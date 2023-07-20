@@ -33,7 +33,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import java.security.SecureRandom
+import scala.util.Random
 import scala.collection.JavaConverters._
 
 
@@ -66,8 +66,8 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "model forward and backward with sigle tensor input" should "be test" in {
     val linear = Linear[Float](4, 5)
-    val input: Tensor[Float] = Tensor[Float](4).apply1(_ => new SecureRandom().nextFloat())
-    val target: Tensor[Float] = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
+    val input: Tensor[Float] = Tensor[Float](4).apply1(_ => Random.nextFloat())
+    val target: Tensor[Float] = Tensor[Float](5).apply1(_ => Random.nextFloat())
     val pythonBigDL = PythonBigDL.ofFloat()
     val mse = new MSECriterion[Float]
     val joutput = pythonBigDL.modelForward(linear,
@@ -175,7 +175,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 //
 //    val data = sc.parallelize(0 to 100).map {i =>
 //      val label = JTensor(Array(i % 2 + 1.0f), Array(1), "double")
-//      val feature = JTensor(Range(0, 100).map(_ => new SecureRandom().nextFloat()).toArray,
+//      val feature = JTensor(Range(0, 100).map(_ => Random.nextFloat()).toArray,
 //        Array(100), "double")
 //      val features = new JArrayList[JTensor]()
 //      features.add(feature)

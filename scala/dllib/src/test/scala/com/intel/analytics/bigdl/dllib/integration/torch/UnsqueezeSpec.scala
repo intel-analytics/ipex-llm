@@ -19,15 +19,15 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.Unsqueeze
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class UnsqueezeSpec extends TorchSpec {
     "A Unsqueeze(2)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](2)
-    val input = Tensor[Double](2, 2, 2).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](2, 1, 2, 2).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](2, 2, 2).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 1, 2, 2).apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -53,8 +53,8 @@ class UnsqueezeSpec extends TorchSpec {
   "A Unsqueeze(3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](3)
-    val input = Tensor[Double](2, 2).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](2, 2, 1).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 2, 1).apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -80,8 +80,8 @@ class UnsqueezeSpec extends TorchSpec {
   "A Unsqueeze(-2)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](-2)
-    val input = Tensor[Double](2, 2).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](2, 2, 1).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 2, 1).apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -107,8 +107,8 @@ class UnsqueezeSpec extends TorchSpec {
   "A Unsqueeze(4, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Unsqueeze[Double](4, 3)
-    val input = Tensor[Double](5, 2, 4, 3).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](5, 2, 4, 3, 1).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](5, 2, 4, 3).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](5, 2, 4, 3, 1).apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)

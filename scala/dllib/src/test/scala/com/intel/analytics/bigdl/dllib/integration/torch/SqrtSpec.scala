@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.Sqrt
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class SqrtSpec extends TorchSpec {
@@ -27,9 +27,9 @@ class SqrtSpec extends TorchSpec {
     torchCheck()
     val layer = new Sqrt[Double]()
     val input = Tensor[Double](10)
-    input.apply1(_ => new SecureRandom().nextDouble())
+    input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](10)
-    gradOutput.apply1(_ => new SecureRandom().nextDouble())
+    gradOutput.apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -56,9 +56,9 @@ class SqrtSpec extends TorchSpec {
     torchCheck()
     val layer = new Sqrt[Double]()
     val input = Tensor[Double](3, 5)
-    input.apply1(_ => new SecureRandom().nextDouble())
+    input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3, 5)
-    gradOutput.apply1(_ => new SecureRandom().nextDouble())
+    gradOutput.apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -85,9 +85,9 @@ class SqrtSpec extends TorchSpec {
     torchCheck()
     val layer = new Sqrt[Double]()
     val input = Tensor[Double](4, 6, 6)
-    input.apply1(_ => new SecureRandom().nextDouble())
+    input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](4, 6, 6)
-    gradOutput.apply1(_ => new SecureRandom().nextDouble())
+    gradOutput.apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -114,9 +114,9 @@ class SqrtSpec extends TorchSpec {
     torchCheck()
     val layer = new Sqrt[Double]()
     val input = Tensor[Double](3, 5, 6, 6)
-    input.apply1(_ => new SecureRandom().nextDouble())
+    input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3, 5, 6, 6)
-    gradOutput.apply1(_ => new SecureRandom().nextDouble())
+    gradOutput.apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)

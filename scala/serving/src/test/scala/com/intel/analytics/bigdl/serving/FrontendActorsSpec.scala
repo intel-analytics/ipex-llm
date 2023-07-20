@@ -31,10 +31,10 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import redis.clients.jedis.Jedis
 
 import scala.concurrent.{Await, ExecutionContextExecutor}
-import java.security.SecureRandom
+import scala.util.Random
 
 class FrontendActorsSpec extends FlatSpec with Matchers with BeforeAndAfter with Supportive {
-  val random = new SecureRandom()
+  val random = new Random()
   val redisHost = "localhost"
   val redisPort = random.nextInt(100) + 10000
   var redisServer: RedisServer = _

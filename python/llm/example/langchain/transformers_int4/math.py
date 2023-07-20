@@ -1,3 +1,4 @@
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -19,38 +20,37 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+# Code is adapted from https://python.langchain.com/docs/modules/chains/additional/llm_math
+
 import argparse
 
+from langchain.chains import LLMMathChain
+from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
+
+
 def main(args):
-    model_family = args.model_family
+    
+    question = args.question
     model_path = args.model_path
-    prompt = args.prompt
-    n_threads = args.thread_num
     
-    if model_family == "llama":     
-        from bigdl.llm.models import Llama
-        modelclass = Llama
-    if model_family == "bloom":   
-        from bigdl.llm.models import Bloom
-        modelclass = Bloom
-    if model_family == "gptneox": 
-        from bigdl.llm.models import Gptneox  
-        modelclass = Gptneox
-        
-    model = modelclass(model_path, n_threads=n_threads)
-    response=model(prompt)
-    print(response)
+    llm = TransformersLLM.from_model_id(
+        model_id=model_path,
+        model_kwargs={"temperature": 0, "max_length": 1024, "trust_remote_code": True},
+    )
     
+    llm_math = LLMMathChain.from_llm(llm, verbose=True)
+
+    output = llm_math.run(question)
+    print("====output=====")
+    print(output)
+    
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
-    parser.add_argument('-x','--model-family', type=str, required=True,
-                        help='the model family')
+    parser = argparse.ArgumentParser(description='TransformersLLM Langchain Math Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
-                        help='the path to the converted llm model')
-    parser.add_argument('-p', '--prompt', type=str, default='What is AI?',
+                        help='the path to transformers model')
+    parser.add_argument('-q', '--question', type=str, default='What is 13 raised to the .3432 power?',
                         help='qustion you want to ask.')
-    parser.add_argument('-t','--thread-num', type=int, default=2,
-                        help='number of threads to use for inference')
     args = parser.parse_args()
     
     main(args)

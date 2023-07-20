@@ -39,4 +39,4 @@ runs:
         export KERAS_BACKEND=tensorflow
         cd scala
         mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P serving,spark_2.x -Dspark.version=2.4.6 "-Dspark.master=local[*]" -pl "!ppml"
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P serving,spark_3.x -Dspark.version=3.1.3 "-Dspark.master=local[*]"
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.friesian" "-Dtest=com.intel.analytics.bigdl.friesian.*Test" test -P serving,spark_3.x -Dspark.version=3.4.1 "-Dspark.master=local[*]"

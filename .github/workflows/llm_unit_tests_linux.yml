@@ -13,26 +13,50 @@ on:
     paths:
       - 'python/llm/**'
       - '.github/workflows/llm_unit_tests_linux.yml'
+      - '.github/workflows/llm-binary-build.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/cli-test/action.yml'
+      - '.github/actions/llm/inference-test/action.yml'
+      - '.github/actions/llm/langchain-test/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'python/llm/**'
       - '.github/workflows/llm_unit_tests_linux.yml'
+      - '.github/workflows/llm-binary-build.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/cli-test/action.yml'
+      - '.github/actions/llm/inference-test/action.yml'
+      - '.github/actions/llm/langchain-test/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
+  workflow_dispatch:
+
+env:
+  INT4_CKPT_DIR: ./llm/ggml-actions/stable
+  LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
+  GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
+  BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
+  STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
+
+  LLM_DIR: ./llm
+  ORIGINAL_CHATGLM_6B_PATH: ./llm/chatglm-6b/
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-unit-test-linux:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+  llm-unit-test-linux-avx512:
+    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
+    needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
     env:
-      INT4_CKPT_DIR: ./llm/ggml-actions/stable
-      LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
-      GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
-      BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
-      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
+      THREAD_NUM: 24
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -45,93 +69,53 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Run LLM-init test
-        shell: bash
-        run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
-          $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source $CONDA_HOME/bin/activate bigdl-init-llm
-          $CONDA_HOME/bin/conda info
-          pip install requests
-          bash python/llm/dev/release_default_linux.sh default false
-          pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
-          source $CONDA_HOME/bin/deactivate
-          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
       - name: Run LLM install (all) test
-        shell: bash
-        run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
-          $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source $CONDA_HOME/bin/activate bigdl-init-llm
-          $CONDA_HOME/bin/conda info
-          pip install requests
-          bash python/llm/dev/release_default_linux.sh default false
-          whl_name=$(ls python/llm/dist)
-          pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
-          pip install pytest
-          bash python/llm/test/run-llm-install-tests.sh
-          source $CONDA_HOME/bin/deactivate
+        uses: ./.github/actions/llm/setup-llm-env
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Download ckpt models
         run: |
-          llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
-          llm_ftp_user=$(echo $llm_ftp_user | tr '[:upper:]' '[:lower:]')
-          llm_ftp_url=${FTP_URI:0:6}${llm_ftp_user}${FTP_URI:9}:8821
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $llm_ftp_url/${LLAMA_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $llm_ftp_url/${GPTNEOX_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $llm_ftp_url/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $llm_ftp_url/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $ORIGINAL_CHATGLM_6B_PATH ]; then
+            echo "Directory $ORIGINAL_CHATGLM_6B_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/${ORIGINAL_CHATGLM_6B_PATH:1} -P $LLM_DIR
           fi
 
+      - name: Run LLM cli test
+        uses: ./.github/actions/llm/cli-test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
       - name: Run LLM inference test
-        shell: bash
-        run: |
-          source $CONDA_HOME/bin/activate bigdl-init-llm
-          $CONDA_HOME/bin/conda info
-          bash python/llm/test/run-llm-inference-tests.sh
-          source $CONDA_HOME/bin/deactivate
+        uses: ./.github/actions/llm/inference-test
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run LLM langchain test
-        shell: bash
-        run: |
-          source $CONDA_HOME/bin/activate bigdl-init-llm
-          $CONDA_HOME/bin/conda info
-          pip install -U langchain==0.0.184
-          pip install -U chromadb==0.3.25
-          pip install -U typing_extensions==4.5.0
-          bash python/llm/test/run-llm-langchain-tests.sh
-          source $CONDA_HOME/bin/deactivate
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      # new test steps should be added here
-
-      - name: Run LLM cli test
-        uses: ./.github/actions/llm/llm-cli-flow-verification-linux
+        uses: ./.github/actions/llm/langchain-test
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Clean up test environment
-        shell: bash
-        run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
+        uses: ./.github/actions/llm/remove-llm-env
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class MultiCriterionSpec extends TorchSpec {

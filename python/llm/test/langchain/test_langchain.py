@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.llm.utils import get_avx_flags
-from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
-from bigdl.llm.langchain.llms import BigdlLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+from bigdl.llm.langchain.llms import BigdlNativeLLM
 import pytest
 from unittest import TestCase
 import os
@@ -27,10 +26,15 @@ class Test_Models_Basics(TestCase):
         self.llama_model_path = os.environ.get('LLAMA_INT4_CKPT_PATH')
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
-        
+        thread_num = os.environ.get('THREAD_NUM')
+        if thread_num is not None:
+            self.n_threads = int(thread_num)
+        else:
+            self.n_threads = 2         
+
         
     def test_langchain_llm_embedding_llama(self):
-        bigdl_embeddings = BigdlLLMEmbeddings(
+        bigdl_embeddings = BigdlNativeEmbeddings(
             model_path=self.llama_model_path,
             model_family="llama")
         text = "This is a test document."
@@ -38,7 +42,7 @@ class Test_Models_Basics(TestCase):
         doc_result = bigdl_embeddings.embed_documents([text])
     
     def test_langchain_llm_embedding_gptneox(self):
-        bigdl_embeddings = BigdlLLMEmbeddings(
+        bigdl_embeddings = BigdlNativeEmbeddings(
             model_path=self.gptneox_model_path,
             model_family="gptneox")
         text = "This is a test document."
@@ -46,28 +50,28 @@ class Test_Models_Basics(TestCase):
         doc_result = bigdl_embeddings.embed_documents([text])
         
     def test_langchain_llm_llama(self):
-        llm = BigdlLLM(
+        llm = BigdlNativeLLM(
             model_path=self.llama_model_path, 
             max_tokens=32,
-            n_threads=2)
+            n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
         
     def test_langchain_llm_gptneox(self):
-        llm = BigdlLLM(
+        llm = BigdlNativeLLM(
             model_path=self.gptneox_model_path,
             model_family="gptneox", 
             max_tokens=32,
-            n_threads=2)
+            n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
         
     def test_langchain_llm_bloom(self):
-        llm = BigdlLLM(
+        llm = BigdlNativeLLM(
             model_path=self.bloom_model_path, 
             model_family="bloom",
             max_tokens=32,
-            n_threads=2)
+            n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
         

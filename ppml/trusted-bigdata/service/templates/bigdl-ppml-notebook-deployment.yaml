@@ -18,6 +18,7 @@ spec:
       containers:
       - name: bigdl-ppml-notebook
         image: {{ .Values.imageName }}
+        imagePullPolicy: Always
         command: [ "/ppml/start-notebook.sh" ]
         ports:
         - containerPort: {{ .Values.jupyterPort }}
@@ -29,6 +30,8 @@ spec:
           value: {{ .Values.imageName }}
         - name: RUNTIME_SPARK_MASTER
           value: {{ .Values.k8sMasterURL }}
+        - name: RUNTIME_DRIVER_MEMORY
+          value: {{ .Values.driverMemory}}
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"
@@ -38,8 +41,8 @@ spec:
         - name: JUPYTER_PORT
           value: "{{ .Values.jupyterPort }}"
         volumeMounts:
-        - mountPath: /ppml/data
-          name: nfs-storage
+        - name: nfs-storage
+          mountPath: /ppml/data
         - name: ssl-keys
           mountPath: /ppml/keys
         - name: ssl-password
