@@ -11,7 +11,6 @@ start=$(date "+%s")
 
 python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k "not test_transformers_int4"
 
-echo $THREAD_NUM
 if [ -z "$THREAD_NUM" ]; then
   THREAD_NUM=2
 fi
