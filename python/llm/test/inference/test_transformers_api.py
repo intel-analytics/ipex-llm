@@ -15,15 +15,13 @@
 #
 
 
-from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
-from bigdl.llm.utils import get_avx_flags
 import unittest
 import os
 
 import time
 import torch
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-from transformers import LlamaTokenizer, AutoTokenizer
+from bigdl.llm.transformers import AutoModel
+from transformers import AutoTokenizer
 
 class TestTransformersAPI(unittest.TestCase):
 
