@@ -51,12 +51,13 @@ from torch import Tensor, device, dtype, nn
 T = TypeVar("T", bound="torch.nn.Module")
 
 import bigdl.llm.ggml.model.llama.llama_cpp as ggml
-from bigdl.llm.utils.isa_checker import check_avx512_vnni
+from bigdl.llm.utils.isa_checker import is_server
 
 import torch
 import ctypes
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-IS_SERVER = check_avx512_vnni()
+IS_SERVER = is_server()
+TORCH_LINEAR_THRESHOLD = 96
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
@@ -224,7 +225,7 @@ class LinearQuant(nn.Linear):
         x0 = self.weight.data
 
         # todo may need to set a different number on different platforms
-        if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= 96:
+        if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
             x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
             result = F.linear(x, x0_fp32, self.bias)
         else:
