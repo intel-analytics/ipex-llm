@@ -356,7 +356,7 @@
 	<dependency>
             <groupId>ml.dmlc</groupId>
             <artifactId>xgboost4j_2.12</artifactId>
-            <version>1.6.2</version>
+	    <version>${xgboost.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.esotericsoftware.kryo</groupId>
@@ -371,7 +371,7 @@
         <dependency>
             <groupId>ml.dmlc</groupId>
 	    <artifactId>xgboost4j-spark_2.12</artifactId>
-            <version>1.6.2</version>
+	    <version>${xgboost.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.esotericsoftware.kryo</groupId>
