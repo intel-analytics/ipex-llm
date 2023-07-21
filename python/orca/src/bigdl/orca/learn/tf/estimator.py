@@ -345,6 +345,8 @@ class Estimator(SparkEstimator):
         :param backend: backend for estimator. Now it only can be "bigdl".
         :return: an Estimator object.
         """
+        invalidInputError(False,
+                          "TF1 Estimator has been deprecated, please use TF2 Estimator instead.")
         invalidInputError(backend == "bigdl", "only bigdl backend is supported for now")
         return TensorFlowEstimator(inputs=inputs,
                                    outputs=outputs,
@@ -378,6 +380,8 @@ class Estimator(SparkEstimator):
         :param backend: backend for estimator. Now it only can be "bigdl".
         :return: an Estimator object.
         """
+        invalidInputError(False,
+                          "TF1 Estimator has been deprecated, please use TF2 Estimator instead.")
         invalidInputError(backend == "bigdl", "only bigdl backend is supported for now")
         return KerasEstimator(keras_model, metrics, model_dir, optimizer)
 
