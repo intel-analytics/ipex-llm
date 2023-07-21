@@ -42,7 +42,7 @@ env:
   STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
 
   LLM_DIR: ./llm
-  ORIGINAL_CHATGLM_6B_PATH: ./llm/chatglm-6b/
+  ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -77,27 +77,27 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Download ckpt models
+      - name: Download ckpt & original models
         run: |
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
-          if [ ! -d $ORIGINAL_CHATGLM_6B_PATH ]; then
-            echo "Directory $ORIGINAL_CHATGLM_6B_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/${ORIGINAL_CHATGLM_6B_PATH:1} -P $LLM_DIR
+          if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
+            echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
           fi
 
       - name: Run LLM cli test

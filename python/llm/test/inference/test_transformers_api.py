@@ -33,7 +33,7 @@ class TestTransformersAPI(unittest.TestCase):
             self.n_threads = 2
 
     def test_transformers_int4(self):
-        model_path = os.environ.get('ORIGINAL_CHATGLM_6B_PATH')
+        model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         input_str = "晚上睡不着应该怎么办"
