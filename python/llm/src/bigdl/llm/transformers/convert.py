@@ -263,15 +263,15 @@ def llama_attention_forward_4_31(
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
         invalidInputError(False,
-                          f"Attention weights should be of size {(bsz, self.num_heads,
-                                                                  q_len, kv_seq_len)}, "
+                          f"Attention weights should be of size"
+                          f" {(bsz, self.num_heads, q_len, kv_seq_len)}, "
                           f"but is {attn_weights.size()}")
 
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
             invalidInputError(False,
                               f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
-                              "but is {attention_mask.size()}")
+                              f"but is {attention_mask.size()}")
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
@@ -281,8 +281,8 @@ def llama_attention_forward_4_31(
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(False,
-                          f"attn_output should be of size {(bsz, self.num_heads,
-                                                            q_len, self.head_dim)}, "
+                          f"attn_output should be of size "
+                          f"{(bsz, self.num_heads, q_len, self.head_dim)}, "
                           f"but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2).contiguous()
