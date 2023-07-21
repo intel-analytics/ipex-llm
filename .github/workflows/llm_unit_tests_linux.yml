@@ -81,23 +81,23 @@ jobs:
         run: |
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:1} -P $LLM_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
           fi
 
       - name: Run LLM cli test
