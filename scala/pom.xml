@@ -163,6 +163,7 @@
         <hadoop.version>3.3.4</hadoop.version>
 	<guava.version>32.0.1-jre</guava.version>
 	<json4s.version>3.7.0-M11</json4s.version>
+	<xgboost.version>1.1.2</xgboost.version>
         <thrift.path>thrift</thrift.path>
         <thrift.version>0.9.2</thrift.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -736,7 +737,8 @@
                 <spark.version>2.4.6</spark.version>
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
-                <scala.macros.version>2.1.0</scala.macros.version>
+		<scala.macros.version>2.1.0</scala.macros.version>
+		<xgboost.version>1.1.2</xgboost.version>
             </properties>
             <build>
                 <plugins>
@@ -816,7 +818,8 @@
                 <spark.version>3.4.1</spark.version>
                 <scala.major.version>2.12</scala.major.version>
                 <scala.version>2.12.15</scala.version>
-                <scala.macros.version>2.1.1</scala.macros.version>
+		<scala.macros.version>2.1.1</scala.macros.version>
+		<xgboost.version>1.6.2</xgboost.version>
                 <lightgbm.scope>compile</lightgbm.scope>
                 <maven.compiler.source>${java.version}</maven.compiler.source>
                 <maven.compiler.target>${java.version}</maven.compiler.target>
