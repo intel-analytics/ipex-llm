@@ -91,7 +91,7 @@ jobs:
     - name: Build with Maven
       run: |
           ls
-          #spark3.1.3
+          #spark3.4.1
           cp scala/pom.xml scala/pom.xml.origin
           cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
           cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
@@ -105,17 +105,17 @@ jobs:
 
           sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
           sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/dllib/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/orca/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/friesian/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/grpc/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/serving/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/ppml/pom.xml
-          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/assembly/pom.xml
-          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign --file scala/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/common/spark-version/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/dllib/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/orca/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/friesian/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/grpc/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/serving/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/ppml/pom.xml
+          sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/assembly/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=3.4.1 -DSPARK_PLATFORM=SPARK_3.4 -P spark_3.x -P sign --file scala/pom.xml
       
           mv scala/pom.xml.origin scala/pom.xml
           mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
@@ -197,52 +197,54 @@ jobs:
         export IMAGE=intelanalytics/bigdl
         cd docker/bigdl
         echo "########################################"
-        echo "################# bigdl 3.1.3 #######"
+        echo "################# bigdl 3.4.1 #######"
         echo "########################################"
         docker build \
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg SPARK_VERSION=3.1.3 \
+          --build-arg SPARK_VERSION=3.4.1 \
+          --build-arg HADOOP_VERSION=3 \
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
-          --rm --no-cache -t $IMAGE-spark-3.1.3:${TAG} .
+          --rm --no-cache -t $IMAGE-spark-3.4.1:${TAG} .
         # tag 'latest'
-        docker push ${IMAGE}-spark-3.1.3:${TAG}
-        docker tag ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
-        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
+        docker push ${IMAGE}-spark-3.4.1:${TAG}
+        docker tag ${IMAGE}-spark-3.4.1:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
         # tag SNAPSHOT
         export TAG_SNAPSHOT=2.5.0-SNAPSHOT
-        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT}
-        docker push ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT}
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}-spark-3.4.1:${TAG_SNAPSHOT}
+        docker push ${IMAGE}-spark-3.4.1:${TAG_SNAPSHOT} 
+        docker rmi -f ${IMAGE}-spark-3.4.1:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}-spark-3.4.1:${TAG_SNAPSHOT}
     - name: docker deploy bigdl-k8s
       run: |
         cd docker/bigdl-k8s
         export IMAGE=intelanalytics/bigdl-k8s
         export TAG=latest
         echo "########################################"
-        echo "################# bigdl-k8s 3.1.3 #######"
+        echo "################# bigdl-k8s 3.4.1 #######"
         echo "########################################"
         docker build \
         --build-arg http_proxy=${HTTP_PROXY} \
         --build-arg https_proxy=${HTTPS_PROXY} \
-        --build-arg SPARK_VERSION=3.1.3 \
+        --build-arg SPARK_VERSION=3.4.1 \
+        --build-arg HADOOP_VERSION=3 \
         --build-arg JDK_VERSION=8u192 \
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
-        --rm --no-cache -t ${IMAGE}-spark-3.1.3:${TAG} .
+        --rm --no-cache -t ${IMAGE}-spark-3.4.1:${TAG} .
         # tag 'latest'
-        docker push ${IMAGE}-spark-3.1.3:${TAG}
-        docker tag ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
+        docker push ${IMAGE}-spark-3.4.1:${TAG}
+        docker tag ${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG}
         docker push ${IMAGE}:${TAG}
-        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
-        docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
+        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
         # tag SNAPSHOT
         export TAG_SNAPSHOT=2.5.0-SNAPSHOT
-        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
+        docker rmi -f ${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
     - name: docker deploy bigdl-chronos
       run: |
         mv docker/chronos-nightly/Dockerfile ./Dockerfile
@@ -279,7 +281,8 @@ jobs:
         --build-arg JDK_VERSION=8u192 \
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
-        --build-arg SPARK_VERSION=3.1.3 \
+        --build-arg SPARK_VERSION=3.4.1 \
+        --build-arg HADOOP_VERSION=3 \
         --build-arg PY4J_VERSION=0.10.9 \
         --rm --no-cache -t ${IMAGE}:${TAG} .
         # tag 'latest'
