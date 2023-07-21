@@ -62,7 +62,7 @@ jobs:
         echo "ls -d scala/assembly/target/*"
         ls -d scala/assembly/target/*
         echo ""
-        echo "zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.4.1-2.2.0-SNAPSHOT-dist-all.zip 'jars/*.jar'"
+        echo "zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.4.1-2.4.0-SNAPSHOT-dist-all.zip 'jars/*.jar'"
         zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.4.1-2.4.0-SNAPSHOT-dist-all.zip 'jars/*.jar'
     
     - name: Create Job Badge
