@@ -42,7 +42,8 @@ if __name__ == '__main__':
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path,
-                                                      load_in_4bit=True)
+                                                      load_in_4bit=True,
+                                                      torch_dtype='auto')
     model.config.forced_decoder_ids = None
 
     # Load processor
