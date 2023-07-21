@@ -204,7 +204,7 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg SPARK_VERSION=3.4.1 \
-          --build-arg HADOOP=3 \
+          --build-arg HADOOP_VERSION=3 \
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
@@ -230,7 +230,7 @@ jobs:
         --build-arg http_proxy=${HTTP_PROXY} \
         --build-arg https_proxy=${HTTPS_PROXY} \
         --build-arg SPARK_VERSION=3.4.1 \
-        --build-arg HADOOP=3 \
+        --build-arg HADOOP_VERSION=3 \
         --build-arg JDK_VERSION=8u192 \
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
@@ -283,7 +283,7 @@ jobs:
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
         --build-arg SPARK_VERSION=3.4.1 \
-        --build-arg HADOOP=3 \
+        --build-arg HADOOP_VERSION=3 \
         --build-arg PY4J_VERSION=0.10.9 \
         --rm --no-cache -t ${IMAGE}:${TAG} .
         # tag 'latest'
