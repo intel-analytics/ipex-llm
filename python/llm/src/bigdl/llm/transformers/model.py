@@ -113,6 +113,9 @@ class _BaseAutoModelClass:
         # Speed up when loading model
         kwargs["low_cpu_mem_usage"] = True
 
+        # set default torch_dtype='auto'
+        kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
         # Note that the int4 linear layers cannot currently
         # be recorded in huggingface Pretrained Model or AutoConfig,
@@ -123,8 +126,6 @@ class _BaseAutoModelClass:
 
         # Avoid KeyError
         kwargs["ignore_mismatched_sizes"] = True
-        # Avoid reading from local file at the first initialization
-        kwargs["state_dict"] = {}
 
         # Maybe needed when extract_local_archive_file
         subfolder = kwargs.get("subfolder", "")
