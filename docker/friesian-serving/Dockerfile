@@ -16,21 +16,23 @@
 
 
 ARG SPARK_VERSION=2.4.6
+ARG HADOOP=2.7
 ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 
 # stage.1 spark
 FROM ubuntu:20.04 as spark
-ARG SPARK_VERSION=2.4.6
+ARG SPARK_VERSION
+ARG HADOOP
 ARG SPARK_HOME=/opt/spark
 
 RUN apt-get update --fix-missing && \
     apt-get install -y --no-install-recommends apt-utils wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    wget --progress=dot:giga --no-check-certificate https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget --progress=dot:giga --no-check-certificate https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
+    rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
     # remove log4j 1.x jars
     rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
     rm -f ${SPARK_HOME}/jars/slf4j-log4j12-1.7.16.jar && \

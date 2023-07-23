@@ -177,7 +177,7 @@ jobs:
           mv build/Release/quantize-llama.exe release/quantize-llama_vnni.exe
           mv build/Release/llama.dll release/libllama_vnni.dll
 
-          mv build/Release/main-gptneox.exe releasee/main-gptneox_vnni.exe
+          mv build/Release/main-gptneox.exe release/main-gptneox_vnni.exe
           mv build/Release/quantize-gptneox.exe release/quantize-gptneox_vnni.exe
           mv build/Release/gptneox.dll release/libgptneox_vnni.dll
 

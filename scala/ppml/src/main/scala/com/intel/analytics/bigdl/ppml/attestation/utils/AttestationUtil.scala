@@ -50,6 +50,10 @@ object AttestationUtil {
     new BigInteger(1, quote.slice(184, 232)).toString(16)
   }
 
+  def getRTMRFromQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(376, 568)).toString(16)
+  }
+
   def generateToken(length: Int = 32): String = {
     val secureRandom = new SecureRandom()
     val charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
