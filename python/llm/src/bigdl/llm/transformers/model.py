@@ -115,9 +115,6 @@ class _BaseAutoModelClass:
         # Speed up when loading model
         kwargs["low_cpu_mem_usage"] = True
 
-        # set default torch_dtype='auto'
-        kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
-
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
         # Note that the int4 linear layers cannot currently
         # be recorded in huggingface Pretrained Model or AutoConfig,
