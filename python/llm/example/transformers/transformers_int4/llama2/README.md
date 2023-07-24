@@ -1,5 +1,5 @@
 # Llama2
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Llama2 models. For illustration purposes, we utilize the [NousResearch/Llama-2-7b-chat-hf](https://huggingface.co/NousResearch/Llama-2-7b-chat-hf) and [daryl149/llama-2-13b-chat-hf](https://huggingface.co/daryl149/llama-2-13b-chat-hf) as reference Llama2 models.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Llama2 models. For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -21,7 +21,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `NousResearch/Llama-2-7b-chat-hf` and `daryl149/llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'NousResearch/Llama-2-7b-chat-hf'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -49,7 +49,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [NousResearch/Llama-2-7b-chat-hf](https://huggingface.co/NousResearch/Llama-2-7b-chat-hf)
+#### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -67,7 +67,7 @@ What is AI?
 AI is a term used to describe the development of computer systems that can perform tasks that typically require human intelligence, such as understanding natural language, recognizing images
 ```
 
-#### [daryl149/llama-2-13b-chat-hf](https://huggingface.co/daryl149/llama-2-13b-chat-hf)
+#### [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------

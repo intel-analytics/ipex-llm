@@ -31,8 +31,8 @@ LLAMA2_PROMPT_FORMAT = """### HUMAN:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="NousResearch/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `NousResearch/Llama-2-7b-chat-hf` and `daryl149/llama-2-13b-chat-hf`) to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
+                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
