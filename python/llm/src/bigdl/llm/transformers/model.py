@@ -125,6 +125,8 @@ class _BaseAutoModelClass:
 
         # Avoid KeyError
         kwargs["ignore_mismatched_sizes"] = True
+        # Avoid reading from local file at the first initialization
+        kwargs["state_dict"] = {}
 
         # Maybe needed when extract_local_archive_file
         subfolder = kwargs.get("subfolder", "")
