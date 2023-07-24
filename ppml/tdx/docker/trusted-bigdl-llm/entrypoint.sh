@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# We do not have any arguments, just run bash
-if [ "$#" == 0 ]; then
-  echo "[INFO] no command is passed in"
-  echo "[INFO] enter pass-through mode"
-  exec /usr/bin/tini -s -- "bash"
-fi
-
 # Attestation
 if [ -z "$ATTESTATION" ]; then
   echo "[INFO] Attestation is disabled!"
@@ -27,8 +20,12 @@ if [ "$ATTESTATION" ==  "true" ]; then
   fi
 fi
 
-#source bigdl-nano-init -o -t
-if [ $# -ne 0 ]; then
+# We do not have any arguments, just run bash
+if [ "$#" == 0 ]; then
+  echo "[INFO] no command is passed in"
+  echo "[INFO] enter pass-through mode"
+  exec /usr/bin/tini -s -- "bash"
+else
   runtime_command="$@"
   exec $runtime_command
 fi
