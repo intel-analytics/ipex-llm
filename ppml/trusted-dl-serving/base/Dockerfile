@@ -26,8 +26,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     git clone https://github.com/analytics-zoo/transformers-PPML.git && \
     cd transformers-PPML && \
     git checkout v4.28.1-memory-files && \
-    python setup.py install
-    
+    python setup.py install && \
+    cp -r src/transformers/encryption /usr/local/lib/python3.9/dist-packages/transformers*/transformers
 
 # Stage.2 Tritonserver
 From ubuntu:20.04 as tritonserver
@@ -139,7 +139,7 @@ COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
 
 # Transformers
-COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/transformers
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers* /usr/local/lib/python3.9/dist-packages/
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers* /usr/local/lib/python3.9/dist-packages/
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
@@ -164,6 +164,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
     pip3 install --no-cache-dir torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+    mv /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/ && \
+    mv  /usr/local/lib/python3.9/dist-packages/tokenizers*/tokenizers* /usr/local/lib/python3.9/dist-packages/ && \
     rm /usr/local/cuda/lib64/stubs/libcublasLt.so.11 && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
