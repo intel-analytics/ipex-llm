@@ -87,7 +87,7 @@ class TestTransformersAPI(unittest.TestCase):
             end = time.time()        
         print('Output:', transcription)
         print(f'Inference time: {end-st} s')
-        res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription
+        res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
         self.assertTrue(res)
 
 if __name__ == '__main__':
