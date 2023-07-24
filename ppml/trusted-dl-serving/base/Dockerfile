@@ -18,7 +18,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     git clone https://github.com/analytics-zoo/pytorch-serve.git && \
     cd pytorch-serve && \
-    git checkout model_decryption && \
     python setup.py install && \
     mkdir -p /ppml/torchserve && \
     mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar && \
