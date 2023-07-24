@@ -22,14 +22,12 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to
-# https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML#prompt-template-llama-2-chat
-# https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML#prompt-template-llama-2-chat
-LLAMA2_PROMPT_FORMAT = """SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
+LLAMA2_PROMPT_FORMAT = """### HUMAN:
+{prompt}
 
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-USER: {prompt}
-ASSISTANT: """
+### RESPONSE:
+"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')

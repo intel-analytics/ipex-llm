@@ -53,32 +53,34 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+### HUMAN:
+What is AI?
 
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-USER: What is AI?
-ASSISTANT: 
+### RESPONSE:
+
 -------------------- Output --------------------
-SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+### HUMAN:
+What is AI?
 
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-USER: What is AI?
-ASSISTANT:  Hello! I'm here to help you with any questions you may have. AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as learning, problem-solving, and decision-making. AI technology can be used
+### RESPONSE:
+
+AI is a term used to describe the development of computer systems that can perform tasks that typically require human intelligence, such as understanding natural language, recognizing images, making decisions, and solving problems. AI systems use algorithms and machine learning techniques to analyze data, learn from it, and make predictions or decisions
 ```
 
 #### [daryl149/llama-2-13b-chat-hf](https://huggingface.co/daryl149/llama-2-13b-chat-hf)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+### HUMAN:
+What is AI?
 
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-USER: What is AI?
-ASSISTANT: 
+### RESPONSE:
+
 -------------------- Output --------------------
-SYSTEM: You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+### HUMAN:
+What is AI?
 
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-USER: What is AI?
-ASSISTANT:  AI stands for Artificial Intelligence. It refers to the ability of machines to perform tasks that would typically require human intelligence, such as learning, problem-solving, and decision-making. AI systems use algorithms and data to make predictions, classify objects, and generate insights. AI has
+### RESPONSE:
+
+AI, or artificial intelligence, refers to the ability of machines to perform tasks that would typically require human intelligence, such as learning, problem-solving, and decision-making. AI systems use algorithms and data to make predictions, classify objects, and generate insights that would be difficult or impossible for humans
 ```
