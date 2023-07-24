@@ -36,7 +36,7 @@ jobs:
   linux-build-avx2:
     runs-on: [self-hosted, AVX2, centos7]
     needs: check-linux-avx2-artifact
-    if: ${{!needs.check-linux-avx2-artifact.outputs.if-exists}}
+    if: ! needs.check-linux-avx2-artifact.outputs.if-exists
     steps:
       - name: Set access token
         run: |
@@ -97,7 +97,7 @@ jobs:
   linux-build-avx512:
     runs-on: [self-hosted, AVX512, centos7]
     needs: check-linux-avx512-artifact
-    if: ${{!needs.check-linux-avx512-artifact.outputs.if-exists}}
+    if: ! needs.check-linux-avx512-artifact.outputs.if-exists
     steps:
       - name: Set access token
         run: |
@@ -158,7 +158,7 @@ jobs:
   windows-build-avx2:
     runs-on: [self-hosted, Windows]
     needs: check-windows-avx2-artifact
-    if: ${{!needs.check-windows-avx2-artifact.outputs.if-exists}}
+    if: ! needs.check-windows-avx2-artifact.outputs.if-exists
     steps:
       - name: Set access token
         run: |
@@ -200,7 +200,7 @@ jobs:
   windows-build-avx2-vnni:
     runs-on: [self-hosted, Windows]
     needs: check-windows-avx2-vnni-artifact
-    if: ${{!needs.check-windows-avx2-vnni-artifact.outputs.if-exists}}
+    if: ! needs.check-windows-avx2-vnni-artifact.outputs.if-exists
     steps:
       - name: Set access token
         run: |
