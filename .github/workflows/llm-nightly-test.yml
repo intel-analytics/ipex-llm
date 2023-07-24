@@ -80,5 +80,7 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-  llm-nightly-inference-test-avx512:
+  llm-inference-test-on-linux:
     uses: ./.github/workflows/llm_unit_tests_linux.yml
+  llm-inference-test-on-windows:
+    uses: ./.github/workflows/llm_unit_tests_windows.yml
