@@ -115,6 +115,9 @@ class _BaseAutoModelClass:
         # Speed up when loading model
         kwargs["low_cpu_mem_usage"] = True
 
+        # set default torch_dtype='auto'
+        kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
         # Note that the int4 linear layers cannot currently
         # be recorded in huggingface Pretrained Model or AutoConfig,
@@ -125,18 +128,21 @@ class _BaseAutoModelClass:
 
         # Avoid KeyError
         kwargs["ignore_mismatched_sizes"] = True
-        # Avoid reading from local file at the first initialization
-        kwargs["state_dict"] = {}
 
         # Maybe needed when extract_local_archive_file
         subfolder = kwargs.get("subfolder", "")
         variant = kwargs.get("variant", None)
 
+        import logging
+        from transformers.modeling_utils import logger
         from .convert import ggml_convert_quant
+        old_level = logger.getEffectiveLevel()
+        # Mute shape mismatch output
+        logger.setLevel(logging.ERROR)
+
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
-        print("Note: If there are warnings during the model loading process, "
-              "they can be safely ignored; "
-              "the model will be loaded with INT4 optimizations applied.")
+
+        logger.setLevel(old_level)
 
         # add save_low_bit to pretrained model dynamically
         import types
