@@ -139,7 +139,7 @@ COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
 
 # Transformers
-COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers-4.30.0.dev0-py3.9.egg /usr/local/lib/python3.9/dist-packages/
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg /usr/local/lib/python3.9/dist-packages/
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg /usr/local/lib/python3.9/dist-packages/
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
