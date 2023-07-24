@@ -1,12 +1,12 @@
-291c291
+308c308
 <     path_model: bytes, params: llama_context_params
 ---
->     path_model: bytes, params: llama_context_params, key: bytes = None, iv: bytes = None
-293c293
-<     return _lib.llama_init_from_file(path_model, pointer(params))
+>     path_model: bytes, params: llama_context_params, key: bytes = None, iv:bytes = None
+310c310
+<     return _lib.llama_init_from_file(path_model, params)
 ---
->     return _lib.llama_init_from_file(path_model, pointer(params), key, iv)
-296c296
-< _lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params_p]
+>     return _lib.llama_init_from_file(path_model, params, key, iv)
+313c313
+< _lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params]
 ---
-> _lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params_p, c_char_p, c_char_p]
+> _lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params, c_char_p, c_char_p]
