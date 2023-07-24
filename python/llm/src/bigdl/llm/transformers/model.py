@@ -18,7 +18,7 @@ import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, load_state_dict, load
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -132,16 +132,10 @@ class _BaseAutoModelClass:
         subfolder = kwargs.get("subfolder", "")
         variant = kwargs.get("variant", None)
 
-        import logging
-        from transformers.modeling_utils import logger
         from .convert import ggml_convert_quant
-        old_level = logger.getEffectiveLevel()
-        # Mute shape mismatch output
-        logger.setLevel(logging.ERROR)
 
-        model = cls.HF_Model.from_pretrained(*args, **kwargs)
-
-        logger.setLevel(old_level)
+        with MuteHFLogger(logger=transformers.modeling_utils.logger):
+            model = cls.HF_Model.from_pretrained(*args, **kwargs)
 
         # add save_low_bit to pretrained model dynamically
         import types
