@@ -26,6 +26,9 @@ if TYPE_CHECKING:
     from pyspark.rdd import RDD
 
 
+invalidInputError(False,
+                  "TF1 API has been deprecated, you may use TF2 Estimator instead.")
+
 class TF1Dataset(TFDataset):
 
     def __init__(self,

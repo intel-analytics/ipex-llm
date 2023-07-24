@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+invalidInputError(False,
+                  "TF1 API has been deprecated, you may use TF2 Estimator instead.")
 
 def check_tf_version():
     import logging

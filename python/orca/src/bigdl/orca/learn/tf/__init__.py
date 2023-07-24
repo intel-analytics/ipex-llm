@@ -13,3 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+invalidInputError(False,
+                  "TF1 API has been deprecated, please use TF2 Estimator instead.")
