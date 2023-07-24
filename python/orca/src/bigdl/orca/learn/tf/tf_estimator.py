@@ -143,8 +143,6 @@ class TFEstimator():
              the specified ExportStrategy. Currently, the return value is undefined for distributed
             training mode.
         """
-        invalidInputError(False,
-                          "TF1 Estimator has been deprecated, please use TF2 Estimator instead.")
         params = dict(
             train_spec=train_spec,
             eval_spec=eval_spec,
