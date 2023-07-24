@@ -26,7 +26,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd transformers-PPML && \
     git checkout v4.28.1-memory-files && \
     python setup.py install && \
-    cp -r src/transformers/encryption /usr/local/lib/python3.9/dist-packages/transformers*/transformers
+    cp -r src/transformers/encryption /usr/local/lib/python3.9/dist-packages/transformers*/transformers && \
+    ls /usr/local/lib/python3.9/dist-packages/transformers*/transformers
 
 # Stage.2 Tritonserver
 From ubuntu:20.04 as tritonserver
