@@ -16,16 +16,16 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    git clone https://github.com/Hanyu-Jin/pytorch-serve.git && \
+    git clone https://github.com/analytics-zoo/pytorch-serve.git && \
     cd pytorch-serve && \
     git checkout model_decryption && \
     python setup.py install && \
     mkdir -p /ppml/torchserve && \
     mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar && \
     cd /ppml && \
-    git clone https://github.com/Hanyu-Jin/transformers-PPML.git && \
+    git clone https://github.com/analytics-zoo/transformers-PPML.git && \
     cd transformers-PPML && \
-    git checkout v4.28.1-encryption && \
+    git checkout v4.28.1-memory-files && \
     python setup.py install
     
 
