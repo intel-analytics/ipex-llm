@@ -28,7 +28,7 @@ if [ "$ATTESTATION" ==  "true" ]; then
 fi
 
 #source bigdl-nano-init -o -t
-
-runtime_command="$@"
-
-exec $runtime_command
+if [ $# -ne 0 ]; then
+  runtime_command="$@"
+  exec $runtime_command
+fi
