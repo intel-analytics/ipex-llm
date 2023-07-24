@@ -25,7 +25,7 @@ jobs:
   check-linux-avx2-artifact:
     runs-on: ubuntu-latest
     outputs:
-      if-exists: steps.check_artifact.outputs.exists 
+      if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
       - name: Check if built
         id: check_artifact
@@ -86,7 +86,7 @@ jobs:
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
     outputs:
-      if-exists: steps.check_artifact.outputs.exists 
+      if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
       - name: Check if built
         id: check_artifact
@@ -147,7 +147,7 @@ jobs:
   check-windows-avx2-artifact:
     runs-on: ubuntu-latest
     outputs:
-      if-exists: steps.check_artifact.outputs.exists 
+      if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
       - name: Check if built
         id: check_artifact
@@ -189,7 +189,7 @@ jobs:
   check-windows-avx2-vnni-artifact:
     runs-on: ubuntu-latest
     outputs:
-      if-exists: steps.check_artifact.outputs.exists 
+      if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
       - name: Check if built
         id: check_artifact
