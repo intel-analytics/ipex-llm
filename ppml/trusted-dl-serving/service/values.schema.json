@@ -13,7 +13,8 @@
         "backendPort",
 	"istioTLSEnabled", 
         "modelDecryption",
-        "aesKey"
+        "aesKey",
+        "tlsEnable"
     ],
     "properties": {
       "imageName": {
@@ -55,6 +56,9 @@
       },
       "aesKey": {
         "type": "string"
+      },
+      "tlsEnable": {
+        "type": "boolean"
       }
     }
 }

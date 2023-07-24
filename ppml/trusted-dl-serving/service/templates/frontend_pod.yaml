@@ -48,7 +48,9 @@ spec:
     - name: MODEL_ENCRYPTION
       value: "{{ .Values.modelDecryption }}"
     - name: DECRYPTION_KEY
-      value: "{{ .Values.decryptionKey }}"
+      value: "{{ .Values.aesKey }}"
+    - name: TLS_ENABLE
+      value: "{{ .Values.tlsEnable }}"
     resources:
       requests:
         cpu: 2
