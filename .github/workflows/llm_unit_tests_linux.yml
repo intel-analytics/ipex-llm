@@ -43,6 +43,10 @@ env:
 
   LLM_DIR: ./llm
   ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
+  ORIGINAL_REPLIT_CODE_PATH: ./llm/replit-code-v1-3b/
+  ORIGINAL_WHISPER_TINY_PATH: ./llm/whisper-tiny/
+  SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -98,6 +102,18 @@ jobs:
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
+          fi
+          if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
+            echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_REPLIT_CODE_PATH:2} -P $LLM_DIR
+          fi
+          if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
+            echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_WHISPER_TINY_PATH:2} -P $LLM_DIR
+          fi
+          if [ ! -d $SPEECH_DATASET_PATH ]; then
+            echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${SPEECH_DATASET_PATH:2} -P $LLM_DIR
           fi
 
       - name: Run LLM cli test
