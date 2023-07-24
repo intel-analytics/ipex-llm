@@ -47,9 +47,11 @@ class TestTransformersAPI(unittest.TestCase):
         print('Prompt:', input_str)
         print('Output:', output_str)
         print(f'Inference time: {end-st} s')
+        res = 'Paris' in output_str        
+        self.assertTrue(res)
 
     def test_transformers_auto_model_for_causal_lm_int4(self):
-        model_path = os.environ.get('ORIGINAL_BLOOMZ_560M_PATH')
+        model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         input_str = 'def hello():\n  print("hello world")\n'
 
@@ -63,8 +65,7 @@ class TestTransformersAPI(unittest.TestCase):
         print('Prompt:', input_str)
         print('Output:', output_str)
         print(f'Inference time: {end-st} s')
-        res = '\nhello()' in output_str
-        
+        res = '\nhello()' in output_str        
         self.assertTrue(res)
         
 
@@ -83,12 +84,11 @@ class TestTransformersAPI(unittest.TestCase):
             predicted_ids = model.generate(input_features)
             # decode token ids to text
             transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)
-            end = time.time()
-        res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription
-        self.assertTrue(res)
+            end = time.time()        
         print('Output:', transcription)
         print(f'Inference time: {end-st} s')
-
+        res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription
+        self.assertTrue(res)
 
 if __name__ == '__main__':
     unittest.main()
