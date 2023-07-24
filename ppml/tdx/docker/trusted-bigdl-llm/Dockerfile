@@ -2,6 +2,7 @@ FROM ubuntu:20.04
 
 ARG http_proxy
 ARG https_proxy
+ARG TINI_VERSION=v0.18.0
 
 RUN mkdir -p /ppml/
 
@@ -11,6 +12,7 @@ ADD ./requirements.txt /opt/requirements.txt
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./attestation_cli.py /opt/attestation_cli.py
 ADD ./attestation.sh /opt/attestation.sh
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 
 
 # Install PYTHON 3.9
@@ -63,7 +65,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev && \
     chmod +x /opt/entrypoint.sh && \
-    chmod +x /opt/attestation.sh
+    chmod +x /opt/attestation.sh && \
+    chmod +x /sbin/tini && \
+    cp /sbin/tini /usr/bin/tini
 
 
 # To boost fschat performance, do the following:
