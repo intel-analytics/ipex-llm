@@ -48,13 +48,14 @@ env:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-unit-test-linux-avx512:
-    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
+  llm-unit-test-linux:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
+        instruction: ["AVX512", "AVX2"]
+    runs-on: [ self-hosted, "${{matrix.instruction}}", ubuntu-20.04-lts ]
     env:
       THREAD_NUM: 24
     steps:
