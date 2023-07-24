@@ -8,7 +8,7 @@ runs:
       shell: bash
       run: |
         source $CONDA_HOME/bin/activate bigdl-llm-test
-        python -m pip install einops datasets
+        python -m pip install einops datasets librosa
         $CONDA_HOME/bin/conda info
         bash python/llm/test/run-llm-inference-tests.sh
         source $CONDA_HOME/bin/deactivate
