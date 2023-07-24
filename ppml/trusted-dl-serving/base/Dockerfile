@@ -163,6 +163,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
     pip3 install --no-cache-dir torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+    ls /usr/local/lib/python3.9/dist-packages/ && \
+    ls /usr/local/lib/python3.9/dist-packages/transformers* && \
     mv /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/ && \
     mv  /usr/local/lib/python3.9/dist-packages/tokenizers*/tokenizers* /usr/local/lib/python3.9/dist-packages/ && \
     rm /usr/local/cuda/lib64/stubs/libcublasLt.so.11 && \
