@@ -191,7 +191,7 @@ class _BaseAutoModelClass:
                         " in the model `from_pretrained` method."
                     )
                 invalidInputError(False, "Error(s) in loading state_dict"
-                                f"for {model.__class__.__name__}:\n\t{error_msg}")
+                                         f"for {model.__class__.__name__}:\n\t{error_msg}")
 
         else:
             state_dict = load_state_dict(resolved_archive_file)
