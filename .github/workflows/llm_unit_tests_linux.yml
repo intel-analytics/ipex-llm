@@ -1,5 +1,38 @@
 name: LLM Unit Tests on Linux
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-win-unittest-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_linux.yml'
+      - '.github/workflows/llm-binary-build.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/cli-test/action.yml'
+      - '.github/actions/llm/inference-test/action.yml'
+      - '.github/actions/llm/langchain-test/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_linux.yml'
+      - '.github/workflows/llm-binary-build.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/cli-test/action.yml'
+      - '.github/actions/llm/inference-test/action.yml'
+      - '.github/actions/llm/langchain-test/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
+  workflow_dispatch:
+
 env:
   INT4_CKPT_DIR: ./llm/ggml-actions/stable
   LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin

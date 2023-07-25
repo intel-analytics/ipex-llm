@@ -1,39 +1,6 @@
 name: Run all LLM tests
 description: Run all LLM tests, will used by both unit tests and nightly-tests. Set different envs before this test to test different models in unit tests and nightly-tests.
 
-# Cancel previous runs in the PR when you push new commits
-concurrency:
-  group: ${{ github.workflow }}-llm-linux-unittest-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
-
-# Controls when the action will run. 
-on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-    paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
-  workflow_dispatch:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
