@@ -5,6 +5,7 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
 | LLaMA     | [link](vicuna)    |
+| LLaMA 2   | [link](llama2)    |
 | MPT       | [link](mpt)       |
 | Falcon    | [link](falcon)    |
 | ChatGLM   | [link](chatglm)   | 
