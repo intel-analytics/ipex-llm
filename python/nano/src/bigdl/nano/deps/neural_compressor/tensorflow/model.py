@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import os
-import pickle
+from bigdl.nano.utils.common import SafePickle
 import yaml
 from pathlib import Path
 from typing import Sequence, Any, Union, Dict
@@ -85,7 +85,7 @@ class KerasQuantizedModel(KerasOptimizedModel):
                     else:
                         kwargs["weighted_metrics"] = weighted_metrics._name
             with open(path / self.status['compile_path'], "wb") as f:
-                pickle.dump(kwargs, f)
+                SafePickle.dump(kwargs, f)
 
     @staticmethod
     def _load(path, model=None):
@@ -106,6 +106,6 @@ class KerasQuantizedModel(KerasOptimizedModel):
 
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
-                kwargs = pickle.load(f)
+                kwargs = SafePickle.load(f)
                 model.compile(**kwargs)
         return model

@@ -54,3 +54,5 @@ from .env import EnvContext
 from .optimizer import *
 
 from .function import _flatten
+
+from .safepickle import SafePickle

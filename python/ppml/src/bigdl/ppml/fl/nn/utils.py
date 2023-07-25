@@ -15,7 +15,7 @@
 #
 
 import logging
-import pickle
+from bigdl.ppml.utils.safepickle import SafePickle
 import stat
 import numpy as np
 
@@ -29,8 +29,8 @@ class ClassAndArgsWrapper(object):
         self.args = args
 
     def to_protobuf(self):
-        cls = pickle.dumps(self.cls)
-        args = pickle.dumps(self.args)
+        cls = SafePickle.dumps(self.cls)
+        args = SafePickle.dumps(self.args)
         return ClassAndArgs(cls=cls, args=args)
 
 
