@@ -17,6 +17,7 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
 | LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/vicuna)    |
+| LLaMA 2   | [link](example/transformers/transformers_int4/llama2)    |
 | MPT       | [link](example/transformers/transformers_int4/mpt)       |
 | Falcon    | [link](example/transformers/transformers_int4/falcon)    |
 | ChatGLM   | [link](example/transformers/transformers_int4/chatglm)   | 
