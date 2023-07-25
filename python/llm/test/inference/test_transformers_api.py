@@ -21,7 +21,7 @@ import pytest
 import time
 import torch
 from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq
-from transformers import AutoTokenizer, AutoModel as TAutoModel, AutoModelForCausalLM as TAutoModelForCausalLM
+from transformers import AutoTokenizer
 
 class TestTransformersAPI(unittest.TestCase):
 
