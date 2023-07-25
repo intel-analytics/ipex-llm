@@ -183,6 +183,16 @@ class _BaseAutoModelClass:
                 del state_dict
                 gc.collect()
 
+            if len(error_msgs) > 0:
+                error_msg = "\n\t".join(error_msgs)
+                if "size mismatch" in error_msg:
+                    error_msg += (
+                        "\n\tYou may consider adding `ignore_mismatched_sizes=True`"
+                        " in the model `from_pretrained` method."
+                    )
+                invalidInputError(False, "Error(s) in loading state_dict"
+                                f"for {model.__class__.__name__}:\n\t{error_msg}")
+
         else:
             state_dict = load_state_dict(resolved_archive_file)
             load(model, state_dict)
