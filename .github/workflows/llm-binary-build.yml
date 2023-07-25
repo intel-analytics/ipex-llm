@@ -75,20 +75,20 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
-      - name: Install Build Environment
-        shell: bash
-        run: |
-          export http_proxy=${HTTP_PROXY}
-          export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          apt install -y gcc-11 g++-11
+      # - name: Install Build Environment
+      #   shell: bash
+      #   run: |
+      #     export http_proxy=${HTTP_PROXY}
+      #     export https_proxy=${HTTPS_PROXY}
+      #     add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      #     apt install -y gcc-11 g++-11
       - name: Build binary
         shell: bash
         run: |
           make
         env:
-          CC: gcc-11
-          CXX: g++-11
+          CC: gcc-9
+          CXX: g++-9
       - name: Move release binary
         shell: bash
         run: |
