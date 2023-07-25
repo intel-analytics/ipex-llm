@@ -17,7 +17,7 @@
 
 import unittest
 import os
-
+import pytest
 import time
 import torch
 from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq
@@ -91,4 +91,4 @@ class TestTransformersAPI(unittest.TestCase):
         self.assertTrue(res)
 
 if __name__ == '__main__':
-    unittest.main()
+    pytest.main([__file__])
