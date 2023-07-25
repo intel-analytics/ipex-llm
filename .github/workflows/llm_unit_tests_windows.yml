@@ -5,19 +5,19 @@ concurrency:
   group: ${{ github.workflow }}-llm-win-unittest-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_windows.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_windows.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_windows.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_windows.yml"
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -25,7 +25,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-unit-test-windows:
-    runs-on: ${{ matrix.os }}
+    runs-on: ["self-hosted", "Windows"]
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -53,7 +53,7 @@ jobs:
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
+
       - name: Run LLM install (all) test
         shell: bash
         run: |
