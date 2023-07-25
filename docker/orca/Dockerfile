@@ -15,6 +15,7 @@
 #
 
 ARG SPARK_VERSION=2.4.6
+ARG HADOOP_VERSION=2.7
 ARG PY4J_VERSION=0.10.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
@@ -26,6 +27,7 @@ ARG PYTHON_VERSION=3.9
 # stage.1 jdk & spark
 FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
+ARG HADOOP_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
@@ -42,10 +44,10 @@ RUN apt-get update --fix-missing && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 # spark
-    wget --no-check-certificate -q https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget --no-check-certificate -q https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
+    rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
     cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
     # remove log4j 1.x jars
     rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
@@ -60,7 +62,7 @@ RUN apt-get update --fix-missing && \
 COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 COPY ./spark-defaults.conf ${SPARK_HOME}/conf/spark-defaults.conf
 SHELL ["/bin/bash", "-c"]
-RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
+RUN if [ $SPARK_VERSION = "3.4.1" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
         wget --no-check-certificate -qP $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
     elif [ $SPARK_VERSION = "2.4.6" ]; then \

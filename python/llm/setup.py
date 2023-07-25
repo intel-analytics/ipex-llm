@@ -73,7 +73,7 @@ def obtain_lib_urls():
                        "libllama_vnni.dll", "libgptneox_vnni.dll", "libbloom_vnni.dll",
                        "quantize-llama_vnni.exe", "quantize-gptneox_vnni.exe", "quantize-bloom_vnni.exe",
                        "main-llama_vnni.exe", "main-gptneox_vnni.exe", "main-bloom_vnni.exe",
-                       "starcoder_vnni.dll", "quantize-starcoder_vnni.exe", "main-starcoder_vnni.exe"]
+                       "libstarcoder_vnni.dll", "quantize-starcoder_vnni.exe", "main-starcoder_vnni.exe"]
     linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
                      "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
@@ -145,28 +145,28 @@ def setup_package():
     package_data = {}
     package_data["Windows"] = [
         "libs/llama.dll",
-        "libs/quantize-llama.exe",
         "libs/gptneox.dll",
-        "libs/quantize-gptneox.exe",
         "libs/bloom.dll",
+        "libs/starcoder.dll",
+        "libs/quantize-llama.exe",
+        "libs/quantize-gptneox.exe",
         "libs/quantize-bloom.exe",
+        "libs/quantize-starcoder.exe",
         "libs/main-bloom.exe",
         "libs/main-gptneox.exe",
         "libs/main-llama.exe",
         "libs/main-starcoder.exe",
-        "libs/starcoder.dll",
-        "libs/quantize-starcoder.exe",
         "libs/libllama_vnni.dll", 
         "libs/libgptneox_vnni.dll", 
         "libs/libbloom_vnni.dll",
+        "libs/libstarcoder_vnni.dll", 
         "libs/quantize-llama_vnni.exe",
         "libs/quantize-gptneox_vnni.exe", 
         "libs/quantize-bloom_vnni.exe",
+        "libs/quantize-starcoder_vnni.exe", 
         "libs/main-llama_vnni.exe", 
         "libs/main-gptneox_vnni.exe", 
         "libs/main-bloom_vnni.exe",
-        "libs/starcoder_vnni.dll", 
-        "libs/quantize-starcoder_vnni.exe", 
         "libs/main-starcoder_vnni.exe"
     ]
     package_data["Linux"] = [
@@ -223,6 +223,13 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
+        
+    # Check if all package files are ready
+    for file in package_data[platform_name]:
+        file_path = os.path.join(libs_dir, os.path.basename(file))
+        if not os.path.exists(file_path):
+            print(f'Could not find package dependency file: {file_path}')
+            raise FileNotFoundError(f'Could not find package dependency file: {file_path}')        
 
     all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP

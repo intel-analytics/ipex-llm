@@ -173,7 +173,7 @@ def _check_python_micro_version():
 
 
 def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g", num_nodes=1,
-                      init_ray_on_spark=False, **kwargs):
+                      init_ray_on_spark=False, init_executor_gateway=True, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
     across the cluster if necessary) or an OrcaRayContext when the runtime is ray.
@@ -207,6 +207,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
     :param init_ray_on_spark: Whether to launch Ray services across the cluster.
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
+    :param init_executor_gateway: Whether to launch Java gateway on executors. Default to be True.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any.
 
@@ -351,6 +352,9 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
         if init_ray_on_spark:
             driver_cores = 0  # This is the default value.
             ray_ctx.init(driver_cores=driver_cores)
+        if init_executor_gateway:
+            from bigdl.dllib.utils.common import init_executor_gateway
+            init_executor_gateway(sc=sc)
         return sc
     else:
         invalidInputError(False,

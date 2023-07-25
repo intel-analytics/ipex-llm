@@ -53,7 +53,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser = argparse.ArgumentParser(description='TransformersLLM Langchain Chat Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='What is AI?',

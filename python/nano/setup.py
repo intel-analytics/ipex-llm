@@ -153,7 +153,7 @@ def setup_package():
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms",
-                               "cryptography==41.0.0"]
+                               "cryptography==41.0.2"]
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires

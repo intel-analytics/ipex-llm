@@ -65,6 +65,8 @@ class _BaseAutoModelClass:
         if load_in_4bit or load_in_low_bit:
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
+            # set default torch_dtype='auto'
+            kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, *args, **kwargs)
         else:
@@ -113,6 +115,9 @@ class _BaseAutoModelClass:
         # Speed up when loading model
         kwargs["low_cpu_mem_usage"] = True
 
+        # set default torch_dtype='auto'
+        kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
         # Note that the int4 linear layers cannot currently
         # be recorded in huggingface Pretrained Model or AutoConfig,
@@ -123,8 +128,6 @@ class _BaseAutoModelClass:
 
         # Avoid KeyError
         kwargs["ignore_mismatched_sizes"] = True
-        # Avoid reading from local file at the first initialization
-        kwargs["state_dict"] = {}
 
         # Maybe needed when extract_local_archive_file
         subfolder = kwargs.get("subfolder", "")
@@ -160,6 +163,10 @@ class AutoModelForCausalLM(_BaseAutoModelClass):
 
 class AutoModel(_BaseAutoModelClass):
     HF_Model = transformers.AutoModel
+
+
+class AutoModelForSpeechSeq2Seq(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForSpeechSeq2Seq
 
 
 class AutoModelForSeq2SeqLM(_BaseAutoModelClass):
