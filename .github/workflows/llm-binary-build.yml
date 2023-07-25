@@ -18,7 +18,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   linux-build-avx2:
-    runs-on: [self-hosted, AVX2, centos7]
+    runs-on: [self-hosted, AVX2, ubuntu-20.04-lts]
     steps:
       - name: Set access token
         run: |
@@ -30,14 +30,17 @@ jobs:
       - name: Install Build Environment
         shell: bash
         run: |
-          yum update -y
-          yum install -y centos-release-scl
-          yum install -y devtoolset-11
-          yum install -y sshpass netcat
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          apt install -y gcc-11 g++-11
       - name: Build binary
         shell: bash
         run: |
-          scl enable devtoolset-11 'make'
+          make
+        env:
+          CC: gcc-11
+          CXX: g++-11
       - name: Move release binary
         shell: bash
         run: |
@@ -66,7 +69,7 @@ jobs:
           make clean
 
   linux-build-avx512:
-    runs-on: [self-hosted, AVX512, centos7]
+    runs-on: [self-hosted, AVX512, ubuntu-20.04-lts]
     steps:
       - name: Set access token
         run: |
@@ -78,14 +81,17 @@ jobs:
       - name: Install Build Environment
         shell: bash
         run: |
-          yum update -y
-          yum install -y centos-release-scl
-          yum install -y devtoolset-11
-          yum install -y sshpass netcat
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          apt install -y gcc-11 g++-11
       - name: Build binary
         shell: bash
         run: |
-          scl enable devtoolset-11 'make'
+          make
+        env:
+          CC: gcc-11
+          CXX: g++-11
       - name: Move release binary
         shell: bash
         run: |
