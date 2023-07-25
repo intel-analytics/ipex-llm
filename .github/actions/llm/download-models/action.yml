@@ -1,0 +1,42 @@
+name: Download models
+description: Download models for tests, set envs before running this
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download models
+      shell: bash
+      run: |
+        if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
+          echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+        fi
+        if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
+          echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+        fi
+        if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
+          echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+        fi
+        if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
+          echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+        fi
+
+        if [ ! -d $ORIGINAL_AUTO_MODEL_PATH ]; then
+          echo "Directory $ORIGINAL_AUTO_MODEL_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_AUTO_MODEL_PATH:2} -P $LLM_DIR
+        fi
+        if [ ! -d $ORIGINAL_CAUSAL_MODEL_PATH ]; then
+          echo "Directory $ORIGINAL_CAUSAL_MODEL_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CAUSAL_MODEL_PATH:2} -P $LLM_DIR
+        fi
+        if [ ! -d $ORIGINAL_SPEECH_MODEL_PATH ]; then
+          echo "Directory $ORIGINAL_SPEECH_MODEL_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_SPEECH_MODEL_PATH:2} -P $LLM_DIR
+        fi
+        if [ ! -d $SPEECH_DATASET_PATH ]; then
+          echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${SPEECH_DATASET_PATH:2} -P $LLM_DIR
+        fi
