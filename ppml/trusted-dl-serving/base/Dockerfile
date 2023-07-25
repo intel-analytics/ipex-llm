@@ -139,7 +139,7 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 # Torchserve
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
-COPY --from=temp /usr/loacl/lib/python3.9/dist-packages/model-archiver /usr/local/lib/python3.9/dist-packages/model-archiver
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/model_archiver /usr/local/lib/python3.9/dist-packages/model_archiver
 COPY --from=temp /usr/local/bin/torch-model-archiver /usr/local/bin/torch-model-archiver
 
 # Transformers
