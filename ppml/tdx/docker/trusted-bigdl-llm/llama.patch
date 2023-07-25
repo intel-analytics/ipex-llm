@@ -1,0 +1,7 @@
+145a146,147
+>         key: bytes = None,
+>         iv: bytes = None,
+208c210
+<             self.model_path.encode("utf-8"), self.params
+---
+>             self.model_path.encode("utf-8"), self.params, key=key, iv=iv

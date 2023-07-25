@@ -1,5 +1,10 @@
 name: LLM Binary Build
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-binary-build-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -17,8 +22,21 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  check-linux-avx2-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: linux-avx2
+          
   linux-build-avx2:
     runs-on: [self-hosted, AVX2, centos7]
+    needs: check-linux-avx2-artifact
+    if: needs.check-linux-avx2-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
@@ -64,9 +82,22 @@ jobs:
         shell: bash
         run: |
           make clean
+          
+  check-linux-avx512-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: linux-avx512
 
   linux-build-avx512:
     runs-on: [self-hosted, AVX512, ubuntu-20.04-lts]
+    needs: check-linux-avx512-artifact
+    if: needs.check-linux-avx512-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
@@ -116,8 +147,21 @@ jobs:
         run: |
           make clean
 
+  check-windows-avx2-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-avx2
+
   windows-build-avx2:
     runs-on: [self-hosted, Windows]
+    needs: check-windows-avx2-artifact
+    if: needs.check-windows-avx2-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
@@ -145,8 +189,21 @@ jobs:
           path: |
             build/Release
 
+  check-windows-avx2-vnni-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-avx2-vnni
+
   windows-build-avx2-vnni:
     runs-on: [self-hosted, Windows]
+    needs: check-windows-avx2-vnni-artifact
+    if: needs.check-windows-avx2-vnni-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |

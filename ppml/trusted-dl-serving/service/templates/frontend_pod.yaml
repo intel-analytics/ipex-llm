@@ -45,6 +45,12 @@ spec:
       value: "{{ .Values.backendNum }}"
     - name: MODEL_NAME
       value: "{{ .Values.modelName }}"
+    - name: MODEL_ENCRYPTION
+      value: "{{ .Values.modelDecryption }}"
+    - name: DECRYPTION_KEY
+      value: "{{ .Values.aesKey }}"
+    - name: TLS_ENABLE
+      value: "{{ .Values.tlsEnable }}"
     resources:
       requests:
         cpu: 2

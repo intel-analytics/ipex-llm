@@ -12,6 +12,8 @@ ADD ./requirements.txt /opt/requirements.txt
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./attestation_cli.py /opt/attestation_cli.py
 ADD ./attestation.sh /opt/attestation.sh
+ADD ./llama_cpp.patch /opt/llama_cpp.patch
+ADD ./llama.patch /opt/llama.patch
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 
 
@@ -19,14 +21,22 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 git curl wget && \
+    apt-get install -y python3.9 git curl wget libcrypto++6 libcrypto++-dev libcrypto++-utils && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
-    # Install bigdl-llm
-    pip3 install --pre --upgrade bigdl-llm[all] && \
+    # Install bigdl-llm and pin its version as we have made certain changes to llm.cpp
+    pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
+    patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama.py /opt/llama.patch && \
+    patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama_cpp.py /opt/llama_cpp.patch && \
+    cd /usr/local/lib/python3.9/dist-packages/bigdl/llm/libs && \
+    rm *avx512* && \
+    rm quantize* && \
+    curl "https://sourceforge.net/projects/analytics-zoo/rss?path=/ppml-llm-encrypted" | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | while read url; do url=`echo $url | sed 's|/download$||'`; wget $url ; done && \
+    rm index.html && \
+    chmod +x * && \
     # FastChat related dependencies
     pip3 install fschat==0.2.18 && \
     # We would also patch fastchat
