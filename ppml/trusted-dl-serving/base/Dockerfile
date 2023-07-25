@@ -28,7 +28,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     python setup.py install && \
     cp -r src/transformers/encryption /usr/local/lib/python3.9/dist-packages/transformers*/transformers && \
     ls /usr/local/lib/python3.9/dist-packages/transformers*/transformers && \
-    cd model-archiver && \
+    cd /ppml/pytorch-serve/model-archiver && \
     pip install .
 
 # Stage.2 Tritonserver
