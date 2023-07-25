@@ -30,6 +30,7 @@ on:
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-trusted-bigdl-llm-tdx
+        - bigdl-ppml-trusted-fastchat-tdx
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
         - bigdl-ppml-trusted-python-toolkit-base
@@ -98,6 +99,35 @@ jobs:
         echo "##############################################################"
         export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-tdx
         cd ppml/tdx/docker/trusted-bigdl-llm/
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-ppml-trusted-fastchat-tdx:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-fastchat-tdx' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-trusted-fastchat-tdx
+      run: |
+        echo "##############################################################"
+        echo "############## bigdl-ppml-trusted-fastchat-tdx ###############"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-ppml-trusted-fastchat-tdx
+        cd ppml/tdx/docker/trusted-bigdl-llm-fschat/
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
