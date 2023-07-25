@@ -397,7 +397,7 @@ class SafePickle:
     key = b'shared-key'
     """
     Example:
-        >>> from bigdl.chronos.utils import SafePickle
+        >>> from bigdl.orca.common import SafePickle
         >>> with open(file_path, 'wb') as file:
         >>>     signature = SafePickle.dump(data, file, return_digest=True)
         >>> with open(file_path, 'rb') as file:
