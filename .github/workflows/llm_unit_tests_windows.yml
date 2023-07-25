@@ -20,16 +20,6 @@ on:
       - '.github/workflows/llm_unit_tests_windows.yml'
   workflow_dispatch:
 
-env:
-  INT4_CKPT_DIR: ./llm/ggml-actions/stable
-  LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
-  GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
-  BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
-  STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
-
-  LLM_DIR: ./llm
-  ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
@@ -75,29 +65,6 @@ jobs:
           bash python/llm/test/run-llm-install-tests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Download ckpt & original models
-        run: |
-          if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
-            echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
-            echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
-            echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
-            echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
-            echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
-          fi
 
       - name: Run LLM unittests
         shell: bash
