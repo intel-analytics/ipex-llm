@@ -144,12 +144,10 @@ else
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
-    echo "Worker address: $worker_address"
-    echo "Controller address: $controller_address"
-
     # Apply optimizations from bigdl-nano
     source bigdl-nano-init -t
     # Set OMP_NUM_THREADS to correct numbers
+    # This works in TDX-CoCo, TDX-VM, and native
     cores=$(calculate_total_cores)
     if [[ $cores == -1 ]]; then
       echo "Failed to obtain the number of cores, will use the default settings OMP_NUM_THREADS=$OMP_NUM_THREADS"
@@ -161,6 +159,8 @@ else
           echo "Please set model path used for worker"
           usage
     fi
+    echo "Worker address: $worker_address"
+    echo "Controller address: $controller_address"
     python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address
   fi
 fi
