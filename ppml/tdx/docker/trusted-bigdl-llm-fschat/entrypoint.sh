@@ -1,14 +1,16 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 [-c] [-ch <controller_host>] [-cp <controller_port>] [-oh <api_host>] [-op <api_port>] [-wh <worker_host>] [-wp <worker_port>]"
+  echo "Usage: $0 [-c] [-h] [-z <controller_host>] [-p <controller_port>] [-o <api_host>] [-u <api_port>] [-x <worker_host>] [-y <worker_port>] [-m <model_path>]"
   echo "-c: Use controller mode."
-  echo "-ch: Set the controller host (default: localhost)."
-  echo "-cp: Set the controller port (default: 21001)."
-  echo "-oh: Set the API host (default: localhost)."
-  echo "-op: Set the API port (default: 8000)."
-  echo "-wh: Set the worker host (default: localhost). (Only applicable in non-controller mode.)"
-  echo "-wp: Set the worker port (default: 21002). (Only applicable in non-controller mode.)"
+  echo "-h: Print help message."
+  echo "-z: Set the controller host (default: localhost)."
+  echo "-p: Set the controller port (default: 21001)."
+  echo "-o: Set the API host (default: localhost)."
+  echo "-u: Set the API port (default: 8000)."
+  echo "-x: Set the worker host (default: localhost). (Only applicable in non-controller mode.)"
+  echo "-y: Set the worker port (default: 21002). (Only applicable in non-controller mode.)"
+  echo "-m: Set the worker model path(default: empty). (Only applicable in non-controller mode.)"
   exit 1
 }
 
@@ -35,11 +37,9 @@ calculate_total_cores() {
       fi
     done
 
-    echo "Total number of cores: $total_cores"
-    return $total_cores
+    echo $total_cores
   else
-    echo "cpuset.cpus file does not exist."
-    return -1
+    echo -1
   fi
 }
 
@@ -70,6 +70,7 @@ api_host="localhost"
 api_port="8000"
 worker_host="localhost"
 worker_port="21002"
+model_path=""
 
 # We do not have any arguments, just run bash
 if [ "$#" == 0 ]; then
@@ -78,37 +79,48 @@ if [ "$#" == 0 ]; then
   exec /usr/bin/tini -s -- "bash"
 else
   # Parse command-line options
-  while getopts ":cch:cp:oh:op:wh:wp:" opt; do
+  while getopts "chz:p:o:u:x:y:m:" opt; do
     case ${opt} in
       c)
         controller_mode=true
         ;;
-      ch)
+      h)
+        usage
+        ;;
+      z)
         controller_host=${OPTARG}
         ;;
-      cp)
+      p)
         controller_port=${OPTARG}
         ;;
-      oh)
+      o)
         api_host=${OPTARG}
         ;;
-      op)
+      u)
         api_port=${OPTARG}
         ;;
-      wh)
+      x)
         if [[ -n $controller_mode ]]; then
           echo "Invalid option: -wh cannot be used with -c."
           usage
         fi
         worker_host=${OPTARG}
         ;;
-      wp)
+      y)
         if [[ -n $controller_mode ]]; then
           echo "Invalid option: -wp cannot be used with -c."
           usage
         fi
         worker_port=${OPTARG}
         ;;
+      m)
+        if [[ -n $controller_mode ]]; then
+          echo "Invalid option: -mp cannot be used with -c."
+          usage
+        fi
+        model_path=${OPTARG}
+        ;;
+
       *)
         usage
         ;;
@@ -130,7 +142,7 @@ else
     # Boot openai api server
     python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address
   else
-    # Logic for non-controller mode
+    # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
@@ -145,6 +157,11 @@ else
       echo "Setting OMP_NUM_THREADS to $cores"
       export OMP_NUM_THREADS=$cores
     fi
+    if [[ -z "${model_path}" ]]; then
+          echo "Please set model path used for worker"
+          usage
+    fi
+    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address
   fi
 fi
 
