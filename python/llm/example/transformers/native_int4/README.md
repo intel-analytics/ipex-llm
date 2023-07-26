@@ -2,7 +2,7 @@
 
 In this example, we show a pipeline to convert a large language model to BigDL-LLM native INT4 format, and then run inference on the converted INT4 model.
 
-> **Note**: BigDL-LLM native INT4 format currently supports model family **LLaMA** (such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.), **GPT-NeoX** (such as RedPajama), **BLOOM** (such as Phoenix) and **StarCoder**.
+> **Note**: BigDL-LLM native INT4 format currently supports model family **LLaMA** (such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.), **LLaMA 2** (such as Llama-2-13B), **GPT-NeoX** (such as RedPajama), **BLOOM** (such as Phoenix) and **StarCoder**.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
@@ -19,7 +19,7 @@ python ./native_int4_pipeline.py --thread-num THREAD_NUM --model-family MODEL_FA
 ```
 arguments info:
 - `--thread-num THREAD_NUM`: **required** argument defining the number of threads to use for inference. It is default to be `2`.
-- `--model-family MODEL_FAMILY`: **required** argument defining the model family of the large language model (supported option: `'llama'`, `'gptneox'`, `'bloom'`, `'starcoder'`). It is default to be `'llama'`.
+- `--model-family MODEL_FAMILY`: **required** argument defining the model family of the large language model (supported option: `'llama'`, `'llama2'`, `'gptneox'`, `'bloom'`, `'starcoder'`). It is default to be `'llama'`.
 - `--repo-id-or-model-path MODEL_PATH`: **required** argument defining the path to the huggingface checkpoint folder for the model.
 
   > **Note** `MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
@@ -49,6 +49,33 @@ bigdl-llm timings:       total time =    xxxx ms
 Inference time (fast forward): xxxx s
 Output:
 {'id': 'cmpl-c87e5562-281a-4837-8665-7b122948e0e8', 'object': 'text_completion', 'created': 1688368515, 'model': './bigdl_llm_llama_q4_0.bin', 'choices': [{'text': ' CPU stands for Central Processing Unit. This means that the processors in your computer are what make it run, so if you have a Pentium 4', 'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 9, 'completion_tokens': 32, 'total_tokens': 41}}
+```
+
+### Model family LLaMA 2
+```log
+--------------------  bigdl-llm based tokenizer  --------------------
+Inference time: xxxx s
+Output:
+[' The CPU (Central Processing Unit) is the brain of your computer. It is responsible for executing most instructions that your computer receives from the operating system and']
+--------------------  HuggingFace transformers tokenizer  --------------------
+Please note that the loading of HuggingFace transformers tokenizer may take some time.
+
+You are using the legacy behaviour of the <class 'transformers.models.llama.tokenization_llama.LlamaTokenizer'>. This means that tokens that come after special tokens will not be properly handled. We recommend you to read the related pull request available at https://github.com/huggingface/transformers/pull/24565
+Llama.generate: prefix-match hit
+Inference time: xxxx s
+Output:
+['Central Processing Unit (CPU) is the brain of any computer system. It performs all the calculations and executes all the instructions that are given to it by']
+--------------------  fast forward  --------------------
+Llama.generate: prefix-match hit
+
+bigdl-llm timings:        load time =     xxxx ms
+bigdl-llm timings:      sample time =     xxxx ms /    32 runs   (    xxxx ms per token)
+bigdl-llm timings: prompt eval time =     xxxx ms /     1 tokens (    xxxx ms per token)
+bigdl-llm timings:        eval time =     xxxx ms /    32 runs   (    xxxx ms per token)
+bigdl-llm timings:       total time =     xxxx ms
+Inference time (fast forward): xxxx s
+Output:
+{'id': 'cmpl-680b5482-2ce8-4a04-a799-41845aa76939', 'object': 'text_completion', 'created': 1690275575, 'model': './bigdl_llm_llama_q4_0.bin', 'choices': [{'text': ' CPU stands for Central Processing Unit. It is the brain of any computer, responsible for executing most instructions that make up a computer program. The CPU retrieves', 'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 9, 'completion_tokens': 32, 'total_tokens': 41}}
 ```
 
 ### Model family GPT-NeoX

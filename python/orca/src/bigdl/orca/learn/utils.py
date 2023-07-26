@@ -30,7 +30,7 @@ from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 from functools import partial
 import numpy as np
-import pickle
+from bigdl.orca.common import SafePickle
 import os
 import subprocess
 from bigdl.dllib.utils.log4Error import *
@@ -587,7 +587,7 @@ def save_pkl(data, path):
         file_name = str(uuid.uuid1()) + ".pkl"
         temp_path = os.path.join(tempfile.gettempdir(), file_name)
         with open(temp_path, 'wb') as f:
-            pickle.dump(data, f)
+            SafePickle.dump(data, f)
         put_local_file_to_remote(temp_path, path)
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -599,13 +599,13 @@ def save_pkl(data, path):
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
-        content = pickle.dumps(data)
+        content = SafePickle.dumps(data)
         s3_client.put_object(Bucket=bucket, Key=key, Body=content)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
         with open(path, 'wb') as f:
-            pickle.dump(data, f)
+            SafePickle.dump(data, f)
 
 
 def find_free_port():
