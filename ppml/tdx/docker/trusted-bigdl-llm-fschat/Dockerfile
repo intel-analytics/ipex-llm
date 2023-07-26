@@ -24,14 +24,17 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache --upgrade requests argparse cryptography==3.3.2 urllib3 && \
-    # Install bigdl-llm and pin its version as we have made certain changes to llm.cpp
     pip3 install --pre --upgrade bigdl-llm[all] && \
     # FastChat related dependencies
     pip3 install fschat==0.2.18 && \
     # We would also patch fastchat
     patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py /opt/fschat.diff && \
+    # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
     pip3 install --pre --upgrade gradio==3.36.1 && \
     pip3 install --pre --upgrade bigdl-nano && \
+    # Pin pydantic version because this error:https://github.com/lm-sys/FastChat/issues/2077
+    pip3 uninstall -y pydantic pydantic-core && \
+    pip3 install pydantic==1.10.8 pydantic-core==2.3.0 && \
     # Install bigdl-ppml
     cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
