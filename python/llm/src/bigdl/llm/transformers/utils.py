@@ -48,6 +48,7 @@ from torch import nn
 
 
 WEIGHTS_NAME = "pytorch_model.bin"
+WEIGHTS_INDEX_NAME = "pytorch_model.bin.index.json"
 
 
 def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant):
@@ -59,7 +60,18 @@ def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant
         archive_file = os.path.join(
             pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_NAME, variant)
         )
-        return archive_file
+        return archive_file, False
+    elif os.path.isfile(
+        os.path.join(pretrained_model_name_or_path,
+                     subfolder,
+                     _add_variant(WEIGHTS_INDEX_NAME, variant))
+    ):
+        # Load from a sharded PyTorch checkpoint
+        archive_file = os.path.join(
+            pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_INDEX_NAME, variant)
+        )
+        is_sharded = True
+        return archive_file, is_sharded
     else:
         invalidInputError(False,
                           f"Error no file named {_add_variant(WEIGHTS_NAME, variant)}"
@@ -89,3 +101,31 @@ def load(module: nn.Module, state_dict, prefix=""):
     for name, child in module._modules.items():
         if child is not None:
             load(child, state_dict, prefix + name + ".")
+
+
+def get_local_shard_files(pretrained_model_name_or_path, index_filename, subfolder=""):
+    import json
+
+    invalidInputError(os.path.isfile(index_filename),
+                      "Can't find a checkpoint index"
+                      f" ({index_filename}) in {pretrained_model_name_or_path}.")
+
+    with open(index_filename, "r") as f:
+        index = json.loads(f.read())
+
+    shard_filenames = sorted(set(index["weight_map"].values()))
+    sharded_metadata = index["metadata"]
+    sharded_metadata["all_checkpoint_keys"] = list(index["weight_map"].keys())
+    sharded_metadata["weight_map"] = index["weight_map"].copy()
+
+    shard_filenames = [os.path.join(pretrained_model_name_or_path, subfolder, f)
+                       for f in shard_filenames]
+    return shard_filenames, sharded_metadata
+
+
+def fix_key(key):
+    if "beta" in key:
+        return key.replace("beta", "bias")
+    if "gamma" in key:
+        return key.replace("gamma", "weight")
+    return key
