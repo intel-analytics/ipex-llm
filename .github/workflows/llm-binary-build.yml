@@ -3,7 +3,7 @@ name: LLM Binary Build
 # Cancel previous runs in the PR when you push new commits
 concurrency:
   group: ${{ github.workflow }}-llm-binary-build-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # Controls when the action will run.
 on:
