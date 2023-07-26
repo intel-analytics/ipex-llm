@@ -161,7 +161,7 @@ else
     fi
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controler-address $controller_address
+    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
   fi
 fi
 
