@@ -5,33 +5,33 @@ concurrency:
   group: ${{ github.workflow }}-llm-linux-unittest-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/inference-test/action.yml"
+      - ".github/actions/llm/langchain-test/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/inference-test/action.yml"
+      - ".github/actions/llm/langchain-test/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
 
 env:
@@ -47,7 +47,6 @@ env:
   ORIGINAL_WHISPER_TINY_PATH: ./llm/whisper-tiny/
   SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
 
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
@@ -58,8 +57,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        instruction: ["AVX512", "AVX2"]
-    runs-on: [ self-hosted, llm,"${{matrix.instruction}}", ubuntu-20.04-lts ]
+        instruction: ["AVX512"]
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", ubuntu-20.04-lts]
     env:
       THREAD_NUM: 24
     steps:
