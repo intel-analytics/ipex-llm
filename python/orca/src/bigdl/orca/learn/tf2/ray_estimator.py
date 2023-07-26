@@ -16,7 +16,7 @@
 
 import os
 import types
-import pickle
+from bigdl.orca.common import SafePickle
 import shutil
 import tempfile
 import logging
@@ -615,7 +615,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         state = ray.get(state_refs[0])
 
         with open(checkpoint, "wb") as f:
-            pickle.dump(state, f)
+            SafePickle.dump(state, f)
 
         return checkpoint
 
@@ -628,7 +628,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         """
         with open(checkpoint, "rb") as f:
-            state = pickle.load(f)
+            state = SafePickle.load(f)
 
         state_id = ray.put(state)
         ray.get([worker.set_state.remote(state_id, **kwargs) for worker in self.remote_workers])

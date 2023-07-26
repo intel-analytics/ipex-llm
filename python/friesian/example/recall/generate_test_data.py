@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import pickle
+from bigdl.friesian.utils import SafePickle
 import string
 import numpy as np
 import math
@@ -122,7 +122,7 @@ def generate_data(args):
     for file, obj in [(args.dict_path, item_dict)]:
         with open(file, "wb") as f:
             print('saving to: {}'.format(file))
-            pickle.dump(obj, f)
+            SafePickle.dump(obj, f)
     # https://github.com/matsui528/faiss_tips#io
 
     with open(args.index_save_path, "wb") as f:
@@ -130,7 +130,7 @@ def generate_data(args):
         # serialize the index into binary array (np.array).
         # You can save/load it via numpy IO functions.
         chunk = faiss.serialize_index(index_faiss)
-        pickle.dump(chunk, f)
+        SafePickle.dump(chunk, f)
 
     if args.verbose:
         # sample
@@ -143,7 +143,7 @@ def generate_data(args):
         print(f"loading {args.dict_path}")
 
         with open(args.dict_path, "rb") as f:
-            item_dict_loaded = pickle.load(f)
+            item_dict_loaded = SafePickle.load(f)
         print(item_dict_loaded.shape)
         print(item_dict_loaded[:10])
 
@@ -151,7 +151,7 @@ def generate_data(args):
         print(q_vec.shape)
 
         with open(args.index_save_path, "rb") as f:
-            index_loaded = faiss.deserialize_index(pickle.load(f))
+            index_loaded = faiss.deserialize_index(SafePickle.load(f))
             search_sample(index_loaded, q_vec)
 
 

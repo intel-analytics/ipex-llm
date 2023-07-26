@@ -33,6 +33,7 @@ on:
       - ".github/actions/llm/langchain-test/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
+  workflow_call:
 
 env:
   INT4_CKPT_DIR: ./llm/ggml-actions/stable

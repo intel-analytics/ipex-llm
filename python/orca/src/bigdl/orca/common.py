@@ -17,6 +17,9 @@
 import os
 from bigdl.dllib.nncontext import ZooContext
 from bigdl.dllib.utils.log4Error import *
+import pickle
+import hmac
+import hashlib
 
 
 class OrcaContextMeta(type):
@@ -389,3 +392,41 @@ def stop_orca_context():
             ray_ctx = OrcaRayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()
+
+# Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
+# To safely use python pickle
+
+
+class SafePickle:
+    key = b'shared-key'
+    """
+    Example:
+        >>> from bigdl.orca.common import SafePickle
+        >>> with open(file_path, 'wb') as file:
+        >>>     signature = SafePickle.dump(data, file, return_digest=True)
+        >>> with open(file_path, 'rb') as file:
+        >>>     data = SafePickle.load(file, signature)
+    """
+    @classmethod
+    def dump(self, obj, file, return_digest=False, *args, **kwargs):
+        if return_digest:
+            pickled_data = pickle.dumps(obj)
+            file.write(pickled_data)
+            digest = hmac.new(self.key, pickled_data, hashlib.sha1).hexdigest()
+            return digest
+        else:
+            pickle.dump(obj, file, *args, **kwargs)
+
+    @classmethod
+    def load(self, file, digest=None, *args, **kwargs):
+        if digest:
+            content = file.read()
+            new_digest = hmac.new(self.key, content, hashlib.sha1).hexdigest()
+            if digest != new_digest:
+                invalidInputError(False, 'Pickle safe check failed')
+            file.seek(0)
+        return pickle.load(file, *args, **kwargs)
+
+    @classmethod
+    def dumps(self, obj, *args, **kwargs):
+        return pickle.dumps(obj, *args, **kwargs)

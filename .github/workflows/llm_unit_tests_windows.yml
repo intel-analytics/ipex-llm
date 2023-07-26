@@ -19,6 +19,7 @@ on:
       - "python/llm/**"
       - ".github/workflows/llm_unit_tests_windows.yml"
   workflow_dispatch:
+  workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
