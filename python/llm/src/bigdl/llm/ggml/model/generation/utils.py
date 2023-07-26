@@ -22,6 +22,7 @@
 
 from typing import Optional, Union, Sequence, List
 from bigdl.llm.utils.common import invalidInputError
+import torch
 
 
 class GenerationMixin:
@@ -101,7 +102,8 @@ class GenerationMixin:
     def generate(
         self,
         inputs: Union[Optional[Sequence[int]],
-                      Sequence[Sequence[int]]]=None,
+                      Sequence[Sequence[int]],
+                      Optional[torch.Tensor]]=None,
         max_new_tokens: int = 128,
         top_k: int = 40,
         top_p: float = 0.95,
@@ -140,6 +142,8 @@ class GenerationMixin:
         Yields:
             The generated tokens.
         """
+        if isinstance(inputs, torch.Tensor):
+            inputs = inputs.tolist()
         if inputs and len(inputs) > 0:
             if not isinstance(inputs[0], Sequence):
                 inputs = [inputs]
