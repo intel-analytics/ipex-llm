@@ -14,9 +14,14 @@
 # limitations under the License.
 #
 
+import gc
 import transformers
 from transformers.configuration_utils import PretrainedConfig
-from .utils import extract_local_archive_file, load_state_dict, load
+from .utils import extract_local_archive_file, \
+    load_state_dict, \
+    load, \
+    get_local_shard_files, \
+    fix_key
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
@@ -147,12 +152,51 @@ class _BaseAutoModelClass:
         # and the tensor shape of int4 weights without quantization.
         model = ggml_convert_quant(model, qtype, convert_shape_only=True)
         # Load the quantized model at last.
-        archive_file = extract_local_archive_file(pretrained_model_name_or_path,
-                                                  subfolder,
-                                                  variant)
-        state_dict = load_state_dict(archive_file)
-        load(model, state_dict)
-        del state_dict
+        resolved_archive_file, is_sharded = extract_local_archive_file(
+            pretrained_model_name_or_path,
+            subfolder,
+            variant)
+        if is_sharded:
+            resolved_archive_file, sharded_metadata = \
+                get_local_shard_files(pretrained_model_name_or_path,
+                                      resolved_archive_file,
+                                      subfolder=subfolder)
+            start_prefix = ""
+            prefix = model.base_model_prefix
+            loaded_keys = [fix_key(key) for key in sharded_metadata["all_checkpoint_keys"]]
+            if len(prefix) > 0:
+                has_prefix_module = any(s.startswith(prefix) for s in loaded_keys)
+            else:
+                has_prefix_module = False
+
+            model_cls = type(model)
+            if len(model_cls.base_model_prefix) > 0 and \
+                not hasattr(model, model_cls.base_model_prefix) and \
+                    has_prefix_module:
+                start_prefix = model_cls.base_model_prefix + "."
+            from transformers.modeling_utils import _load_state_dict_into_model
+            error_msgs = []
+            for shard_file in resolved_archive_file:
+                state_dict = load_state_dict(shard_file)
+                error_msgs += _load_state_dict_into_model(model, state_dict, start_prefix)
+                # force memory release
+                del state_dict
+                gc.collect()
+
+            if len(error_msgs) > 0:
+                error_msg = "\n\t".join(error_msgs)
+                if "size mismatch" in error_msg:
+                    error_msg += (
+                        "\n\tYou may consider adding `ignore_mismatched_sizes=True`"
+                        " in the model `from_pretrained` method."
+                    )
+                invalidInputError(False, "Error(s) in loading state_dict"
+                                         f"for {model.__class__.__name__}:\n\t{error_msg}")
+
+        else:
+            state_dict = load_state_dict(resolved_archive_file)
+            load(model, state_dict)
+            del state_dict
 
         return model
 
