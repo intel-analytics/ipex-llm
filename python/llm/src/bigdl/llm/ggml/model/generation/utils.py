@@ -101,9 +101,9 @@ class GenerationMixin:
 
     def generate(
         self,
-        inputs: Union[Optional[Sequence[int]],
-                      Sequence[Sequence[int]],
-                      Optional[torch.Tensor]]=None,
+        inputs: Optional[Union[Sequence[int],
+                         Sequence[Sequence[int]],
+                         torch.Tensor]]=None,
         max_new_tokens: int = 128,
         top_k: int = 40,
         top_p: float = 0.95,
@@ -118,9 +118,9 @@ class GenerationMixin:
         mirostat_eta: float = 0.1,
         stop: Optional[Union[str, List[str]]]=[],  # TODO: rebase to support stopping_criteria
         **kwargs,
-    ) -> Union[Optional[Sequence[int]],
-               Sequence[Sequence[int]],
-               None]:
+    ) -> Optional[Union[Sequence[int],
+                  Sequence[Sequence[int]],
+                  None]]:
         # TODO: modify docs
         """Create a generator of tokens from a prompt.
 
