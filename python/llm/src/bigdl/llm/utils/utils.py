@@ -51,8 +51,8 @@ def get_shared_lib_info(lib_base_name: str):
     # Searching for the library in the current directory under the name "lib{lib_base_name}"
     # (default name for llmcpp) and "{lib_base_name}" (default name for this repo)
     _lib_paths = [
-        _base_path / f"lib{lib_base_name}{cpuflags}{lib_ext}",
-        _base_path / f"{lib_base_name}{cpuflags}{lib_ext}",
+        _base_path / f"lib{lib_base_name}-api{lib_ext}",
+        _base_path / f"{lib_base_name}-api{lib_ext}",
     ]
 
     return _base_path, _lib_paths

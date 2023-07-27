@@ -73,7 +73,8 @@ def obtain_lib_urls():
                        "libllama_vnni.dll", "libgptneox_vnni.dll", "libbloom_vnni.dll",
                        "quantize-llama_vnni.exe", "quantize-gptneox_vnni.exe", "quantize-bloom_vnni.exe",
                        "main-llama_vnni.exe", "main-gptneox_vnni.exe", "main-bloom_vnni.exe",
-                       "libstarcoder_vnni.dll", "quantize-starcoder_vnni.exe", "main-starcoder_vnni.exe"]
+                       "libstarcoder_vnni.dll", "quantize-starcoder_vnni.exe", "main-starcoder_vnni.exe",
+                       "llama-api.dll"]
     linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
                      "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
@@ -167,7 +168,8 @@ def setup_package():
         "libs/main-llama_vnni.exe", 
         "libs/main-gptneox_vnni.exe", 
         "libs/main-bloom_vnni.exe",
-        "libs/main-starcoder_vnni.exe"
+        "libs/main-starcoder_vnni.exe",
+        "libs/llama-api.dll"
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
