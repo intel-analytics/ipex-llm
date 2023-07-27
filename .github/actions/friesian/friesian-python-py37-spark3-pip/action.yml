@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         cd scala
-        mvn clean package -DskipTests -P spark_3.x -Dspark.version=3.1.3 -U
+        mvn clean package -DskipTests -P spark_3.x -Dspark.version=3.4.1 -U
         cd -
        
         #wget https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz -O ${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7.tgz
@@ -16,7 +16,7 @@ runs:
       
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install pyspark==3.1.3 
+        pip install pyspark==3.4.1 
         chmod a+x python/dev/release_default_linux_spark3.sh
         ./python/dev/release_default_linux_spark3.sh default false false
         
