@@ -100,7 +100,7 @@ def main():
                              "'gptneox', 'bloom', 'starcoder')")
     parser.add_argument('--repo-id-or-model-path', type=str, required=True,
                         help='The path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default='Q: What is CPU? A:',
+    parser.add_argument('--prompt', type=str, default='Once upon a time, there existed a little girl who liked to have adventures. ',
                         help='Prompt to infer')
     parser.add_argument('--tmp-path', type=str, default='/tmp',
                         help='path to store intermediate model during the conversion process')
