@@ -41,8 +41,34 @@ calculate_total_cores() {
     done
 
     echo $total_cores
+    return
+  fi
+  # Kubernetes core-binding will use this file
+  cpuset_file="/sys/fs/cgroup/cpuset.cpus"
+  if [[ -f "$cpuset_file" ]]; then
+    local cpuset_cpus=$(cat "$cpuset_file")
+    cpuset_cpus=$(echo "${cpuset_cpus}" | tr -d '\n')
+
+    local total_cores=0
+    IFS=',' read -ra cpu_list <<< "$cpuset_cpus"
+    for cpu in "${cpu_list[@]}"; do
+      if [[ $cpu =~ - ]]; then
+        # Range of CPUs
+        local start_cpu=$(echo "$cpu" | cut -d'-' -f1)
+        local end_cpu=$(echo "$cpu" | cut -d'-' -f2)
+        local range_cores=$((end_cpu - start_cpu + 1))
+        total_cores=$((total_cores + range_cores))
+      else
+        # Single CPU
+        total_cores=$((total_cores + 1))
+      fi
+    done
+
+    echo $total_cores
+    return
   else
     echo -1
+    return
   fi
 }
 
@@ -75,6 +101,12 @@ worker_host="localhost"
 worker_port="21002"
 model_path=""
 mode=""
+omp_num_threads=""
+
+# Remember the value of `OMP_NUM_THREADS`:
+if [[ -n "${OMP_NUM_THREADS}" ]]; then
+  omp_num_threads="${OMP_NUM_THREADS}"
+fi
 
 # We do not have any arguments, just run bash
 if [ "$#" == 0 ]; then
@@ -154,14 +186,20 @@ else
     worker_address="http://$worker_host:$worker_port"
     # Apply optimizations from bigdl-nano
     source bigdl-nano-init -t
-    # Set OMP_NUM_THREADS to correct numbers
-    # This works in TDX-CoCo, TDX-VM, and native
-    cores=$(calculate_total_cores)
-    if [[ $cores == -1 ]]; then
-      echo "Failed to obtain the number of cores, will use the default settings OMP_NUM_THREADS=$OMP_NUM_THREADS"
+    # First check if user have set OMP_NUM_THREADS by themselves
+    if [[ -n "${omp_num_threads}" ]]; then
+      echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
+      export OMP_NUM_THREADS=$omp_num_threads
     else
-      echo "Setting OMP_NUM_THREADS to $cores"
-      export OMP_NUM_THREADS=$cores
+      # Use calculate_total_cores to acquire cpuset settings
+      # Set OMP_NUM_THREADS to correct numbers
+      cores=$(calculate_total_cores)
+      if [[ $cores == -1 ]]; then
+        echo "Failed to obtain the number of cores, will use the default settings OMP_NUM_THREADS=$OMP_NUM_THREADS"
+      else
+        echo "Setting OMP_NUM_THREADS to $cores"
+        export OMP_NUM_THREADS=$cores
+      fi
     fi
     if [[ -z "${model_path}" ]]; then
           echo "Please set env MODEL_PATH used for worker"
