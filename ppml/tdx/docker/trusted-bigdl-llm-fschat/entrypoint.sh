@@ -1,16 +1,19 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 [-c] [-h] [-z <controller_host>] [-p <controller_port>] [-o <api_host>] [-u <api_port>] [-x <worker_host>] [-y <worker_port>] [-m <model_path>]"
-  echo "-c: Use controller mode."
+  echo "Usage: $0 [-m --mode <controller|worker>] [-h --help]"
   echo "-h: Print help message."
-  echo "-z: Set the controller host (default: localhost)."
-  echo "-p: Set the controller port (default: 21001)."
-  echo "-o: Set the API host (default: localhost)."
-  echo "-u: Set the API port (default: 8000)."
-  echo "-x: Set the worker host (default: localhost). (Only applicable in non-controller mode.)"
-  echo "-y: Set the worker port (default: 21002). (Only applicable in non-controller mode.)"
-  echo "-m: Set the worker model path(default: empty). (Only applicable in non-controller mode.)"
+  echo "Controller mode reads the following env:"
+  echo "CONTROLLER_HOST (default: localhost)."
+  echo "CONTROLLER_PORT (default: 21001)."
+  echo "API_HOST (default: localhost)."
+  echo "API_PORT (default: 8000)."
+  echo "Worker mode reads the following env:"
+  echo "CONTROLLER_HOST (default: localhost)."
+  echo "CONTROLLER_PORT (default: 21001)."
+  echo "WORKER_HOST (default: localhost)."
+  echo "WORKER_PORT (default: 21002)."
+  echo "MODEL_PATH (default: empty)."
   exit 1
 }
 
@@ -71,6 +74,7 @@ api_port="8000"
 worker_host="localhost"
 worker_port="21002"
 model_path=""
+mode=""
 
 # We do not have any arguments, just run bash
 if [ "$#" == 0 ]; then
@@ -79,59 +83,63 @@ if [ "$#" == 0 ]; then
   exec /usr/bin/tini -s -- "bash"
 else
   # Parse command-line options
-  while getopts "chz:p:o:u:x:y:m:" opt; do
-    case ${opt} in
-      c)
-        controller_mode=true
+  options=$(getopt -o "m:h" --long "mode:,help" -n "$0" -- "$@")
+  if [ $? != 0 ]; then
+    usage
+  fi
+  eval set -- "$options"
+
+  while true; do
+    case "$1" in
+      -m|--mode)
+        mode="$2"
+        [[ $mode == "controller" || $mode == "worker" ]] || usage
+        shift 2
         ;;
-      h)
+      -h|--help)
         usage
         ;;
-      z)
-        controller_host=${OPTARG}
+      --)
+        shift
+        break
         ;;
-      p)
-        controller_port=${OPTARG}
-        ;;
-      o)
-        api_host=${OPTARG}
-        ;;
-      u)
-        api_port=${OPTARG}
-        ;;
-      x)
-        if [[ -n $controller_mode ]]; then
-          echo "Invalid option: -wh cannot be used with -c."
-          usage
-        fi
-        worker_host=${OPTARG}
-        ;;
-      y)
-        if [[ -n $controller_mode ]]; then
-          echo "Invalid option: -wp cannot be used with -c."
-          usage
-        fi
-        worker_port=${OPTARG}
-        ;;
-      m)
-        if [[ -n $controller_mode ]]; then
-          echo "Invalid option: -mp cannot be used with -c."
-          usage
-        fi
-        model_path=${OPTARG}
-        ;;
-
       *)
         usage
         ;;
     esac
   done
 
-  shift $((OPTIND - 1))
+  if [[ -n $CONTROLLER_HOST ]]; then
+    controller_host=$CONTROLLER_HOST
+  fi
+
+  if [[ -n $CONTROLLER_PORT ]]; then
+    controller_port=$CONTROLLER_PORT
+  fi
+
+  if [[ -n $API_HOST ]]; then
+    api_host=$API_HOST
+  fi
+
+  if [[ -n $API_PORT ]]; then
+    api_port=$API_PORT
+  fi
+
+  if [[ -n $WORKER_HOST ]]; then
+    worker_host=$WORKER_HOST
+  fi
+
+  if [[ -n $WORKER_PORT ]]; then
+    worker_port=$WORKER_PORT
+  fi
+
+  if [[ -n $MODEL_PATH ]]; then
+    model_path=$MODEL_PATH
+  fi
 
   controller_address="http://$controller_host:$controller_port"
   # Execute logic based on options
-  if [[ -n $controller_mode ]]; then
+  if [[ $mode == "controller" ]]; then
     # Logic for controller mode
     # Boot Controller
     # TODO: add dispatch-method
@@ -156,7 +164,7 @@ else
       export OMP_NUM_THREADS=$cores
     fi
     if [[ -z "${model_path}" ]]; then
-          echo "Please set model path used for worker"
+          echo "Please set env MODEL_PATH used for worker"
           usage
     fi
     echo "Worker address: $worker_address"
