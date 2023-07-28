@@ -24,7 +24,7 @@ function Display-Help
 
 function llama
 {
-    $exec_file = if ($vnni_enable) { "main-llama_vnni.exe" } else { "main-llama.exe" }
+    $exec_file = "main-llama.exe"
     $prompt_file = Join-Path $prompt_dir "chat-with-llm.txt"
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict -f $prompt_file -i --color --reverse-prompt 'USER:' --in-prefix ' ' $filteredArguments"
     Write-Host "$command"
@@ -33,7 +33,7 @@ function llama
 
 function gptneox
 {
-    $exec_file = if ($vnni_enable) { "main-gptneox_vnni.exe" } else { "main-gptneox.exe" }
+    $exec_file = "main-gptneox.exe"
     $prompt = "A chat between a curious human and an artificial intelligence assistant.`
             The assistant gives helpful, detailed, and polite answers."
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict --color --instruct -p '$prompt' $filteredArguments"
