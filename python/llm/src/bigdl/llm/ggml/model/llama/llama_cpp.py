@@ -103,7 +103,6 @@ _lib_base_name = "llama"
 
 # Load the library
 _lib = _load_shared_library(_lib_base_name)
-# _lib.llama_init()
 
 # Misc
 c_float_p = POINTER(c_float)
