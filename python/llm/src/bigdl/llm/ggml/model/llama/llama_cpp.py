@@ -81,6 +81,7 @@ def _load_shared_library(lib_base_name: str):
     # Add the library directory to the DLL search path on Windows (if needed)
     if sys.platform == "win32" and sys.version_info >= (3, 8):
         os.add_dll_directory(str(_base_path))
+        os.environ["PATH"] = str(_base_path) + ";" + os.environ["PATH"]
         if "CUDA_PATH" in os.environ:
             os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "bin"))
             os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "lib"))
@@ -102,7 +103,7 @@ _lib_base_name = "llama"
 
 # Load the library
 _lib = _load_shared_library(_lib_base_name)
-_lib.llama_init()
+# _lib.llama_init()
 
 # Misc
 c_float_p = POINTER(c_float)
