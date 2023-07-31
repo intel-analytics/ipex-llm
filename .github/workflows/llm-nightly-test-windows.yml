@@ -20,8 +20,8 @@ on:
   workflow_call:
 
 env:
-  MODEL_DIR: ../
-  INT4_CKPT_DIR: ./llm/ggml-actions/stable
+  MODEL_DIR: ../llm
+  INT4_CKPT_DIR: ../llm/converted_models
   LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
   GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
   BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
@@ -32,7 +32,6 @@ env:
   SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
   LLM_DIR: ./llm
 
-
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
@@ -40,6 +39,10 @@ jobs:
     runs-on: ["self-hosted", "Windows"]
     needs: llm-cpp-build
     steps:
+      - name: Add test info to env
+        shell: bash
+        run: |
+          echo "test_info=12345" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -61,3 +64,7 @@ jobs:
           whl_name=$(ls python/llm/dist)
           pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
           pip install pytest
+      - name: Get test info
+        shell: bash
+        run: |
+          echo $test_info
