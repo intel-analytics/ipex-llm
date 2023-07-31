@@ -41,6 +41,13 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Update Git
+        shell: bash
+        run: |
+          yum -y remove git
+          yum -y remove git-*
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install git
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -114,6 +121,13 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Update Git
+        shell: bash
+        run: |
+          yum -y remove git
+          yum -y remove git-*
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install git
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
