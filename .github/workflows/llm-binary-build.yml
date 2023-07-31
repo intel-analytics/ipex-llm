@@ -46,7 +46,7 @@ jobs:
         run: |
           yum -y remove git
           yum -y remove git-*
-          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm || true
           yum -y install git
       - uses: actions/checkout@v3
         with:
@@ -127,7 +127,7 @@ jobs:
         run: |
           yum -y remove git
           yum -y remove git-*
-          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm || true
           yum -y install git
       - uses: actions/checkout@v3
         with:
