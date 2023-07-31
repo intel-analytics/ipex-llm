@@ -72,6 +72,18 @@ jobs:
           mv build/main-starcoder release/main-starcoder_avx2
           mv build/quantize-starcoder release/quantize-starcoder
           mv build/libstarcoder.so release/libstarcoder_avx2.so
+      - name: Build Chatglm
+        shell: bash
+        run: |
+          cd src/chatglm
+          git submodule update --init --recursive
+          scl enable devtoolset-11 'cmake -B build'
+          scl enable devtoolset-11 'cmake --build build --config Release'
+      - name: Move Chatglm binaries
+        shell: bash
+        run: |
+          mv src/chatglm/build/main release/main-chatglm_avx2
+
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -133,6 +145,17 @@ jobs:
           mv build/main-starcoder release/main-starcoder_avx512
           mv build/quantize-starcoder release/quantize-starcoder_avx512
           mv build/libstarcoder.so release/libstarcoder_avx512.so
+      - name: Build Chatglm
+        shell: bash
+        run: |
+          cd src/chatglm
+          git submodule update --init --recursive
+          scl enable devtoolset-11 'cmake -B build'
+          scl enable devtoolset-11 'cmake --build build --config Release'
+      - name: Move Chatglm binaries
+        shell: bash
+        run: |
+          mv src/chatglm/build/main release/main-chatglm_avx512
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -241,7 +264,17 @@ jobs:
           # mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
           mv build/Release/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
           mv build/Release/starcoder.dll release/libstarcoder_vnni.dll
-
+      - name: Build Chatglm
+        shell: powershell
+        run: |
+          cd src/chatglm
+          git submodule update --init --recursive
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release
+      - name: Move Chatglm binaries
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/main.exe release/main-chatglm.exe
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
