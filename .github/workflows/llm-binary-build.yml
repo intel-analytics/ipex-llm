@@ -60,6 +60,7 @@ jobs:
           yum install -y centos-release-scl
           yum install -y devtoolset-11
           yum install -y sshpass netcat
+          yum install -y cmake
       - name: Build binary
         shell: bash
         run: |
@@ -140,6 +141,7 @@ jobs:
           yum install -y centos-release-scl
           yum install -y devtoolset-11
           yum install -y sshpass netcat
+          yum install -y cmake
       - name: Build binary
         shell: bash
         run: |
