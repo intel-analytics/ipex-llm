@@ -98,9 +98,10 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
           cd src/chatglm
-          scl enable devtoolset-11 '../cmake-3.27.1-linux-x86_64/bin/cmake -B build'
-          scl enable devtoolset-11 '../cmake-3.27.1-linux-x86_64/bin/cmake --build build --config Release'
+          scl enable devtoolset-11 "$cmake_path -B build"
+          scl enable devtoolset-11 "$cmake_path --build build --config Release"
       - name: Move Chatglm binaries
         shell: bash
         run: |
@@ -193,9 +194,10 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
           cd src/chatglm
-          scl enable devtoolset-11 '../cmake-3.27.1-linux-x86_64/bin/cmake -B build'
-          scl enable devtoolset-11 '../cmake-3.27.1-linux-x86_64/bin/cmake --build build --config Release'
+          scl enable devtoolset-11 "$cmake_path -B build"
+          scl enable devtoolset-11 "$cmake_path --build build --config Release"
       - name: Move Chatglm binaries
         shell: bash
         run: |
