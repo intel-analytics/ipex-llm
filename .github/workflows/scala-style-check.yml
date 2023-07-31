@@ -72,6 +72,8 @@ jobs:
 
     - name: Run tests
       run: |
+          export _JAVA_OPTIONS="-XX:MaxPermSize=3G -Xmx10G"
+          export MAVEN_OPTS="-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G -Xmx10G"
           cd scala
           mvn clean verify -DskipTests -U
 
