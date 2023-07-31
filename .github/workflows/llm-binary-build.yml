@@ -45,6 +45,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Install Build Environment
         shell: bash
         run: |
@@ -118,6 +119,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Install Build Environment
         shell: bash
         run: |
@@ -191,6 +193,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:
@@ -233,6 +236,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:
