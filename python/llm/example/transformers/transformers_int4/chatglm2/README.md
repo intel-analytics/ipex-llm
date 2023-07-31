@@ -87,8 +87,14 @@ pip install bigdl-llm[all] # install bigdl-llm with 'all' option
 ```
 
 ### 2. Run
+**Stream Chat using `stream_chat()` API**:
 ```
 python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION
+```
+
+**Chat using `chat()` API**:
+```
+python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION --disable-stream
 ```
 
 Arguments info:
