@@ -24,6 +24,9 @@ from .utils import extract_local_archive_file, \
     fix_key
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
+import sys
+import importlib
+
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -104,6 +107,14 @@ class _BaseAutoModelClass:
         else:
             # todo implement 4.28.0 ~ 4.30.2
             pass
+
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward_8eb45c
+        convert_forward(model,
+                        module.SelfAttention,
+                        chatglm_attention_forward_8eb45c
+                        )
 
     @classmethod
     def load_convert(cls, q_k, *args, **kwargs):
