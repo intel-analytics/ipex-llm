@@ -18,8 +18,6 @@
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/v4.30.2/src/transformers/utils/bitsandbytes.py
 # and https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py
-# and https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/
-#     llama/modeling_llama.py
 # which is licensed under Apache License 2.0:
 #
 # Copyright 2021 The HuggingFace Inc. team. All rights reserved.
@@ -42,10 +40,6 @@ import torch.nn as nn
 from accelerate import init_empty_weights
 from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 import warnings
-from typing import List, Optional, Tuple, Union
-import math
-import torch.nn.functional as F
-from bigdl.llm.utils.common import invalidInputError
 
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
