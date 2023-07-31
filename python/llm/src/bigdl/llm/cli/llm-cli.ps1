@@ -23,7 +23,7 @@ function Display-Help
 
 function llama
 {
-    $exec_file = if ($vnni_enable) { "main-llama_vnni.exe" } else { "main-llama.exe" }
+    $exec_file = "main-llama.exe"
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
@@ -31,7 +31,7 @@ function llama
 
 function bloom
 {
-    $exec_file = if ($vnni_enable) { "main-bloom_vnni.exe" } else { "main-bloom.exe" }
+    $exec_file = "main-bloom.exe"
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
@@ -39,7 +39,7 @@ function bloom
 
 function gptneox
 {
-    $exec_file = if ($vnni_enable) { "main-gptneox_vnni.exe" } else { "main-gptneox.exe" }
+    $exec_file = "main-gptneox.exe"
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
@@ -47,7 +47,7 @@ function gptneox
 
 function starcoder
 {
-    $exec_file = if ($vnni_enable) { "main-starcoder_vnni.exe" } else { "main-starcoder.exe" }
+    $exec_file = "main-starcoder.exe"
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
