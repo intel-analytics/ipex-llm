@@ -43,11 +43,61 @@ long_description = '''
 
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
+VERSION = open(os.path.join(BIGDL_PYTHON_HOME,
+               'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-CONVERT_DEP = ['numpy >= 1.22', 'torch', 'transformers', 'sentencepiece', 'accelerate']
+CONVERT_DEP = ['numpy >= 1.22', 'torch',
+               'transformers', 'sentencepiece', 'accelerate']
+windows_binarys = [
+    "llama.dll",
+    "gptneox.dll",
+    "bloom.dll",
+    "starcoder.dll",
+    "llama-api.dll",
+    "gptneox-api.dll",
+    "bloom-api.dll",
+    "starcoder-api.dll",
+    "quantize-llama.exe",
+    "quantize-gptneox.exe",
+    "quantize-bloom.exe",
+    "quantize-starcoder.exe",
+    "main-llama.exe",
+    "main-gptneox.exe",
+    "main-bloom.exe",
+    "main-starcoder.exe",
+    "libllama_vnni.dll",
+    "libgptneox_vnni.dll",
+    "libbloom_vnni.dll",
+    "libstarcoder_vnni.dll",
+    "quantize-llama_vnni.exe",
+    "quantize-gptneox_vnni.exe",
+    "quantize-bloom_vnni.exe",
+    "quantize-starcoder_vnni.exe",
+]
+linux_binarys = [
+    "libllama_avx2.so",
+    "libgptneox_avx2.so",
+    "libbloom_avx2.so",
+    "libllama_avx512.so",
+    "libgptneox_avx512.so",
+    "libbloom_avx512.so",
+    "quantize-llama",
+    "quantize-gptneox",
+    "quantize-bloom",
+    "main-llama_avx2",
+    "main-gptneox_avx2",
+    "main-bloom_avx2",
+    "main-llama_avx512",
+    "main-gptneox_avx512",
+    "main-bloom_avx512",
+    "libstarcoder_avx512.so",
+    "main-starcoder_avx512",
+    "quantize-starcoder",
+    "libstarcoder_avx2.so",
+    "main-starcoder_avx2"
+]
 
 
 def get_llm_packages():
@@ -66,21 +116,6 @@ def get_llm_packages():
 
 def obtain_lib_urls():
     base_url = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/"
-    windows_binarys = ["llama.dll", "gptneox.dll", "bloom.dll",
-                       "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
-                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe",
-                       "starcoder.dll", "quantize-starcoder.exe", "main-starcoder.exe",
-                       "libllama_vnni.dll", "libgptneox_vnni.dll", "libbloom_vnni.dll",
-                       "quantize-llama_vnni.exe", "quantize-gptneox_vnni.exe", "quantize-bloom_vnni.exe",
-                       "main-llama_vnni.exe", "main-gptneox_vnni.exe", "main-bloom_vnni.exe",
-                       "libstarcoder_vnni.dll", "quantize-starcoder_vnni.exe", "main-starcoder_vnni.exe"]
-    linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
-                     "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
-                     "quantize-llama", "quantize-gptneox", "quantize-bloom",
-                     "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
-                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512",
-                     "libstarcoder_avx512.so", "main-starcoder_avx512", "quantize-starcoder",
-                     "libstarcoder_avx2.so", "main-starcoder_avx2"]
 
     def get_date_urls(base_url):
         # obtain all urls based on date(format: xxxx-xx-xx)
@@ -88,10 +123,10 @@ def obtain_lib_urls():
         try:
             text = requests.get(base_url).text
         except Exception as e:
-            print("error - > ",base_url,e)
+            print("error - > ", base_url, e)
             pass
         reg = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}/"
-        urls =  re.findall(reg, text)
+        urls = re.findall(reg, text)
         return urls
 
     def get_urls_for_binary(date_urls, binarys):
@@ -143,55 +178,10 @@ def download_libs(url: str, change_permission=False):
 
 def setup_package():
     package_data = {}
-    package_data["Windows"] = [
-        "libs/llama.dll",
-        "libs/gptneox.dll",
-        "libs/bloom.dll",
-        "libs/starcoder.dll",
-        "libs/quantize-llama.exe",
-        "libs/quantize-gptneox.exe",
-        "libs/quantize-bloom.exe",
-        "libs/quantize-starcoder.exe",
-        "libs/main-bloom.exe",
-        "libs/main-gptneox.exe",
-        "libs/main-llama.exe",
-        "libs/main-starcoder.exe",
-        "libs/libllama_vnni.dll", 
-        "libs/libgptneox_vnni.dll", 
-        "libs/libbloom_vnni.dll",
-        "libs/libstarcoder_vnni.dll", 
-        "libs/quantize-llama_vnni.exe",
-        "libs/quantize-gptneox_vnni.exe", 
-        "libs/quantize-bloom_vnni.exe",
-        "libs/quantize-starcoder_vnni.exe", 
-        "libs/main-llama_vnni.exe", 
-        "libs/main-gptneox_vnni.exe", 
-        "libs/main-bloom_vnni.exe",
-        "libs/main-starcoder_vnni.exe"
-    ]
-    package_data["Linux"] = [
-        "libs/libllama_avx2.so",
-        "libs/libllama_avx512.so",
-        "libs/quantize-llama",
-        "libs/libgptneox_avx2.so",
-        "libs/libgptneox_avx512.so",
-        "libs/quantize-gptneox",
-        "libs/libbloom_avx2.so",
-        "libs/libbloom_avx512.so",
-        "libs/quantize-bloom",
-        "libs/libstarcoder_avx512.so",
-        "libs/libstarcoder_avx2.so",
-        "libs/quantize-starcoder",
-        "libs/main-bloom_avx2",
-        "libs/main-bloom_avx512",
-        "libs/main-gptneox_avx2",
-        "libs/main-gptneox_avx512",
-        "libs/main-llama_avx2",
-        "libs/main-llama_avx512",
-        "libs/main-starcoder_avx512",
-        "libs/main-starcoder_avx2",
-    ]
-
+    package_data["Windows"] = list(map(lambda x: os.path.join('libs', x),
+                                       windows_binarys))
+    package_data["Linux"] = list(map(lambda x: os.path.join('libs', x),
+                                     linux_binarys))
     platform_name = None
     if "--win" in sys.argv:
         platform_name = "Windows"
@@ -213,9 +203,9 @@ def setup_package():
         print(f"Deleting existing libs_dir {libs_dir} ....")
         shutil.rmtree(libs_dir)
     os.makedirs(libs_dir, exist_ok=True)
-    
+
     # copy built files for github workflow
-    for built_file in glob.glob(os.path.join(github_artifact_dir,'*')):
+    for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
         print(f'Copy workflow built file: {built_file}')
         shutil.copy(built_file, libs_dir)
 
@@ -223,13 +213,14 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
-        
+
     # Check if all package files are ready
     for file in package_data[platform_name]:
         file_path = os.path.join(libs_dir, os.path.basename(file))
         if not os.path.exists(file_path):
             print(f'Could not find package dependency file: {file_path}')
-            raise FileNotFoundError(f'Could not find package dependency file: {file_path}')        
+            raise FileNotFoundError(
+                f'Could not find package dependency file: {file_path}')
 
     all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP
@@ -246,7 +237,8 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_llm_packages(),
         package_dir={"": "src"},
-        package_data={"bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"]},
+        package_data={
+            "bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"]},
         include_package_data=True,
         entry_points={
             "console_scripts": [
