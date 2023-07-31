@@ -81,6 +81,7 @@ def _load_shared_library(lib_base_name: str):
     # Add the library directory to the DLL search path on Windows (if needed)
     if sys.platform == "win32" and sys.version_info >= (3, 8):
         os.add_dll_directory(str(_base_path))
+        os.environ["PATH"] = str(_base_path) + ";" + os.environ["PATH"]
 
     # Try to load the shared library, handling potential errors
     for _lib_path in _lib_paths:

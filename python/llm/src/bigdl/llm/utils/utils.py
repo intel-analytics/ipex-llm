@@ -30,7 +30,8 @@ def get_cpu_flags():
         else:
             invalidOperationError(False, "Unsupported CPUFLAGS.")
     else:
-        flags = "_vnni" if check_avx_vnni() else ""
+        # flags = "_vnni" if check_avx_vnni() else ""
+        flags = "-api"
     return flags
 
 
