@@ -110,11 +110,15 @@ class _BaseAutoModelClass:
 
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward_8eb45c
+        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward_8eb45c, cross_attn_forward
         convert_forward(model,
                         module.SelfAttention,
                         chatglm_attention_forward_8eb45c
                         )
+        convert_forward(model,
+                module.CoreAttention,
+                cross_attn_forward
+                )
 
     @classmethod
     def load_convert(cls, q_k, *args, **kwargs):
