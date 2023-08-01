@@ -76,6 +76,8 @@ windows_binarys = [
     "quantize-gptneox_vnni.exe",
     "quantize-bloom_vnni.exe",
     "quantize-starcoder_vnni.exe",
+    
+    "main-chatglm_vnni.exe",
 ]
 linux_binarys = [
     "libllama_avx2.so",
@@ -97,7 +99,9 @@ linux_binarys = [
     "main-starcoder_avx512",
     "quantize-starcoder",
     "libstarcoder_avx2.so",
-    "main-starcoder_avx2"
+    "main-starcoder_avx2",
+    
+    "main-chatglm_vnni",
 ]
 
 
@@ -208,6 +212,8 @@ def setup_package():
     # copy built files for github workflow
     for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
         print(f'Copy workflow built file: {built_file}')
+        if change_permission:
+            os.chmod(built_file, 0o775)
         shutil.copy(built_file, libs_dir)
 
     lib_urls = obtain_lib_urls()
