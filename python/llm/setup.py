@@ -211,6 +211,8 @@ def setup_package():
     # copy built files for github workflow
     for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
         print(f'Copy workflow built file: {built_file}')
+        if change_permission:
+            os.chmod(built_file, 0o775)
         shutil.copy(built_file, libs_dir)
 
     lib_urls = obtain_lib_urls()
