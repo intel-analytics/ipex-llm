@@ -2,7 +2,9 @@
 
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on ChatGLM models. For illustration purposes, we utilize the [THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b) as a reference ChatGLM model.
 
-> **Note**: If you want to download the model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git). And you don't need to convert the original [THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b) model.
+> **Note**: If you want to download any Hugging Face *Transformers* model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git).
+>
+> Please note that BigDL-LLM optimizes any *Transformers* model in INT4 precision during loading, so that no explicit conversion is needed.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -10,11 +12,11 @@ To run these examples with BigDL-LLM, we have some recommended requirements for 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage the python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
-After installing conda, create a python environment for BigDL-LLM:
+After installing conda, create a Python environment for BigDL-LLM:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
@@ -30,7 +32,7 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-And the expected output can be found in [Sample Output](#23-sample-output).
+And the expected output can be found in [Sample Output](#23-sample-output) section.
 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
