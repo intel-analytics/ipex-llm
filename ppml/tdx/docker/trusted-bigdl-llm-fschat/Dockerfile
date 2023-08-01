@@ -35,8 +35,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /ppml/FastChat && \
     pip install -e . && \
     # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
-    pip3 install --pre --upgrade gradio==3.36.1 && \
-    pip3 install --pre --upgrade bigdl-nano && \
+    pip install --pre --upgrade gradio==3.36.1 && \
+    pip install --pre --upgrade bigdl-nano && \
     # Install bigdl-ppml
     cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
