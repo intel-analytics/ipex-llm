@@ -14,6 +14,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install soundfile librosa # required by audio processing
 ```
 
 ### 2. Run
