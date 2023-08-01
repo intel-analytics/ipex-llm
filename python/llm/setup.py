@@ -75,6 +75,8 @@ windows_binarys = [
     "quantize-gptneox_vnni.exe",
     "quantize-bloom_vnni.exe",
     "quantize-starcoder_vnni.exe",
+    
+    "main-chatglm_vnni.exe",
 ]
 linux_binarys = [
     "libllama_avx2.so",
@@ -96,7 +98,9 @@ linux_binarys = [
     "main-starcoder_avx512",
     "quantize-starcoder",
     "libstarcoder_avx2.so",
-    "main-starcoder_avx2"
+    "main-starcoder_avx2",
+    
+    "main-chatglm_vnni",
 ]
 
 
