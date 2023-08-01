@@ -87,7 +87,9 @@ class ModelType(Enum):
 
 def quantize_q8_0(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q8_0 in ggml.c
-    invalidInputError(tensor.shape[1] % GGML_QK8_0 == 0)
+    invalidInputError(tensor.shape[1] % GGML_QK8_0 == 0,
+                      "tensor.shape[1] should be divided by GGML_QK8_0(64), "
+                      f"but get {tensor.shape[1]}")
     tensor = tensor.view(-1, GGML_QK8_0)
     scale = tensor.abs().max(dim=-1, keepdim=True).values / ((1 << 7) - 1)
     tensor = (tensor / scale).round().clamp(min=-128, max=127).char()
@@ -98,7 +100,9 @@ def quantize_q8_0(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q4_0(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q4_0 in ggml.c
-    invalidInputError(tensor.shape[1] % GGML_QK4_0 == 0)
+    invalidInputError(tensor.shape[1] % GGML_QK4_1 == 0,
+                      "tensor.shape[1] should be divided by GGML_QK4_1(64), "
+                      f"but get {tensor.shape[1]}")
     tensor = tensor.view(-1, GGML_QK4_0)
     abs_max_indices = tensor.abs().max(dim=-1, keepdim=True).indices
     max_values = torch.take_along_dim(tensor, abs_max_indices, dim=-1)
@@ -113,7 +117,9 @@ def quantize_q4_0(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q4_1(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q4_1 in ggml.c
-    invalidInputError(tensor.shape[1] % GGML_QK4_1 == 0)
+    invalidInputError(tensor.shape[1] % GGML_QK4_1 == 0,
+                      "tensor.shape[1] should be divided by GGML_QK4_1(64), "
+                      f"but get {tensor.shape[1]}")
     tensor = tensor.view(-1, GGML_QK4_1)
     min_vals = tensor.min(dim=-1, keepdim=True).values
     max_vals = tensor.max(dim=-1, keepdim=True).values
@@ -129,7 +135,9 @@ def quantize_q4_1(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q5_0(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q5_0 in ggml.c
-    invalidInputError(tensor.shape[1] % GGML_QK5_0 == 0)
+    invalidInputError(tensor.shape[1] % GGML_QK5_0 == 0,
+                      "tensor.shape[1] should be divided by GGML_QK5_1(32), "
+                      f"but get {tensor.shape[1]}")
     tensor = tensor.view(-1, GGML_QK5_0)
     abs_max_indices = tensor.abs().max(dim=-1, keepdim=True).indices
     max_values = torch.take_along_dim(tensor, abs_max_indices, dim=-1)
@@ -147,7 +155,9 @@ def quantize_q5_0(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q5_1(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q5_1 in ggml.c
-    invalidInputError(tensor.shape[1] % GGML_QK5_1 == 0)
+    invalidInputError(tensor.shape[1] % GGML_QK5_1 == 0,
+                      "tensor.shape[1] should be divided by GGML_QK5_1(32), "
+                      f"but get {tensor.shape[1]}")
     tensor = tensor.view(-1, GGML_QK5_1)
     min_vals = tensor.min(dim=-1, keepdim=True).values
     max_vals = tensor.max(dim=-1, keepdim=True).values
@@ -167,7 +177,9 @@ def quantize_q5_1(tensor: torch.Tensor) -> torch.CharTensor:
 
 
 def dump_tensor(f, name: str, tensor: torch.Tensor, ggml_type: GGMLType):
-    invalidInputError(tensor.dtype == torch.float32)
+    invalidInputError(tensor.dtype == torch.float32,
+                      "tensor.dtype should be torch.float32, "
+                      f"but get {tensor.dtype}")
 
     # tensor name
     f.write(struct.pack("i", len(name.encode())))
@@ -209,7 +221,8 @@ def dump_state_dict(f, weight_names, state_dict, quantization_bit, ggml_type):
 
             # step 1: de-quantize it back to float32
             if tensor.dtype == torch.int8:
-                invalidInputError(quantization_bit in [4, 8])
+                invalidInputError(quantization_bit in [4, 8],
+                                  "quantization_bit should be 4 or 8.")
                 scale = state_dict[f"{name}_scale"].float()  # channel-wise scale
 
                 if quantization_bit == 4:
@@ -225,7 +238,8 @@ def dump_state_dict(f, weight_names, state_dict, quantization_bit, ggml_type):
             tensor_ggml_type = ggml_type
         else:
             # 1d weight: convert it to float32
-            invalidInputError(tensor.ndim == 1)
+            invalidInputError(tensor.ndim == 1,
+                              "tensor.ndim should be 1")
             tensor = tensor.float()
             tensor_ggml_type = GGMLType.F32
 
