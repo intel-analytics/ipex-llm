@@ -53,6 +53,8 @@ class Test_Langchain_Transformers_API(TestCase):
           and Alexa are founded on AI technology, as are some customer 
           service chatbots that pop up to help you navigate websites.
         '''
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        texts = text_splitter.split_text(texts)
         query = 'What is AI?'
         embeddings = TransformersEmbeddings.from_model_id(model_id=self.auto_model_path, model_kwargs={'trust_remote_code': True})
 
@@ -63,7 +65,8 @@ class Test_Langchain_Transformers_API(TestCase):
         bigdl_llm = TransformersLLM.from_model_id(model_id=self.auto_model_path, model_kwargs={'trust_remote_code': True})
         doc_chain = load_qa_chain(bigdl_llm, chain_type="stuff", prompt=QA_PROMPT)
         output = doc_chain.run(input_documents=docs, question=query)
-        print(output)
+        res = "AI" in output
+        self.assertTrue(res)
         
 if __name__ == '__main__':
     pytest.main([__file__])
