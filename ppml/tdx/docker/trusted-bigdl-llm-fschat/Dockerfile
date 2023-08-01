@@ -25,16 +25,18 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache --upgrade requests argparse cryptography==3.3.2 urllib3 && \
     pip3 install --pre --upgrade bigdl-llm[all] && \
-    # FastChat related dependencies
-    pip3 install fschat==0.2.18 && \
-    # We would also patch fastchat
-    patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py /opt/fschat.diff && \
+    cd /ppml/ && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    # Install FastChat from source requires PEP 660 support
+    python3 get-pip.py && \
+    rm get-pip.py && \
+    # Install FastChat
+    git clone https://github.com/analytics-zoo/FastChat.git && \
+    cd /ppml/FastChat && \
+    pip install -e . && \
     # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
     pip3 install --pre --upgrade gradio==3.36.1 && \
     pip3 install --pre --upgrade bigdl-nano && \
-    # Pin pydantic version because this error:https://github.com/lm-sys/FastChat/issues/2077
-    pip3 uninstall -y pydantic pydantic-core && \
-    pip3 install pydantic==1.10.8 pydantic-core==2.3.0 && \
     # Install bigdl-ppml
     cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
@@ -58,12 +60,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /opt/attestation.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
-
-
-# To boost fschat performance, do the following:
-# source bigdl-nano-init -t
-# export KMP_AFFINITY=granularity=fine,compact
-# export OMP_NUM_THREADS=#phy cores
 
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
