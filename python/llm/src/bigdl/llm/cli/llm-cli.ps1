@@ -55,7 +55,7 @@ function starcoder
 
 function chatglm
 {
-    $exec_file = "main-chatglm.exe"
+    $exec_file = "main-chatglm_vnni.exe"
     $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command

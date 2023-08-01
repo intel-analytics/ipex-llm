@@ -60,7 +60,7 @@ function starcoder {
 }
 
 function chatglm {
-  command="$lib_dir/main-chatglm_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-chatglm_vnni -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
