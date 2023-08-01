@@ -41,6 +41,7 @@ env:
   GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
   BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
   STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
+  CHATGLM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/chatglm2-6b-q4_0.bin
 
   LLM_DIR: ./llm
   ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
@@ -99,6 +100,10 @@ jobs:
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $CHATGLM_INT4_CKPT_PATH ]; then
+            echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $LLM_FTP_URL/${CHATGLM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."

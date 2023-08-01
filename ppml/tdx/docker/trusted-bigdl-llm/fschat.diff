@@ -1,6 +1,6 @@
 325a326,348
 > class BigDLLLMAdapter(BaseModelAdapter):
->     "Model adapater for vicuna-v1.1"
+>     "Model adapater for bigdl-llm backend models"
 > 
 >     def match(self, model_path: str):
 >         return "bigdl" in model_path
@@ -22,5 +22,11 @@
 >         return model, tokenizer
 > 
 > 
-985a1009
+504a528
+>         from bigdl.llm.transformers import AutoModel
+506c530
+<             model_path, trust_remote_code=True, **from_pretrained_kwargs
+---
+>             model_path, trust_remote_code=True, load_in_4bit=True, **from_pretrained_kwargs
+985a1010
 > register_model_adapter(BigDLLLMAdapter)
