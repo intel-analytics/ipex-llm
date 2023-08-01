@@ -16,7 +16,7 @@
 import os
 import time
 from pathlib import Path
-from bigdl.llm.ggml.convert import _convert_to_ggml
+from bigdl.llm.ggml.convert import _convert_to_ggml, _convert_chatglm
 from bigdl.llm.ggml.quantize import quantize
 from bigdl.llm.utils.common import invalidInputError
 import argparse
@@ -54,9 +54,9 @@ def convert_model(input_path: str,
     # make sure directory exists
     os.makedirs(output_path, exist_ok=True)
     # check input value
-    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder', 'chatglm'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloom', 'gptneox', 'starcoder')",
+                       family('llama', 'bloom', 'gptneox', 'starcoder', 'chatglm')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isdir(output_path),
                       "The output_path {} was not a directory".format(output_path))
@@ -77,6 +77,13 @@ def convert_model(input_path: str,
                           "Now we only support int8 quantization of model \
                           family('llama', 'gptneox', 'starcoder')",
                           "{} is not in the list.".format(model_family))
+
+    # chatglm merges convertion and quantization into one operation.
+    if model_family == 'chatglm':
+        _convert_chatglm(model_path=input_path,
+                         outfile_dir=output_path,
+                         outtype=dtype)
+        return
 
     if tmp_path is not None:
         model_name = Path(input_path).stem
