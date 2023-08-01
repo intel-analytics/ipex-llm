@@ -33,7 +33,7 @@ from unittest import TestCase
 import os
 
 
-class Test_Models_Basics(TestCase):
+class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         thread_num = os.environ.get('THREAD_NUM')
@@ -43,7 +43,7 @@ class Test_Models_Basics(TestCase):
             self.n_threads = 2         
 
         
-    def test_langchain_llm_embedding_llama(self):
+    def test_qa_chain(self):
         texts = '''
         AI is a machine’s ability to perform the cognitive functions 
         we associate with human minds, such as perceiving, reasoning, 
