@@ -55,6 +55,7 @@ import torch
 from tabulate import tabulate
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer
+from bigdl.llm.utils.common import invalidInputError
 
 GGML_QK8_0 = 64
 GGML_QK4_0 = 64
@@ -86,7 +87,7 @@ class ModelType(Enum):
 
 def quantize_q8_0(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q8_0 in ggml.c
-    assert tensor.shape[1] % GGML_QK8_0 == 0
+    invalidInputError(tensor.shape[1] % GGML_QK8_0 == 0)
     tensor = tensor.view(-1, GGML_QK8_0)
     scale = tensor.abs().max(dim=-1, keepdim=True).values / ((1 << 7) - 1)
     tensor = (tensor / scale).round().clamp(min=-128, max=127).char()
@@ -97,7 +98,7 @@ def quantize_q8_0(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q4_0(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q4_0 in ggml.c
-    assert tensor.shape[1] % GGML_QK4_0 == 0
+    invalidInputError(tensor.shape[1] % GGML_QK4_0 == 0)
     tensor = tensor.view(-1, GGML_QK4_0)
     abs_max_indices = tensor.abs().max(dim=-1, keepdim=True).indices
     max_values = torch.take_along_dim(tensor, abs_max_indices, dim=-1)
@@ -112,7 +113,7 @@ def quantize_q4_0(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q4_1(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q4_1 in ggml.c
-    assert tensor.shape[1] % GGML_QK4_1 == 0
+    invalidInputError(tensor.shape[1] % GGML_QK4_1 == 0)
     tensor = tensor.view(-1, GGML_QK4_1)
     min_vals = tensor.min(dim=-1, keepdim=True).values
     max_vals = tensor.max(dim=-1, keepdim=True).values
@@ -121,13 +122,14 @@ def quantize_q4_1(tensor: torch.Tensor) -> torch.CharTensor:
     # compress two int4 weights into an int8
     tensor = tensor[:, :GGML_QK4_1//2] | (tensor[:, GGML_QK4_1//2:] << 4)
     # add scale & min into each block
-    tensor = torch.cat((scale.half().view(torch.int8), min_vals.half().view(torch.int8), tensor), dim=-1)
+    tensor = torch.cat((scale.half().view(torch.int8),
+                        min_vals.half().view(torch.int8), tensor), dim=-1)
     return tensor
 
 
 def quantize_q5_0(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q5_0 in ggml.c
-    assert tensor.shape[1] % GGML_QK5_0 == 0
+    invalidInputError(tensor.shape[1] % GGML_QK5_0 == 0)
     tensor = tensor.view(-1, GGML_QK5_0)
     abs_max_indices = tensor.abs().max(dim=-1, keepdim=True).indices
     max_values = torch.take_along_dim(tensor, abs_max_indices, dim=-1)
@@ -145,7 +147,7 @@ def quantize_q5_0(tensor: torch.Tensor) -> torch.CharTensor:
 
 def quantize_q5_1(tensor: torch.Tensor) -> torch.CharTensor:
     # equivalent to ggml_quantize_q5_1 in ggml.c
-    assert tensor.shape[1] % GGML_QK5_1 == 0
+    invalidInputError(tensor.shape[1] % GGML_QK5_1 == 0)
     tensor = tensor.view(-1, GGML_QK5_1)
     min_vals = tensor.min(dim=-1, keepdim=True).values
     max_vals = tensor.max(dim=-1, keepdim=True).values
@@ -158,13 +160,14 @@ def quantize_q5_1(tensor: torch.Tensor) -> torch.CharTensor:
 
     # add scale & min into each block
     tensor = torch.cat(
-        (scale.half().view(torch.int8), min_vals.half().view(torch.int8), qh[..., None].view(torch.int8), qs), dim=-1
+        (scale.half().view(torch.int8), min_vals.half().view(torch.int8),
+         qh[..., None].view(torch.int8), qs), dim=-1
     )
     return tensor
 
 
 def dump_tensor(f, name: str, tensor: torch.Tensor, ggml_type: GGMLType):
-    assert tensor.dtype == torch.float32
+    invalidInputError(tensor.dtype == torch.float32)
 
     # tensor name
     f.write(struct.pack("i", len(name.encode())))
@@ -189,7 +192,7 @@ def dump_tensor(f, name: str, tensor: torch.Tensor, ggml_type: GGMLType):
     elif ggml_type == GGMLType.Q5_1:
         tensor = quantize_q5_1(tensor)
     else:
-        raise NotImplementedError(f"Cannot dump tensor of dtype {tensor.dtype}")
+        invalidInputError(False, f"Cannot dump tensor of dtype {tensor.dtype}")
 
     # align address
     aligned_pos = (f.tell() + (GGML_MEM_ALIGN - 1)) // GGML_MEM_ALIGN * GGML_MEM_ALIGN
@@ -206,7 +209,7 @@ def dump_state_dict(f, weight_names, state_dict, quantization_bit, ggml_type):
 
             # step 1: de-quantize it back to float32
             if tensor.dtype == torch.int8:
-                assert quantization_bit in [4, 8]
+                invalidInputError(quantization_bit in [4, 8])
                 scale = state_dict[f"{name}_scale"].float()  # channel-wise scale
 
                 if quantization_bit == 4:
@@ -222,7 +225,7 @@ def dump_state_dict(f, weight_names, state_dict, quantization_bit, ggml_type):
             tensor_ggml_type = ggml_type
         else:
             # 1d weight: convert it to float32
-            assert tensor.ndim == 1
+            invalidInputError(tensor.ndim == 1)
             tensor = tensor.float()
             tensor_ggml_type = GGMLType.F32
 
@@ -251,10 +254,11 @@ class ChatGLMConverter(BaseConverter):
 
     @staticmethod
     def dump_config(f, config, ggml_type):
-        assert config.position_encoding_2d, "unimplemented: position_encoding_2d should be True"
-        assert (
+        invalidInputError(config.position_encoding_2d,
+                          "unimplemented: position_encoding_2d should be True")
+        invalidInputError((
             config.inner_hidden_size == 4 * config.hidden_size
-        ), "unimplemented: inner_hidden_size should be 4 times hidden_size"
+        ), "unimplemented: inner_hidden_size should be 4 times hidden_size")
         config_values = [
             ggml_type.value,
             config.vocab_size,
@@ -278,9 +282,10 @@ class ChatGLMConverter(BaseConverter):
 
     @staticmethod
     def dump_model(f, model, ggml_type):
-        assert torch.allclose(
-            model.state_dict()["transformer.word_embeddings.weight"], model.state_dict()["lm_head.weight"]
-        ), "unimplemented: lm_head weight must be tied to input embedding"
+        invalidInputError(torch.allclose(
+            model.state_dict()["transformer.word_embeddings.weight"],
+            model.state_dict()["lm_head.weight"]
+        ), "unimplemented: lm_head weight must be tied to input embedding")
 
         weight_names = ["transformer.word_embeddings.weight"]
         for i in range(model.config.num_layers):
@@ -302,7 +307,8 @@ class ChatGLMConverter(BaseConverter):
             "transformer.final_layernorm.weight",
             "transformer.final_layernorm.bias",
         ]
-        dump_state_dict(f, weight_names, model.state_dict(), model.config.quantization_bit, ggml_type)
+        dump_state_dict(f, weight_names, model.state_dict(),
+                        model.config.quantization_bit, ggml_type)
 
 
 class ChatGLM2Converter(BaseConverter):
@@ -310,18 +316,22 @@ class ChatGLM2Converter(BaseConverter):
 
     @staticmethod
     def dump_config(f, config, ggml_type):
-        assert config.add_bias_linear is False, "unimplemented: add_bias_linear must be false"
-        assert config.add_qkv_bias is True, "unimplemented: add_qkv_bias must be true"
-        assert (
+        invalidInputError(config.add_bias_linear is False,
+                          "unimplemented: add_bias_linear must be false")
+        invalidInputError(config.add_qkv_bias is True, "unimplemented: add_qkv_bias must be true")
+        invalidInputError((
             config.apply_residual_connection_post_layernorm is False
-        ), "unimplemented: apply_residual_connection_post_layernorm must be false"
-        assert (
+        ), "unimplemented: apply_residual_connection_post_layernorm must be false")
+        invalidInputError((
             config.kv_channels * config.num_attention_heads == config.hidden_size
-        ), "unimplemented: invalid kv_channels"
-        assert config.multi_query_attention is True, "unimplemented: multi_query_attention must be true"
-        assert config.original_rope is True, "unimplemented: original_rope must be true"
-        assert config.post_layer_norm is True, "unimplemented: post_layer_norm must be true"
-        assert config.rmsnorm is True, "unimplemented: rmsnorm must be true"
+        ), "unimplemented: invalid kv_channels")
+        invalidInputError(config.multi_query_attention is True,
+                          "unimplemented: multi_query_attention must be true")
+        invalidInputError(config.original_rope is True,
+                          "unimplemented: original_rope must be true")
+        invalidInputError(config.post_layer_norm is True,
+                          "unimplemented: post_layer_norm must be true")
+        invalidInputError(config.rmsnorm is True, "unimplemented: rmsnorm must be true")
 
         config_values = [
             ggml_type.value,
@@ -363,7 +373,9 @@ class ChatGLM2Converter(BaseConverter):
             "transformer.encoder.final_layernorm.weight",
             "transformer.output_layer.weight",
         ]
-        dump_state_dict(f, weight_names, model.state_dict(), model.config.quantization_bit, ggml_type)
+        dump_state_dict(f, weight_names, model.state_dict(),
+                        model.config.quantization_bit, ggml_type)
+
 
 def _convert_chatglm_hf_to_ggml_(model_path, outfile_dir, outtype):
     ggml_type = GGMLType[outtype.upper()]
@@ -375,6 +387,7 @@ def _convert_chatglm_hf_to_ggml_(model_path, outfile_dir, outtype):
     else:
         ChatGLMConverter.convert(model, tokenizer, ggml_type, outfile_dir)
 
+
 def main():
     parser = argparse.ArgumentParser("chatglm-convert")
     parser.add_argument(
@@ -385,7 +398,8 @@ def main():
         help="Model name or path used in AutoModel.from_pretrained",
     )
     parser.add_argument(
-        "-o", "--save_path", default="chatglm-ggml.bin", type=Path, help="Path to save the generated GGML model"
+        "-o", "--save_path", default="chatglm-ggml.bin",
+        type=Path, help="Path to save the generated GGML model"
     )
     parser.add_argument(
         "-t",
