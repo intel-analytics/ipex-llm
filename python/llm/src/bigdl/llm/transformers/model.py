@@ -33,6 +33,14 @@ def save_low_bit(self, *args, **kwargs):
     self.save_pretrained(*args, **kwargs)
 
 
+def convert_forward(m, target_m, new_forward):
+    for _, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            bound_method = new_forward.__get__(sub_m, sub_m.__class__)
+            setattr(sub_m, "forward", bound_method)
+        convert_forward(sub_m, target_m, new_forward)
+
+
 class _BaseAutoModelClass:
 
     HF_MODEL = None
@@ -72,6 +80,9 @@ class _BaseAutoModelClass:
             kwargs["low_cpu_mem_usage"] = True
             # set default torch_dtype='auto'
             kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+            # Avoid tensor parallel F.Linear Operations
+            if "pretraining_tp" in config_dict:
+                kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, *args, **kwargs)
         else:
@@ -79,6 +90,20 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
 
         return model
+
+    @classmethod
+    def optimize(cls, model):
+        from packaging import version
+        from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+        trans_version = transformers.__version__
+        if version.parse(trans_version) >= version.parse("4.31.0"):
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaAttention,
+                llama_attention_forward_4_31,)
+        else:
+            # todo implement 4.28.0 ~ 4.30.2
+            pass
 
     @classmethod
     def load_convert(cls, q_k, *args, **kwargs):
@@ -91,6 +116,8 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_quant(model, qtype)
         model.config.update({"bigdl_transformers_low_bit": q_k})
+
+        cls.optimize(model)
 
         # add save_low_bit to pretrained model dynamically
         import types

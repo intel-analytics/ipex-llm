@@ -49,7 +49,8 @@ llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
-               'transformers', 'sentencepiece', 'accelerate']
+               'transformers', 'sentencepiece',
+               'accelerate', 'tabulate']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -75,6 +76,8 @@ windows_binarys = [
     "quantize-gptneox_vnni.exe",
     "quantize-bloom_vnni.exe",
     "quantize-starcoder_vnni.exe",
+    
+    "main-chatglm_vnni.exe",
 ]
 linux_binarys = [
     # "libllama_avx.so",
@@ -101,6 +104,8 @@ linux_binarys = [
     "main-gptneox",
     "main-bloom",
     "main-starcoder",
+    
+    "main-chatglm_vnni",
 ]
 
 
@@ -211,6 +216,8 @@ def setup_package():
     # copy built files for github workflow
     for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
         print(f'Copy workflow built file: {built_file}')
+        if change_permission:
+            os.chmod(built_file, 0o775)
         shutil.copy(built_file, libs_dir)
 
     lib_urls = obtain_lib_urls()

@@ -41,10 +41,18 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Update Git
+        shell: bash
+        run: |
+          yum -y remove git
+          yum -y remove git-*
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm || true
+          yum -y install git
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Install Build Environment
         shell: bash
         run: |
@@ -72,6 +80,33 @@ jobs:
           mv build/main-starcoder release/main-starcoder_avx2
           mv build/quantize-starcoder release/quantize-starcoder
           mv build/libstarcoder.so release/libstarcoder_avx2.so
+      - name: Download cmake
+        shell: bash
+        run: |
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          cd ..
+          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
+            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
+            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
+              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+            fi
+          else
+            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+          fi
+          tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
+      - name: Build Chatglm
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          cd src/chatglm
+          scl enable devtoolset-11 "$cmake_path -B build"
+          scl enable devtoolset-11 "$cmake_path --build build --config Release"
+      - name: Move Chatglm binaries
+        shell: bash
+        run: |
+          mv src/chatglm/build/main release/main-chatglm_vnni
+
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -102,10 +137,18 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Update Git
+        shell: bash
+        run: |
+          yum -y remove git
+          yum -y remove git-*
+          yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm || true
+          yum -y install git
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Install Build Environment
         shell: bash
         run: |
@@ -133,6 +176,28 @@ jobs:
           mv build/main-starcoder release/main-starcoder_avx512
           mv build/quantize-starcoder release/quantize-starcoder_avx512
           mv build/libstarcoder.so release/libstarcoder_avx512.so
+      # - name: Download cmake
+      #   shell: bash
+      #   run: |
+      #     export http_proxy=${HTTP_PROXY}
+      #     export https_proxy=${HTTPS_PROXY}
+      #     cd ..
+      #     if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
+      #       actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
+      #       if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
+      #         wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+      #       fi
+      #     else
+      #       wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+      #     fi
+      #     tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
+      # - name: Build Chatglm
+      #   shell: bash
+      #   run: |
+      #     cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+      #     cd src/chatglm
+      #     scl enable devtoolset-11 "$cmake_path -B build"
+      #     scl enable devtoolset-11 "$cmake_path --build build --config Release"
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -168,6 +233,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:
@@ -210,6 +276,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: 'recursive'
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:
@@ -241,7 +308,16 @@ jobs:
           # mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
           mv build/Release/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
           mv build/Release/starcoder.dll release/libstarcoder_vnni.dll
-
+      - name: Build Chatglm
+        shell: powershell
+        run: |
+          cd src/chatglm
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release
+      - name: Move Chatglm binaries
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/main.exe release/main-chatglm_vnni.exe
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
