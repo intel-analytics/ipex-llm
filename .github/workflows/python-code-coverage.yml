@@ -95,6 +95,7 @@ jobs:
           conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate coverage-env37
           pip install bigdl bigdl-dllib bigdl-orca pyspark 
+          pip install cryptography keras caffe h5py onnx
           pip install pytest
           pip install coverage
 
