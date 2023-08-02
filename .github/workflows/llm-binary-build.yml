@@ -60,26 +60,6 @@ jobs:
           yum install -y centos-release-scl
           yum install -y devtoolset-11
           yum install -y sshpass netcat
-      - name: Build binary
-        shell: bash
-        run: |
-          scl enable devtoolset-11 'make'
-      - name: Move release binary
-        shell: bash
-        run: |
-          mkdir release
-          mv build/main-bloom release/main-bloom_avx2
-          mv build/quantize-bloom release/quantize-bloom
-          mv build/libbloom.so release/libbloom_avx2.so
-          mv build/main-llama release/main-llama_avx2
-          mv build/quantize-llama release/quantize-llama
-          mv build/libllama.so release/libllama_avx2.so
-          mv build/main-gptneox release/main-gptneox_avx2
-          mv build/quantize-gptneox release/quantize-gptneox
-          mv build/libgptneox.so release/libgptneox_avx2.so
-          mv build/main-starcoder release/main-starcoder_avx2
-          mv build/quantize-starcoder release/quantize-starcoder
-          mv build/libstarcoder.so release/libstarcoder_avx2.so
       - name: Download cmake
         shell: bash
         run: |
@@ -95,6 +75,32 @@ jobs:
             wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
           fi
           tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
+      - name: Build binary
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          scl enable devtoolset-11 '$cmake_path .'
+          scl enable devtoolset-11 "$cmake_path --build . --config Release"
+      - name: Move release binary
+        shell: bash
+        run: |
+          mkdir release
+          mv build/main-bloom release/main-bloom
+          mv build/libbloom-api.so release/libbloom-api.so
+          mv build/quantize-bloom release/quantize-bloom
+          mv build/libbloom.so release/libbloom_avx2.so
+          mv build/main-llama release/main-llama
+          mv build/libllama-api.so release/libllama-api.so
+          mv build/quantize-llama release/quantize-llama
+          mv build/libllama.so release/libllama_avx2.so
+          mv build/main-gptneox release/main-gptneox
+          mv build/libgptneox-api.so release/libgptneox-api.so
+          mv build/quantize-gptneox release/quantize-gptneox
+          mv build/libgptneox.so release/libgptneox_avx2.so
+          mv build/main-starcoder release/main-starcoder
+          mv build/libstarcoder-api.so release/libstarcoder-api.so
+          mv build/quantize-starcoder release/quantize-starcoder
+          mv build/libstarcoder.so release/libstarcoder_avx2.so
       - name: Build Chatglm
         shell: bash
         run: |
@@ -156,41 +162,39 @@ jobs:
           yum install -y centos-release-scl
           yum install -y devtoolset-11
           yum install -y sshpass netcat
+      - name: Download cmake
+        shell: bash
+        run: |
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          cd ..
+          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
+            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
+            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
+              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+            fi
+          else
+            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+          fi
+          tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
       - name: Build binary
         shell: bash
         run: |
-          scl enable devtoolset-11 'make'
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          scl enable devtoolset-11 '$cmake_path .'
+          scl enable devtoolset-11 "$cmake_path --build . --config Release"
       - name: Move release binary
         shell: bash
         run: |
           mkdir release
-          mv build/main-bloom release/main-bloom_avx512
           mv build/quantize-bloom release/quantize-bloom_avx512
           mv build/libbloom.so release/libbloom_avx512.so
-          mv build/main-llama release/main-llama_avx512
           mv build/quantize-llama release/quantize-llama_avx512
           mv build/libllama.so release/libllama_avx512.so
-          mv build/main-gptneox release/main-gptneox_avx512
           mv build/quantize-gptneox release/quantize-gptneox_avx512
           mv build/libgptneox.so release/libgptneox_avx512.so
-          mv build/main-starcoder release/main-starcoder_avx512
           mv build/quantize-starcoder release/quantize-starcoder_avx512
           mv build/libstarcoder.so release/libstarcoder_avx512.so
-      # - name: Download cmake
-      #   shell: bash
-      #   run: |
-      #     export http_proxy=${HTTP_PROXY}
-      #     export https_proxy=${HTTPS_PROXY}
-      #     cd ..
-      #     if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
-      #       actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
-      #       if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
-      #         wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-      #       fi
-      #     else
-      #       wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-      #     fi
-      #     tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
       # - name: Build Chatglm
       #   shell: bash
       #   run: |
