@@ -140,7 +140,7 @@ jobs:
           fi
           conda create -n coverage-env39 python=3.9 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate coverage-env39
-          pip install bigdl-llm[all]
+          pip install --pre --upgrade bigdl-llm[all]
           pip install pytest
           pip install coverage
 
