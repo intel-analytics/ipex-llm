@@ -26,30 +26,11 @@ jobs:
     runs-on: ["self-hosted", "Windows"]
     needs: llm-cpp-build
     steps:
-      - name: Set environment variables
+      - name: Set model directories
         shell: bash
         run: |
           echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
           echo "INT4_CKPT_DIR=$(pwd)/../llm/converted-models" >> "$GITHUB_ENV"
-          echo $ORIGIN_DIR
-
-          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf" >> "$GITHUB_ENV"
-          echo "GPTNEOX_ORIGIN_PATH=${ORIGIN_DIR}/gptneox-7b-redpajama-bf16" >> "$GITHUB_ENV"
-          echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloomz-7b1" >> "$GITHUB_ENV"
-          echo "STARCODER_ORIGIN_PATH=${ORIGIN_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
-
-          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_7b_q4_0.bin" >> "$GITHUB_ENV"
-          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_redpajama_7b_q4_0.bin" >> "$GITHUB_ENV"
-          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
-          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
-      - name: Test env
-        shell: bash
-        run: |
-          echo $ORIGIN_DIR
-          echo $LLAMA_ORIGIN_PATH
-          echo $LLAMA_INT4_CKPT_PATH
-          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf"
-          echo "LLAMA_ORIGIN_PATH=$ORIGIN_DIR/llama-7b-hf"
       - name: Create model directories
         shell: bash
         run: |
@@ -59,6 +40,19 @@ jobs:
           if [ ! -d $INT4_CKPT_DIR];then
             mkdir -p $INT4_CKPT_DIR
           fi
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf" >> "$GITHUB_ENV"
+          echo "GPTNEOX_ORIGIN_PATH=${ORIGIN_DIR}/gptneox-7b-redpajama-bf16" >> "$GITHUB_ENV"
+          echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloomz-7b1" >> "$GITHUB_ENV"
+          echo "STARCODER_ORIGIN_PATH=${ORIGIN_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
+
+          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_redpajama_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
