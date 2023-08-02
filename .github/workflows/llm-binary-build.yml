@@ -79,7 +79,7 @@ jobs:
         shell: bash
         run: |
           cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          scl enable devtoolset-11 '$cmake_path -B build'
+          scl enable devtoolset-11 "$cmake_path -B build"
           scl enable devtoolset-11 "$cmake_path --build build --config Release"
       - name: Move release binary
         shell: bash
@@ -181,7 +181,7 @@ jobs:
         shell: bash
         run: |
           cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          scl enable devtoolset-11 '$cmake_path -B build'
+          scl enable devtoolset-11 "$cmake_path -B build"
           scl enable devtoolset-11 "$cmake_path --build build --config Release"
       - name: Move release binary
         shell: bash
