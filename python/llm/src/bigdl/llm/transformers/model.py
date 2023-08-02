@@ -28,7 +28,6 @@ import sys
 import importlib
 
 
-
 def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"

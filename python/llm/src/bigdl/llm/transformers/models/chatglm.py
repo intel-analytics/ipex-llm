@@ -98,19 +98,20 @@ def chatglm_attention_forward_8eb45c(
             dim=-1,
         )
         query_layer = query_layer.view(
-            query_layer.size()[:-1] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head)
+            query_layer.size()[:-1] + (self.num_attention_heads_per_partition,
+                                       self.hidden_size_per_attention_head)
         )
         key_layer = key_layer.view(
-            key_layer.size()[:-1] + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head)
+            key_layer.size()[:-1] + (self.num_multi_query_groups_per_partition,
+                                     self.hidden_size_per_attention_head)
         )
         value_layer = value_layer.view(
             value_layer.size()[:-1]
             + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head)
         )
     else:
-        new_tensor_shape = mixed_x_layer.size()[:-1] + \
-                            (self.num_attention_heads_per_partition,
-                            3 * self.hidden_size_per_attention_head)
+        new_tensor_shape = mixed_x_layer.size()[:-1] + (self.num_attention_heads_per_partition,
+                                                        3 * self.hidden_size_per_attention_head)
         mixed_x_layer = mixed_x_layer.view(*new_tensor_shape)
 
         # [sq, b, np, 3 * hn] --> 3 [sq, b, np, hn]
@@ -120,25 +121,24 @@ def chatglm_attention_forward_8eb45c(
     if rotary_pos_emb is not None:
         query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
         key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
-    
+
     cur_length, batch_size = query_layer.shape[0], query_layer.shape[1]
 
     if self.multi_query_attention:
         key_length = key_layer.size(0)
+        query_group_size = self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition
         key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
-        key_layer = key_layer.expand(
-            -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
-        )
-        key_layer = key_layer.contiguous().view(
-            (batch_size, self.num_attention_heads_per_partition, key_length, self.hidden_size_per_attention_head)
-        )
+        key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
+        key_layer = key_layer.contiguous().view((batch_size,
+                                                 self.num_attention_heads_per_partition,
+                                                 key_length,
+                                                 self.hidden_size_per_attention_head))
         value_layer = value_layer.permute(1, 2, 0, 3).unsqueeze(-3)
-        value_layer = value_layer.expand(
-            -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
-        )
-        value_layer = value_layer.contiguous().view(
-            (batch_size, self.num_attention_heads_per_partition, key_length, self.hidden_size_per_attention_head)
-        )
+        value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
+        value_layer = value_layer.contiguous().view((batch_size,
+                                                     self.num_attention_heads_per_partition,
+                                                     key_length,
+                                                     self.hidden_size_per_attention_head))
 
     # adjust key and value for inference
     if kv_cache is not None:
@@ -147,10 +147,14 @@ def chatglm_attention_forward_8eb45c(
 
         if past_length + cur_length > self.max_cache_length:
             self.max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            self.kv_cache = (torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                         self.max_cache_length, self.hidden_size_per_attention_head,),
-                             torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                         self.max_cache_length, self.hidden_size_per_attention_head,))
+            self.kv_cache = (torch.empty(batch_size,
+                                         self.num_attention_heads_per_partition,
+                                         self.max_cache_length,
+                                         self.hidden_size_per_attention_head,),
+                             torch.empty(batch_size,
+                                         self.num_attention_heads_per_partition,
+                                         self.max_cache_length,
+                                         self.hidden_size_per_attention_head,))
             self.kv_cache[0][:, :, :past_length, :] = cache_k
             self.kv_cache[1][:, :, :past_length, :] = cache_v
         self.kv_cache[0][:, :, past_length:past_length + cur_length, :] = key_layer
@@ -163,13 +167,12 @@ def chatglm_attention_forward_8eb45c(
         self.max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
         self.kv_cache = (torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                        self.max_cache_length, self.hidden_size_per_attention_head,),
-                            torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                        self.max_cache_length, self.hidden_size_per_attention_head,))
+                                     self.max_cache_length, self.hidden_size_per_attention_head,),
+                         torch.empty(batch_size, self.num_attention_heads_per_partition,
+                                     self.max_cache_length, self.hidden_size_per_attention_head,))
         self.kv_cache[0][:, :, :cur_length, :] = key_layer
         self.kv_cache[1][:, :, :cur_length, :] = value_layer
-    
-        
+
     if use_cache:
         kv_cache = (key_layer, value_layer)
     else:
@@ -195,13 +198,17 @@ def cross_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attenti
     if query_layer.size(0) > 1 and pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
-                                                                                is_causal=True)
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             is_causal=True)
         else:
             if attention_mask is not None:
                 attention_mask = ~attention_mask
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
-                                                                                attention_mask)
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             attention_mask)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
         context_layer = context_layer.reshape(*new_context_layer_shape)
@@ -209,7 +216,8 @@ def cross_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attenti
         # Raw attention scores
 
         # [b, np, sq, sk]
-        output_size = (query_layer.size(1), query_layer.size(2), query_layer.size(0), key_layer.size(2))
+        output_size = (query_layer.size(1), query_layer.size(2),
+                       query_layer.size(0), key_layer.size(2))
 
         # [sq, b, np, hn] -> [sq, b * np, hn]
         query_layer = query_layer.view(output_size[2], output_size[0] * output_size[1], -1)
@@ -218,7 +226,8 @@ def cross_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attenti
 
         # preallocting input tensor: [b * np, sq, sk]
         matmul_input_buffer = torch.empty(
-            output_size[0] * output_size[1], output_size[2], output_size[3], dtype=query_layer.dtype,
+            output_size[0] * output_size[1],
+            output_size[2], output_size[3], dtype=query_layer.dtype,
             device=query_layer.device
         )
 
@@ -264,7 +273,8 @@ def cross_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attenti
         # [sk, b, np, hn] --> [b, np, sq, hn]
 
         # context layer shape: [b, np, sq, hn]
-        output_size = (value_layer.size(0), value_layer.size(1), query_layer.size(0), value_layer.size(3))
+        output_size = (value_layer.size(0), value_layer.size(1),
+                       query_layer.size(0), value_layer.size(3))
         # change view [sk, b * np, hn]
         value_layer = value_layer.view(output_size[0] * output_size[1], value_layer.size(2), -1)
         # change view [b * np, sq, sk]
