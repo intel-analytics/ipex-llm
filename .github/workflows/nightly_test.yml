@@ -1483,7 +1483,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Friesian-Python-Py37-Spark3-Pip:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3-Pip' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-Py37-Spark3-Pip' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     
     steps:
@@ -1499,17 +1499,6 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Friesian-Python-Py37-Spark3-Pip.json
-        type: job
-        job-name: Friesian-Python-Py37-Spark3-Pip
-        runner-hosted-on: 'Shanghai'
 
   Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
