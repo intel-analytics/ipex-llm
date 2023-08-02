@@ -26,6 +26,9 @@ jobs:
       #   uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
       - name: Run test
         run: |
+          if [ -d "/opt/conda/envs/coverage-env37" ];then
+            rm -rf /opt/conda/envs/coverage-env37
+          fi
           conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate coverage-env37
           
