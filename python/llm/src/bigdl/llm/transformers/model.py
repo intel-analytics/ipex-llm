@@ -23,7 +23,7 @@ from .utils import extract_local_archive_file, \
     get_local_shard_files, \
     fix_key
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -166,10 +166,9 @@ class _BaseAutoModelClass:
         variant = kwargs.get("variant", None)
 
         from .convert import ggml_convert_quant
-        model = cls.HF_Model.from_pretrained(*args, **kwargs)
-        print("Note: If there are warnings during the model loading process, "
-              "they can be safely ignored; "
-              "the model will be loaded with INT4 optimizations applied.")
+
+        with MuteHFLogger(logger=transformers.modeling_utils.logger):
+            model = cls.HF_Model.from_pretrained(*args, **kwargs)
 
         # add save_low_bit to pretrained model dynamically
         import types
