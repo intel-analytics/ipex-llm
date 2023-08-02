@@ -17,8 +17,10 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         pip install pyspark==3.4.1 
-        chmod a+x python/dev/release_default_linux_spark3.sh
-        ./python/dev/release_default_linux_spark3.sh default false false
+        pip install pytest coverage
+	      cd python/friesian
+	      coverage run -m pytest -v test/bigdl/friesian
+	      coverage report -i
         
         # install dllib
         pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
