@@ -116,7 +116,6 @@ jobs:
       - name: Run test
         run: |
           pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
-          pip install jep
           pip install openvino
           pip install mxnet
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
