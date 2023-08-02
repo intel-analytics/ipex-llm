@@ -114,12 +114,12 @@ jobs:
         shell: bash
         run: |
           echo "Running the convert models tests..."
-          python -m pytest -s .\test\convert\test_convert_model.py
+          python -m pytest -s python/llm/test/inference/test_call_models.py
       - name: Test model inference
         shell: bash
         run: |
           echo "Running the inference models tests..."
-          python -m pytest -s .\test\inference\test_call_models.py
+          python -m pytest -s python/llm/test/inference/test_call_models.py
       - name: Clean up environment
         shell: bash
         run: |
