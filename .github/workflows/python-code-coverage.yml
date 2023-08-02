@@ -96,6 +96,7 @@ jobs:
           source activate coverage-env37
           pip install bigdl bigdl-dllib bigdl-orca pyspark 
           pip install cryptography keras h5py onnx
+          pip install tensorflow
           pip install pytest
           pip install coverage
 
@@ -112,15 +113,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Setup env
+        uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
       - name: Run test
         run: |
-          if [ -d "/opt/conda/envs/coverage-env37" ];then
-            rm -rf /opt/conda/envs/coverage-env37
-          fi
-          conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source activate coverage-env37
-          pip install bigdl bigdl-dllib bigdl-orca pyspark 
-          pip install cryptography keras caffe h5py onnx
+          
           pip install pytest
           pip install coverage
 
@@ -129,7 +126,6 @@ jobs:
           coverage report -i
           
           source deactivate
-          conda remove -n coverage-env37 -y --all
 
 
   llm:
