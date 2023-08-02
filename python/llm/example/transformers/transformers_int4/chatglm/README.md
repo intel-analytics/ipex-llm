@@ -4,7 +4,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 
 > **Note**: If you want to download the Hugging Face *Transformers* model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git).
 >
-> BigDL-LLM optimizes the *Transformers* model in INT4 precision during loading, so that no explicit conversion is needed.
+> BigDL-LLM optimizes the *Transformers* model in INT4 precision at runtime, so that no explicit conversion is needed.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
