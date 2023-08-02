@@ -81,8 +81,31 @@ jobs:
           source deactivate
           conda remove -n coverage-env37 -y --all
           
+  Dllib:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run test
+        run: |
+          if [ -d "/opt/conda/envs/coverage-env37" ];then
+            rm -rf /opt/conda/envs/coverage-env37
+          fi
+          conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          source activate coverage-env37
+          pip install -y bigdl bigdl-dllib bigdl-orca pyspark 
+          pip install pytest
+          pip install coverage
+
+          cd python/dllib
+          coverage run -m pytest -v test/bigdl
+          coverage report -i
           
+          source deactivate
+          conda remove -n coverage-env37 -y --all
           
+
+  
   Orca:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     steps:
