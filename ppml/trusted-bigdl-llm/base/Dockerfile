@@ -28,6 +28,16 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
     patch -R /usr/local/lib/python3.9/dist-packages/bigdl/llm/utils/utils.py /opt/utils.diff && \
     patch -R /usr/local/bin/llm-cli /opt/llm_cli.diff && \
     # Gramine commands
-    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs
+    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
+    cd /ppml/ && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    # Install FastChat from source requires PEP 660 support
+    python3 get-pip.py && \
+    rm get-pip.py && \
+    # Install FastChat
+    git clone https://github.com/analytics-zoo/FastChat.git && \
+    cd /ppml/FastChat && \
+    git checkout dev-2023-08-01 && \
+    pip install -e . && \
 
 WORKDIR /ppml
