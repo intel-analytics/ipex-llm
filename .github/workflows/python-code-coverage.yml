@@ -58,6 +58,7 @@ jobs:
           source activate coverage-env37
           pip install --pre --upgrade bigdl-nano[pytorch,inference]
           pip install pytest
+          pip install tensorflow
 
           # required by Ray test
           pip install google-api-core==2.8.2
