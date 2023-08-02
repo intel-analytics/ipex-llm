@@ -324,3 +324,58 @@ jobs:
           name: windows-avx2-vnni
           path: |
             release
+
+  check-windows-avx-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-avx
+
+  windows-build-avx:
+    runs-on: [self-hosted, Windows]
+    needs: check-windows-avx-artifact
+    if: needs.check-windows-avx-artifact.outputs.if-exists == 'false'
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          token: ${{ env.github_access_token }}
+          submodules: 'recursive'
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+      - name: Add cmake to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Build binary
+        shell: powershell
+        run: |
+          cmake -DONLYAVX=ON .
+          cmake --build . --config Release
+      - name: Move release binary
+        shell: powershell
+        run: |
+          if (Test-Path ./release) { rm -r -fo release }
+          mkdir release
+          mv build/Release/bloom.dll release/libbloom_avx.dll
+
+          mv build/Release/llama.dll release/libllama_avx.dll
+
+          mv build/Release/gptneox.dll release/libgptneox_avx.dll
+
+          mv build/Release/starcoder.dll release/libstarcoder_avx.dll
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-avx
+          path: |
+            release
