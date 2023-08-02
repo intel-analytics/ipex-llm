@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  #pull_request:
-    #branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
   schedule:
     - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
@@ -99,7 +99,7 @@ permissions:
 
 jobs:
   Orca-Basic-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Basic-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Basic-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -113,17 +113,7 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Orca-Basic-Py37-Spark3.json
-        type: job
-        job-name: Orca-Basic-Py37-Spark3
-        runner-hosted-on: 'Shanghai'
+
 
   Orca-Basic-PyTorch-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Basic-PyTorch-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
