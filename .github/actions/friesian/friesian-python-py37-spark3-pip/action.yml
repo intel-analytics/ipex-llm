@@ -17,11 +17,7 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         pip install pyspark==3.4.1 
-        pip install pytest coverage
-	      cd python/friesian
-	      coverage run -m pytest -v test/bigdl/friesian
-	      coverage report -i
-        
+
         # install dllib
         pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
         # install orca
@@ -29,19 +25,12 @@ runs:
         # install friesian
         pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
         
-        # download model from ftp
-        if [ -f ./distilbert-base-uncased ]
-        then
-            echo "model distilbert-base-uncased already exists"
-        else
-            wget $FTP_URI/analytics-zoo-models/distilbert-base-uncased.zip
-            unzip distilbert-base-uncased.zip
-        fi
-        python -m pytest -v python/friesian/test/bigdl/friesian/feature/
         
-        # remove the model
-        rm -rf ./distilbert-base-uncased
-        rm -f ./distilbert-base-uncased.zip
+        pip install pytest coverage
+	cd python/friesian
+	coverage run -m pytest -v test/bigdl/friesian
+	coverage report -i
+        
         
         source deactivate
       env:
