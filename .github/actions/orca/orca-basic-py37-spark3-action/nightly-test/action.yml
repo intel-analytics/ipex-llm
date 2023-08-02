@@ -10,7 +10,7 @@ runs:
         export SPARK_LOCAL_HOSTNAME=localhost
         
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
-
+        pip install orca[automl] orca[ray]
         pip list
         pip install pytest coverage
         cd python/orca
