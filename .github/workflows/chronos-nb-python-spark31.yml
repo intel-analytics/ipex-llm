@@ -35,6 +35,7 @@ jobs:
           conda create -n chronos-nb-env -y python=3.8 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-nb-env
           pip install pytest
+          pip install bigdl-chronos-spark3[pytorch,tensorflow,inference,automl,distributed]
           apt-get update
           apt-get install -y libgl1 patchelf
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
