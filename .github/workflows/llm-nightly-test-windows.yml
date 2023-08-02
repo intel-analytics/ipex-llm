@@ -19,19 +19,6 @@ on:
   workflow_dispatch:
   workflow_call:
 
-env:
-  MODEL_DIR: ../llm
-  INT4_CKPT_DIR: ../llm/converted_models
-  LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
-  GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
-  BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
-  STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
-  ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
-  ORIGINAL_REPLIT_CODE_PATH: ./llm/replit-code-v1-3b/
-  ORIGINAL_WHISPER_TINY_PATH: ./llm/whisper-tiny/
-  SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
-  LLM_DIR: ./llm
-
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
@@ -39,10 +26,30 @@ jobs:
     runs-on: ["self-hosted", "Windows"]
     needs: llm-cpp-build
     steps:
-      - name: Add test info to env
+      - name: Set environment variables
         shell: bash
         run: |
-          echo "test_info=12345" >> "$GITHUB_ENV"
+          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
+          echo "INT4_CKPT_DIR=$(pwd)/../llm/converted-models" >> "$GITHUB_ENV"
+
+          echo "LLAMA_ORIGIN_PATH=$ORIGIN_DIR/llama-7b-hf" >> "$GITHUB_ENV"
+          echo "GPTNEOX_ORIGIN_PATH=$ORIGIN_DIR/gptneox-7b-redpajama-bf16" >> "$GITHUB_ENV"
+          echo "BLOOM_ORIGIN_PATH=$ORIGIN_DIR/bloomz-7b1" >> "$GITHUB_ENV"
+          echo "STARCODER_ORIGIN_PATH=$ORIGIN_DIR/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
+
+          echo "LLAMA_INT4_CKPT_PATH=$INT4_CKPT_DIR/bigdl_llm_llama_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "GPTNEOX_INT4_CKPT_PATH=$INT4_CKPT_DIR/bigdl_llm_redpajama_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "BLOOM_INT4_CKPT_PATH=$INT4_CKPT_DIR/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "STARCODER_INT4_CKPT_PATH=$INT4_CKPT_DIR/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
+      - name: Create model directories
+        shell: bash
+        run: |
+          if [ ! -d $ORIGIN_DIR];then
+            mkdir -p $ORIGIN_DIR
+          fi
+          if [ ! -d $INT4_CKPT_DIR];then
+            mkdir -p $INT4_CKPT_DIR
+          fi
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -62,9 +69,55 @@ jobs:
           pip install requests
           bash python/llm/dev/release_default_windows.sh default false
           whl_name=$(ls python/llm/dist)
-          pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
+          pip install -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
           pip install pytest
-      - name: Get test info
+      - name: Download origin models
         shell: bash
         run: |
-          echo $test_info
+          if [ ! -d $LLAMA_ORIGIN_PATH ]; then
+            echo "Directory $LLAMA_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/llama-7b-hf -P $ORIGIN_DIR
+          fi
+          if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
+            echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
+          fi
+          if [ ! -d $BLOOM_ORIGIN_PATH ]; then
+            echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/bloomz-7b1 -P $ORIGIN_DIR
+          fi
+          if [ ! -d $STARCODER_ORIGIN_PATH ]; then
+            echo "Directory $STARCODER_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gpt_bigcode-santacoder -P $ORIGIN_DIR
+          fi
+
+          # if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
+          # echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          #   wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          # fi
+          # if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
+          #   echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          #   wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          # fi
+          # if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
+          #   echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          #   wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          # fi
+          # if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
+          #   echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          #   wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          # fi
+      - name: Test converting models
+        shell: bash
+        run: |
+          echo "Running the convert models tests..."
+          python -m pytest -s .\test\convert\test_convert_model.py
+      - name: Test model inference
+        shell: bash
+        run: |
+          echo "Running the inference models tests..."
+          python -m pytest -s .\test\inference\test_call_models.py
+      - name: Clean up environment
+        shell: bash
+        run: |
+          pip uninstall bigdl-llm -y
