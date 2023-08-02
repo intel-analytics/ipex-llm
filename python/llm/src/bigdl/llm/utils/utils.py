@@ -44,16 +44,14 @@ def get_shared_lib_info(lib_base_name: str):
     else:
         invalidInputError(False, "Unsupported platform.")
 
-    cpuflags = get_cpu_flags()
-
     # Construct the paths to the possible shared library names (python/llm/src/bigdl/llm/libs)
     _base_path = pathlib.Path(__file__).parent.parent.resolve()
     _base_path = _base_path / 'libs'
     # Searching for the library in the current directory under the name "lib{lib_base_name}"
     # (default name for llmcpp) and "{lib_base_name}" (default name for this repo)
     _lib_paths = [
-        _base_path / f"lib{lib_base_name}{cpuflags}{lib_ext}",
-        _base_path / f"{lib_base_name}{cpuflags}{lib_ext}",
+        _base_path / f"lib{lib_base_name}-api{lib_ext}",
+        _base_path / f"{lib_base_name}-api{lib_ext}",
     ]
 
     return _base_path, _lib_paths
