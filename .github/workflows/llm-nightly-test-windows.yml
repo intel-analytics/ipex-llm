@@ -114,7 +114,7 @@ jobs:
         shell: bash
         run: |
           echo "Running the convert models tests..."
-          python -m pytest -s python/llm/test/inference/test_call_models.py
+          python -m pytest -s python/llm/test/convert/test_convert_model.py
       - name: Test model inference
         shell: bash
         run: |
