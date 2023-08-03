@@ -14,6 +14,27 @@
 # limitations under the License.
 #
 
+# Some parts of this file is adapted from
+# https://github.com/TimDettmers/bitsandbytes/blob/0.39.1/bitsandbytes/nn/modules.py
+# which is licensed under the Apache license:
+#
+# coding=utf-8
+# Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
+# Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import gc
 import transformers
 from transformers.configuration_utils import PretrainedConfig
@@ -26,10 +47,13 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
 
 
+LOWBIT_HINT = "Please use from_pretrained" \
+              " with load_in_4bit or load_in_low_bit to get a low-bit model , and " \
+              " serialize the model using save_low_bit first."
+
 def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
-                      f"Detected this model is not a low-bit model, please use from_pretrained's"
-                      f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+                      "Detected this model is not a low-bit model, " + LOWBIT_HINT)
     self.save_pretrained(*args, **kwargs)
 
 
@@ -136,9 +160,7 @@ class _BaseAutoModelClass:
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
 
         invalidInputError(bigdl_transformers_low_bit,
-                          "Detect this model is not a low-bit model, Please use from_pretrained"
-                          " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
-                          " serialize the model using save_low_bit first.")
+                          "Detect this model is not a low-bit model, " + LOWBIT_HINT)
 
         invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
@@ -213,8 +235,8 @@ class _BaseAutoModelClass:
                 error_msg = "\n\t".join(error_msgs)
                 if "size mismatch" in error_msg:
                     error_msg += (
-                        "\n\tYou may consider adding `ignore_mismatched_sizes=True`"
-                        " in the model `from_pretrained` method."
+                        "\n\tYou are trying to load a wrong or "
+                        "possibly corrupt model file, " + LOWBIT_HINT
                     )
                 invalidInputError(False, "Error(s) in loading state_dict"
                                          f"for {model.__class__.__name__}:\n\t{error_msg}")
