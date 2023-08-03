@@ -20,6 +20,6 @@ runs:
         source $CONDA_HOME/bin/activate bigdl-llm-test
         cd python/llm/example/transformers/transformers_int4/llama2
 
-        std=$(python generate.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH)
-        echo $std
+        python generate.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH
+        
         source $CONDA_HOME/bin/deactivate
