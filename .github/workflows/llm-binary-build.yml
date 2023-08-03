@@ -186,15 +186,15 @@ jobs:
       - name: Move avx512 release binary
         shell: bash
         run: |
-          mkdir avx512release
-          mv build/quantize-bloom avx512release/quantize-bloom_avx512
-          mv build/libbloom.so avx512release/libbloom_avx512.so
-          mv build/quantize-llama avx512release/quantize-llama_avx512
-          mv build/libllama.so avx512release/libllama_avx512.so
-          mv build/quantize-gptneox avx512release/quantize-gptneox_avx512
-          mv build/libgptneox.so avx512release/libgptneox_avx512.so
-          mv build/quantize-starcoder avx512release/quantize-starcoder_avx512
-          mv build/libstarcoder.so avx512release/libstarcoder_avx512.so
+          mkdir avx512_release
+          mv build/quantize-bloom avx512_release/quantize-bloom_avx512
+          mv build/libbloom.so avx512_release/libbloom_avx512.so
+          mv build/quantize-llama avx512_release/quantize-llama_avx512
+          mv build/libllama.so avx512_release/libllama_avx512.so
+          mv build/quantize-gptneox avx512_release/quantize-gptneox_avx512
+          mv build/libgptneox.so avx512_release/libgptneox_avx512.so
+          mv build/quantize-starcoder avx512_release/quantize-starcoder_avx512
+          mv build/libstarcoder.so avx512_release/libstarcoder_avx512.so
       - name: Build avx2 binary
         shell: bash
         run: |
@@ -235,19 +235,19 @@ jobs:
         with:
           name: linux-avx512
           path: |
-            avx512release
+            avx512_release
       - name: Archive avx2 build files
         uses: actions/upload-artifact@v3
         with:
           name: linux-avx2
           path: |
-            avx2release
+            avx2_release
       - name: Archive avx build files
         uses: actions/upload-artifact@v3
         with:
           name: linux-avx
           path: |
-            avxrelease
+            avx_release
       - name: Clean up test environment
         shell: bash
         run: |
