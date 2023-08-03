@@ -133,7 +133,7 @@ jobs:
         id: check_artifact
         uses: xSAVIKx/artifact-exists-action@v0
         with:
-          name: linux-avx512, linux-avx2, linux-avx
+          name: linux-avx512
 
   linux-build-avx512:
     runs-on: [self-hosted, AVX512, centos7]
