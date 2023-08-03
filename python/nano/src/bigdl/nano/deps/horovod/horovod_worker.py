@@ -20,7 +20,8 @@ import sys
 
 
 if __name__ == '__main__':
-    temp_dir = sys.argv[1]
+    temp_dir_input = sys.argv[1]
+    temp_dir = os.path.join(os.path.dirname(temp_dir_input), os.path.basename(temp_dir_input))
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
