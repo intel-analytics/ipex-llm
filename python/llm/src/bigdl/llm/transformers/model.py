@@ -47,7 +47,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
 
 
-LOWBIT_HINT = "Please use from_pretrained" \
+LOWBIT_HINT = "please use from_pretrained" \
               " with load_in_4bit or load_in_low_bit to get a low-bit model , and " \
               " serialize the model using save_low_bit first."
 
