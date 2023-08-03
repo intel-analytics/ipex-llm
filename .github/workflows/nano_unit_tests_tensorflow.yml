@@ -80,8 +80,13 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           pip install pytest
+          pip list
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-inference-tests.sh
           source $CONDA/bin/deactivate
@@ -124,6 +129,10 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
           pip install pytest
@@ -142,6 +151,10 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           pip install pytest
           # fix issue, see https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Overview/known_issues.md#ray-issues
@@ -162,6 +175,10 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           pip install pytest
           pip install ConfigSpace
@@ -182,6 +199,10 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           pip install pytest
           source bigdl-nano-init
@@ -199,6 +220,10 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           pip install pytest
           source bigdl-nano-init
@@ -216,6 +241,10 @@ jobs:
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
             bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
+            if [[ "${{matrix.tf-version}}" == "tensorflow_210" ]]; then
+              pip install tensorflow==2.10.0
+              pip install intel-extension-for-tensorflow[cpu]
+            fi
           fi
           pip install pytest
           source bigdl-nano-init
