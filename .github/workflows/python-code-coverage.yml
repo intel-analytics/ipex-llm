@@ -215,4 +215,7 @@ jobs:
           coverage report -i
       - name: Coverage Report
         if: ${{ always() }}
-        run: coverage report -i
+        run: |
+          pwd
+          ls -al
+          coverage report -i
