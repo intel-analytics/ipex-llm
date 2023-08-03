@@ -126,7 +126,8 @@ def chatglm_attention_forward_8eb45c(
 
     if self.multi_query_attention:
         key_length = key_layer.size(0)
-        query_group_size = self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition
+        query_group_size = self.num_attention_heads_per_partition // \
+            self.num_multi_query_groups_per_partition
         key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
         key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
         key_layer = key_layer.contiguous().view((batch_size,
@@ -193,7 +194,7 @@ def chatglm_attention_forward_8eb45c(
     return output, kv_cache
 
 
-def cross_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
+def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
     pytorch_major_version = int(torch.__version__.split('.')[0])
     if query_layer.size(0) > 1 and pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)

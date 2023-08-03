@@ -35,14 +35,6 @@ def save_low_bit(self, *args, **kwargs):
     self.save_pretrained(*args, **kwargs)
 
 
-def convert_forward(m, target_m, new_forward):
-    for _, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
-            bound_method = new_forward.__get__(sub_m, sub_m.__class__)
-            setattr(sub_m, "forward", bound_method)
-        convert_forward(sub_m, target_m, new_forward)
-
-
 class _BaseAutoModelClass:
 
     HF_MODEL = None
@@ -94,33 +86,6 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def optimize(cls, model):
-        from packaging import version
-        from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
-        trans_version = transformers.__version__
-        if version.parse(trans_version) >= version.parse("4.31.0"):
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaAttention,
-                llama_attention_forward_4_31,)
-        else:
-            # todo implement 4.28.0 ~ 4.30.2
-            pass
-
-        if "chatglm2" in model.config._name_or_path:
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward_8eb45c
-            from bigdl.llm.transformers.models.chatglm import cross_attn_forward_8eb45c
-            convert_forward(model,
-                            module.SelfAttention,
-                            chatglm_attention_forward_8eb45c
-                            )
-            convert_forward(model,
-                            module.CoreAttention,
-                            cross_attn_forward_8eb45c)
-
-    @classmethod
     def load_convert(cls, q_k, *args, **kwargs):
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
@@ -131,8 +96,6 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_quant(model, qtype)
         model.config.update({"bigdl_transformers_low_bit": q_k})
-
-        cls.optimize(model)
 
         # add save_low_bit to pretrained model dynamically
         import types

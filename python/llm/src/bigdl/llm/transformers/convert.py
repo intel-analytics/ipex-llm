@@ -40,6 +40,8 @@ import torch.nn as nn
 from accelerate import init_empty_weights
 from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 import warnings
+import transformers
+import importlib
 
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
@@ -124,4 +126,41 @@ def ggml_convert_quant(model, qtype, convert_shape_only=False):
         )
     else:
         model.to(torch.float32)
+
+    model = optimize(model)
     return model
+
+
+def convert_forward(m, target_m, new_forward):
+    for _, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            bound_method = new_forward.__get__(sub_m, sub_m.__class__)
+            setattr(sub_m, "forward", bound_method)
+        convert_forward(sub_m, target_m, new_forward)
+
+
+def optimize(model):
+    from packaging import version
+    from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    trans_version = transformers.__version__
+    if version.parse(trans_version) >= version.parse("4.31.0"):
+        convert_forward(
+            model,
+            transformers.models.llama.modeling_llama.LlamaAttention,
+            llama_attention_forward_4_31,)
+    else:
+        # todo implement 4.28.0 ~ 4.30.2
+        pass
+
+    if "chatglm2" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward_8eb45c
+        from bigdl.llm.transformers.models.chatglm import core_attn_forward_8eb45c
+        convert_forward(model,
+                        module.SelfAttention,
+                        chatglm_attention_forward_8eb45c
+                        )
+        convert_forward(model,
+                        module.CoreAttention,
+                        core_attn_forward_8eb45c)
