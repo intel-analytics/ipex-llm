@@ -15,7 +15,7 @@
 #
 
 # Some parts of this file is adapted from
-# https://github.com/TimDettmers/bitsandbytes/blob/0.39.1/bitsandbytes/nn/modules.py
+# https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_tf_pytorch_utils.py
 # which is licensed under the Apache license:
 #
 # coding=utf-8
@@ -50,6 +50,7 @@ from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
 LOWBIT_HINT = "Please use from_pretrained" \
               " with load_in_4bit or load_in_low_bit to get a low-bit model , and " \
               " serialize the model using save_low_bit first."
+
 
 def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
