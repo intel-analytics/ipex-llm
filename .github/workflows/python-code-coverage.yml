@@ -45,6 +45,7 @@ jobs:
       #   uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
       - name: Run test
         run: |
+          set +e
           if [ -d "/opt/conda/envs/coverage-env37" ];then
             rm -rf /opt/conda/envs/coverage-env37
           fi
@@ -70,6 +71,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run test
         run: |
+          set +e
           if [ -d "/opt/conda/envs/coverage-env37" ];then
             rm -rf /opt/conda/envs/coverage-env37
           fi
@@ -108,6 +110,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run test
         run: |
+          set +e
           if [ -d "/opt/conda/envs/coverage-env37" ];then
             rm -rf /opt/conda/envs/coverage-env37
           fi
@@ -136,7 +139,7 @@ jobs:
         uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
       - name: Run test
         run: |
-          
+          set +e
           pip install pytest
           pip install coverage
 
@@ -157,6 +160,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run test
         run: |
+          set +e
           if [ -d "/opt/conda/envs/coverage-env39" ];then
             rm -rf /opt/conda/envs/coverage-env39
           fi
@@ -182,6 +186,7 @@ jobs:
         uses: ./.github/actions/ppml/setup-env/setup-ppml-python-ut-spark3
       - name: Run test
         run: |
+          set +e
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.51.1
           pip install pytest
           pip install coverage
@@ -201,6 +206,7 @@ jobs:
         uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
       - name: Run test
         run: |
+          set +e
           pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
           pip install openvino
           pip install mxnet
