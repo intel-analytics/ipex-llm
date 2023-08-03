@@ -126,6 +126,9 @@ jobs:
           coverage report -i
           
           source deactivate
+      - name: Coverage Report
+        if: ${{ always() }}
+        run: coverage report -i
 
 
   llm:
@@ -210,3 +213,6 @@ jobs:
           cd python/orca
           coverage run -m pytest -v test/bigdl/orca
           coverage report -i
+      - name: Coverage Report
+        if: ${{ always() }}
+        run: coverage report -i
