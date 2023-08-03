@@ -15,7 +15,26 @@ permissions:
   packages: write
 
 jobs:
-  
+
+
+  Test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      # - name: Setup env
+      #   uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
+      - name: Run test
+        run: |
+          set +e
+          coverage run -m pytest -v test/bigdl/chronos
+          coverage report -i
+          ls -al
+          pwd
+      - name: Run test
+        run: |
+          pwd
+          ls -al
 
   Chronos:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
