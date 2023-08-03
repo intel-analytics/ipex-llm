@@ -22,7 +22,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  check-linux-avx2-artifact:
+  check-linux-avxvnni-artifact:
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -31,12 +31,12 @@ jobs:
         id: check_artifact
         uses: xSAVIKx/artifact-exists-action@v0
         with:
-          name: linux-avx2
+          name: linux-avxvnni
           
-  linux-build-avx2:
+  linux-build-avxvnni:
     runs-on: [self-hosted, AVX2, centos7]
-    needs: check-linux-avx2-artifact
-    if: needs.check-linux-avx2-artifact.outputs.if-exists == 'false'
+    needs: check-linux-avxvnni-artifact
+    if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
@@ -88,19 +88,19 @@ jobs:
           mv build/main-bloom release/main-bloom
           mv build/libbloom-api.so release/libbloom-api.so
           mv build/quantize-bloom release/quantize-bloom
-          mv build/libbloom.so release/libbloom_avx2.so
+          mv build/libbloom.so release/libbloom_avxvnni.so
           mv build/main-llama release/main-llama
           mv build/libllama-api.so release/libllama-api.so
           mv build/quantize-llama release/quantize-llama
-          mv build/libllama.so release/libllama_avx2.so
+          mv build/libllama.so release/libllama_avxvnni.so
           mv build/main-gptneox release/main-gptneox
           mv build/libgptneox-api.so release/libgptneox-api.so
           mv build/quantize-gptneox release/quantize-gptneox
-          mv build/libgptneox.so release/libgptneox_avx2.so
+          mv build/libgptneox.so release/libgptneox_avxvnni.so
           mv build/main-starcoder release/main-starcoder
           mv build/libstarcoder-api.so release/libstarcoder-api.so
           mv build/quantize-starcoder release/quantize-starcoder
-          mv build/libstarcoder.so release/libstarcoder_avx2.so
+          mv build/libstarcoder.so release/libstarcoder_avxvnni.so
       - name: Build Chatglm
         shell: bash
         run: |
@@ -116,7 +116,7 @@ jobs:
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
-          name: linux-avx2
+          name: linux-avxvnni
           path: |
             release
       - name: Clean up test environment
@@ -177,24 +177,52 @@ jobs:
             wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
           fi
           tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
-      - name: Build binary
+      - name: Build avx512 binary
         shell: bash
         run: |
           cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          scl enable devtoolset-11 "$cmake_path -B build"
+          scl enable devtoolset-11 "$cmake_path -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
           scl enable devtoolset-11 "$cmake_path --build build --config Release"
-      - name: Move release binary
+      - name: Move avx512 release binary
         shell: bash
         run: |
-          mkdir release
-          mv build/quantize-bloom release/quantize-bloom_avx512
-          mv build/libbloom.so release/libbloom_avx512.so
-          mv build/quantize-llama release/quantize-llama_avx512
-          mv build/libllama.so release/libllama_avx512.so
-          mv build/quantize-gptneox release/quantize-gptneox_avx512
-          mv build/libgptneox.so release/libgptneox_avx512.so
-          mv build/quantize-starcoder release/quantize-starcoder_avx512
-          mv build/libstarcoder.so release/libstarcoder_avx512.so
+          mkdir avx512_release
+          mv build/quantize-bloom avx512_release/quantize-bloom_avx512
+          mv build/libbloom.so avx512_release/libbloom_avx512.so
+          mv build/quantize-llama avx512_release/quantize-llama_avx512
+          mv build/libllama.so avx512_release/libllama_avx512.so
+          mv build/quantize-gptneox avx512_release/quantize-gptneox_avx512
+          mv build/libgptneox.so avx512_release/libgptneox_avx512.so
+          mv build/quantize-starcoder avx512_release/quantize-starcoder_avx512
+          mv build/libstarcoder.so avx512_release/libstarcoder_avx512.so
+      - name: Build avx2 binary
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          scl enable devtoolset-11 "$cmake_path -DONLYAVX=OFF -DONLYAVX2=ON -B build"
+          scl enable devtoolset-11 "$cmake_path --build build --config Release"
+      - name: Move avx2 release binary
+        shell: bash
+        run: |
+          mkdir avx2_release
+          mv build/libbloom.so avx2_release/libbloom_avx2.so
+          mv build/libllama.so avx2_release/libllama_avx2.so
+          mv build/libgptneox.so avx2_release/libgptneox_avx2.so
+          mv build/libstarcoder.so avx2_release/libstarcoder_avx2.so
+      - name: Build avx binary
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          scl enable devtoolset-11 "$cmake_path -DONLYAVX=ON -DONLYAVX2=OFF -B build"
+          scl enable devtoolset-11 "$cmake_path --build build --config Release"
+      - name: Move avx release binary
+        shell: bash
+        run: |
+          mkdir avx_release
+          mv build/libbloom.so avx_release/libbloom_avx.so
+          mv build/libllama.so avx_release/libllama_avx.so
+          mv build/libgptneox.so avx_release/libgptneox_avx.so
+          mv build/libstarcoder.so avx_release/libstarcoder_avx.so
       # - name: Build Chatglm
       #   shell: bash
       #   run: |
@@ -202,12 +230,24 @@ jobs:
       #     cd src/chatglm
       #     scl enable devtoolset-11 "$cmake_path -B build"
       #     scl enable devtoolset-11 "$cmake_path --build build --config Release"
-      - name: Archive build files
+      - name: Archive avx512 build files
         uses: actions/upload-artifact@v3
         with:
           name: linux-avx512
           path: |
-            release
+            avx512_release
+      - name: Archive avx2 build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-avx2
+          path: |
+            avx2_release
+      - name: Archive avx build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-avx
+          path: |
+            avx_release
       - name: Clean up test environment
         shell: bash
         run: |
