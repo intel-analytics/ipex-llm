@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload ckpt to ftp
         run: |
-          apt-get update && apt install tnftp
+          apt-get update && apt install -y tnftp
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
