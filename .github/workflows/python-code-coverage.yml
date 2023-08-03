@@ -167,6 +167,9 @@ jobs:
           cd python/ppml
           coverage run -m pytest -v test/bigdl/ppml
           coverage report -i
+      - name: Coverage Report
+        if: ${{ always() }}
+        run: coverage report -i
 
   Orca:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
