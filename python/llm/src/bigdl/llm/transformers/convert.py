@@ -164,3 +164,4 @@ def optimize(model):
         convert_forward(model,
                         module.CoreAttention,
                         core_attn_forward_8eb45c)
+    return model
