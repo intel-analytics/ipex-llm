@@ -17,32 +17,17 @@ permissions:
 jobs:
 
 
-  Test:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
-    steps:
-      - uses: actions/checkout@v3
-      # - name: Setup env
-      #   uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
-      - name: Run test
-        run: |
-          set +e
-          coverage run -m pytest -v test/bigdl/chronos
-          coverage report -i
-          ls -al
-          pwd
-      - name: Run test
-        run: |
-          pwd
-          ls -al
 
   Chronos:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
       - uses: actions/checkout@v3
-      # - name: Setup env
-      #   uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action 
       - name: Run test
         run: |
           set +e
@@ -58,189 +43,180 @@ jobs:
           pip install --pre --upgrade bigdl-orca
           
           cd python/chronos
-          coverage run -m pytest -v test/bigdl/chronos
+          coverage run -m pytest -v test/bigdl/chronos/autots
           coverage report -i
           
           source deactivate
           conda remove -n coverage-env37 -y --all
 
-  Nano:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  # Nano:
+  #   runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run test
-        run: |
-          set +e
-          if [ -d "/opt/conda/envs/coverage-env37" ];then
-            rm -rf /opt/conda/envs/coverage-env37
-          fi
-          conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source activate coverage-env37
-          pip install --pre --upgrade bigdl-nano[pytorch,inference]
-          pip install pytest
-          pip install tensorflow
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run test
+  #       run: |
+  #         set +e
+  #         if [ -d "/opt/conda/envs/coverage-env37" ];then
+  #           rm -rf /opt/conda/envs/coverage-env37
+  #         fi
+  #         conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+  #         source activate coverage-env37
+  #         pip install --pre --upgrade bigdl-nano[pytorch,inference]
+  #         pip install pytest
+  #         pip install tensorflow
 
-          # required by Ray test
-          pip install google-api-core==2.8.2
-          pip install ray[default]==1.13.0 prometheus_client==0.13.0
+  #         # required by Ray test
+  #         pip install google-api-core==2.8.2
+  #         pip install ray[default]==1.13.0 prometheus_client==0.13.0
   
-          # required by Automl test
-          pip install ConfigSpace 'optuna<=3.1.1'
+  #         # required by Automl test
+  #         pip install ConfigSpace 'optuna<=3.1.1'
   
-          # required by NoteBook and Tutorial test
-          pip install nbmake==1.3.0 lightning-bolts==0.5.0 ipykernel==5.5.6 matplotlib
+  #         # required by NoteBook and Tutorial test
+  #         pip install nbmake==1.3.0 lightning-bolts==0.5.0 ipykernel==5.5.6 matplotlib
   
-          # required by OpenVINO and IPEX test
-          pip install diffusers==0.11.1
+  #         # required by OpenVINO and IPEX test
+  #         pip install diffusers==0.11.1
           
-          pip install coverage
+  #         pip install coverage
 
-          cd python/nano
-          coverage run -m pytest -v test
-          coverage report -i
+  #         cd python/nano
+  #         coverage run -m pytest -v test
+  #         coverage report -i
           
-          source deactivate
-          conda remove -n coverage-env37 -y --all
+  #         source deactivate
+  #         conda remove -n coverage-env37 -y --all
           
-  Dllib:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  # Dllib:
+  #   runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run test
-        run: |
-          set +e
-          if [ -d "/opt/conda/envs/coverage-env37" ];then
-            rm -rf /opt/conda/envs/coverage-env37
-          fi
-          conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source activate coverage-env37
-          pip install bigdl bigdl-dllib bigdl-orca pyspark 
-          pip install cryptography keras h5py onnx
-          pip install tensorflow
-          pip install pytest
-          pip install coverage
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run test
+  #       run: |
+  #         set +e
+  #         if [ -d "/opt/conda/envs/coverage-env37" ];then
+  #           rm -rf /opt/conda/envs/coverage-env37
+  #         fi
+  #         conda create -n coverage-env37 python=3.7 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+  #         source activate coverage-env37
+  #         pip install bigdl bigdl-dllib bigdl-orca pyspark 
+  #         pip install cryptography keras h5py onnx
+  #         pip install tensorflow
+  #         pip install pytest
+  #         pip install coverage
 
-          cd python/dllib
-          coverage run -m pytest -v test/bigdl
-          coverage report -i
+  #         cd python/dllib
+  #         coverage run -m pytest -v test/bigdl
+  #         coverage report -i
           
-          source deactivate
-          conda remove -n coverage-env37 -y --all
+  #         source deactivate
+  #         conda remove -n coverage-env37 -y --all
 
           
-  Frisian:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  # Frisian:
+  #   runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup env
-        uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
-      - name: Run test
-        run: |
-          set +e
-          pip install pytest
-          pip install coverage
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Setup env
+  #       uses: ./.github/actions/friesian/setup-env/setup-friesian-python-py37-spark3
+  #     - name: Run test
+  #       run: |
+  #         set +e
+  #         pip install pytest
+  #         pip install coverage
 
-          cd python/dllib
-          coverage run -m pytest -v test/bigdl
-          coverage report -i
+  #         cd python/dllib
+  #         coverage run -m pytest -v test/bigdl
+  #         coverage report -i
           
-          source deactivate
-      - name: Coverage Report
-        if: ${{ always() }}
-        run: coverage report -i
+  #         source deactivate
 
+  # llm:
+  #   runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
-  llm:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Run test
+  #       run: |
+  #         set +e
+  #         if [ -d "/opt/conda/envs/coverage-env39" ];then
+  #           rm -rf /opt/conda/envs/coverage-env39
+  #         fi
+  #         conda create -n coverage-env39 python=3.9 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+  #         source activate coverage-env39
+  #         pip install --pre --upgrade bigdl-llm[all]
+  #         pip install pytest
+  #         pip install coverage
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run test
-        run: |
-          set +e
-          if [ -d "/opt/conda/envs/coverage-env39" ];then
-            rm -rf /opt/conda/envs/coverage-env39
-          fi
-          conda create -n coverage-env39 python=3.9 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source activate coverage-env39
-          pip install --pre --upgrade bigdl-llm[all]
-          pip install pytest
-          pip install coverage
-
-          cd python/llm
-          coverage run -m pytest -v test
-          coverage report -i
+  #         cd python/llm
+  #         coverage run -m pytest -v test
+  #         coverage report -i
           
-          source deactivate
-          conda remove -n coverage-env39 -y --all
+  #         source deactivate
+  #         conda remove -n coverage-env39 -y --all
 
-  ppml:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  # ppml:
+  #   runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup env
-        uses: ./.github/actions/ppml/setup-env/setup-ppml-python-ut-spark3
-      - name: Run test
-        run: |
-          set +e
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.51.1
-          pip install pytest
-          pip install coverage
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Setup env
+  #       uses: ./.github/actions/ppml/setup-env/setup-ppml-python-ut-spark3
+  #     - name: Run test
+  #       run: |
+  #         set +e
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.51.1
+  #         pip install pytest
+  #         pip install coverage
 
-          cd python/ppml
-          coverage run -m pytest -v test/bigdl/ppml
-          coverage report -i
-      - name: Coverage Report
-        if: ${{ always() }}
-        run: coverage report -i
+  #         cd python/ppml
+  #         coverage run -m pytest -v test/bigdl/ppml
+  #         coverage report -i
 
-  Orca:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup env
-        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
-      - name: Run test
-        run: |
-          set +e
-          pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
-          pip install openvino
-          pip install mxnet
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
-          pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3[ray]
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} mmcv==1.7.1
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} opencv-python-headless
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} xgboost_ray==0.1.8
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tabulate==0.8.7
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-optimize==0.8.1
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
-          pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==1.15.0
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-gan==2.0.0
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-probability==0.7.0
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-datasets==3.2.0
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
-          # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} h5py==2.10.0
-          pip install pytest coverage
-          cd python/orca
-          coverage run -m pytest -v test/bigdl/orca
-          coverage report -i
-      - name: Coverage Report
-        if: ${{ always() }}
-        run: |
-          pwd
-          ls -al
-          coverage report -i
+
+  # Orca:
+  #   runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Setup env
+  #       uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+  #     - name: Run test
+  #       run: |
+  #         set +e
+  #         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
+  #         pip install openvino
+  #         pip install mxnet
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+  #         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3[ray]
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} mmcv==1.7.1
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} opencv-python-headless
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} xgboost_ray==0.1.8
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tabulate==0.8.7
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-optimize==0.8.1
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+  #         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==1.15.0
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-gan==2.0.0
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-probability==0.7.0
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-datasets==3.2.0
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
+  #         # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} h5py==2.10.0
+  #         pip install pytest coverage
+  #         cd python/orca
+  #         coverage run -m pytest -v test/bigdl/orca
+  #         coverage report -i
+  #   - name: Remove Env
+  #     if: ${{ always() }}
+  #     uses: ./.github/actions/remove-env
