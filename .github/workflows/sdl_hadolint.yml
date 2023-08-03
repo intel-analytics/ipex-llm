@@ -4,14 +4,18 @@ on:
 #    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 3:00 China Every Sunday
 #  push:
 #    branches: [ "main" ]
-#  pull_request:
-#    branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
 jobs:
   scan-dockerfile:
-    runs-on: [self-hosted, SDL-TEST]
+    runs-on: [self-hosted, HADOLINT]
     steps:
     - uses: actions/checkout@v3
+    - name: "set up env"
+      run: |
+        apt-get update
+        apt-get install git -y
     - name: "bigdl-k8s-dockerfile-scanning"
       run: |
-        docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile
+        hadolint --ignore DL4000 --ignore DL3020 ./docker/bigdl-k8s/Dockerfile
