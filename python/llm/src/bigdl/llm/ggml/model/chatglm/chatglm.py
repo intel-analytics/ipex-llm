@@ -241,7 +241,7 @@ class ChatGLM:
             finish_reason = "stop"
         else:
             finish_reason = None
-        completion_len = len(self._tokenize(split_text))
+        completion_len = n_past - prompt_len
         return {
             "id": completion_id,
             "object": "text_completion",
@@ -306,10 +306,7 @@ class ChatGLM:
                 if token == self.eos_token():
                     print('\n')
                     break
-                text = self.detokenize([token])
-                if text.endswith("</s>"):
-                    print('\n')
-                    break
+                text = self.detokenize(token)
                 yield {
                     "id": completion_id,
                     "object": "text_completion",
