@@ -15,6 +15,7 @@
 #
 
 
+from bigdl.llm.utils import is_valid_path
 from bigdl.llm.utils.common import invalidInputError
 import argparse
 import os
@@ -89,9 +90,11 @@ def llm_convert(model,
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
+        invalidInputError(is_valid_path(outfile),
+                          "The output_path {} is not a valid path.".format(outfile))
         os.makedirs(outfile, exist_ok=True)
         invalidInputError(os.path.isdir(outfile),
-                          "The output_path {} is not a directory".format(outfile))
+                          "The output_path {} is not a directory.".format(outfile))
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
                                              check_args=["tokenizer_path"])
 

@@ -15,6 +15,7 @@
 #
 
 import sys
+import re
 import pathlib
 from bigdl.llm.utils.isa_checker import check_avx_vnni, check_avx2, check_avx512_vnni
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
@@ -55,3 +56,9 @@ def get_shared_lib_info(lib_base_name: str):
     ]
 
     return _base_path, _lib_paths
+
+
+def is_valid_path(path):
+    pattern = r'^(/[^/\x00-\x1f:<>|?*"]+)+/?$'
+    match = re.match(pattern, path)
+    return match is not None and path.strip() != ""

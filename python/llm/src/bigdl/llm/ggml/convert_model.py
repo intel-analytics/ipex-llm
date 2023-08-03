@@ -19,6 +19,7 @@ from pathlib import Path
 from bigdl.llm.ggml.convert import _convert_to_ggml, _convert_chatglm
 from bigdl.llm.ggml.quantize import quantize
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.utils import is_valid_path
 import argparse
 import tempfile
 
@@ -52,6 +53,8 @@ def convert_model(input_path: str,
 
     dtype = dtype.lower()
     # make sure directory exists
+    invalidInputError(is_valid_path(output_path),
+                      "The output_path {} is not a valid path.".format(output_path))
     os.makedirs(output_path, exist_ok=True)
     # check input value
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder', 'chatglm'],
