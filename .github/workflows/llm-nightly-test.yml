@@ -78,4 +78,4 @@ jobs:
     uses: ./.github/workflows/llm_unit_tests_linux.yml
   llm-inference-test-on-windows:
     needs: llm-nightly-convert-test-avx512
-    uses: ./.github/workflows/llm_unit_tests_windows.yml
+    uses: ./.github/workflows/llm-nightly-test-windows.yml
