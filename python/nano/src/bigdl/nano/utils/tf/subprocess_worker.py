@@ -20,11 +20,22 @@ import cloudpickle
 import sys
 import tensorflow as tf
 
-if __name__ == '__main__':
+safe_dir = '/home/'
+
+def is_path_within_safe_directory(requested_path):
+    # Append '/' to the safe directory to account for the check when requested_path is the same as safe_dir.
+    safe_dir_with_slash = safe_dir if safe_dir.endswith('/') else safe_dir + '/'
+    return os.path.commonprefix((os.path.realpath(requested_path), safe_dir_with_slash)) == safe_dir_with_slash
+
+def main():
     # Set number of threads in subprocess
     tf.config.threading.set_inter_op_parallelism_threads(int(sys.argv[2]))
     tf.config.threading.set_intra_op_parallelism_threads(int(sys.argv[2]))
     temp_dir = sys.argv[1]
+
+    if not is_path_within_safe_directory(temp_dir):
+        print("Bad user! The requested path is not allowed.")
+        return
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
@@ -38,3 +49,6 @@ if __name__ == '__main__':
     with open(os.path.join(temp_dir,
                            f"history_{tf_config['task']['index']}"), "wb") as f:
         cloudpickle.dump(history, f)
+
+if __name__ == '__main__':
+    main()
