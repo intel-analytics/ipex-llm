@@ -14,7 +14,7 @@ runs:
       run: |
         if [ ! -d $ORIGINAL_LLAMA2_PATH ]; then
             echo "Directory $ORIGINAL_LLAMA2_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${ORIGINAL_LLAMA2_PATH:2} -P $LLM_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_LLAMA2_PATH:2} -P $LLM_DIR
         fi
 
         source $CONDA_HOME/bin/activate bigdl-llm-test
