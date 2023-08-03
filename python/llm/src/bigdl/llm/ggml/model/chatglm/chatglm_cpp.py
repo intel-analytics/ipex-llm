@@ -23,8 +23,7 @@
 from typing import List
 from pathlib import Path
 
-sys.path.append()
-
+# todo: need a way to find the python dynamic lib file
 import ._C as _C
 from ._C import Pipeline, GenerationConfig
 

@@ -46,7 +46,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 
-from chatglm_cpp import chatglm_load, chatglm_tokenize, chatglm_detokenize, chatglm_eval, chatglm_eos_token
+from .chatglm_cpp import chatglm_load, chatglm_tokenize, chatglm_detokenize, chatglm_eval, chatglm_eos_token
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.model.generation import GenerationMixin
 from typing import List, Optional, Generator, Sequence, Union
