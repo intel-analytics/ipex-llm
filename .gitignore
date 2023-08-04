@@ -29,6 +29,7 @@ model*.[0-9]*
 state*.[0-9]*
 
 # other
+libs/
 nohup.out
 *.log
 *.lock
