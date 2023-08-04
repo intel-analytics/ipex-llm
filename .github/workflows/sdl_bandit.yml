@@ -25,6 +25,7 @@ jobs:
     steps:
     - name: "bandit python"
       run: |
+        export CI=false
         source activate bigdl-bandit 
         bandit -r python -f html -o /root/bandit_report.html -c /root/ipas_default.config
     - name: HTML Preview
