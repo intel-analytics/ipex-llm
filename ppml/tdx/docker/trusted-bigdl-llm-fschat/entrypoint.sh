@@ -102,6 +102,10 @@ worker_port="21002"
 model_path=""
 mode=""
 omp_num_threads=""
+enable_tls=""
+tls_keyfile=""
+tls_certfile=""
+flags=""
 
 # Update rootCA config if needed
 update-ca-certificates
@@ -172,21 +176,46 @@ else
     model_path=$MODEL_PATH
   fi
 
-  controller_address="http://$controller_host:$controller_port"
+  if [[ -n $ENABLE_TLS ]]; then
+    enable_tls=$ENABLE_TLS
+  fi
+
+  if [[ -n $TLS_KEYFILE ]]; then
+    tls_keyfile=$TLS_KEYFILE
+  fi
+
+  if [[ -n $TLS_CERTFILE ]]; then
+    tls_certfile=$TLS_CERTFILE
+  fi
+  if [ "$enable_tls" = true ]; then
+    controller_address="https://$controller_host:$controller_port"
+    flags="--enable-tls --ssl-keyfile $tls_keyfile --ssl-certfile $tls_certfile"
+  else
+    controller_address="http://$controller_host:$controller_port"
+  fi
+
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
     # Logic for controller mode
     # Boot Controller
     # TODO: add dispatch-method
-    api_address="http://$api_host:$api_port"
+    if [ "$enable_tls" = true ]; then
+      api_address="https://$api_host:$api_port"
+    else
+      api_address="http://$api_host:$api_port"
+    fi
     echo "Controller address: $controller_address"
     echo "OpenAI API address: $api_address"
-    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port &
+    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $flags &
     # Boot openai api server
-    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address
+    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $flags
   else
     # Logic for non-controller(worker) mode
-    worker_address="http://$worker_host:$worker_port"
+    if [ "$enable_tls" = true ]; then
+      worker_address="https://$worker_host:$worker_port"
+    else
+      worker_address="http://$worker_host:$worker_port"
+    fi
     # Apply optimizations from bigdl-nano
     source bigdl-nano-init -t
     # First check if user have set OMP_NUM_THREADS by themselves
@@ -210,7 +239,7 @@ else
     fi
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
+    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address $flags
   fi
 fi
 
