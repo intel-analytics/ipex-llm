@@ -53,8 +53,6 @@ def convert_model(input_path: str,
 
     dtype = dtype.lower()
     # make sure directory exists
-    invalidInputError(is_valid_path(output_path),
-                      "The output_path {} is not a valid path.".format(output_path))
     os.makedirs(output_path, exist_ok=True)
     # check input value
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder', 'chatglm'],
@@ -128,5 +126,7 @@ def main():
                         help="Which path to store the intermediate model during the"
                         "conversion process.")
     args = parser.parse_args()
+    invalidInputError(is_valid_path(args.output_path),
+                      "The output_path {} is not a valid path.".format(args.output_path))
     params = vars(args)
     convert_model(**params)

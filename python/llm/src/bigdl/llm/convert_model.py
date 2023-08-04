@@ -90,8 +90,6 @@ def llm_convert(model,
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
-        invalidInputError(is_valid_path(outfile),
-                          "The output_path {} is not a valid path.".format(outfile))
         os.makedirs(outfile, exist_ok=True)
         invalidInputError(os.path.isdir(outfile),
                           "The output_path {} is not a directory.".format(outfile))
@@ -143,5 +141,7 @@ def main():
     parser.add_argument('-k', '--tokenizer-path', type=str, default=None,
                         help="tokenizer_path, a path of tokenizer.model")
     args = parser.parse_args()
+    invalidInputError(is_valid_path(args.outfile),
+                        "The output_path {} is not a valid path.".format(args.outfile))
     params = vars(args)
     llm_convert(**params)

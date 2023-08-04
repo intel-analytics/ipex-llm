@@ -18,6 +18,7 @@ import argparse
 import os
 import file_operator
 import key_manager
+from bigdl.ppml.utils.log4Error import invalidInputError
 
 def generate_primary_key(ip, port):
     key_manager.generate_primary_key_cipher_text(ip, port)
@@ -76,6 +77,7 @@ if __name__ == "__main__":
     parser.add_argument('-sdp', '--sdp', type=str, help='path of the save directory output to',required=False)
     parser.add_argument('-dkl', '--dkl', type=int, help='length of data key, e.g. 16 or 32', default=32, required=False)
     args = parser.parse_args()
+    invalidInputError(os.path.isdir(args.pkp), "The input_dir {} is not a valid path.".format(args.pkp))
 
     api = args.api
     ip = args.ip

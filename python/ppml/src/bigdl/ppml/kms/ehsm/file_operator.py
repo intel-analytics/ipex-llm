@@ -15,7 +15,6 @@
 #
 
 from key_manager import retrieve_data_key_plaintext
-from bigdl.ppml.utils.log4Error import invalidInputError
 from cryptography.fernet import Fernet
 import os, csv, io
 
@@ -62,7 +61,6 @@ def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path
         os.mkdir(save_dir)
     data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     fernet = Fernet(data_key)
-    invalidInputError(os.path.isdir(input_dir), "The input_dir {} is not a valid path.".format(input_dir))
     for file_name in os.listdir(input_dir):
         input_path = os.path.join(input_dir, file_name)
         encrypted = fernet.encrypt(read_data_file(input_path))
