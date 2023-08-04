@@ -26,4 +26,4 @@ jobs:
     - name: "bandit python"
       run: |
         source activate bigdl-bandit 
-        bandit -r python -f html -o /root/bandit_report.html -c ipas_default.config
+        bandit -r python -f html -o /root/bandit_report.html -c /root/ipas_default.config
