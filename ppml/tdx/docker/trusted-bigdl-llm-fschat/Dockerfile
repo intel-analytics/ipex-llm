@@ -7,7 +7,6 @@ ARG TINI_VERSION=v0.18.0
 RUN mkdir -p /ppml/
 
 
-ADD ./fschat.diff /opt/fschat.diff
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./attestation_cli.py /opt/attestation_cli.py
 ADD ./attestation.sh /opt/attestation.sh
