@@ -22,10 +22,13 @@ import cloudpickle
 import multiprocessing
 from torch.multiprocessing.spawn import _wrap
 from bigdl.nano.pytorch.dispatcher import patch_torch
+from bigdl.nano.utils.common import invalidInputError
 
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
+    invalidInputError(os.path.isdir(temp_dir),
+                      "The argument {} is not a valid path.".format(temp_dir))
     process_idx = int(os.environ["PROCESS_IDX"])
 
     # set the same `multiprocessing.current_process().authkey` as the main process
