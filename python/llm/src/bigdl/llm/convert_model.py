@@ -142,6 +142,6 @@ def main():
                         help="tokenizer_path, a path of tokenizer.model")
     args = parser.parse_args()
     invalidInputError(is_valid_path(args.outfile),
-                        "The output_path {} is not a valid path.".format(args.outfile))
+                      "The output_path {} is not a valid path.".format(args.outfile))
     params = vars(args)
     llm_convert(**params)
