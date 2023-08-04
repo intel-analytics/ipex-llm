@@ -1,11 +1,11 @@
 name: Scanner-bandit
 on:
-  schedule:
-    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 11:00 China Every Sunday
+#  schedule:
+#    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 11:00 China Every Sunday
 #  push:
 #    branches: [ "main" ]
-pull_request:
-  branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
     inputs:
       snyk_apitoken:
