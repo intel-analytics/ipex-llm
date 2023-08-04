@@ -34,7 +34,7 @@ jobs:
           name: linux-avxvnni
 
   linux-build-avxvnni:
-    runs-on: [self-hosted, AVX2, ubuntu-18.04-lts]
+    runs-on: [self-hosted, AVX2, ubuntu-20.04-lts]
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
