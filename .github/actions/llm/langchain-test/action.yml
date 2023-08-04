@@ -1,5 +1,5 @@
-name: 'BigDL-LLM langchain tests'
-description: 'BigDL-LLM langchain tests'
+name: "BigDL-LLM langchain tests"
+description: "BigDL-LLM langchain tests"
 
 runs:
   using: "composite"
@@ -7,10 +7,7 @@ runs:
     - name: Test LLM langchain
       shell: bash
       run: |
-        source $CONDA_HOME/bin/activate bigdl-llm-test
-        $CONDA_HOME/bin/conda info
         pip install -U langchain==0.0.184
         pip install -U chromadb==0.3.25
         pip install -U typing_extensions==4.5.0
         bash python/llm/test/run-llm-langchain-tests.sh
-        source $CONDA_HOME/bin/deactivate

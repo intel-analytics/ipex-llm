@@ -68,8 +68,10 @@ class TestConvertModel(TestCase):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
         tempdir = tempfile.mkdtemp(dir=output_dir)
         model.save_pretrained(tempdir)
-        model = AutoModelForCausalLM.from_pretrained(tempdir)
+        model = AutoModelForCausalLM.load_low_bit(tempdir)
         assert model is not None
+        import shutil
+        shutil.rmtree(tempdir)
 
     def test_transformer_convert_llama_q5(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,

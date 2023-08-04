@@ -5,33 +5,33 @@ concurrency:
   group: ${{ github.workflow }}-llm-linux-unittest-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/inference-test/action.yml"
+      - ".github/actions/llm/langchain-test/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/inference-test/action.yml"
+      - ".github/actions/llm/langchain-test/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
   workflow_call:
 
@@ -49,7 +49,6 @@ env:
   ORIGINAL_WHISPER_TINY_PATH: ./llm/whisper-tiny/
   SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
 
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
@@ -61,13 +60,14 @@ jobs:
       matrix:
         python-version: ["3.9"]
         instruction: ["AVX512"]
-    runs-on: [ self-hosted, llm,"${{matrix.instruction}}", ubuntu-20.04-lts ]
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", ubuntu-20.04-lts]
     env:
       THREAD_NUM: 24
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -81,8 +81,6 @@ jobs:
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Download ckpt & original models
         run: |
@@ -125,20 +123,9 @@ jobs:
 
       - name: Run LLM cli test
         uses: ./.github/actions/llm/cli-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run LLM inference test
         uses: ./.github/actions/llm/inference-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run LLM langchain test
         uses: ./.github/actions/llm/langchain-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Clean up test environment
-        uses: ./.github/actions/llm/remove-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

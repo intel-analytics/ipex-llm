@@ -52,4 +52,3 @@ RUN pip3 install -r /opt/requirements.txt && \
     rm -rf /root/BigDL
 
 WORKDIR /ppml
-ENTRYPOINT [ "/bin/bash" ]
