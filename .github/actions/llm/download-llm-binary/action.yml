@@ -10,7 +10,7 @@ runs:
       shell: bash
       run: |
         rm -rf python/llm/llm-binary || true
-        mkdir python/llm/llm-binary
+        mkdir -p python/llm/llm-binary
         mv linux-avx2/* python/llm/llm-binary/
         mv linux-avx512/* python/llm/llm-binary/
         mv linux-avxvnni/* python/llm/llm-binary/

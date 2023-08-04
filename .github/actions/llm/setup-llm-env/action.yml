@@ -1,5 +1,5 @@
-name: 'Setup BigDL-LLM Env'
-description: 'Conda env create and BigDL-LLM installation'
+name: "Setup BigDL-LLM Env"
+description: "BigDL-LLM installation"
 
 runs:
   using: "composite"
@@ -7,14 +7,9 @@ runs:
     - name: Create conda env for llm tests and conduct install tests
       shell: bash
       run: |
-        $CONDA_HOME/bin/conda env remove -y -n bigdl-llm-test || true
-        $CONDA_HOME/bin/conda create -n bigdl-llm-test -y python==3.9 setuptools==58.0.4
-        source $CONDA_HOME/bin/activate bigdl-llm-test
-        $CONDA_HOME/bin/conda info
         pip install requests
         bash python/llm/dev/release_default_linux.sh default false
         whl_name=$(ls python/llm/dist)
         pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
         pip install pytest
         bash python/llm/test/run-llm-install-tests.sh
-        source $CONDA_HOME/bin/deactivate
