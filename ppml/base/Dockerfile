@@ -133,4 +133,3 @@ RUN cd /ppml && \
 
 ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
-ENTRYPOINT [ "/bin/bash" ]
