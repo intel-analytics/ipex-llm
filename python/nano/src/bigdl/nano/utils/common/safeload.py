@@ -18,14 +18,14 @@ import sys
 import os
 
 # To solve path traversal issue
+
+
 class SafeLoad:
     def safe_load(self, output_file):
         safe_dir = "/safe_dir/"
         dir_name = os.path.dirname(output_file)
-        
         if '../' in dir_name:
             sys.exit(1)
-
         safe_dir = dir_name
         file_name = os.path.basename(output_file)
         safe_output_file = os.path.join(safe_dir, file_name)
