@@ -49,6 +49,7 @@ jobs:
       - name: Update Git
         shell: bash
         run: |
+          add-apt-repository -y ppa:git-core/ppa
           apt update
           apt install -y git
       - uses: actions/checkout@v3
@@ -140,6 +141,7 @@ jobs:
       - name: Update Git
         shell: bash
         run: |
+          add-apt-repository -y ppa:git-core/ppa
           apt update
           apt install -y git
       - uses: actions/checkout@v3
