@@ -20,18 +20,11 @@ import cloudpickle
 import sys
 import tensorflow as tf
 
-
-def main():
+if __name__ == '__main__':
     # Set number of threads in subprocess
     tf.config.threading.set_inter_op_parallelism_threads(int(sys.argv[2]))
     tf.config.threading.set_intra_op_parallelism_threads(int(sys.argv[2]))
     temp_dir = sys.argv[1]
-    temp_dir = os.path.basename(temp_dir)
-    temp_dir = "public_files/" + temp_dir
-
-    if not is_path_within_safe_directory(temp_dir):
-        print("Bad user! The requested path is not allowed.")
-        return
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
@@ -45,6 +38,3 @@ def main():
     with open(os.path.join(temp_dir,
                            f"history_{tf_config['task']['index']}"), "wb") as f:
         cloudpickle.dump(history, f)
-
-if __name__ == '__main__':
-    main()

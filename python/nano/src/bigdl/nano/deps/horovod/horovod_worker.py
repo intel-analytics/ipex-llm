@@ -21,9 +21,6 @@ import sys
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
-    if '..' in temp_dir:
-        print("Invalid temp_dir")
-        sys.exit(1)
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)

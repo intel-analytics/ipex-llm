@@ -23,12 +23,15 @@ import cloudpickle
 from pytorch_lightning.utilities.seed import reset_seed
 
 if __name__ == '__main__':
-    temp_dir_input = sys.argv[1]
-    temp_dir = os.path.join(os.path.dirname(temp_dir_input), os.path.basename(temp_dir_input))
-    if '..' in temp_dir:
-        print("Invalid temp_dir")
+    temp_dir = sys.argv[1]
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(temp_dir)
+    if '../' in dir_name:
         sys.exit(1)
-
+    safe_dir = dir_name
+    file_name = os.path.basename(temp_dir)
+    temp_dir = os.path.join(safe_dir, file_name)
+    
     with open(os.path.join(temp_dir, "search_kwargs.json"), 'r') as f:
         kwargs = json.load(f)
     with open(os.path.join(temp_dir, "search_func.pkl"), 'rb') as f:

@@ -6,18 +6,14 @@ jobs = ['Developer', 'Engineer', 'Researcher']
 output_file = sys.argv[1]
 num_lines = int(sys.argv[2])
 
-# Define the safe directory
-safe_dir = '/home/'
-
-# Ensure that the output directory is under safe_dir and does not contain ../
-output_directory = os.path.dirname(output_file)
-
-if not output_directory.startswith(safe_dir) or '../' in output_directory:
-    print("Invalid output directory")
+safe_dir = "/safe_dir/"
+dir_name = os.path.dirname(output_file)
+if '../' in dir_name:
     sys.exit(1)
 
-os.makedirs(output_directory, exist_ok=True)
-output_file = os.path.join(output_directory, os.path.basename(output_file))
+safe_dir = dir_name
+file_name = os.path.basename(output_file)
+output_file = safe_dir + "/" + file_name
 
 with open(output_file, 'wb') as File:
     File.write("name,age,job\n".encode())
