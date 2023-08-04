@@ -103,6 +103,9 @@ model_path=""
 mode=""
 omp_num_threads=""
 
+# Update rootCA config if needed
+update-ca-certificates
+
 # Remember the value of `OMP_NUM_THREADS`:
 if [[ -n "${OMP_NUM_THREADS}" ]]; then
   omp_num_threads="${OMP_NUM_THREADS}"
@@ -194,7 +197,7 @@ else
       # Use calculate_total_cores to acquire cpuset settings
       # Set OMP_NUM_THREADS to correct numbers
       cores=$(calculate_total_cores)
-      if [[ $cores == -1 ]]; then
+      if [[ $cores == -1 || $cores == 0 ]]; then
         echo "Failed to obtain the number of cores, will use the default settings OMP_NUM_THREADS=$OMP_NUM_THREADS"
       else
         echo "Setting OMP_NUM_THREADS to $cores"
