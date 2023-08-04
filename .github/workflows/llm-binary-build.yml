@@ -32,7 +32,7 @@ jobs:
         uses: xSAVIKx/artifact-exists-action@v0
         with:
           name: linux-avxvnni
-          
+
   linux-build-avxvnni:
     runs-on: [self-hosted, AVX2, centos7]
     needs: check-linux-avxvnni-artifact
@@ -101,6 +101,11 @@ jobs:
           mv build/libstarcoder-api.so release/libstarcoder-api.so
           mv build/quantize-starcoder release/quantize-starcoder
           mv build/libstarcoder.so release/libstarcoder_avxvnni.so
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Build Chatglm
         shell: bash
         run: |
@@ -112,6 +117,7 @@ jobs:
         shell: bash
         run: |
           mv src/chatglm/build/main release/main-chatglm_vnni
+          mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
 
       - name: Archive build files
         uses: actions/upload-artifact@v3
@@ -123,7 +129,7 @@ jobs:
         shell: bash
         run: |
           make clean
-          
+
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
     outputs:
@@ -352,6 +358,11 @@ jobs:
           # mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
           mv build/Release/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
           mv build/Release/starcoder.dll release/libstarcoder_vnni.dll
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Build Chatglm
         shell: powershell
         run: |
@@ -362,6 +373,7 @@ jobs:
         shell: powershell
         run: |
           mv src/chatglm/build/Release/main.exe release/main-chatglm_vnni.exe
+          mv src/chatglm/build/Release/_C.cp39-win_amd64.pyd release/chatglm_C.cp39-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
