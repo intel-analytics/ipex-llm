@@ -27,3 +27,8 @@ jobs:
       run: |
         source activate bigdl-bandit 
         bandit -r python -f html -o /root/bandit_report.html -c /root/ipas_default.config
+    - name: HTML Preview
+      id: html_preview
+      uses: pavi2410/html-preview-action@v2
+      with:
+        html_file: '/root/bandit_report.html'
