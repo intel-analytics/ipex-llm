@@ -23,9 +23,7 @@
 from typing import List
 from pathlib import Path
 
-# todo: need a way to find the python dynamic lib file
-import ._C as _C
-from ._C import Pipeline, GenerationConfig
+from bigdl.llm.libs.chatglm_C import Pipeline, GenerationConfig
 
 
 class ChatGLMContext:
@@ -43,7 +41,7 @@ def chatglm_load(path: str,
     pipeline = Pipeline(path, use_mmap)
     config = GenerationConfig(
         max_context_length=n_ctx,
-        num_threads = n_threads,
+        num_threads=n_threads,
     )
     return ChatGLMContext(pipeline, config)
 
@@ -68,7 +66,8 @@ def chatglm_eval(ctx: ChatGLMContext,
     ctx.config.top_k = top_k
     ctx.config.top_p = top_p
     ctx.temperature = temperature
-    return ctx.pipeline.model.generate_next_token(input_ids, ctx.config, n_past, ctx.config.max_context_length)
+    return ctx.pipeline.model.generate_next_token(input_ids, ctx.config, n_past,
+                                                  ctx.config.max_context_length)
 
 
 def chatglm_eos_token(ctx: ChatGLMContext):
