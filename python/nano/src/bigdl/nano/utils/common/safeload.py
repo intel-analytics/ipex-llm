@@ -14,22 +14,20 @@
 # limitations under the License.
 #
 
-
-import os
 import sys
-import json
-import cloudpickle
+import os
 
-from pytorch_lightning.utilities.seed import reset_seed
-from bigdl.nano.utils.common import SafeLoad
+# To solve path traversal issue
+class SafeLoad:
+    def safe_load(self, output_file):
+        safe_dir = "/safe_dir/"
+        dir_name = os.path.dirname(output_file)
+        
+        if '../' in dir_name:
+            sys.exit(1)
 
-if __name__ == '__main__':
-    temp_dir = SafeLoad.safe_load(sys.argv[1])
-    with open(os.path.join(temp_dir, "search_kwargs.json"), 'r') as f:
-        kwargs = json.load(f)
-    with open(os.path.join(temp_dir, "search_func.pkl"), 'rb') as f:
-        func = cloudpickle.load(f)
+        safe_dir = dir_name
+        file_name = os.path.basename(output_file)
+        safe_output_file = os.path.join(safe_dir, file_name)
 
-    # do we need to reset seed?
-    # reset_seed()
-    func(**kwargs)
+        return safe_output_file
