@@ -1,3 +1,6 @@
+.. meta::
+   :google-site-verification: googledee8e887603eddd8.html
+
 BigDL: fast, distributed, secure AI for Big Data
 =================================================
 
