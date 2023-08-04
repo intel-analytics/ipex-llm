@@ -64,7 +64,7 @@ jobs:
           export https_proxy=${HTTPS_PROXY}
           add-apt-repository -y ppa:ubuntu-toolchain-r/test
           apt update
-          apt install build-essential
+          apt install -y build-essential
           apt install -y gcc-11 g++-11
           cd ..
           if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
@@ -169,7 +169,7 @@ jobs:
           export https_proxy=${HTTPS_PROXY}
           add-apt-repository -y ppa:ubuntu-toolchain-r/test
           apt update
-          apt install build-essential
+          apt install -y build-essential
           apt install -y gcc-11 g++-11
           cd ..
           if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
