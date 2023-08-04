@@ -80,7 +80,7 @@ windows_binarys = [
     "quantize-gptneox_vnni.exe",
     "quantize-bloom_vnni.exe",
     "quantize-starcoder_vnni.exe",
-    
+
     "main-chatglm_vnni.exe",
 ]
 linux_binarys = [
@@ -112,7 +112,7 @@ linux_binarys = [
     "main-gptneox",
     "main-bloom",
     "main-starcoder",
-    
+
     "main-chatglm_vnni",
 ]
 
@@ -220,6 +220,7 @@ def setup_package():
         print(f"Deleting existing libs_dir {libs_dir} ....")
         shutil.rmtree(libs_dir)
     os.makedirs(libs_dir, exist_ok=True)
+    open(os.path.join(libs_dir, "__init__.py"), 'w').close()
 
     # copy built files for github workflow
     for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
