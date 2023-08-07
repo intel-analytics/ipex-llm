@@ -41,6 +41,14 @@ def throughput_calculate_helper(iterrun, func, model, input_sample):
 
 if __name__ == "__main__":
     param_file = sys.argv[1]
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(param_file)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(param_file)
+    param_file = os.path.join(safe_dir, file_name)
     thread_num = sys.argv[2]
     if thread_num != 'None':
         thread_num = int(thread_num)  # type: ignore

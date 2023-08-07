@@ -24,6 +24,8 @@ from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 from urllib.parse import urlparse
 from os.path import exists
 from bigdl.dllib.utils import log4Error
+import os
+import sys
 
 
 def is_local_and_existing_uri(uri):
@@ -58,10 +60,26 @@ if __name__ == '__main__':
                         default=10,
                         help='The boosting rounds.')
     args = parser.parse_args()
+    # process path traversal issue
+    safe_dir_train = "/safe_dir/"
+    dir_name_train = os.path.dirname(args.train_path)
+    if '../' in dir_name_train:
+        sys.exit(1)
+    safe_dir_train = dir_name_train
+    file_name_train = os.path.basename(args.train_path)
+    train_path = os.path.join(safe_dir_train, file_name_train)
+    
+    safe_dir_test = "/safe_dir/"
+    dir_name_test = os.path.dirname(args.test_path)
+    if '../' in dir_name_test:
+        sys.exit(1)
+    safe_dir_test = dir_name_test
+    file_name_test = os.path.basename(args.test_path)
+    test_path = os.path.join(safe_dir_test, file_name_test)
 
     init_fl_context(1)
-    is_local_and_existing_uri(args.train_path)
-    df_train = pd.read_csv(args.train_path)
+    is_local_and_existing_uri(train_path)
+    df_train = pd.read_csv(train_path)
     fgboost_regression = FGBoostRegression()
     
     df_x = df_train.drop('SalePrice', 1)
@@ -81,7 +99,7 @@ if __name__ == '__main__':
                            y_stacked.reshape(-1, y_stacked.shape[-1]),
                            num_round=args.num_round)
     
-    is_local_and_existing_uri(args.test_path)
-    df_test = pd.read_csv(args.test_path)
+    is_local_and_existing_uri(test_path)
+    df_test = pd.read_csv(test_path)
     result = fgboost_regression.predict(df_test, feature_columns=df_x.columns)
     

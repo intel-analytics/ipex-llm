@@ -26,6 +26,14 @@ from bigdl.nano.pytorch.dispatcher import patch_torch
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(temp_dir)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(temp_dir)
+    temp_dir = os.path.join(safe_dir, file_name)
     process_idx = int(os.environ["PROCESS_IDX"])
 
     # set the same `multiprocessing.current_process().authkey` as the main process

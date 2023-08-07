@@ -21,7 +21,15 @@ import sys
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
-
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(temp_dir)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(temp_dir)
+    temp_dir = os.path.join(safe_dir, file_name)
+    
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
 

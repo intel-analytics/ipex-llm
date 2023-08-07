@@ -24,6 +24,7 @@ from bigdl.orca.automl import hp
 from urllib.parse import urlparse
 from os.path import exists
 from bigdl.dllib.utils import log4Error
+import sys
 
 
 def is_local_and_existing_uri(uri):
@@ -59,6 +60,14 @@ if __name__ == '__main__':
                         )
 
     opt = parser.parse_args()
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(opt.path)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(opt.path)
+    temp_dir = os.path.join(safe_dir, file_name)
     if opt.cluster_mode == "yarn":
         init_orca_context(cluster_mode="yarn-client",
                           num_nodes=opt.num_workers,
@@ -69,7 +78,7 @@ if __name__ == '__main__':
 
     import pandas as pd
     is_local_and_existing_uri(opt.path)
-    df = pd.read_csv(opt.path, encoding='latin-1')
+    df = pd.read_csv(temp_dir, encoding='latin-1')
     df.rename(
         columns={
             " FIPS": "FIPS",

@@ -19,6 +19,8 @@ from model import *
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.friesian.feature import FeatureTable
+import sys
+import os
 
 parser = argparse.ArgumentParser(description="Two Tower Inference")
 parser.add_argument('--cluster_mode', type=str, default="local",
@@ -39,6 +41,23 @@ parser.add_argument('--data_dir', type=str,
                     help="data directory of processed features for the two tower model")
 args = parser.parse_args()
 
+# process path traversal issue
+safe_dir_model = "/safe_dir/"
+dir_name_model = os.path.dirname(args.model_dir)
+if '../' in dir_name_model:
+    sys.exit(1)
+safe_dir_model = dir_name_model
+file_name_model = os.path.basename(args.model_dir)
+model_dir = os.path.join(safe_dir_model, file_name_model)
+
+safe_dir_data = "/safe_dir/"
+dir_name_data = os.path.dirname(args.data_dir)
+if '../' in dir_name_data:
+    sys.exit(1)
+safe_dir_data = dir_name_data
+file_name_data = os.path.basename(args.data_dir)
+data_dir = os.path.join(safe_dir_data, file_name_data)
+
 if args.cluster_mode == "local":
     sc = init_orca_context("local", cores=args.executor_cores,
                            memory=args.executor_memory)
@@ -57,9 +76,9 @@ config = {"inter_op_parallelism": 4,
           "intra_op_parallelism": args.executor_cores}
 
 user_est = Estimator.from_keras(config=config, backend=args.backend)
-user_est.load(os.path.join(args.model_dir, "user-model"))
+user_est.load(os.path.join(model_dir, "user-model"))
 
-full_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "user_item_parquet"))
+full_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "user_item_parquet"))
 print("Data size: " + str(full_tbl.size()))
 
 enaging_user_df = full_tbl.select(['enaging_user_id', 'enaging_user_is_verified',
@@ -82,10 +101,10 @@ user_embed = FeatureTable(user_est.predict(data=user_df.df,
     .select(['user_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
-user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
+user_embed.write_parquet(os.path.join(data_dir, 'user_ebd.parquet'))
 
 item_est = Estimator.from_keras(config=config, backend=args.backend)
-item_est.load(os.path.join(args.model_dir, "item-model"))
+item_est.load(os.path.join(model_dir, "item-model"))
 item_embed = item_est.predict(data=full_tbl.df,
                               batch_size=args.batch_size,
                               feature_cols=['engaged_with_user_is_verified', 'present_media',
@@ -96,6 +115,6 @@ item_embed = FeatureTable(item_embed)
 item_embed = item_embed.select(['tweet_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 items:")
 item_embed.show(5)
-item_embed.write_parquet(os.path.join(args.data_dir, 'item_ebd.parquet'))
+item_embed.write_parquet(os.path.join(data_dir, 'item_ebd.parquet'))
 
 stop_orca_context()

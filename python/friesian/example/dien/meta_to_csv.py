@@ -16,14 +16,24 @@
 
 import json
 from argparse import ArgumentParser
+import sys
+import os
 
 parser = ArgumentParser()
 parser.add_argument('--input_meta', type=str, required=True,
                     help="item metadata file")
 
 args = parser.parse_args()
-with open(args.input_meta, "r") as fi:
-    out_file = args.input_meta.split(".json")[0] + ".csv"
+# process path traversal issue
+safe_dir = "/safe_dir/"
+dir_name = os.path.dirname(args.input_meta)
+if '../' in dir_name:
+    sys.exit(1)
+safe_dir = dir_name
+file_name = os.path.basename(args.input_meta)
+temp_dir = os.path.join(safe_dir, file_name)
+with open(temp_dir, "r") as fi:
+    out_file = temp_dir.split(".json")[0] + ".csv"
     with open(out_file, "w") as fo:
         for line in fi:
             try:

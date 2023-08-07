@@ -15,6 +15,8 @@
 #
 
 import argparse
+import os
+import sys
 
 import pandas as pd
 import numpy as np
@@ -44,6 +46,14 @@ if __name__ == '__main__':
                         choices=['gridrandom', 'skopt'],
                         help='The search algorithm to use.')
     opt = parser.parse_args()
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(opt.path)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(opt.path)
+    temp_dir = os.path.join(safe_dir, file_name)
     if opt.cluster_mode == "yarn":
         init_orca_context(cluster_mode="yarn-client",
                           num_nodes=opt.num_workers,
@@ -77,7 +87,7 @@ if __name__ == '__main__':
         "nrows": num_rows,  # Max Rows in dataset: 115000000
         "delayed_threshold": 10,
     }
-    pdf = pd.read_csv(opt.path, names=input_cols, nrows=dataset_config["nrows"])
+    pdf = pd.read_csv(temp_dir, names=input_cols, nrows=dataset_config["nrows"])
 
     pdf["ArrDelayBinary"] = 1.0 * (
         pdf["ArrDelay"] > dataset_config["delayed_threshold"]
