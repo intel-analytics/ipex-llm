@@ -21,7 +21,7 @@ on:
 
 jobs:
   bandit-python:
-    runs-on: [self-hosted, SDL]
+    runs-on: [self-hosted, SDL-TEST]
     steps:
     - name: Security check - Bandit
       uses: ioggstream/bandit-report-artifacts@v0.0.2
