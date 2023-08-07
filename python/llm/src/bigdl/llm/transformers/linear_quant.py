@@ -108,7 +108,8 @@ class ParamsQuant(torch.nn.Parameter):
                 quantized=False,
                 _shape=None,
                 convert_shape_only=False,
-                qtype=None):
+                qtype=None,
+                dev="CPU"):
         if data is None:
             data = torch.empty(0)
 
@@ -118,10 +119,15 @@ class ParamsQuant(torch.nn.Parameter):
         self._shape = _shape
         self.convert_shape_only = convert_shape_only
         self.qtype = qtype
+        self.dev = dev
         return self
 
     def quantize(self, device):
         if not self.quantized:
+            if device.type == "xpu":
+                # xpu only support q4_0 now
+                invalidInputError(self.qtype == 2,
+                                  "Arc int4 only support q4_0(qtype=2) now.")
             w = self.data.contiguous().float()
             # self.old_data = self.data
             w_quantized = ggml_convert_quant(w, self.qtype,
@@ -152,6 +158,27 @@ class ParamsQuant(torch.nn.Parameter):
 
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
             return self.quantize(device)
+        elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
+            # enter xpu logic, compile linear_int4 extension at first time
+            try:
+                import linear_q4
+            except ModuleNotFoundError:
+                from torch.xpu.cpp_extension import load
+                linear_q4 = load(name="linear_q4",
+                                 sources=[os.path.join(os.path.dirname(__file__), 'linear_xpu.cpp'),
+                                          os.path.join(os.path.dirname(__file__), 'linear_xpu_kernel.cpp')],
+                                 extra_ldflags=["-fsycl"])
+
+            q_tensor = self.quantize(device)  # tensor is cpu now
+            new_param = ParamsQuant(super().to(device=device,
+                                               dtype=dtype,
+                                               non_blocking=non_blocking),
+                                    requires_grad=self.requires_grad,
+                                    quantized=self.quantized,
+                                    _shape=self._shape,
+                                    qtype=self.qtype,
+                                    dev="GPU")
+            return new_param
         else:
             new_param = ParamsQuant(super().to(device=device,
                                                dtype=dtype,
@@ -224,15 +251,25 @@ class LinearQuant(nn.Linear):
 
         x0 = self.weight.data
 
-        # todo may need to set a different number on different platforms
-        if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
-            x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-            result = F.linear(x, x0_fp32, self.bias)
-        else:
-            result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+        if self.weight.dev == "GPU":
+            # GPU logic
+            # input format of linear_q4.forward is 1: input, 2: weight
+            result = linear_q4.forward(x_2d, x0)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
                 result += self.bias
+        else:
+            # CPU logic
+            # todo may need to set a different number on different platforms
+            if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
+                x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                result = F.linear(x, x0_fp32, self.bias)
+            else:
+                result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+                new_shape = x_shape[:-1] + (self.out_len,)
+                result = result.view(new_shape)
+                if self.bias is not None:
+                    result += self.bias
 
         return result.to(x.dtype)
