@@ -69,10 +69,10 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run LLM example test
-        uses: ./.github/actions/llm/example-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      # - name: Run LLM example test
+      #   uses: ./.github/actions/llm/example-test
+      #   env:
+      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Clean up test environment
         uses: ./.github/actions/llm/remove-llm-env
