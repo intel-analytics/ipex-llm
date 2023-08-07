@@ -169,7 +169,7 @@ class TestTable(TestCase):
                              StructField("C", IntegerType(), True)])
         df = spark.createDataFrame(data, schema)
         tbl = FeatureTable(df)
-        hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
+        hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict'), usedforsecurity=False).hexdigest()
         hash_int = lambda x: int(hash_str(x), 16) % 100
         hash_value = []
         for row in df.collect():
@@ -219,7 +219,7 @@ class TestTable(TestCase):
                                     "each element in cross_col_names should be None or string"):
             tbl.cross_hash_encode([["A", "B", "C"]], [100], [0x14])
 
-        cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict')).hexdigest()
+        cross_hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict'), usedforsecurity=False).hexdigest()
         cross_hash_int = lambda x: int(cross_hash_str(x), 16) % 100
         cross_hash_value = []
         for row in cross_hash_df.collect():
