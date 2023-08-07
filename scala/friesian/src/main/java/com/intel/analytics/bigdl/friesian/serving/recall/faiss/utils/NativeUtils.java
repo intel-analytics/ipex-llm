@@ -133,12 +133,7 @@ public class NativeUtils {
     }
 
     private static File createTempDirectory(String prefix) throws IOException {
-        File generatedDir = File.createTempFile(prefix + System.nanoTime(), "");
-
-        if (!generatedDir.mkdir()) {
-            throw new IOException("Failed to create temp directory " + generatedDir.getName());
-        }
-
-        return generatedDir;
+        Path tempDir = Files.createTempDirectory(prefix + System.nanoTime());
+        return tempDir.toFile();
     }
 }
