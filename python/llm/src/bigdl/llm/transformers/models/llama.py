@@ -153,8 +153,10 @@ def llama_attention_forward_4_31(
     past_key_value = (key_states, value_states) if use_cache else None
 
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                     dtype=hidden_states.dtype)
+    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                         dtype=hidden_states.dtype)
 
     attn_weights = torch.matmul(query_states,
                                 key_states.transpose(2, 3)) / math.sqrt(self.head_dim)

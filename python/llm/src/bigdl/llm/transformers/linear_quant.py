@@ -43,7 +43,7 @@
 
 from typing import Optional, TypeVar, Union, overload
 from bigdl.llm.utils.common import invalidInputError
-
+import os
 import torch
 import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
@@ -52,8 +52,6 @@ T = TypeVar("T", bound="torch.nn.Module")
 
 import bigdl.llm.ggml.model.llama.llama_cpp as ggml
 from bigdl.llm.utils.isa_checker import is_server
-
-import torch
 import ctypes
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 IS_SERVER = is_server()
@@ -108,8 +106,7 @@ class ParamsQuant(torch.nn.Parameter):
                 quantized=False,
                 _shape=None,
                 convert_shape_only=False,
-                qtype=None,
-                dev="CPU"):
+                qtype=None):
         if data is None:
             data = torch.empty(0)
 
@@ -119,15 +116,10 @@ class ParamsQuant(torch.nn.Parameter):
         self._shape = _shape
         self.convert_shape_only = convert_shape_only
         self.qtype = qtype
-        self.dev = dev
         return self
 
     def quantize(self, device):
         if not self.quantized:
-            if device.type == "xpu":
-                # xpu only support q4_0 now
-                invalidInputError(self.qtype == 2,
-                                  "Arc int4 only support q4_0(qtype=2) now.")
             w = self.data.contiguous().float()
             # self.old_data = self.data
             w_quantized = ggml_convert_quant(w, self.qtype,
@@ -160,15 +152,6 @@ class ParamsQuant(torch.nn.Parameter):
             return self.quantize(device)
         elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
             # enter xpu logic, compile linear_int4 extension at first time
-            try:
-                import linear_q4
-            except ModuleNotFoundError:
-                from torch.xpu.cpp_extension import load
-                linear_q4 = load(name="linear_q4",
-                                 sources=[os.path.join(os.path.dirname(__file__), 'linear_xpu.cpp'),
-                                          os.path.join(os.path.dirname(__file__), 'linear_xpu_kernel.cpp')],
-                                 extra_ldflags=["-fsycl"])
-
             q_tensor = self.quantize(device)  # tensor is cpu now
             new_param = ParamsQuant(super().to(device=device,
                                                dtype=dtype,
@@ -176,8 +159,7 @@ class ParamsQuant(torch.nn.Parameter):
                                     requires_grad=self.requires_grad,
                                     quantized=self.quantized,
                                     _shape=self._shape,
-                                    qtype=self.qtype,
-                                    dev="GPU")
+                                    qtype=self.qtype)
             return new_param
         else:
             new_param = ParamsQuant(super().to(device=device,
@@ -251,8 +233,20 @@ class LinearQuant(nn.Linear):
 
         x0 = self.weight.data
 
-        if self.weight.dev == "GPU":
+        if x0.device.type == "xpu":
             # GPU logic
+            # just compile this int4 linear extension at first time
+            try:
+                import linear_q4
+            except ModuleNotFoundError:
+                from torch.xpu.cpp_extension import load
+                linear_q4 = load(name="linear_q4",
+                                 sources=[os.path.join(os.path.dirname(__file__), 'linear_xpu.cpp'),
+                                          os.path.join(os.path.dirname(__file__),
+                                                       'linear_xpu_kernel.cpp')],
+                                 extra_ldflags=["-fsycl"])
+            if x_2d.is_contiguous() is False:
+                x_2d = x_2d.contiguous()
             # input format of linear_q4.forward is 1: input, 2: weight
             result = linear_q4.forward(x_2d, x0)
             new_shape = x_shape[:-1] + (self.out_len,)
