@@ -23,3 +23,5 @@ from bigdl.llm.ggml.model.llama import Llama
 from bigdl.llm.ggml.model.gptneox import Gptneox
 from bigdl.llm.ggml.model.bloom import Bloom
 from bigdl.llm.ggml.model.starcoder import Starcoder
+# temporarily disable until linux binary file for chatglm ready
+# from bigdl.llm.ggml.model.chatglm import ChatGLM

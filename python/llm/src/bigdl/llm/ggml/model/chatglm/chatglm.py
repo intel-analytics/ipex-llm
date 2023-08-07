@@ -56,7 +56,7 @@ import uuid
 import warnings
 
 
-class ChatGLM:
+class ChatGLM(GenerationMixin):
     """High-level Python wrapper for a chatglm.cpp model."""
 
     def __init__(
@@ -327,7 +327,7 @@ class ChatGLM:
                     }
                 }
 
-    def _tokenize(self, text: bytes) -> List[int]:
+    def _tokenize(self, text: bytes, *args) -> List[int]:
         """Tokenize a string.
 
         Args:
@@ -339,9 +339,10 @@ class ChatGLM:
         Returns:
             A list of tokens.
         """
+        warnings.warn("The parameter `add_bos` is unsupported, please use the default value.")
         return chatglm_tokenize(self.ctx, text)
 
-    def detokenize(self, tokens: List[int]) -> bytes:
+    def detokenize(self, tokens: List[int]) -> str:
         """Detokenize a list of tokens.
 
         Args:
@@ -371,3 +372,65 @@ class ChatGLM:
 
     def eos_token(self) -> int:
         return chatglm_eos_token(self.ctx)
+
+    def _generate(
+        self,
+        tokens: Sequence[int],
+        top_k: int = 0,
+        top_p: float = 0.7,
+        temp: float = 0.95,
+        repeat_penalty: float = 1.1,
+        reset: bool = True,
+        frequency_penalty: float = 0.0,
+        presence_penalty: float = 0.0,
+        tfs_z: float = 1.0,
+        mirostat_mode: int = 0,
+        mirostat_tau: float = 5.0,
+        mirostat_eta: float = 0.1,
+    ) -> Generator[int, Optional[Sequence[int]], None]:
+        """Create a generator of tokens from a prompt.
+
+        Examples:
+            >>> llm = ChatGLM(your_model_path)
+            >>> tokens = llm._tokenize(b"Learning English is")
+            >>> for token in llm._generate(tokens):
+            >>>     print(llm.detokenize([token]).decode("utf-8", errors="ignore"))
+
+        Args:
+            tokens: The prompt tokens.
+
+        Yields:
+            The generated tokens.
+        """
+        # TODO: Some parameters are temporarily not supported
+        # Unsupported parameters are checked in `_supported_generate`
+        return self._supported_generate(tokens, top_k, top_p, temp, repeat_penalty, reset,
+                                        frequency_penalty, presence_penalty, tfs_z, mirostat_mode,
+                                        mirostat_tau, mirostat_eta)
+
+    def _supported_generate(self, tokens: Sequence[int], top_k: int = 0, top_p: float = 0.7,
+                            temp: float = 0.95, *args):
+        # Check unsupporeted parameters
+        unsupported_arg = ['repeat_penalty', 'reset', 'frequency_penalty', 'presence_penalty',
+                           'tfs_z', 'mirostat_mode', 'mirostat_tau', 'mirostat_eta']
+        defult_value = {'repeat_penalty': 1.1, 'reset': True, 'frequency_penalty': 0.0,
+                        'presence_penalty': 0.0, 'tfs_z': 1.0, 'mirostat_mode': 0,
+                        'mirostat_tau': 5.0, 'mirostat_eta': 0.1}
+        for index in range(len(args)):
+            if args[index] != defult_value[unsupported_arg[index]]:
+                warnings.warn(f"The parameter {unsupported_arg[index]} is temporarily "
+                              "unsupported, please use the default value.")
+
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `ChatGLM` object is None.")
+        n_past = 0
+        while True:
+            token = self.forward(input_ids=tokens,
+                                 n_past=n_past,
+                                 top_k=top_k,
+                                 top_p=top_p,
+                                 temperature=temp)
+            n_past += len(tokens)
+            tokens_or_none = yield token
+            tokens = [token]
+            if tokens_or_none is not None:
+                tokens.extend(tokens_or_none)
