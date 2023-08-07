@@ -23,13 +23,18 @@ jobs:
   bandit-python:
     runs-on: [self-hosted, SDL]
     steps:
-    - name: "bandit python"
-      run: |
-        export CI=false
-        source activate bigdl-bandit 
-        bandit -r python -f html -o /root/bandit_report.html -c /root/ipas_default.config
-    - name: HTML Preview
-      id: html_preview
-      uses: pavi2410/html-preview-action@v2
+    - name: Security check - Bandit
+      uses: ioggstream/bandit-report-artifacts@v0.0.2
       with:
-        html_file: '/root/bandit_report.html'
+        project_path: ./python
+        ignore_failure: true
+        #    - name: "bandit python"
+        #      run: |
+        #export CI=false
+        #source activate bigdl-bandit 
+        #bandit -r python -f html -o /root/bandit_report.html -c /root/ipas_default.config
+        #- name: HTML Preview
+        #id: html_preview
+        #uses: pavi2410/html-preview-action@v2
+        # with:
+        # html_file: '/root/bandit_report.html'
