@@ -34,7 +34,7 @@ jobs:
           name: linux-avxvnni
 
   linux-build-avxvnni:
-    runs-on: [self-hosted, AVX2, ubuntu-20.04-lts]
+    runs-on: [self-hosted, AVX2, almalinux8]
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
@@ -46,45 +46,22 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-      - name: Update Git
-        shell: bash
-        run: |
-          add-apt-repository -y ppa:git-core/ppa
-          apt update
-          apt install -y git
-      - uses: actions/checkout@v3
-        with:
-          repository: "intel-analytics/llm.cpp"
-          token: ${{ env.github_access_token }}
-          submodules: "recursive"
       - name: Install Build Environment
         shell: bash
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          apt update
-          apt install -y build-essential
-          apt install -y gcc-11 g++-11
-          cd ..
-          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
-            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
-            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
-              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-            fi
-          else
-            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-          fi
-          tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
+          yum install -y gcc-toolset-11 cmake git
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Build binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release"
       - name: Move release binary
         shell: bash
         run: |
@@ -108,13 +85,9 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
           cd src/chatglm
-          $cmake_path -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release"
       - name: Move Chatglm binaries
         shell: bash
         run: |
