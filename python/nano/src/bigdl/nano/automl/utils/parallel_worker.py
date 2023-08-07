@@ -23,7 +23,7 @@ import cloudpickle
 from pytorch_lightning.utilities.seed import reset_seed
 
 if __name__ == '__main__':
-    temp_dir = SafeLoad.safe_load(sys.argv[1])
+    temp_dir = sys.argv[1]
     # process path traversal issue
     safe_dir = "/safe_dir/"
     dir_name = os.path.dirname(temp_dir)

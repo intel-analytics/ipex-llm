@@ -29,7 +29,7 @@ if __name__ == '__main__':
     safe_dir = dir_name
     file_name = os.path.basename(temp_dir)
     temp_dir = os.path.join(safe_dir, file_name)
-    
+
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
 
