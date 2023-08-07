@@ -38,11 +38,10 @@ jobs:
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
-      # todo: it seems centos7 doesn't support python 3.9
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: "3.9"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
