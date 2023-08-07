@@ -170,7 +170,7 @@ class TestTable(TestCase):
         df = spark.createDataFrame(data, schema)
         tbl = FeatureTable(df)
         hash_str = lambda x: hashlib.md5(str(x).encode('utf-8', 'strict'),
-                             usedforsecurity=False).hexdigest()
+                                         usedforsecurity=False).hexdigest()
         hash_int = lambda x: int(hash_str(x), 16) % 100
         hash_value = []
         for row in df.collect():
