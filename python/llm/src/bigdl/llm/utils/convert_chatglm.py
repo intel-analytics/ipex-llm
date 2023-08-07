@@ -261,6 +261,7 @@ class BaseConverter:
             cls.dump_model(f, model, ggml_type)
 
         print(f"{cls.MODEL_TYPE.name} GGML model saved to {save_path}")
+        return save_path
 
 
 class ChatGLMConverter(BaseConverter):
@@ -397,9 +398,9 @@ def _convert_chatglm_hf_to_ggml_(model_path, outfile_dir, outtype):
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
 
     if hasattr(model.config, "multi_query_attention"):
-        ChatGLM2Converter.convert(model, tokenizer, ggml_type, outfile_dir)
+        return ChatGLM2Converter.convert(model, tokenizer, ggml_type, outfile_dir)
     else:
-        ChatGLMConverter.convert(model, tokenizer, ggml_type, outfile_dir)
+        return ChatGLMConverter.convert(model, tokenizer, ggml_type, outfile_dir)
 
 
 def main():

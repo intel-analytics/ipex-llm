@@ -77,7 +77,7 @@ def _convert_starcoder(model_path, outfile_dir, outtype):
 
 
 def _convert_chatglm(model_path, outfile_dir, outtype):
-    _convert_chatglm_hf_to_ggml(model_path, outfile_dir, outtype)
+    return _convert_chatglm_hf_to_ggml(model_path, outfile_dir, outtype)
 
 
 def _convert_to_ggml(model_path: str, outfile_dir: str,

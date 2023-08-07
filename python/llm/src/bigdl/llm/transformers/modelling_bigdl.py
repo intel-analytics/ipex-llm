@@ -38,12 +38,13 @@ class BigdlNativeForCausalLM:
         :param pretrained_model_name_or_path: Path for converted BigDL-LLM optimized ggml
                binary checkpoint. The checkpoint should be converted by ``bigdl.llm.llm_convert``.
         :param model_family: The model family of the pretrained checkpoint.
-               Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"`` and ``"starcoder"``.
+               Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"``, ``"starcoder"``
+               and ``"chatglm"``.
         :param dtype: Which quantized precision will be converted.
                 Now only `int4` and `int8` are supported, and `int8` only works for `llama`
                 , `gptneox` and `starcoder`.
         :param cache_dir: (optional) This parameter will only be used when
-               ``pretrained_model_name_or_path`` is a hugginface checkpoint or hub repo id.
+               ``pretrained_model_name_or_path`` is a huggingface checkpoint or hub repo id.
                It indicates the saving path for the converted low precision model.
         :param tmp_path: (optional) Which path to store the intermediate fp16 model during the
                conversion process. Default to `None` so that intermediate model will not be saved.
@@ -51,9 +52,9 @@ class BigdlNativeForCausalLM:
 
         :return: a model instance
         """
-        invalidInputError(model_family in ['llama', 'gptneox', 'bloom', 'starcoder'],
+        invalidInputError(model_family in ['llama', 'gptneox', 'bloom', 'starcoder', 'chatglm'],
                           "Now we only support model family: 'llama', 'gptneox', 'bloom',"
-                          " 'starcoder', '{}' is not in the list.".format(model_family))
+                          " 'starcoder', 'chatglm', '{}' is not in the list.".format(model_family))
         invalidInputError(dtype.lower() in ['int4', 'int8'],
                           "Now we only support int4 and int8 as date type for weight")
 
@@ -71,3 +72,6 @@ class BigdlNativeForCausalLM:
         elif model_family == 'starcoder':
             from bigdl.llm.ggml.model.starcoder import Starcoder
             return Starcoder(model_path=ggml_model_path, **kwargs)
+        elif model_family == 'chatglm':
+            from bigdl.llm.ggml.model.chatglm import ChatGLM
+            return ChatGLM(model_path=ggml_model_path, **kwargs)

@@ -80,10 +80,9 @@ def convert_model(input_path: str,
 
     # chatglm merges convertion and quantization into one operation.
     if model_family == 'chatglm':
-        _convert_chatglm(model_path=input_path,
-                         outfile_dir=output_path,
-                         outtype=dtype)
-        return
+        return _convert_chatglm(model_path=input_path,
+                                outfile_dir=output_path,
+                                outtype=dtype)
 
     if tmp_path is not None:
         model_name = Path(input_path).stem
