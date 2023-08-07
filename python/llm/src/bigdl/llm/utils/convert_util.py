@@ -1596,6 +1596,6 @@ def _convert_chatglm_hf_to_ggml(model_path, outfile_dir, outtype):
                       "For now we only support quantization type 'q4_0' and 'q4_1' "
                       "in chatglm family.")
     from bigdl.llm.utils.convert_chatglm import _convert_chatglm_hf_to_ggml_
-    _convert_chatglm_hf_to_ggml_(model_path,
-                                 outfile,
-                                 outtype)
+    return _convert_chatglm_hf_to_ggml_(model_path,
+                                        outfile,
+                                        outtype)

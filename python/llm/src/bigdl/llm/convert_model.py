@@ -124,7 +124,7 @@ def main():
                         help=("outfile,save path of output quantized model."))
     parser.add_argument('-x', '--model-family', type=str, required=True,
                         help=("--model-family: Which model family your input model belongs to."
-                              "Now only `llama`/`bloom`/`gptneox` are supported."))
+                              "Now only `llama`/`bloom`/`gptneox`/`chatglm` are supported."))
     parser.add_argument('-f', '--model-format', type=str, required=True,
                         help=("The model type to be convert to a ggml compatible file."
                               "Now only `pth`/`gptq` are supported."))
