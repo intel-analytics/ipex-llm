@@ -51,6 +51,7 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
+          apt update -y
           apt install -y git cmake g++-11 gcc-11 build-essential
       - uses: actions/checkout@v3
         with:
@@ -130,6 +131,7 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
+          apt update -y
           apt install -y git cmake g++-11 gcc-11 build-essential
       - uses: actions/checkout@v3
         with:
