@@ -74,7 +74,7 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
     """info necessary for different model family initiation and configure"""
 
     client: Any  #: :meta private:
-    model_path: str
+    model_path: str  # TODO: missing doc
 
     n_ctx: int = Field(512, alias="n_ctx")
     """Token context window."""

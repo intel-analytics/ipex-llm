@@ -329,6 +329,13 @@ subtrees:
                   - file: doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s
                   - file: doc/PPML/Overview/azure_ppml_occlum
                   - file: doc/PPML/Overview/secure_lightgbm_on_spark
+  - entries:
+    - file: doc/LLM/index
+      title: "LLM"
+      subtrees:
+        - entries:
+          - file: doc/PythonAPI/LLM/index
+            title: "API Reference"
 
   - entries:
     - file: doc/UserGuide/contributor

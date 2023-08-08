@@ -48,12 +48,12 @@ class _BaseAutoModelClass:
         the weight of model's linears can be loaded to low-bit format, like int4, int5 and int8.
 
         Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
-        New Arguments:
-            load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
-            load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                             or sym_int8. (sym_int4 means symmetric int 4, asym_int4 means
-                             asymmetric int 4, etc.). Relevant low bit optimizations will
-                             be applied to the model.
+
+        :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
+        :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
+                                or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
+                                asymmetric int 4, etc. Relevant low bit optimizations will
+                                be applied to the model.
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
