@@ -38,11 +38,6 @@ jobs:
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
-      # This action only support ubuntu 16.04 to 22.04
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: "3.9"
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
@@ -52,6 +47,8 @@ jobs:
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
           yum install -y gcc-toolset-11 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -85,6 +82,7 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
+          source activate python39
           cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
           scl enable gcc-toolset-11 "cmake --build build --config Release"
@@ -92,8 +90,7 @@ jobs:
         shell: bash
         run: |
           mv src/chatglm/build/main release/main-chatglm_vnni
-          # mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
-
+          mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -104,6 +101,7 @@ jobs:
         shell: bash
         run: |
           make clean
+          conda remove -n python39 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
