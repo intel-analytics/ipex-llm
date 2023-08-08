@@ -14,6 +14,9 @@ usage() {
   echo "WORKER_HOST (default: localhost)."
   echo "WORKER_PORT (default: 21002)."
   echo "MODEL_PATH (default: empty)."
+  echo "ENABLE_TLS (default: false)."
+  echo "TLS_KEYFILE (default: "")."
+  echo "TLS_CERTFILE (default: "")."
   exit 1
 }
 
