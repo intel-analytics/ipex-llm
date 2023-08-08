@@ -88,6 +88,7 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
+          source activate python39
           cd src/chatglm
           cmake -B build
           cmake --build build --config Release
@@ -98,8 +99,7 @@ jobs:
         shell: bash
         run: |
           mv src/chatglm/build/main release/main-chatglm_vnni
-          # mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
-
+          mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:

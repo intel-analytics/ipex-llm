@@ -115,6 +115,7 @@ linux_binarys = [
     "main-starcoder",
 
     "main-chatglm_vnni",
+    "chatglm_C.cpython-39-x86_64-linux-gnu.so",
 ]
 
 
