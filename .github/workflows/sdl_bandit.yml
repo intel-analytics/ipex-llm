@@ -21,7 +21,7 @@ on:
 
 jobs:
   bandit-python:
-    runs-on: [self-hosted, SDL-TEST]
+    runs-on: [self-hosted, SDL]
     steps:
     - name: "bandit python"
       run: |
