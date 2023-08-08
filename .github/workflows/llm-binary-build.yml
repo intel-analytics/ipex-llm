@@ -41,8 +41,8 @@ jobs:
       - name: Install Python 3.9
         shell: bash
         run: |
-          yum update && yum install -y python39
-          update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
@@ -85,6 +85,7 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
+          conda activate python39
           cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
           scl enable gcc-toolset-11 "cmake --build build --config Release"
@@ -103,6 +104,7 @@ jobs:
         shell: bash
         run: |
           make clean
+          conda remove -n python39 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
