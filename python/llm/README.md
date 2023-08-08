@@ -1,8 +1,10 @@
 ## BigDL-LLM
 
-**`bigdl-llm`** is a library for running ***LLM*** (language language model) on your Intel ***laptop*** using INT4 with very low latency (for any Hugging Face *Transformers* model). 
+**`bigdl-llm`** is a library for running ***LLM*** (language language model) on your Intel ***laptop*** using INT4 with very low latency[^1] (for any Hugging Face *Transformers* model). 
 
-*(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.)*
+>*(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.)*
+
+[^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 ### Demos
 See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
@@ -22,6 +24,7 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | Falcon    | [link](example/transformers/transformers_int4/falcon)    |
 | ChatGLM   | [link](example/transformers/transformers_int4/chatglm)   | 
 | ChatGLM2  | [link](example/transformers/transformers_int4/chatglm2)  | 
+| Qwen      | [link](example/transformers/transformers_int4/qwen)      |
 | MOSS      | [link](example/transformers/transformers_int4/moss)      | 
 | Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
 | Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
@@ -31,7 +34,6 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
 | InternLM  | [link](example/transformers/transformers_int4/internlm)  |
 | Whisper   | [link](example/transformers/transformers_int4/whisper)   |
-| Qwen      | [link](example/transformers/transformers_int4/qwen)      |
 
 
 ### Working with `bigdl-llm`
