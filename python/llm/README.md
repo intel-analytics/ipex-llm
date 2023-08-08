@@ -4,8 +4,6 @@
 
 >*(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.)*
 
-[^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
-
 ### Demos
 See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
 
@@ -238,6 +236,8 @@ You may run the models using the LangChain API in `bigdl-llm`.
    #llama/gptneox model family is currently supported
    llm-chat -m "/path/to/output/model.bin" -x llama
    ```
+
+[^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 ### `bigdl-llm` Dependence 
 The native code/lib in `bigdl-llm` has been built using the following tools; in particular, lower  `LIBC` version on your Linux system may be incompatible with `bigdl-llm`.
