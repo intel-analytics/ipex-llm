@@ -52,6 +52,7 @@ libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers == 4.31.0', 'sentencepiece',
                'accelerate', 'tabulate']
+SERVING_DEP = ['fschat[model_worker] >= 0.2.24', 'py-cpuinfo', 'protobuf']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -245,8 +246,9 @@ def setup_package():
             raise FileNotFoundError(
                 f'Could not find package dependency file: {file_path}')
 
-    all_requires = ['py-cpuinfo']
+    all_requires = []
     all_requires += CONVERT_DEP
+    all_requires += SERVING_DEP
 
     # install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_requires = copy.deepcopy(all_requires)
@@ -277,7 +279,8 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires},
+                        "xpu": xpu_requires,
+                        "serving": SERVING_DEP},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
