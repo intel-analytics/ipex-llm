@@ -38,11 +38,6 @@ jobs:
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
-      - name: Install Python 3.9
-        shell: bash
-        run: |
-          conda remove -n python39 --all -y
-          conda create -n python39 python=3.9 -y
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
@@ -52,6 +47,8 @@ jobs:
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
           yum install -y gcc-toolset-11 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
