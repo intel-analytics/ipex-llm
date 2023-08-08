@@ -88,7 +88,6 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
-          source activate python39
           cd src/chatglm
           cmake -B build
           cmake --build build --config Release
@@ -106,10 +105,6 @@ jobs:
           name: linux-avxvnni
           path: |
             release
-      - name: Clean up test environment
-        shell: bash
-        run: |
-          make clean
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
