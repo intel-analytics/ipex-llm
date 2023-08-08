@@ -85,7 +85,7 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
-          conda activate python39
+          source activate python39
           cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
           scl enable gcc-toolset-11 "cmake --build build --config Release"
