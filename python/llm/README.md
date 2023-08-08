@@ -31,6 +31,7 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
 | InternLM  | [link](example/transformers/transformers_int4/internlm)  |
 | Whisper   | [link](example/transformers/transformers_int4/whisper)   |
+| Qwen      | [link](example/transformers/transformers_int4/qwen)      |
 
 
 ### Working with `bigdl-llm`
