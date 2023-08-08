@@ -64,7 +64,7 @@ from ctypes import (
     c_size_t,
 )
 import pathlib
-from bigdl.llm.utils import get_shared_lib_info
+from bigdl.llm.utils.utils import get_shared_lib_info
 from bigdl.llm.utils.common import invalidInputError
 
 

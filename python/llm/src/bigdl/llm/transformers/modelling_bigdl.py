@@ -48,7 +48,7 @@ class BigdlNativeForCausalLM:
                It indicates the saving path for the converted low precision model.
         :param tmp_path: (optional) Which path to store the intermediate fp16 model during the
                conversion process. Default to `None` so that intermediate model will not be saved.
-        :param **kwargs: keyword arguments which will be passed to the model instance
+        :param kwargs: keyword arguments which will be passed to the model instance
 
         :return: a model instance
         """
