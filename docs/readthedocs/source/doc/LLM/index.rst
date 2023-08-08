@@ -2,8 +2,7 @@ BigDL-LLM
 =========================
 
 
-
-BigDL LLM
+BigDL-LLM is a library for running LLM (Large Language Models) on your Intel laptop using INT4 with very low latency (for any Hugging Face Transformers model).
 
 -------
 
