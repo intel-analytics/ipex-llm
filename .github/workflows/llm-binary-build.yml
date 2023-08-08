@@ -41,7 +41,7 @@ jobs:
       - name: Install Python 3.9
         shell: bash
         run: |
-          yum update && yum install python39
+          yum update && yum install -y python39
           update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
       - name: Set access token
         run: |
