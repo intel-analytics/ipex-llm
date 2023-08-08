@@ -38,7 +38,6 @@
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 import warnings
 import transformers
 import importlib
@@ -46,6 +45,7 @@ import importlib
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                                current_key_name=None, convert_shape_only=False):
+    from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
     has_been_replaced = False
 
     # Through our method, certain layers that were initialized on the device "meta"
