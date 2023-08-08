@@ -51,6 +51,7 @@ libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers >= 4.31.0', 'sentencepiece',
                'accelerate', 'tabulate']
+SERVING_DEP = ['fschat ==0.2.23']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -246,6 +247,7 @@ def setup_package():
 
     all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP
+    all_requires += SERVING_DEP
 
     metadata = dict(
         name='bigdl-llm',
@@ -267,7 +269,8 @@ def setup_package():
                 'llm-convert=bigdl.llm.convert_model:main'
             ]
         },
-        extras_require={"all": all_requires},
+        extras_require={"all": all_requires,
+                        "serving": SERVING_DEP},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
