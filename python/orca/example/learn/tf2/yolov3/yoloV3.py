@@ -581,14 +581,14 @@ def main():
     safe_dir = dir_name
     file_name = os.path.basename(options.names)
     names_path = os.path.join(safe_dir, file_name)
-    
+
     dir_name = os.path.dirname(options.data_dir)
     if '../' in dir_name:
         sys.exit(1)
     safe_dir = dir_name
     file_name = os.path.basename(options.data_dir)
     data_dir = os.path.join(safe_dir, file_name)
-    
+
     dir_name = os.path.dirname(options.output_data)
     if '../' in dir_name:
         sys.exit(1)

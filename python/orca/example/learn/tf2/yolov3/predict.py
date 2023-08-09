@@ -89,7 +89,7 @@ def main():
     safe_dir = dir_name
     file_name = os.path.basename(options.names)
     names_path = os.path.join(safe_dir, file_name)
-    
+
     safe_dir = "/safe_dir/"
     dir_name = os.path.dirname(options.image)
     if '../' in dir_name:
@@ -97,7 +97,7 @@ def main():
     safe_dir = dir_name
     file_name = os.path.basename(options.image)
     image_path = os.path.join(safe_dir, file_name)
-    
+
     yolo = YoloV3(classes=options.class_num)
 
     yolo.load_weights(options.checkpoint).expect_partial()
