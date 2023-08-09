@@ -9,13 +9,14 @@ _**Fast, Distributed, Secure AI for Big Data**_
 ---
 ## Latest News
 
-- **Try the latest [`bigdl-llm`](python/llm) for running LLM (language language model) on your Intel laptop using INT4 with very low latency!** *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
+- **Try the latest [`bigdl-llm`](python/llm) for running LLM (language language model) on your Intel laptop using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
 
 <p align="center">
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-7b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models.png" width='76%'/>
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models2.png" width='76%'/>
 </p>
 
+- **[Update] Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
 
 ---
 ## Overview
@@ -405,6 +406,8 @@ If you've found BigDL useful for your project, you may cite our papers as follow
       doi={10.1109/CVPR52688.2022.02076}
   }
   ```
+
+[^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 - *[BigDL](https://arxiv.org/abs/1804.05839): A Distributed Deep Learning Framework for Big Data*
   ```
