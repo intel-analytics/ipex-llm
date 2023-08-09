@@ -44,6 +44,7 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
   - [Hugging Face `transformers` API](#hugging-face-transformers-api)
   - [LangChain API](#langchain-api)
   - [CLI Tool](#cli-tool)
+- [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
 - [`bigdl-llm` Dependence](#bigdl-llm-dependence)
 
 </details>
@@ -236,6 +237,9 @@ You may run the models using the LangChain API in `bigdl-llm`.
    #llama/gptneox model family is currently supported
    llm-chat -m "/path/to/output/model.bin" -x llama
    ```
+
+### `bigdl-llm` API Doc
+See the inital `bigdl-llm` API Doc [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).
 
 [^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
