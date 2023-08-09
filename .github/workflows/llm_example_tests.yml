@@ -9,20 +9,9 @@ concurrency:
 on:
   schedule:
     - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
-  push:
-    branches: [ main ]
-    paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_example_tests.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/example-test/action.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
   pull_request:
     branches: [ main ]
     paths:
-      - 'python/llm/**'
       - '.github/workflows/llm_example_tests.yml'
       - '.github/workflows/llm-binary-build.yml'
       - '.github/actions/llm/example-test/action.yml'
