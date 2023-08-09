@@ -68,6 +68,7 @@ class _BaseAutoModelClass:
         # we can convert the model to quantized later.
         load_in_4bit = kwargs.pop("load_in_4bit", False)
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
+        optimize_model = kwargs.pop("optimize_model", True)
 
         if load_in_4bit or load_in_low_bit:
             # load int x-bit
@@ -78,7 +79,7 @@ class _BaseAutoModelClass:
             if "pretraining_tp" in config_dict:
                 kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
-            model = cls.load_convert(q_k, *args, **kwargs)
+            model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -86,7 +87,7 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def load_convert(cls, q_k, *args, **kwargs):
+    def load_convert(cls, q_k, optimize_model, *args, **kwargs):
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
@@ -94,7 +95,7 @@ class _BaseAutoModelClass:
         qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
-        model = ggml_convert_quant(model, qtype)
+        model = ggml_convert_quant(model, qtype, optimize_model)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # add save_low_bit to pretrained model dynamically
@@ -128,6 +129,9 @@ class _BaseAutoModelClass:
         # set default torch_dtype='auto'
         kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
 
+        # set default optimize_model=True
+        optimize_model = kwargs.pop("optimize_model", True)
+
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
         # Note that the int4 linear layers cannot currently
         # be recorded in huggingface Pretrained Model or AutoConfig,
@@ -154,7 +158,7 @@ class _BaseAutoModelClass:
 
         # We forcefully modify the model's definition
         # and the tensor shape of int4 weights without quantization.
-        model = ggml_convert_quant(model, qtype, convert_shape_only=True)
+        model = ggml_convert_quant(model, qtype, optimize_model, convert_shape_only=True)
         # Load the quantized model at last.
         resolved_archive_file, is_sharded = extract_local_archive_file(
             pretrained_model_name_or_path,
