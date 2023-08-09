@@ -240,7 +240,7 @@ class LinearQuant(nn.Linear):
                 import linear_q4_0
             except ModuleNotFoundError:
                 invalidInputError(False,
-                                  "Please `pip install xe_accelerate` first.")
+                                  "Please `pip install bigdl_core_xe` first.")
 
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
