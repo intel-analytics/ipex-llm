@@ -2,6 +2,7 @@
 from csv import reader,writer
 import numpy as np
 import sys
+import os
 
 
 def split_dataset(fname,ind_arg):
@@ -47,6 +48,14 @@ def split_dataset(fname,ind_arg):
 def main():
   ind_arg=[0,1,2,3,8]
   fname=input("please type data file name:")
+  # process path traversal issue
+  safe_dir = "/safe_dir/"
+  dir_name = os.path.dirname(fname)
+  if '../' in dir_name:
+      sys.exit(1)
+  safe_dir = dir_name
+  file_name = os.path.basename(fname)
+  fname = os.path.join(safe_dir, file_name)
   if len(fname)==0:
       fname="pima-indians-diabetes.csv"
   if len(sys.argv)>1:

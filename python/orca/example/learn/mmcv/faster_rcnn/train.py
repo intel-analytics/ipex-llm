@@ -16,6 +16,7 @@
 
 import argparse
 import os
+import sys
 
 import numpy as np
 import os.path as osp
@@ -219,13 +220,21 @@ def main():
     parser.add_argument('--load_from', default=None, type=str,
                         help='checkpoint path to resume model')
     args = parser.parse_args()
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(args.dataset)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(args.dataset)
+    dataset = os.path.join(safe_dir, file_name)
 
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.cores, memory="10g")
     elif args.cluster_mode.startswith("yarn"):
         additional = None
-        if exists(join(args.dataset, "kitti_tiny.zip")):
-            additional = join(args.dataset, "kitti_tiny.zip#", args.dataset)
+        if exists(join(dataset, "kitti_tiny.zip")):
+            additional = join(dataset, "kitti_tiny.zip#", dataset)
         init_orca_context(cluster_mode="yarn-client", cores=args.cores, memory="4g",
                           num_nodes=args.num_nodes, driver_cores=4, driver_memory="2g",
                           additional_archive=additional)

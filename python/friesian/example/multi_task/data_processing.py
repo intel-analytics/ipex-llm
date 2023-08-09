@@ -15,6 +15,7 @@
 #
 
 import os
+import sys
 from argparse import ArgumentParser
 
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -107,6 +108,14 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    # process path traversal issue
+    safe_dir = "/safe_dir/"
+    dir_name = os.path.dirname(args.output_path)
+    if '../' in dir_name:
+        sys.exit(1)
+    safe_dir = dir_name
+    file_name = os.path.basename(args.output_path)
+    output_path = os.path.join(safe_dir, file_name)
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
                                memory=args.executor_memory)
@@ -144,6 +153,6 @@ if __name__ == '__main__':
                                                args.output_path,
                                                sparse_int_features,
                                                sparse_string_features, dense_features)
-    train_tbl.write_parquet(os.path.join(args.output_path, 'train_multi_task'))
-    valid_tbl.write_parquet(os.path.join(args.output_path, 'test_multi_task'))
+    train_tbl.write_parquet(os.path.join(output_path, 'train_multi_task'))
+    valid_tbl.write_parquet(os.path.join(output_path, 'test_multi_task'))
     stop_orca_context()

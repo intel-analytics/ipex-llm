@@ -16,6 +16,8 @@
 
 from bigdl.friesian.utils import SafePickle
 import argparse
+import os
+import sys
 import math
 from model import *
 from pyspark.sql.functions import array
@@ -154,7 +156,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
             embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
 
     with tempfile.TemporaryDirectory() as local_path:
-        get_remote_file_to_local(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"),
+        get_remote_file_to_local(os.path.join(data_dir, "meta/categorical_sizes.pkl"),
                                  local_path)
         with open(os.path.join(local_path, "categorical_sizes.pkl"), 'rb') as f:
             cat_sizes_dict = SafePickle.load(f)
@@ -227,6 +229,14 @@ if __name__ == '__main__':
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
 
     args = parser.parse_args()
+    # process path traversal issue
+    safe_dir_data = "/safe_dir/"
+    dir_name_data = os.path.dirname(args.data_dir)
+    if '../' in dir_name_data:
+        sys.exit(1)
+    safe_dir_data = dir_name_data
+    file_name_data = os.path.basename(args.data_dir)
+    data_dir = os.path.join(safe_dir_data, file_name_data)
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
@@ -250,15 +260,15 @@ if __name__ == '__main__':
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
 
-    train_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "train_parquet"))
-    test_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "test_parquet"))
+    train_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "train_parquet"))
+    test_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "test_parquet"))
     reindex_tbls = None
     if args.frequency_limit > 1:
         reindex_tbls = train_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
     if reindex_tbls:
-        output_dir = os.path.join(args.data_dir, "embed_reindex")
+        output_dir = os.path.join(data_dir, "embed_reindex")
         for i, c in enumerate(embed_cols):
             reindex_tbls[i].write_parquet(output_dir + "_" + c)
 
@@ -272,6 +282,6 @@ if __name__ == '__main__':
           model_dir=args.model_dir, backend=args.backend)
 
     full_tbl = train_tbl.concat(test_tbl)
-    full_tbl.write_parquet(os.path.join(args.data_dir, "user_item_parquet"))
+    full_tbl.write_parquet(os.path.join(data_dir, "user_item_parquet"))
 
     stop_orca_context()
