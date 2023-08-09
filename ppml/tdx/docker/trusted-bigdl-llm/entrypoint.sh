@@ -24,7 +24,8 @@ fi
 if [ "$#" == 0 ]; then
   echo "[INFO] no command is passed in"
   echo "[INFO] enter pass-through mode"
-  exec /usr/bin/tini -s -- "bash"
+  # exec /usr/bin/tini -s -- "bash"
+  tail -f /dev/null
 else
   runtime_command="$@"
   exec $runtime_command
