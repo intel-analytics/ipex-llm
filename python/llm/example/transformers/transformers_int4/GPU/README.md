@@ -11,7 +11,5 @@ Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](http
 For better performance, it is recommended to set environment variables on Linux:
 ```bash
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1 ENABLE_SDP_FUSION=1
-export COL_MAJOR=1
-export ENABLE_SDP_FUSION=0
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```

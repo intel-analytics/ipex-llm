@@ -26,9 +26,7 @@ For optimal performance on Arc, it is recommended to set several environment var
 
 ```bash
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1 ENABLE_SDP_FUSION=1
-export COL_MAJOR=1
-export ENABLE_SDP_FUSION=0
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
 
 ```

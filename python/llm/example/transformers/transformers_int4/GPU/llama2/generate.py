@@ -58,7 +58,6 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        torch.xpu.synchronize()
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,

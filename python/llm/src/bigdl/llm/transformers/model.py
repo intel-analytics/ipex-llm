@@ -128,7 +128,7 @@ class _BaseAutoModelClass:
 
         # set default torch_dtype='auto'
         kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
-        
+
         # set default optimize_model=True
         optimize_model = kwargs.pop("optimize_model", True)
 
