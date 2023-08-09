@@ -34,6 +34,7 @@ import urllib.request
 import requests
 import re
 import glob
+import copy
 
 from setuptools import setup
 
@@ -247,6 +248,13 @@ def setup_package():
     all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP
 
+    # install with -f https://developer.intel.com/ipex-whl-stable-xpu
+    xpu_requires = copy.deepcopy(all_requires)
+    xpu_requires.remove('torch')
+    xpu_requires += ["torch==2.0.1a0",
+                     "torchvision==0.15.2a0",
+                     "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'"]
+
     metadata = dict(
         name='bigdl-llm',
         version=VERSION,
@@ -267,7 +275,8 @@ def setup_package():
                 'llm-convert=bigdl.llm.convert_model:main'
             ]
         },
-        extras_require={"all": all_requires},
+        extras_require={"all": all_requires,
+                        "xpu": xpu_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
