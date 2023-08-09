@@ -74,7 +74,7 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Clean up test environment
-        uses: ./.github/actions/llm/remove-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      # - name: Clean up test environment
+      #   uses: ./.github/actions/llm/remove-llm-env
+      #   env:
+      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
