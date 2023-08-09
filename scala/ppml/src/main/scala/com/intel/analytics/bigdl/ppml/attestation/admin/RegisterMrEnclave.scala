@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation.admin
 
-import com.intel.analytics.bigdl.ppml.examples.Decrypt.timing
+import com.intel.analytics.bigdl.ppml.utils.Supportive.timing
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil
 import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
