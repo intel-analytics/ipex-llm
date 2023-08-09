@@ -57,7 +57,7 @@ jobs:
           apt install -y build-essential
           apt install -y gcc-11 g++-11
           # install binutils
-          if [[ "$(ld -v | awk '{print  $NF}')" != "2.36.1"]]; then
+          if [[ "$(ld -v | awk '{print  $NF}')" != "2.36.1" ]]; then
             wget http://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.gz
             tar xzf binutils-2.36.1.tar.gz
             cd binutils-2.36.1
