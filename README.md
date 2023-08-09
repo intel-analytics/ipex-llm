@@ -12,8 +12,8 @@ _**Fast, Distributed, Secure AI for Big Data**_
 - **Try the latest [`bigdl-llm`](python/llm) for running LLM (language language model) on your Intel laptop using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
 
 <p align="center">
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-7b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models.png" width='76%'/>
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models2.png" width='76%'/>
 </p>
 
 - **[Update] Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
