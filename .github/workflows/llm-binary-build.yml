@@ -113,8 +113,8 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
-          cd src/chatglm
           cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          cd src/chatglm
           $cmake_path -B build
           $cmake_path --build build --config Release
         env:
