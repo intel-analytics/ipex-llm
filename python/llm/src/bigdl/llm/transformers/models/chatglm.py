@@ -201,23 +201,25 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
 
             if torch.is_autocast_cpu_enabled():
-                attention_mask = torch.ones(query_layer.shape[2], key_layer.shape[2], dtype=torch.bool).tril(diagonal=0)
+                attention_mask = torch.ones(query_layer.shape[2],
+                                            key_layer.shape[2],
+                                            dtype=torch.bool).tril(diagonal=0)
                 attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
                 attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
                 query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
                 key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
                 value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
                 context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                key_layer,
-                                                                                value_layer,
-                                                                                attention_mask,
-                                                                                is_causal=False)
+                                                                                 key_layer,
+                                                                                 value_layer,
+                                                                                 attention_mask,
+                                                                                 is_causal=False)
             else:
                 context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                key_layer,
-                                                                                value_layer,
-                                                                                attention_mask,
-                                                                                is_causal=True)
+                                                                                 key_layer,
+                                                                                 value_layer,
+                                                                                 attention_mask,
+                                                                                 is_causal=True)
         else:
             if attention_mask is not None:
                 attention_mask = ~attention_mask
