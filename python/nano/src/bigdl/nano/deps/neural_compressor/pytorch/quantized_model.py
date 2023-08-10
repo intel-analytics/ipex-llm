@@ -17,6 +17,7 @@ from pathlib import Path
 import yaml
 import os
 import operator
+import torch
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
@@ -55,7 +56,10 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         )
         ipex_quantization = False
         # only ipex quantization saves this file
-        if os.path.exists(os.path.join(path, "best_configure.json")):
+        if isinstance(path, dict) and "best_configure.json" in path:
+            ipex_quantization = True
+            import intel_extension_for_pytorch as ipex
+        if not isinstance(path, dict) and os.path.exists(os.path.join(path, "best_configure.json")):
             ipex_quantization = True
             import intel_extension_for_pytorch as ipex
         if ipex_quantization:
@@ -65,18 +69,34 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
         # so we only quantize the internal nn.Module to fix this issue,
         # so we should load weight using internal nn.Module also
-        if isinstance(model, LightningModule) and compare_version("neural_compressor",
-                                                                  operator.ge, "2.0"):
-            qmodel = PyTorchModel(load(path, model.model, example_inputs=example_inputs))
+        if isinstance(path, dict):
+            weights_file = path['best_model.pt']
+            try:
+                stat_dict = torch.jit.load(weights_file)
+            except:
+                stat_dict = torch.load(weights_file)
+            if isinstance(model, LightningModule) and compare_version("neural_compressor",
+                                                                      operator.ge, "2.0"):
+                qmodel = PyTorchModel(load(stat_dict, model.model, example_inputs=example_inputs))
+            else:
+                qmodel = PyTorchModel(load(stat_dict, model, example_inputs=example_inputs))
         else:
-            qmodel = PyTorchModel(load(path, model, example_inputs=example_inputs))
+            if isinstance(model, LightningModule) and compare_version("neural_compressor",
+                                                                      operator.ge, "2.0"):
+                qmodel = PyTorchModel(load(path, model.model, example_inputs=example_inputs))
+            else:
+                qmodel = PyTorchModel(load(path, model, example_inputs=example_inputs))
         from packaging import version
         if version.parse(inc_version) < version.parse("1.11"):
-            path = Path(path)
-            tune_cfg_file = path / 'best_configure.yaml'
-            with open(tune_cfg_file, 'r') as f:
-                tune_cfg = yaml.safe_load(f)
+            if isinstance(path, dict):
+                tune_cfg = yaml.safe_load(path['best_configure.yaml'])
                 qmodel.tune_cfg = tune_cfg
+            else:
+                path = Path(path)
+                tune_cfg_file = path / 'best_configure.yaml'
+                with open(tune_cfg_file, 'r') as f:
+                    tune_cfg = yaml.safe_load(f)
+                    qmodel.tune_cfg = tune_cfg
         thread_num = status.get('thread_num', None)
         if thread_num == {}:
             thread_num = None
