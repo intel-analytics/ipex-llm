@@ -199,13 +199,34 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
     if query_layer.size(0) > 1 and pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             is_causal=True)
+
+            if torch.is_autocast_cpu_enabled():
+                attention_mask = torch.ones(query_layer.shape[2], key_layer.shape[2], dtype=torch.bool).tril(diagonal=0)
+                attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
+                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
+                query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
+                key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
+                value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
+                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                                key_layer,
+                                                                                value_layer,
+                                                                                attention_mask,
+                                                                                is_causal=False)
+            else:
+                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                                key_layer,
+                                                                                value_layer,
+                                                                                attention_mask,
+                                                                                is_causal=True)
         else:
             if attention_mask is not None:
                 attention_mask = ~attention_mask
+            attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
+            if torch.is_autocast_cpu_enabled():
+                query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
+                key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
+                value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
+                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
@@ -232,13 +253,19 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
             device=query_layer.device
         )
 
+        matmul_result = torch.empty(
+            output_size[0] * output_size[1],
+            output_size[2], output_size[3], dtype=query_layer.dtype,
+        )
+
         # Raw attention scores. [b * np, sq, sk]
-        matmul_result = torch.baddbmm(
+        torch.baddbmm(
             matmul_input_buffer,
             query_layer.transpose(0, 1),  # [b * np, sq, hn]
             key_layer.transpose(1, 2),  # [b * np, hn, sk]
             beta=0.0,
             alpha=(1.0 / self.norm_factor),
+            out=matmul_result
         )
 
         # change view to [b, np, sq, sk]
@@ -281,7 +308,11 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         # change view [b * np, sq, sk]
         attention_probs = attention_probs.view(output_size[0] * output_size[1], output_size[2], -1)
         # matmul: [b * np, sq, hn]
-        context_layer = torch.bmm(attention_probs, value_layer)
+        context_layer = torch.empty(
+            output_size[0] * output_size[1],
+            output_size[2], value_layer.size(-1), dtype=value_layer.dtype,
+        )
+        torch.bmm(attention_probs, value_layer, out=context_layer)
         # change view [b, np, sq, hn]
         context_layer = context_layer.view(*output_size)
         # [b, np, sq, hn] --> [sq, b, np, hn]
