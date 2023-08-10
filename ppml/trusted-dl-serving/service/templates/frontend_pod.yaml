@@ -59,9 +59,11 @@ spec:
         sgx.intel.com/epc: 21474836280
         sgx.intel.com/enclave: 1
         sgx.intel.com/provision: 1
+      {{- end }}
       limits:
         cpu: 2
         memory: 10Gi
+      {{- if eq .Values.TEEMode "sgx" }}
         sgx.intel.com/epc: 21474836280
         sgx.intel.com/enclave: 1
         sgx.intel.com/provision: 1
