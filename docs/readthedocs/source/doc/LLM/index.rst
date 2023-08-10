@@ -14,7 +14,7 @@ BigDL-LLM is a library for running LLM (Large Language Models) on your Intel lap
         **API Document**
         ^^^
 
-        API Document provides detailed description of LLM APIs.
+        API Document provides detailed description of BigDL-LLM APIs.
 
         +++
 

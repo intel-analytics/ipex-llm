@@ -1,4 +1,4 @@
-LLM LangChain API
+BigDL-LLM LangChain API
 =====================
 
 llm.langchain.embeddings.bigdlllm
