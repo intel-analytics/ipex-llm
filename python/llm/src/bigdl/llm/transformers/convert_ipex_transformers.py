@@ -43,9 +43,10 @@ from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 
 from intel_extension_for_pytorch.nn.utils._transformers import IPEXEmptyLinear
 
+
 def _convert_ipex_transformers(model: nn.Module):
     for name, module in model.named_children():
-        if isinstance(module, nn.Linear) or isinstance(module, IPEXEmptyLinear) and module.weight is not None:
+        if isinstance(module, (nn.Linear, IPEXEmptyLinear)):
             with init_empty_weights():
                 # create new quantized linear
                 if isinstance(module, nn.Linear):
@@ -57,7 +58,7 @@ def _convert_ipex_transformers(model: nn.Module):
                     )
                 else:
                     # "out_proj" in Llama cannot be converted to int4
-                    if "out_proj" in name:
+                    if "out_proj" in name or module.weight is None:
                         continue
 
                     new_linear = LinearQuant(
