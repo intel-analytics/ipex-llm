@@ -38,7 +38,6 @@
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 import warnings
 import transformers
 import importlib
@@ -46,6 +45,7 @@ import importlib
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                                current_key_name=None, convert_shape_only=False):
+    from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
     has_been_replaced = False
 
     # Through our method, certain layers that were initialized on the device "meta"
@@ -73,7 +73,6 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-
                     new_linear = LinearQuant(
                         module.in_features,
                         module.out_features,
@@ -112,7 +111,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def ggml_convert_quant(model, qtype, convert_shape_only=False):
+def ggml_convert_quant(model, qtype, optimize_model=True, convert_shape_only=False):
     modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_quant_linear(
         model, qtype, modules_to_not_convert, None, convert_shape_only=convert_shape_only
@@ -127,7 +126,8 @@ def ggml_convert_quant(model, qtype, convert_shape_only=False):
     else:
         model.to(torch.float32)
 
-    model = optimize(model)
+    if optimize_model:
+        model = optimize(model)
     return model
 
 
