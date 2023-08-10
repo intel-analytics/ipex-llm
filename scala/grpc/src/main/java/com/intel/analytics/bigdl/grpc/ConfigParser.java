@@ -24,6 +24,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.IOException;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * ConfigParser has static method to read config formatted in JavaBean class from YAML file
@@ -39,7 +42,20 @@ public class ConfigParser {
 
     public static <T> T loadConfigFromPath(String configPath, Class<T> valueType)
             throws IOException {
-        return objectMapper.readValue(new java.io.File(configPath), valueType);
+        // process path traversal issue
+        String safeDir = "/safe_dir/";
+        Path dirPath = Paths.get(configPath).getParent();
+        if (dirPath != null) {
+            String dirName = dirPath.toString();
+            if (dirName.contains("../")) {
+                System.exit(1);
+            }
+            safeDir = dirName;
+        }
+
+        String fileBaseName = new File(configPath).getName();
+        String safeFilePath = Paths.get(safeDir, fileBaseName).toString();
+        return objectMapper.readValue(new java.io.File(safeFilePath), valueType);
     }
     public static <T> T loadConfigFromString(String configString, Class<T> valueType)
             throws IOException {
