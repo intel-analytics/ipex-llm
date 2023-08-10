@@ -14,8 +14,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
 pip install bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-# download wheel from sourceforge(https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/bigdl_core_xe-0.0.0-cp39-cp39-linux_x86_64.whl/download), then install it
-pip install bigdl_core_xe-0.0.0-cp39-cp39-linux_x86_64.whl
+pip install bigdl-core-xe
 ```
 ### 2. Configures OneAPI environment variables
 ```bash
