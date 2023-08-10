@@ -16,6 +16,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
 pip install bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install bigdl-core-xe
 pip install librosa soundfile datasets
 pip install accelerate
 pip install SpeechRecognition sentencepiece colorama
