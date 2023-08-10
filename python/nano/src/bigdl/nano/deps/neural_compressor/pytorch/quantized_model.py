@@ -71,10 +71,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         # so we should load weight using internal nn.Module also
         if isinstance(path, dict):
             weights_file = path['best_model.pt']
-            try:
-                stat_dict = torch.jit.load(weights_file)
-            except:
-                stat_dict = torch.load(weights_file)
+            stat_dict = torch.jit.load(weights_file)
             if isinstance(model, LightningModule) and compare_version("neural_compressor",
                                                                       operator.ge, "2.0"):
                 qmodel = PyTorchModel(load(stat_dict, model.model, example_inputs=example_inputs))
