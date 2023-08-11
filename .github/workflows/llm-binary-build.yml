@@ -51,8 +51,9 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          yum install -y gcc-toolset-11 cmake git python39
+          conda update -y conda
           conda config --set auto_activate_base false
+          yum install -y gcc-toolset-11 cmake git python39
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
