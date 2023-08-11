@@ -48,7 +48,7 @@ llm.transformers.model
 llm.transformers.modelling_bigdl
 ----------------------------------------
 
-.. autoclass:: bigdl.llm.transformers.model.LlamaForCausalLM
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.LlamaForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
@@ -56,7 +56,7 @@ llm.transformers.modelling_bigdl
     .. automethod:: from_pretrained
 
 
-.. autoclass:: bigdl.llm.transformers.model.ChatGLMForCausalLM
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.ChatGLMForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
@@ -64,7 +64,7 @@ llm.transformers.modelling_bigdl
     .. automethod:: from_pretrained
 
 
-.. autoclass:: bigdl.llm.transformers.model.GptneoxForCausalLM
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.GptneoxForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
@@ -72,14 +72,14 @@ llm.transformers.modelling_bigdl
     .. automethod:: from_pretrained
 
 
-.. autoclass:: bigdl.llm.transformers.model.BloomForCausalLM
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.BloomForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
 
     .. automethod:: from_pretrained
 
-.. autoclass:: bigdl.llm.transformers.model.StarcoderForCausalLM
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.StarcoderForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
