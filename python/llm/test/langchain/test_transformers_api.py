@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.llm.langchain.llms import TransformersLLM
+from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
 from bigdl.llm.langchain.embeddings import TransformersEmbeddings
 
 
@@ -33,14 +33,26 @@ from unittest import TestCase
 import os
 
 
+
+
+
 class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
+        self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
         else:
             self.n_threads = 2         
+
+    def test_pipeline_llm(self):
+        texts = 'def hello():\n  print("hello world")\n'
+        bigdl_llm = TransformersPipelineLLM.from_model_id(model_id=self.auto_causal_model_path, task='text-generation', model_kwargs={'trust_remote_code': True})
+        
+        output = bigdl_llm(texts)
+        res = "hello()" in output
+        self.assertTrue(res)
 
         
     def test_qa_chain(self):
@@ -48,10 +60,10 @@ class Test_Langchain_Transformers_API(TestCase):
         AI is a machine’s ability to perform the cognitive functions 
         we associate with human minds, such as perceiving, reasoning, 
         learning, interacting with an environment, problem solving,
-          and even exercising creativity. You’ve probably interacted 
-          with AI even if you didn’t realize it—voice assistants like Siri 
-          and Alexa are founded on AI technology, as are some customer 
-          service chatbots that pop up to help you navigate websites.
+            and even exercising creativity. You’ve probably interacted 
+            with AI even if you didn’t realize it—voice assistants like Siri 
+            and Alexa are founded on AI technology, as are some customer 
+            service chatbots that pop up to help you navigate websites.
         '''
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_text(texts)
