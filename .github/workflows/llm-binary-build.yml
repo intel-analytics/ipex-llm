@@ -41,19 +41,19 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-      # - name: Set up Python
-      #   run: |
-      #     uses: actions/setup-python@v4
-      #     with:
-      #       python-version: "3.9"
+      - name: Build and Setup Python
+        uses: MatteoH2O1999/setup-python@v1.5.0
+        with:
+          python-version: '3.9'
+          allow-build: info
+          cache-build: true
+          cache: pip
       - name: Install Build Environment
         shell: bash
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          conda update -y conda
-          conda config --set auto_activate_base false
-          yum install -y gcc-toolset-11 cmake git python39
+          yum install -y gcc-toolset-11 cmake git
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
