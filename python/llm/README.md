@@ -133,7 +133,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
     >```
     >See the complete example [here](example/transformers/transformers_low_bit/).
   
-  *  You may also load the Hugging Face model with `transformers-style` API developed for specific models (`Llama`, `Gptneox`, `Bloom`, `Starcoder`, `ChatGLM`) as below:
+  *  You may also load the Hugging Face model with `transformers`-style API developed for specific models (`Llama`, `Gptneox`, `Bloom`, `Starcoder`, `ChatGLM`) as below:
 
 
       >```python
@@ -158,7 +158,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   
   * Currently only llama/bloom/gptneox/starcoder/chatglm model family is supported; for other models, you may use the Transformers INT4 format as described above).
   
-  * We have developed the `transformers-style` API for specific native models, you may choose the corresponding API to load the converted model.
+  * We have developed the `transformers`-style API for specific native models, you may choose the corresponding API to load the converted model.
 
    ```python
   #convert the model
