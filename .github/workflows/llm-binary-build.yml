@@ -34,48 +34,24 @@ jobs:
           name: linux-avxvnni
 
   linux-build-avxvnni:
-    runs-on: [self-hosted, AVX2, ubuntu-18.04-lts]
+    runs-on: [self-hosted, AVX2, almalinux8]
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
+      # - name: Set up Python
+      #   run: |
+      #     uses: actions/setup-python@v4
+      #     with:
+      #       python-version: "3.9"
       - name: Install Build Environment
         shell: bash
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:git-core/ppa
-          add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          apt update
-          apt install -y git
-          apt install -y build-essential
-          apt install -y gcc-11 g++-11
-          # install binutils
-          if [[ "$(ld -v | awk '{print  $NF}')" != "2.36.1" ]]; then
-            wget http://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.gz
-            tar xzf binutils-2.36.1.tar.gz
-            cd binutils-2.36.1
-            ./configure
-            make 
-            make install
-            cd ..
-          fi
-          cd ..
-          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
-            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
-            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
-              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-            fi
-          else
-            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-          fi
-          tar zxf cmake-3.27.1-linux-x86_64.tar.gz
+          yum install -y gcc-toolset-11 cmake git python39
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -84,9 +60,10 @@ jobs:
       - name: Build binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -B build
-          $cmake_path --build build --config Release
+          python --version
+          which python
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release"
         env:
           CC: gcc-11
           CXX: g++-11
