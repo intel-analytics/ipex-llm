@@ -61,6 +61,26 @@ TORCH_LINEAR_THRESHOLD = 96
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
+def ggml_convert_meta(tensor: torch.Tensor, qtype: int):
+    QK = ggml.ggml_qk_size(qtype)
+    block_size_in_bytes = ggml.ggml_type_size(qtype)
+
+    invalidInputError(tensor.dtype == torch.float,
+                      "Input tensor must be float32")
+    src = tensor.data.data_ptr()
+    src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
+    n = tensor.numel()
+    invalidInputError(n % QK == 0,
+                      "Input tensor size must be multiple of 64")
+    k = tensor.shape[-1]
+    invalidInputError(k % QK == 0,
+                      "Last dim of input tensor must be multiple of 64")
+
+    dst_size = (n // QK) * block_size_in_bytes
+    dst_tensor = torch.empty(dst_size, dtype=torch.uint8, device="meta")
+    return dst_tensor
+
+
 def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=False):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
@@ -112,12 +132,21 @@ class ParamsQuant(torch.nn.Parameter):
         if data is None:
             data = torch.empty(0)
 
-        self = torch.Tensor._make_subclass(cls, data, requires_grad)
-        self.data = data
-        self.quantized = quantized
-        self._shape = _shape
-        self.convert_shape_only = convert_shape_only
-        self.qtype = qtype
+        # extract args from data
+        if not qtype:
+            new_data = data.to(torch.uint8)
+            self = torch.Tensor._make_subclass(cls, new_data, False)
+            self.data = new_data
+            self.quantized = True
+            self._shape = new_data.shape
+            del data
+        else:
+            self = torch.Tensor._make_subclass(cls, data, requires_grad)
+            self.data = data
+            self.quantized = quantized
+            self._shape = _shape
+            self.convert_shape_only = convert_shape_only
+            self.qtype = qtype
         return self
 
     def quantize(self, device):
@@ -129,6 +158,15 @@ class ParamsQuant(torch.nn.Parameter):
             self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
+        return self
+    
+    def meta_convert(self):
+        w = self.data.contiguous().float()
+        w_quantized = ggml_convert_meta(w, self.qtype,
+                                        )
+        self.data = w_quantized
+        self.quantized = True
+        self._shape = w.shape
         return self
 
     def get_shape(self):
