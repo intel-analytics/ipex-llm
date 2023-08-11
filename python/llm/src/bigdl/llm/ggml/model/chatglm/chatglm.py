@@ -235,7 +235,7 @@ class ChatGLM(GenerationMixin):
 
         text = self.detokenize(output_tokens)
         split_text = text[len(prompt):]
-        split_text.rstrip('�') # remove partial emoji
+        split_text.rstrip('�')  # remove partial emoji
         if stop != []:
             for stop_word in stop:
                 split_text = split_text.split(stop_word)[0]
@@ -311,7 +311,8 @@ class ChatGLM(GenerationMixin):
                     break
                 text = self.detokenize(output_tokens)
                 if text.endswith('�'):
-                    # generated new token is part of an emoji (some emoji consists of multiple tokens)
+                    # generated new token is part of an emoji
+                    # (some emoji consists of multiple tokens)
                     # continue to generate more tokens to decode this emoji
                     continue
                 text = text[len(history_text):]
