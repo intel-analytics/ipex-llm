@@ -65,11 +65,11 @@ class MPIEstimator:
             invalidInputError(feature_cols is not None and label_cols is not None,
                               "feature_cols and label_cols must be provided if data is"
                               " a Spark DataFrame")
-            data = data.rdd.map(convert_row(feature_cols, label_cols))
+            data_rdd = data.rdd.map(convert_row(feature_cols, label_cols))
             # TODO: make object store memory configurable?
             object_store_address = self.mpi_runner.launch_plasma(object_store_memory="100g")
             # partition_id, subpartition_id, subpartition_size, object_id, node_ip
-            plasma_meta = data.mapPartitionsWithIndex(
+            plasma_meta = data_rdd.mapPartitionsWithIndex(
                 put_to_plasma(object_store_address)).collect()
             # The following is mainly for debugging and confirmation purpose.
             train_size_map = {}
@@ -90,12 +90,12 @@ class MPIEstimator:
                 count = 0
             data_creator = plasma_data_creator(plasma_meta, object_store_address,
                                                self.mpi_runner.processes_per_node, batch_size)
-            data.unpersist()
+            data_rdd.unpersist()
             if validation_data:
                 invalidInputError(isinstance(validation_data, DataFrame),
                                   "expect validation data to be DataFrame")
-                validation_data = validation_data.rdd.map(convert_row(feature_cols, label_cols))
-                validate_plasma_meta = validation_data.mapPartitionsWithIndex(
+                validation_data_rdd = validation_data.rdd.map(convert_row(feature_cols, label_cols))
+                validate_plasma_meta = validation_data_rdd.mapPartitionsWithIndex(
                     put_to_plasma(object_store_address)).collect()
                 validate_size_map = {}
                 for partition_id, subpartition_id, subpartition_size, object_id, ip \
@@ -118,7 +118,7 @@ class MPIEstimator:
                 validation_data_creator = plasma_data_creator(
                     validate_plasma_meta, object_store_address,
                     self.mpi_runner.processes_per_node, validate_batch_size)
-                validation_data.unpersist()
+                validation_data_rdd.unpersist()
             else:
                 validation_data_creator = None
         else:
@@ -145,7 +145,7 @@ class MPIEstimator:
         self.mpi_runner.run("{}/mpi_train.py".format(self.dir),
                             mpi_options=mpi_options,
                             pkl_path=self.dir)
-        if isinstance(data, RDD):
+        if isinstance(data, DataFrame):
             self.mpi_runner.shutdown_plasma()
 
     def shutdown(self):
