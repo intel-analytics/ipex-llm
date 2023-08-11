@@ -33,9 +33,6 @@ from unittest import TestCase
 import os
 
 
-
-
-
 class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
