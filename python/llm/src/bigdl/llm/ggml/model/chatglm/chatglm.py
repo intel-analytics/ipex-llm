@@ -234,7 +234,7 @@ class ChatGLM(GenerationMixin):
                 break
 
         text = self.detokenize(output_tokens)
-        split_text = text.split(prompt)[1]
+        split_text = text[len(prompt):]
         if stop != []:
             for stop_word in stop:
                 split_text = split_text.split(stop_word)[0]
@@ -309,7 +309,7 @@ class ChatGLM(GenerationMixin):
                     print('\n')
                     break
                 text = self.detokenize(output_tokens)
-                text = text.split(history_text)[1]
+                text = text[len(history_text):]
                 history_text += text
                 yield {
                     "id": completion_id,
