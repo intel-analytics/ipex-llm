@@ -90,5 +90,24 @@ class TestTransformersAPI(unittest.TestCase):
         res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
         self.assertTrue(res)
 
+    def test_transformers_unify_api(self):
+        from bigdl.llm.transformers import ChatGLMForCausalLM
+        model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
+        model = ChatGLMForCausalLM.from_pretrained(model_path, native=False, trust_remote_code=True, load_in_4bit=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        input_str = "Tell me the capital of France.\n\n"
+
+        with torch.inference_mode():
+            st = time.time()
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+            end = time.time()
+        print('Prompt:', input_str)
+        print('Output:', output_str)
+        print(f'Inference time: {end-st} s')
+        res = 'Paris' in output_str        
+        self.assertTrue(res)
+
 if __name__ == '__main__':
     pytest.main([__file__])
