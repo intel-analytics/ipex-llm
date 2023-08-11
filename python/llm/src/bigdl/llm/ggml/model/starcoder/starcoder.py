@@ -295,6 +295,10 @@ class Starcoder(GenerationMixin):
                 text = self.detokenize([token]).decode("utf-8", errors="ignore")
                 if text.endswith("<|endoftext|>"):
                     print('\n')
+                    return
+                elif text is not None and text in stop:
+                    print('\n')
+                    return
                 else:
                     yield {
                         "id": completion_id,
