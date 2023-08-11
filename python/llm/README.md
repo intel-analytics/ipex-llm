@@ -112,7 +112,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
   ```
 
-  After loading Hugging Face Transformers model, you could run the optimized model easily.
+  After loading Hugging Face Transformers model, you may easily run the optimized model.
 
   ```python
   #run the optimized model
@@ -132,7 +132,9 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
     >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
     >```
     >See the complete example [here](example/transformers/transformers_low_bit/).
+  
   *  You may also load the Hugging Face model with `transformers-style` API developed for specific models (`Llama`, `Gptneox`, `Bloom`, `Starcoder`, `ChatGLM`) as below:
+
 
     ```python
     #specify native to `False` to load Hugging Face Transformers Llama model with INT4 optimizations
@@ -155,13 +157,14 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   >**Notes**: 
   
   * Currently only llama/bloom/gptneox/starcoder/chatglm model family is supported; for other models, you may use the Transformers INT4 format as described above).
+  
   * We have developed the `transformers-style` API for specific native models, you may choose the corresponding API to load the converted model.
 
    ```python
   #convert the model
   from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
-          outfile='/path/to/output/', outtype='int4', model_family="llama")
+          outfile='/path/to/output/', outtypse='int4', model_family="llama")
 
   #load the converted model
   from bigdl.llm.transformers import LlamaForCausalLM
