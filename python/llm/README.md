@@ -136,11 +136,11 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   *  You may also load the Hugging Face model with `transformers-style` API developed for specific models (`Llama`, `Gptneox`, `Bloom`, `Starcoder`, `ChatGLM`) as below:
 
 
-    ```python
-    #specify native to `False` to load Hugging Face Transformers Llama model with INT4 optimizations
-    from bigdl.llm.transformers import LlamaForCausalLM
-    model = LlamaForCausalLM.from_pretrained('/path/to/model/', native=False, load_in_4bit=True)
-    ```
+      >```python
+      >#specify native to `False` to load Hugging Face Transformers Llama model with INT4 optimizations
+      >from bigdl.llm.transformers import LlamaForCausalLM
+      >model = LlamaForCausalLM.from_pretrained('/path/to/model/', native=False, load_in_4bit=True)
+      >```
 
   After the model is optimizaed using INT4 (or INT8/INT5), you may save and load the optimized model as follows:
   ```python
