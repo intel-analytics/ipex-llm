@@ -295,6 +295,7 @@ class ChatGLM(GenerationMixin):
         else:
             n_past = 0
             output_tokens = []
+            history_text = ''
             for i in range(max_tokens):
                 token = self.forward(input_ids=input_tokens,
                                      n_past=n_past,
@@ -307,7 +308,10 @@ class ChatGLM(GenerationMixin):
                 if token == self.eos_token():
                     print('\n')
                     break
-                text = self.detokenize(token)
+                text = self.detokenize(output_tokens)
+                if len(history_text) > 0:
+                    text = text.split(history_text)[-1]
+                history_text = text
                 yield {
                     "id": completion_id,
                     "object": "text_completion",
