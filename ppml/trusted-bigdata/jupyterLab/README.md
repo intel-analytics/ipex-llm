@@ -13,16 +13,16 @@ Replace the values in [values.yaml](./values.yaml). The specific parameter meani
 
 ### Prepare environment
 ```bash
-kubectl create namespace bigdl-ppml
+kubectl create namespace bigdl-ppml-jupyter
 ```
-This will create a namespace called bigdl-ppml to avoid naming conflict and organize resources.
+This will create a namespace called bigdl-ppml-jupyter to avoid naming conflict and organize resources.
 ```bash
-kubectl create secret generic kubeconfig-secret --from-file=<path_to_kubeconfig_file> -n bigdl-ppml
+kubectl create secret generic kubeconfig-secret --from-file=<path_to_kubeconfig_file> -n bigdl-ppml-jupyter
 ```
 This will create secret containing k8s information.
 ```bash
-kubectl apply -f <path_to_password_folder>/password.yaml -n bigdl-ppml
-kubectl apply -f <path_to_keys_folder>/keys.yaml -n bigdl-ppml
+kubectl apply -f <path_to_password_folder>/password.yaml -n bigdl-ppml-jupyter
+kubectl apply -f <path_to_keys_folder>/keys.yaml -n bigdl-ppml-jupyter
 ```
 This creates some security related resources. `password.yaml` and `keys.yaml` come from [generate script](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts).
 ### Install and use
@@ -31,7 +31,7 @@ helm install trusted-bigdata-service .
 ```
 This will create JupterLab.
 ```bash
-kubectl get all -n bigdl-ppml
+kubectl get all -n bigdl-ppml-jupyter
 ```
 This will check if service pod is running. If you want to access jupyter lab from frontend, forward port and access http://notebookExternalIP:jupyterPort/?token=1234qwer from browser
 ### Uninstall
