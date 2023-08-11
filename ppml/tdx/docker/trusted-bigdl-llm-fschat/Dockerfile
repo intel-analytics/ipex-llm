@@ -23,7 +23,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache --upgrade requests argparse cryptography==3.3.2 urllib3 && \
-    pip3 install --pre --upgrade bigdl-llm[all] && \
+    pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230804 && \
     cd /ppml/ && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     # Install FastChat from source requires PEP 660 support
