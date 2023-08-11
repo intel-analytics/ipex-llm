@@ -294,8 +294,8 @@ class ChatGLM(GenerationMixin):
             }
         else:
             n_past = 0
-            output_tokens = []
-            history_text = ''
+            output_tokens = input_tokens
+            history_text = prompt
             for i in range(max_tokens):
                 token = self.forward(input_ids=input_tokens,
                                      n_past=n_past,
