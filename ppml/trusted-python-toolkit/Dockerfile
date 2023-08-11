@@ -21,6 +21,7 @@ RUN pip3 install --upgrade pip && \
     pip install --no-cache-dir -U scikit-learn && \
     pip install --no-cache-dir shap && \
     pip install --no-cache-dir -U matplotlib && \
+    pip install --upgrade "protobuf<=3.20.1" && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /ppml/work/start-scripts/* && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
