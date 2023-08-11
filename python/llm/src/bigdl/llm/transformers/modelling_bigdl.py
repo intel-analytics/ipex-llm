@@ -19,6 +19,7 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+import logging
 from bigdl.llm.utils.common import invalidInputError
 from .model import *
 
@@ -53,9 +54,8 @@ class BigdlNativeForCausalLM:
 
         :return: a model instance
         """
-        invalidInputError(False,
-                          "This API has been deprecated, "
-                          "please switch to the new API for sepcific models.")
+        logging.warning("BigdlNativeForCausalLM has been deprecated, "
+                        "please switch to the new CausalLM API for sepcific models.")
         invalidInputError(model_family in ['llama', 'gptneox', 'bloom', 'starcoder', 'chatglm'],
                           "Now we only support model family: 'llama', 'gptneox', 'bloom',"
                           " 'starcoder', 'chatglm', '{}' is not in the list.".format(model_family))

@@ -90,7 +90,7 @@ class TestTransformersAPI(unittest.TestCase):
         res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
         self.assertTrue(res)
 
-    def test_transformers_unify_api(self):
+    def test_transformers_chatglm_for_causallm(self):
         from bigdl.llm.transformers import ChatGLMForCausalLM
         model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         model = ChatGLMForCausalLM.from_pretrained(model_path, native=False, trust_remote_code=True, load_in_4bit=True)

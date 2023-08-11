@@ -45,7 +45,7 @@ class Test_Models_Basics(TestCase):
         llm = Llama(self.llama_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=True)
 
-    def test_llama_unify_native_api(self):
+    def test_llama_for_causallm(self):
         llm = LlamaForCausalLM.from_pretrained(self.llama_model_path, native=True,
                                                n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=False)
@@ -62,7 +62,7 @@ class Test_Models_Basics(TestCase):
         llm = Bloom(self.bloom_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=True)
 
-    def test_bloom_unify_native_api(self):
+    def test_bloom_for_causallm(self):
         llm = BloomForCausalLM.from_pretrained(self.bloom_model_path, native=True,
                                                n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=False)
@@ -76,7 +76,7 @@ class Test_Models_Basics(TestCase):
         llm = Gptneox(self.gptneox_model_path, n_threads=self.n_threads)
         output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=True)
 
-    def test_getneox_unify_native_api(self):
+    def test_getneox_for_causallm(self):
         llm = GptneoxForCausalLM.from_pretrained(self.gptneox_model_path, native=True,
                                                  n_threads=self.n_threads)
         output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=False)
@@ -90,7 +90,7 @@ class Test_Models_Basics(TestCase):
         llm = Starcoder(self.starcoder_model_path, n_threads=self.n_threads)
         output = llm("def print_hello_world(", max_tokens=32, stream=True)
 
-    def test_starcoder_unify_native_api(self):
+    def test_starcoder_for_causallm(self):
         llm = StarcoderForCausalLM.from_pretrained(self.gptneox_model_path, native=True,
                                                    n_threads=self.n_threads)
         output = llm("def print_hello_world(", max_tokens=32, stream=False)
