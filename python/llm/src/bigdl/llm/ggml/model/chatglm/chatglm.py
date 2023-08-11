@@ -220,7 +220,7 @@ class ChatGLM(GenerationMixin):
             }
 
         n_past = 0
-        output_tokens = []
+        output_tokens = input_tokens
         for i in range(max_tokens):
             token = self.forward(input_ids=input_tokens,
                                  n_past=n_past,
@@ -234,7 +234,7 @@ class ChatGLM(GenerationMixin):
                 break
 
         text = self.detokenize(output_tokens)
-        split_text = text
+        split_text = text.split(prompt)[1]
         if stop != []:
             for stop_word in stop:
                 split_text = split_text.split(stop_word)[0]
