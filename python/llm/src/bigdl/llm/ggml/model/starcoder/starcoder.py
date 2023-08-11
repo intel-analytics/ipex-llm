@@ -295,6 +295,10 @@ class Starcoder(GenerationMixin):
                 text = self.detokenize([token]).decode("utf-8", errors="ignore")
                 if text.endswith("<|endoftext|>"):
                     print('\n')
+                    return
+                elif text is not None and text in stop:
+                    print('\n')
+                    return
                 else:
                     yield {
                         "id": completion_id,
@@ -314,9 +318,6 @@ class Starcoder(GenerationMixin):
                                 "prompt_tokens": prompt_len
                         }
                     }
-
-    def free(self):
-        starcoder_free(self.ctx)
 
     def _tokenize(self, text: bytes, add_bos: bool = False) -> List[int]:
         """Tokenize a string.
@@ -433,3 +434,8 @@ class Starcoder(GenerationMixin):
                                seed=self.seed,
                                n_threads=self.n_threads,
                                n_batch=self.n_batch)
+
+    def __del__(self):
+        if self.ctx is not None:
+            starcoder_free(self.ctx)
+            self.ctx = None

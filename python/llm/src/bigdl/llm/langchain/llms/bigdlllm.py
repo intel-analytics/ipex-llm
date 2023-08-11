@@ -332,7 +332,7 @@ class BigdlNativeLLM(LLM):
                     temperature = 0.5
                 )
                 for chunk in llm.stream("Ask 'Hi, how are you?' like a pirate:'",
-                        stop=["'","\n"]):
+                        stop=["'","\\n"]):
                     result = chunk["choices"][0]
                     print(result["text"], end='', flush=True)
 

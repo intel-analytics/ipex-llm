@@ -21,9 +21,15 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     python setup.py install && \
     mkdir -p /ppml/torchserve && \
     mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar && \
-    cd model-archiver && \
+    cd /ppml && \
+    git clone https://github.com/analytics-zoo/transformers-PPML.git && \
+    cd transformers-PPML && \
+    git checkout v4.28.1-memory-files && \
+    python setup.py install && \
+    cp -r src/transformers/encryption /usr/local/lib/python3.9/dist-packages/transformers*/transformers && \
+    ls /usr/local/lib/python3.9/dist-packages/transformers*/transformers && \
+    cd /ppml/pytorch-serve/model-archiver && \
     pip install .
-    
 
 # Stage.2 Tritonserver
 From ubuntu:20.04 as tritonserver
@@ -133,8 +139,12 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 # Torchserve
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
-COPY --from=temp /usr/loacl/lib/python3.9/dist-packages/model-archiver /usr/local/lib/python3.9/dist-packages/model-archiver
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/model_archiver /usr/local/lib/python3.9/dist-packages/model_archiver
 COPY --from=temp /usr/local/bin/torch-model-archiver /usr/local/bin/torch-model-archiver
+
+# Transformers
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
@@ -151,12 +161,20 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev libpython3-dev && \
     apt-get install -y libssl-dev && \
 # Optimization related
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch_112,inference] vit_pytorch && \
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference] && \
+    pip3 install --pre --no-cache --upgrade  vit_pytorch neural-compressor==2.2 huggingface_hub==0.14.1 regex==2023.5.5 && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
-    pip3 install --no-cache-dir torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
+    pip3 install --no-cache-dir torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+# Modify inc to receive RecursiveScriptModule directly
+    sed -i 's/if isinstance(checkpoint_dir, dict):/if isinstance(checkpoint_dir, dict) or isinstance(checkpoint_dir, torch.jit._script.RecursiveScriptModule):/g' /usr/local/lib/python3.9/dist-packages/neural_compressor/utils/pytorch.py && \
+    ls /usr/local/lib/python3.9/dist-packages/ && \
+    ls /usr/local/lib/python3.9/dist-packages/transformers* && \
+    mv /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/ && \
+    mv  /usr/local/lib/python3.9/dist-packages/tokenizers*/tokenizers* /usr/local/lib/python3.9/dist-packages/ && \
+    rm /usr/local/cuda/lib64/stubs/libcublasLt.so.11 && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     cp /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml /ppml && \
@@ -168,7 +186,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 transformers cryptography && \
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
     ls /opt/tritonserver/backends/pytorch && \
     patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
 

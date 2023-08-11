@@ -32,4 +32,4 @@ RUN cd /ppml && \
 
 WORKDIR /ppml
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+ENTRYPOINT [ "/ppml/torchserve/frontend-entrypoint.sh" ]

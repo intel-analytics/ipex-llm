@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation.admin
 
-import com.intel.analytics.bigdl.ppml.examples.Decrypt.timing
+import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil
 import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.ppml.attestation._
 import com.intel.analytics.bigdl.ppml.attestation.service.ATTESTATION_CONVENTION
 import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, JsonUtil}
 
-object RegisterMrEnclave {
+object RegisterMrEnclave extends Supportive {
   val sslConSocFactory = {
     val sslContext: SSLContext = SSLContext.getInstance("SSL")
     val trustManager: TrustManager = new X509TrustManager() {

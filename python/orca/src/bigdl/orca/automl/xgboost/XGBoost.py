@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-import pickle
+from bigdl.orca.common import SafePickle
 
 import pandas as pd
 from xgboost.sklearn import XGBRegressor
@@ -241,11 +241,11 @@ class XGBoost(BaseModel):
         return result_list
 
     def save(self, checkpoint):
-        pickle.dump(self.model, open(checkpoint, "wb"))
+        SafePickle.dump(self.model, open(checkpoint, "wb"))
 
     def restore(self, checkpoint):
         with open(checkpoint, 'rb') as f:
-            self.model = pickle.load(f)
+            self.model = SafePickle.load(f)
         self.model_init = True
 
     def _get_required_parameters(self):

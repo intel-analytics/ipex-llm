@@ -2,37 +2,38 @@ name: LLM Unit Tests on Linux
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  group: ${{ github.workflow }}-llm-linux-unittest-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/inference-test/action.yml"
+      - ".github/actions/llm/langchain-test/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_linux.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/cli-test/action.yml'
-      - '.github/actions/llm/inference-test/action.yml'
-      - '.github/actions/llm/langchain-test/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/inference-test/action.yml"
+      - ".github/actions/llm/langchain-test/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
+  workflow_call:
 
 env:
   INT4_CKPT_DIR: ./llm/ggml-actions/stable
@@ -40,27 +41,33 @@ env:
   GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
   BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
   STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
+  CHATGLM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/chatglm2-6b-q4_0.bin
 
   LLM_DIR: ./llm
   ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
+  ORIGINAL_REPLIT_CODE_PATH: ./llm/replit-code-v1-3b/
+  ORIGINAL_WHISPER_TINY_PATH: ./llm/whisper-tiny/
+  SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-unit-test-linux-avx512:
-    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
+  llm-unit-test-linux:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
+        instruction: ["AVX512"]
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", ubuntu-20.04-lts]
     env:
       THREAD_NUM: 24
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -74,8 +81,6 @@ jobs:
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Download ckpt & original models
         run: |
@@ -95,27 +100,32 @@ jobs:
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
           fi
+          # if [ ! -d $CHATGLM_INT4_CKPT_PATH ]; then
+          #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+          #   wget --no-verbose $LLM_FTP_URL/${CHATGLM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
           fi
+          if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
+            echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_REPLIT_CODE_PATH:2} -P $LLM_DIR
+          fi
+          if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
+            echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_WHISPER_TINY_PATH:2} -P $LLM_DIR
+          fi
+          if [ ! -d $SPEECH_DATASET_PATH ]; then
+            echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${SPEECH_DATASET_PATH:2} -P $LLM_DIR
+          fi
 
       - name: Run LLM cli test
         uses: ./.github/actions/llm/cli-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run LLM inference test
         uses: ./.github/actions/llm/inference-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run LLM langchain test
         uses: ./.github/actions/llm/langchain-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Clean up test environment
-        uses: ./.github/actions/llm/remove-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

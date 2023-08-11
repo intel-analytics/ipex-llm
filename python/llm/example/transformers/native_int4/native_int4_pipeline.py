@@ -95,18 +95,22 @@ def main():
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--model-family', type=str, default='llama', required=True,
-                        choices=["llama", "bloom", "gptneox", "starcoder"],
-                        help="The model family of the large language model (supported option: 'llama', "
+                        choices=["llama", "llama2", "bloom", "gptneox", "starcoder"],
+                        help="The model family of the large language model (supported option: 'llama', 'llama2', "
                              "'gptneox', 'bloom', 'starcoder')")
     parser.add_argument('--repo-id-or-model-path', type=str, required=True,
                         help='The path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default='Q: What is CPU? A:',
+    parser.add_argument('--prompt', type=str, default='Once upon a time, there existed a little girl who liked to have adventures. ',
                         help='Prompt to infer')
     parser.add_argument('--tmp-path', type=str, default='/tmp',
                         help='path to store intermediate model during the conversion process')
     args = parser.parse_args()
 
     repo_id_or_model_path = args.repo_id_or_model_path
+
+    # Currently, we can directly use llama related implementation to run llama2 models
+    if args.model_family == 'llama2':
+        args.model_family = 'llama'
 
     # Step 1: convert original model to BigDL llm model
     bigdl_llm_path = convert(repo_id_or_model_path=repo_id_or_model_path,

@@ -36,6 +36,10 @@ spec:
           value: "{{ .Values.managementPort }}"
         - name: MODEL_NAME
           value: "{{ .Values.modelName }}"
+        - name: MODEL_DECRYPTION
+          value: "{{ .Values.modelDecryption }}"
+        - name: AES_KEY
+          value: "{{ .Values.aesKey }}"
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"
@@ -50,21 +54,23 @@ spec:
         {{- end }}
         - name: BACKEND_PORT
           value: "{{ .Values.backendPort }}"
-        {{- if eq .Values.TEEMode "sgx" }}
         resources:
           requests:
             cpu: 1
             memory: 10Gi
+          {{- if eq .Values.TEEMode "sgx" }}
             sgx.intel.com/epc: 21474836280
             sgx.intel.com/enclave: 1
             sgx.intel.com/provision: 1
+          {{- end }}
           limits:
             cpu: 1
             memory: 10Gi
+          {{- if eq .Values.TEEMode "sgx" }}
             sgx.intel.com/epc: 21474836280
             sgx.intel.com/enclave: 1
             sgx.intel.com/provision: 1
-        {{- end }} 
+          {{- end }} 
       volumes:
       - name: nfs-storage
         persistentVolumeClaim:

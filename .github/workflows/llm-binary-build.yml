@@ -1,5 +1,10 @@
 name: LLM Binary Build
 
+# Cancel previous runs in the PR when you push new commits
+# concurrency:
+#   group: ${{ github.workflow }}-llm-binary-build-${{ github.event.pull_request.number || github.run_id }}
+#   cancel-in-progress: false
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -17,47 +22,113 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  linux-build-avx2:
-    runs-on: [self-hosted, AVX2, centos7]
+  check-linux-avxvnni-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: linux-avxvnni
+
+  linux-build-avxvnni:
+    runs-on: [self-hosted, AVX2, ubuntu-18.04-lts]
+    needs: check-linux-avxvnni-artifact
+    if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install Build Environment
+        shell: bash
+        run: |
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          add-apt-repository -y ppa:git-core/ppa
+          add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          apt update
+          apt install -y git
+          apt install -y build-essential
+          apt install -y gcc-11 g++-11
+          # install binutils
+          if [[ "$(ld -v | awk '{print  $NF}')" != "2.36.1" ]]; then
+            wget http://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.gz
+            tar xzf binutils-2.36.1.tar.gz
+            cd binutils-2.36.1
+            ./configure
+            make 
+            make install
+            cd ..
+          fi
+          cd ..
+          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
+            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
+            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
+              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+            fi
+          else
+            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+          fi
+          tar zxf cmake-3.27.1-linux-x86_64.tar.gz
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
-      - name: Install Build Environment
-        shell: bash
-        run: |
-          yum update -y
-          yum install -y centos-release-scl
-          yum install -y devtoolset-11
-          yum install -y sshpass netcat
+          submodules: "recursive"
       - name: Build binary
         shell: bash
         run: |
-          scl enable devtoolset-11 'make'
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          $cmake_path -B build
+          $cmake_path --build build --config Release
+        env:
+          CC: gcc-11
+          CXX: g++-11
       - name: Move release binary
         shell: bash
         run: |
           mkdir release
-          mv build/main-bloom release/main-bloom_avx2
+          mv build/main-bloom release/main-bloom
+          mv build/libbloom-api.so release/libbloom-api.so
           mv build/quantize-bloom release/quantize-bloom
-          mv build/libbloom.so release/libbloom_avx2.so
-          mv build/main-llama release/main-llama_avx2
+          mv build/libbloom.so release/libbloom_avxvnni.so
+          mv build/main-llama release/main-llama
+          mv build/libllama-api.so release/libllama-api.so
           mv build/quantize-llama release/quantize-llama
-          mv build/libllama.so release/libllama_avx2.so
-          mv build/main-gptneox release/main-gptneox_avx2
+          mv build/libllama.so release/libllama_avxvnni.so
+          mv build/main-gptneox release/main-gptneox
+          mv build/libgptneox-api.so release/libgptneox-api.so
           mv build/quantize-gptneox release/quantize-gptneox
-          mv build/libgptneox.so release/libgptneox_avx2.so
-          mv build/main-starcoder release/main-starcoder_avx2
+          mv build/libgptneox.so release/libgptneox_avxvnni.so
+          mv build/main-starcoder release/main-starcoder
+          mv build/libstarcoder-api.so release/libstarcoder-api.so
           mv build/quantize-starcoder release/quantize-starcoder
-          mv build/libstarcoder.so release/libstarcoder_avx2.so
+          mv build/libstarcoder.so release/libstarcoder_avxvnni.so
+      - name: Build Chatglm
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          cd src/chatglm
+          $cmake_path -B build
+          $cmake_path --build build --config Release
+        env:
+          CC: gcc-11
+          CXX: g++-11
+      - name: Move Chatglm binaries
+        shell: bash
+        run: |
+          mv src/chatglm/build/main release/main-chatglm_vnni
+          mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
-          name: linux-avx2
+          name: linux-avxvnni
           path: |
             release
       - name: Clean up test environment
@@ -65,56 +136,160 @@ jobs:
         run: |
           make clean
 
+  check-linux-avx512-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: linux-avx512
+
   linux-build-avx512:
-    runs-on: [self-hosted, AVX512, centos7]
+    runs-on: [self-hosted, AVX512, ubuntu-18.04-lts]
+    needs: check-linux-avx512-artifact
+    if: needs.check-linux-avx512-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Update Git
+        shell: bash
+        run: |
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          add-apt-repository -y ppa:git-core/ppa
+          apt update
+          apt install -y git
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Install Build Environment
         shell: bash
         run: |
-          yum update -y
-          yum install -y centos-release-scl
-          yum install -y devtoolset-11
-          yum install -y sshpass netcat
-      - name: Build binary
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          apt update
+          apt install -y build-essential
+          apt install -y gcc-11 g++-11
+          cd ..
+          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
+            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
+            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
+              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+            fi
+          else
+            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
+          fi
+          tar zxf cmake-3.27.1-linux-x86_64.tar.gz
+      - name: Build avx512 binary
         shell: bash
         run: |
-          scl enable devtoolset-11 'make'
-      - name: Move release binary
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          $cmake_path -DONLYAVX=OFF -DONLYAVX2=OFF -B build
+          $cmake_path --build build --config Release
+        env:
+          CC: gcc-11
+          CXX: g++-11
+      - name: Move avx512 release binary
         shell: bash
         run: |
-          mkdir release
-          mv build/main-bloom release/main-bloom_avx512
-          mv build/quantize-bloom release/quantize-bloom_avx512
-          mv build/libbloom.so release/libbloom_avx512.so
-          mv build/main-llama release/main-llama_avx512
-          mv build/quantize-llama release/quantize-llama_avx512
-          mv build/libllama.so release/libllama_avx512.so
-          mv build/main-gptneox release/main-gptneox_avx512
-          mv build/quantize-gptneox release/quantize-gptneox_avx512
-          mv build/libgptneox.so release/libgptneox_avx512.so
-          mv build/main-starcoder release/main-starcoder_avx512
-          mv build/quantize-starcoder release/quantize-starcoder_avx512
-          mv build/libstarcoder.so release/libstarcoder_avx512.so
-      - name: Archive build files
+          mkdir avx512_release
+          mv build/quantize-bloom avx512_release/quantize-bloom_avx512
+          mv build/libbloom.so avx512_release/libbloom_avx512.so
+          mv build/quantize-llama avx512_release/quantize-llama_avx512
+          mv build/libllama.so avx512_release/libllama_avx512.so
+          mv build/quantize-gptneox avx512_release/quantize-gptneox_avx512
+          mv build/libgptneox.so avx512_release/libgptneox_avx512.so
+          mv build/quantize-starcoder avx512_release/quantize-starcoder_avx512
+          mv build/libstarcoder.so avx512_release/libstarcoder_avx512.so
+      - name: Build avx2 binary
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          $cmake_path -DONLYAVX=OFF -DONLYAVX2=ON -B build
+          $cmake_path --build build --config Release
+        env:
+          CC: gcc-11
+          CXX: g++-11
+      - name: Move avx2 release binary
+        shell: bash
+        run: |
+          mkdir avx2_release
+          mv build/libbloom.so avx2_release/libbloom_avx2.so
+          mv build/libllama.so avx2_release/libllama_avx2.so
+          mv build/libgptneox.so avx2_release/libgptneox_avx2.so
+          mv build/libstarcoder.so avx2_release/libstarcoder_avx2.so
+      - name: Build avx binary
+        shell: bash
+        run: |
+          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          $cmake_path -DONLYAVX=ON -DONLYAVX2=OFF -B build
+          $cmake_path --build build --config Release
+        env:
+          CC: gcc-11
+          CXX: g++-11
+      - name: Move avx release binary
+        shell: bash
+        run: |
+          mkdir avx_release
+          mv build/libbloom.so avx_release/libbloom_avx.so
+          mv build/libllama.so avx_release/libllama_avx.so
+          mv build/libgptneox.so avx_release/libgptneox_avx.so
+          mv build/libstarcoder.so avx_release/libstarcoder_avx.so
+      # - name: Build Chatglm
+      #   shell: bash
+      #   run: |
+      #     cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+      #     cd src/chatglm
+      #     $cmake_path -B build
+      #     $cmake_path --build build --config Release
+      #   env:
+      #     CC: gcc-11
+      #     CXX: g++-11
+      - name: Archive avx512 build files
         uses: actions/upload-artifact@v3
         with:
           name: linux-avx512
           path: |
-            release
+            avx512_release
+      - name: Archive avx2 build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-avx2
+          path: |
+            avx2_release
+      - name: Archive avx build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-avx
+          path: |
+            avx_release
       - name: Clean up test environment
         shell: bash
         run: |
           make clean
 
+  check-windows-avx2-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-avx2
+
   windows-build-avx2:
     runs-on: [self-hosted, Windows]
+    needs: check-windows-avx2-artifact
+    if: needs.check-windows-avx2-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
@@ -124,6 +299,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:
@@ -142,9 +318,26 @@ jobs:
           path: |
             build/Release
 
+  check-windows-avx2-vnni-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-avx2-vnni
+
   windows-build-avx2-vnni:
     runs-on: [self-hosted, Windows]
+    needs: check-windows-avx2-vnni-artifact
+    if: needs.check-windows-avx2-vnni-artifact.outputs.if-exists == 'false'
     steps:
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Set access token
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
@@ -153,6 +346,7 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
         with:
@@ -169,25 +363,90 @@ jobs:
         run: |
           if (Test-Path ./release) { rm -r -fo release }
           mkdir release
-          mv build/Release/main-bloom.exe release/main-bloom_vnni.exe
+          # mv build/Release/main-bloom.exe release/main-bloom_vnni.exe
           mv build/Release/quantize-bloom.exe release/quantize-bloom_vnni.exe
           mv build/Release/bloom.dll release/libbloom_vnni.dll
 
-          mv build/Release/main-llama.exe release/main-llama_vnni.exe
+          # mv build/Release/main-llama.exe release/main-llama_vnni.exe
           mv build/Release/quantize-llama.exe release/quantize-llama_vnni.exe
           mv build/Release/llama.dll release/libllama_vnni.dll
 
-          mv build/Release/main-gptneox.exe release/main-gptneox_vnni.exe
+          # mv build/Release/main-gptneox.exe release/main-gptneox_vnni.exe
           mv build/Release/quantize-gptneox.exe release/quantize-gptneox_vnni.exe
           mv build/Release/gptneox.dll release/libgptneox_vnni.dll
 
-          mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
+          # mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
           mv build/Release/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
           mv build/Release/starcoder.dll release/libstarcoder_vnni.dll
-
+      - name: Build Chatglm
+        shell: powershell
+        run: |
+          cd src/chatglm
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release
+      - name: Move Chatglm binaries
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/main.exe release/main-chatglm_vnni.exe
+          mv src/chatglm/build/Release/_C.cp39-win_amd64.pyd release/chatglm_C.cp39-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
           name: windows-avx2-vnni
+          path: |
+            release
+
+  check-windows-avx-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-avx
+
+  windows-build-avx:
+    runs-on: [self-hosted, Windows]
+    needs: check-windows-avx-artifact
+    if: needs.check-windows-avx-artifact.outputs.if-exists == 'false'
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+      - name: Add cmake to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Build binary
+        shell: powershell
+        run: |
+          cmake -DONLYAVX=ON .
+          cmake --build . --config Release
+      - name: Move release binary
+        shell: powershell
+        run: |
+          if (Test-Path ./release) { rm -r -fo release }
+          mkdir release
+          mv build/Release/bloom.dll release/libbloom_avx.dll
+
+          mv build/Release/llama.dll release/libllama_avx.dll
+
+          mv build/Release/gptneox.dll release/libgptneox_avx.dll
+
+          mv build/Release/starcoder.dll release/libstarcoder_avx.dll
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-avx
           path: |
             release

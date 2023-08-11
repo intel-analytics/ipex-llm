@@ -88,7 +88,8 @@ __all__ = ['Params',
            'default_outfile',
            '_convert_gptneox_hf_to_ggml',
            '_convert_bloom_hf_to_ggml',
-           '_convert_starcoder_hf_to_ggml']
+           '_convert_starcoder_hf_to_ggml',
+           '_convert_chatglm_hf_to_ggml']
 
 
 @dataclass(frozen=True)
@@ -1586,3 +1587,15 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
         data.tofile(fout)
 
     fout.close()
+
+
+def _convert_chatglm_hf_to_ggml(model_path, outfile_dir, outtype):
+    filestem = Path(model_path).stem
+    outfile = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
+    invalidInputError(outtype in ["q4_0", "q4_1"],
+                      "For now we only support quantization type 'q4_0' and 'q4_1' "
+                      "in chatglm family.")
+    from bigdl.llm.utils.convert_chatglm import _convert_chatglm_hf_to_ggml_
+    return _convert_chatglm_hf_to_ggml_(model_path,
+                                        outfile,
+                                        outtype)

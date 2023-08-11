@@ -1,16 +1,21 @@
 name: LLM Nightly Tests
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run.
 on:
   schedule:
-    - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - '.github/workflows/llm-nightly-test.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/convert-test/action.yml'
+      - ".github/workflows/llm-nightly-test.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/convert-test/action.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -19,7 +24,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-nightly-convert-test-avx512:
-    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
+    runs-on: [self-hosted, llm, AVX512, ubuntu-20.04-lts]
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -37,10 +42,12 @@ jobs:
       GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
       BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
       STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
+
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -51,107 +58,24 @@ jobs:
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
-      
+
       - name: Install BigDL-LLM
         uses: ./.github/actions/llm/setup-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Download original models & convert 
+      - name: Download original models & convert
         uses: ./.github/actions/llm/convert-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Upload ckpt to ftp
         run: |
-          apt-get update && apt install tnftp
+          apt-get update && apt install -y tnftp
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
-    
-      - name: Clean up test environment
-        uses: ./.github/actions/llm/remove-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-  llm-nightly-inference-test-avx512:
-    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
-    needs: llm-cpp-build
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9"]
-    env:
-      INT4_CKPT_DIR: ./llm/ggml-actions/stable
-      LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
-      GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
-      BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
-      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
-
-      LLM_DIR: ./llm
-      ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
-
-      THREAD_NUM: 24
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
-
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
-      
-      - name: Install BigDL-LLM
-        uses: ./.github/actions/llm/setup-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Download ckpt & original models
-        run: |
-          if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
-            echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
-            echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
-            echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
-            echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
-          fi
-          if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
-            echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
-          fi
-
-      - name: Run LLM cli test
-        uses: ./.github/actions/llm/cli-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run LLM inference test
-        uses: ./.github/actions/llm/inference-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run LLM langchain test
-        uses: ./.github/actions/llm/langchain-test
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-    
-      - name: Clean up test environment
-        uses: ./.github/actions/llm/remove-llm-env
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+  llm-inference-test-on-linux:
+    needs: llm-nightly-convert-test-avx512
+    uses: ./.github/workflows/llm_unit_tests_linux.yml
+  llm-inference-test-on-windows:
+    needs: llm-nightly-convert-test-avx512
+    uses: ./.github/workflows/llm-nightly-test-windows.yml
