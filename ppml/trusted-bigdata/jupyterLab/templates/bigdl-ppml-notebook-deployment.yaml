@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-ppml-notebook
-  namespace: bigdl-ppml
+  namespace: bigdl-ppml-jupyter
 spec:
   replicas: 1
   selector:
