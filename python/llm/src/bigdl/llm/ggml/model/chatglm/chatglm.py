@@ -310,8 +310,8 @@ class ChatGLM(GenerationMixin):
                     break
                 text = self.detokenize(output_tokens)
                 if len(history_text) > 0:
-                    text = text.split(history_text)[-1]
-                history_text = text
+                    text = text.split(history_text)[1]
+                history_text += text
                 yield {
                     "id": completion_id,
                     "object": "text_completion",
