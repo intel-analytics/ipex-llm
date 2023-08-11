@@ -24,7 +24,7 @@ This will create secret containing k8s information.
 kubectl apply -f <path_to_password_folder>/password.yaml -n bigdl-ppml
 kubectl apply -f <path_to_keys_folder>/keys.yaml -n bigdl-ppml
 ```
-This creates some security related resources
+This creates some security related resources. `password.yaml` and `keys.yaml` come from [generate script](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts).
 ### Install and use
 ```bash
 helm install trusted-bigdata-service .
