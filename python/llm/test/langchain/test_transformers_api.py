@@ -57,13 +57,13 @@ class Test_Langchain_Transformers_API(TestCase):
         
     def test_qa_chain(self):
         texts = '''
-        AI is a machine’s ability to perform the cognitive functions 
-        we associate with human minds, such as perceiving, reasoning, 
-        learning, interacting with an environment, problem solving,
-            and even exercising creativity. You’ve probably interacted 
-            with AI even if you didn’t realize it—voice assistants like Siri 
-            and Alexa are founded on AI technology, as are some customer 
-            service chatbots that pop up to help you navigate websites.
+AI is a machine’s ability to perform the cognitive functions 
+we associate with human minds, such as perceiving, reasoning, 
+learning, interacting with an environment, problem solving,
+and even exercising creativity. You’ve probably interacted 
+with AI even if you didn’t realize it—voice assistants like Siri 
+and Alexa are founded on AI technology, as are some customer 
+service chatbots that pop up to help you navigate websites.
         '''
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_text(texts)
