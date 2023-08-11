@@ -91,7 +91,7 @@ class Test_Models_Basics(TestCase):
         output = llm("def print_hello_world(", max_tokens=32, stream=True)
 
     def test_starcoder_for_causallm(self):
-        llm = StarcoderForCausalLM.from_pretrained(self.gptneox_model_path, native=True,
+        llm = StarcoderForCausalLM.from_pretrained(self.starcoder_model_path, native=True,
                                                    n_threads=self.n_threads)
         output = llm("def print_hello_world(", max_tokens=32, stream=False)
 
