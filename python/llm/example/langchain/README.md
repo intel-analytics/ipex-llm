@@ -58,13 +58,14 @@ pip install soundfile
 ```
 
 ```bash
-python native_int4/voiceassistant.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM
+python native_int4/voiceassistant.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM -c CONTEXT_SIZE
 ```
 
 arguments info:
 - `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model
 - `-x MODEL_FAMILY`: **required**, the model family of the model specified in `-m`, available options are `llama`, `gptneox` and `bloom`
 - `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.
+- `-c CONTEXT_SIZE`: specify maximum context size. Default to be 512.
 
 When you see output says
 > listening now...
