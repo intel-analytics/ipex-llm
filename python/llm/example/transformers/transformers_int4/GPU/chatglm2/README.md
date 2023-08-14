@@ -40,11 +40,6 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
->
-> Please select the appropriate size of the ChatGLM2 model based on the capabilities of your machine.
-
-
 #### Sample Output
 #### [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b)
 ```log
