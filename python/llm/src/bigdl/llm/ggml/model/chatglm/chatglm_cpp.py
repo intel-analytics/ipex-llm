@@ -40,7 +40,7 @@ def chatglm_load(path: str,
     path = str(Path(path))
     pipeline = Pipeline(path, use_mmap)
     config = GenerationConfig(
-        max_context_length=n_ctx,
+        max_length=n_ctx,
         num_threads=n_threads,
     )
     return ChatGLMContext(pipeline, config)
@@ -54,20 +54,18 @@ def chatglm_detokenize(ctx: ChatGLMContext, input_ids: List[int]) -> str:
     return ctx.pipeline.tokenizer.decode(input_ids)
 
 
-def chatglm_eval(ctx: ChatGLMContext,
-                 input_ids: List[int],
-                 n_past: int,
-                 do_sample: bool = True,
-                 top_k: int = 0,
-                 top_p: float = 0.7,
-                 temperature: float = 0.95,
-                 ) -> int:
+def chatglm_forward(ctx: ChatGLMContext,
+                    input_ids: List[int],
+                    do_sample: bool = True,
+                    top_k: int = 0,
+                    top_p: float = 0.7,
+                    temperature: float = 0.95,
+                    ) -> int:
     ctx.config.do_sample = do_sample
     ctx.config.top_k = top_k
     ctx.config.top_p = top_p
-    ctx.temperature = temperature
-    return ctx.pipeline.model.generate_next_token(input_ids, ctx.config, n_past,
-                                                  ctx.config.max_context_length)
+    ctx.config.temperature = temperature
+    return ctx.pipeline.forward(input_ids, ctx.config)
 
 
 def chatglm_eos_token(ctx: ChatGLMContext):
