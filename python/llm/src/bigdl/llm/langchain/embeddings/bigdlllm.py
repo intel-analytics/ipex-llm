@@ -45,6 +45,7 @@
 # THE SOFTWARE.
 
 """Wrapper around BigdlNative embedding models."""
+import logging
 import importlib
 from typing import Any, Dict, List, Optional
 
@@ -62,6 +63,9 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
             from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
             llama = BigdlNativeEmbeddings(model_path="/path/to/model.bin")
     """
+
+    logging.warning("BigdlNativeEmbeddings has been deprecated, "
+                    "please switch to the new LMEmbeddings API for sepcific models.")
 
     model_family: str = "llama"
     """the model family"""
@@ -190,3 +194,153 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
         """
         embedding = self.client.embed(text)
         return list(map(float, embedding))
+
+
+class _BaseEmbeddings:
+    """Wrapper around bigdl-llm embedding models.
+
+    Example:
+        .. code-block:: python
+
+            from bigdl.llm.langchain.embeddings import LlamaEmbedding
+            llama = LlamaEmbedding(model_path="/path/to/model.bin")
+    """
+
+    GGML_Model = None
+
+    client: Any  #: :meta private:
+    model_path: str  # TODO: missing doc
+
+    n_ctx: int = Field(512, alias="n_ctx")
+    """Token context window."""
+
+    n_parts: int = Field(-1, alias="n_parts")
+    """Number of parts to split the model into. 
+    If -1, the number of parts is automatically determined."""
+
+    seed: int = Field(-1, alias="seed")
+    """Seed. If -1, a random seed is used."""
+
+    f16_kv: bool = Field(True, alias="f16_kv")
+    """Use half-precision for key/value cache."""
+
+    logits_all: bool = Field(False, alias="logits_all")
+    """Return logits for all tokens, not just the last token."""
+
+    vocab_only: bool = Field(False, alias="vocab_only")
+    """Only load the vocabulary, no weights."""\
+
+    use_mlock: bool = Field(False, alias="use_mlock")
+    """Force system to keep model in RAM."""
+
+    n_threads: Optional[int] = Field(2, alias="n_threads")
+    """Number of threads to use."""
+
+    n_batch: Optional[int] = Field(512, alias="n_batch")
+    """Number of tokens to process in parallel.
+    Should be a number between 1 and n_ctx."""
+
+    n_gpu_layers: Optional[int] = Field(0, alias="n_gpu_layers")
+    """Number of layers to be loaded into gpu memory. Default None."""
+
+    class Config:
+        """Configuration for this pydantic object."""
+
+        extra = Extra.forbid
+
+    @root_validator()
+    def validate_environment(cls, values: Dict) -> Dict:
+        """Validate that bigdl-llm library is installed."""
+        model_path = values["model_path"]
+        model_param_names = [
+            "n_ctx",
+            "n_parts",
+            "seed",
+            "f16_kv",
+            "logits_all",
+            "vocab_only",
+            "use_mlock",
+            "n_threads",
+            "n_batch",
+        ]
+        model_params = {k: values[k] for k in model_param_names}
+        # For backwards compatibility, only include if non-null.
+        if values["n_gpu_layers"] is not None:
+            model_params["n_gpu_layers"] = values["n_gpu_layers"]
+
+        try:
+
+            module = importlib.import_module(b_info['module'])
+
+            values["client"] = cls.GGML_Model(model_path, embedding=True, **model_params)
+
+            # from bigdl.llm.ggml.model.llama import Llama
+
+            # values["client"] = Llama(model_path, embedding=True, **model_params)
+
+        except ImportError:
+            raise ModuleNotFoundError(
+                "Could not import bigdl-llm library. "
+                "Please install the bigdl-llm library to "
+                "use this embedding model: pip install bigdl-llm"
+            )
+        except Exception as e:
+            raise ValueError(
+                f"Could not load Llama model from path: {model_path}. "
+                f"Please make sure the model embedding class matches "
+                "the model you want to load."
+                f"Received error {e}"
+            )
+
+        return values
+
+    @classmethod
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """Embed a list of documents using the Llama model.
+
+        Args:
+            texts: The list of texts to embed.
+
+        Returns:
+            List of embeddings, one for each text.
+        """
+        embeddings = [self.client.embed(text) for text in texts]
+        return [list(map(float, e)) for e in embeddings]
+
+    @classmethod
+    def embed_query(self, text: str) -> List[float]:
+        """Embed a query using the Llama model.
+
+        Args:
+            text: The text to embed.
+
+        Returns:
+            Embeddings for the text.
+        """
+        embedding = self.client.embed(text)
+        return list(map(float, embedding))
+
+
+class LlamaLMEmbeddings(_BaseEmbeddings):
+    from bigdl.llm.ggml.model.llama import Llama
+    GGML_Model = Llama
+
+
+class BloomLMEmbeddings(_BaseEmbeddings):
+    from bigdl.llm.ggml.model.bloom import Bloom
+    GGML = Bloom
+
+
+class GptneoxLMEmbeddings(_BaseEmbeddings):
+    from bigdl.llm.ggml.model.gptneox import Gptneox
+    GGML = Gptneox
+
+
+class ChatGLMLMEmbeddings(_BaseEmbeddings):
+    from bigdl.llm.ggml.model.chatglm import ChatGLM
+    GGML = ChatGLM
+
+
+class StarcoderForCausalLM(_BaseGGMLClass):
+    from bigdl.llm.ggml.model.starcoder import Starcoder
+    GGML_Model = Starcoder
