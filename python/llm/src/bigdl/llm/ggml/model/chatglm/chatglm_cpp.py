@@ -53,6 +53,7 @@ def chatglm_tokenize(ctx: ChatGLMContext, prompt: str) -> List[int]:
 def chatglm_detokenize(ctx: ChatGLMContext, input_ids: List[int]) -> str:
     return ctx.pipeline.tokenizer.decode(input_ids)
 
+
 def chatglm_forward(ctx: ChatGLMContext,
                     input_ids: List[int],
                     do_sample: bool = True,
@@ -65,6 +66,7 @@ def chatglm_forward(ctx: ChatGLMContext,
     ctx.config.top_p = top_p
     ctx.config.temperature = temperature
     return ctx.pipeline.forward(input_ids, ctx.config)
+
 
 def chatglm_eos_token(ctx: ChatGLMContext):
     return ctx.pipeline.model.config.eos_token_id
