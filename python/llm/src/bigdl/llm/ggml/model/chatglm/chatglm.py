@@ -423,6 +423,6 @@ class ChatGLM(GenerationMixin):
                                  top_p=top_p,
                                  temperature=temp)
             tokens_or_none = yield token
-            tokens = [token]
+            tokens.append(token)
             if tokens_or_none is not None:
                 tokens.extend(tokens_or_none)
