@@ -187,6 +187,12 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
+    cd /ppml && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    cd BigDL/python/nano/src && \
+    cp bigdl/ /usr/local/lib/python3.9/dist-packages/ -r && \
+    cd /ppml && \
+    rm -rf BigDL && \
     ls /opt/tritonserver/backends/pytorch && \
     patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
 
