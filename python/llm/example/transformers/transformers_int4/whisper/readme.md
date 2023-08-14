@@ -6,7 +6,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Recognize Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
