@@ -99,7 +99,7 @@ class MPIEstimator:
                     put_to_plasma(object_store_address)).collect()
                 validate_size_map = {}
                 for partition_id, subpartition_id, subpartition_size, object_id, ip \
-                    in validate_plasma_meta:
+                in validate_plasma_meta:
                     if ip not in validate_size_map:
                         validate_size_map[ip] = {}
                     if partition_id not in validate_size_map[ip]:
@@ -367,7 +367,7 @@ def train(config, epochs, model, train_ld, train_batches, optimizer, loss, sched
             total_samp += batch_samples
             step += 1
             should_print = ("print_freq" in config and (step % config["print_freq"] == 0)) \
-                           or (j + 1 == train_batches)
+                or (j + 1 == train_batches)
             if should_print:
                 average_batch_time = 1000.0 * total_time / total_iter
                 total_time = 0

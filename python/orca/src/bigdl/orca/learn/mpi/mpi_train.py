@@ -45,7 +45,7 @@ if init_func:
 # Wrap DDP should be done by users in model_creator
 model = model_creator(config)
 optimizer = optimizer_creator(model, config) if optimizer_creator else None
-loss = loss_creator if loss_creator else None # assume it is an instance
+loss = loss_creator if loss_creator else None  # assume it is an instance
 if scheduler_creator:
     scheduler = scheduler_creator(optimizer, config)
 else:
