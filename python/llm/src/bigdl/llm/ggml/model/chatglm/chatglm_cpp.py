@@ -63,7 +63,7 @@ def chatglm_forward(ctx: ChatGLMContext,
     ctx.config.do_sample = do_sample
     ctx.config.top_k = top_k
     ctx.config.top_p = top_p
-    ctx.temperature = temperature
+    ctx.config.temperature = temperature
     return ctx.pipeline.forward(input_ids, ctx.config)
 
 def chatglm_eos_token(ctx: ChatGLMContext):
