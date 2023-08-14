@@ -98,8 +98,8 @@ class MPIEstimator:
                 validate_plasma_meta = validation_data_rdd.mapPartitionsWithIndex(
                     put_to_plasma(object_store_address)).collect()
                 validate_size_map = {}
-                for partition_id, subpartition_id, subpartition_size, object_id, ip \
-                in validate_plasma_meta:
+                for partition_id, subpartition_id, subpartition_size, object_id, ip in \
+                    validate_plasma_meta:
                     if ip not in validate_size_map:
                         validate_size_map[ip] = {}
                     if partition_id not in validate_size_map[ip]:
