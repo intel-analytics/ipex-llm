@@ -2,11 +2,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: bigdl-ppml-service-role-binding
-  namespace: bigdl-ppml
+  namespace: bigdl-ppml-jupyter
 subjects:
   - kind: ServiceAccount
     name: bigdl-ppml-sa
-    namespace: bigdl-ppml
+    namespace: bigdl-ppml-jupyter
 roleRef:
   kind: Role
   name: bigdl-ppml-role
