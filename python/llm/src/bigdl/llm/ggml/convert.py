@@ -46,7 +46,7 @@ from pathlib import Path
 import os
 
 
-def _convert_llama(model_path, outfile_dir, outtype):
+def _convert_llama(model_path, outfile_dir, outtype, vocab_format):
     model_path = Path(model_path)
     outfile_dir = Path(outfile_dir)
     model_plus = load_some_model(model_path)
@@ -54,14 +54,14 @@ def _convert_llama(model_path, outfile_dir, outtype):
         vocab = model_plus.vocab
     else:
         vocab_dir = model_plus.paths[0].parent
-        vocab = load_vocab(vocab_dir)
+        vocab = load_vocab(vocab_dir, vocab_format)
+    params = Params.load(model_plus)
     model = model_plus.model
-    model = do_necessary_conversions(model)
+    model = do_necessary_conversions(model, params)
     output_type = pick_output_type(model, outtype)
     model = convert_to_output_type(model, output_type)
-    params = Params.guessed(model, output_type)
-    outfile_path = default_outfile(outfile_dir, params)
-    OutputFile.write_all(outfile_path, params, model, vocab)
+    outfile_path = default_outfile(outfile_dir, output_type)
+    OutputFile.write_all(outfile_path, params, output_type, model, vocab)
 
 
 def _convert_gptneox(model_path, outfile_dir, outtype):
@@ -81,7 +81,7 @@ def _convert_chatglm(model_path, outfile_dir, outtype):
 
 
 def _convert_to_ggml(model_path: str, outfile_dir: str,
-                     model_family: str = 'llama', outtype: str="fp16"):
+                     model_family: str = 'llama', outtype: str="fp16", vocab_format: str = 'spm'):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to ggml format.
 
@@ -94,6 +94,8 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     :param model_family: Which model family your input model belongs to. Default to `llama`.
             Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
     :param outtype: specify the output format. Defalut to `fp16`. Now `fp32`/`fp16` are supported.
+    :param vocab_format: specify the vocabulary format (`spm` or `bpe`).
+            Default to be `spm` and valid when ``model_family='llama'.
     """
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
@@ -111,7 +113,7 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     outtype = outtype.replace('p', '')
     print("It may takes several minutes to load the original model, please wait...")
     if model_family == 'llama':
-        _convert_llama(model_path, outfile_dir, outtype)
+        _convert_llama(model_path, outfile_dir, outtype, vocab_format)
     if model_family == 'gptneox':
         _convert_gptneox(model_path, outfile_dir, outtype)
     if model_family == 'bloom':

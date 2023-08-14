@@ -33,6 +33,7 @@ def llm_convert(model,
                 model_family,
                 outtype='int4',
                 model_format="pth",
+                vocab_format="spm",
                 **kwargs):
     """
     This function is able to:
@@ -65,6 +66,8 @@ def llm_convert(model,
     :param model_format: Specify the model format to be converted. ``pth`` is for
            PyTorch model checkpoint from Hugging Face. ``gptq`` is for GPTQ format
            model from Hugging Face.
+    :param vocab_format: Specify the vocabulary format to be `spm` or `bpe`. Default to be `spm`
+           and valid when ``model_family='llama' and model_format='pth'``.
     :param **kwargs: Supported keyword arguments includes:
 
            * ``tmp_path``: Valid when ``model_format='pth'``. It refers to the path
@@ -82,6 +85,7 @@ def llm_convert(model,
                                   output_path=outfile,
                                   model_family=model_family,
                                   dtype=outtype,
+                                  vocab_format=vocab_format,
                                   **_used_args,
                                   )
     elif model_format == "gptq":
