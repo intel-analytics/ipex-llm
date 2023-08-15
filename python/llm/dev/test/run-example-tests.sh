@@ -72,7 +72,7 @@ if [ ! -d $ORIGINAL_CHATGLM2_PATH ]; then
 fi
 
 echo ">>> Testing ChatGLM2 transformers API"
-std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/example/transformers/transformers_int4/llama2/generate.py --repo-id-or-model-path $ORIGINAL_CHATGLM2_PATH)
+std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/example/transformers/transformers_int4/chatglm2/generate.py --repo-id-or-model-path $ORIGINAL_CHATGLM2_PATH)
 echo "the output of the example is: " 
 echo $std
 if [[ ! $std == *"AI指的是人工智能"* ]]; then
