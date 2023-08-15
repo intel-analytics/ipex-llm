@@ -51,7 +51,7 @@ libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers >= 4.31.0', 'sentencepiece',
                'accelerate', 'tabulate']
-SERVING_DEP = ['fschat ==0.2.23']
+SERVING_DEP = ['fschat[model_worker] >= 0.2.24']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
