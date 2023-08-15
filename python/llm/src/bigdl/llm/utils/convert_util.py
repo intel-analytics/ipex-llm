@@ -194,7 +194,9 @@ def find_n_mult(n_ff: int, n_embd: int) -> int:
         calc_ff = (((8*n_embd) // 3 + n_mult - 1) // n_mult)*n_mult
         if calc_ff == n_ff:
             return n_mult
-    raise Exception(f"failed to find n_mult for (n_ff={n_ff}, n_embd={n_embd}).")
+    invalidInputError(False,
+                      f"Failed to find n_mult for (n_ff={n_ff}, n_embd={n_embd}).")
+
 
 @dataclass
 class Params:
@@ -208,81 +210,88 @@ class Params:
     @staticmethod
     def guessed(model: 'LazyModel') -> 'Params':
         # try transformer naming first
-        n_vocab, n_embd = model["model.embed_tokens.weight"].shape if "model.embed_tokens.weight" in model else model["tok_embeddings.weight"].shape
+        if "model.embed_tokens.weight" in model:
+            n_vocab, n_embd = model["model.embed_tokens.weight"].shape
+        else:
+            n_vocab, n_embd = model["tok_embeddings.weight"].shape
 
         # try transformer naming first
         if "model.layers.0.self_attn.q_proj.weight" in model:
-            n_layer=next(i for i in itertools.count() if f"model.layers.{i}.self_attn.q_proj.weight" not in model)
+            n_layer = next(i for i in itertools.count()
+                           if f"model.layers.{i}.self_attn.q_proj.weight" not in model)
         elif "model.layers.0.self_attn.W_pack.weight" in model:   # next: try baichuan naming
-            n_layer=next(i for i in itertools.count() if f"model.layers.{i}.self_attn.W_pack.weight" not in model)
+            n_layer = next(i for i in itertools.count()
+                           if f"model.layers.{i}.self_attn.W_pack.weight" not in model)
         else:
-            n_layer=next(i for i in itertools.count() if f"layers.{i}.attention.wq.weight" not in model)
+            n_layer = next(i for i in itertools.count()
+                           if f"layers.{i}.attention.wq.weight" not in model)
 
         if n_layer < 1:
-            raise Exception("failed to guess 'n_layer'. This model is unknown or unsupported.\n"
-                            "Suggestion: provide 'config.json' of the model in the same directory containing model files.")
+            invalidInputError(False, "Failed to guess 'n_layer'. This model is unknown or "
+                                     "unsupported.\nSuggestion: provide 'config.json' of the "
+                                     "model in the same directory containing model files.")
 
-        n_head=n_embd // 128 # guessed
+        n_head = n_embd // 128  # guessed
 
         return Params(
-            n_vocab   = n_vocab,
-            n_embd    = n_embd,
-            n_mult    = 256,
-            n_head    = n_head,
-            n_layer   = n_layer,
-            n_kv_head = None,
+            n_vocab=n_vocab,
+            n_embd=n_embd,
+            n_mult=256,
+            n_head=n_head,
+            n_layer=n_layer,
+            n_kv_head=None,
         )
-
 
     @staticmethod
     def loadHFTransformerJson(model: 'LazyModel', config_path: 'Path') -> 'Params':
         config = json.load(open(config_path))
 
-        n_vocab = config["vocab_size"];
-        n_embd  = config["hidden_size"];
-        n_head  = config["num_attention_heads"];
-        n_layer = config["num_hidden_layers"];
-        n_ff    = config["intermediate_size"];
+        n_vocab = config["vocab_size"]
+        n_embd = config["hidden_size"]
+        n_head = config["num_attention_heads"]
+        n_layer = config["num_hidden_layers"]
+        n_ff = config["intermediate_size"]
         n_kv_head = config.get("num_key_value_heads")
 
-        n_mult = find_n_mult(n_ff, n_embd);
+        n_mult = find_n_mult(n_ff, n_embd)
 
         return Params(
-            n_vocab   = n_vocab,
-            n_embd    = n_embd,
-            n_mult    = n_mult,
-            n_head    = n_head,
-            n_layer   = n_layer,
-            n_kv_head = n_kv_head,
+            n_vocab=n_vocab,
+            n_embd=n_embd,
+            n_mult=n_mult,
+            n_head=n_head,
+            n_layer=n_layer,
+            n_kv_head=n_kv_head,
         )
 
     # LLaMA v2 70B params.json
-    # {"dim": 8192, "multiple_of": 4096, "ffn_dim_multiplier": 1.3, "n_heads": 64, "n_kv_heads": 8, "n_layers": 80, "norm_eps": 1e-05, "vocab_size": -1
+    # {"dim": 8192, "multiple_of": 4096, "ffn_dim_multiplier": 1.3, "n_heads": 64, "n_kv_heads": 8,
+    # "n_layers": 80, "norm_eps": 1e-05, "vocab_size": -1}
     @staticmethod
     def loadOriginalParamsJson(model: 'LazyModel', config_path: 'Path') -> 'Params':
         config = json.load(open(config_path))
 
-        n_vocab   = config["vocab_size"];
-        n_embd    = config["dim"];
-        n_head    = config["n_heads"];
-        n_layer   = config["n_layers"];
-        n_mult    = config["multiple_of"];
+        n_vocab = config["vocab_size"]
+        n_embd = config["dim"]
+        n_head = config["n_heads"]
+        n_layer = config["n_layers"]
+        n_mult = config["multiple_of"]
 
         if n_vocab == -1:
             n_vocab = model["tok_embeddings.weight"].shape[0]
 
         return Params(
-            n_vocab   = n_vocab,
-            n_embd    = n_embd,
-            n_mult    = n_mult,
-            n_head    = n_head,
-            n_layer   = n_layer,
-            n_kv_head = None,
+            n_vocab=n_vocab,
+            n_embd=n_embd,
+            n_mult=n_mult,
+            n_head=n_head,
+            n_layer=n_layer,
+            n_kv_head=None,
         )
 
     @staticmethod
     def load(model_plus: 'ModelPlus') -> 'Params':
-        hf_config_path   = model_plus.paths[0].parent / "config.json"
+        hf_config_path = model_plus.paths[0].parent / "config.json"
         orig_config_path = model_plus.paths[0].parent / "params.json"
 
         if hf_config_path.exists():
@@ -292,12 +301,14 @@ class Params:
         else:
             params = Params.guessed(model_plus.model)
 
-        print(f'params: n_vocab:{params.n_vocab} n_embd:{params.n_embd} n_mult:{params.n_mult} n_head:{params.n_head} n_layer:{params.n_layer}')
+        print(f'params: n_vocab:{params.n_vocab} n_embd:{params.n_embd}'
+              f'n_mult:{params.n_mult} n_head:{params.n_head} n_layer:{params.n_layer}')
         return params
 
 
 class SentencePieceVocab:
-    def __init__(self, fname_tokenizer: Path, fname_added_tokens: Optional[Path], vocabtype: Optional[str]) -> None:
+    def __init__(self, fname_tokenizer: Path, fname_added_tokens: Optional[Path],
+                 vocabtype: Optional[str]) -> None:
         self.vocabtype = vocabtype
         if self.vocabtype == "bpe":
             self.sentencepiece_tokenizer = json.loads(open(str(fname_tokenizer)).read())
@@ -332,7 +343,8 @@ class SentencePieceVocab:
             byte_decoder = {v: k for k, v in byte_encoder.items()}
             for i, item in enumerate(tokenizer):
                 text: bytes
-                text = b''.join([x.to_bytes(1, byteorder='big') for x in [byte_decoder[y] for y in item]])
+                text = b''.join([x.to_bytes(1, byteorder='big') for x in [byte_decoder[y]
+                                 for y in item]])
                 score: float = -i
                 yield text, score
         else:
@@ -345,7 +357,7 @@ class SentencePieceVocab:
                 elif tokenizer.is_byte(i):
                     piece = tokenizer.id_to_piece(i)
                     if len(piece) != 6:
-                        raise Exception(f"Invalid token: {piece}")
+                        invalidInputError(False, f"Invalid token: {piece}")
                     byte_value = int(piece[3:-1], 16)
                     text = struct.pack("B", byte_value)
                 else:
@@ -480,11 +492,11 @@ class UnquantizedTensor(Tensor):
 
     def permute_part(self, n_part: int, n_head: int) -> 'UnquantizedTensor':
         r = self.ndarray.shape[0] // 3
-        return UnquantizedTensor(permute(self.ndarray[r * n_part : r * n_part + r, ...], n_head))
+        return UnquantizedTensor(permute(self.ndarray[r * n_part: r * n_part + r, ...], n_head))
 
     def part(self, n_part: int) -> 'UnquantizedTensor':
         r = self.ndarray.shape[0] // 3
-        return UnquantizedTensor(self.ndarray[r * n_part : r * n_part + r, ...])
+        return UnquantizedTensor(self.ndarray[r * n_part: r * n_part + r, ...])
 
     def permute(self, n_head: int, n_kv_head: Optional[int] = None) -> 'UnquantizedTensor':
         return UnquantizedTensor(permute(self.ndarray, n_head, n_kv_head))
@@ -537,15 +549,16 @@ class GGMLQuantizedTensor(Tensor):
         return self
 
     def permute(self, n_head: int, n_kv_head: Optional[int] = None) -> 'GGMLQuantizedTensor':
-        return GGMLQuantizedTensor(permute(self.ndarray, n_head, n_kv_head), self.shape, self.data_type)
+        return GGMLQuantizedTensor(permute(self.ndarray, n_head, n_kv_head),
+                                   self.shape, self.data_type)
 
     def permute_part(self, n_part: int, n_head: int) -> 'UnquantizedTensor':
         r = self.ndarray.shape[0] // 3
-        return UnquantizedTensor(permute(self.ndarray[r * n_part : r * n_part + r, ...], n_head))
+        return UnquantizedTensor(permute(self.ndarray[r * n_part: r * n_part + r, ...], n_head))
 
     def part(self, n_part: int) -> 'UnquantizedTensor':
         r = self.ndarray.shape[0] // 3
-        return UnquantizedTensor(self.ndarray[r * n_part : r * n_part + r, ...])
+        return UnquantizedTensor(self.ndarray[r * n_part: r * n_part + r, ...])
 
 
 GGMLCompatibleTensor = Union[UnquantizedTensor, GGMLQuantizedTensor]
@@ -728,8 +741,8 @@ class LazyTensor:
             if self.data_type.have_g_idx:
                 sys.stderr.write(
                     "Error: Input uses the newer GPTQ-for-LLaMa format (using g_idx), "
-                    "which is not yet natively supported by GGML. "
-                    "For now you can still convert this model by passing `--outtype f16` to dequantize, "
+                    "which is not yet natively supported by GGML. For now "
+                    "you can still convert this model by passing `--outtype f16` to dequantize, "
                     "but that will result in a much larger output file for no quality benefit.\n")
                 sys.exit(1)
             invalidInputError(not data_type.have_g_idx and self.data_type.have_addends and
@@ -806,17 +819,22 @@ def merge_multifile_models(models_plus: List[ModelPlus]) -> ModelPlus:
     return ModelPlus(model, paths, format, vocab)
 
 
-def permute_lazy(lazy_tensor: LazyTensor, n_head: int, n_kv_head: Optional[int] = None) -> LazyTensor:
+def permute_lazy(lazy_tensor: LazyTensor, n_head: int,
+                 n_kv_head: Optional[int] = None) -> LazyTensor:
     def load() -> Tensor:
         return lazy_tensor.load().permute(n_head, n_kv_head)
-    return LazyTensor(load, lazy_tensor.shape, lazy_tensor.data_type, f'permute({n_head}, {n_kv_head}) ' + lazy_tensor.description)
+    return LazyTensor(load, lazy_tensor.shape, lazy_tensor.data_type,
+                      f'permute({n_head}, {n_kv_head}) ' + lazy_tensor.description)
+
 
 def permute_part_lazy(lazy_tensor: LazyTensor, n_part: int, n_head: int) -> LazyTensor:
     def load() -> Tensor:
         return lazy_tensor.load().permute_part(n_part, n_head)
     s = lazy_tensor.shape.copy()
     s[0] = s[0] // 3
-    return LazyTensor(load, s, lazy_tensor.data_type, f'permute({n_head}) ' + lazy_tensor.description)
+    return LazyTensor(load, s, lazy_tensor.data_type,
+                      f'permute({n_head}) ' + lazy_tensor.description)
+
 
 def part_lazy(lazy_tensor: LazyTensor, n_part: int) -> LazyTensor:
     def load() -> Tensor:
@@ -824,6 +842,7 @@ def part_lazy(lazy_tensor: LazyTensor, n_part: int) -> LazyTensor:
     s = lazy_tensor.shape.copy()
     s[0] = s[0] // 3
     return LazyTensor(load, s, lazy_tensor.data_type, 'part ' + lazy_tensor.description)
+
 
 def convert_transformers_to_orig(model: LazyModel, params: Params) -> LazyModel:
     out = {}
@@ -833,13 +852,22 @@ def convert_transformers_to_orig(model: LazyModel, params: Params) -> LazyModel:
 
     for i in itertools.count():
         if f"model.layers.{i}.self_attn.q_proj.weight" in model:
-            out[f"layers.{i}.attention.wq.weight"] = permute_lazy(model[f"model.layers.{i}.self_attn.q_proj.weight"], params.n_head)
-            out[f"layers.{i}.attention.wk.weight"] = permute_lazy(model[f"model.layers.{i}.self_attn.k_proj.weight"], params.n_head, params.n_kv_head)
-            out[f"layers.{i}.attention.wv.weight"] = model[f"model.layers.{i}.self_attn.v_proj.weight"]
+            out[f"layers.{i}.attention.wq.weight"] = \
+                permute_lazy(model[f"model.layers.{i}.self_attn.q_proj.weight"], params.n_head)
+            out[f"layers.{i}.attention.wk.weight"] = \
+                permute_lazy(model[f"model.layers.{i}.self_attn.k_proj.weight"],
+                             params.n_head, params.n_kv_head)
+            out[f"layers.{i}.attention.wv.weight"] = \
+                model[f"model.layers.{i}.self_attn.v_proj.weight"]
         elif f"model.layers.{i}.self_attn.W_pack.weight" in model:
-            out[f"layers.{i}.attention.wq.weight"] = permute_part_lazy(model[f"model.layers.{i}.self_attn.W_pack.weight"], 0, params.n_head)
-            out[f"layers.{i}.attention.wk.weight"] = permute_part_lazy(model[f"model.layers.{i}.self_attn.W_pack.weight"], 1, params.n_head)
-            out[f"layers.{i}.attention.wv.weight"] = part_lazy(model[f"model.layers.{i}.self_attn.W_pack.weight"], 2)
+            out[f"layers.{i}.attention.wq.weight"] = \
+                permute_part_lazy(model[f"model.layers.{i}.self_attn.W_pack.weight"],
+                                  0, params.n_head)
+            out[f"layers.{i}.attention.wk.weight"] = \
+                permute_part_lazy(model[f"model.layers.{i}.self_attn.W_pack.weight"],
+                                  1, params.n_head)
+            out[f"layers.{i}.attention.wv.weight"] = \
+                part_lazy(model[f"model.layers.{i}.self_attn.W_pack.weight"], 2)
         else:
             break
         out[f"layers.{i}.attention.wo.weight"] = model[f"model.layers.{i}.self_attn.o_proj.weight"]
@@ -1205,7 +1233,8 @@ class OutputFile:
         of.fout.close()
 
     @staticmethod
-    def write_all(fname_out: Path, params: Params, file_type: GGMLFileType, model: LazyModel, vocab: Vocab) -> None:
+    def write_all(fname_out: Path, params: Params, file_type: GGMLFileType, model: LazyModel,
+                  vocab: Vocab) -> None:
         check_vocab_size(params, vocab)
         of = OutputFile(fname_out)
         of.write_file_header(params, file_type)
@@ -1364,7 +1393,7 @@ def default_outfile(model_paths: List[Path], file_type: GGMLFileType) -> Path:
         GGMLFileType.MostlyQ4_1: "q4_1",
         GGMLFileType.PerLayerIsQ4_1: "q4_1",
     }[file_type]
-    ret = model_paths[0].parent / f"ggml-model-{namestr}.bin"
+    ret = model_paths[0] / f"ggml-model-{namestr}.bin"
     if ret in model_paths:
         sys.stderr.write(
             f"Error: Default output path ({ret}) would overwrite the input. "

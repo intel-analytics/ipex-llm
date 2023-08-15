@@ -134,6 +134,8 @@ def main():
                               "Now only `pth`/`gptq` are supported."))
     parser.add_argument('-t', '--outtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
+    parser.add_argument('-b', '--vocab_format', type=str, default='spm', choices=["spm", "bpe"],
+                        help="vocab format (default: spm), valid when `model_family=llama`.")
 
     # pth specific args
     parser.add_argument('-p', '--tmp-path', type=str, default=None,

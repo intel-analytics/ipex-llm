@@ -60,7 +60,7 @@ def _convert_llama(model_path, outfile_dir, outtype, vocab_format):
     model = do_necessary_conversions(model, params)
     output_type = pick_output_type(model, outtype)
     model = convert_to_output_type(model, output_type)
-    outfile_path = default_outfile(outfile_dir, output_type)
+    outfile_path = default_outfile([outfile_dir], output_type)
     OutputFile.write_all(outfile_path, params, output_type, model, vocab)
 
 

@@ -93,11 +93,13 @@ def convert_model(input_path: str,
     if tmp_path is not None:
         model_name = Path(input_path).stem
         tmp_ggml_file_path = os.path.join(tmp_path, f'{model_name}_{int(time.time())}')
+        print('tmp_ggml_file_path:', tmp_ggml_file_path)
         _convert_to_ggml(model_path=input_path,
                          outfile_dir=tmp_ggml_file_path,
                          model_family=model_family,
                          outtype="fp16",
                          vocab_format=vocab_format)
+        print('tmp_ggml_file_path:', tmp_ggml_file_path)
         tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
         return quantize(input_path=tmp_ggml_file_path,
                         output_path=output_path,
@@ -128,7 +130,7 @@ def main():
                               "Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported."))
     parser.add_argument('-t', '--dtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
-    parser.add_argument('-p', '--vocab_format', type=str, default='spm', choices=["spm", "bpe"],
+    parser.add_argument('-b', '--vocab_format', type=str, default='spm', choices=["spm", "bpe"],
                         help="vocab format (default: spm), valid when `model_family=llama`.")
     parser.add_argument('-p', '--tmp_path', type=str, default=None,
                         help="Which path to store the intermediate model during the"
