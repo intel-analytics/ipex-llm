@@ -93,13 +93,11 @@ def convert_model(input_path: str,
     if tmp_path is not None:
         model_name = Path(input_path).stem
         tmp_ggml_file_path = os.path.join(tmp_path, f'{model_name}_{int(time.time())}')
-        print('tmp_ggml_file_path:', tmp_ggml_file_path)
         _convert_to_ggml(model_path=input_path,
                          outfile_dir=tmp_ggml_file_path,
                          model_family=model_family,
                          outtype="fp16",
                          vocab_format=vocab_format)
-        print('tmp_ggml_file_path:', tmp_ggml_file_path)
         tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
         return quantize(input_path=tmp_ggml_file_path,
                         output_path=output_path,
