@@ -52,6 +52,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Extra, Field, root_validator
 
 from langchain.embeddings.base import Embeddings
+from bigdl.llm.langchain.embedding import TransformersEmbeddings
 
 
 class BigdlNativeEmbeddings(BaseModel, Embeddings):
@@ -74,6 +75,8 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
         'llama': {'module': "bigdl.llm.models", 'class': "Llama"},
         'bloom': {'module': "bigdl.llm.models", 'class': "Bloom"},
         'gptneox': {'module': "bigdl.llm.models", 'class': "Gptneox"},
+        'chatglm': {'module':"bigdl.llm.models", 'class': "ChatGLM"},
+        'starcoder': {'module':"bigdl.llm.models", 'class': "Starcoder"},
     }  #: :meta private:
     """info necessary for different model family initiation and configure"""
 
@@ -207,6 +210,9 @@ class _BaseEmbeddings:
     """
 
     GGML_Model = None
+    GGML_Module = None
+
+    native: bool: True
 
     client: Any  #: :meta private:
     model_path: str  # TODO: missing doc
@@ -270,9 +276,12 @@ class _BaseEmbeddings:
 
         try:
 
-            module = importlib.import_module(b_info['module'])
+            module = importlib.import_module(cls.GGML_Module)
 
-            values["client"] = cls.GGML_Model(model_path, embedding=True, **model_params)
+            if self.native:
+                values["client"] = cls.GGML_Model(model_path, embedding=True, **model_params)
+            else:
+                values["client"] = TransformersEmbeddings.from_model_id(model_path)
 
             # from bigdl.llm.ggml.model.llama import Llama
 
@@ -304,8 +313,11 @@ class _BaseEmbeddings:
         Returns:
             List of embeddings, one for each text.
         """
-        embeddings = [self.client.embed(text) for text in texts]
-        return [list(map(float, e)) for e in embeddings]
+        if self.native:
+            embeddings = [self.client.embed(text) for text in texts]
+            return [list(map(float, e)) for e in embeddings]
+        else:
+            return self.client.embed_documents(texts)
 
     @classmethod
     def embed_query(self, text: str) -> List[float]:
@@ -317,30 +329,38 @@ class _BaseEmbeddings:
         Returns:
             Embeddings for the text.
         """
-        embedding = self.client.embed(text)
-        return list(map(float, embedding))
+        if self.native:
+            embedding = self.client.embed(text)
+            return list(map(float, embedding))
+        else:
+            return self.client.embed_query(texts)
 
 
 class LlamaLMEmbeddings(_BaseEmbeddings):
     from bigdl.llm.ggml.model.llama import Llama
     GGML_Model = Llama
+    GGML_Module = bigdl.llm.models
 
 
 class BloomLMEmbeddings(_BaseEmbeddings):
     from bigdl.llm.ggml.model.bloom import Bloom
-    GGML = Bloom
+    GGML_Model = Bloom
+    GGML_Module = bigdl.llm.models
 
 
 class GptneoxLMEmbeddings(_BaseEmbeddings):
     from bigdl.llm.ggml.model.gptneox import Gptneox
-    GGML = Gptneox
+    GGML_Model = Gptneox
+    GGML_Module = bigdl.llm.models
 
 
 class ChatGLMLMEmbeddings(_BaseEmbeddings):
     from bigdl.llm.ggml.model.chatglm import ChatGLM
-    GGML = ChatGLM
+    GGML_Model = ChatGLM
+    GGML_Module = bigdl.llm.models
 
 
 class StarcoderForCausalLM(_BaseGGMLClass):
     from bigdl.llm.ggml.model.starcoder import Starcoder
     GGML_Model = Starcoder
+    GGML_Module = bigdl.llm.models

@@ -52,6 +52,7 @@ from pydantic import Field, root_validator
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
+from bigdl.llm.langchain.llms import TransformersLLM
 
 
 
@@ -371,6 +372,8 @@ class _BaseLLM(LLM):
     GGML_Model = None
     GGML_Module = None
 
+    native: bool: True
+
     client: Any  #: :meta private:
     """the actual model"""
 
@@ -478,7 +481,10 @@ class _BaseLLM(LLM):
 
         try:
             module = importlib.import_module(cls.GGML_Module)
-            values["client"] = cls.GGML_Model(model_path, **model_params)
+            if native:
+                values["client"] = cls.GGML_Model(model_path, **model_params)
+            else:
+                values["client"] = TransformersLLM(model_path)
 
         except ImportError:
             raise ModuleNotFoundError(
@@ -552,6 +558,7 @@ class _BaseLLM(LLM):
         prompt: str,
         stop: Optional[List[str]] = None,
         run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs
     ) -> str:
         """Call the Llama model and return the output.
 
@@ -569,18 +576,21 @@ class _BaseLLM(LLM):
                 llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
-        if self.streaming:
-            # If streaming is enabled, we use the stream
-            # method that yields as they are generated
-            # and return the combined strings from the first choices's text:
-            combined_text_output = ""
-            for token in self.stream(prompt=prompt, stop=stop, run_manager=run_manager):
-                combined_text_output += token["choices"][0]["text"]
-            return combined_text_output
+        if self.native:
+            if self.streaming:
+                # If streaming is enabled, we use the stream
+                # method that yields as they are generated
+                # and return the combined strings from the first choices's text:
+                combined_text_output = ""
+                for token in self.stream(prompt=prompt, stop=stop, run_manager=run_manager):
+                    combined_text_output += token["choices"][0]["text"]
+                return combined_text_output
+            else:
+                params = self._get_parameters(stop)
+                result = self.client(prompt=prompt, **params)
+                return result["choices"][0]["text"]
         else:
-            params = self._get_parameters(stop)
-            result = self.client(prompt=prompt, **params)
-            return result["choices"][0]["text"]
+            return self.client._call(prompt, stop, run_manager, **kwargs)
 
     def stream(
         self,
