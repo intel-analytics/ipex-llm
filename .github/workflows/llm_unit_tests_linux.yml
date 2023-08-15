@@ -17,8 +17,6 @@ on:
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
       - ".github/actions/llm/cli-test/action.yml"
-      - ".github/actions/llm/inference-test/action.yml"
-      - ".github/actions/llm/langchain-test/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
   pull_request:
     branches: [main]
@@ -29,25 +27,9 @@ on:
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
       - ".github/actions/llm/cli-test/action.yml"
-      - ".github/actions/llm/inference-test/action.yml"
-      - ".github/actions/llm/langchain-test/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
   workflow_call:
-
-env:
-  INT4_CKPT_DIR: ./llm/ggml-actions/stable
-  LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
-  GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
-  BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
-  STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
-  CHATGLM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/chatglm2-6b-q4_0.bin
-
-  LLM_DIR: ./llm
-  ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
-  ORIGINAL_REPLIT_CODE_PATH: ./llm/replit-code-v1-3b/
-  ORIGINAL_WHISPER_TINY_PATH: ./llm/whisper-tiny/
-  SPEECH_DATASET_PATH: ./llm/datasets/librispeech_asr_dummy
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -59,12 +41,48 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        instruction: ["AVX512"]
-    runs-on: [self-hosted, llm, "${{matrix.instruction}}", ubuntu-20.04-lts]
+        include:
+          - os: windows
+            instruction: avx2
+          - os: ubuntu-20.04-lts
+            instruction: avx512
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       THREAD_NUM: 24
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
+      - name: Set model directories
+        shell: bash
+        run: |
+          echo "DATASET_DIR=$(pwd)/../llm/datasets" >> "$GITHUB_ENV"
+          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
+          echo "INT4_CKPT_DIR=$(pwd)/../llm/converted-models" >> "$GITHUB_ENV"
+      - name: Create model directories
+        shell: bash
+        run: |
+          if [ ! -d $DATASET_DIR];then
+            mkdir -p $DATASET_DIR
+          fi
+          if [ ! -d $ORIGIN_DIR];then
+            mkdir -p $ORIGIN_DIR
+          fi
+          if [ ! -d $INT4_CKPT_DIR];then
+            mkdir -p $INT4_CKPT_DIR
+          fi
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "SPEECH_DATASET_PATH=${DATASET_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
+
+          echo "ORIGINAL_CHATGLM2_6B_PATH=${ORIGIN_DIR}/chatglm2-6b" >> "$GITHUB_ENV"
+          echo "ORIGINAL_REPLIT_CODE_PATH=${ORIGIN_DIR}/replit-code-v1-3b" >> "$GITHUB_ENV"
+          echo "ORIGINAL_WHISPER_TINY_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
+
+          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_q4_0.bin" >> "$GITHUB_ENV"
+          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_gptneox_q4_0.bin" >> "$GITHUB_ENV"
+          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin" >> "$GITHUB_ENV"
+          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_starcoder_q4_0.bin" >> "$GITHUB_ENV"
+          echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/chatglm2-6b-q4_0.bin" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -86,46 +104,54 @@ jobs:
         run: |
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $LLAMA_INT4_CKPT_PATH
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin -P $GPTNEOX_INT4_CKPT_PATH
           fi
           if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin -P $BLOOM_INT4_CKPT_PATH
           fi
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin -P $STARCODER_INT4_CKPT_PATH
           fi
           # if [ ! -d $CHATGLM_INT4_CKPT_PATH ]; then
           #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-          #   wget --no-verbose $LLM_FTP_URL/${CHATGLM_INT4_CKPT_PATH:2} -P $INT4_CKPT_DIR
+          #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $CHATGLM_INT4_CKPT_PATH
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:2} -P $LLM_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGINAL_CHATGLM2_6B_PATH
           fi
           if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
             echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_REPLIT_CODE_PATH:2} -P $LLM_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGINAL_REPLIT_CODE_PATH
           fi
           if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
             echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_WHISPER_TINY_PATH:2} -P $LLM_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGINAL_WHISPER_TINY_PATH
           fi
           if [ ! -d $SPEECH_DATASET_PATH ]; then
             echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${SPEECH_DATASET_PATH:2} -P $LLM_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $SPEECH_DATASET_PATH
           fi
 
       - name: Run LLM cli test
         uses: ./.github/actions/llm/cli-test
 
       - name: Run LLM inference test
-        uses: ./.github/actions/llm/inference-test
+        shell: bash
+        run: |
+          python -m pip install einops datasets librosa
+          bash python/llm/test/run-llm-inference-tests.sh
 
       - name: Run LLM langchain test
-        uses: ./.github/actions/llm/langchain-test
+        shell: bash
+        run: |
+          pip install -U langchain==0.0.184
+          pip install -U chromadb==0.3.25
+          pip install -U typing_extensions==4.5.0
+          bash python/llm/test/run-llm-langchain-tests.sh

@@ -24,27 +24,46 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-nightly-convert-test-avx512:
-    runs-on: [self-hosted, llm, AVX512, ubuntu-20.04-lts]
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
+        include:
+          - os: windows
+            instruction: avx2
+          - os: ubuntu-20.04-lts
+            instruction: avx512
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
-      ORIGIN_DIR: ./llm/models
-      LLAMA_ORIGIN_PATH: ./llm/models/llama-7b-hf
-      GPTNEOX_ORIGIN_PATH: ./llm/models/gptneox-7b-redpajama-bf16
-      BLOOM_ORIGIN_PATH: ./llm/models/bloomz-7b1
-      STARCODER_ORIGIN_PATH: ./llm/models/gpt_bigcode-santacoder
-
-      INT4_CKPT_DIR: ./llm/ggml-actions/nightly
-      LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_llama_q4_0.bin
-      GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
-      BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
-      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
-
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
+      - name: Set model directories
+        shell: bash
+        run: |
+          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
+          echo "INT4_CKPT_DIR=$(pwd)/../llm/converted-models" >> "$GITHUB_ENV"
+      - name: Create model directories
+        shell: bash
+        run: |
+          if [ ! -d $ORIGIN_DIR];then
+            mkdir -p $ORIGIN_DIR
+          fi
+          if [ ! -d $INT4_CKPT_DIR];then
+            mkdir -p $INT4_CKPT_DIR
+          fi
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/gpt4all-7b-hf" >> "$GITHUB_ENV"
+          echo "GPTNEOX_ORIGIN_PATH=${ORIGIN_DIR}/gptneox-7b-redpajama-bf16" >> "$GITHUB_ENV"
+          echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloomz-7b1" >> "$GITHUB_ENV"
+          echo "STARCODER_ORIGIN_PATH=${ORIGIN_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
+
+          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_q4_0.bin" >> "$GITHUB_ENV"
+          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_gptneox_q4_0.bin" >> "$GITHUB_ENV"
+          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin" >> "$GITHUB_ENV"
+          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_starcoder_q4_0.bin" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -68,14 +87,15 @@ jobs:
       - name: Upload ckpt to ftp
         run: |
           apt-get update && apt install -y tnftp
-          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
-          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
-          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
-          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
+          rm -rf $LLAMA_INT4_CKPT_PATH
+          rm -rf $GPTNEOX_INT4_CKPT_PATH
+          rm -rf $BLOOM_INT4_CKPT_PATH
+          rm -rf $STARCODER_INT4_CKPT_PATH
 
   llm-inference-test-on-linux:
-    needs: llm-nightly-convert-test-avx512
+    needs: llm-cpp-build
     uses: ./.github/workflows/llm_unit_tests_linux.yml
-  llm-inference-test-on-windows:
-    needs: llm-nightly-convert-test-avx512
-    uses: ./.github/workflows/llm-nightly-test-windows.yml
