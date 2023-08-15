@@ -46,7 +46,7 @@ from pathlib import Path
 import os
 
 
-def _convert_llama(model_path, outfile_dir, outtype, vocab_format):
+def _convert_llama(model_path, outfile_dir, outtype):
     model_path = Path(model_path)
     outfile_dir = Path(outfile_dir)
     model_plus = load_some_model(model_path)
@@ -54,7 +54,7 @@ def _convert_llama(model_path, outfile_dir, outtype, vocab_format):
         vocab = model_plus.vocab
     else:
         vocab_dir = model_plus.paths[0].parent
-        vocab = load_vocab(vocab_dir, vocab_format)
+        vocab = load_vocab(vocab_dir, vocabtype='spm')
     params = Params.load(model_plus)
     model = model_plus.model
     model = do_necessary_conversions(model, params)
@@ -81,7 +81,7 @@ def _convert_chatglm(model_path, outfile_dir, outtype):
 
 
 def _convert_to_ggml(model_path: str, outfile_dir: str,
-                     model_family: str = 'llama', outtype: str="fp16", vocab_format: str = 'spm'):
+                     model_family: str = 'llama', outtype: str="fp16"):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to ggml format.
 
@@ -94,8 +94,6 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     :param model_family: Which model family your input model belongs to. Default to `llama`.
             Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
     :param outtype: specify the output format. Defalut to `fp16`. Now `fp32`/`fp16` are supported.
-    :param vocab_format: specify the vocabulary format (`spm` or `bpe`).
-            Default to be `spm` and valid when ``model_family='llama'.
     """
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
@@ -113,7 +111,7 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     outtype = outtype.replace('p', '')
     print("It may takes several minutes to load the original model, please wait...")
     if model_family == 'llama':
-        _convert_llama(model_path, outfile_dir, outtype, vocab_format)
+        _convert_llama(model_path, outfile_dir, outtype)
     if model_family == 'gptneox':
         _convert_gptneox(model_path, outfile_dir, outtype)
     if model_family == 'bloom':

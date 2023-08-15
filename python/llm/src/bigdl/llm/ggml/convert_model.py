@@ -27,7 +27,6 @@ def convert_model(input_path: str,
                   output_path: str,
                   model_family: str,
                   dtype: str = 'int4',
-                  vocab_format: str = 'spm',
                   tmp_path: str = None):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
@@ -45,8 +44,6 @@ def convert_model(input_path: str,
     :param dtype: Which quantized precision will be converted.
             Now only `int4` and `int8` are supported, and `int8` only works for `llama`
             and `gptneox`.
-    :param vocab_format: Which vocabulary format of input model (`spm` or `bpe`).
-           Default to be `spm` and valid when ``model_family='llama'.
     :param tmp_path: Which path to store the intermediate model during the conversion process.
             Default to `None` so that intermediate model will not be saved.
 
@@ -71,9 +68,6 @@ def convert_model(input_path: str,
     invalidInputError(os.path.isdir(input_path),
                       "The input path {} was not a directory".format(input_path))
     # shall we support model_id or just model directory?
-    # check for vocab_format
-    invalidInputError(vocab_format in ['spm', 'bpe'],
-                      f"Unsupported input vocab_format: {vocab_format}")
 
     if dtype == 'int4':
         dtype = 'q4_0'
@@ -96,8 +90,7 @@ def convert_model(input_path: str,
         _convert_to_ggml(model_path=input_path,
                          outfile_dir=tmp_ggml_file_path,
                          model_family=model_family,
-                         outtype="fp16",
-                         vocab_format=vocab_format)
+                         outtype="fp16")
         tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
         return quantize(input_path=tmp_ggml_file_path,
                         output_path=output_path,
@@ -108,8 +101,7 @@ def convert_model(input_path: str,
             _convert_to_ggml(model_path=input_path,
                              outfile_dir=tmp_ggml_file_path,
                              model_family=model_family,
-                             outtype="fp16",
-                             vocab_format=vocab_format)
+                             outtype="fp16")
             tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
             return quantize(input_path=tmp_ggml_file_path,
                             output_path=output_path,
@@ -128,8 +120,6 @@ def main():
                               "Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported."))
     parser.add_argument('-t', '--dtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
-    parser.add_argument('-b', '--vocab_format', type=str, default='spm', choices=["spm", "bpe"],
-                        help="vocab format (default: spm), valid when `model_family=llama`.")
     parser.add_argument('-p', '--tmp_path', type=str, default=None,
                         help="Which path to store the intermediate model during the"
                         "conversion process.")
