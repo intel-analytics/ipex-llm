@@ -114,7 +114,7 @@ class _BaseGGMLClass:
             class_ = getattr(module, cls.GGML_Model)
             if native:
                 invalidInputError(dtype.lower() in ['int4', 'int8'],
-                                "Now we only support int4 and int8 as date type for weight")
+                                  "Now we only support int4 and int8 as date type for weight")
                 ggml_model_path = pretrained_model_name_or_path
                 model = class_(model_path=ggml_model_path, **kwargs)
             else:
