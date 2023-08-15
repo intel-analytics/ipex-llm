@@ -2,7 +2,6 @@ ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
 ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 
-#Stage.1 Torchserve Frontend
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 ARG http_proxy
 ARG https_proxy
