@@ -65,7 +65,7 @@ echo $std
 
 
 ########## ChatGLM2
-export ORIGINAL_CHATGLM2_6B_PATH=./llm/chatglm2-6b/
+export ORIGINAL_CHATGLM2_PATH=./llm/chatglm2-6b/
 if [ ! -d $ORIGINAL_CHATGLM2_PATH ]; then
     echo "Directory $ORIGINAL_CHATGLM2_PATH not found. Downloading from FTP server..."
     wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_PATH:2} -P $LLM_DIR
