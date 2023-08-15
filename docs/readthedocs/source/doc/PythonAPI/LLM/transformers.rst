@@ -26,7 +26,7 @@ llm.transformers.model
 
 .. autoclass:: bigdl.llm.transformers.model.AutoModelForSpeechSeq2Seq
     :members:
-    :undoc-members:
+    :undoc-members: 
     :show-inheritance:
 
     .. automethod:: from_pretrained
@@ -52,6 +52,7 @@ llm.transformers.modelling_bigdl
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
 
     .. automethod:: from_pretrained
 
@@ -60,6 +61,7 @@ llm.transformers.modelling_bigdl
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
 
     .. automethod:: from_pretrained
 
@@ -68,6 +70,7 @@ llm.transformers.modelling_bigdl
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
 
     .. automethod:: from_pretrained
 
@@ -76,6 +79,7 @@ llm.transformers.modelling_bigdl
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class    
 
     .. automethod:: from_pretrained
 
@@ -83,5 +87,6 @@ llm.transformers.modelling_bigdl
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
 
     .. automethod:: from_pretrained

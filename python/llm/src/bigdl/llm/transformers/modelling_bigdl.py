@@ -19,7 +19,9 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+import importlib
 import logging
+
 from bigdl.llm.utils.common import invalidInputError
 from .model import *
 
@@ -107,42 +109,52 @@ class _BaseGGMLClass:
 
         :return: a model instance
         """
+        try:
+            module = importlib.import_module(cls.GGML_Module)
+            class_ = getattr(module, cls.GGML_Model)
+        except ImportError:
+            raise ModuleNotFoundError(
+                "Could not import llama-cpp-python library. "
+                "Please install the llama-cpp-python library to "
+                "use this embedding model: pip install llama-cpp-python"
+            )
         if native:
             invalidInputError(dtype.lower() in ['int4', 'int8'],
                               "Now we only support int4 and int8 as date type for weight")
             ggml_model_path = pretrained_model_name_or_path
-            return cls.GGML_Model(model_path=ggml_model_path,
-                                  **kwargs)
+            return class_(model_path=ggml_model_path,
+                          **kwargs)
         else:
             return cls.HF_Class.from_pretrained(pretrained_model_name_or_path,
                                                 *args, **kwargs)
 
 
 class LlamaForCausalLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.llama import Llama
-    GGML_Model = Llama
+    GGML_Module = "bigdl.llm.models"
+    GGML_Model = "Llama"
     HF_Class = AutoModelForCausalLM
 
 
 class ChatGLMForCausalLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.chatglm import ChatGLM
-    GGML_Model = ChatGLM
+    GGML_Module = "bigdl.llm.models"
+    GGML_Model = "ChatGLM"
     HF_Class = AutoModel
 
 
 class GptneoxForCausalLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.gptneox import Gptneox
-    GGML_Model = Gptneox
+    GGML_Module = "bigdl.llm.models"
+    GGML_Model = "Gptneox"
     HF_Class = AutoModelForCausalLM
 
 
 class BloomForCausalLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.bloom import Bloom
-    GGML_Model = Bloom
+    GGML_Module = "bigdl.llm.models"
+    GGML_Model = "Bloom"
     HF_Class = AutoModelForCausalLM
 
 
 class StarcoderForCausalLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.starcoder import Starcoder
-    GGML_Model = Starcoder
+    GGML_Module = "bigdl.llm.models"
+    GGML_Model = "Starcoder"
     HF_Class = AutoModelForCausalLM
+
