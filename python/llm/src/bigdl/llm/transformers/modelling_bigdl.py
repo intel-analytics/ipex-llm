@@ -157,4 +157,3 @@ class StarcoderForCausalLM(_BaseGGMLClass):
     GGML_Module = "bigdl.llm.models"
     GGML_Model = "Starcoder"
     HF_Class = AutoModelForCausalLM
-
