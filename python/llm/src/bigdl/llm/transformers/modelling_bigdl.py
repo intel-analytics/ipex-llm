@@ -116,7 +116,7 @@ class _BaseGGMLClass:
             raise ModuleNotFoundError(
                 "Could not import llama-cpp-python library. "
                 "Please install the llama-cpp-python library to "
-                "use this embedding model: pip install llama-cpp-python"
+                "use this native ggml int4 model: pip install llama-cpp-python"
             )
         if native:
             invalidInputError(dtype.lower() in ['int4', 'int8'],
