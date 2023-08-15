@@ -28,12 +28,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
         include:
           - os: windows
             instruction: avx2
+            python-version: "3.9"
           - os: ubuntu-20.04-lts
             instruction: avx512
+            python-version: "3.9"
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -40,12 +40,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
         include:
           - os: windows
             instruction: avx2
+            python-version: "3.9"
           - os: ubuntu-20.04-lts
             instruction: avx512
+            python-version: "3.9"
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       THREAD_NUM: 24
@@ -104,39 +105,39 @@ jobs:
         run: |
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $LLAMA_INT4_CKPT_PATH
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $INT4_CKPT_DIR
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin -P $GPTNEOX_INT4_CKPT_PATH
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin -P $INT4_CKPT_DIR
           fi
           if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin -P $BLOOM_INT4_CKPT_PATH
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin -P $INT4_CKPT_DIR
           fi
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin -P $STARCODER_INT4_CKPT_PATH
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin -P $INT4_CKPT_DIR
           fi
           # if [ ! -d $CHATGLM_INT4_CKPT_PATH ]; then
           #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-          #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $CHATGLM_INT4_CKPT_PATH
+          #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $INT4_CKPT_DIR
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGINAL_CHATGLM2_6B_PATH
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
             echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGINAL_REPLIT_CODE_PATH
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
             echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGINAL_WHISPER_TINY_PATH
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGIN_DIR
           fi
           if [ ! -d $SPEECH_DATASET_PATH ]; then
             echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $SPEECH_DATASET_PATH
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
           fi
 
       - name: Run LLM cli test
