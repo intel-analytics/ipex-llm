@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
         input_features = processor(sample["array"],
                                    sampling_rate=sample["sampling_rate"],
-                                   return_tensors="pt").input_features.to('xpu')
+                                   return_tensors="pt").input_features.half().to('xpu')
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,

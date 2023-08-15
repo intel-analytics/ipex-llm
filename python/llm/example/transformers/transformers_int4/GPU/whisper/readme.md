@@ -39,5 +39,5 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------
-[" Mr. Quilter is the Apostle of the Middle classes and we're glad to welcome his Gospel."]
+[' Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.']
 ```
