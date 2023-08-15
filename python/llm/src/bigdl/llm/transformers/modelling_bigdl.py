@@ -114,9 +114,9 @@ class _BaseGGMLClass:
             class_ = getattr(module, cls.GGML_Model)
         except ImportError:
             raise ModuleNotFoundError(
-                "Could not import llama-cpp-python library. "
-                "Please install the llama-cpp-python library to "
-                "use this native ggml int4 model: pip install llama-cpp-python"
+                "Could not import bigdl-llm library. "
+                "Please install the bigdl-llm library to "
+                "use this native ggml int4 model: pip install bigdl-llm"
             )
         if native:
             invalidInputError(dtype.lower() in ['int4', 'int8'],
