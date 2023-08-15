@@ -52,7 +52,7 @@ from pydantic import Field, root_validator
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
-from bigdl.llm.langchain.llms import TransformersLLM
+from bigdl.llm.langchain.llms.transformersllm import TransformersLLM
 
 
 
@@ -369,8 +369,8 @@ class _BaseLLM(LLM):
     """
 
 
-    GGML_Model = None
-    GGML_Module = None
+    GGML_Model: str
+    GGML_Module: str
 
     native: bool = True
 
@@ -658,16 +658,16 @@ class BloomLLM(_BaseLLM):
     GGML_Module = "bigdl.llm.models"
 
 
-class GptneoxLLM(_BaseEmbeddings):
-    GGML = "Gptneox"
+class GptneoxLLM(_BaseLLM):
+    GGML_Model = "Gptneox"
     GGML_Module = "bigdl.llm.models"
 
 
-class ChatGLMLLM(_BaseEmbeddings):
-    GGML = "ChatGLM"
+class ChatGLMLLM(_BaseLLM):
+    GGML_Model = "ChatGLM"
     GGML_Module = "bigdl.llm.models"
 
 
-class StarcoderLLM(_BaseGGMLClass):
+class StarcoderLLM(_BaseLLM):
     GGML_Model = "Starcoder"
     GGML_Module = "bigdl.llm.models"
