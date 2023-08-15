@@ -112,21 +112,28 @@ class _BaseGGMLClass:
         try:
             module = importlib.import_module(cls.GGML_Module)
             class_ = getattr(module, cls.GGML_Model)
+            if native:
+                invalidInputError(dtype.lower() in ['int4', 'int8'],
+                                "Now we only support int4 and int8 as date type for weight")
+                ggml_model_path = pretrained_model_name_or_path
+                model = class_(model_path=ggml_model_path, **kwargs)
+            else:
+                model = cls.HF_Class.from_pretrained(pretrained_model_name_or_path,
+                                                     *args, **kwargs)
         except ImportError:
             raise ModuleNotFoundError(
                 "Could not import bigdl-llm library. "
                 "Please install the bigdl-llm library to "
                 "use this native ggml int4 model: pip install bigdl-llm"
             )
-        if native:
-            invalidInputError(dtype.lower() in ['int4', 'int8'],
-                              "Now we only support int4 and int8 as date type for weight")
-            ggml_model_path = pretrained_model_name_or_path
-            return class_(model_path=ggml_model_path,
-                          **kwargs)
-        else:
-            return cls.HF_Class.from_pretrained(pretrained_model_name_or_path,
-                                                *args, **kwargs)
+        except Exception as e:
+            raise ValueError(
+                f"Could not load Llama model from path: {pretrained_model_name_or_path}. "
+                f"Please make sure the CausalLM class matches "
+                "the model you want to load."
+                f"Received error {e}"
+            )
+        return model
 
 
 class LlamaForCausalLM(_BaseGGMLClass):
