@@ -212,7 +212,7 @@ class _BaseEmbeddings:
     GGML_Model = None
     GGML_Module = None
 
-    native: bool: True
+    native: bool = True
 
     client: Any  #: :meta private:
     model_path: str  # TODO: missing doc
@@ -277,9 +277,10 @@ class _BaseEmbeddings:
         try:
 
             module = importlib.import_module(cls.GGML_Module)
+            class_ = getattr(module, cls.GGML_Model)
 
             if self.native:
-                values["client"] = cls.GGML_Model(model_path, embedding=True, **model_params)
+                values["client"] = class_.GGML_Model(model_path, embedding=True, **model_params)
             else:
                 values["client"] = TransformersEmbeddings.from_model_id(model_path)
 
@@ -337,30 +338,25 @@ class _BaseEmbeddings:
 
 
 class LlamaLMEmbeddings(_BaseEmbeddings):
-    from bigdl.llm.ggml.model.llama import Llama
-    GGML_Model = Llama
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Llama"
+    GGML_Module = "bigdl.llm.models"
 
 
 class BloomLMEmbeddings(_BaseEmbeddings):
-    from bigdl.llm.ggml.model.bloom import Bloom
-    GGML_Model = Bloom
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Bloom"
+    GGML_Module = "bigdl.llm.models"
 
 
 class GptneoxLMEmbeddings(_BaseEmbeddings):
-    from bigdl.llm.ggml.model.gptneox import Gptneox
-    GGML_Model = Gptneox
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Gptneox"
+    GGML_Module = "bigdl.llm.models"
 
 
 class ChatGLMLMEmbeddings(_BaseEmbeddings):
-    from bigdl.llm.ggml.model.chatglm import ChatGLM
-    GGML_Model = ChatGLM
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "ChatGLM"
+    GGML_Module = "bigdl.llm.models"
 
 
 class StarcoderForCausalLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.starcoder import Starcoder
-    GGML_Model = Starcoder
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Starcoder"
+    GGML_Module = "bigdl.llm.models"

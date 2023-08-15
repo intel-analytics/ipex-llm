@@ -372,7 +372,7 @@ class _BaseLLM(LLM):
     GGML_Model = None
     GGML_Module = None
 
-    native: bool: True
+    native: bool = True
 
     client: Any  #: :meta private:
     """the actual model"""
@@ -481,16 +481,17 @@ class _BaseLLM(LLM):
 
         try:
             module = importlib.import_module(cls.GGML_Module)
+            class_ = getattr(module, cls.GGML_Model)
             if native:
-                values["client"] = cls.GGML_Model(model_path, **model_params)
+                values["client"] = class_(model_path, **model_params)
             else:
-                values["client"] = TransformersLLM(model_path)
+                values["client"] = TransformersLLM.from_model_id(model_path)
 
         except ImportError:
             raise ModuleNotFoundError(
-                "Could not import llama-cpp-python library. "
-                "Please install the llama-cpp-python library to "
-                "use this embedding model: pip install llama-cpp-python"
+                "Could not import bigdl-llm library. "
+                "Please install the bigdl-llm library to "
+                "use this embedding model: pip install bigdl-llm"
             )
         except Exception as e:
             raise ValueError(
@@ -648,30 +649,25 @@ class _BaseLLM(LLM):
 
 
 class LlamaLLM(_BaseLLM):
-    from bigdl.llm.ggml.model.llama import Llama
-    GGML_Model = Llama
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Llama"
+    GGML_Module = "bigdl.llm.models"
 
 
 class BloomLLM(_BaseLLM):
-    from bigdl.llm.ggml.model.bloom import Bloom
-    GGML_Model = Bloom
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Bloom"
+    GGML_Module = "bigdl.llm.models"
 
 
 class GptneoxLLM(_BaseEmbeddings):
-    from bigdl.llm.ggml.model.gptneox import Gptneox
-    GGML = Gptneox
-    GGML_Module = bigdl.llm.models
+    GGML = "Gptneox"
+    GGML_Module = "bigdl.llm.models"
 
 
 class ChatGLMLLM(_BaseEmbeddings):
-    from bigdl.llm.ggml.model.chatglm import ChatGLM
-    GGML = ChatGLM
-    GGML_Module = bigdl.llm.models
+    GGML = "ChatGLM"
+    GGML_Module = "bigdl.llm.models"
 
 
 class StarcoderLLM(_BaseGGMLClass):
-    from bigdl.llm.ggml.model.starcoder import Starcoder
-    GGML_Model = Starcoder
-    GGML_Module = bigdl.llm.models
+    GGML_Model = "Starcoder"
+    GGML_Module = "bigdl.llm.models"
