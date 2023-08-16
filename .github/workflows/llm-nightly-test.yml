@@ -56,7 +56,7 @@ jobs:
       - name: Set environment variables
         shell: bash
         run: |
-          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/gpt4all-7b-hf" >> "$GITHUB_ENV"
+          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf" >> "$GITHUB_ENV"
           echo "GPTNEOX_ORIGIN_PATH=${ORIGIN_DIR}/gptneox-7b-redpajama-bf16" >> "$GITHUB_ENV"
           echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloomz-7b1" >> "$GITHUB_ENV"
           echo "STARCODER_ORIGIN_PATH=${ORIGIN_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"

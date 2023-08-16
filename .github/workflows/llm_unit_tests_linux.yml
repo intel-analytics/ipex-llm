@@ -73,16 +73,16 @@ jobs:
       - name: Set environment variables
         shell: bash
         run: |
-          echo "SPEECH_DATASET_PATH=${DATASET_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
+          echo "SPEECH_DATASET_PATH=${DATASET_DIR}/librispeech_asr_dummy" >> "$GITHUB_ENV"
 
           echo "ORIGINAL_CHATGLM2_6B_PATH=${ORIGIN_DIR}/chatglm2-6b" >> "$GITHUB_ENV"
           echo "ORIGINAL_REPLIT_CODE_PATH=${ORIGIN_DIR}/replit-code-v1-3b" >> "$GITHUB_ENV"
           echo "ORIGINAL_WHISPER_TINY_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
 
-          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_q4_0.bin" >> "$GITHUB_ENV"
-          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_gptneox_q4_0.bin" >> "$GITHUB_ENV"
-          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin" >> "$GITHUB_ENV"
-          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_starcoder_q4_0.bin" >> "$GITHUB_ENV"
+          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_redpajama_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
+          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
           echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/chatglm2-6b-q4_0.bin" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -105,6 +105,7 @@ jobs:
         run: |
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            echo "wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $INT4_CKPT_DIR"
             wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $INT4_CKPT_DIR
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
