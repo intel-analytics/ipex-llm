@@ -213,17 +213,18 @@ def result(args, records):
     """
 
     print(">>>>>>>>>>>>> test-run information >>>>>>>>>>>>>")
-    print("\033[1m\tModel\033[0m: \033[0;31m{}\033[0m".format(args.model))
-    print("\033[1m\tStage\033[0m: \033[0;31m{}\033[0m".format(args.stage))
-    print("\033[1m\tDataset\033[0m: \033[0;31m{}\033[0m".format(args.dataset))
+    print("\033[1m\tModel\033[0m: \033[0;31m" + args.model + "\033[0m")
+    print("\033[1m\tStage\033[0m: \033[0;31m" + args.stage +"\033[0m")
+    print("\033[1m\tDataset\033[0m: \033[0;31m" + args.dataset + "\033[0m")
     if args.cores:
-        print("\033[1m\tCores\033[0m: \033[0;31m{}\033[0m".format(args.cores))
+        print("\033[1m\tCores\033[0m: \033[0;31m" + args.core + "\033[0m")
     else:
-        print("\033[1m\tCores\033[0m: \033[0;31m{}\033[0m".format(psutil.cpu_count(logical=False) *
-              int(subprocess.getoutput('cat /proc/cpuinfo | '
-                                       'grep "physical id" | sort -u | wc -l'))))
-    print("\033[1m\tLookback\033[0m: \033[0;31m{}\033[0m".format(args.lookback))
-    print("\033[1m\tHorizon\033[0m: \033[0;31m{}\033[0m".format(args.horizon))
+        core_num = psutil.cpu_count(logical=False) *
+                   int(subprocess.getoutput('cat /proc/cpuinfo | '
+                                            'grep "physical id" | sort -u | wc -l'))
+        print("\033[1m\tCores\033[0m: \033[0;31m" + core_num + "\033[0m")
+    print("\033[1m\tLookback\033[0m: \033[0;31m" + args.lookback + "\033[0m")
+    print("\033[1m\tHorizon\033[0m: \033[0;31m" + args.horizon + "\033[0m")
 
     if args.stage == 'train':
         print("\n>>>>>>>>>>>>> train result >>>>>>>>>>>>>")
