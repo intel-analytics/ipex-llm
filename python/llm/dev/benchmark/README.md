@@ -1,6 +1,7 @@
 # Benchmark tool for transformers int4 (separate 1st token and rest)
 
 `benchmark_util.py` is used to provide a simple benchmark tool for transformer int4 model to calculate 1st token performance and the rest on CPU.
+
 `gpu_benchmark_util.py` is used to provide a simple benchmark tool for transformer int4 model to calculate 1st token performance and the rest on GPU.
 
 ## CPU Usage
