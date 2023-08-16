@@ -126,18 +126,22 @@ jobs:
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"            
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
             echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR"
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
             echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGIN_DIR"
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGIN_DIR
           fi
           if [ ! -d $SPEECH_DATASET_PATH ]; then
             echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR"
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
           fi
 
