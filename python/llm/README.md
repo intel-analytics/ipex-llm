@@ -78,7 +78,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
   ```
 
-  After loading Hugging Face Transformers model, you may easily run the optimized model.
+  After loading the Hugging Face Transformers model, you may easily run the optimized model as follows.
 
   ```python
   #run the optimized model
