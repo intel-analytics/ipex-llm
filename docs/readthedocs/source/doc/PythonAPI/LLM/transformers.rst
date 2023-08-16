@@ -26,7 +26,7 @@ llm.transformers.model
 
 .. autoclass:: bigdl.llm.transformers.model.AutoModelForSpeechSeq2Seq
     :members:
-    :undoc-members: 
+    :undoc-members:
     :show-inheritance:
 
     .. automethod:: from_pretrained
