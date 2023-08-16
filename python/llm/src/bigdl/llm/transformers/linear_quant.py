@@ -161,8 +161,6 @@ class ParamsQuant(torch.nn.Parameter):
                                     _shape=self._shape,
                                     qtype=self.qtype)
             return new_param
-        # elif (device is not None and device.type == "xpu" and self.data.device.type == "xpu"):
-        #     return self.quantize(device)
         else:
             new_param = ParamsQuant(super().to(device=device,
                                                dtype=dtype,
