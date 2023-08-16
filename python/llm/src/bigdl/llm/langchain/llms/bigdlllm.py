@@ -369,8 +369,8 @@ class _BaseLLM(LLM):
     """
 
 
-    GGML_Model: str
-    GGML_Module: str
+    ggml_model: str = None
+    ggml_module: str = None
 
     native: bool = True
 
@@ -480,9 +480,9 @@ class _BaseLLM(LLM):
             model_params["n_gpu_layers"] = values["n_gpu_layers"]
 
         try:
-            module = importlib.import_module(cls.GGML_Module)
-            class_ = getattr(module, cls.GGML_Model)
-            if native:
+            module = importlib.import_module(values["ggml_module"])
+            class_ = getattr(module, values["ggml_model"])
+            if values["native"]:
                 values["client"] = class_(model_path, **model_params)
             else:
                 values["client"] = TransformersLLM.from_model_id(model_path)
@@ -521,7 +521,7 @@ class _BaseLLM(LLM):
     @property
     def _identifying_params(self) -> Dict[str, Any]:
         """Get the identifying parameters."""
-        return {**{"model_path": self.model_path}, 
+        return {**{"model_path": self.model_path},
                 **self._default_params}
 
     @property
@@ -577,7 +577,7 @@ class _BaseLLM(LLM):
                 llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
-        if self.native:
+        if values["native"]:
             if self.streaming:
                 # If streaming is enabled, we use the stream
                 # method that yields as they are generated
@@ -649,25 +649,25 @@ class _BaseLLM(LLM):
 
 
 class LlamaLLM(_BaseLLM):
-    GGML_Model = "Llama"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Llama"
+    ggml_module = "bigdl.llm.models"
 
 
 class BloomLLM(_BaseLLM):
-    GGML_Model = "Bloom"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Bloom"
+    ggml_module = "bigdl.llm.models"
 
 
 class GptneoxLLM(_BaseLLM):
-    GGML_Model = "Gptneox"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Gptneox"
+    ggml_module = "bigdl.llm.models"
 
 
 class ChatGLMLLM(_BaseLLM):
-    GGML_Model = "ChatGLM"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "ChatGLM"
+    ggml_module = "bigdl.llm.models"
 
 
 class StarcoderLLM(_BaseLLM):
-    GGML_Model = "Starcoder"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Starcoder"
+    ggml_module = "bigdl.llm.models"
