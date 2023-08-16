@@ -61,13 +61,13 @@ jobs:
       - name: Create model directories
         shell: bash
         run: |
-          if [ ! -d $DATASET_DIR];then
+          if [ ! -d $DATASET_DIR ]; then
             mkdir -p $DATASET_DIR
           fi
-          if [ ! -d $ORIGIN_DIR];then
+          if [ ! -d $ORIGIN_DIR ]; then
             mkdir -p $ORIGIN_DIR
           fi
-          if [ ! -d $INT4_CKPT_DIR];then
+          if [ ! -d $INT4_CKPT_DIR ]; then
             mkdir -p $INT4_CKPT_DIR
           fi
       - name: Set environment variables
