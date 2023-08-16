@@ -117,17 +117,17 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   
   * You may choose the corresponding API developed for specific native models to load the converted model.
 
-   ```python
+  ```python
   #convert the model
   from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
           outfile='/path/to/output/', outtype='int4', model_family="llama")
 
   #load the converted model
-  #switch to `ChatGLMForCausalLM`, `GptneoxForCausalLM`, `BloomForCausalLM` and `StarcoderForCausalLM` to load other corresponding models
+  #switch to ChatGLMForCausalLM/GptneoxForCausalLM/BloomForCausalLM/StarcoderForCausalLM to load other models
   from bigdl.llm.transformers import LlamaForCausalLM
   llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin")
-   
+  
   #run the converted model
   input_ids = llm.tokenize(prompt)
   output_ids = llm.generate(input_ids, ...)
