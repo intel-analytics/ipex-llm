@@ -677,7 +677,7 @@ We provide python util to encrypt or decrypt csv data, which is easier to custom
 ```bash
 bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
 ```
-2. Edit python encryption or decryption python code
+2. Edit python encryption or decryption python code. Add logic like `.option("multiLine", "true") \`
 ```python
 import argparse
 import pyspark
@@ -700,7 +700,7 @@ sc.write(df, args["output_encrypt_mode"]) \
     .option("header", "true") \
     .csv(args["output_path"])
 ```
-3.submit to use, for example encrypt.sh
+3.submit to use, for example encrypt.sh. If you want to decrypt, just exchange input_encrypt_mode and output_encrypt_mode.
 ```bash
 #encrypt.sh or decrypt.sh
     export PYTHONHOME=/opt/python-occlum
@@ -718,7 +718,7 @@ sc.write(df, args["output_encrypt_mode"]) \
                    --api_key 123456654321 \
                    --primary_key_material /opt/occlum_spark/data/key/simple_encrypted_primary_key \
                    --input_path /opt/sampledata.csv \
-                   --output_path /opt/occlum_spark/data/encryptEhsm/ \
+                   --output_path /opt/occlum_spark/data/encryptSimple/ \
                    --input_encrypt_mode plain_text \
                    --output_encrypt_mode aes/cbc/pkcs5padding \
                    --kms_type SimpleKeyManagementService
