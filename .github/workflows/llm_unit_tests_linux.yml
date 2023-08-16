@@ -105,8 +105,8 @@ jobs:
         run: |
           if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
-            echo "wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $INT4_CKPT_DIR"
-            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_q4_0.bin -P $INT4_CKPT_DIR
+            echo "wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin -P $INT4_CKPT_DIR"
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin -P $INT4_CKPT_DIR
           fi
           if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
