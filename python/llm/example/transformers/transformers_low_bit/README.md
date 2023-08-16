@@ -13,7 +13,7 @@ pip install --pre --upgrade bigdl-llm[all]
 
 ## Run Example
 ```bash
-python ./transformers_low_bit_pipeline.py --model-path decapoda-research/llama-7b-hf --low-bit sym_int5 --save-path ./llama-7b-sym_int5
+python ./transformers_low_bit_pipeline.py --repo-id-or-model-path decapoda-research/llama-7b-hf --low-bit sym_int5 --save-path ./llama-7b-sym_int5
 ```
 arguments info:
 - `--repo-id-or-model-path`: str value, argument defining the huggingface repo id for the large language model to be downloaded, or the path to the huggingface checkpoint folder, the value is 'decapoda-research/llama-7b-hf' by default.
