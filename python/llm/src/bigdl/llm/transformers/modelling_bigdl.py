@@ -120,15 +120,9 @@ class _BaseGGMLClass:
             else:
                 model = cls.HF_Class.from_pretrained(pretrained_model_name_or_path,
                                                      *args, **kwargs)
-        except ImportError:
-            invalidInputError(
-                "Could not import bigdl-llm library. "
-                "Please install the bigdl-llm library to "
-                "use this native ggml int4 model: pip install bigdl-llm"
-            )
         except Exception as e:
             invalidInputError(
-                f"Could not load Llama model from path: {pretrained_model_name_or_path}. "
+                f"Could not load model from path: {pretrained_model_name_or_path}. "
                 f"Please make sure the CausalLM class matches "
                 "the model you want to load."
                 f"Received error {e}"

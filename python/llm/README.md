@@ -131,7 +131,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   #convert the model
   from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
-          outfile='/path/to/output/', outtypse='int4', model_family="llama")
+          outfile='/path/to/output/', outtype='int4', model_family="llama")
 
   #load the converted model
   from bigdl.llm.transformers import LlamaForCausalLM
