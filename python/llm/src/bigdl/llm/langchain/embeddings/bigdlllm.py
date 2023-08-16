@@ -314,7 +314,7 @@ class _BaseEmbeddings:
         Returns:
             List of embeddings, one for each text.
         """
-        if values["native"]:
+        if self.native:
             embeddings = [self.client.embed(text) for text in texts]
             return [list(map(float, e)) for e in embeddings]
         else:
@@ -330,7 +330,7 @@ class _BaseEmbeddings:
         Returns:
             Embeddings for the text.
         """
-        if values["native"]:
+        if self.native:
             embedding = self.client.embed(text)
             return list(map(float, embedding))
         else:

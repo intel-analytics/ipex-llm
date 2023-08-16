@@ -577,7 +577,7 @@ class _BaseLLM(LLM):
                 llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
-        if values["native"]:
+        if self.native:
             if self.streaming:
                 # If streaming is enabled, we use the stream
                 # method that yields as they are generated
