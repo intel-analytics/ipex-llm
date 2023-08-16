@@ -161,6 +161,8 @@ class ParamsQuant(torch.nn.Parameter):
                                     _shape=self._shape,
                                     qtype=self.qtype)
             return new_param
+        # elif (device is not None and device.type == "xpu" and self.data.device.type == "xpu"):
+        #     return self.quantize(device)
         else:
             new_param = ParamsQuant(super().to(device=device,
                                                dtype=dtype,
@@ -169,7 +171,6 @@ class ParamsQuant(torch.nn.Parameter):
                                     quantized=self.quantized,
                                     _shape=self._shape,
                                     qtype=self.qtype)
-
             return new_param
 
 
@@ -244,6 +245,9 @@ class LinearQuant(nn.Linear):
 
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
+            # current workaround to reduce first token latency of fp32 input
+            if x_2d.shape[0] > 1 and  x_2d.dtype == torch.float32:
+                x_2d = x_2d.half()
             # input format of linear_q4.forward is 1: input, 2: weight
             result = linear_q4_0.forward(x_2d, x0)
             new_shape = x_shape[:-1] + (self.out_len,)
