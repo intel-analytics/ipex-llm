@@ -33,35 +33,35 @@ echo ">>> Testing LLAMA2 transformers API sym_int5"
 std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/example/transformers/transformers_low_bit/transformers_low_bit_pipeline.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH --low-bit sym_int5)
 echo "the output of the example is: " 
 echo $std
-# if [[ ! $std == *"But her parents were always telling her to stay close to home"* ]]; then
-#     echo "The expected output is not met."
-#     return 1
-# fi
+if [[ ! $std == *"She wanted to go to places and meet new people"* ]]; then
+    echo "The expected output is not met."
+    return 1
+fi
 echo ">>> Testing LLAMA2 transformers API sym_int8"
 std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/example/transformers/transformers_low_bit/transformers_low_bit_pipeline.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH --low-bit sym_int8)
 echo "the output of the example is: " 
 echo $std
-# if [[ ! $std == *"But her parents were always telling her to stay close to home"* ]]; then
-#     echo "The expected output is not met."
-#     return 1
-# fi
+if [[ ! $std == *"She wanted to go to places and meet new people"* ]]; then
+    echo "The expected output is not met."
+    return 1
+fi
 echo ">>> Testing LLAMA2 transformers API asym_int4"
 std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/example/transformers/transformers_low_bit/transformers_low_bit_pipeline.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH --low-bit asym_int4)
 echo "the output of the example is: " 
 echo $std
-# if [[ ! $std == *"But her parents were always telling her to stay close to home"* ]]; then
-#     echo "The expected output is not met."
-#     return 1
-# fi
+if [[ ! $std == *"She wanted to go to places and meet new people"* ]]; then
+    echo "The expected output is not met."
+    return 1
+fi
 
 echo ">>> Testing LLAMA2 transformers API asym_int5"
 std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/example/transformers/transformers_low_bit/transformers_low_bit_pipeline.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH --low-bit asym_int5)
 echo "the output of the example is: " 
 echo $std
-# if [[ ! $std == *"But her parents were always telling her to stay close to home"* ]]; then
-#     echo "The expected output is not met."
-#     return 1
-# fi
+if [[ ! $std == *"She wanted to go to places and meet new people"* ]]; then
+    echo "The expected output is not met."
+    return 1
+fi
 
 
 ########## ChatGLM2
