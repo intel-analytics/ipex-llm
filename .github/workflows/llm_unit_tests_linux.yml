@@ -141,8 +141,8 @@ jobs:
           fi
           if [ ! -d $SPEECH_DATASET_PATH ]; then
             echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR"
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
+            echo "wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR"
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
           fi
 
       - name: Run LLM cli test
