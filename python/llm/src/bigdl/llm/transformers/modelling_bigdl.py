@@ -122,6 +122,7 @@ class _BaseGGMLClass:
                                                      *args, **kwargs)
         except Exception as e:
             invalidInputError(
+                False,
                 f"Could not load model from path: {pretrained_model_name_or_path}. "
                 f"Please make sure the CausalLM class matches "
                 "the model you want to load."
@@ -137,7 +138,7 @@ class LlamaForCausalLM(_BaseGGMLClass):
 
 
 class ChatGLMForCausalLM(_BaseGGMLClass):
-    GGML_Module = "bigdl.llm.models"
+    GGML_Module = "bigdl.llm.ggml.model.chatglm"
     GGML_Model = "ChatGLM"
     HF_Class = AutoModel
 
