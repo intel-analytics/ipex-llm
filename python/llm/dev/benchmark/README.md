@@ -54,9 +54,16 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 prompt = "今天睡不着怎么办"
  
 with torch.inference_mode():
-    input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-    output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
-    output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+    # wamup two times as use ipex
+    for i in range(2):
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+    # collect performance data now
+    for i in range(5):
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 ```
 Output will be like:
 ```bash
