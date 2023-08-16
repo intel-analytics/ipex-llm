@@ -34,42 +34,45 @@ class Test_Models_Basics(TestCase):
 
         
     def test_langchain_llm_embedding_llama(self):
-        bigdl_embeddings = BigdlNativeEmbeddings(
-            model_path=self.llama_model_path,
-            model_family="llama")
+        bigdl_embeddings = LlamaLMEmbeddings(
+            model_path=self.llama_model_path)
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
         doc_result = bigdl_embeddings.embed_documents([text])
     
     def test_langchain_llm_embedding_gptneox(self):
-        bigdl_embeddings = BigdlNativeEmbeddings(
-            model_path=self.gptneox_model_path,
-            model_family="gptneox")
+        bigdl_embeddings = GptneoxLMEmbeddings(
+            model_path=self.gptneox_model_path)
+        text = "This is a test document."
+        query_result = bigdl_embeddings.embed_query(text)
+        doc_result = bigdl_embeddings.embed_documents([text])
+
+    def test_langchain_llm_embedding_bloom(self):
+        bigdl_embeddings = BloomLMEmbeddings(
+            model_path=self.bloom_model_path)
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
         doc_result = bigdl_embeddings.embed_documents([text])
         
     def test_langchain_llm_llama(self):
-        llm = BigdlNativeLLM(
-            model_path=self.llama_model_path, 
+        llm = LlamaLLM(
+            model_path=self.llama_model_path,
             max_tokens=32,
             n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
         
     def test_langchain_llm_gptneox(self):
-        llm = BigdlNativeLLM(
+        llm = GptneoxLLM(
             model_path=self.gptneox_model_path,
-            model_family="gptneox", 
             max_tokens=32,
             n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
         
     def test_langchain_llm_bloom(self):
-        llm = BigdlNativeLLM(
-            model_path=self.bloom_model_path, 
-            model_family="bloom",
+        llm = BloomLLM(
+            model_path=self.bloom_model_path,
             max_tokens=32,
             n_threads=self.n_threads)
         question = "What is AI?"
