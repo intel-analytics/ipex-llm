@@ -209,8 +209,8 @@ class _BaseEmbeddings:
             llama = LlamaEmbedding(model_path="/path/to/model.bin")
     """
 
-    GGML_Model = None
-    GGML_Module = None
+    ggml_model = None
+    ggml_module = None
 
     native: bool = True
 
@@ -276,10 +276,10 @@ class _BaseEmbeddings:
 
         try:
 
-            module = importlib.import_module(cls.GGML_Module)
-            class_ = getattr(module, cls.GGML_Model)
+            module = importlib.import_module(values["ggml_module"])
+            class_ = getattr(module, values["ggml_model"])
 
-            if self.native:
+            if values["native"]:
                 values["client"] = class_.GGML_Model(model_path, embedding=True, **model_params)
             else:
                 values["client"] = TransformersEmbeddings.from_model_id(model_path)
@@ -314,7 +314,7 @@ class _BaseEmbeddings:
         Returns:
             List of embeddings, one for each text.
         """
-        if self.native:
+        if values["native"]:
             embeddings = [self.client.embed(text) for text in texts]
             return [list(map(float, e)) for e in embeddings]
         else:
@@ -330,7 +330,7 @@ class _BaseEmbeddings:
         Returns:
             Embeddings for the text.
         """
-        if self.native:
+        if values["native"]:
             embedding = self.client.embed(text)
             return list(map(float, embedding))
         else:
@@ -338,25 +338,25 @@ class _BaseEmbeddings:
 
 
 class LlamaLMEmbeddings(_BaseEmbeddings):
-    GGML_Model = "Llama"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Llama"
+    ggml_module = "bigdl.llm.models"
 
 
 class BloomLMEmbeddings(_BaseEmbeddings):
-    GGML_Model = "Bloom"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Bloom"
+    ggml_module = "bigdl.llm.models"
 
 
 class GptneoxLMEmbeddings(_BaseEmbeddings):
-    GGML_Model = "Gptneox"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "Gptneox"
+    ggml_module = "bigdl.llm.models"
 
 
 class ChatGLMLMEmbeddings(_BaseEmbeddings):
-    GGML_Model = "ChatGLM"
-    GGML_Module = "bigdl.llm.models"
+    ggml_model = "ChatGLM"
+    ggml_module = "bigdl.llm.models"
 
 
-class StarcoderForCausalLM(_BaseGGMLClass):
-    GGML_Model = "Starcoder"
-    GGML_Module = "bigdl.llm.models"
+class StarcoderForCausalLM(_BaseEmbeddings):
+    ggml_model = "Starcoder"
+    ggml_module = "bigdl.llm.models"
