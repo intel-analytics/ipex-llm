@@ -126,7 +126,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   #load the converted model
   #switch to ChatGLMForCausalLM/GptneoxForCausalLM/BloomForCausalLM/StarcoderForCausalLM to load other models
   from bigdl.llm.transformers import LlamaForCausalLM
-  llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin")
+  llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", ...)
   
   #run the converted model
   input_ids = llm.tokenize(prompt)
