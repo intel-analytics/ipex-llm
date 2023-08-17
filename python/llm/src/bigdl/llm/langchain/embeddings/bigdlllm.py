@@ -52,7 +52,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Extra, Field, root_validator
 
 from langchain.embeddings.base import Embeddings
-from bigdl.llm.langchain.embedding import TransformersEmbeddings
+from .transformersembeddings import TransformersEmbeddings
 
 
 class BigdlNativeEmbeddings(BaseModel, Embeddings):

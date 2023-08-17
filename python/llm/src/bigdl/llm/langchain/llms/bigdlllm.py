@@ -52,8 +52,7 @@ from pydantic import Field, root_validator
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
-from bigdl.llm.langchain.llms.transformersllm import TransformersLLM
-
+from .transformersllm import TransformersLLM
 
 
 class BigdlNativeLLM(LLM):
