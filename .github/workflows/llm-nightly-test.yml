@@ -100,3 +100,6 @@ jobs:
   llm-inference-test-on-linux:
     needs: llm-cpp-build
     uses: ./.github/workflows/llm_unit_tests_linux.yml
+  llm-example-test:
+    needs: llm-cpp-build
+    uses: ./.github/workflows/llm_example_tests.yml

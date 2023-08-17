@@ -20,7 +20,7 @@ from transformers import LlamaTokenizer, TextGenerationPipeline
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer save_load example')
-    parser.add_argument('--model-path', type=str, default="decapoda-research/llama-7b-hf",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
                         help='The huggingface repo id for the large language model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default="sym_int4",
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--load-path', type=str, default=None,
                         help='The path to load the low-bit model.')
     args = parser.parse_args()
-    model_path = args.model_path
+    model_path = args.repo_id_or_model_path
     low_bit = args.low_bit
     load_path = args.load_path
     if load_path:
@@ -40,8 +40,8 @@ if __name__ == '__main__':
     else:
         # load_in_low_bit in bigdl.llm.transformers will convert
         # the relevant layers in the model into corresponding int X format
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit)
-        tokenizer = LlamaTokenizer.from_pretrained(model_path)
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True)
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, max_new_tokens=32)
     input_str = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
