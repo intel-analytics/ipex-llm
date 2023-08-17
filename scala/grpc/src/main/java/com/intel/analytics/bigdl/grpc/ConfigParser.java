@@ -24,6 +24,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * ConfigParser has static method to read config formatted in JavaBean class from YAML file
@@ -39,7 +42,10 @@ public class ConfigParser {
 
     public static <T> T loadConfigFromPath(String configPath, Class<T> valueType)
             throws IOException {
-        return objectMapper.readValue(new java.io.File(configPath), valueType);
+        Path absolutePath = Paths.get(configPath).toAbsolutePath().normalize();
+        File tempFile = absolutePath.toFile();
+        tempFile.setExecutable(false);
+        return objectMapper.readValue(tempFile, valueType);
     }
     public static <T> T loadConfigFromString(String configString, Class<T> valueType)
             throws IOException {
