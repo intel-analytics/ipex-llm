@@ -32,8 +32,7 @@ from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 from bigdl.llm.langchain.llms import LlamaLLM
-from bigdl.llm.langchain.embeddings import LlamaLMEmbeddings
-
+from bigdl.llm.langchain.embeddings import LlamaEmbeddings
 
 
 def main(args):
@@ -55,7 +54,7 @@ def main(args):
 
     # create embeddings and store into vectordb
     # switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
-    embeddings = LlamaLMEmbeddings(model_path=model_path, n_threads=n_threads, n_ctx=n_ctx)
+    embeddings = LlamaEmbeddings(model_path=model_path, n_threads=n_threads, n_ctx=n_ctx)
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
     # get relavant texts
