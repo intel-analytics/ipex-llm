@@ -24,7 +24,8 @@ import scopt.OptionParser
 
 object TestUtils {
   def getStrFromResourceFile(path: String): String = {
-    scala.io.Source.fromFile(path).mkString
+    val absolutePath = java.nio.file.Paths.get(path).toAbsolutePath.normalize()
+    scala.io.Source.fromFile(absolutePath).mkString
   }
 }
 
