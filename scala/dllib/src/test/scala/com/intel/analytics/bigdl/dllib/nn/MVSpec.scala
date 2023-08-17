@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MVSpec extends FlatSpec with Matchers {
@@ -67,8 +67,8 @@ class MVSpec extends FlatSpec with Matchers {
 class MVSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val mv = MV[Float]().setName("mv_layer")
-    val input1 = Tensor[Float](2, 3).apply1(e => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](3).apply1(e => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3).apply1(e => Random.nextFloat())
     val input = new Table()
     input(1.0f) = input1
     input(2.0f) = input2

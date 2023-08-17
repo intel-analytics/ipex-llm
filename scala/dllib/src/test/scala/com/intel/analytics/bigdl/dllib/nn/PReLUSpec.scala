@@ -21,15 +21,15 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PReLUSpec extends FlatSpec with Matchers {
 
   "A PReLU Module " should "generate correct output and grad not inplace" in {
 
-    val input = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble() - 0.5)
-    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble() - 0.5)
+    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
 
     val layer1 = new PReLU[Double]()
     val layer2 = new PReLU[Double]()
@@ -54,7 +54,7 @@ class PReLUSpec extends FlatSpec with Matchers {
 class PReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val preLu = PReLU[Float](2).setName("preLu")
-    val input = Tensor[Float](2, 3, 4).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(preLu, input)
   }
 }

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class RankSpec extends FlatSpec with Matchers {
   "Rank Float operation" should "works correctly" in {
@@ -107,7 +107,7 @@ class RankSpec extends FlatSpec with Matchers {
 class RankSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val rank = Rank[Float].setName("rank")
-    val input = Tensor[Float](3, 3).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
     runSerializationTest(rank, input, rank.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

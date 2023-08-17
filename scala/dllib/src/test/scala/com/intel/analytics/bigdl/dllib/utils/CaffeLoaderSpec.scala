@@ -31,7 +31,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-import java.security.SecureRandom
+import scala.util.Random
 
 class CaffeLoaderSpec extends FlatSpec with Matchers {
 
@@ -208,7 +208,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
       .add(Linear(27, 2, withBias = false).setName("ip"))
       .add(SoftMax().setName("softmax"))
 
-    val staticInput = Tensor[Double](1, 3, 5, 5).apply1( e => new SecureRandom().nextDouble())
+    val staticInput = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())
 
     val dynamicInput = Tensor[Double]()
 
@@ -238,12 +238,12 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
     val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
       customizedConverters = convertMap)
 
-    val labelInput = Tensor[Double](1, 3, 5, 5).apply1(e => new SecureRandom().nextDouble())
+    val labelInput = Tensor[Double](1, 3, 5, 5).apply1(e => Random.nextDouble())
 
     val target = dynamicLoadedModule.forward(labelInput).toTensor[Double].max(1)
       ._2.squeeze().storage().array()
 
-    val inputTensor1 = Tensor[Double](2).apply1(e => new SecureRandom().nextDouble())
+    val inputTensor1 = Tensor[Double](2).apply1(e => Random.nextDouble())
 
     val inputTensor2 = Tensor[Double]()
 

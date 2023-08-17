@@ -54,6 +54,7 @@ from ctypes import (
     c_char_p,
     c_void_p,
     c_bool,
+    pointer,
     POINTER,
     _Pointer,  # type: ignore
     Structure,
@@ -63,30 +64,12 @@ from ctypes import (
 )
 import pathlib
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.utils import get_avx_flags
+from bigdl.llm.utils.utils import get_shared_lib_info
 
 
 # Load the library
 def _load_shared_library(lib_base_name: str):
-    # Determine the file extension based on the platform
-    if sys.platform.startswith("linux") or sys.platform == "darwin":
-        lib_ext = ".so"
-    elif sys.platform == "win32":
-        lib_ext = ".dll"
-    else:
-        invalidInputError(False, "Unsupported platform.")
-
-    avx = get_avx_flags()
-
-    # Construct the paths to the possible shared library names
-    _base_path = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
-    _base_path = _base_path / 'libs'
-    # Searching for the library in the current directory under the name "libllama" (default name
-    # for llamacpp) and "llama" (default name for this repo)
-    _lib_paths = [
-        _base_path / f"lib{lib_base_name}{avx}{lib_ext}",
-        _base_path / f"{lib_base_name}{avx}{lib_ext}",
-    ]
+    _base_path, _lib_paths = get_shared_lib_info(lib_base_name=lib_base_name)
 
     if "LLAMA_CPP_LIB" in os.environ:
         lib_base_name = os.environ["LLAMA_CPP_LIB"]
@@ -98,6 +81,7 @@ def _load_shared_library(lib_base_name: str):
     # Add the library directory to the DLL search path on Windows (if needed)
     if sys.platform == "win32" and sys.version_info >= (3, 8):
         os.add_dll_directory(str(_base_path))
+        os.environ["PATH"] = str(_base_path) + ";" + os.environ["PATH"]
         if "CUDA_PATH" in os.environ:
             os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "bin"))
             os.add_dll_directory(os.path.join(os.environ["CUDA_PATH"], "lib"))
@@ -307,10 +291,10 @@ _lib.llama_time_us.restype = ctypes.c_int64
 def llama_init_from_file(
     path_model: bytes, params: llama_context_params
 ) -> llama_context_p:
-    return _lib.llama_init_from_file(path_model, params)
+    return _lib.llama_init_from_file(path_model, pointer(params))
 
 
-_lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params]
+_lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params_p]
 _lib.llama_init_from_file.restype = llama_context_p
 
 
@@ -955,28 +939,65 @@ _lib.llama_print_system_info.restype = c_char_p
 
 
 # GGML API
-def ggml_quantize_q4_0(
+def ggml_quantize_tensor(
     src,  # type: ctypes.Array[ctypes.c_float] # type: ignore
     dst: ctypes.c_void_p,
+    qtype: ctypes.c_int,
     n: ctypes.c_int,
     k: ctypes.c_int,
     hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
 ) -> int:
-    return _lib.ggml_quantize_q4_0(src, dst, n, k, hist)
+    return _lib.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
 
 
-_lib.ggml_quantize_q4_0.argtypes = [
+_lib.ggml_quantize_tensor.argtypes = [
     ctypes.POINTER(ctypes.c_float),
     ctypes.c_void_p,
     ctypes.c_int,
     ctypes.c_int,
+    ctypes.c_int,
     ctypes.POINTER(ctypes.c_int64),
 ]
-_lib.ggml_quantize_q4_0.restype = ctypes.c_size_t
+_lib.ggml_quantize_tensor.restype = ctypes.c_size_t
+
+
+def ggml_type_size(qtype: ctypes.c_int) -> int:
+    return _lib.ggml_type_size(qtype)
+
+_lib.ggml_type_size.argtypes = [
+    ctypes.c_int,
+]
+_lib.ggml_type_size.restype = ctypes.c_size_t
+
+
+def ggml_qk_size(qtype: ctypes.c_int) -> int:
+    return _lib.ggml_qk_size(qtype)
+
+_lib.ggml_qk_size.argtypes = [
+    ctypes.c_int,
+]
+_lib.ggml_qk_size.restype = ctypes.c_int
+
+
+def ggml_dequantize_q4_0(
+    src: ctypes.c_void_p,
+    dst: ctypes.c_void_p,
+    k: ctypes.c_int,
+):
+    _lib.ggml_dequantize_q4_0(src, dst, k)
+
+
+_lib.ggml_dequantize_q4_0.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+]
+_lib.ggml_quantize_q4_0.restype = None
 
 
 def ggml_compute_forward_mul_mat_q_fp32(src_0_ne,  # type: ctypes.Array[ctypes.c_int64]
                                         src_0_data,  # type: ctypes.c_void_p
+                                        src_0_qtype,  # type: int
                                         src_1_ne,  # type: ctypes.Array[ctypes.c_int64]
                                         src_1_data,  # type: ctypes.c_void_p
                                         result,  # type: ctypes.c_void_p
@@ -991,6 +1012,7 @@ def ggml_compute_forward_mul_mat_q_fp32(src_0_ne,  # type: ctypes.Array[ctypes.c
 
     return _lib.ggml_compute_forward_mul_mat_q_fp32(src_0_ne,
                                                     src_0_data,
+                                                    src_0_qtype,
                                                     src_1_ne,
                                                     src_1_data,
                                                     result)
@@ -999,6 +1021,7 @@ def ggml_compute_forward_mul_mat_q_fp32(src_0_ne,  # type: ctypes.Array[ctypes.c
 _lib.ggml_compute_forward_mul_mat_q_fp32.argtypes = [
     ctypes.POINTER(ctypes.c_int64),
     ctypes.c_void_p,
+    ctypes.c_int,
     ctypes.POINTER(ctypes.c_int64),
     ctypes.c_void_p,
     ctypes.c_void_p

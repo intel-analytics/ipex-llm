@@ -1,6 +1,6 @@
 ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
-ARG GRAMINE_BRANCH=devel-v1.3.1-2023-05-22
+ARG GRAMINE_BRANCH=devel-v1.3.1-2023-07-13
 
 FROM ubuntu:20.04
 ARG http_proxy
@@ -108,6 +108,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/ && \
+    mkdir -p /root/.jupyter && \
     mkdir -p /ppml/encrypted-fs && \
 # folder required for distributed encrypted file system
     mkdir -p /ppml/encrypted-fsd && \
@@ -132,4 +133,3 @@ RUN cd /ppml && \
 
 ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
-ENTRYPOINT [ "/bin/bash" ]

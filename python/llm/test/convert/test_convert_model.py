@@ -17,9 +17,11 @@
 
 import pytest
 import os
+import tempfile
 from unittest import TestCase
 
 from bigdl.llm import llm_convert
+from bigdl.llm.transformers import AutoModelForCausalLM
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
@@ -61,6 +63,32 @@ class TestConvertModel(TestCase):
                                            model_format="pth",
                                            outtype='int4')
         assert os.path.isfile(converted_model_path)
+
+    def test_transformer_convert_llama(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
+        tempdir = tempfile.mkdtemp(dir=output_dir)
+        model.save_pretrained(tempdir)
+        model = AutoModelForCausalLM.load_low_bit(tempdir)
+        assert model is not None
+        import shutil
+        shutil.rmtree(tempdir)
+
+    def test_transformer_convert_llama_q5(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_low_bit="sym_int5")
+
+    def test_transformer_convert_llama_q8(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_low_bit="sym_int8")
+
+    def test_transformer_convert_llama_save_load(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_low_bit="asym_int4")
+        tempdir = tempfile.mkdtemp(dir=output_dir)
+        model.save_low_bit(tempdir)
+        newModel = AutoModelForCausalLM.load_low_bit(tempdir)
+        import shutil
+        shutil.rmtree(tempdir)
 
 
 if __name__ == '__main__':

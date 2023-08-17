@@ -9,6 +9,7 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * [Attestation Service (AS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
 * [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
 * (Optional) [K8s Monitoring](#optional-k8s-monitioring-setup)
+* [Troubleshooting](#troubleshooting)
 
 ### Prepare Key and Password
 Download scripts from [here](https://github.com/intel-analytics/BigDL).
@@ -48,11 +49,20 @@ cd BigDL/ppml/
     ```bash
     kubectl create serviceaccount spark
     kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+
     kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
+
     # bind service account and user
     kubectl config set-credentials spark-user \
                   --token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
+    ```
+    Now, you should have bound the service account and user by injecting the token of service account into the user.
 
+    However, in some latest versions of k8s, the token would not be generated automatically after creating the service account, and you will find no secret when running `kubectl get secret|grep service-account-token` above. In such a case, you could manually create a secret annoted with spark service account by refering to case 1 in [Troubleshooting](#troubleshooting).
+
+    Then, continue to bind the spark user with k8s cluster:
+
+    ```bash
     # bind user and context
     kubectl config set-context spark-context --user=spark-user
 
@@ -61,19 +71,6 @@ cd BigDL/ppml/
     kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
     ```
 
-If spark service account secret is not auto-generated, please generate manually with the following command:
-
-```bash
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: spark-secret
-  annotations:
-    kubernetes.io/service-account.name: spark
-type: kubernetes.io/service-account-token
-EOF
-```
 
 2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
@@ -111,3 +108,20 @@ Pull Docker image from Dockerhub
 
 ### (Optional) K8s Monitoring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md
+
+### TroubleShooting
+1. Spark service account secret are not automatically generated when Spark Service Account are created.
+   
+   Newer versions of Kubernetes don't automatically created spark service account secret. Please generate manually with the following command:
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spark-service-account-token
+  annotations:
+    kubernetes.io/service-account.name: spark
+type: kubernetes.io/service-account-token
+EOF
+```
+   This operation will inject the `spark` service account's token into the secret `spark-service-account-token`.

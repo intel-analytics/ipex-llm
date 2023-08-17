@@ -33,6 +33,12 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
+# Temporarily workaround to conflict on protobuf version of nano and orca
+ORCA_AUTOML_DEP = ['ray[default]==1.9.2', 'aiohttp==3.8.1', 'async-timeout==4.0.1',
+                   'aioredis==1.3.1', 'hiredis==2.0.0', 'setproctitle', 'psutil',
+                   'prometheus-client==0.11.0', 'protobuf==3.19.5', 'ray[tune]==1.9.2',
+                   'scikit-learn', 'tensorboard']
+
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
@@ -66,14 +72,14 @@ def setup_package():
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],
-                        'distributed:platform_system!="Windows"': ['bigdl-orca-spark3[automl]=='
-                                                                   + VERSION,
-                                                                   'grpcio==1.53.0', 'pyarrow'],
+                        'distributed:platform_system!="Windows"': ['bigdl-orca-spark3==' + VERSION,
+                                                                   'grpcio==1.53.0', 'pyarrow'] +
+                        ORCA_AUTOML_DEP,
                         'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
                                 'bigdl-nano[tensorflow_27]=='+VERSION,
                                 'optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27',
-                                'bigdl-orca-spark3[automl]==' + VERSION +
+                                'bigdl-orca-spark3==' + VERSION +
                                 ';platform_system!="Windows"',
                                 'grpcio==1.53.0',
                                 'pmdarima==1.8.5',
@@ -83,7 +89,7 @@ def setup_package():
                                 'pyarrow==6.0.1',
                                 'matplotlib',
                                 'inotify_simple',
-                                'bigdl-nano[inference]==' + VERSION]},
+                                'bigdl-nano[inference]==' + VERSION] + ORCA_AUTOML_DEP},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         entry_points={

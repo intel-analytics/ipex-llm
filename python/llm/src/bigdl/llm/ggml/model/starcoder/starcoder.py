@@ -69,7 +69,7 @@ class Starcoder(GenerationMixin):
         f16_kv: bool = True,
         logits_all: bool = False,
         vocab_only: bool = False,
-        use_mmap: bool = True,
+        use_mmap: bool = False,
         use_mlock: bool = False,
         embedding: bool = False,
         n_threads: Optional[int] = 2,
@@ -128,7 +128,7 @@ class Starcoder(GenerationMixin):
         self.verbose = verbose
         # TODO: Some parameters are temporarily not supported
         unsupported_arg = {'n_parts': -1, 'n_gpu_layers': 0, 'f16_kv': True, 'logits_all': False,
-                           'vocab_only': False, 'use_mmap': True, 'use_mlock': False,
+                           'vocab_only': False, 'use_mmap': False, 'use_mlock': False,
                            'last_n_tokens_size': 64, 'lora_base': None,
                            'lora_path': None, 'verbose': True}
         for arg in unsupported_arg.keys():
@@ -295,6 +295,10 @@ class Starcoder(GenerationMixin):
                 text = self.detokenize([token]).decode("utf-8", errors="ignore")
                 if text.endswith("<|endoftext|>"):
                     print('\n')
+                    return
+                elif text is not None and text in stop:
+                    print('\n')
+                    return
                 else:
                     yield {
                         "id": completion_id,
@@ -314,9 +318,6 @@ class Starcoder(GenerationMixin):
                                 "prompt_tokens": prompt_len
                         }
                     }
-
-    def free(self):
-        starcoder_free(self.ctx)
 
     def _tokenize(self, text: bytes, add_bos: bool = False) -> List[int]:
         """Tokenize a string.
@@ -433,3 +434,8 @@ class Starcoder(GenerationMixin):
                                seed=self.seed,
                                n_threads=self.n_threads,
                                n_batch=self.n_batch)
+
+    def __del__(self):
+        if self.ctx is not None:
+            starcoder_free(self.ctx)
+            self.ctx = None

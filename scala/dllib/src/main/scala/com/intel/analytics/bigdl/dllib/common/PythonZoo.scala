@@ -289,6 +289,14 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     zooUtils.mkdirs(path)
   }
 
+  def rmdir(path: String): Unit = {
+    zooUtils.rmdir(path)
+  }
+
+  def isFile(path: String): Boolean = {
+    zooUtils.isFile(path)
+  }
+
   def createZooEveryEpoch(): EveryEpoch = {
     new EveryEpoch()
   }

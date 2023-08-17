@@ -499,7 +499,6 @@ TORCH_VERSION_CLS = Pytorch1_11
 
 
 if not _avx512_checker():
-    print("IPEX Inference Model Without AVX512")
     print("IPEX BF16 Inference Model Without AVX512")
     TORCH_VERSION_CLS = CaseWithoutAVX512
 

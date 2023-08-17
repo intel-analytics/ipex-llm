@@ -76,6 +76,8 @@ class TransformersLLM(LLM):
     """BigDL-LLM Transformer-INT4 model."""
     tokenizer: Any  #: :meta private:
     """Huggingface tokenizer model."""
+    streaming: bool = True
+    """Whether to stream the results, token by token."""
 
     class Config:
         """Configuration for this pydantic object."""
@@ -130,6 +132,53 @@ class TransformersLLM(LLM):
             **kwargs,
         )
 
+    @classmethod
+    def from_model_id_low_bit(
+        cls,
+        model_id: str,
+        model_kwargs: Optional[dict] = None,
+        **kwargs: Any,
+    ) -> LLM:
+        """Construct object from model_id"""
+        try:
+            from bigdl.llm.transformers import (
+                AutoModel,
+                AutoModelForCausalLM,
+            )
+            from transformers import AutoTokenizer, LlamaTokenizer
+
+        except ImportError:
+            raise ValueError(
+                "Could not import transformers python package. "
+                "Please install it with `pip install transformers`."
+            )
+
+        _model_kwargs = model_kwargs or {}
+        # TODO: may refactore this code in the future
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
+        except:
+            tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
+
+        # TODO: may refactore this code in the future
+        try:
+            model = AutoModelForCausalLM.load_low_bit(model_id, **_model_kwargs)
+        except:
+            model = AutoModel.load_low_bit(model_id, **_model_kwargs)
+
+        if "trust_remote_code" in _model_kwargs:
+            _model_kwargs = {
+                k: v for k, v in _model_kwargs.items() if k != "trust_remote_code"
+            }
+
+        return cls(
+            model_id=model_id,
+            model=model,
+            tokenizer=tokenizer,
+            model_kwargs=_model_kwargs,
+            **kwargs,
+        )
+
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""
@@ -149,11 +198,32 @@ class TransformersLLM(LLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-        output = self.model.generate(input_ids, **kwargs)
-        text = self.tokenizer.decode(output[0], skip_special_tokens=True)[len(prompt) :]
-        if stop is not None:
-            # This is a bit hacky, but I can't figure out a better way to enforce
-            # stop tokens when making calls to huggingface_hub.
-            text = enforce_stop_tokens(text, stop)
-        return text
+        if self.streaming:
+            from transformers import TextStreamer
+            input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
+            if stop is not None:
+                from transformers.generation.stopping_criteria import StoppingCriteriaList
+                from transformers.tools.agents import StopSequenceCriteria
+                # stop generation when stop words are encountered
+                # TODO: stop generation when the following one is stop word
+                stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(stop,
+                                                                               self.tokenizer)])
+            else:
+                stopping_criteria = None
+            output = self.model.generate(input_ids, streamer=streamer,
+                                         stopping_criteria=stopping_criteria, **kwargs)
+            text = self.tokenizer.decode(output[0], skip_special_tokens=True)
+            return text
+        else:
+            input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            if stop is not None:
+                from transformers.generation.stopping_criteria import StoppingCriteriaList
+                from transformers.tools.agents import StopSequenceCriteria
+                stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(stop,
+                                                                               self.tokenizer)])
+            else:
+                stopping_criteria = None
+            output = self.model.generate(input_ids, stopping_criteria=stopping_criteria, **kwargs)
+            text = self.tokenizer.decode(output[0], skip_special_tokens=True)[len(prompt) :]
+            return text

@@ -450,6 +450,28 @@ You can find GBT result under folder `/path/to/data/model/`.
 /path/to/data/model/*.txt
 ```
 
+## BigDL LGBM model encrypt Example
+
+### Download data
+You can download the iris.data from [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).Then mount `/path/to/data/iris.data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/:/opt/occlum_spark/data
+```
+
+1.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate primary key for encrypt and decrypt. The primary key will be generated in `/opt/occlum_spark/data/key/simple_encrypted_primary_key`.
+```
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+3.To run the BigDL SimpleQuery e2e Example. The source code is [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum/py-examples/encrypted_lightgbm_model_io.py)
+```
+bash /opt/run_spark_on_occlum_glibc.sh lgbm_model_encrypt
+```
+
 ## BigDL GBT e2e Example
 
 ### Download data
@@ -649,6 +671,58 @@ bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/jo
 ```
 And the decrypt result is under folder `/opt/occlum_spark/data/decryptSimple` and `/opt/occlum_spark/data/decryptEhsm`.
 
+## e2e Exapmle csv encryption and decryption python util
+We provide python util to encrypt or decrypt csv data, which is easier to customize your own logic. 
+1. Generate primary key like before
+```bash
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+2. Edit python encryption or decryption python code. Add logic like `.option("multiLine", "true") \`
+```python
+import argparse
+import pyspark
+from bigdl.ppml.ppml_context import *
+from bigdl.ppml.kms.utils.kms_argument_parser import KmsArgumentParser
+
+args = KmsArgumentParser().get_arg_dict()
+
+sc = PPMLContext('pyspark-encrypt-or-decrypt-util', args)
+print(args["input_path"])
+
+# get a DataFrame from an plain or encrypted csv file
+df = sc.read(args["input_encrypt_mode"]) \
+    .option("header", "true") \
+    .csv(args["input_path"])
+df.show(5)
+# write DataFrame tp an plain or encrypted csv file
+sc.write(df, args["output_encrypt_mode"]) \
+    .mode('overwrite') \
+    .option("header", "true") \
+    .csv(args["output_path"])
+```
+3.submit to use, for example encrypt.sh. If you want to decrypt, just exchange input_encrypt_mode and output_encrypt_mode.
+```bash
+#encrypt.sh or decrypt.sh
+    export PYTHONHOME=/opt/python-occlum
+    /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                    -XX:-UseCompressedOops \
+                    -XX:ActiveProcessorCount=4 \
+                    -Divy.home="/tmp/.ivy" \
+                    -Dos.name="Linux" \
+                    -Djdk.lang.Process.launchMechanism=vfork \
+                    -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$BIGDL_HOME/jars/*" \
+                    -Xmx1g org.apache.spark.deploy.SparkSubmit \
+                    --py-files /opt/py-examples/bigdl.zip \
+                    /opt/python_util.py \
+                   --app_id 123456654321 \
+                   --api_key 123456654321 \
+                   --primary_key_material /opt/occlum_spark/data/key/simple_encrypted_primary_key \
+                   --input_path /opt/sampledata.csv \
+                   --output_path /opt/occlum_spark/data/encryptSimple/ \
+                   --input_encrypt_mode plain_text \
+                   --output_encrypt_mode aes/cbc/pkcs5padding \
+                   --kms_type SimpleKeyManagementService
+```
 ## PySpark 3.1.3 Pi example
 
 To run PySpark Pi example, start the docker container with:

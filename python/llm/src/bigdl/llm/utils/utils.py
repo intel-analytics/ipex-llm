@@ -15,18 +15,43 @@
 #
 
 import sys
+import pathlib
+from bigdl.llm.utils.isa_checker import check_avx_vnni, check_avx2, check_avx512_vnni
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 
 
-def get_avx_flags():
-    avx = ""
+def get_cpu_flags():
+    flags = ""
     if sys.platform != "win32":
-        import subprocess
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        if "avx512_vnni" in msg:
-            avx = "_avx512"
-        elif "avx2" in msg:
-            avx = "_avx2"
+        if check_avx512_vnni():
+            flags = "_avx512"
+        elif check_avx_vnni():
+            flags = "_avx2"
         else:
             invalidOperationError(False, "Unsupported CPUFLAGS.")
-    return avx
+    else:
+        # flags = "_vnni" if check_avx_vnni() else ""
+        flags = "-api"
+    return flags
+
+
+def get_shared_lib_info(lib_base_name: str):
+    # Determine the file extension based on the platform
+    if sys.platform.startswith("linux") or sys.platform == "darwin":
+        lib_ext = ".so"
+    elif sys.platform == "win32":
+        lib_ext = ".dll"
+    else:
+        invalidInputError(False, "Unsupported platform.")
+
+    # Construct the paths to the possible shared library names (python/llm/src/bigdl/llm/libs)
+    _base_path = pathlib.Path(__file__).parent.parent.resolve()
+    _base_path = _base_path / 'libs'
+    # Searching for the library in the current directory under the name "lib{lib_base_name}"
+    # (default name for llmcpp) and "{lib_base_name}" (default name for this repo)
+    _lib_paths = [
+        _base_path / f"lib{lib_base_name}-api{lib_ext}",
+        _base_path / f"{lib_base_name}-api{lib_ext}",
+    ]
+
+    return _base_path, _lib_paths

@@ -133,11 +133,13 @@ class KITTI(Dataset):
         return len(self.img_list)
 
     def __getitem__(self, idx):
-        img = Image.open(self.img_list[idx])
+        with open(self.img_list[idx], 'rb') as fb:
+            img = Image.open(fb)
         img = img.resize(self.img_size)
         img = np.array(img)
 
-        mask = Image.open(self.mask_list[idx]).convert("L")
+        with open(self.mask_list[idx], 'rb') as fb:
+            mask = Image.open(fb).convert("L")
         mask = mask.resize(self.img_size)
         mask = np.array(mask)
         mask = self.encode_segmap(mask)

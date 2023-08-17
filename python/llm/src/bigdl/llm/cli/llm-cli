@@ -28,7 +28,7 @@ function display_help {
   echo ""
   echo "options:"
   echo "  -h, --help           show this help message"
-  echo "  -x, --model_family {llama,bloom,gptneox}"
+  echo "  -x, --model_family {llama,bloom,gptneox,starcoder,chatglm}"
   echo "                       family name of model"
   echo "  -t N, --threads N    number of threads to use during computation (default: 8)"
   echo "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
@@ -36,25 +36,31 @@ function display_help {
 }
 
 function llama {
-  command="$lib_dir/main-llama_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-llama -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
 
 function bloom {
-  command="$lib_dir/main-bloom_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-bloom -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
 
 function gptneox {
-  command="$lib_dir/main-gptneox_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-gptneox -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
 
 function starcoder {
-  command="$lib_dir/main-starcoder_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-starcoder -t $threads -n $n_predict ${filteredArguments[*]}"
+  echo "$command"
+  eval "$command"
+}
+
+function chatglm {
+  command="$lib_dir/main-chatglm_vnni -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
@@ -99,6 +105,8 @@ elif [[ "$model_family" == "gptneox" ]]; then
   gptneox
 elif [[ "$model_family" == "starcoder" ]]; then
   starcoder
+elif [[ "$model_family" == "chatglm" ]]; then
+  chatglm
 else
   echo "Invalid model_family: $model_family"
   display_help
