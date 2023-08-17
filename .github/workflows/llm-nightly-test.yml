@@ -88,6 +88,7 @@ jobs:
 
       - name: Upload ckpt to ftp
         shell: bash
+        if: runner.os == 'Linux' 
         run: |
           curl -T $LLAMA_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_llama_7b_q4_0.bin
           curl -T $GPTNEOX_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_redpajama_7b_q4_0.bin
