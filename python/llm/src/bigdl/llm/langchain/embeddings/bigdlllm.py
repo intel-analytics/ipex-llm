@@ -209,8 +209,8 @@ class _BaseEmbeddings(BaseModel, Embeddings):
             llama = LlamaEmbeddings(model_path="/path/to/model.bin")
     """
 
-    ggml_model = None
-    ggml_module = None
+    ggml_model: str = None
+    ggml_module: str = None
 
     native: bool = True
 
@@ -280,7 +280,7 @@ class _BaseEmbeddings(BaseModel, Embeddings):
             class_ = getattr(module, values["ggml_model"])
 
             if values["native"]:
-                values["client"] = class_.GGML_Model(model_path, embedding=True, **model_params)
+                values["client"] = class_(model_path, embedding=True, **model_params)
             else:
                 values["client"] = TransformersEmbeddings.from_model_id(model_path)
 
