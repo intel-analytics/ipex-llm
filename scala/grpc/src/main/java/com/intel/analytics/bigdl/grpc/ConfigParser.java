@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.IOException;
-import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -42,20 +42,8 @@ public class ConfigParser {
 
     public static <T> T loadConfigFromPath(String configPath, Class<T> valueType)
             throws IOException {
-        // process path traversal issue
-        String safeDir = "/safe_dir/";
-        Path dirPath = Paths.get(configPath).getParent();
-        if (dirPath != null) {
-            String dirName = dirPath.toString();
-            if (dirName.contains("../")) {
-                System.exit(1);
-            }
-            safeDir = dirName;
-        }
-
-        String fileBaseName = new File(configPath).getName();
-        String safeFilePath = Paths.get(safeDir, fileBaseName).toString();
-        return objectMapper.readValue(new java.io.File(safeFilePath), valueType);
+        Path absolutePath = Paths.get(configPath).toAbsolutePath().normalize();
+        return objectMapper.readValue(absolutePath.toFile(), valueType);
     }
     public static <T> T loadConfigFromString(String configString, Class<T> valueType)
             throws IOException {

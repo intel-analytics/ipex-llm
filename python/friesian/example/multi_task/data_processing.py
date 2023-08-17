@@ -77,7 +77,7 @@ def feature_engineering(train_tbl, valid_tbl, output_path, sparse_int_features,
         valid_tbl = valid_tbl.encode_string(feature, feature_idx)
         valid_tbl = valid_tbl.fillna(0, feature)
         print("The class number of feature: {}/{}".format(feature, feature_idx.size()))
-        feature_idx.write_parquet(os.path.join(output_path, 'feature_maps'))
+        feature_idx.write_parquet(os.path.normpath(f"{output_path}{os.sep}feature_maps"))
     return train_tbl, valid_tbl
 
 
