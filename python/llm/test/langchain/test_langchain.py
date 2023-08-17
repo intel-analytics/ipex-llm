@@ -26,6 +26,7 @@ class Test_Models_Basics(TestCase):
         self.llama_model_path = os.environ.get('LLAMA_INT4_CKPT_PATH')
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
+        self.starcoder_model_path = os.environ.get('STARCODER_INT4_CKPT_PATH')
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
@@ -53,6 +54,13 @@ class Test_Models_Basics(TestCase):
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
         doc_result = bigdl_embeddings.embed_documents([text])
+
+    def test_langchain_llm_embedding_starcoder(self):
+        bigdl_embeddings = StarcoderEmbeddings(
+            model_path=self.starcoder_model_path)
+        text = "This is a test document."
+        query_result = bigdl_embeddings.embed_query(text)
+        doc_result = bigdl_embeddings.embed_documents([text])
         
     def test_langchain_llm_llama(self):
         llm = LlamaLLM(
@@ -77,6 +85,14 @@ class Test_Models_Basics(TestCase):
             n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
-        
+
+    def test_langchain_llm_starcoder(self):
+        llm = StarcoderLLM(
+            model_path=self.starcoder_model_path,
+            max_tokens=32,
+            n_threads=self.n_threads)
+        question = "What is AI?"
+        result = llm(question)
+
 if __name__ == '__main__':
     pytest.main([__file__])
