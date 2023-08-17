@@ -23,6 +23,7 @@ from .bigdlllm import *
 from .transformersembeddings import TransformersEmbeddings
 
 __all__ = [
+    "BigdlNativeEmbeddings",
     "LlamaLMEmbeddings",
     "BloomLMEmbeddings",
     "GptneoxLMEmbeddings",
