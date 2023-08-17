@@ -18,7 +18,6 @@ import logging
 import grpc
 from friesian.example.serving.generated import recall_pb2_grpc, recall_pb2
 import os
-import sys
 import pandas as pd
 import argparse
 import time
@@ -109,17 +108,9 @@ if __name__ == '__main__':
                         help='The target of recall service url')
     logging.basicConfig(filename="client.log", level=logging.INFO)
     args = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(args.data_dir)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(args.data_dir)
-    data_dir = os.path.join(safe_dir, file_name)
 
     is_local_and_existing_uri(args.data_dir)
-    df = pd.read_parquet(data_dir)
+    df = pd.read_parquet(args.data_dir)
     id_list = df["tweet_id"].unique()
     n_thread = 4
 

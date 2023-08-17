@@ -17,7 +17,6 @@
 from __future__ import division, print_function, unicode_literals
 
 import os
-import sys
 import math
 import tempfile
 from bigdl.friesian.utils import SafePickle
@@ -194,14 +193,6 @@ if __name__ == "__main__":
                         help="The learning rate to train the model.")
 
     args = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(args.model_dir)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(args.model_dir)
-    model_dir = os.path.join(safe_dir, file_name)
 
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory,
@@ -263,7 +254,7 @@ if __name__ == "__main__":
             label_cols=label_cols)
     end = time()
     print("Training time is: ", end - start)
-    est.save(os.path.join(model_dir, "model-%d.ckpt" % args.epochs))
-    est.save_weights(os.path.join(model_dir, "model.h5"))
+    est.save(os.path.join(args.model_dir, "model-%d.ckpt" % args.epochs))
+    est.save_weights(os.path.join(args.model_dir, "model.h5"))
 
     stop_orca_context()

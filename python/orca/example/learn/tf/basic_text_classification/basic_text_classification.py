@@ -59,8 +59,6 @@ import tensorflow as tf
 from tensorflow import keras
 
 import argparse
-import os
-import sys
 
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -80,14 +78,6 @@ parser.add_argument('--k8s_master', type=str, default="",
                          "It should be k8s://https://<k8s-apiserver-host>: "
                          "<k8s-apiserver-port>.")
 args = parser.parse_args()
-# process path traversal issue
-safe_dir_data = "/safe_dir/"
-dir_name_data = os.path.dirname(args.data_dir)
-if '../' in dir_name_data:
-    sys.exit(1)
-safe_dir_data = dir_name_data
-file_name_data = os.path.basename(args.data_dir)
-data_dir = os.path.join(safe_dir_data, file_name_data)
 cluster_mode = args.cluster_mode
 download = args.download
 if cluster_mode == "local":
@@ -114,7 +104,7 @@ else:
     import numpy as np
     import os
     from tensorflow.keras.utils import get_file
-    path = os.path.join(data_dir, 'imdb.npz')
+    path = os.path.join(args.data_dir, 'imdb.npz')
     num_words = 10000
     skip_top = 0
     maxlen = None
@@ -183,7 +173,7 @@ if download:
     word_index = imdb.get_word_index()
 else:
     import json
-    path = os.path.join(data_dir, 'imdb_word_index.json')
+    path = os.path.join(args.data_dir, 'imdb_word_index.json')
     with open(path) as f:
         word_index = json.load(f)
 

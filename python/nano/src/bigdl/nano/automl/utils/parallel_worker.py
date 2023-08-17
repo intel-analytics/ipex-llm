@@ -24,14 +24,7 @@ from pytorch_lightning.utilities.seed import reset_seed
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(temp_dir)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(temp_dir)
-    temp_dir = os.path.join(safe_dir, file_name)
+
     with open(os.path.join(temp_dir, "search_kwargs.json"), 'r') as f:
         kwargs = json.load(f)
     with open(os.path.join(temp_dir, "search_func.pkl"), 'rb') as f:

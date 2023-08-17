@@ -124,14 +124,6 @@ if __name__ == '__main__':
                         help='snapshot directory name (default: snapshot)')
     parser.add_argument('--data_dir', type=str, default="./preprocessed", help='data directory')
     args = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(args.model_dir)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(args.model_dir)
-    model_dir = os.path.join(safe_dir, file_name)
 
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
@@ -166,7 +158,7 @@ if __name__ == '__main__':
     estimator.fit(train_data.df, epochs=args.epochs, batch_size=args.batch_size,
                   feature_cols=feature_cols, label_cols=['label'], validation_data=test_data.df)
 
-    ckpts_dir = os.path.join(model_dir, 'ckpts/')
+    ckpts_dir = os.path.join(args.model_dir, 'ckpts/')
     if not exists(ckpts_dir):
         makedirs(ckpts_dir)
     snapshot_path = ckpts_dir + "ckpt_" + args.model_type

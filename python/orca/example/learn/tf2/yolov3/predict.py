@@ -48,8 +48,6 @@ import numpy as np
 import tensorflow as tf
 from yoloV3 import YoloV3, transform_images
 import argparse
-import os
-import sys
 
 DEFAULT_IMAGE_SIZE = 416
 
@@ -81,33 +79,17 @@ def main():
                         help="Image output path.")
 
     options = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(options.names)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(options.names)
-    names_path = os.path.join(safe_dir, file_name)
-
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(options.image)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(options.image)
-    image_path = os.path.join(safe_dir, file_name)
 
     yolo = YoloV3(classes=options.class_num)
 
     yolo.load_weights(options.checkpoint).expect_partial()
     print("weights loaded")
 
-    class_names = [c.strip() for c in open(names_path).readlines()]
+    class_names = [c.strip() for c in open(options.names).readlines()]
     print("names loaded")
 
     img_raw = tf.image.decode_image(
-        open(image_path, 'rb').read(), channels=3)
+        open(options.image, 'rb').read(), channels=3)
 
     img = tf.expand_dims(img_raw, 0)
     img = transform_images(img, DEFAULT_IMAGE_SIZE)

@@ -21,8 +21,6 @@ import time
 import cv2
 import glob
 import math
-import os
-import sys
 from bigdl.orca.learn.openvino import Estimator
 
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -55,14 +53,6 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=4, help="The batch size of inference.")
     parser.add_argument('--memory', type=str, default="2g", help="The executor memory size.")
     args = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(args.image_folder)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(args.image_folder)
-    temp_dir = os.path.join(safe_dir, file_name)
 
     if args.cluster_mode == "local":
         init_orca_context(cores=args.core_num, memory=args.memory)
@@ -73,7 +63,7 @@ if __name__ == "__main__":
         init_orca_context(cluster_mode=args.cluster_mode)
 
     images = [cv2.imread(file) for file in
-              glob.glob(temp_dir + "/*.jpg")]
+              glob.glob(args.image_folder + "/*.jpg")]
     images = [crop(img, 416, 416) for img in images]
     image_num = len(images)
     copy_time = math.ceil(args.data_num/image_num)

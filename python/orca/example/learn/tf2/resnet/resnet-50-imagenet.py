@@ -15,7 +15,6 @@
 #
 
 import os
-import sys
 import argparse
 import tensorflow as tf
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -371,14 +370,6 @@ parser.add_argument("--epochs", type=int, default=18, help=" epochs.")
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(args.log_dir)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(args.log_dir)
-    log_dir = os.path.join(safe_dir, file_name)
     if args.runtime == "ray":
         init_orca_context(runtime=args.runtime, address=args.address)
     else:
@@ -391,7 +382,7 @@ if __name__ == "__main__":
         invalidInputError(args.data_dir is not None,
                           "--data_dir must be provided if not using dummy data")
 
-    if not os.path.exists(log_dir):
+    if not os.path.exists(args.log_dir):
         os.mkdir(args.log_dir)
 
     from bigdl.orca.learn.tf2 import Estimator
@@ -444,5 +435,5 @@ if __name__ == "__main__":
             validation_steps=args.num_images_validation // global_batch_size,
         )
 
-        trainer.save(os.path.join(log_dir, f"model-{args.epochs}.pkl"))
+        trainer.save(os.path.join(args.log_dir, f"model-{args.epochs}.pkl"))
     stop_orca_context()

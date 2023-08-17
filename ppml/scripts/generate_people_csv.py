@@ -1,20 +1,8 @@
 import sys
-import os
 import random
-
-jobs = ['Developer', 'Engineer', 'Researcher']
+jobs=['Developer', 'Engineer', 'Researcher']
 output_file = sys.argv[1]
 num_lines = int(sys.argv[2])
-
-# process path traversal issue
-safe_dir = "/safe_dir/"
-dir_name = os.path.dirname(output_file)
-if '../' in dir_name:
-    sys.exit(1)
-safe_dir = dir_name
-file_name = os.path.basename(output_file)
-output_file = os.path.join(safe_dir, file_name)
-
 with open(output_file, 'wb') as File:
     File.write("name,age,job\n".encode())
     cur_num_line = 0

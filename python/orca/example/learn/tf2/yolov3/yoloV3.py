@@ -57,7 +57,6 @@ from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
 import tempfile
 import os
-import sys
 import argparse
 
 DEFAULT_IMAGE_SIZE = 416
@@ -573,28 +572,6 @@ def main():
                         help="nfs mount path")
 
     options = parser.parse_args()
-    # process path traversal issue
-    safe_dir = "/safe_dir/"
-    dir_name = os.path.dirname(options.names)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(options.names)
-    names_path = os.path.join(safe_dir, file_name)
-
-    dir_name = os.path.dirname(options.data_dir)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(options.data_dir)
-    data_dir = os.path.join(safe_dir, file_name)
-
-    dir_name = os.path.dirname(options.output_data)
-    if '../' in dir_name:
-        sys.exit(1)
-    safe_dir = dir_name
-    file_name = os.path.basename(options.output_data)
-    output_data = os.path.join(safe_dir, file_name)
 
     if options.cluster_mode == "local":
         init_orca_context(cluster_mode="local", cores=options.cores, num_nodes=options.worker_num,
@@ -649,11 +626,11 @@ def main():
         return model
 
     # prepare data
-    with open(names_path) as f:
+    with open(options.names) as f:
         class_map = {name: idx for idx, name in enumerate(f.read().splitlines())}
-    dataset_path = os.path.join(data_dir, "VOCdevkit")
-    voc_train_path = os.path.join(output_data, "train_dataset")
-    voc_val_path = os.path.join(output_data, "val_dataset")
+    dataset_path = os.path.join(options.data_dir, "VOCdevkit")
+    voc_train_path = os.path.join(options.output_data, "train_dataset")
+    voc_val_path = os.path.join(options.output_data, "val_dataset")
 
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_train_path,
                   splits_names=[(options.data_year, options.split_name_train)], classes=class_map)

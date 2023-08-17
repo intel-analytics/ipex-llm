@@ -18,7 +18,6 @@ import argparse
 import torch
 import torchvision
 import os
-import sys
 from torchvision import datasets, transforms
 from bigdl.dllib.optim.optimizer import *
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -93,13 +92,6 @@ def main():
     parser.add_argument("--deploy_mode", type=str, default="yarn-client",
                         help="yarn deploy mode, yarn-client or yarn-cluster")
     args = parser.parse_args()
-    safe_dir_data = "/safe_dir/"
-    dir_name_data = os.path.dirname(args.data)
-    if '../' in dir_name_data:
-        sys.exit(1)
-    safe_dir_data = dir_name_data
-    file_name_data = os.path.basename(args.data)
-    data_dir = os.path.join(safe_dir_data, file_name_data)
 
     # init
     hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
@@ -114,8 +106,8 @@ def main():
                                  })
 
     # Data loading code
-    traindir = os.path.join(data_dir, 'train')
-    valdir = os.path.join(data_dir, 'val')
+    traindir = os.path.join(args.data, 'train')
+    valdir = os.path.join(args.data, 'val')
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
