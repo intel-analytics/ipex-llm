@@ -304,7 +304,6 @@ class _BaseEmbeddings(BaseModel, Embeddings):
 
         return values
 
-    @classmethod
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """Embed a list of documents using the Llama model.
 
@@ -320,7 +319,6 @@ class _BaseEmbeddings(BaseModel, Embeddings):
         else:
             return self.client.embed_documents(texts)
 
-    @classmethod
     def embed_query(self, text: str) -> List[float]:
         """Embed a query using the Llama model.
 
