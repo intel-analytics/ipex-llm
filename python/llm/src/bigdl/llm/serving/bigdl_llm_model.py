@@ -18,7 +18,7 @@ def _get_patch_map():
     return _mapping_fastchat
 
 
-# Decide if we want to change the load_model method for base?
+# TODO: Decide if we want to change the load_model method for base?
 def load_model_base(self, model_path: str, from_pretrained_kwargs: dict):
     revision = from_pretrained_kwargs.get("revision", "main")
     # TODO: remove
