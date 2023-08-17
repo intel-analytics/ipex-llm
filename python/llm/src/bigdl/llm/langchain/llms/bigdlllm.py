@@ -77,6 +77,8 @@ class BigdlNativeLLM(LLM):
         'llama': {'module': "bigdl.llm.models" , 'class': "Llama"},
         'bloom': {'module': "bigdl.llm.models", 'class': "Bloom"},
         'gptneox': {'module': "bigdl.llm.models", 'class': "Gptneox"},
+        'starcoder': {'module':"bigdl.llm.models", 'class': "Starcoder"},
+        'chatglm': {'module':"bigdl.llm.ggml.model.chatglm", 'class': "ChatGLM"},
     }  #: :meta private:
     """info necessary for different model families initiation and configure"""
 
@@ -201,9 +203,9 @@ class BigdlNativeLLM(LLM):
 
         except ImportError:
             raise ModuleNotFoundError(
-                "Could not import llama-cpp-python library. "
-                "Please install the llama-cpp-python library to "
-                "use this embedding model: pip install llama-cpp-python"
+                "Could not import bigdl-llm library. "
+                "Please install the bigdl-llm library to "
+                "use this embedding model: pip install bigdl-llm"
             )
         except Exception as e:
             raise ValueError(
@@ -357,7 +359,7 @@ class BigdlNativeLLM(LLM):
         return len(tokenized_text)
 
 
-class _BaseLLM(LLM):
+class _BaseCausalLM(LLM):
     """Wrapper around the BigDL-LLM
 
     Example:
@@ -572,8 +574,8 @@ class _BaseLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlNativeLLM
-                llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
+                from langchain.llms import LlamaLLM
+                llm = LlamaLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
         if self.native:
@@ -620,8 +622,8 @@ class _BaseLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlNativeLLM
-                llm = BigdlNativeLLM(
+                from langchain.llms import LlamaLLM
+                llm = LlamaLLM(
                     model_path="/path/to/local/model.bin",
                     temperature = 0.5
                 )
@@ -647,26 +649,26 @@ class _BaseLLM(LLM):
         return len(tokenized_text)
 
 
-class LlamaLLM(_BaseLLM):
+class LlamaLLM(_BaseCausalLM):
     ggml_model = "Llama"
     ggml_module = "bigdl.llm.models"
 
 
-class BloomLLM(_BaseLLM):
+class BloomLLM(_BaseCausalLM):
     ggml_model = "Bloom"
     ggml_module = "bigdl.llm.models"
 
 
-class GptneoxLLM(_BaseLLM):
+class GptneoxLLM(_BaseCausalLM):
     ggml_model = "Gptneox"
     ggml_module = "bigdl.llm.models"
 
 
-class ChatGLMLLM(_BaseLLM):
+class ChatGLMLLM(_BaseCausalLM):
     ggml_model = "ChatGLM"
-    ggml_module = "bigdl.llm.models"
+    ggml_module = "bigdl.llm.ggml.model.chatglm"
 
 
-class StarcoderLLM(_BaseLLM):
+class StarcoderLLM(_BaseCausalLM):
     ggml_model = "Starcoder"
     ggml_module = "bigdl.llm.models"

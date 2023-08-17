@@ -23,7 +23,7 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.llms import LlamaLLM
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -35,7 +35,6 @@ import argparse
 def prepare_chain(args):
 
     model_path = args.model_path
-    model_family = args.model_family
     n_threads = args.thread_num
 
     # Use a easy prompt could bring good-enough result
@@ -45,11 +44,11 @@ def prepare_chain(args):
     A:"""
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-    # We use our BigdlNativeLLM to subsititute OpenAI web-required API
+    # We use our BigDLCausalLLM to subsititute OpenAI web-required API
+    # Switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    llm = BigdlNativeLLM(
+    llm = LlamaLLM(
             model_path=model_path,
-            model_family=model_family,
             n_threads=n_threads,
             callback_manager=callback_manager, 
             verbose=True
@@ -109,9 +108,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BigdlNativeLLM Langchain Voice Assistant Example')
-    parser.add_argument('-x','--model-family', type=str, required=True,
-                        help='the model family')
+    parser = argparse.ArgumentParser(description='BigDLCausalLM Langchain Voice Assistant Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
     parser.add_argument('-t','--thread-num', type=int, default=2,

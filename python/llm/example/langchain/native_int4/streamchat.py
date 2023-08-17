@@ -21,7 +21,7 @@
 
 import argparse
 
-from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.llms import LlamaLLM
 from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -31,7 +31,6 @@ def main(args):
     
     question = args.question
     model_path = args.model_path
-    model_family = args.model_family
     n_threads = args.thread_num
     template ="""{question}"""
 
@@ -41,9 +40,8 @@ def main(args):
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
     
     # Verbose is required to pass to the callback manager
-    llm = BigdlNativeLLM(
+    llm = LlamaLLM(
         model_path=model_path,
-        model_family=model_family,
         n_threads=n_threads,
         callback_manager=callback_manager, 
         verbose=True
@@ -55,10 +53,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BigdlNativeLLM Langchain Streaming Chat Example')
-    parser.add_argument('-x','--model-family', type=str, required=True,
-                        choices=["llama", "bloom", "gptneox"],
-                        help='the model family')
+    parser = argparse.ArgumentParser(description='BigDLCausalLM Langchain Streaming Chat Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
     parser.add_argument('-q', '--question', type=str, default='What is AI?',

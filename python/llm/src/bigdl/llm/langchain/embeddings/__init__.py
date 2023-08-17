@@ -24,10 +24,10 @@ from .transformersembeddings import TransformersEmbeddings
 
 __all__ = [
     "BigdlNativeEmbeddings",
-    "LlamaLMEmbeddings",
-    "BloomLMEmbeddings",
-    "GptneoxLMEmbeddings",
-    "ChatGLMLMEmbeddings",
-    "StarcoderForCausalLM",
+    "LlamaEmbeddings",
+    "BloomEmbeddings",
+    "GptneoxEmbeddings",
+    "ChatGLMEmbeddings",
+    "StarcoderEmbeddings",
     "TransformersEmbeddings"
 ]

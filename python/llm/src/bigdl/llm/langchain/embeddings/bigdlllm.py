@@ -75,8 +75,8 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
         'llama': {'module': "bigdl.llm.models", 'class': "Llama"},
         'bloom': {'module': "bigdl.llm.models", 'class': "Bloom"},
         'gptneox': {'module': "bigdl.llm.models", 'class': "Gptneox"},
-        'chatglm': {'module':"bigdl.llm.models", 'class': "ChatGLM"},
         'starcoder': {'module':"bigdl.llm.models", 'class': "Starcoder"},
+        'chatglm': {'module':"bigdl.llm.ggml.model.chatglm", 'class': "ChatGLM"},
     }  #: :meta private:
     """info necessary for different model family initiation and configure"""
 
@@ -166,7 +166,7 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
             )
         except Exception as e:
             raise ValueError(
-                f"Could not load Llama model from path: {model_path}. "
+                f"Could not load model from path: {model_path}. "
                 f"Please make sure the model family {model_family} matches "
                 "the model you want to load."
                 f"Received error {e}"
@@ -199,7 +199,7 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
         return list(map(float, embedding))
 
 
-class _BaseEmbeddings:
+class _BaseEmbeddings(BaseModel, Embeddings):
     """Wrapper around bigdl-llm embedding models.
 
     Example:
@@ -296,7 +296,7 @@ class _BaseEmbeddings:
             )
         except Exception as e:
             raise ValueError(
-                f"Could not load Llama model from path: {model_path}. "
+                f"Could not load model from path: {model_path}. "
                 f"Please make sure the model embedding class matches "
                 "the model you want to load."
                 f"Received error {e}"
@@ -337,26 +337,26 @@ class _BaseEmbeddings:
             return self.client.embed_query(texts)
 
 
-class LlamaLMEmbeddings(_BaseEmbeddings):
+class LlamaEmbeddings(_BaseEmbeddings):
     ggml_model = "Llama"
     ggml_module = "bigdl.llm.models"
 
 
-class BloomLMEmbeddings(_BaseEmbeddings):
+class BloomEmbeddings(_BaseEmbeddings):
     ggml_model = "Bloom"
     ggml_module = "bigdl.llm.models"
 
 
-class GptneoxLMEmbeddings(_BaseEmbeddings):
+class GptneoxEmbeddings(_BaseEmbeddings):
     ggml_model = "Gptneox"
     ggml_module = "bigdl.llm.models"
 
 
-class ChatGLMLMEmbeddings(_BaseEmbeddings):
+class ChatGLMEmbeddings(_BaseEmbeddings):
     ggml_model = "ChatGLM"
     ggml_module = "bigdl.llm.ggml.model.chatglm"
 
 
-class StarcoderForCausalLM(_BaseEmbeddings):
+class StarcoderEmbeddings(_BaseEmbeddings):
     ggml_model = "Starcoder"
     ggml_module = "bigdl.llm.models"

@@ -34,21 +34,21 @@ class Test_Models_Basics(TestCase):
 
         
     def test_langchain_llm_embedding_llama(self):
-        bigdl_embeddings = LlamaLMEmbeddings(
+        bigdl_embeddings = LlamaEmbeddings(
             model_path=self.llama_model_path)
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
         doc_result = bigdl_embeddings.embed_documents([text])
     
     def test_langchain_llm_embedding_gptneox(self):
-        bigdl_embeddings = GptneoxLMEmbeddings(
+        bigdl_embeddings = GptneoxEmbeddings(
             model_path=self.gptneox_model_path)
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
         doc_result = bigdl_embeddings.embed_documents([text])
 
     def test_langchain_llm_embedding_bloom(self):
-        bigdl_embeddings = BloomLMEmbeddings(
+        bigdl_embeddings = BloomEmbeddings(
             model_path=self.bloom_model_path)
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
