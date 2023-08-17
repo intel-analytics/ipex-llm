@@ -4,12 +4,23 @@ description: "Verify the llm-cli flow on linux"
 runs:
   using: "composite"
   steps:
+    - name: Set llm-cli command
+      shell: bash
+      run: |
+        if [[ ${{ runner.os }} == 'Linux' ]]; then
+          echo "LLM_CLI_CMD=llm-cli" >> "$GITHUB_ENV"
+        elif [[ ${{ runner.os }} == 'Windows' ]]; then
+          echo "LLM_CLI_CMD=llm-cli.ps1" >> "$GITHUB_ENV"
+        else
+          echo "Runner os is not supported!!!!!"
+          exit 1
+        fi
     - name: Test llama llm-cli
       shell: bash
       run: |
-        llm-cli -t $THREAD_NUM -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
+        $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
 
-        timeout 30s llm-cli -t $THREAD_NUM -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -i -p \
+        timeout 30s $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -i -p \
         'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1 || true
 
         if ! grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out ; then
@@ -20,9 +31,9 @@ runs:
     - name: Test gptneox llm-cli
       shell: bash
       run: |
-        llm-cli -t $THREAD_NUM -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
+        $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
 
-        timeout 30s llm-cli -t $THREAD_NUM -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -i -p \
+        timeout 30s $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -i -p \
         'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1 || true
 
         if ! grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out ; then
@@ -33,17 +44,14 @@ runs:
     - name: Test bloom llm-cli
       shell: bash
       run: |
-        llm-cli -t $THREAD_NUM -n 256 -x bloom -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
+        $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x bloom -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
 
     - name: Test starcoder llm-cli
       shell: bash
       run: |
-        llm-cli -t $THREAD_NUM -n 256 -x starcoder -m $STARCODER_INT4_CKPT_PATH -p 'def check_odd('
+        $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x starcoder -m $STARCODER_INT4_CKPT_PATH -p 'def check_odd('
 
     # - name: Test chatglm llm-cli
     #   shell: bash
     #   run: |
-    #     source $CONDA_HOME/bin/activate bigdl-llm-test
-    #     $CONDA_HOME/bin/conda info
-
-    #     llm-cli -t $THREAD_NUM -n 256 -x chatglm -m $CHATGLM_INT4_CKPT_PATH -p '你好'
+    #     $LLM_CLI_CMD -t $THREAD_NUM -n 256 -x chatglm -m $CHATGLM_INT4_CKPT_PATH -p '你好'
