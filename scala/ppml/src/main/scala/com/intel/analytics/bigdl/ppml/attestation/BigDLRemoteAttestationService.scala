@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.attestation
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 import java.io.{File, InputStream}
 import java.io.{BufferedOutputStream, BufferedInputStream};
+import java.nio.file.{Paths, Path}
 import java.security.{KeyStore, SecureRandom}
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import java.util.{Base64, UUID}
@@ -344,7 +345,10 @@ object BigDLRemoteAttestationService {
     val token = httpsKeyStoreToken.toCharArray
 
     val keyStore = KeyStore.getInstance("PKCS12")
-    val keystoreInputStream = new File(httpsKeyStorePath).toURI().toURL().openStream()
+    val httpsKeyStorePath = Paths.get(httpsKeyStorePath).toAbsolute.normalize
+    val httpsKeyStoreFile = httpsKeyStorePath.toFile
+    httpsKeyStoreFile.setExecutable(false)
+    val keystoreInputStream = httpsKeyStoreFile.toURI().toURL().openStream()
 
     keyStore.load(keystoreInputStream, token)
 

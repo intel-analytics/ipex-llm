@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.attestation.generator
 import org.apache.logging.log4j.LogManager
 import java.io.{File, FileInputStream, FileOutputStream}
+import java.nio.file.{Paths, Path}
 import scopt.OptionParser
 
 import com.intel.analytics.bigdl.ppml.attestation._
@@ -47,7 +48,9 @@ object QuoteGeneratorCmd {
         if(params.libOSType=="gramine") {
             val userReportData = try {
                 // read userReportData
-                val userReportDataFile = new File(params.reportDataPath)
+                val reportDataPath = Paths.get(params.reportDataPath).toAbsolute.normalize
+                val userReportDataFile = reportDataPath.toFile
+                userReportDataFile.setExecutable(false)
                 val in = new FileInputStream(userReportDataFile)
                 val userReportData = new Array[Byte](userReportDataFile.length.toInt)
                 in.read(userReportData)
@@ -65,7 +68,8 @@ object QuoteGeneratorCmd {
 
             try {
                 // write gramine-quote to file.
-                val quoteWriter = new FileOutputStream(params.quoteOutputPath)
+                val quoteOutputPath = Paths.get(params.quoteOutputPath).toAbsolutePath.normalize
+                val quoteWriter = new FileOutputStream(quoteOutputPath.toString)
                 quoteWriter.write(quote)
                 quoteWriter.close()
             } catch {
