@@ -71,6 +71,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
@@ -86,12 +87,12 @@ jobs:
         uses: ./.github/actions/llm/convert-test
 
       - name: Upload ckpt to ftp
+        shell: bash
         run: |
-          apt-get update && apt install -y tnftp
-          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
-          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
-          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
-          tnftp -u ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
+          curl -T $LLAMA_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_llama_7b_q4_0.bin
+          curl -T $GPTNEOX_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_redpajama_7b_q4_0.bin
+          curl -T $BLOOM_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_bloom_7b_q4_0.bin
+          curl -T $STARCODER_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_santacoder_1b_q4_0.bin
           rm -rf $LLAMA_INT4_CKPT_PATH
           rm -rf $GPTNEOX_INT4_CKPT_PATH
           rm -rf $BLOOM_INT4_CKPT_PATH
