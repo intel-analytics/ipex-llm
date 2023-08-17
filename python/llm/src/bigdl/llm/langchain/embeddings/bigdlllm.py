@@ -205,8 +205,8 @@ class _BaseEmbeddings(BaseModel, Embeddings):
     Example:
         .. code-block:: python
 
-            from bigdl.llm.langchain.embeddings import LlamaEmbedding
-            llama = LlamaEmbedding(model_path="/path/to/model.bin")
+            from bigdl.llm.langchain.embeddings import LlamaEmbeddings
+            llama = LlamaEmbeddings(model_path="/path/to/model.bin")
     """
 
     ggml_model = None
