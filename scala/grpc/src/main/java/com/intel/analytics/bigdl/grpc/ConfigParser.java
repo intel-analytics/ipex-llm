@@ -43,7 +43,9 @@ public class ConfigParser {
     public static <T> T loadConfigFromPath(String configPath, Class<T> valueType)
             throws IOException {
         Path absolutePath = Paths.get(configPath).toAbsolutePath().normalize();
-        return objectMapper.readValue(absolutePath.toFile(), valueType);
+        File tempFile = absolutePath.toFile();
+        tempFile.setExecutable(false);
+        return objectMapper.readValue(tempFile, valueType);
     }
     public static <T> T loadConfigFromString(String configString, Class<T> valueType)
             throws IOException {
