@@ -79,3 +79,6 @@ jobs:
   llm-inference-test-on-windows:
     needs: llm-nightly-convert-test-avx512
     uses: ./.github/workflows/llm-nightly-test-windows.yml
+  llm-example-test:
+    needs: llm-nightly-convert-test-avx512
+    uses: ./.github/workflows/llm_example_tests.yml
