@@ -69,7 +69,7 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
                     "please switch to the new LMEmbeddings API for sepcific models.")
 
     model_family: str = "llama"
-    """the model family"""
+    """The model family: currently supports llama, gptneox, bloom, starcoder and chatglm."""
 
     family_info = {
         'llama': {'module': "bigdl.llm.models", 'class': "Llama"},
@@ -78,10 +78,13 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
         'starcoder': {'module':"bigdl.llm.models", 'class': "Starcoder"},
         'chatglm': {'module':"bigdl.llm.ggml.model.chatglm", 'class': "ChatGLM"},
     }  #: :meta private:
-    """info necessary for different model family initiation and configure"""
+    """Info necessary for different model family initiation and configure."""
 
     client: Any  #: :meta private:
+    """The actual model."""
+
     model_path: str  # TODO: missing doc
+    """Path to the converted BigDL-LLM optimized ggml binary checkpoint."""
 
     n_ctx: int = Field(512, alias="n_ctx")
     """Token context window."""
@@ -202,6 +205,11 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
 class _BaseEmbeddings(BaseModel, Embeddings):
     """Wrapper around bigdl-llm embedding models.
 
+    param model_path: If running with ``native int4``, the path should be converted BigDL-LLM
+          optimized ggml binary checkpoint, which should be converted by ``bigdl.llm.llm_convert``.
+          If running with ``transformers int4``, the path should be the huggingface repo id
+          to be downloaded or the huggingface checkpoint folder.
+
     Example:
         .. code-block:: python
 
@@ -213,9 +221,16 @@ class _BaseEmbeddings(BaseModel, Embeddings):
     ggml_module: str = None
 
     native: bool = True
+    """Load model to either BigDL-LLM optimized Transformers or Native (ggml) int4."""
 
     client: Any  #: :meta private:
+    """The actual model."""
+
     model_path: str  # TODO: missing doc
+    """Path to the loading model file.
+    If native, the path shoule be converted BigDL-LLM optimized ggml binary checkpoint.
+    If transformers, the path should be the huggingface repo id to be downloaded
+    or the huggingface checkpoint folder."""
 
     n_ctx: int = Field(512, alias="n_ctx")
     """Token context window."""
@@ -305,7 +320,7 @@ class _BaseEmbeddings(BaseModel, Embeddings):
         return values
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        """Embed a list of documents using the Llama model.
+        """Embed a list of documents using the optimized int4 model.
 
         Args:
             texts: The list of texts to embed.
@@ -320,7 +335,7 @@ class _BaseEmbeddings(BaseModel, Embeddings):
             return self.client.embed_documents(texts)
 
     def embed_query(self, text: str) -> List[float]:
-        """Embed a query using the Llama model.
+        """Embed a query using the optimized int4 model.
 
         Args:
             text: The text to embed.

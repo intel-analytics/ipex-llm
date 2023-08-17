@@ -70,8 +70,7 @@ class BigdlNativeLLM(LLM):
                     "please switch to the new LLM API for sepcific models.")
 
     model_family: str = "llama"
-    """the model family: currently supports llama, gptneox, and bloom."""
-
+    """The model family: currently supports llama, gptneox, bloom, starcoder and chatglm."""
 
     family_info = {
         'llama': {'module': "bigdl.llm.models" , 'class': "Llama"},
@@ -80,13 +79,13 @@ class BigdlNativeLLM(LLM):
         'starcoder': {'module':"bigdl.llm.models", 'class': "Starcoder"},
         'chatglm': {'module':"bigdl.llm.ggml.model.chatglm", 'class': "ChatGLM"},
     }  #: :meta private:
-    """info necessary for different model families initiation and configure"""
+    """Info necessary for different model families initiation and configure."""
 
     client: Any  #: :meta private:
-    """the actual model"""
+    """The actual model."""
 
     model_path: str
-    """The path to the Llama model file."""
+    """Path to the converted BigDL-LLM optimized ggml binary checkpoint."""
 
     lora_base: Optional[str] = None
     """The path to the Llama LoRA base model."""
@@ -374,12 +373,16 @@ class _BaseCausalLM(LLM):
     ggml_module: str = None
 
     native: bool = True
+    """Load model to either BigDL-LLM optimized Transformers or Native (ggml) int4."""
 
     client: Any  #: :meta private:
-    """the actual model"""
+    """The actual model."""
 
     model_path: str
-    """The path to the Llama model file."""
+    """Path to the loading model file.
+    If native, the path shoule be converted BigDL-LLM optimized ggml binary checkpoint.
+    If transformers, the path should be the huggingface repo id to be downloaded
+    or the huggingface checkpoint folder."""
 
     lora_base: Optional[str] = None
     """The path to the Llama LoRA base model."""
