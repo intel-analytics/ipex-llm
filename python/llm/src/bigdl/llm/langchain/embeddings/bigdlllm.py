@@ -354,7 +354,7 @@ class GptneoxLMEmbeddings(_BaseEmbeddings):
 
 class ChatGLMLMEmbeddings(_BaseEmbeddings):
     ggml_model = "ChatGLM"
-    ggml_module = "bigdl.llm.models"
+    ggml_module = "bigdl.llm.ggml.model.chatglm"
 
 
 class StarcoderForCausalLM(_BaseEmbeddings):
