@@ -152,7 +152,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
   
   >**Notes**: 
   
-  * Currently only llama/bloom/gptneox/starcoder model families are supported; for other models, you may use the Transformers INT4 format as described above).
+  * Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Transformers INT4 format as described above).
 
   * You may choose the corresponding API developed for specific native models to load the converted model.
 
