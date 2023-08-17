@@ -16,7 +16,8 @@ on:
       - ".github/workflows/llm-binary-build.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/cli-test-linux/action.yml"
+      - ".github/actions/llm/cli-test-windows/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
   pull_request:
     branches: [main]
@@ -26,7 +27,8 @@ on:
       - ".github/workflows/llm-binary-build.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/cli-test/action.yml"
+      - ".github/actions/llm/cli-test-linux/action.yml"
+      - ".github/actions/llm/cli-test-windows/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
   workflow_call:
@@ -147,9 +149,13 @@ jobs:
             wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
           fi
 
-      - name: Run LLM cli test
-        uses: ./.github/actions/llm/cli-test
-
+      - name: Run LLM cli test (Linux)
+        if: runner.os == 'Linux' 
+        uses: ./.github/actions/llm/cli-test-linux
+      - name: Run LLM cli test (Windows)
+        if: runner.os == 'Windows' 
+        uses: ./.github/actions/llm/cli-test-windows
+        
       - name: Run LLM inference test
         shell: bash
         run: |
