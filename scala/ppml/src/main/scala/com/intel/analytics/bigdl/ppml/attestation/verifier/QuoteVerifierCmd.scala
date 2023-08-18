@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import java.io.{File, FileInputStream}
+import java.nio.file.{Paths, Path}
 import java.math.BigInteger
 
 import com.intel.analytics.bigdl.ppml.attestation._
@@ -39,9 +40,11 @@ object QuoteVerifierCmd {
             .action((x, c) => c.copy(quoteOutputPath = x))
         }
 
-        val params = cmdParser.parse(args, CmdParams()).get
+        val params: CmdParams = cmdParser.parse(args, CmdParams()).get
 
-        val quoteOutputFile = new File(params.quoteOutputPath)
+        val quoteOutputPath = Paths.get(params.quoteOutputPath).toAbsolutePath.normalize
+        val quoteOutputFile = quoteOutputPath.toFile
+        quoteOutputFile.setExecutable(false)
         if (quoteOutputFile.length == 0) {
             logger.error("Invalid quote file length.")
             throw new AttestationRuntimeException("Retrieving Gramine quote " +
