@@ -88,12 +88,15 @@ jobs:
 
       - name: Upload ckpt to ftp
         shell: bash
-        if: runner.os == 'Linux' 
+        if: runner.os == 'Linux' && github.event_name == 'schedule'
         run: |
           curl -T $LLAMA_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_llama_7b_q4_0.bin
           curl -T $GPTNEOX_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_redpajama_7b_q4_0.bin
           curl -T $BLOOM_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_bloom_7b_q4_0.bin
           curl -T $STARCODER_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_santacoder_1b_q4_0.bin
+      - name: Delete ckpt
+        shell: bash
+        run: |
           rm -rf $LLAMA_INT4_CKPT_PATH
           rm -rf $GPTNEOX_INT4_CKPT_PATH
           rm -rf $BLOOM_INT4_CKPT_PATH
