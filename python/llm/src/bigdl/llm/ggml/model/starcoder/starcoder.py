@@ -72,7 +72,7 @@ class Starcoder(GenerationMixin):
         use_mmap: bool = False,
         use_mlock: bool = False,
         embedding: bool = False,
-        n_threads: Optional[int] = 2,
+        n_threads: Optional[int] = -1,
         n_batch: int = 512,
         last_n_tokens_size: int = 64,
         lora_base: Optional[str] = None,
@@ -93,7 +93,7 @@ class Starcoder(GenerationMixin):
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             embedding: Embedding mode only.
-            n_threads: Number of threads to use. Default to be 2.
+            n_threads: Number of threads to use. Default to be -1, means auto.
             n_batch: Maximum number of prompt tokens to batch together when calling starcoder_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             lora_base: Optional path to base model, useful if using a quantized base model and
