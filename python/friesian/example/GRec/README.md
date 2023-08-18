@@ -4,7 +4,7 @@ Implementation of Generalist Recommender (GRec), an end-to-end efficient and sca
 designed to train a single model that could generalize across multiple search & recommender tasks
 while at the same time being highly efficient.
 
-This work was contributed by the _Verizon AI Center team_.
+This work was contributed by the **_Verizon AI Center team_**.
 
 **GRec** has the following highlights:
 - **Input Modalities** - Designed to handle inputs of multi-modalities (including categorical and numerical data, texts, and images) by utilizing NLP heads, parallel Transformers, as well as wide and deep in the model architecture.
