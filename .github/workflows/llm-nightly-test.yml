@@ -43,7 +43,7 @@ jobs:
         shell: bash
         run: |
           echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
-          echo "INT4_CKPT_DIR=$(pwd)/../llm/converted-models" >> "$GITHUB_ENV"
+          echo "INT4_CKPT_DIR=$(pwd)/../llm/nightly-converted-models" >> "$GITHUB_ENV"
       - name: Create model directories
         shell: bash
         run: |
