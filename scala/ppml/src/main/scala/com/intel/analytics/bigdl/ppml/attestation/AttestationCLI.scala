@@ -164,7 +164,7 @@ object AttestationCLI {
           quote = quoteGenerator.getQuote(userReportData)
         } else {
           println("[INFO] Using generated quote, only for debug!")
-          val tempQuotePath = Paths.get(quotePath).toAbsolute.normalize
+          val tempQuotePath = Paths.get(quotePath).toAbsolutePath.normalize
           val quoteFile = tempQuotePath.toFile
           quoteFile.setExecutable(false)
           val in = new FileInputStream(quoteFile)
