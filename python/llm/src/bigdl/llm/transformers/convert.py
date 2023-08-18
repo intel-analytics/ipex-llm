@@ -44,26 +44,9 @@ import importlib
 
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
-                               current_key_name=None, convert_shape_only=False):
+                               current_key_name=None):
     from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
     has_been_replaced = False
-
-    # Through our method, certain layers that were initialized on the device "meta"
-    # (associated with the lazy initialization strategy of low_cpu_mem_usage) are not
-    # being correctly moved back to the CPU device for some reason. Therefore, we are
-    # moving these layers back to the CPU here in order to prevent the occurrence
-    # of NoImplementnError. Details refer to:
-    # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L3110
-    model_state_dict = model.state_dict()
-    for name, param in model.named_parameters():
-        if param.data.device == torch.device('meta'):
-            from accelerate.utils.modeling import set_module_tensor_to_device
-            param = model_state_dict[name]
-            set_module_tensor_to_device(model,
-                                        name,
-                                        "cpu",
-                                        torch.empty(*param.size(), dtype=torch.float32))
-    del model_state_dict
 
     for name, module in model.named_children():
         if current_key_name is None:
@@ -80,18 +63,18 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                         qtype,
                         module.bias is not None,
                     )
-
+                    
+                    device_type = module.weight.data.device.type 
                     # Copy the weights
                     paramsQuant = ParamsQuant(data=module.weight.data,
                                               requires_grad=False,
                                               quantized=False,
-                                              convert_shape_only=convert_shape_only,
                                               _shape=None,
-                                              qtype=qtype).to("cpu")
+                                              qtype=qtype).to(device_type)
                     new_linear._parameters['weight'] = paramsQuant
 
                     if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to("cpu")
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to(device_type)
 
                     model._modules[name] = new_linear
                     has_been_replaced = True
@@ -107,33 +90,13 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                 qtype,
                 modules_to_not_convert,
                 current_key_name,
-                convert_shape_only,
             )
     return model, has_been_replaced
 
 
-def ggml_convert_quant(model, qtype, convert_shape_only=False):
+def ggml_convert_quant(model, qtype, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_quant_linear(
-        model, qtype, modules_to_not_convert, None, convert_shape_only=convert_shape_only
-    )
-    if not has_been_replaced:
-        warnings.warn(
-            "No linear modules were found in "
-            "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
-            "instead of Linear layers. Please double check your model architecture, or submit "
-            "an issue on github if you think this is a bug."
-        )
-    else:
-        model.to(torch.float32)
-
-    model = optimize(model)
-    return model
-
-
-def ggml_convert_meta(model, qtype):
-    modules_to_not_convert = []  # ["lm_head"]
-    model, has_been_replaced = _replace_with_convert_linear(
         model, qtype, modules_to_not_convert, None
     )
     if not has_been_replaced:
@@ -143,10 +106,12 @@ def ggml_convert_meta(model, qtype):
             "instead of Linear layers. Please double check your model architecture, or submit "
             "an issue on github if you think this is a bug."
         )
-    # else:
-    #     model.to(torch.float32)
-    
-    # Todo: revert after test
+    elif device == "cpu":
+        model.to(torch.float32)
+    elif device == "meta":
+        ## Do nothing here
+        pass
+
     model = optimize(model)
     return model
 
@@ -155,56 +120,6 @@ def print_mem_swap(hint="hint"):
     memory_info = psutil.virtual_memory()
     print("Memory Usage" + hint + " :")
     print(f"Used: {memory_info.used / (1024 ** 2):.2f} MB")
-
-def _replace_with_convert_linear(model, qtype, modules_to_not_convert=None,
-                               current_key_name=None):
-    from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
-    has_been_replaced = False
-
-    for name, module in model.named_children():
-
-        if current_key_name is None:
-            current_key_name = []
-
-        if isinstance(module, nn.Linear) and name not in modules_to_not_convert:
-            # Check if the current key is not in the `modules_to_not_convert`
-            if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
-                with init_empty_weights():
-                    new_linear = LinearQuant(
-                        module.in_features,
-                        module.out_features,
-                        qtype,
-                        module.bias is not None,
-                    )
-
-                    # Copy the weights
-                    paramsQuant = ParamsQuant(data=module.weight.data,
-                                              requires_grad=False,
-                                              quantized=False,
-                                              convert_shape_only=True,
-                                              _shape=None,
-                                              qtype=qtype).meta_convert()
-                    new_linear._parameters['weight'] = paramsQuant
-
-                    if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)
-
-                    model._modules[name] = new_linear
-                    has_been_replaced = True
-                    # Force requires grad to False to avoid unexpected errors
-                    model._modules[name].requires_grad_(False)
-
-                    module.weight = None
-
-        # Remove the last key for recursion
-        if len(list(module.children())) > 0:
-            _, has_been_replaced = _replace_with_convert_linear(
-                module,
-                qtype,
-                modules_to_not_convert,
-                current_key_name,
-            )
-    return model, has_been_replaced
 
 
 def convert_forward(m, target_m, new_forward):

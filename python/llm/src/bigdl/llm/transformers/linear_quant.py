@@ -61,7 +61,14 @@ TORCH_LINEAR_THRESHOLD = 96
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
-def ggml_convert_meta(tensor: torch.Tensor, qtype: int):
+def print_mem_swap(hint=""):
+    import psutil
+    memory_info = psutil.virtual_memory()
+    print("Memory Usage:"+hint)
+    print(f"Used: {memory_info.used / (1024 ** 2):.2f} MB")
+    return memory_info.used
+
+def ggml_convert_quant(tensor: torch.Tensor, qtype: int, device=None):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -77,32 +84,12 @@ def ggml_convert_meta(tensor: torch.Tensor, qtype: int):
                       "Last dim of input tensor must be multiple of 64")
 
     dst_size = (n // QK) * block_size_in_bytes
-    dst_tensor = torch.empty(dst_size, dtype=torch.uint8, device="meta")
-    return dst_tensor
+    dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                             device=device)
 
-
-def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=False):
-    QK = ggml.ggml_qk_size(qtype)
-    block_size_in_bytes = ggml.ggml_type_size(qtype)
-
-    invalidInputError(tensor.dtype == torch.float,
-                      "Input tensor must be float32")
-    src = tensor.data.data_ptr()
-    src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
-    n = tensor.numel()
-    invalidInputError(n % QK == 0,
-                      "Input tensor size must be multiple of 64")
-    k = tensor.shape[-1]
-    invalidInputError(k % QK == 0,
-                      "Last dim of input tensor must be multiple of 64")
-
-    dst_size = (n // QK) * block_size_in_bytes
-    dst_tensor = torch.empty(dst_size, dtype=torch.uint8)
-    dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
-
-    hist = (ctypes.c_int64 * 16)()
-
-    if not convert_shape_only:
+    if device != 'meta':
+        dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+        hist = (ctypes.c_int64 * 16)()
         ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
@@ -123,11 +110,10 @@ def ggml_int4_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int):
 class ParamsQuant(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
-                requires_grad=True,
+                requires_grad=False,
                 old_data=None,
                 quantized=False,
                 _shape=None,
-                convert_shape_only=False,
                 qtype=None):
         if data is None:
             data = torch.empty(0)
@@ -145,28 +131,17 @@ class ParamsQuant(torch.nn.Parameter):
             self.data = data
             self.quantized = quantized
             self._shape = _shape
-            self.convert_shape_only = convert_shape_only
             self.qtype = qtype
         return self
 
-    def quantize(self, device):
+    def quantize(self, device=None):
         if not self.quantized:
             w = self.data.contiguous().float()
-            # self.old_data = self.data
             w_quantized = ggml_convert_quant(w, self.qtype,
-                                             convert_shape_only=self.convert_shape_only)
+                                             device=device)
             self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
-        return self
-    
-    def meta_convert(self):
-        w = self.data.contiguous().float()
-        w_quantized = ggml_convert_meta(w, self.qtype,
-                                        )
-        self.data = w_quantized
-        self.quantized = True
-        self._shape = w.shape
         return self
 
     def get_shape(self):
@@ -187,9 +162,10 @@ class ParamsQuant(torch.nn.Parameter):
 
     def to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
-
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
-            return self.quantize(device)
+            return self.quantize()
+        elif device is not None and device.type == "meta" and self.data.device.type == "meta":
+            return self.quantize(device.type)
         else:
             new_param = ParamsQuant(super().to(device=device,
                                                dtype=dtype,
@@ -253,6 +229,7 @@ class LinearQuant(nn.Linear):
         self.qtype = qtype
 
     def forward(self, x: torch.Tensor):
+        # on_begin = print_mem_swap("before forward")
         # weights are cast automatically as Int8Params, but the bias has to be cast manually
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
@@ -261,7 +238,9 @@ class LinearQuant(nn.Linear):
         x_2d = x.view(-1, x_shape[-1])
 
         x0 = self.weight.data
-
+        # on_forward = print_mem_swap("on forward")
+        # if on_forward >on_begin:
+        #     print("leak between on_forward and on_begin")
         # todo may need to set a different number on different platforms
         if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
             x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
@@ -272,5 +251,7 @@ class LinearQuant(nn.Linear):
             result = result.view(new_shape)
             if self.bias is not None:
                 result += self.bias
-
+        # on_end = print_mem_swap("end forward")
+        # if on_end > on_forward:
+        #     print("leak between on_forward and on_end")
         return result.to(x.dtype)

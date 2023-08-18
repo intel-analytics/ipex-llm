@@ -36,7 +36,7 @@ def save_low_bit(self, *args, **kwargs):
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
     self.save_pretrained(*args, **kwargs)
     # TODO: Why this place been overwritten to float32?
-    self.dtype = "bfloat16"
+    # self.torch_dtype = "bfloat16"
     import json, os
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
@@ -239,7 +239,7 @@ class _BaseAutoModelClass:
         from transformers.generation.configuration_utils import GenerationConfig
         from transformers.models.auto.auto_factory import _get_model_class
         from accelerate.big_modeling import init_empty_weights
-        from .convert import ggml_convert_meta
+        from .convert import ggml_convert_quant
         import copy, os
         
         # Autofactory
@@ -349,7 +349,7 @@ class _BaseAutoModelClass:
         with ContextManagers(init_contexts):
             model = model_class(config, *model_args, **kwargs)
 
-        model = ggml_convert_meta(model, qtype)
+        model = ggml_convert_quant(model, qtype, device="meta")
 
 
         if is_sharded:
