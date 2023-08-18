@@ -226,7 +226,16 @@ class _BaseEmbeddings(BaseModel, Embeddings):
     client: Any  #: :meta private:
     """The actual model."""
 
-    model_path: str  # TODO: missing doc
+    model_kwargs: Optional[dict] = None
+    """Key word arguments to pass to the Transformers model."""
+
+    encode_kwargs: Optional[dict] = None
+    """Key word arguments to pass when calling the `encode` method of the Transformers model."""
+
+    kwargs: Optional[dict] = None
+    """Additional key word arguments passed to TransformersLLM."""
+
+    model_path: str
     """Path to the loading model file.
     If native, the path shoule be converted BigDL-LLM optimized ggml binary checkpoint.
     If transformers, the path should be the huggingface repo id to be downloaded
@@ -272,7 +281,11 @@ class _BaseEmbeddings(BaseModel, Embeddings):
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
         """Validate that bigdl-llm library is installed."""
+
+        native = values["native"]
         model_path = values["model_path"]
+        model_kwargs = values["model_kwargs"]
+        kwargs = values["kwargs"]
         model_param_names = [
             "n_ctx",
             "n_parts",
@@ -294,10 +307,11 @@ class _BaseEmbeddings(BaseModel, Embeddings):
             module = importlib.import_module(values["ggml_module"])
             class_ = getattr(module, values["ggml_model"])
 
-            if values["native"]:
+            if native:
                 values["client"] = class_(model_path, embedding=True, **model_params)
             else:
-                values["client"] = TransformersEmbeddings.from_model_id(model_path)
+                values["client"] = TransformersEmbeddings.from_model_id(model_path, model_kwargs,
+                                                                        **kwargs)
 
             # from bigdl.llm.ggml.model.llama import Llama
 

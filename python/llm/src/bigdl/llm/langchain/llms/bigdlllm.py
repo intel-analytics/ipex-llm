@@ -384,6 +384,12 @@ class _BaseCausalLM(LLM):
     If transformers, the path should be the huggingface repo id to be downloaded
     or the huggingface checkpoint folder."""
 
+    model_kwargs: Optional[dict] = None
+    """Key word arguments passed to the model."""
+
+    kwargs: Optional[dict] = None
+    """Additional key word arguments passed to TransformersLLM."""
+
     lora_base: Optional[str] = None
     """The path to the Llama LoRA base model."""
 
@@ -462,7 +468,10 @@ class _BaseCausalLM(LLM):
     def validate_environment(cls, values: Dict) -> Dict:
         """Validate that bigdl-llm is installed, family is supported"""  
 
+        native = values["native"]
         model_path = values["model_path"]
+        model_kwargs = values["model_kwargs"]
+        kwargs = values["kwargs"]
         model_param_names = [
             "lora_path",
             "lora_base",
@@ -486,10 +495,11 @@ class _BaseCausalLM(LLM):
         try:
             module = importlib.import_module(values["ggml_module"])
             class_ = getattr(module, values["ggml_model"])
-            if values["native"]:
+            if native:
                 values["client"] = class_(model_path, **model_params)
             else:
-                values["client"] = TransformersLLM.from_model_id(model_path)
+                values["client"] = TransformersLLM.from_model_id(model_path, model_kwargs,
+                                                                 **kwargs)
 
         except ImportError:
             raise ModuleNotFoundError(
