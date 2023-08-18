@@ -40,7 +40,7 @@ object QuoteVerifierCmd {
             .action((x, c) => c.copy(quoteOutputPath = x))
         }
 
-        val params = cmdParser.parse(args, CmdParams()).get
+        val params: CmdParams = cmdParser.parse(args, CmdParams()).get
 
         val quoteOutputPath = Paths.get(params.quoteOutputPath).toAbsolutePath.normalize
         val quoteOutputFile = quoteOutputPath.toFile
