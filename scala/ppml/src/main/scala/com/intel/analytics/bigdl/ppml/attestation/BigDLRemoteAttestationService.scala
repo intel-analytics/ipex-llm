@@ -345,8 +345,8 @@ object BigDLRemoteAttestationService {
     val token = httpsKeyStoreToken.toCharArray
 
     val keyStore = KeyStore.getInstance("PKCS12")
-    val httpsKeyStorePath = Paths.get(httpsKeyStorePath).toAbsolute.normalize
-    val httpsKeyStoreFile = httpsKeyStorePath.toFile
+    val tempHttpsKeyStorePath = Paths.get(httpsKeyStorePath).toAbsolute.normalize
+    val httpsKeyStoreFile = tempHttpsKeyStorePath.toFile
     httpsKeyStoreFile.setExecutable(false)
     val keystoreInputStream = httpsKeyStoreFile.toURI().toURL().openStream()
 

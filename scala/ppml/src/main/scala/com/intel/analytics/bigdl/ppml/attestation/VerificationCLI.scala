@@ -86,8 +86,8 @@ object VerificationCLI {
           }
 
         } else {
-          val quotePath = Paths.get(quotePath).toAbsolute.normalize
-          val quoteFile = quotePath.toFile
+          val tempQuotePath = Paths.get(quotePath).toAbsolute.normalize
+          val quoteFile = tempQuotePath.toFile
           quoteFile.setExecutable(false)
           val in = new FileInputStream(quoteFile)
           val bufIn = new BufferedInputStream(in)

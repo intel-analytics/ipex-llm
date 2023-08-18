@@ -48,7 +48,7 @@ object QuoteGeneratorCmd {
         if(params.libOSType=="gramine") {
             val userReportData = try {
                 // read userReportData
-                val reportDataPath = Paths.get(params.reportDataPath).toAbsolute.normalize
+                val reportDataPath = Paths.get(params.reportDataPath).toAbsolutePath.normalize
                 val userReportDataFile = reportDataPath.toFile
                 userReportDataFile.setExecutable(false)
                 val in = new FileInputStream(userReportDataFile)
