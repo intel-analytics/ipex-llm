@@ -1,0 +1,9 @@
+imageName: 10.239.45.10/arda/intelanalytics/bigdl-ppml-lora-finetuning:internal-test #10.239.45.10/arda/bigdl-ppml-lora:817 #bigdl-lora:815a2 #templora:8153 #10.239.45.10/arda/bigdl-ppml-finetuning:11 #10.239.45.10/arda/ppml-lora:16 #intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.4.0-SNAPSHOT
+trainerNum: 8
+microBatchSize: 8
+TEEMode: tdx # tdx, sgx or native
+nfsServerIp: 172.168.0.205 #your_nfs_server_ip
+nfsPath: /mnt/sdb/disk1/nfsdata/lora #a_nfs_shared_folder_path_on_the_server
+dataSubPath: alpaca_data_cleaned_archive.json #a subpath of the data file under nfs directory
+modelSubPath: llama-7b-hf #a subpath of the model file (dir) under nfs directory
+ompNumThreads: 14
