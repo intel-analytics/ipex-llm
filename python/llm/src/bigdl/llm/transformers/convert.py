@@ -45,7 +45,7 @@ import importlib
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                                current_key_name=None):
-    from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
+    from bigdl.llm.transformers.linear_quant import LinearQuant, FP4Params
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -66,7 +66,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                     
                     device_type = module.weight.data.device.type 
                     # Copy the weights
-                    paramsQuant = ParamsQuant(data=module.weight.data,
+                    paramsQuant = FP4Params(data=module.weight.data,
                                               requires_grad=False,
                                               quantized=False,
                                               _shape=None,

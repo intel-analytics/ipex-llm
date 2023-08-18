@@ -107,7 +107,10 @@ def ggml_int4_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int):
     return dst_tensor
 
 
-class ParamsQuant(torch.nn.Parameter):
+# Rename to FP4Params to trigger initializing
+# the params layer with all parameters on the CPU
+# https://github.com/huggingface/accelerate/blob/main/src/accelerate/utils/modeling.py#L333
+class FP4Params(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
                 requires_grad=False,
@@ -118,20 +121,11 @@ class ParamsQuant(torch.nn.Parameter):
         if data is None:
             data = torch.empty(0)
 
-        # extract args from data
-        if not qtype:
-            new_data = data.to(torch.uint8)
-            self = torch.Tensor._make_subclass(cls, new_data, False)
-            self.data = new_data
-            self.quantized = True
-            self._shape = new_data.shape
-            del data
-        else:
-            self = torch.Tensor._make_subclass(cls, data, requires_grad)
-            self.data = data
-            self.quantized = quantized
-            self._shape = _shape
-            self.qtype = qtype
+        self = torch.Tensor._make_subclass(cls, data, requires_grad)
+        self.data = data
+        self.quantized = quantized
+        self._shape = _shape
+        self.qtype = qtype
         return self
 
     def quantize(self, device=None):
@@ -167,7 +161,7 @@ class ParamsQuant(torch.nn.Parameter):
         elif device is not None and device.type == "meta" and self.data.device.type == "meta":
             return self.quantize(device.type)
         else:
-            new_param = ParamsQuant(super().to(device=device,
+            new_param = FP4Params(super().to(device=device,
                                                dtype=dtype,
                                                non_blocking=non_blocking),
                                     requires_grad=self.requires_grad,
@@ -219,7 +213,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class LinearQuant(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True):
         super().__init__(input_features, output_features, bias)
-        self.weight = ParamsQuant(self.weight.data, requires_grad=False,
+        self.weight = FP4Params(self.weight.data, requires_grad=False,
                                   old_data=self.weight.data,
                                   quantized=False, _shape=None, qtype=qtype)
         self.in_len = input_features
