@@ -91,7 +91,14 @@ class TransformersLLM(LLM):
         model_kwargs: Optional[dict] = None,
         **kwargs: Any,
     ) -> LLM:
-        """Construct object from model_id"""
+        """
+        Construct object from model_id
+        
+        :param model_id: Path for the huggingface repo id to be downloaded or
+               the huggingface checkpoint folder.
+        :param model_kwargs: Keyword arguments which will be passed to the model instance.
+        :param kwargs: Extra arguments which will be passed to the model instance.
+        """
         try:
             from bigdl.llm.transformers import (
                 AutoModel,
@@ -139,7 +146,14 @@ class TransformersLLM(LLM):
         model_kwargs: Optional[dict] = None,
         **kwargs: Any,
     ) -> LLM:
-        """Construct object from model_id"""
+        """
+        Construct object from model_id
+        
+        :param model_id: Path for the huggingface repo id to be downloaded or
+               the huggingface checkpoint folder.
+        :param model_kwargs: Keyword arguments which will be passed to the model instance.
+        :param kwargs: Extra arguments which will be passed to the model instance.
+        """
         try:
             from bigdl.llm.transformers import (
                 AutoModel,
