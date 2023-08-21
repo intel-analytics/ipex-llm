@@ -29,10 +29,12 @@ def save_low_bit(self, *args, **kwargs):
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
     self.save_pretrained(*args, **kwargs)
-    # TODO: Why this place been overwritten to float32?
-    # self.torch_dtype = "bfloat16"
     import json
     import os
+    # We conveniently save all the keys of the model to have them on hand,
+    # so that when using 'low_cpumem load',
+    # it's not necessary to load the entire model to extract its keys
+    # and we can avoid gc not triggered potentially.
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
