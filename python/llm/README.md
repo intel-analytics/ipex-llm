@@ -111,13 +111,9 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
-  >**Notes**: 
+  >**Notes**: Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; you may use the corresponding API to load the converted model. (For other models, you can use the Transformers INT4 format as described above).
   
-  * Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Transformers INT4 format as described above).
-  
-  * You may choose the corresponding API developed for specific native models to load the converted model.
-
-  ```python
+   ```python
   #convert the model
   from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
@@ -126,7 +122,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   #load the converted model
   #switch to ChatGLMForCausalLM/GptneoxForCausalLM/BloomForCausalLM/StarcoderForCausalLM to load other models
   from bigdl.llm.transformers import LlamaForCausalLM
-  llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", ...)
+  llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", native=True, ...)
   
   #run the converted model
   input_ids = llm.tokenize(prompt)
