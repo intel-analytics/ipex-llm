@@ -49,13 +49,15 @@ flowchart TD;
     Feature1-- "Yes"  -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature2-- Python -->Feature3{{What type of application?}};
     Feature2-- Scala/Java -->ReferDLlib([<em><strong>DLlib</strong></em>]);
-    Feature3-- "Distributed Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
+    Feature3-- "Large Language Model" -->ReferLLM([<em><strong>LLM</strong></em>]);
+    Feature3-- "Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
     Feature3-- Accelerate TensorFlow / PyTorch -->ReferNano([<em><strong>Nano</strong></em>]);
     Feature3-- DL for Spark MLlib -->ReferDLlib2([<em><strong>DLlib</strong></em>]);
     Feature3-- High Level App Framework -->Feature4{{Domain?}};
     Feature4-- Time Series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- Recommender System -->ReferFriesian([<em><strong>Friesian</strong></em>]);
     
+    click ReferLLM "https://github.com/intel-analytics/bigdl/tree/main/python/llm"
     click ReferNano "https://github.com/intel-analytics/bigdl#nano"
     click ReferOrca "https://github.com/intel-analytics/bigdl#orca"
     click ReferDLlib "https://github.com/intel-analytics/bigdl#dllib"
@@ -66,7 +68,7 @@ flowchart TD;
     
     classDef ReferStyle1 fill:#5099ce,stroke:#5099ce;
     classDef Feature fill:#FFF,stroke:#08409c,stroke-width:1px;
-    class ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
+    class ReferLLM,ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
     class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
     
 ```
