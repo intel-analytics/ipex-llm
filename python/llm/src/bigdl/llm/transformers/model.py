@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import gc
 import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, \
@@ -32,7 +31,8 @@ def save_low_bit(self, *args, **kwargs):
     self.save_pretrained(*args, **kwargs)
     # TODO: Why this place been overwritten to float32?
     # self.torch_dtype = "bfloat16"
-    import json, os
+    import json
+    import os
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
@@ -105,22 +105,24 @@ class _BaseAutoModelClass:
         model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
-    
+
     @classmethod
     def load_low_bit(cls,
-                            pretrained_model_name_or_path,
-                            *model_args,
-                            **kwargs):
+                     pretrained_model_name_or_path,
+                     *model_args,
+                     **kwargs):
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
-        from transformers.dynamic_module_utils import resolve_trust_remote_code, get_class_from_dynamic_module
+        from transformers.dynamic_module_utils import resolve_trust_remote_code, \
+            get_class_from_dynamic_module
         from transformers.models.auto.configuration_auto import AutoConfig
         from transformers.utils.generic import ContextManagers
         from transformers.generation.configuration_utils import GenerationConfig
         from transformers.models.auto.auto_factory import _get_model_class
         from accelerate.big_modeling import init_empty_weights
         from .convert import ggml_convert_quant
-        import copy, os
-        
+        import copy
+        import os
+
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -155,7 +157,7 @@ class _BaseAutoModelClass:
         invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
-        
+
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
@@ -179,7 +181,7 @@ class _BaseAutoModelClass:
             pretrained_model_name_or_path,
             subfolder,
             variant)
-        
+
         if is_sharded:
             resolved_archive_file, sharded_metadata = \
                 get_local_shard_files(pretrained_model_name_or_path,
@@ -188,17 +190,18 @@ class _BaseAutoModelClass:
 
         # set dtype to instantiate the model under:
         # 1. If torch_dtype is not None, we use that dtype
-        # 2. If torch_dtype is "auto", we auto-detect dtype from the loaded state_dict, by checking its first
-        #    weights entry that is of a floating type - we assume all floating dtype weights are of the same dtype
+        # 2. If torch_dtype is "auto", we auto-detect dtype from the loaded state_dict,
+        #    by checking its first weights entry that is of a floating type
+        #    - we assume all floating dtype weights are of the same dtype
         # we also may have config.torch_dtype available, but we won't rely on it till v5
         dtype_orig = None
-        
+
         if torch_dtype is not None:
             if isinstance(torch_dtype, str):
                 if torch_dtype == "auto":
                     if hasattr(config, "torch_dtype") and config.torch_dtype is not None:
                         torch_dtype = config.torch_dtype
-                        
+
                     else:
                         if is_sharded and "dtype" in sharded_metadata:
                             torch_dtype = sharded_metadata["dtype"]
@@ -207,11 +210,11 @@ class _BaseAutoModelClass:
                             torch_dtype = get_state_dict_dtype(one_state_dict)
                             del one_state_dict  # free CPU memory
                 else:
-                    raise ValueError(
-                        f'`torch_dtype` can be either `torch.dtype` or `"auto"`, but received {torch_dtype}'
-                    )
+                    invalidInputError(False,
+                                      f'`torch_dtype` can be either `torch.dtype` or `"auto"`,'
+                                      'but received {torch_dtype}')
             dtype_orig = model_class._set_default_torch_dtype(torch_dtype)
-        
+
         # Pretrained Model
         _fast_init = kwargs.pop("_fast_init", True)
         init_contexts = [no_init_weights(_enable=_fast_init)]
@@ -225,7 +228,8 @@ class _BaseAutoModelClass:
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
         else:
-            import os, json
+            import os
+            import json
             with open(os.path.join(pretrained_model_name_or_path,
                                    "load_keys.json"), "r") as json_file:
                 loaded_data = json.load(json_file)
@@ -234,7 +238,7 @@ class _BaseAutoModelClass:
         # restore default dtype
         if dtype_orig is not None:
             torch.set_default_dtype(dtype_orig)
-        
+
         (
             model,
             missing_keys,

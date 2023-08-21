@@ -63,18 +63,19 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                         qtype,
                         module.bias is not None,
                     )
-                    
-                    device_type = module.weight.data.device.type 
+
+                    device_type = module.weight.data.device.type
                     # Copy the weights
                     paramsQuant = FP4Params(data=module.weight.data,
-                                              requires_grad=False,
-                                              quantized=False,
-                                              _shape=None,
-                                              qtype=qtype).to(device_type)
+                                            requires_grad=False,
+                                            quantized=False,
+                                            _shape=None,
+                                            qtype=qtype).to(device_type)
                     new_linear._parameters['weight'] = paramsQuant
 
                     if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to(device_type)
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            .to(device_type)
 
                     model._modules[name] = new_linear
                     has_been_replaced = True
@@ -109,7 +110,7 @@ def ggml_convert_quant(model, qtype, device="cpu"):
     elif device == "cpu":
         model.to(torch.float32)
     elif device == "meta":
-        ## Do nothing here for weights are empty.
+        # Do nothing here for weights are empty.
         pass
 
     model = optimize(model)

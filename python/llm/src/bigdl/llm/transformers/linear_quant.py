@@ -155,12 +155,12 @@ class FP4Params(torch.nn.Parameter):
             return self.quantize(device.type)
         else:
             new_param = FP4Params(super().to(device=device,
-                                               dtype=dtype,
-                                               non_blocking=non_blocking),
-                                    requires_grad=self.requires_grad,
-                                    quantized=self.quantized,
-                                    _shape=self._shape,
-                                    qtype=self.qtype)
+                                  dtype=dtype,
+                                  non_blocking=non_blocking),
+                                  requires_grad=self.requires_grad,
+                                  quantized=self.quantized,
+                                  _shape=self._shape,
+                                  qtype=self.qtype)
 
             return new_param
 
@@ -206,9 +206,10 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class LinearQuant(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True):
         super().__init__(input_features, output_features, bias)
-        self.weight = FP4Params(self.weight.data, requires_grad=False,
-                                  old_data=self.weight.data,
-                                  quantized=False, _shape=None, qtype=qtype)
+        self.weight = FP4Params(self.weight.data,
+                                requires_grad=False,
+                                old_data=self.weight.data,
+                                quantized=False, _shape=None, qtype=qtype)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
