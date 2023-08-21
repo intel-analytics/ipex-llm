@@ -73,6 +73,7 @@ class _BaseAutoModelClass:
         # we can convert the model to quantized later.
         load_in_4bit = kwargs.pop("load_in_4bit", False)
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
+        optimize_model = kwargs.pop("optimize_model", True)
 
         if load_in_4bit or load_in_low_bit:
             # load int x-bit
@@ -83,7 +84,7 @@ class _BaseAutoModelClass:
             if "pretraining_tp" in config_dict:
                 kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
-            model = cls.load_convert(q_k, *args, **kwargs)
+            model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -91,7 +92,7 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def load_convert(cls, q_k, *args, **kwargs):
+    def load_convert(cls, q_k, optimize_model, *args, **kwargs):
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
@@ -99,7 +100,7 @@ class _BaseAutoModelClass:
         qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
-        model = ggml_convert_quant(model, qtype)
+        model = ggml_convert_quant(model, qtype, optimize_model)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # add save_low_bit to pretrained model dynamically
@@ -159,6 +160,9 @@ class _BaseAutoModelClass:
         invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+
+        # set default optimize_model=True
+        optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
 
@@ -225,7 +229,7 @@ class _BaseAutoModelClass:
         with ContextManagers(init_contexts):
             model = model_class(config, *model_args, **kwargs)
 
-        model = ggml_convert_quant(model, qtype, device="meta")
+        model = ggml_convert_quant(model, qtype, optimize_model, device="meta")
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

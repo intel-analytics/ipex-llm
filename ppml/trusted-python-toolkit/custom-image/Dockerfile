@@ -30,7 +30,6 @@ RUN cd /ppml && \
     gramine-sgx-quote-dump -m bash.sig|grep mr_enclave && \
     gramine-sgx-quote-dump -m bash.sig|grep mr_signer
 
-WORKDIR /ppml/
+WORKDIR /ppml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-

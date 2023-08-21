@@ -1,4 +1,4 @@
-LLM Transformers API
+BigDL-LLM Transformers API
 =====================
 
 llm.transformers.model
@@ -48,7 +48,45 @@ llm.transformers.model
 llm.transformers.modelling_bigdl
 ----------------------------------------
 
-.. automodule:: bigdl.llm.transformers.modelling_bigdl
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.LlamaForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
+
+    .. automethod:: from_pretrained
+
+
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.ChatGLMForCausalLM
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
+
+    .. automethod:: from_pretrained
+
+
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.GptneoxForCausalLM
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
+
+    .. automethod:: from_pretrained
+
+
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.BloomForCausalLM
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class    
+
+    .. automethod:: from_pretrained
+
+.. autoclass:: bigdl.llm.transformers.modelling_bigdl.StarcoderForCausalLM
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: GGML_Model, GGML_Module, HF_Class
+
+    .. automethod:: from_pretrained

@@ -279,8 +279,8 @@ class BigDLEncrypt extends Crypto {
   protected def decryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
-    val header = read(inputStream, 400)
-    verifyHeader(header)
+    val (_, initializationVector) = getHeader(inputStream)
+    verifyHeader(initializationVector)
     while (inputStream.available() != 0) {
       val decrypted = decryptPart(inputStream, byteBuffer)
       outputStream.write(decrypted)

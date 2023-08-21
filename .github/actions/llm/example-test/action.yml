@@ -1,0 +1,14 @@
+name: 'BigDL-LLM example tests'
+description: 'BigDL-LLM example tests'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Test LLAMA2
+      shell: bash
+      env:
+        INT4_CKPT_DIR: ./llm/ggml-actions/stable
+        LLM_DIR: ./llm
+      
+      run: |
+        bash python/llm/dev/test/run-example-tests.sh

@@ -110,7 +110,7 @@ class BigdlNativeLLM(LLM):
     use_mlock: bool = Field(False, alias="use_mlock")
     """Force system to keep model in RAM."""
 
-    n_threads: Optional[int] = Field(2, alias="n_threads")
+    n_threads: Optional[int] = Field(-1, alias="n_threads")
     """Number of threads to use."""
 
     n_batch: Optional[int] = Field(512, alias="n_batch")
@@ -158,7 +158,7 @@ class BigdlNativeLLM(LLM):
 
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that bigdl-llm is installed, family is supported"""  
+        """Validate that bigdl-llm is installed, family is supported"""
 
         model_path = values["model_path"]
         model_param_names = [
@@ -230,7 +230,7 @@ class BigdlNativeLLM(LLM):
     def _identifying_params(self) -> Dict[str, Any]:
         """Get the identifying parameters."""
         return {**{"model_path": self.model_path,
-                   "model_family": self.model_family}, 
+                   "model_family": self.model_family},
                 **self._default_params}
 
     @property

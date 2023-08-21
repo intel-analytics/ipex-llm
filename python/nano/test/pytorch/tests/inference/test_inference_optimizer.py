@@ -944,6 +944,16 @@ class InferencePipeline:
 TORCH_CLS = InferencePipeline
 
 
+class CaseWithoutAVX512:
+    def test(self):
+        pass
+
+
+if not _avx512_checker():
+    print("Inference Optimizer Without AVX512")
+    TORCH_VERSION_CLS = CaseWithoutAVX512
+
+
 class TestInferencePipeline(TORCH_CLS, TestCase):
     pass
 

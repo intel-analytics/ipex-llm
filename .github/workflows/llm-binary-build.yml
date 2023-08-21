@@ -17,8 +17,19 @@ on:
     paths:
       - ".github/workflows/llm-binary-build.yml"
   workflow_dispatch:
-
+    inputs:
+      llmcpp-ref:
+        description: 'Ref of llm.cpp code'
+        default: ''
+        required: false
+        type: string
   workflow_call:
+    inputs:
+      llmcpp-ref:
+        description: 'Ref of llm.cpp code'
+        default: ''
+        required: false
+        type: string
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -52,6 +63,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Build binary
@@ -82,7 +94,7 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
-          source activate python39
+          source activate python39 || conda activate python39
           cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
           scl enable gcc-toolset-11 "cmake --build build --config Release"
@@ -115,52 +127,32 @@ jobs:
           name: linux-avx512
 
   linux-build-avx512:
-    runs-on: [self-hosted, AVX512, ubuntu-18.04-lts]
+    runs-on: [self-hosted, AVX512, almalinux8]
     needs: check-linux-avx512-artifact
     if: needs.check-linux-avx512-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-      - name: Update Git
-        shell: bash
-        run: |
-          add-apt-repository -y ppa:git-core/ppa
-          apt update
-          apt install -y git
-      - uses: actions/checkout@v3
-        with:
-          repository: "intel-analytics/llm.cpp"
-          token: ${{ env.github_access_token }}
-          submodules: "recursive"
       - name: Install Build Environment
         shell: bash
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          apt update
-          apt install -y build-essential
-          apt install -y gcc-11 g++-11
-          cd ..
-          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
-            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
-            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
-              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-            fi
-          else
-            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-          fi
-          tar zxvf cmake-3.27.1-linux-x86_64.tar.gz
+          yum install -y gcc-toolset-11 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Build avx512 binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -DONLYAVX=OFF -DONLYAVX2=OFF -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release"
       - name: Move avx512 release binary
         shell: bash
         run: |
@@ -176,12 +168,8 @@ jobs:
       - name: Build avx2 binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -DONLYAVX=OFF -DONLYAVX2=ON -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=ON -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release"
       - name: Move avx2 release binary
         shell: bash
         run: |
@@ -193,12 +181,8 @@ jobs:
       - name: Build avx binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -DONLYAVX=ON -DONLYAVX2=OFF -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=ON -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release"
       - name: Move avx release binary
         shell: bash
         run: |
@@ -207,16 +191,6 @@ jobs:
           mv build/libllama.so avx_release/libllama_avx.so
           mv build/libgptneox.so avx_release/libgptneox_avx.so
           mv build/libstarcoder.so avx_release/libstarcoder_avx.so
-      # - name: Build Chatglm
-      #   shell: bash
-      #   run: |
-      #     cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-      #     cd src/chatglm
-      #     $cmake_path -B build
-      #     $cmake_path --build build --config Release
-      #   env:
-      #     CC: gcc-11
-      #     CXX: g++-11
       - name: Archive avx512 build files
         uses: actions/upload-artifact@v3
         with:
@@ -239,6 +213,7 @@ jobs:
         shell: bash
         run: |
           make clean
+          conda remove -n python39 --all -y
 
   check-windows-avx2-artifact:
     runs-on: ubuntu-latest
@@ -263,6 +238,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Add msbuild to PATH
@@ -310,6 +286,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Add msbuild to PATH
@@ -384,6 +361,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Add msbuild to PATH

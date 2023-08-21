@@ -43,7 +43,7 @@
 
 from typing import Optional, TypeVar, Union, overload
 from bigdl.llm.utils.common import invalidInputError
-
+import os
 import torch
 import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
@@ -52,8 +52,6 @@ T = TypeVar("T", bound="torch.nn.Module")
 
 import bigdl.llm.ggml.model.llama.llama_cpp as ggml
 from bigdl.llm.utils.isa_checker import is_server
-
-import torch
 import ctypes
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 IS_SERVER = is_server()
@@ -150,18 +148,28 @@ class FP4Params(torch.nn.Parameter):
     def to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
-            return self.quantize()
+            return self.quantize(device.type)
         elif device is not None and device.type == "meta" and self.data.device.type == "meta":
             return self.quantize(device.type)
-        else:
+        elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
+            # enter xpu logic, compile linear_int4 extension at first time
+            q_tensor = self.quantize(device)  # tensor is cpu now
             new_param = FP4Params(super().to(device=device,
-                                  dtype=dtype,
-                                  non_blocking=non_blocking),
+                                             dtype=dtype,
+                                             non_blocking=non_blocking),
                                   requires_grad=self.requires_grad,
                                   quantized=self.quantized,
                                   _shape=self._shape,
                                   qtype=self.qtype)
-
+            return new_param
+        else:
+            new_param = FP4Params(super().to(device=device,
+                                             dtype=dtype,
+                                             non_blocking=non_blocking),
+                                  requires_grad=self.requires_grad,
+                                  quantized=self.quantized,
+                                  _shape=self._shape,
+                                  qtype=self.qtype)
             return new_param
 
 
@@ -224,14 +232,38 @@ class LinearQuant(nn.Linear):
         x_2d = x.view(-1, x_shape[-1])
 
         x0 = self.weight.data
-        # todo may need to set a different number on different platforms
-        if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
-            x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-            result = F.linear(x, x0_fp32, self.bias)
-        else:
-            result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+
+        if x0.device.type == "xpu":
+            # GPU logic
+            try:
+                import intel_extension_for_pytorch
+                import linear_q4_0
+            except ModuleNotFoundError:
+                invalidInputError(False,
+                                  "Please `pip install bigdl_core_xe` first.")
+
+            if x_2d.is_contiguous() is False:
+                x_2d = x_2d.contiguous()
+            # current workaround to reduce first token latency of fp32 input
+            if x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+                x_2d = x_2d.half()
+            # input format of linear_q4.forward is 1: input, 2: weight
+            result = linear_q4_0.forward(x_2d, x0, self.qtype)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
                 result += self.bias
+        else:
+            # CPU logic
+            # todo may need to set a different number on different platforms
+            if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
+                x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                result = F.linear(x, x0_fp32, self.bias)
+            else:
+                result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+                new_shape = x_shape[:-1] + (self.out_len,)
+                result = result.view(new_shape)
+                if self.bias is not None:
+                    result += self.bias
+
         return result.to(x.dtype)

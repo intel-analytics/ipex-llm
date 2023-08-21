@@ -56,7 +56,6 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-
                     new_linear = LinearQuant(
                         module.in_features,
                         module.out_features,
@@ -95,7 +94,8 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def ggml_convert_quant(model, qtype, device="cpu"):
+
+def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_quant_linear(
         model, qtype, modules_to_not_convert, None
@@ -113,7 +113,8 @@ def ggml_convert_quant(model, qtype, device="cpu"):
         # Do nothing here for weights are empty.
         pass
 
-    model = optimize(model)
+    if optimize_model:
+        model = optimize(model)
     return model
 
 

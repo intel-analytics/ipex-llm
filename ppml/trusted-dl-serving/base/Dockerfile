@@ -161,13 +161,15 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev libpython3-dev && \
     apt-get install -y libssl-dev && \
 # Optimization related
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference]==2.4.0b20230718 && \
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference] && \
     pip3 install --pre --no-cache --upgrade  vit_pytorch neural-compressor==2.2 huggingface_hub==0.14.1 regex==2023.5.5 && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
     pip3 install --no-cache-dir torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+# Modify inc to receive RecursiveScriptModule directly
+    sed -i 's/if isinstance(checkpoint_dir, dict):/if isinstance(checkpoint_dir, dict) or isinstance(checkpoint_dir, torch.jit._script.RecursiveScriptModule):/g' /usr/local/lib/python3.9/dist-packages/neural_compressor/utils/pytorch.py && \
     ls /usr/local/lib/python3.9/dist-packages/ && \
     ls /usr/local/lib/python3.9/dist-packages/transformers* && \
     mv /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/ && \
