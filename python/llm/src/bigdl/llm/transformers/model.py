@@ -19,14 +19,9 @@ import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, \
     load_state_dict, \
-    load, \
-    get_local_shard_files, \
-    fix_key
+    get_local_shard_files
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
-import sys
-import importlib
-import psutil
+from bigdl.llm.utils.common import invalidInputError
 import torch
 
 
@@ -41,21 +36,6 @@ def save_low_bit(self, *args, **kwargs):
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
-
-
-class Mem_Record:
-
-    last_mem = psutil.virtual_memory().used     
-    
-    def print_mem_swap(self, check=1):
-
-        memory_info = psutil.virtual_memory()
-        # swap_info = psutil.swap_memory()
-        print("--------------------"+str(check)+"--------------------\n")
-        print(f"Used: {memory_info.used / (1024 ** 3):.2f} GB")
-        # print(f"last_mem: {self.last_mem / (1024 ** 3):.2f} GB")
-        print(f"Increased: {(memory_info.used - self.last_mem) / (1024 ** 3):.2f} GB")
-        self.last_mem = memory_info.used
 
 
 class _BaseAutoModelClass:
@@ -125,110 +105,9 @@ class _BaseAutoModelClass:
         model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
-
-    @classmethod
-    def load_low_bit(cls,
-                     *args,
-                     **kwargs):
-        # Read bigdl_transformers_low_bit from config.json
-        pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
-            if len(args) == 0 else args[0]
-        config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
-        bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
-
-        invalidInputError(bigdl_transformers_low_bit,
-                          "Detect this model is not a low-bit model, Please use from_pretrained"
-                          " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
-                          " serialize the model using save_low_bit first.")
-
-        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
-                          f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
-                          f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
-
-        # Speed up when loading model
-        kwargs["low_cpu_mem_usage"] = True
-
-        # set default torch_dtype='auto'
-        kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
-
-        qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
-        # Note that the int4 linear layers cannot currently
-        # be recorded in huggingface Pretrained Model or AutoConfig,
-        # and huggingface transformers cls.HF_Model.from_pretrained
-        # could only restore the model in the original format,
-        # which is not quantized. we can Initialize original model first,
-        # convert the model to quantized int4 format later, and then load the quantized model.
-
-        # Avoid KeyError
-        kwargs["ignore_mismatched_sizes"] = True
-
-        # Maybe needed when extract_local_archive_file
-        subfolder = kwargs.get("subfolder", "")
-        variant = kwargs.get("variant", None)
-
-        from .convert import ggml_convert_quant
-
-        with MuteHFLogger(logger=transformers.modeling_utils.logger):
-            model = cls.HF_Model.from_pretrained(*args, **kwargs)
-
-        # add save_low_bit to pretrained model dynamically
-        import types
-        model.save_low_bit = types.MethodType(save_low_bit, model)
-
-        # We forcefully modify the model's definition
-        # and the tensor shape of int4 weights without quantization.
-        model = ggml_convert_quant(model, qtype, convert_shape_only=True)
-        # Load the quantized model at last.
-        resolved_archive_file, is_sharded = extract_local_archive_file(
-            pretrained_model_name_or_path,
-            subfolder,
-            variant)
-        if is_sharded:
-            resolved_archive_file, sharded_metadata = \
-                get_local_shard_files(pretrained_model_name_or_path,
-                                      resolved_archive_file,
-                                      subfolder=subfolder)
-            start_prefix = ""
-            prefix = model.base_model_prefix
-            loaded_keys = [fix_key(key) for key in sharded_metadata["all_checkpoint_keys"]]
-            if len(prefix) > 0:
-                has_prefix_module = any(s.startswith(prefix) for s in loaded_keys)
-            else:
-                has_prefix_module = False
-
-            model_cls = type(model)
-            if len(model_cls.base_model_prefix) > 0 and \
-                not hasattr(model, model_cls.base_model_prefix) and \
-                    has_prefix_module:
-                start_prefix = model_cls.base_model_prefix + "."
-            from transformers.modeling_utils import _load_state_dict_into_model
-            error_msgs = []
-            for shard_file in resolved_archive_file:
-                state_dict = load_state_dict(shard_file)
-                error_msgs += _load_state_dict_into_model(model, state_dict, start_prefix)
-                # force memory release
-                del state_dict
-                gc.collect()
-
-            if len(error_msgs) > 0:
-                error_msg = "\n\t".join(error_msgs)
-                if "size mismatch" in error_msg:
-                    error_msg += (
-                        "\n\tYou may consider adding `ignore_mismatched_sizes=True`"
-                        " in the model `from_pretrained` method."
-                    )
-                invalidInputError(False, "Error(s) in loading state_dict"
-                                         f"for {model.__class__.__name__}:\n\t{error_msg}")
-
-        else:
-            state_dict = load_state_dict(resolved_archive_file)
-            load(model, state_dict)
-            del state_dict
-
-        return model
     
     @classmethod
-    def load_low_bit_cpumem(cls,
+    def load_low_bit(cls,
                             pretrained_model_name_or_path,
                             *model_args,
                             **kwargs):
@@ -293,14 +172,8 @@ class _BaseAutoModelClass:
                 model_class.register_for_auto_class(cls.HF_Model.__name__)
             else:
                 cls.HF_Model.register(config.__class__, model_class, exist_ok=True)
-            # return model_class.from_pretrained(
-            #     pretrained_model_name_or_path, *model_args, config=config, **kwargs
-            # )
         elif type(config) in cls.HF_Model._model_mapping.keys():
             model_class = _get_model_class(config, cls.HF_Model._model_mapping)
-            # return model_class.from_pretrained(
-            #     pretrained_model_name_or_path, *model_args, config=config, **kwargs
-            # )
 
         resolved_archive_file, is_sharded = extract_local_archive_file(
             pretrained_model_name_or_path,
@@ -313,14 +186,12 @@ class _BaseAutoModelClass:
                                       resolved_archive_file,
                                       subfolder=subfolder)
 
-
         # set dtype to instantiate the model under:
         # 1. If torch_dtype is not None, we use that dtype
         # 2. If torch_dtype is "auto", we auto-detect dtype from the loaded state_dict, by checking its first
         #    weights entry that is of a floating type - we assume all floating dtype weights are of the same dtype
         # we also may have config.torch_dtype available, but we won't rely on it till v5
         dtype_orig = None
-
         
         if torch_dtype is not None:
             if isinstance(torch_dtype, str):
@@ -340,7 +211,7 @@ class _BaseAutoModelClass:
                         f'`torch_dtype` can be either `torch.dtype` or `"auto"`, but received {torch_dtype}'
                     )
             dtype_orig = model_class._set_default_torch_dtype(torch_dtype)
-
+        
         # Pretrained Model
         _fast_init = kwargs.pop("_fast_init", True)
         init_contexts = [no_init_weights(_enable=_fast_init)]
@@ -350,7 +221,6 @@ class _BaseAutoModelClass:
             model = model_class(config, *model_args, **kwargs)
 
         model = ggml_convert_quant(model, qtype, device="meta")
-
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
@@ -364,7 +234,7 @@ class _BaseAutoModelClass:
         # restore default dtype
         if dtype_orig is not None:
             torch.set_default_dtype(dtype_orig)
-
+        
         (
             model,
             missing_keys,
@@ -386,6 +256,7 @@ class _BaseAutoModelClass:
             dtype=torch_dtype,
             keep_in_fp32_modules=[],
         )
+
         # make sure token embedding weights are still tied if needed
         model.tie_weights()
 

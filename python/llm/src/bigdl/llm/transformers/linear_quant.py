@@ -61,13 +61,6 @@ TORCH_LINEAR_THRESHOLD = 96
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
-def print_mem_swap(hint=""):
-    import psutil
-    memory_info = psutil.virtual_memory()
-    print("Memory Usage:"+hint)
-    print(f"Used: {memory_info.used / (1024 ** 2):.2f} MB")
-    return memory_info.used
-
 def ggml_convert_quant(tensor: torch.Tensor, qtype: int, device=None):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
@@ -223,8 +216,6 @@ class LinearQuant(nn.Linear):
         self.qtype = qtype
 
     def forward(self, x: torch.Tensor):
-        # on_begin = print_mem_swap("before forward")
-        # weights are cast automatically as Int8Params, but the bias has to be cast manually
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
@@ -232,9 +223,6 @@ class LinearQuant(nn.Linear):
         x_2d = x.view(-1, x_shape[-1])
 
         x0 = self.weight.data
-        # on_forward = print_mem_swap("on forward")
-        # if on_forward >on_begin:
-        #     print("leak between on_forward and on_begin")
         # todo may need to set a different number on different platforms
         if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
             x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
@@ -245,7 +233,4 @@ class LinearQuant(nn.Linear):
             result = result.view(new_shape)
             if self.bias is not None:
                 result += self.bias
-        # on_end = print_mem_swap("end forward")
-        # if on_end > on_forward:
-        #     print("leak between on_forward and on_end")
         return result.to(x.dtype)

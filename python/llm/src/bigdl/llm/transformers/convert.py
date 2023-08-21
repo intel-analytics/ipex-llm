@@ -109,17 +109,11 @@ def ggml_convert_quant(model, qtype, device="cpu"):
     elif device == "cpu":
         model.to(torch.float32)
     elif device == "meta":
-        ## Do nothing here
+        ## Do nothing here for weights are empty.
         pass
 
     model = optimize(model)
     return model
-
-def print_mem_swap(hint="hint"):
-    import psutil
-    memory_info = psutil.virtual_memory()
-    print("Memory Usage" + hint + " :")
-    print(f"Used: {memory_info.used / (1024 ** 2):.2f} MB")
 
 
 def convert_forward(m, target_m, new_forward):
