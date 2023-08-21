@@ -22,4 +22,4 @@ runs:
     - name: Test starcoder llm-cli
       shell: powershell
       run: |
-        llm-cli.ps1 -t $env:THREAD_NUM -n 128 -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
+        llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
