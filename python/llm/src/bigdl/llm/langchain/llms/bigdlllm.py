@@ -385,9 +385,9 @@ class _BaseCausalLM(LLM):
     or the huggingface checkpoint folder."""
 
     model_kwargs: Optional[dict] = None
-    """Key word arguments passed to the model."""
+    """Key word arguments passed to the Transformers model."""
 
-    kwargs: Optional[dict] = None
+    kwargs: Any
     """Additional key word arguments passed to TransformersLLM."""
 
     lora_base: Optional[str] = None
@@ -498,6 +498,7 @@ class _BaseCausalLM(LLM):
             if native:
                 values["client"] = class_(model_path, **model_params)
             else:
+                kwargs = {} if kwargs is None else kwargs
                 values["client"] = TransformersLLM.from_model_id(model_path, model_kwargs,
                                                                  **kwargs)
 

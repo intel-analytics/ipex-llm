@@ -232,7 +232,7 @@ class _BaseEmbeddings(BaseModel, Embeddings):
     encode_kwargs: Optional[dict] = None
     """Key word arguments to pass when calling the `encode` method of the Transformers model."""
 
-    kwargs: Optional[dict] = None
+    kwargs: Any
     """Additional key word arguments passed to TransformersLLM."""
 
     model_path: str
@@ -310,6 +310,7 @@ class _BaseEmbeddings(BaseModel, Embeddings):
             if native:
                 values["client"] = class_(model_path, embedding=True, **model_params)
             else:
+                kwargs = {} if kwargs is None else kwargs
                 values["client"] = TransformersEmbeddings.from_model_id(model_path, model_kwargs,
                                                                         **kwargs)
 
@@ -361,7 +362,7 @@ class _BaseEmbeddings(BaseModel, Embeddings):
             embedding = self.client.embed(text)
             return list(map(float, embedding))
         else:
-            return self.client.embed_query(texts)
+            return self.client.embed_query(text)
 
 
 class LlamaEmbeddings(_BaseEmbeddings):
