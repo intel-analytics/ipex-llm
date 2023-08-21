@@ -24,8 +24,9 @@ Overview
 ---------------------------------
 `BigDL <https://github.com/intel-analytics/bigdl>`_ seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
+- `LLM <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_: Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
 - `Orca <doc/Orca/index.html>`_: Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
-- `Nano <doc/Nano/index.html>`_: Transparent Acceleration of Tensorflow & PyTorch Programs on XPU
+- `Nano <doc/Nano/index.html>`_: Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
 - `DLlib <doc/DLlib/index.html>`_: "Equivalent of Spark MLlib" for Deep Learning
 - `Chronos <doc/Chronos/index.html>`_: Scalable Time Series Analysis using AutoML
 - `Friesian <doc/Friesian/index.html>`_: End-to-End Recommendation Systems
