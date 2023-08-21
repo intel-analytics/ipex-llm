@@ -53,13 +53,13 @@ Choosing the right BigDL library
         ArrowLabel2[label="Yes" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel3[label="Python" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel4[label="Scala/Java" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel5[label="Big Data + \n AI (TF/PyTorch)" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel6[label="Accelerate \n TensorFlow / PyTorch" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel7[label="DL for Spark MLlib" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel8[label="High Level App Framework" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel9[label="Time Series" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel10[label="Recommender System" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel11[label="Large Language Model" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel5[label="Large Language Model" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel6[label="Big Data + \n AI (TF/PyTorch)" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel7[label="Accelerate \n TensorFlow / PyTorch" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel8[label="DL for Spark MLlib" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel9[label="High Level App Framework" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel10[label="Time Series" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel11[label="Recommender System" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         
         Feature1 -> ArrowLabel1[dir=none]
         ArrowLabel1 -> Feature2
@@ -71,21 +71,21 @@ Choosing the right BigDL library
         Feature2 -> ArrowLabel4[dir=none]
         ArrowLabel4 -> DLlib1
         
-        Feature3 -> ArrowLabel11[dir=none]
-        ArrowLabel11 -> LLM
         Feature3 -> ArrowLabel5[dir=none]
-        ArrowLabel5 -> Orca
+        ArrowLabel5 -> LLM
         Feature3 -> ArrowLabel6[dir=none]
-        ArrowLabel6 -> Nano
+        ArrowLabel6 -> Orca
         Feature3 -> ArrowLabel7[dir=none]
-        ArrowLabel7 -> DLlib2
+        ArrowLabel7 -> Nano
         Feature3 -> ArrowLabel8[dir=none]
-        ArrowLabel8 -> Feature4
+        ArrowLabel8 -> DLlib2
+        Feature3 -> ArrowLabel9[dir=none]
+        ArrowLabel9 -> Feature4
      
-        Feature4 -> ArrowLabel9[dir=none]
-        ArrowLabel9 -> Chronos
         Feature4 -> ArrowLabel10[dir=none]
-        ArrowLabel10 -> Friesian
+        ArrowLabel10 -> Chronos
+        Feature4 -> ArrowLabel11[dir=none]
+        ArrowLabel11 -> Friesian
     }
 
 ------
