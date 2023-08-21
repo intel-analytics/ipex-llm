@@ -15,9 +15,9 @@
 #
 
 
-from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
+from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder, ChatGLM
 from bigdl.llm.transformers import LlamaForCausalLM, BloomForCausalLM, \
-    GptneoxForCausalLM, StarcoderForCausalLM
+    GptneoxForCausalLM, StarcoderForCausalLM, ChatGLMForCausalLM
 import pytest
 from unittest import TestCase
 import os
@@ -30,6 +30,7 @@ class Test_Models_Basics(TestCase):
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
         self.starcoder_model_path = os.environ.get('STARCODER_INT4_CKPT_PATH')
+        self.chatglm_model_path = os.environ.get('CHATGLM_INT4_CKPT_PATH')
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
@@ -93,6 +94,20 @@ class Test_Models_Basics(TestCase):
     def test_starcoder_for_causallm(self):
         llm = StarcoderForCausalLM.from_pretrained(self.starcoder_model_path, native=True,
                                                    n_threads=self.n_threads)
+        output = llm("def print_hello_world(", max_tokens=32, stream=False)
+
+    def test_chatglm_completion_success(self):
+        llm = ChatGLM(self.chatglm_model_path, n_threads=self.n_threads)
+        output = llm("def print_hello_world(", max_tokens=32, stream=False)
+        # assert "Paris" in output['choices'][0]['text']
+
+    def test_chatglm_completion_with_stream_success(self):
+        llm = ChatGLM(self.chatglm_model_path, n_threads=self.n_threads)
+        output = llm("def print_hello_world(", max_tokens=32, stream=True)
+
+    def test_chatglm_for_causallm(self):
+        llm = ChatGLMForCausalLM.from_pretrained(self.chatglm_model_path, native=True,
+                                                 n_threads=self.n_threads)
         output = llm("def print_hello_world(", max_tokens=32, stream=False)
 
 
