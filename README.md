@@ -23,9 +23,11 @@ _**Fast, Distributed, Secure AI for Big Data**_
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
+- [LLM](python/llm): Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
+
 - [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
-- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on XPU
+- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
 
 - [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 
@@ -33,7 +35,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Friesian](#friesian): End-to-End Recommendation Systems
 
-- [PPML](#ppml): Secure Big Data and AI (with SGX Hardware Security)
+- [PPML](#ppml): Secure Big Data and AI (with SGX/TDX Hardware Security)
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
