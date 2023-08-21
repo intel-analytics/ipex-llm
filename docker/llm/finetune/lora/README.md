@@ -1,4 +1,4 @@
-### Run BF16-Optimized Lora Finetuning on Kubernetes with OneCCL
+## Run BF16-Optimized Lora Finetuning on Kubernetes with OneCCL
 
 [Alpaca Lora](https://github.com/tloen/alpaca-lora/tree/main) uses [low-rank adaption](https://arxiv.org/pdf/2106.09685.pdf) to speed up the finetuning process of base model [Llama 7b](https://huggingface.co/decapoda-research/llama-7b-hf), and tries to reproduce the standard Alpaca, a general finetuned LLM. This is on top of Hugging Face transformers with Pytorch backend, which natively requires a number of expensive GPU resources and takes significant time.
 
@@ -15,11 +15,11 @@ Now, let's go to deploy a Lora finetuning to create a LLM from Llama.
 
 **Note: Please make sure you have already have an available Kubernetes infrastructure and NFS shared storage, and install [Helm CLI](https://helm.sh/docs/helm/helm_install/) for Kubernetes job submission.**
 
-#### 1. Install Kubeflow MPI Operator
+### 1. Install Kubeflow MPI Operator
 
 Follow [here](https://github.com/kubeflow/mpi-operator/tree/master#installation) to install a Kubeflow MPI operator in your Kubernetes, which will listen and receive the following MPIJob request at backend.
 
-#### 2. Download Base Model and Finetuning Data
+### 2. Download Base Model and Finetuning Data
 
 As finetuning is from a base model, first download [Llama 7b hf model from the public download site of Hugging Face](https://huggingface.co/decapoda-research/llama-7b-hf/tree/main).
 
@@ -27,7 +27,7 @@ Then, download [cleaned alpaca data](https://raw.githubusercontent.com/tloen/alp
 
 Next, move the downloaded files to a shared directory on your NFS server.
 
-#### 3. Deploy through Helm Chart
+### 3. Deploy through Helm Chart
 
 You are allowed to edit and experiment with different parameters in `./kubernetes/values.yaml` to improve finetuning performance and accuracy. For example, you can adjust `trainerNum` and `cpuPerPod` to make full use of all CPU cores in your cluster, and different `microBatchSize` result in different training speed and loss (here note that `microBatchSize`×`trainerNum` should not more than 128, as it is the batch size).
 
@@ -38,12 +38,12 @@ cd ./kubernetes
 helm install bigdl-lora-finetuning .
 ```
 
-#### 4. Check Deployment
+### 4. Check Deployment
 ```bash
 kubectl get all -n bigdl-lora-finetuning # you will see launcher and worker pods running
 ```
 
-#### 5. Check Finetuning Process
+### 5. Check Finetuning Process
 
 After deploying successfully, you can find a launcher pod, and then go inside this pod and check the logs collected from all workers.
 
