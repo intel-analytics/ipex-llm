@@ -23,7 +23,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache --upgrade requests argparse cryptography==3.3.2 urllib3 && \
-    pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230804 && \
+    pip3 install --pre --upgrade bigdl-llm[all] && \
     cd /ppml/ && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     # Install FastChat from source requires PEP 660 support
@@ -32,7 +32,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # Install FastChat
     git clone https://github.com/analytics-zoo/FastChat.git && \
     cd /ppml/FastChat && \
-    git checkout using-upstreaming-patch && \
+    git checkout used-for-bench && \
     pip install -e . && \
     # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
     pip install --pre --upgrade gradio==3.36.1 && \
