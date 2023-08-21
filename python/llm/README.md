@@ -162,11 +162,9 @@ You may run the models using the LangChain API in `bigdl-llm`.
   from langchain.chains.question_answering import load_qa_chain
 
   #switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
-  embeddings = LlamaEmbeddings(model_path='/path/to/converted/model.bin',
-                               model_family="llama",...)
+  embeddings = LlamaEmbeddings(model_path='/path/to/converted/model.bin')
   #switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
-  bigdl_llm = LlamaLLM(model_path='/path/to/converted/model.bin',
-                       model_family="llama",...)
+  bigdl_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
 
   doc_chain = load_qa_chain(bigdl_llm, ...)
   doc_chain.run(...)
