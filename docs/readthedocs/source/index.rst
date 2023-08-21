@@ -40,6 +40,7 @@ Choosing the right BigDL library
         Feature3 [label="What type of application?"]
         Feature4 [label="Domain?"]
         
+        LLM[href="https://github.com/intel-analytics/BigDL/blob/main/python/llm" target="_blank" target="_blank" style="rounded,filled" fontcolor="#ffffff" tooltip="Go to BigDL-LLM document"]
         Orca[href="../doc/Orca/index.html" target="_blank" target="_blank" style="rounded,filled" fontcolor="#ffffff" tooltip="Go to BigDL-Orca document"]
         Nano[href="../doc/Nano/index.html" target="_blank" target="_blank" style="rounded,filled" fontcolor="#ffffff" tooltip="Go to BigDL-Nano document"]
         DLlib1[label="DLlib" href="../doc/DLlib/index.html" target="_blank" style="rounded,filled" fontcolor="#ffffff" tooltip="Go to BigDL-DLlib document"]
@@ -52,12 +53,13 @@ Choosing the right BigDL library
         ArrowLabel2[label="Yes" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel3[label="Python" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel4[label="Scala/Java" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
-        ArrowLabel5[label="Distributed Big Data \n + \n AI (TF/PyTorch)" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel5[label="Big Data + \n AI (TF/PyTorch)" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel6[label="Accelerate \n TensorFlow / PyTorch" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel7[label="DL for Spark MLlib" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel8[label="High Level App Framework" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel9[label="Time Series" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         ArrowLabel10[label="Recommender System" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
+        ArrowLabel11[label="Large Language Model" fontsize=12 width=0.1 height=0.1 style=filled color="#c9c9c9"]
         
         Feature1 -> ArrowLabel1[dir=none]
         ArrowLabel1 -> Feature2
@@ -69,8 +71,10 @@ Choosing the right BigDL library
         Feature2 -> ArrowLabel4[dir=none]
         ArrowLabel4 -> DLlib1
         
+        Feature3 -> ArrowLabel11[dir=none]
+        ArrowLabel11 -> LLM
         Feature3 -> ArrowLabel5[dir=none]
-         ArrowLabel5 -> Orca
+        ArrowLabel5 -> Orca
         Feature3 -> ArrowLabel6[dir=none]
         ArrowLabel6 -> Nano
         Feature3 -> ArrowLabel7[dir=none]
