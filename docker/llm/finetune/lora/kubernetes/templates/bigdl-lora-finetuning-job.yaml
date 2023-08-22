@@ -16,14 +16,14 @@ spec:
          spec:
            volumes:
            - name: nfs-storage
-             hostPath:
-               path: /root/heyang
+             persistentVolumeClaim:
+               claimName: nfs-pvc
            containers:
            - image: {{ .Values.imageName }}
              name: bigdl-ppml-finetuning-launcher
              securityContext:
               runAsUser: 1000
-             command: ['sh' , '-c', 'bash /ppml/bigdl-ppml-finetuing-entrypoint.sh']
+             command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -56,10 +56,10 @@ spec:
         spec:
           containers:
           - image: {{ .Values.imageName }}
-            name: bigdl-ppml-finetuning-trainer
+            name: bigdl-ppml-finetuning-worker
             securityContext:
               runAsUser: 1000
-            command: ['sh' , '-c', 'bash /ppml/bigdl-ppml-finetuing-entrypoint.sh']
+            command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
             env:
             - name: WORKER_ROLE
               value: "trainer"
@@ -84,7 +84,7 @@ spec:
               mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
             resources:
               requests:
-                cpu: 42
+                cpu: {{ .Values.cpuPerPod }}
           volumes:
           - name: nfs-storage
             persistentVolumeClaim:
