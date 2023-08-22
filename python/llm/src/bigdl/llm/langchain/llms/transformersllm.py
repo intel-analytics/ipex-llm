@@ -71,7 +71,7 @@ class TransformersLLM(LLM):
     model_id: str = DEFAULT_MODEL_ID
     """Model name or model path to use."""
     model_kwargs: Optional[dict] = None
-    """Key word arguments passed to the model."""
+    """Keyword arguments passed to the model."""
     model: Any  #: :meta private:
     """BigDL-LLM Transformer-INT4 model."""
     tokenizer: Any  #: :meta private:
@@ -94,10 +94,14 @@ class TransformersLLM(LLM):
         """
         Construct object from model_id
         
-        :param model_id: Path for the huggingface repo id to be downloaded or
-               the huggingface checkpoint folder.
-        :param model_kwargs: Keyword arguments which will be passed to the model instance.
-        :param kwargs: Extra arguments which will be passed to the model instance.
+        Args:
+        
+            model_id: Path for the huggingface repo id to be downloaded or
+                      the huggingface checkpoint folder.
+            model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
+            kwargs: Extra arguments that will be passed to the model and tokenizer.
+
+        Returns: An object of TransformersLLM.
         """
         try:
             from bigdl.llm.transformers import (
@@ -149,10 +153,14 @@ class TransformersLLM(LLM):
         """
         Construct object from model_id
         
-        :param model_id: Path for the huggingface repo id to be downloaded or
-               the huggingface checkpoint folder.
-        :param model_kwargs: Keyword arguments which will be passed to the model instance.
-        :param kwargs: Extra arguments which will be passed to the model instance.
+        Args:
+        
+            model_id: Path for the huggingface repo id to be downloaded or
+                      the huggingface checkpoint folder.
+            model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
+            kwargs: Extra arguments that will be passed to the model and tokenizer.
+
+        Returns: An object of TransformersLLM.
         """
         try:
             from bigdl.llm.transformers import (

@@ -68,13 +68,15 @@ class TransformersEmbeddings(BaseModel, Embeddings):
     """
 
     model: Any  #: :meta private:
+    """BigDL-LLM Transformer-INT4 model."""
     tokenizer: Any  #: :meta private:
+    """Huggingface tokenizer."""
     model_id: str = DEFAULT_MODEL_NAME
-    """Model id to use."""
+    """Model name or model path to use."""
     model_kwargs: Dict[str, Any] = Field(default_factory=dict)
-    """Key word arguments to pass to the model."""
+    """Keyword arguments to pass to the model."""
     encode_kwargs: Dict[str, Any] = Field(default_factory=dict)
-    """Key word arguments to pass when calling the `encode` method of the model."""
+    """Keyword arguments to pass when calling the `encode` method of the model."""
 
     @classmethod
     def from_model_id(
@@ -83,7 +85,18 @@ class TransformersEmbeddings(BaseModel, Embeddings):
         model_kwargs: Optional[dict] = None,
         **kwargs: Any,
     ):
-        """Construct object from model_id"""
+        """
+        Construct object from model_id.
+
+        Args:
+
+            model_id: Path for the huggingface repo id to be downloaded or the huggingface
+                      checkpoint folder.
+            model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
+            kwargs: Extra arguments that will be passed to the model and tokenizer.
+        
+        Returns: Instances of the embedding model and tokenizer.
+        """
         try:
             from bigdl.llm.transformers import AutoModel
             from transformers import AutoTokenizer, LlamaTokenizer
