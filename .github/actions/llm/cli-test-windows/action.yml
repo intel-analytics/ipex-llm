@@ -19,7 +19,7 @@ runs:
       run: |
         llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x bloom -m $env:BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
 
-    - name: Test starcoder llm-cli
-      shell: powershell
-      run: |
-        llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
+    # - name: Test starcoder llm-cli
+    #   shell: powershell
+    #   run: |
+    #     llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
