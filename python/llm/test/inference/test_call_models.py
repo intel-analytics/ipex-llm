@@ -15,7 +15,8 @@
 #
 
 
-from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder, ChatGLM
+from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
+from bigdl.llm.ggml.model.chatglm import ChatGLM
 from bigdl.llm.transformers import LlamaForCausalLM, BloomForCausalLM, \
     GptneoxForCausalLM, StarcoderForCausalLM, ChatGLMForCausalLM
 import pytest
