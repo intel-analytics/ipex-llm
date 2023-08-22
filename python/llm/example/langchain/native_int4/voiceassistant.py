@@ -23,7 +23,7 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from bigdl.llm.langchain.llms import LlamaLLM
+from bigdl.llm.langchain.llms import *
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -46,8 +46,21 @@ def prepare_chain(args):
 
     # We use our BigDLCausalLLM to subsititute OpenAI web-required API
     # Switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
+    model_family_to_llm = {
+        "llama": LlamaLLM,
+        "gptneox": GptneoxLLM,
+        "bloom": BloomLLM,
+        "starcoder": StarcoderLLM,
+        "chatglm": ChatGLMLLM
+    }
+
+    if model_family in model_family_to_llm:
+        langchain_llm = model_family_to_llm[model_family]
+    else:
+        raise ValueError(f"Unknown model family: {model_family}")
+
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    llm = LlamaLLM(
+    llm = langchain_llm(
             model_path=model_path,
             n_threads=n_threads,
             callback_manager=callback_manager, 
@@ -109,6 +122,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BigDLCausalLM Langchain Voice Assistant Example')
+    parser.add_argument('-x','--model-family', type=str, required=True,
+                        choices=["llama", "bloom", "gptneox", "chatglm", "starcoder"],
+                        help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
     parser.add_argument('-t','--thread-num', type=int, default=2,

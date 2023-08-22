@@ -31,18 +31,18 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from bigdl.llm.langchain.llms import LlamaLLM
-from bigdl.llm.langchain.embeddings import LlamaEmbeddings
+from bigdl.llm.langchain.llms import *
+from bigdl.llm.langchain.embeddings import *
 
 
 def main(args):
     
     input_path = args.input_path 
-    model_path = args.model_path 
+    model_path = args.model_path
+    model_family = args.model_family
     query = args.question
     n_ctx = args.n_ctx
     n_threads=args.thread_num
-
 
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
@@ -52,16 +52,38 @@ def main(args):
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_text(input_doc)
 
+    model_family_to_embeddings = {
+        "llama": LlamaEmbeddings,
+        "gptneox": GptneoxEmbeddings,
+        "bloom": BloomEmbeddings,
+        "starcoder": StarcoderEmbeddings,
+        "chatglm": ChatGLMEmbeddings
+    }
+
+    model_family_to_llm = {
+        "llama": LlamaLLM,
+        "gptneox": GptneoxLLM,
+        "bloom": BloomLLM,
+        "starcoder": StarcoderLLM,
+        "chatglm": ChatGLMLLM
+    }
+
+    if model_family in model_family_to_embeddings and model_family in model_family_to_llm:
+        llm_embeddings = model_family_to_embeddings[model_family]
+        langchain_llm = model_family_to_llm[model_family]
+    else:
+        raise ValueError(f"Unknown model family: {model_family}")
+
     # create embeddings and store into vectordb
     # switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
-    embeddings = LlamaEmbeddings(model_path=model_path, n_threads=n_threads, n_ctx=n_ctx)
+    embeddings = llm_embeddings(model_path=model_path, n_threads=n_threads, n_ctx=n_ctx)
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
     # get relavant texts
     docs = docsearch.get_relevant_documents(query)
 
     # switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
-    bigdl_llm = LlamaLLM(
+    bigdl_llm = langchain_llm(
         model_path=model_path, n_ctx=n_ctx, n_threads=n_threads, callback_manager=callback_manager
     )
 
@@ -74,6 +96,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BigDLCausalLM Langchain QA over Docs Example')
+    parser.add_argument('-x','--model-family', type=str, required=True,
+                        choices=["llama", "bloom", "gptneox", "chatglm", "starcoder"],
+                        help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
     parser.add_argument('-i', '--input-path', type=str, required=True,
