@@ -42,6 +42,7 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
     # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
     pip install --pre --upgrade gradio==3.36.1 && \
     pip install --pre --upgrade bigdl-nano && \
+    apt-get install libunwind8-dev && \
     mkdir /ppml/data
 
 WORKDIR /ppml
