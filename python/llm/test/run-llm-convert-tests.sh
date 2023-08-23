@@ -18,6 +18,8 @@ elif [[ $1 == "bloom" ]]; then
   python -m pytest -s ${LLM_CONVERT_TEST_DIR}/test_convert_model.py -k "test_convert_bloom"
 elif [[ $1 == "starcoder" ]]; then
   python -m pytest -s ${LLM_CONVERT_TEST_DIR}/test_convert_model.py -k "test_convert_starcoder"
+elif [[ $1 == "chatglm" ]]; then
+  python -m pytest -s ${LLM_CONVERT_TEST_DIR}/test_convert_model.py -k "test_convert_chatglm"
 fi
 
 now=$(date "+%s")

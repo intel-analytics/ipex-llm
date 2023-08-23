@@ -43,3 +43,13 @@ runs:
         fi
         bash python/llm/test/run-llm-convert-tests.sh starcoder
         rm -rf $STARCODER_ORIGIN_PATH
+    
+    - name: Download original models & test convert (CHATGLM)
+      shell: bash
+      run: |
+        if [ ! -d $CHATGLM_ORIGIN_PATH ]; then
+          echo "Directory $CHATGLM_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+        fi
+        bash python/llm/test/run-llm-convert-tests.sh chatglm
+        rm -rf $CHATGLM_ORIGIN_PATH
