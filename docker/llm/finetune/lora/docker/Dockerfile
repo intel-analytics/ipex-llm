@@ -54,4 +54,4 @@ RUN mkdir /ppml/data && mkdir /ppml/model && \
 
 ADD ./bigdl-lora-finetuing-entrypoint.sh /ppml/bigdl-lora-finetuing-entrypoint.sh
 ADD ./lora_finetune.py /ppml/lora_finetune.py
-RUN chmod -R a+x /ppml
+RUN chown -R mpiuser:mpiuser /ppml
