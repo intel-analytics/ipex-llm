@@ -75,7 +75,6 @@ def main(args):
         raise ValueError(f"Unknown model family: {model_family}")
 
     # create embeddings and store into vectordb
-    # switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
     embeddings = llm_embeddings(model_path=model_path, n_threads=n_threads, n_ctx=n_ctx)
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
