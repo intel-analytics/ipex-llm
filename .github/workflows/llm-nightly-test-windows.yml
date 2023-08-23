@@ -29,15 +29,15 @@ jobs:
       - name: Set model directories
         shell: bash
         run: |
-          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
-          echo "INT4_CKPT_DIR=$(pwd)/../llm/converted-models" >> "$GITHUB_ENV"
+          echo "ORIGIN_DIR=${{ github.workspace }}/../llm/origin-models" >> "$GITHUB_ENV"
+          echo "INT4_CKPT_DIR=${{ github.workspace }}/../llm/converted-models" >> "$GITHUB_ENV"
       - name: Create model directories
         shell: bash
         run: |
-          if [ ! -d $ORIGIN_DIR];then
+          if [ ! -d $ORIGIN_DIR ]; then
             mkdir -p $ORIGIN_DIR
           fi
-          if [ ! -d $INT4_CKPT_DIR];then
+          if [ ! -d $INT4_CKPT_DIR ]; then
             mkdir -p $INT4_CKPT_DIR
           fi
       - name: Set environment variables

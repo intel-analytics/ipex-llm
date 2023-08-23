@@ -1,0 +1,25 @@
+name: "llm-cli Flow Verification (Windows)"
+description: "Verify the llm-cli flow on Windows"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Test llama llm-cli
+      shell: powershell
+      run: |
+        llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x llama -m $env:LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
+
+    - name: Test gptneox llm-cli
+      shell: powershell
+      run: |
+        llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x gptneox -m $env:GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
+
+    - name: Test bloom llm-cli
+      shell: powershell
+      run: |
+        llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x bloom -m $env:BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
+
+    # - name: Test starcoder llm-cli
+    #   shell: powershell
+    #   run: |
+    #     llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('

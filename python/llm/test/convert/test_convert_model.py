@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-
 import pytest
 import os
 import tempfile
 from unittest import TestCase
+import shutil
 
 from bigdl.llm import llm_convert
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -65,13 +65,11 @@ class TestConvertModel(TestCase):
         assert os.path.isfile(converted_model_path)
 
     def test_transformer_convert_llama(self):
-        model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
-        tempdir = tempfile.mkdtemp(dir=output_dir)
-        model.save_pretrained(tempdir)
-        model = AutoModelForCausalLM.load_low_bit(tempdir)
-        assert model is not None
-        import shutil
-        shutil.rmtree(tempdir)
+        with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
+            model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
+            model.save_pretrained(tempdir)
+            newModel = AutoModelForCausalLM.load_low_bit(tempdir)
+            assert newModel is not None
 
     def test_transformer_convert_llama_q5(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
@@ -82,14 +80,12 @@ class TestConvertModel(TestCase):
                                                      load_in_low_bit="sym_int8")
 
     def test_transformer_convert_llama_save_load(self):
-        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_low_bit="asym_int4")
-        tempdir = tempfile.mkdtemp(dir=output_dir)
-        model.save_low_bit(tempdir)
-        newModel = AutoModelForCausalLM.load_low_bit(tempdir)
-        import shutil
-        shutil.rmtree(tempdir)
-
+        with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
+            model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                        load_in_low_bit="asym_int4")
+            model.save_low_bit(tempdir)
+            newModel = AutoModelForCausalLM.load_low_bit(tempdir)
+            assert newModel is not None
 
 if __name__ == '__main__':
     pytest.main([__file__])
