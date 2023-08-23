@@ -2,6 +2,7 @@ package com.intel.analytics.bigdl.apps.model.inference.flink.ImageClassification
 
 import java.io.{File, FileInputStream}
 import java.{io, util}
+import java.nio.file.{Paths, Path}
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.orca.inference.JTensor
@@ -57,11 +58,14 @@ object ImageClassificationStreaming {
     println("start ImageClassificationStreaming job...")
 
     // ImageNet labels
+    val classesFilePath = Paths.get(classesFile).toAbsolute.normalize
     val labels = Source.fromFile(classesFile).getLines.toList
 
     // Image loading and pre-processing
     // Load images from folder, and hold images as a list
-    val fileList = new File(imageDir).listFiles.toList
+    val imageDir = Paths.get(imageDir).toAbsolute.normalize
+    val imageFile = imageDir.toFile
+    val fileList = imageFile.listFiles.toList
     println("ImageList", fileList)
 
     // Image pre-processing

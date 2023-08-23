@@ -16,4 +16,4 @@
 
 from .convert import ggml_convert_quant
 from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, AutoModelForSpeechSeq2Seq
-from .modelling_bigdl import BigdlNativeForCausalLM
+from .modelling_bigdl import *

@@ -3,8 +3,11 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 
 ## Recommended Requirements
 To apply Intel® Arc™ A-Series Graphics acceleration, there’re several steps for tools installation and environment preparation.
+
 Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
+
 Step 2, please refer to our [drive installation](https://dgpu-docs.intel.com/installation-guides/index.html#intel-arc-gpus) for general purpose GPU capabilities.
+
 Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html). OneMKL and DPC++ compiler are needed, others are optional.
 
 ## Best Known Configuration on Linux

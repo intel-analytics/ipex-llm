@@ -36,10 +36,13 @@ def prepare_chain(args):
 
     model_path = args.model_path
     n_threads = args.thread_num
+    n_ctx = args.context_size
 
     # Use a easy prompt could bring good-enough result
+    # You could tune the prompt based on your own model to perform better
     template = """
     {history}
+
     Q: {human_input}
     A:"""
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
@@ -62,8 +65,10 @@ def prepare_chain(args):
     llm = langchain_llm(
             model_path=model_path,
             n_threads=n_threads,
-            callback_manager=callback_manager, 
-            verbose=True
+            callback_manager=callback_manager,
+            verbose=True,
+            n_ctx=n_ctx,
+            stop=['\n\n'] # You could tune the stop words based on your own model to perform better
         )
 
     # Following code are complete the same as the use-case
@@ -128,6 +133,8 @@ if __name__ == '__main__':
                         help='the path to the converted llm model')
     parser.add_argument('-t','--thread-num', type=int, default=2,
                         help='Number of threads to use for inference')
+    parser.add_argument('-c','--context-size', type=int, default=512,
+                        help='Maximum context size')
     args = parser.parse_args()
 
     main(args)

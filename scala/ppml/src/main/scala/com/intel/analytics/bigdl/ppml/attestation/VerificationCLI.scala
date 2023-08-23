@@ -23,6 +23,7 @@ import scopt.OptionParser
 import java.io.{BufferedOutputStream, BufferedInputStream};
 import java.io.File;
 import java.io.{FileInputStream, FileOutputStream};
+import java.nio.file.{Paths, Path}
 import java.util.Base64
 
 import com.intel.analytics.bigdl.ppml.attestation.service._
@@ -85,7 +86,9 @@ object VerificationCLI {
           }
 
         } else {
-          val quoteFile = new File(quotePath)
+          val tempQuotePath = Paths.get(quotePath).toAbsolutePath.normalize
+          val quoteFile = tempQuotePath.toFile
+          quoteFile.setExecutable(false)
           val in = new FileInputStream(quoteFile)
           val bufIn = new BufferedInputStream(in)
           quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray

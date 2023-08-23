@@ -953,7 +953,7 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg SGX_MEM_SIZE=64G \
+          --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
