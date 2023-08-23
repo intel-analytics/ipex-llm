@@ -7,21 +7,21 @@ ARG TINI_VERSION=v0.18.0
 RUN mkdir -p /ppml/
 
 
-ADD ./fschat.diff /opt/fschat.diff
+# ADD ./fschat.diff /opt/fschat.diff
 ADD ./requirements.txt /opt/requirements.txt
-ADD ./entrypoint.sh /opt/entrypoint.sh
+# ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./attestation_cli.py /opt/attestation_cli.py
 ADD ./attestation.sh /opt/attestation.sh
 ADD ./llama_cpp.patch /opt/llama_cpp.patch
 ADD ./llama.patch /opt/llama.patch
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-
+ADD ./torch-2.0.0.dev20230228+cpu.cxx11.abi-cp39-cp39-linux_x86_64.whl /opt/torch-2.0.0.dev20230228+cpu.cxx11.abi-cp39-cp39-linux_x86_64.whl
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 git curl wget libcrypto++6 libcrypto++-dev libcrypto++-utils && \
+    apt-get install -y python3.9 git curl wget libcrypto++6 libcrypto++-dev libcrypto++-utils strace && \
     apt-get install -y git-lfs && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
@@ -29,7 +29,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     # Install bigdl-llm and pin its version as we have made certain changes to llm.cpp
-    pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
+    pip3 install --pre --upgrade bigdl-llm==2.4.0b20230710 && \
     patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama.py /opt/llama.patch && \
     patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama_cpp.py /opt/llama_cpp.patch && \
     cd /usr/local/lib/python3.9/dist-packages/bigdl/llm/libs && \
@@ -39,10 +39,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm index.html && \
     chmod +x * && \
     # FastChat related dependencies
-    pip3 install fschat==0.2.18 && \
+    # pip3 install fschat==0.2.18 && \
     # We would also patch fastchat
-    patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py /opt/fschat.diff && \
-    pip3 install --pre --upgrade gradio==3.36.1 && \
+    # patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py /opt/fschat.diff && \
+    # pip3 install --pre --upgrade gradio==3.36.1 && \
     pip3 install --pre --upgrade bigdl-nano && \
 # Install dependencies for bigdl-llm-demo
     pip3 install -r /opt/requirements.txt && \
@@ -55,12 +55,16 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install cryptography && \
     pip3 install pytorch_lightning==1.6.4 && \
     pip3 uninstall -y torchvision && \
-    pip3 install https://download.pytorch.org/whl/nightly/cpu-cxx11-abi/torch-2.0.0.dev20230228%2Bcpu.cxx11.abi-cp39-cp39-linux_x86_64.whl && \
+    pip3 install /opt/torch-2.0.0.dev20230228+cpu.cxx11.abi-cp39-cp39-linux_x86_64.whl
+
 # Install bigdl-ppml
-    cd /root && \
+RUN cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv /root/BigDL/python/ppml/src/bigdl/ppml/ /usr/local/lib/python3.9/dist-packages/bigdl/ && \
     rm -rf /root/BigDL && \
+# install sentence-transformers_all-mpnet-base-v2
+    git lfs install && \
+    git clone -v https://huggingface.co/sentence-transformers/all-mpnet-base-v2 /ppml/models/sentence-transformers_all-mpnet-base-v2 && \
 # Remote attestation dependencies
     mkdir -p /opt/intel/ && \
     cd /opt/intel && \
@@ -75,12 +79,17 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev && \
-    chmod +x /opt/entrypoint.sh && \
+    # chmod +x /opt/entrypoint.sh && \
     chmod +x /opt/attestation.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
+RUN rm -rf /ppml/ChatLLM && \
+    git clone --branch load_key_from_kms_0811 "https://github.com/xiangyuT/ChatLLM.git" /ppml/ChatLLM
 
+ADD ./libtdx_attest.so /usr/lib/x86_64-linux-gnu/libtdx_attest.so.1.16.100.2
+ADD ./entrypoint.sh /opt/entrypoint.sh
+RUN chmod +x /opt/entrypoint.sh
 # To boost fschat performance, do the following:
 # source bigdl-nano-init -t
 # export KMP_AFFINITY=granularity=fine,compact
