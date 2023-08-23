@@ -23,9 +23,11 @@ import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
 
+
 def rotate_half(x):
     x1, x2 = x[..., :x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
     return torch.cat((-x2, x1), dim=x1.ndim - 1)  # dim=-1 triggers a bug in earlier torch versions
+
 
 @torch.jit.script
 def apply_rotary_pos_emb_index(q, k, cos, sin, position_id):
@@ -37,6 +39,7 @@ def apply_rotary_pos_emb_index(q, k, cos, sin, position_id):
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 KV_CACHE_ALLOC_MIN_LENGTH = 512
+
 
 def attention_fn(
         self,
@@ -61,10 +64,14 @@ def attention_fn(
         past_length = past_key.size(2)
         if past_length + cur_length > self.max_cache_length:
             self.max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            self.kv_cache = (torch.empty(batch_size, self.num_attention_heads,
-                                        self.max_cache_length, self.hidden_size_per_attention_head,),
-                            torch.empty(batch_size, self.num_attention_heads,
-                                        self.max_cache_length, self.hidden_size_per_attention_head,))
+            self.kv_cache = (torch.empty(batch_size,
+                                         self.num_attention_heads,
+                                         self.max_cache_length,
+                                         self.hidden_size_per_attention_head,),
+                            torch.empty(batch_size,
+                                        self.num_attention_heads,
+                                        self.max_cache_length,
+                                        self.hidden_size_per_attention_head,))
             self.kv_cache[0][:, :, :past_length, :] = past_key
             self.kv_cache[1][:, :, :past_length, :] = past_value
 
@@ -209,9 +216,8 @@ def attention_fn(
 
         # matmul: [b * np, sq, hn]
         context_layer = torch.empty(
-                output_size[0] * output_size[1],
-                output_size[2], value_layer.size(-1), dtype=value_layer.dtype,
-            )
+            output_size[0] * output_size[1],
+            output_size[2], value_layer.size(-1), dtype=value_layer.dtype,)
         torch.bmm(attention_probs, value_layer, out=context_layer)
 
         # change view [b, np, sq, hn]
