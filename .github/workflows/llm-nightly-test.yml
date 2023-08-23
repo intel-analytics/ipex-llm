@@ -62,11 +62,13 @@ jobs:
           echo "STARCODER_ORIGIN_PATH=${ORIGIN_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
           echo "CHATGLM_ORIGIN_PATH=${ORIGIN_DIR}/chatglm2-6b" >> "$GITHUB_ENV"
 
+
           echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_q4_0.bin" >> "$GITHUB_ENV"
           echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_gptneox_q4_0.bin" >> "$GITHUB_ENV"
           echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin" >> "$GITHUB_ENV"
           echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_starcoder_q4_0.bin" >> "$GITHUB_ENV"
           echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_chatglm2_q4_0.bin" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -97,6 +99,7 @@ jobs:
           curl -T $BLOOM_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_bloom_7b_q4_0.bin
           curl -T $STARCODER_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_santacoder_1b_q4_0.bin
           curl -T $CHATGLM_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_chatglm2_6b_q4_0.bin
+
       - name: Delete ckpt
         shell: bash
         run: |
@@ -106,9 +109,11 @@ jobs:
           rm -rf $STARCODER_INT4_CKPT_PATH
           rm -rf $CHATGLM_INT4_CKPT_PATH
 
+
   llm-unit-tests:
     needs: llm-cpp-build
     uses: ./.github/workflows/llm_unit_tests.yml
   llm-example-test:
     needs: llm-cpp-build
     uses: ./.github/workflows/llm_example_tests.yml
+
