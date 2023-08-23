@@ -777,7 +777,7 @@ class SparkXShards(XShards):
             sdf_schema = self._get_spark_df_schema()
 
             sqlContext = get_spark_sql_context(get_spark_context())
-            timezone = sqlContext._conf.sessionLocalTimeZone()
+            timezone = sqlContext.getConf("spark.sql.session.timeZone")
 
             def f(iter):
                 from bigdl.dllib.utils.log4Error import invalidInputError
