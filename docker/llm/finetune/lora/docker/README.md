@@ -3,7 +3,7 @@
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull bigdl-lora-finetuning:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-lora-finetuning:2.4.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -15,6 +15,6 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg HTTP_PROXY=${HTTP_PROXY} \
   --build-arg HTTPS_PROXY=${HTTPS_PROXY} \
-  -t bigdl-lora-finetuning:2.4.0-SNAPSHOT \
+  -t intelanalytics/bigdl-lora-finetuning:2.4.0-SNAPSHOT \
   -f ./Dockerfile .
 ```

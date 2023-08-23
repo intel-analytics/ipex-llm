@@ -1,4 +1,4 @@
-imageName: bigdl-lora-finetuning:2.4.0-SNAPSHOT
+imageName: intelanalytics/bigdl-lora-finetuning:2.4.0-SNAPSHOT
 trainerNum: 8
 microBatchSize: 8
 TEEMode: tdx # tdx or native

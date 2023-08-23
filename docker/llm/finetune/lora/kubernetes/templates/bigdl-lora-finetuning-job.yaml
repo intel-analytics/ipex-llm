@@ -34,7 +34,7 @@ spec:
              - name: MASTER_PORT
                value: "42679"
              - name: MASTER_ADDR
-               value: "bigdl-ppml-finetuning-job-worker-0.bigdl-ppml-finetuning-job-worker"
+               value: "bigdl-lora-finetuning-job-worker-0.bigdl-lora-finetuning-job-worker"
              - name: DATA_SUB_PATH
                value: "{{ .Values.dataSubPath }}"
              - name: OMP_NUM_THREADS
@@ -70,7 +70,7 @@ spec:
             - name: MASTER_PORT
               value: "42679"
             - name: MASTER_ADDR
-              value: "bigdl-ppml-finetuning-job-worker-0.bigdl-ppml-finetuning-job-worker"
+              value: "bigdl-lora-finetuning-job-worker-0.bigdl-lora-finetuning-job-worker"
             - name: LOCAL_POD_NAME
               valueFrom:
                 fieldRef:

@@ -7,7 +7,7 @@ ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ADD ./requirements.txt /ppml/requirements.txt
 
-RUN mkdir /ppml && mkdir /ppml/data && mkdir /ppml/model && \
+RUN mkdir /ppml/data && mkdir /ppml/model && \
 # install pytorch 2.0.1
     export http_proxy=$HTTP_PROXY && \
     export https_proxy=$HTTPS_PROXY && \
@@ -36,10 +36,10 @@ RUN mkdir /ppml && mkdir /ppml/data && mkdir /ppml/model && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
-    pip3 install --upgrade pip && \
-    pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
-    pip3 install --upgrade requests && \
-    pip3 install setuptools==58.4.0 && \
+    pip install --upgrade pip && \
+    pip install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
+    pip install --upgrade requests && \
+    pip install setuptools==58.4.0 && \
 # Install OpenSSH for MPI to communicate between containers
     apt-get install -y --no-install-recommends openssh-client openssh-server && \
     mkdir -p /var/run/sshd && \
