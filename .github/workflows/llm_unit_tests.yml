@@ -1,8 +1,8 @@
-name: LLM Unit Tests on Linux
+name: LLM Unit Tests
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
-  group: ${{ github.workflow }}-llm-linux-unittest-${{ github.event.pull_request.number || github.run_id }}
+  group: ${{ github.workflow }}-llm-unittest-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 # Controls when the action will run.
@@ -12,7 +12,7 @@ on:
     branches: [main]
     paths:
       - "python/llm/**"
-      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm_unit_tests.yml"
       - ".github/workflows/llm-binary-build.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
@@ -23,7 +23,7 @@ on:
     branches: [main]
     paths:
       - "python/llm/**"
-      - ".github/workflows/llm_unit_tests_linux.yml"
+      - ".github/workflows/llm_unit_tests.yml"
       - ".github/workflows/llm-binary-build.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
@@ -37,7 +37,7 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-unit-test-linux:
+  llm-unit-test:
     needs: llm-cpp-build
     strategy:
       fail-fast: false

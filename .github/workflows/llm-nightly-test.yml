@@ -23,7 +23,7 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-nightly-convert-test-avx512:
+  llm-nightly-convert-test:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -102,9 +102,9 @@ jobs:
           rm -rf $BLOOM_INT4_CKPT_PATH
           rm -rf $STARCODER_INT4_CKPT_PATH
 
-  llm-inference-test-on-linux:
+  llm-unit-tests:
     needs: llm-cpp-build
-    uses: ./.github/workflows/llm_unit_tests_linux.yml
+    uses: ./.github/workflows/llm_unit_tests.yml
   llm-example-test:
     needs: llm-cpp-build
     uses: ./.github/workflows/llm_example_tests.yml
