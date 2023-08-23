@@ -5,7 +5,7 @@ metadata:
   namespace: bigdl-lora-finetuning
 spec:
   capacity:
-    storage: 10Gi
+    storage: 15Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
