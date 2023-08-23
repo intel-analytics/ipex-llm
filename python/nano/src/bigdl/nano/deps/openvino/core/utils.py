@@ -98,7 +98,6 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
 def save(model, xml_path):
     xml_path = Path(xml_path)
     if OpenVINO_2023:
-        print("------------------saving ov 2023")
         from openvino.runtime import serialize
         serialize(model, xml_path)
     else:
