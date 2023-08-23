@@ -69,14 +69,13 @@ class BigdlNativeEmbeddings(BaseModel, Embeddings):
                     "please switch to the new LMEmbeddings API for sepcific models.")
 
     model_family: str = "llama"
-    """The model family: currently supports llama, gptneox, bloom, starcoder and chatglm."""
+    """The model family: currently supports llama, gptneox, bloom and starcoder."""
 
     family_info = {
         'llama': {'module': "bigdl.llm.models", 'class': "Llama"},
         'bloom': {'module': "bigdl.llm.models", 'class': "Bloom"},
         'gptneox': {'module': "bigdl.llm.models", 'class': "Gptneox"},
         'starcoder': {'module':"bigdl.llm.models", 'class': "Starcoder"},
-        'chatglm': {'module':"bigdl.llm.ggml.model.chatglm", 'class': "ChatGLM"},
     }  #: :meta private:
     """Info necessary for different model family initiation and configure."""
 
@@ -378,11 +377,6 @@ class BloomEmbeddings(_BaseEmbeddings):
 class GptneoxEmbeddings(_BaseEmbeddings):
     ggml_model = "Gptneox"
     ggml_module = "bigdl.llm.models"
-
-
-class ChatGLMEmbeddings(_BaseEmbeddings):
-    ggml_model = "ChatGLM"
-    ggml_module = "bigdl.llm.ggml.model.chatglm"
 
 
 class StarcoderEmbeddings(_BaseEmbeddings):

@@ -27,7 +27,6 @@ __all__ = [
     "LlamaEmbeddings",
     "BloomEmbeddings",
     "GptneoxEmbeddings",
-    "ChatGLMEmbeddings",
     "StarcoderEmbeddings",
     "TransformersEmbeddings"
 ]

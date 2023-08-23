@@ -54,7 +54,6 @@ def main(args):
         raise ValueError(f"Unknown model family: {model_family}")
     
     # Verbose is required to pass to the callback manager
-    # Switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
     llm = langchain_llm(
         model_path=model_path,
         n_threads=n_threads,

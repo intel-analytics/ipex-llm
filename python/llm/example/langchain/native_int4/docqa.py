@@ -82,7 +82,6 @@ def main(args):
     # get relavant texts
     docs = docsearch.get_relevant_documents(query)
 
-    # switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
     bigdl_llm = langchain_llm(
         model_path=model_path, n_ctx=n_ctx, n_threads=n_threads, callback_manager=callback_manager
     )

@@ -45,7 +45,6 @@ def prepare_chain(args):
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
     # We use our BigDLCausalLLM to subsititute OpenAI web-required API
-    # Switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
     model_family_to_llm = {
         "llama": LlamaLLM,
         "gptneox": GptneoxLLM,
