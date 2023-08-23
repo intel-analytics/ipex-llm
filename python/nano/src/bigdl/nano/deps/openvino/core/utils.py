@@ -103,8 +103,8 @@ def save(model, xml_path):
     else:
         pass_manager = Manager()
         pass_manager.register_pass(pass_name="Serialize",
-                                xml_path=str(xml_path),
-                                bin_path=str(xml_path.with_suffix(".bin")))
+                                   xml_path=str(xml_path),
+                                   bin_path=str(xml_path.with_suffix(".bin")))
         pass_manager.run_passes(model)
 
 
