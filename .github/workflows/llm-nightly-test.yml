@@ -36,12 +36,14 @@ jobs:
       GPTNEOX_ORIGIN_PATH: ./llm/models/gptneox-7b-redpajama-bf16
       BLOOM_ORIGIN_PATH: ./llm/models/bloomz-7b1
       STARCODER_ORIGIN_PATH: ./llm/models/gpt_bigcode-santacoder
+      CHATGLM_ORIGIN_PATH: ./llm/chatglm2-6b
 
       INT4_CKPT_DIR: ./llm/ggml-actions/nightly
       LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_llama_q4_0.bin
       GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
       BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
       STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
+      CHATGLM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_chatglm_q4_0.bin
 
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
@@ -72,6 +74,7 @@ jobs:
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_chatglm_1b_q4_0.bin $CHATGLM_INT4_CKPT_PATH
 
   llm-inference-test-on-linux:
     needs: llm-nightly-convert-test-avx512
