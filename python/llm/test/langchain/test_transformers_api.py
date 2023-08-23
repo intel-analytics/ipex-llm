@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, ChatGLMLLM
-from bigdl.llm.langchain.embeddings import TransformersEmbeddings, ChatGLMEmbeddings
+from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, LlamaLLM
+from bigdl.llm.langchain.embeddings import TransformersEmbeddings, LlamaEmbeddings
 
 
 from langchain.document_loaders import WebBaseLoader
@@ -37,6 +37,7 @@ class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
+        self.llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
@@ -91,13 +92,13 @@ class Test_Langchain_Transformers_API(TestCase):
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_text(texts)
         query = 'What is AI?'
-        embeddings = ChatGLMEmbeddings(model_path=self.auto_model_path, model_kwargs={'trust_remote_code': True}, native=False)
+        embeddings = LlamaEmbeddings(model_path=self.llama_model_path, model_kwargs={'trust_remote_code': True}, native=False)
 
         docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
         #get relavant texts
         docs = docsearch.get_relevant_documents(query)
-        bigdl_llm = ChatGLMLLM(model_path=self.auto_model_path, model_kwargs={'trust_remote_code': True}, native=False)
+        bigdl_llm = LlamaLLM(model_path=self.llama_model_path, model_kwargs={'trust_remote_code': True}, native=False)
         doc_chain = load_qa_chain(bigdl_llm, chain_type="stuff", prompt=QA_PROMPT)
         output = doc_chain.run(input_documents=docs, question=query)
         res = "AI" in output
