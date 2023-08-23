@@ -68,10 +68,10 @@ def attention_fn(
                                          self.num_attention_heads,
                                          self.max_cache_length,
                                          self.hidden_size_per_attention_head,),
-                            torch.empty(batch_size,
-                                        self.num_attention_heads,
-                                        self.max_cache_length,
-                                        self.hidden_size_per_attention_head,))
+                             torch.empty(batch_size,
+                                         self.num_attention_heads,
+                                         self.max_cache_length,
+                                         self.hidden_size_per_attention_head,))
             self.kv_cache[0][:, :, :past_length, :] = past_key
             self.kv_cache[1][:, :, :past_length, :] = past_value
 
@@ -241,7 +241,7 @@ def chatglm_attention_forward(
         position_ids,
         attention_mask: torch.Tensor,
         layer_id,
-        layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
+        layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]]=None,
         use_cache: bool = False,
         output_attentions: bool = False,
 ):
