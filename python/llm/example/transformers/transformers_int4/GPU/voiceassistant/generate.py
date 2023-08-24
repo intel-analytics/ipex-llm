@@ -50,27 +50,6 @@ def get_prompt(message: str, chat_history: list[tuple[str, str]],
     texts.append(f'{message} [/INST]')
     return ''.join(texts)
 
-def get_input_features(r, device_id):
-    with sr.Microphone(device_index=device_id, sample_rate=16000) as source:
-        print("Calibrating...")
-        r.adjust_for_ambient_noise(source, duration=2)
-
-        print(Fore.YELLOW + "Listening now..." + Fore.RESET)
-        try:
-            audio = r.listen(source, timeout=5, phrase_time_limit=30)
-            # refer to https://github.com/openai/whisper/blob/main/whisper/audio.py#L63
-            frame_data = np.frombuffer(audio.frame_data, np.int16).flatten().astype(np.float32) / 32768.0
-            input_features = processor(frame_data, sampling_rate=audio.sample_rate, return_tensors="pt").input_features
-            input_features = input_features.contiguous().to('xpu')
-            print("Recognizing...")
-        except Exception as e:
-            unrecognized_speech_text = (
-                f"Sorry, I didn't catch that. Exception was: \n {e}"
-            )
-            print(unrecognized_speech_text)
-    
-    return input_features
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--llama2-repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
@@ -133,15 +112,32 @@ if __name__ == '__main__':
         output = llama_model.generate(input_ids, do_sample=False, max_new_tokens=32)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         torch.xpu.synchronize()
-        
-        while 1:
-            input_features = get_input_features(r, device_index)
-            predicted_ids = whisper.generate(input_features)
-            output_str = processor.batch_decode(predicted_ids, skip_special_tokens=True)
-            output_str = output_str[0]
-            print("\n" + Fore.GREEN + "Whisper : " + Fore.RESET + "\n" + output_str)
-            print("\n" + Fore.BLUE + "BigDL-LLM: " + Fore.RESET)
-            prompt = get_prompt(output_str, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
-            input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-            streamer = TextStreamer(tokenizer, skip_special_tokens=True, skip_prompt=True)
-            _ = llama_model.generate(input_ids, streamer=streamer, do_sample=False, max_new_tokens=args.n_predict)
+
+        with sr.Microphone(device_index=device_index, sample_rate=16000) as source:
+            print("Calibrating...")
+            r.adjust_for_ambient_noise(source, duration=5)
+            
+            while 1:
+                print(Fore.YELLOW + "Listening now..." + Fore.RESET)
+                try:
+                    audio = r.listen(source, timeout=5, phrase_time_limit=30)
+                    # refer to https://github.com/openai/whisper/blob/main/whisper/audio.py#L63
+                    frame_data = np.frombuffer(audio.frame_data, np.int16).flatten().astype(np.float32) / 32768.0
+                    print("Recognizing...")
+                    input_features = processor(frame_data, sampling_rate=audio.sample_rate, return_tensors="pt").input_features
+                    input_features = input_features.contiguous().to('xpu')
+                except Exception as e:
+                    unrecognized_speech_text = (
+                        f"Sorry, I didn't catch that. Exception was: \n {e}"
+                    )
+                    print(unrecognized_speech_text)
+
+                predicted_ids = whisper.generate(input_features)
+                output_str = processor.batch_decode(predicted_ids, skip_special_tokens=True)
+                output_str = output_str[0]
+                print("\n" + Fore.GREEN + "Whisper : " + Fore.RESET + "\n" + output_str)
+                print("\n" + Fore.BLUE + "BigDL-LLM: " + Fore.RESET)
+                prompt = get_prompt(output_str, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+                input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+                streamer = TextStreamer(tokenizer, skip_special_tokens=True, skip_prompt=True)
+                _ = llama_model.generate(input_ids, streamer=streamer, do_sample=False, max_new_tokens=args.n_predict)
