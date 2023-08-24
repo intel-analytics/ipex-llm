@@ -24,7 +24,7 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-example-test:
+  llm-performance-test:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -54,7 +54,7 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run LLM example test        
+      - name: Run LLM Performance test        
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
         run:

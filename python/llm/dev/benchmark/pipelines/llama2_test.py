@@ -21,7 +21,7 @@ import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 
 
 import os
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     model = BenchmarkWrapper(model, do_print=False)
 
     # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     # Generate predicted tokens
     with torch.inference_mode():
