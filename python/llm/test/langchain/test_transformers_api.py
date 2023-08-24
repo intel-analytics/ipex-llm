@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 
-from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, LlamaLLM
-from bigdl.llm.langchain.embeddings import TransformersEmbeddings, LlamaEmbeddings
+from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, \
+    LlamaLLM, BloomLLM
+from bigdl.llm.langchain.embeddings import TransformersEmbeddings, LlamaEmbeddings, \
+    BloomEmbeddings
 
 
 from langchain.document_loaders import WebBaseLoader
@@ -38,11 +40,13 @@ class Test_Langchain_Transformers_API(TestCase):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
         self.llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
+        self.bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
         else:
             self.n_threads = 2         
+
 
     def test_pipeline_llm(self):
         texts = 'def hello():\n  print("hello world")\n'
@@ -52,7 +56,27 @@ class Test_Langchain_Transformers_API(TestCase):
         res = "hello()" in output
         self.assertTrue(res)
 
-        
+
+    def test_causalLM_embeddings(self):
+        bigdl_embeddings = BloomEmbeddings(model_path=self.bloom_model_path, model_kwargs={'trust_remote_code': True}, native=False)
+        text = "This is a test document."
+        query_result = bigdl_embeddings.embed_query(text)
+        doc_result = bigdl_embeddings.embed_documents([text])
+
+        bigdl_llm = BloomLLM(model_path=self.bloom_model_path, model_kwargs={'trust_remote_code': True}, native=False)
+        res = bigdl_llm(text)
+
+
+    def test_transformers_llama_embeddings(self):
+        bigdl_embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True})
+        text = "This is a test document."
+        query_result = bigdl_embeddings.embed_query(text)
+        doc_result = bigdl_embeddings.embed_documents([text])
+
+        bigdl_llm = TransformersLLM.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True})
+        res = bigdl_llm(text)
+
+
     def test_qa_chain(self):
         texts = '''
             AI is a machine’s ability to perform the cognitive functions 
