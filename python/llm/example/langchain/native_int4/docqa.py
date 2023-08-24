@@ -56,16 +56,14 @@ def main(args):
         "llama": LlamaEmbeddings,
         "gptneox": GptneoxEmbeddings,
         "bloom": BloomEmbeddings,
-        "starcoder": StarcoderEmbeddings,
-        "chatglm": ChatGLMEmbeddings
+        "starcoder": StarcoderEmbeddings
     }
 
     model_family_to_llm = {
         "llama": LlamaLLM,
         "gptneox": GptneoxLLM,
         "bloom": BloomLLM,
-        "starcoder": StarcoderLLM,
-        "chatglm": ChatGLMLLM
+        "starcoder": StarcoderLLM
     }
 
     if model_family in model_family_to_embeddings and model_family in model_family_to_llm:
