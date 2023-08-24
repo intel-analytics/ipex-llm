@@ -50,6 +50,9 @@ spec:
              - name: nfs-storage
                subPath: {{ .Values.dataSubPath }}
                mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
+             - name: nfs-storage
+               subPath: {{ .Values.outputSubPath }}
+               mountPath: "/ppml/output"
     Worker:
       replicas: {{ .Values.trainerNum }}
       template:
@@ -82,6 +85,9 @@ spec:
             - name: nfs-storage
               subPath: {{ .Values.dataSubPath }}
               mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
+            - name: nfs-storage
+              subPath: {{ .Values.outputSubPath }}
+              mountPath: "/ppml/output"
             resources:
               requests:
                 cpu: {{ .Values.cpuPerPod }}
