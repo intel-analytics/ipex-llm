@@ -7,6 +7,7 @@ runs:
     - name: Create conda env for llm tests and conduct install tests
       shell: bash
       run: |
+        pip install --upgrade pip
         pip install requests
         if [[ ${{ runner.os }} == 'Linux' ]]; then
           bash python/llm/dev/release_default_linux.sh default false
