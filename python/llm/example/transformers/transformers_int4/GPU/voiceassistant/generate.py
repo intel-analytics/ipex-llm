@@ -17,13 +17,14 @@
 import os
 import torch
 import time
+import intel_extension_for_pytorch as ipex
 import argparse
 import numpy as np
+import inquirer
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers import LlamaTokenizer
-import intel_extension_for_pytorch as ipex
 from transformers import WhisperProcessor
 from transformers import TextStreamer
 from colorama import Fore
@@ -49,10 +50,10 @@ def get_prompt(message: str, chat_history: list[tuple[str, str]],
     texts.append(f'{message} [/INST]')
     return ''.join(texts)
 
-def get_input_features(r):
-    with sr.Microphone(device_index=1, sample_rate=16000) as source:
+def get_input_features(r, device_id):
+    with sr.Microphone(device_index=device_id, sample_rate=16000) as source:
         print("Calibrating...")
-        r.adjust_for_ambient_noise(source, duration=5)
+        r.adjust_for_ambient_noise(source, duration=2)
 
         print(Fore.YELLOW + "Listening now..." + Fore.RESET)
         try:
@@ -60,7 +61,7 @@ def get_input_features(r):
             # refer to https://github.com/openai/whisper/blob/main/whisper/audio.py#L63
             frame_data = np.frombuffer(audio.frame_data, np.int16).flatten().astype(np.float32) / 32768.0
             input_features = processor(frame_data, sampling_rate=audio.sample_rate, return_tensors="pt").input_features
-            input_features = input_features.half().contiguous().to('xpu')
+            input_features = input_features.contiguous().to('xpu')
             print("Recognizing...")
         except Exception as e:
             unrecognized_speech_text = (
@@ -82,6 +83,21 @@ if __name__ == '__main__':
                         help='Max tokens to predict')
 
     args = parser.parse_args()
+
+    # Select device
+    mics = sr.Microphone.list_microphone_names()
+    mics.insert(0, "Default")
+    questions = [
+        inquirer.List('device_name',
+                      message="Which microphone do you choose?",
+                      choices=mics)
+    ]
+    answers = inquirer.prompt(questions)
+    device_name = answers['device_name']
+    idx = mics.index(device_name)
+    device_index = None if idx == 0 else idx - 1
+    print(f"The device name {device_name} is selected.")
+
     whisper_model_path = args.whisper_repo_id_or_model_path
     llama_model_path = args.llama2_repo_id_or_model_path
 
@@ -95,10 +111,10 @@ if __name__ == '__main__':
     # generate token ids
     whisper =  AutoModelForSpeechSeq2Seq.from_pretrained(whisper_model_path, load_in_4bit=True, optimize_model=False)
     whisper.config.forced_decoder_ids = None
-    whisper = whisper.half().to('xpu')
+    whisper = whisper.to('xpu')
     
     llama_model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True, trust_remote_code=True, optimize_model=False)
-    llama_model = llama_model.half().to('xpu')
+    llama_model = llama_model.to('xpu')
     tokenizer = LlamaTokenizer.from_pretrained(llama_model_path)
 
     r = sr.Recognizer()
@@ -107,7 +123,7 @@ if __name__ == '__main__':
         # warm up
         sample = ds[2]["audio"]
         input_features = processor(sample["array"], sampling_rate=sample["sampling_rate"], return_tensors="pt").input_features
-        input_features = input_features.half().contiguous().to('xpu')
+        input_features = input_features.contiguous().to('xpu')
         torch.xpu.synchronize()
         predicted_ids = whisper.generate(input_features)
         torch.xpu.synchronize()
@@ -119,7 +135,7 @@ if __name__ == '__main__':
         torch.xpu.synchronize()
         
         while 1:
-            input_features = get_input_features(r)
+            input_features = get_input_features(r, device_index)
             predicted_ids = whisper.generate(input_features)
             output_str = processor.batch_decode(predicted_ids, skip_special_tokens=True)
             output_str = output_str[0]
