@@ -32,27 +32,3 @@ For better performance, it is recommended to set environment variables on Linux 
 pip install bigdl-nano
 source bigdl-nano-init
 ```
-
-## Environment Setup
-### Conda Installation
-Follow the instructions corresponding to your OS below.
-
-#### Linux
-For Linux users, open a terminal and run below commands.
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash ./Miniconda3-latest-Linux-x86_64.sh
-conda init
-```
->**Note**
-> Follow the instructions popped up on the console until conda initialization finished successfully.
-
-#### Windows
-For Windows users, download conda installer [here](https://docs.conda.io/en/latest/miniconda.html#latest-miniconda-installer-links) and execute it.
-
-
-#### Windows Subsystem for Linux (WSL):
-
-For WSL users, ensure you have already installed WSL2. If not, refer to [here](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/win.html#install-wsl2l) for how to install.
-
-Open a WSL2 shell and run the same commands as in [Linux](#linux) section.

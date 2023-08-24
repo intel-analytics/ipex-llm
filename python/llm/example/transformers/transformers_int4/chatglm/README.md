@@ -12,7 +12,7 @@ To run these examples with BigDL-LLM, we have some recommended requirements for 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](../README.md#conda-installation).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for BigDL-LLM:
 ```bash
@@ -23,6 +23,7 @@ pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
 ```
 
 ### 2. Run
+After setting up the Python environment, you could run the example [generate.py](./generate.py) by following steps.
 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
