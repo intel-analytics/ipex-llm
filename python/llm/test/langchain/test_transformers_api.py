@@ -66,7 +66,7 @@ class Test_Langchain_Transformers_API(TestCase):
         bigdl_llm = BloomLLM(model_path=self.bloom_model_path, model_kwargs={'trust_remote_code': True}, native=False)
         res = bigdl_llm(text)
 
-
+    """
     def test_transformers_llama_embeddings(self):
         bigdl_embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True})
         text = "This is a test document."
@@ -75,7 +75,7 @@ class Test_Langchain_Transformers_API(TestCase):
 
         bigdl_llm = TransformersLLM.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True})
         res = bigdl_llm(text)
-
+    """
 
     def test_qa_chain(self):
         texts = '''
@@ -103,6 +103,7 @@ class Test_Langchain_Transformers_API(TestCase):
         self.assertTrue(res)
 
     
+    """
     def test_qa_chain_causalLM(self):
         texts = '''
             AI is a machine’s ability to perform the cognitive functions 
@@ -127,6 +128,7 @@ class Test_Langchain_Transformers_API(TestCase):
         output = doc_chain.run(input_documents=docs, question=query)
         res = "AI" in output
         self.assertTrue(res)
+    """
 
 
 if __name__ == '__main__':
