@@ -77,3 +77,11 @@ orca.learn.openvino.estimator
     :members:
     :undoc-members:
     :show-inheritance:
+
+orca.learn.mpi.mpi_estimator
+------------------------------
+
+.. autoclass:: bigdl.orca.learn.mpi.MPIEstimator
+    :members:
+    :undoc-members:
+    :show-inheritance:

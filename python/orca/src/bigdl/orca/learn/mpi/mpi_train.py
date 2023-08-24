@@ -61,10 +61,5 @@ else:
     valid_ld = None
     validate_batches = None
 
-# for i in range(epochs):
-#     config["epoch"] = i
-#     train_func(config, model, train_ld, train_batches, optimizer, loss, scheduler,
-#                validate_func, valid_ld, metrics, validate_batches, validate_steps)
-
 train_func(config, epochs, model, train_ld, train_batches, optimizer, loss, scheduler,
            validate_func, valid_ld, metrics, validate_batches, validate_steps)
