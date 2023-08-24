@@ -56,7 +56,7 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 - **Trusted ML (Machine Learning)**: with trusted Big Data analytics and ML support, users can run distributed machine learning (such as MLlib, LightGBM) in a secure and trusted fashion.
 - **Trusted DL (Deep Learning)**: with trusted Big Data analytics and DL support, users can run distributed deep learning (such as BigDL, Orca, Nano, and PyTorch, Tensorflow) in a secure and trusted fashion.
 - **Trusted DL Serving**: with trusted DL Serving support, users can run distributed DL serving (such as TorchServe, TF Serving, etc.) in a secure and trusted fashion.
-- **Trusted LLM(Large Language Model)**: with trusted LLM support, users can run distributed LLM serving and fine-tuning with BigDL-LLM in a secure and trusted fashion.
+- **Trusted LLM (Large Language Model)**: with trusted LLM support, users can run distributed LLM serving and fine-tuning with BigDL-LLM in a secure and trusted fashion.
 
 ## 3. Getting Started with PPML
 
