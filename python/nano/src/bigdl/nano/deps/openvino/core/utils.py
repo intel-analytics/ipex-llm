@@ -21,13 +21,17 @@ from bigdl.nano.utils.common import compare_version
 from openvino.runtime.passes import Manager
 
 OpenVINO_LESS_2022_3 = compare_version("openvino", operator.lt, "2022.3")
+OpenVINO_2023 = compare_version("openvino", operator.ge, "2023.0")
 
 
 def convert_onnx_to_xml(onnx_file_path, xml_path, precision,
                         logging=True, batch_size=1, **kwargs):
     xml_path = Path(xml_path)
     model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    precision_str = "--data_type FP16" if precision == 'fp16' else ""
+    if OpenVINO_2023:
+        precision_str = "--compress_to_fp16" if precision == 'fp16' else ""
+    else:
+        precision_str = "--data_type FP16" if precision == 'fp16' else ""
     params_str = ""
     for key, value in kwargs.items():
         value = str(value)
@@ -93,11 +97,15 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
 
 def save(model, xml_path):
     xml_path = Path(xml_path)
-    pass_manager = Manager()
-    pass_manager.register_pass(pass_name="Serialize",
-                               xml_path=str(xml_path),
-                               bin_path=str(xml_path.with_suffix(".bin")))
-    pass_manager.run_passes(model)
+    if OpenVINO_2023:
+        from openvino.runtime import serialize
+        serialize(model, xml_path)
+    else:
+        pass_manager = Manager()
+        pass_manager.register_pass(pass_name="Serialize",
+                                   xml_path=str(xml_path),
+                                   bin_path=str(xml_path.with_suffix(".bin")))
+        pass_manager.run_passes(model)
 
 
 def validate_dataloader(model, dataloader):
