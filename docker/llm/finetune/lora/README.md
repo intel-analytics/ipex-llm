@@ -10,7 +10,7 @@ The architecture is illustrated in the following:
 
 As above, BigDL implements its MPI training build on [Kubeflow MPI operator](https://github.com/kubeflow/mpi-operator/tree/master), which encapsulates the deployment as MPIJob CRD, and assists users to handle the construction of a MPI worker cluster on Kubernetes, such as public key distribution, SSH connection, and log collection. 
 
-Now, let's go to deploy a Lora finetuning to create a LLM from Llama.
+Now, let's go to deploy a Lora finetuning to create a LLM from Llama 7b.
 
 **Note: Please make sure you have already have an available Kubernetes infrastructure and NFS shared storage, and install [Helm CLI](https://helm.sh/docs/helm/helm_install/) for Kubernetes job submission.**
 
