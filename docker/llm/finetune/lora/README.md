@@ -28,7 +28,7 @@ As finetuning is from a base model, first download [Llama 7b hf model from the p
 
 You are allowed to edit and experiment with different parameters in `./kubernetes/values.yaml` to improve finetuning performance and accuracy. For example, you can adjust `trainerNum` and `cpuPerPod` according to node and CPU core numbers in your cluster to make full use of these resources, and different `microBatchSize` result in different training speed and loss (here note that `microBatchSize`×`trainerNum` should not more than 128, as it is the batch size).
 
-**Note: ``dataSubPath`, `modelSubPath` and `outputPath` need to have the same names as files under the NFS directory in step 2. **
+** Note: `dataSubPath`, `modelSubPath` and `outputPath` need to have the same names as files under the NFS directory in step 2. **
 
 After preparing parameters in `./kubernetes/values.yaml`, submit the job as beflow:
 
