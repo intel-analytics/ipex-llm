@@ -8,7 +8,7 @@ if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
   export DATA_PATH="/ppml/data/$DATA_SUB_PATH"
-  export MODEL_SAVE_PATH="/ppml/model/finetuned_model_output"
+  export MODEL_SAVE_PATH="/ppml/model/output"
   sleep 10
   mpirun \
     -n $WORLD_SIZE \

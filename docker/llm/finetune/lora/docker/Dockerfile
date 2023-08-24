@@ -7,7 +7,7 @@ ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ADD ./requirements.txt /ppml/requirements.txt
 
-RUN mkdir /ppml/data && mkdir /ppml/model && \
+RUN mkdir /ppml/data && mkdir /ppml/model && mkdir /ppml/output && \
 # install pytorch 2.0.1
     export http_proxy=$HTTP_PROXY && \
     export https_proxy=$HTTPS_PROXY && \
@@ -54,4 +54,5 @@ RUN mkdir /ppml/data && mkdir /ppml/model && \
 
 ADD ./bigdl-lora-finetuing-entrypoint.sh /ppml/bigdl-lora-finetuing-entrypoint.sh
 ADD ./lora_finetune.py /ppml/lora_finetune.py
-RUN chown -R mpiuser:mpiuser /ppml
+RUN chown -R mpiuser /ppml
+USER mpiuser
