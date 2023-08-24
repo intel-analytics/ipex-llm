@@ -31,7 +31,7 @@ jobs:
       matrix:
         python-version: ["3.9"]
         instruction: ["AVX512"]
-    runs-on: [ self-hosted, llm,"${{matrix.instruction}}", ubuntu-20.04-lts ]
+    runs-on: [ self-hosted, llm, perf ]
     env:
       THREAD_NUM: 24
     steps:
