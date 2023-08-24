@@ -48,7 +48,7 @@ Among these security technologies, [Confidential computing](https://www.intel.co
 PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS), and optional Federated Learning support. 
 
 <p align="left">
-  <img src="https://user-images.githubusercontent.com/61072813/177922914-f670111c-e174-40d2-b95a-aafe92485024.png" alt="data lifecycle" width='600px' />
+  <img src="https://github.com/intel-analytics/BigDL/assets/60865256/c5cde022-b530-4019-ade5-8adf3f5a02b2" alt="data lifecycle" width='800px' />
 </p>
 
 With BigDL PPML, you can run trusted Big Data & AI applications
