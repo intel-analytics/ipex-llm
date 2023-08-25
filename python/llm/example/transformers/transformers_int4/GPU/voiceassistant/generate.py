@@ -21,6 +21,7 @@ import intel_extension_for_pytorch as ipex
 import argparse
 import numpy as np
 import inquirer
+import sounddevice
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
