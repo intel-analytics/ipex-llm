@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.utils.log4Error import invalidInputError
+import logging
 
-invalidInputError(False,
-                  "TF1 API has been deprecated, you may use TF2 Estimator instead.")
+logging.warning("TF1 API has been deprecated, you may use TF2 Estimator instead.")

@@ -21,13 +21,13 @@ from bigdl.orca.tfpark import TFDataset
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from typing import TYPE_CHECKING, Optional, Any
+import logging
 if TYPE_CHECKING:
     from bigdl.orca.data.tf.data import MapDataset
     from pyspark.rdd import RDD
 
 
-invalidInputError(False,
-                  "TF1 API has been deprecated, you may use TF2 Estimator instead.")
+logging.warning("TF1 API has been deprecated, you may use TF2 Estimator instead.")
 
 
 class TF1Dataset(TFDataset):
