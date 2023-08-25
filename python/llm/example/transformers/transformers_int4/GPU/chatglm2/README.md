@@ -65,3 +65,44 @@ Inference time: xxxx s
 
 答： Artificial Intelligence (AI) refers to the ability of a computer or machine to perform tasks that typically require human-like intelligence, such as understanding language, recognizing patterns
 ```
+
+## Example 2: Stream Chat using `stream_chat()` API
+In the example [streamchat.py](./streamchat.py), we show a basic use case for a ChatGLM2 model to stream chat, with BigDL-LLM INT4 optimizations.
+### 1. Install
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.9
+conda activate llm
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+```
+
+### 2. Configures OneAPI environment variables
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+### 3. Run
+
+For optimal performance on Arc, it is recommended to set several environment variables.
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
+**Stream Chat using `stream_chat()` API**:
+```
+python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION
+```
+
+**Chat using `chat()` API**:
+```
+python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION --disable-stream
+```
+
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the ChatGLM2 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/chatglm2-6b'`.
+- `--question QUESTION`: argument defining the question to ask. It is default to be `"晚上睡不着应该怎么办"`.
+- `--disable-stream`: argument defining whether to stream chat. If include `--disable-stream` when running the script, the stream chat is disabled and `chat()` API is used.
