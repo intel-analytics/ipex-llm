@@ -15,12 +15,12 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer, GenerationConfig
-import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/spaces/mosaicml/mpt-30b-chat/blob/main/app.py
@@ -46,7 +46,7 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=False,
                                                  trust_remote_code=True)
-    model = model.half().to('xpu')
+    model = model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -56,6 +56,11 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = MPT_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict)
+
+        # start inference
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
         # to obtain optimal performance with BigDL-LLM INT4 optimizations,
