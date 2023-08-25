@@ -58,8 +58,8 @@ class MPIEstimator:
         :param config: A parameter config dict, that plays a role of
                configuration to create model, loss, optimizer, scheduler and data.
                Default: None if no config is needed.
-        :param init_func: A function takes the parameter "config" to init the distributed environment
-                for MPI if any.
+        :param init_func: A function takes the parameter "config" to init the distributed
+                environment for MPI if any.
         :param hosts: host information to be run distributedly.
                It can be None, 'all' or list of hostname/ip.
                If hosts is None, means it runs on single(self) node.
