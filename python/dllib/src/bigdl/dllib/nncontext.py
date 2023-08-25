@@ -766,15 +766,12 @@ def init_spark_conf(conf=None):
         if 'PYSPARK_SUBMIT_ARGS' in os.environ:
             submit_args = os.environ['PYSPARK_SUBMIT_ARGS']
             start = submit_args.find('pyspark-shell')
-            submit_args = submit_args[:start] +
-                          "--driver-class-path " +
-                          os.environ["BIGDL_JARS"] +
-                          submit_args[start:]
+            submit_args = submit_args[:start] + "--driver-class-path " +
+                        os.environ["BIGDL_JARS"] + submit_args[start:]
         else:
             submit_args = f" --driver-class-path {os.environ['BIGDL_JARS']} pyspark-shell "
         print("pyspark_submit_args is:", submit_args)
         os.environ['PYSPARK_SUBMIT_ARGS'] = submit_args
-
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
     # This is a workaround for current Spark on k8s
