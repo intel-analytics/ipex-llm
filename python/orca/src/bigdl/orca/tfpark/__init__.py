@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+import logging
+
+logging.warning("TF1 API has been deprecated, you may use TF2 Estimator instead.")
 
 def check_tf_version():
     import logging
