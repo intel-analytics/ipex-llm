@@ -43,7 +43,8 @@ class MPIEstimator:
                  env=None):
         """
         Create Orca MPI Estimator
-        :param model_creator: A model creator function that takes the parameter "config" and returns a model
+        :param model_creator: A model creator function that takes the parameter "config"
+               and returns a model
         :param optimizer_creator: An optimizer creator function that has two parameters "model" and
                "config" and returns a optimizer.
         :param loss_creator: An creater function to return a loss.
@@ -57,9 +58,11 @@ class MPIEstimator:
         :param config: A parameter config dict, that plays a role of
                configuration to create model, loss, optimizer, scheduler and data.
                Default: None if no config is needed.
-        :param init_func: A function takes the parameter "config" to init the distributed environment for MPI if any
-        :param hosts: host information to be run distributedly.It can be None, 'all' or list of hostname/ip.
-               If hosts is None, means run it on singel(self) node.
+        :param init_func: A function takes the parameter "config" to init the distributed environment
+                for MPI if any.
+        :param hosts: host information to be run distributedly.
+               It can be None, 'all' or list of hostname/ip.
+               If hosts is None, means it runs on single(self) node.
                If hosts is 'all', it will get executor hosts from current Spark Context.
                Default: None.
         :param workers_per_node: The number of workers on each node.
@@ -91,19 +94,17 @@ class MPIEstimator:
                that takes config as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
-        :param batch_size: Total batch size for all workers used for training. Each worker's batch
-               size would be this value divide the total number of workers. Default is 32.
+        :param batch_size: Batch size on each workers used for training. Default is 32.
                If your training data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader.
         :param validation_data: validation data. Validation data type should be the same
                as train data.
-        :param validate_batch_size: Total batch size for all workers used for validation. Each worker's batch
-               size would be this value divide the total number of workers. Default is 32.
+        :param validate_batch_size: Each worker's batch size for validation. Default is 32.
                If your training data is a function, you can set batch_size to be the input
                batch_size of the function for the PyTorch DataLoader
         :param train_func: Specific training loop to take parameters "config", "epochs", "model",
-               "train_ld", "train_batches", "optimizer", "loss", "scheduler", "validate_func", "valid_ld",
-                "metrics", "validate_batches" and "validate_steps".
+               "train_ld", "train_batches", "optimizer", "loss", "scheduler",
+               "validate_func", "valid_ld", "metrics", "validate_batches" and "validate_steps".
                Default: None to use our default training loop
         :param validate_func: Specific validate function.
                Default: None to use our default validation function.
