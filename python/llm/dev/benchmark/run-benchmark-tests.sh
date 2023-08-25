@@ -18,10 +18,5 @@ if [ ! -d $ORIGINAL_LLAMA2_PATH ]; then
 fi
 
 echo ">>> Testing LLAMA2 transformers API"
-std=$(taskset -c 0-$((THREAD_NUM - 1)) python python/llm/dev/benchmark/pipelines/llama2_test.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH)
-echo "the output of the example is: " 
-echo $std
-if [[ ! $std == *"AI is a term"* ]]; then
-    echo "The expected output is not met."
-    return 1
-fi
+taskset -c 0-$((THREAD_NUM - 1)) python python/llm/dev/benchmark/pipelines/llama2_test.py --repo-id-or-model-path $ORIGINAL_LLAMA2_PATH
+

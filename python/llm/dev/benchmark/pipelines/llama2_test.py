@@ -83,6 +83,7 @@ if __name__ == '__main__':
         print('-'*20, 'Output', '-'*20)
         print(output_str)
         
+        assert "AI is a term" in output_str, "output is not as expected, the correctness may be wrong."
         llama2_baseline = os.getenv('LLAMA2_BASELINE')
         if llama2_baseline is None:
             print('baseline is not set, skipping baseline validation')
