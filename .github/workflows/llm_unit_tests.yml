@@ -107,24 +107,24 @@ jobs:
       - name: Download ckpt & original models
         shell: bash
         run: |
-          if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
+          if [ ! -e $LLAMA_INT4_CKPT_PATH ]; then
             echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
             echo "wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin -P $INT4_CKPT_DIR"
             wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin -P $INT4_CKPT_DIR
           fi
-          if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
+          if [ ! -e $GPTNEOX_INT4_CKPT_PATH ]; then
             echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin -P $INT4_CKPT_DIR
           fi
-          if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
+          if [ ! -e $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin -P $INT4_CKPT_DIR
           fi
-          if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
+          if [ ! -e $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin -P $INT4_CKPT_DIR
           fi
-          # if [ ! -d $CHATGLM_INT4_CKPT_PATH ]; then
+          # if [ ! -e $CHATGLM_INT4_CKPT_PATH ]; then
           #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
           #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $INT4_CKPT_DIR
           # fi
