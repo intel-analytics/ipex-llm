@@ -126,11 +126,14 @@ def setup_package():
                             "torchvision==0.14.1",
                             "intel_extension_for_pytorch==1.13.100;platform_system=='Linux'"]
 
-    # This is for xpu support (currently we only support 1.13)
-    # should be installed with -f https://developer.intel.com/ipex-whl-stable-xpu
-    pytorch_113_xpu_requires = ["torch==1.13.0a0",
+    # xpu should be installed with -f https://developer.intel.com/ipex-whl-stable-xpu
+    pytorch_113_xpu_requires = ["torch==1.13.0a0+git6c9b55e",
                                 "torchvision==0.14.1a0",
-                                "intel_extension_for_pytorch==1.13.10+xpu;platform_system=='Linux'"]
+                                "intel_extension_for_pytorch==1.13.120+xpu;platform_system=='Linux'"]
+
+    pytorch_20_xpu_requires = ["torch==2.0.1a0",
+                               "torchvision==0.15.2a0",
+                               "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'"]
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",
@@ -226,6 +229,7 @@ def setup_package():
                         "pytorch_111": pytorch_111_requires,
                         "pytorch_110": pytorch_110_requires,
                         "pytorch_113_xpu": pytorch_113_xpu_requires,
+                        "pytorch_20_xpu": pytorch_20_xpu_requires,
                         "pytorch_nightly": pytorch_nightly_requires,
                         "inference": inference_requires},
         package_data={"bigdl.nano": package_data},

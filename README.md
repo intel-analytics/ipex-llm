@@ -9,11 +9,11 @@ _**Fast, Distributed, Secure AI for Big Data**_
 ---
 ## Latest News
 
-- **Try the latest [`bigdl-llm`](python/llm) for running LLM (language language model) on your Intel laptop using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
+- **Try the latest [`bigdl-llm`](python/llm) library for running LLM (large language model) on your Intel laptop using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
 
 <p align="center">
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models2.png" width='76%'/>
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png" width='76%'/>
 </p>
 
 - **[Update] Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
@@ -23,9 +23,11 @@ _**Fast, Distributed, Secure AI for Big Data**_
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
+- [LLM](python/llm): Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
+
 - [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
-- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on XPU
+- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
 
 - [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 
@@ -33,7 +35,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Friesian](#friesian): End-to-End Recommendation Systems
 
-- [PPML](#ppml): Secure Big Data and AI (with SGX Hardware Security)
+- [PPML](#ppml): Secure Big Data and AI (with SGX/TDX Hardware Security)
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
@@ -47,13 +49,15 @@ flowchart TD;
     Feature1-- "Yes"  -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature2-- Python -->Feature3{{What type of application?}};
     Feature2-- Scala/Java -->ReferDLlib([<em><strong>DLlib</strong></em>]);
-    Feature3-- "Distributed Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
+    Feature3-- "Large Language Model" -->ReferLLM([<em><strong>LLM</strong></em>]);
+    Feature3-- "Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
     Feature3-- Accelerate TensorFlow / PyTorch -->ReferNano([<em><strong>Nano</strong></em>]);
     Feature3-- DL for Spark MLlib -->ReferDLlib2([<em><strong>DLlib</strong></em>]);
     Feature3-- High Level App Framework -->Feature4{{Domain?}};
     Feature4-- Time Series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- Recommender System -->ReferFriesian([<em><strong>Friesian</strong></em>]);
     
+    click ReferLLM "https://github.com/intel-analytics/bigdl/tree/main/python/llm"
     click ReferNano "https://github.com/intel-analytics/bigdl#nano"
     click ReferOrca "https://github.com/intel-analytics/bigdl#orca"
     click ReferDLlib "https://github.com/intel-analytics/bigdl#dllib"
@@ -64,7 +68,7 @@ flowchart TD;
     
     classDef ReferStyle1 fill:#5099ce,stroke:#5099ce;
     classDef Feature fill:#FFF,stroke:#08409c,stroke-width:1px;
-    class ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
+    class ReferLLM,ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
     class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
     
 ```

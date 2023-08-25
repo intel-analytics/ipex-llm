@@ -25,6 +25,9 @@
       - [2. Spark security configurations](#2-spark-security-configurations)
         - [2.1 Spark RPC](#21-spark-rpc)
       - [3 env MALLOC\_ARENA\_MAX explanations](#3-env-malloc_arena_max-explanations)
+    - [Spark Operator](#spark-operator)
+      - [Install the Operator Using Helm Chart](#install-the-operator-using-helm-chart)
+      - [Run Spark applications](#run-spark-applications)
   - [TDXVM](#tdxvm)
     - [1. Deploy PCCS](#1-deploy-pccs)
     - [2. Deploy BigDL Remote Attestation Service](#2-deploy-bigdl-remote-attestation-service)
@@ -100,10 +103,10 @@ Then, use the `enclave-key.pem` and the bigdata base image to build your own cus
 The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values used to register your MREnclave in the following.
 
 ````bash
-......
-[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
-mr_enclave       : c7a8a42af......
-mr_signer        : 6f0627955......
+Attributes:
+    mr_enclave:  56ba......
+    mr_signer:   422c......
+........
 ````
 ### 2. Prepare SSL key
 
@@ -843,6 +846,151 @@ If you use k8s to run spark distributedly, you can set it by this:
 ```
 
 You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
+
+### Spark Operator
+
+Except for Spark Submit, [Spark Operator](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator) is another way to run Spark application on k8s cluster.
+
+#### Install the Operator Using Helm Chart
+
+```bash
+helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
+
+helm install my-release spark-operator/spark-operator --namespace spark-operator --create-namespace --set image.tag=v1beta2-1.3.3-3.1.1 --set webhook.enable=true --set webhook.port=443
+
+helm status --namespace spark-operator my-release
+```
+
+#### Run Spark applications
+There is a template for running Spark applications:
+
+```yaml
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-pi-gramine
+  namespace: default
+spec:
+  type: Scala
+  mode: cluster
+  image: "intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT"
+  imagePullPolicy: Always
+  mainClass: org.apache.spark.examples.SparkPi
+  mainApplicationFile: "local:///ppml/spark-3.1.3/examples/jars/spark-examples_2.12-3.1.3.jar"
+  sparkVersion: 3.1.3
+  arguments:
+    - "100"
+  restartPolicy:
+    type: Never
+  volumes:
+  - name: device-plugin
+    hostPath:
+      path: /var/lib/kubelet/device-plugins
+  - name: aesm-socket
+    hostPath:
+      path: /var/run/aesmd/aesm.socket
+  - name: secure-keys
+    secret:
+      secretName: ssl-keys
+  - name: kubeconfig
+    secret:
+      secretName: kubeconfig-secret
+  driver:
+    cores: 8
+    memory: "4g"
+    serviceAccount: spark
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      - name: MALLOC_ARENA_MAX
+        value: "4"
+      - name: RUNTIME_DRIVER_MEMORY
+        value: "1g"
+      - name: SGX_ENABLED
+        value: "true"
+      - name: ATTESTATION
+        value: "false"
+      - name: SGX_DRIVER_MEM_SIZE
+        value: "16G"
+      - name: SGX_DRIVER_JVM_MEM_SIZE
+        value: "1G"
+      - name: SGX_EXECUTOR_MEM_SIZE
+        value: "32G"
+      - name: SGX_EXECUTOR_JVM_MEM_SIZE
+        value: "3G"
+      - name: SGX_LOG_LEVEL
+        value: "error"
+      - name: SPARK_DRIVER_MEMORY
+        value: "1024m"
+    volumeMounts:
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: secure-keys
+        mountPath: /ppml/keys
+      - name: kubeconfig
+        mountPath: /root/.kube
+  executor:
+    cores: 8
+    instances: 2
+    memory: "4g"
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      - name: MALLOC_ARENA_MAX
+        value: "4"
+      - name: RUNTIME_DRIVER_MEMORY
+        value: "1g"
+      - name: SGX_ENABLED
+        value: "true"
+      - name: ATTESTATION
+        value: "false"
+      - name: SGX_DRIVER_MEM_SIZE
+        value: "16G"
+      - name: SGX_DRIVER_JVM_MEM_SIZE
+        value: "1G"
+      - name: SGX_EXECUTOR_MEM_SIZE
+        value: "32G"
+      - name: SGX_EXECUTOR_JVM_MEM_SIZE
+        value: "3G"
+      - name: SGX_LOG_LEVEL
+        value: "error"
+      - name: SPARK_DRIVER_MEMORY
+        value: "1024m"
+    volumeMounts:
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: secure-keys
+        mountPath: /ppml/keys
+  sparkConf:
+    "spark.kubernetes.executor.deleteOnTermination": "false"
+    "spark.network.timeout": "10000000"
+    "spark.executor.heartbeatInterval": "10000000"
+    "spark.python.use.daemon": "false"
+    "spark.python.worker.reuse": "false"
+```
+
+Assuming the yaml file name is `spark-pi-gramine.yaml`, you can use the command  `kubectl apply -f spark-pi-gramine.yaml` to run Spark Pi application on Gramine. After that, you can use following commands to check whether the spark pi is running normally:
+```bash
+kubectl get sparkapplications
+
+kubectl describe sparkapplications <name_of_spark_application>
+
+kubectl get pods
+
+kubectl logs <name_of_pod>
+
+kubectl describe <name_of_pod>
+```
+
+For more information about Spark Operator, please refer to [Quick Start Guide](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/blob/master/docs/quick-start-guide.md) and [User Guide](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/blob/master/docs/user-guide.md).
 
 ## TDXVM
 

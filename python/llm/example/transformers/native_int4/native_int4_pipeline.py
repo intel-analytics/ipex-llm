@@ -16,6 +16,7 @@
 
 import time
 import argparse
+from bigdl.llm.transformers import *
 
 
 def convert(repo_id_or_model_path, model_family, tmp_path):
@@ -31,17 +32,30 @@ def convert(repo_id_or_model_path, model_family, tmp_path):
     return bigdl_llm_path
 
 def load(model_path, model_family, n_threads):
-    from bigdl.llm.transformers import BigdlNativeForCausalLM
-    llm = BigdlNativeForCausalLM.from_pretrained(
+    model_family_to_class = {
+        "llama": LlamaForCausalLM,
+        "gptneox": GptneoxForCausalLM,
+        "bloom": BloomForCausalLM,
+        "starcoder": StarcoderForCausalLM,
+        "chatglm": ChatGLMForCausalLM
+    }
+
+    if model_family in model_family_to_class:
+        llm_causal = model_family_to_class[model_family]
+    else:
+        raise ValueError(f"Unknown model family: {model_family}")
+
+    llm = llm_causal.from_pretrained(
         pretrained_model_name_or_path=model_path,
-        model_family=model_family,
+        native=True,
+        dtype="int4",
         n_threads=n_threads)
 
     return llm
 
 def inference(llm, repo_id_or_model_path, model_family, prompt):
 
-    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder']:
+    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder', 'chatglm']:
         # ------ Option 1: Use bigdl-llm based tokenizer
         print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
         st = time.time()
@@ -95,9 +109,9 @@ def main():
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--model-family', type=str, default='llama', required=True,
-                        choices=["llama", "llama2", "bloom", "gptneox", "starcoder"],
+                        choices=["llama", "llama2", "bloom", "gptneox", "starcoder", "chatglm"],
                         help="The model family of the large language model (supported option: 'llama', 'llama2', "
-                             "'gptneox', 'bloom', 'starcoder')")
+                             "'gptneox', 'bloom', 'starcoder', 'chatglm')")
     parser.add_argument('--repo-id-or-model-path', type=str, required=True,
                         help='The path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Once upon a time, there existed a little girl who liked to have adventures. ',
@@ -116,7 +130,6 @@ def main():
     bigdl_llm_path = convert(repo_id_or_model_path=repo_id_or_model_path,
                              model_family=args.model_family,
                              tmp_path=args.tmp_path)
-    
     
     # Step 2: load int4 model
     llm = load(model_path=bigdl_llm_path,

@@ -28,8 +28,6 @@ COPY --from=temp /ppml/bash.manifest /ppml/bash.manifest
 # 2.2 output mr_enclave and mr_signer to customer
 RUN cd /ppml && \
     sed -i 's#loader.env.PYTHONPATH = "/usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src"#loader.env.PYTHONPATH = "/usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src:/ppml/FastChat"#' /ppml/bash.manifest.template && \
-    echo "[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:" && \
-    gramine-sgx-quote-dump -m bash.sig|grep mr_enclave && \
-    gramine-sgx-quote-dump -m bash.sig|grep mr_signer
+    gramine-sgx-get-token --output bash.token --sig bash.sig
 
 WORKDIR /ppml

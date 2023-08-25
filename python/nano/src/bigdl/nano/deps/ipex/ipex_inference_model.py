@@ -182,7 +182,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
     @staticmethod
     def _load(path, model, input_sample=None, inplace=False):
         status = PytorchIPEXJITModel._load_status(path)
-        checkpoint_path = path / status['checkpoint']
+        if isinstance(path, dict):
+            checkpoint_path = path[status['checkpoint']]
+        else:
+            checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
             if status['compression'] == "bf16":
                 invalidInputError(model is not None,
