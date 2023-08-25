@@ -115,6 +115,7 @@ def init_ray_if_not(redis_address, redis_password):
 
 
 def write_to_ray(idx, partition, redis_address, redis_password, partition_store_names):
+    import pandas
     init_ray_if_not(redis_address, redis_password)
     ip = ray._private.services.get_node_ip_address()
     local_store_name = None
