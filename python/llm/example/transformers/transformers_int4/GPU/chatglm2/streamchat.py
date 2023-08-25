@@ -26,7 +26,7 @@ from transformers import AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Stream Chat for ChatGLM2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="/mnt/disk1/models/chatglm2-6b",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm2-6b",
                         help='The huggingface repo id for the ChatGLM2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--question', type=str, default="晚上睡不着应该怎么办",
