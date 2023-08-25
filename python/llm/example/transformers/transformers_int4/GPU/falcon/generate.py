@@ -46,7 +46,7 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=False,
                                                  trust_remote_code=True)
-    model = model.half().to('xpu')
+    model = model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -56,6 +56,12 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = FALCON_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict)
+
+        # start inference
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
