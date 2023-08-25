@@ -15,12 +15,12 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
-import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model,
 FALCON_PROMPT_FORMAT = "<human> {prompt} <bot>"

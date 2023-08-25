@@ -26,7 +26,7 @@ from transformers import AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Stream Chat for ChatGLM2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm2-6b",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="/mnt/disk1/models/chatglm2-6b",
                         help='The huggingface repo id for the ChatGLM2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--question', type=str, default="晚上睡不着应该怎么办",
@@ -51,6 +51,13 @@ if __name__ == '__main__':
                                               trust_remote_code=True)
 
     with torch.inference_mode():
+        prompt = args.question
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(input_ids,
+                                max_new_tokens=32)
+
+        # start inference
         if disable_stream:
             # Chat
             response, history = model.chat(tokenizer, args.question, history=[])
