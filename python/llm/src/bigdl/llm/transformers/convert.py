@@ -94,7 +94,6 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-
 def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_quant_linear(
