@@ -252,12 +252,12 @@ jobs:
         shell: bash
         run: |
           scl enable gcc-toolset-12 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
-          scl enable gcc-toolset-12 "cmake --build build --config Release"
+          scl enable gcc-toolset-12 "cmake --build build --config Release -j"
           # build chatglm
           source activate python39 || conda activate python39
           cd src/chatglm
           scl enable gcc-toolset-12 "cmake -B build"
-          scl enable gcc-toolset-12 "cmake --build build --config Release"
+          scl enable gcc-toolset-12 "cmake --build build --config Release -j"
       - name: Move amx release binary
         shell: bash
         run: |
