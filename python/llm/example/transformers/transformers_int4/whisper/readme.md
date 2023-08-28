@@ -27,6 +27,17 @@ Arguments info:
 - `--repo-id-or-data-path REPO_ID_OR_DATA_PATH`: argument defining the huggingface repo id for the audio dataset to be downloaded, or the path to the huggingface dataset folder. It is default to be `'hf-internal-testing/librispeech_asr_dummy'`.
 - `--language LANGUAGE`: argument defining language to be transcribed. It is default to be `english`.
 
+The Whisper model is intrinsically designed to work on audio samples of up to 30s in duration. For audio recordings longer than 30 seconds, it is possible to enable batched inference with `pipeline` method:
+```
+python ./long-segment-recognize.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --audio-file PATH_TO_THE_AUDIO_FILE --language LANGUAGE --chunk-length CHUNK_LENGTH
+```
+
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Whisper model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openai/whisper-medium'`.
+- `--audio-file PATH_TO_THE_AUDIO_FILE`: argument defining the path of the audio file to be recognized.
+- `--language LANGUAGE`: argument defining language to be transcribed. It is default to be `english`.
+- `--chunk-length CHUNK_LENGTH`: argument defining The maximum number of chuncks of sampling_rate samples used to trim and pad longer or shorter audio sequences. It is default to be 30.
+
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the Whisper model based on the capabilities of your machine.
@@ -35,6 +46,9 @@ Arguments info:
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
 python ./recognize.py 
+
+# Long Segment Recognize
+python ./long-segment-recognize.py --audio-file extracted_audio.wav 
 ```
 
 #### 2.2 Server
@@ -48,6 +62,9 @@ source bigdl-nano-init
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
 numactl -C 0-47 -m 0 python ./recognize.py
+
+# Long Segment Recognize
+numactl -C 0-47 -m 0 python ./long-segment-recognize.py --audio-file extracted_audio.wav 
 ```
 
 #### 2.3 Sample Output
@@ -57,4 +74,10 @@ numactl -C 0-47 -m 0 python ./recognize.py
 Inference time: xxxx s
 -------------------- Output --------------------
 [" Mr. Quilter is the Apostle of the Middle classes and we're glad to welcome his Gospel."]
+```
+
+For audio file(.wav) download from https://www.youtube.com/watch?v=-LIIf7E-qFI, it should be extracted as:
+```log
+inference time is xxxx s
+ I don't know who you are. I don't know what you want. If you're looking for ransom, I can tell you I don't have money. But what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now, that'll be the end of it. I will not look for you. I will not pursue you. But if you don't, I will look for you. I will find you. And I will kill you. Good luck.
 ```
