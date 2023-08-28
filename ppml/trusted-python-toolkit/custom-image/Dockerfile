@@ -24,12 +24,6 @@ COPY --from=temp /ppml/bash.manifest.sgx /ppml/bash.manifest.sgx
 COPY --from=temp /ppml/bash.sig /ppml/bash.sig
 COPY --from=temp /ppml/bash.manifest /ppml/bash.manifest
 
-# 2.2 output mr_enclave and mr_signer to customer
-RUN cd /ppml && \
-    echo "[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:" && \
-    gramine-sgx-quote-view -m bash.sig|grep mr_enclave && \
-    gramine-sgx-quote-view -m bash.sig|grep mr_signer
-
 WORKDIR /ppml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

@@ -43,7 +43,4 @@ runs:
     # - name: Test chatglm llm-cli
     #   shell: bash
     #   run: |
-    #     source $CONDA_HOME/bin/activate bigdl-llm-test
-    #     $CONDA_HOME/bin/conda info
-
     #     llm-cli -t $THREAD_NUM -n 256 -x chatglm -m $CHATGLM_INT4_CKPT_PATH -p '你好'

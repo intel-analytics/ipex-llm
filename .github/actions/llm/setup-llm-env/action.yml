@@ -8,7 +8,14 @@ runs:
       shell: bash
       run: |
         pip install requests
-        bash python/llm/dev/release_default_linux.sh default false
+        if [[ ${{ runner.os }} == 'Linux' ]]; then
+          bash python/llm/dev/release_default_linux.sh default false
+        elif [[ ${{ runner.os }} == 'Windows' ]]; then
+          bash python/llm/dev/release_default_windows.sh default false
+        else
+          echo "Runner os is not supported!!!!!"
+          exit 1
+        fi
         whl_name=$(ls python/llm/dist)
         pip install -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
         pip install pytest

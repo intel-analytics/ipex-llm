@@ -247,7 +247,7 @@ class LinearQuant(nn.Linear):
             if x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
                 x_2d = x_2d.half()
             # input format of linear_q4.forward is 1: input, 2: weight
-            result = linear_q4_0.forward(x_2d, x0)
+            result = linear_q4_0.forward(x_2d, x0, self.qtype)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
