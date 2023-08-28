@@ -10,7 +10,10 @@ The BigDL Project
 ---------------------------------
 BigDL-LLM: low-Bit LLM library
 ---------------------------------
-`bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ is a library for running **LLM** (large language model) on your Intel **laptop** or **GPU** using INT4 with very low latency [*]_ (for any **PyTorch** model).
+
+.. raw:: html
+
+   <p><a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on your Intel <strong>laptop</strong> or <strong>GPU</strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).</p>
 
 .. note::
 
@@ -151,4 +154,12 @@ Choosing the right BigDL library
 
 ------
 
-.. [*] Performance varies by use, configuration and other factors. ``bigdl-llm`` may not optimize to the same degree for non-Intel products. Learn more at `www.Intel.com/PerformanceIndex <http://www.intel.com/PerformanceIndex>`_.
+.. raw:: html
+
+    <div>
+        <p>
+            <sup><a href="#ref-perf" id="footnote-perf">[1]</a>
+                Performance varies by use, configuration and other factors. <code><span>bigdl-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="http://www.intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>
+            </sup>
+        </p>
+    </div>

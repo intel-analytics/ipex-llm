@@ -1,8 +1,11 @@
 BigDL-LLM
 =========================
 
+.. raw:: html
 
-**BigDL-LLM** is a library for running **LLM** (Large Language Models) on your Intel **laptop** using INT4 with very low latency [*]_ (for any Hugging Face *Transformers* model).
+    <p>
+        <strong>BigDL-LLM</strong> is a library for running <strong><em>LLM</em></strong> (Large Language Models) on your Intel <strong><em>laptop</em></strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any Hugging Face <em>Transformers</em> model).
+    </p>
 
 See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and ``starcoder-15b`` models on a 12th Gen Intel Core CPU below.
 
@@ -84,8 +87,16 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
 
 ------
 
-.. [*] Performance varies by use, configuration and other factors. ``bigdl-llm`` may not optimize to the same degree for non-Intel products. Learn more at `www.Intel.com/PerformanceIndex <http://www.intel.com/PerformanceIndex>`_.
+.. raw:: html
 
+    <div>
+        <p>
+            <sup><a href="#ref-perf" id="footnote-perf">[1]</a>
+                Performance varies by use, configuration and other factors. <code><span>bigdl-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="http://www.intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>
+            </sup>
+        </p>
+    </div>
+                                        
 ..  toctree::
     :hidden:
 
