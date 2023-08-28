@@ -43,34 +43,32 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-### HUMAN:
-What is AI?
+<s>[INST] <<SYS>>
 
-### RESPONSE:
+<</SYS>>
 
+What is AI? [/INST]
 -------------------- Output --------------------
-### HUMAN:
-What is AI?
+[INST] <<SYS>>
 
-### RESPONSE:
+<</SYS>>
 
-AI is a term used to describe the development of computer systems that can perform tasks that typically require human intelligence, such as understanding natural language, recognizing images
+What is AI? [/INST]  Artificial intelligence (AI) is the broader field of research and development aimed at creating machines that can perform tasks that typically require human intelligence,
 ```
 
 #### [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-### HUMAN:
-What is AI?
+<s>[INST] <<SYS>>
 
-### RESPONSE:
+<</SYS>>
 
+What is AI? [/INST]
 -------------------- Output --------------------
-### HUMAN:
-What is AI?
+[INST] <<SYS>>
 
-### RESPONSE:
+<</SYS>>
 
-AI, or artificial intelligence, refers to the ability of machines to perform tasks that would typically require human intelligence, such as learning, problem-solving,
+What is AI? [/INST]  AI stands for Artificial Intelligence, which refers to the ability of machines or computers to perform tasks that would typically require human intelligence, such as
 ```
