@@ -1,6 +1,8 @@
 BigDL-LLM Key Features
 ================================
 
+You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
+
 * |transformers_style_api|_
 
   * `Hugging Face Format <./hugging_face_format.html>`_
