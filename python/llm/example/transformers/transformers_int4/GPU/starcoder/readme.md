@@ -39,10 +39,6 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'def print_hello_world():'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading.
->
-> Please select the appropriate size of the StarCoder model based on the capabilities of your machine.
-
 #### Sample Output
 #### [bigcode/starcoder](https://huggingface.co/bigcode/starcoder)
 ```log
@@ -51,7 +47,7 @@ The attention mask and the pad token id were not set. As a consequence, you may 
 Setting `pad_token_id` to `eos_token_id`:0 for open-end generation.
 The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
 Setting `pad_token_id` to `eos_token_id`:0 for open-end generation.
-Inference time: 1.8966729640960693 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 def print_hello_world():
 -------------------- Output --------------------
