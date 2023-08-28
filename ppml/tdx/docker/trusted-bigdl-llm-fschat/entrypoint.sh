@@ -14,7 +14,7 @@ usage() {
   echo "WORKER_HOST (default: localhost)."
   echo "WORKER_PORT (default: 21002)."
   echo "MODEL_PATH (default: empty)."
-  echo "ENABLE_ATTESTATION (default: empty)."
+  echo "ENABLE_ATTESTATION_API (default: empty)."
   exit 1
 }
 
@@ -174,7 +174,7 @@ else
     model_path=$MODEL_PATH
   fi
 
-  if [[ $ENABLE_ATTESTATION = "true" ]]; then
+  if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
     attest_flag="--attest"
   fi
 
