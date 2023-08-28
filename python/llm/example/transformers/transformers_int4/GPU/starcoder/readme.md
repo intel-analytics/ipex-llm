@@ -46,5 +46,22 @@ Arguments info:
 #### Sample Output
 #### [bigcode/starcoder](https://huggingface.co/bigcode/starcoder)
 ```log
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [02:07<00:00, 18.23s/it]
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:0 for open-end generation.
+The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Setting `pad_token_id` to `eos_token_id`:0 for open-end generation.
+Inference time: 1.8966729640960693 s
+-------------------- Prompt --------------------
+def print_hello_world():
+-------------------- Output --------------------
+def print_hello_world():
+    print("Hello World!")
 
+
+def print_hello_name(name):
+    print(f"Hello {name}!")
+
+
+def print_
 ```

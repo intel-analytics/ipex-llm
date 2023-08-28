@@ -24,11 +24,21 @@ from transformers import LlamaTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-LLAMA2_PROMPT_FORMAT = """### HUMAN:
-{prompt}
-
-### RESPONSE:
+DEFAULT_SYSTEM_PROMPT = """\
 """
+
+def get_prompt(message: str, chat_history: list[tuple[str, str]],
+               system_prompt: str) -> str:
+    texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
+    # The first user input is _not_ stripped
+    do_strip = False
+    for user_input, response in chat_history:
+        user_input = user_input.strip() if do_strip else user_input
+        do_strip = True
+        texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
+    message = message.strip() if do_strip else message
+    texts.append(f'{message} [/INST]')
+    return ''.join(texts)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
@@ -56,7 +66,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
