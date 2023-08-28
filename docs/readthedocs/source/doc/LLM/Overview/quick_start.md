@@ -1,1 +1,1 @@
-# BigDL-LLM in 5 Minutes
+# BigDL-LLM in 5 minutes
