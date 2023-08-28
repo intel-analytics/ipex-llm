@@ -28,6 +28,7 @@ import time
 from typing import List, Optional
 import threading
 import uuid
+from bigdl.llm.utils.common import invalidInputError
 
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -125,7 +126,7 @@ class BaseModelWorker:
             "worker_status": self.get_status(),
         }
         r = requests.post(url, json=data)
-        assert r.status_code == 200
+        invalidInputError(r.status_code==200, "Error register to Controller")
 
     def send_heart_beat(self):
         logger.info(
@@ -234,7 +235,7 @@ class ModelWorker(BaseModelWorker):
             awq_config=awq_config,
         )
         self.device = device
-        if self.tokenizer.pad_token == None:
+        if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.context_len = get_context_length(self.model.config)
         self.generate_stream_func = get_generate_stream_function(self.model, model_path)
@@ -467,9 +468,7 @@ if __name__ == "__main__":
 
     if args.gpus:
         if len(args.gpus.split(",")) < args.num_gpus:
-            raise ValueError(
-                f"Larger --num-gpus ({args.num_gpus}) than --gpus {args.gpus}!"
-            )
+            invalidInputError(False, f"Larger --num-gpus ({args.num_gpus}) than --gpus {args.gpus}!")
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
 
     gptq_config = GptqConfig(

@@ -20,6 +20,7 @@ from transformers import AutoTokenizer
 is_fastchat_patched = False
 _mapping_fastchat = None
 
+
 def _get_patch_map():
     global _mapping_fastchat
 
@@ -50,6 +51,7 @@ def load_model_base(self, model_path: str, from_pretrained_kwargs: dict):
     )
     return model, tokenizer
 
+
 def load_model_chatglm(self, model_path: str, from_pretrained_kwargs: dict):
     revision = from_pretrained_kwargs.get("revision", "main")
     # TODO: remove
@@ -62,6 +64,7 @@ def load_model_chatglm(self, model_path: str, from_pretrained_kwargs: dict):
         model_path, trust_remote_code=True, load_in_4bit=True, **from_pretrained_kwargs
     )
     return model, tokenizer
+
 
 class BigDLLLMAdapter(BaseModelAdapter):
     "Model adapter for bigdl-llm backend models"
@@ -84,6 +87,7 @@ class BigDLLLMAdapter(BaseModelAdapter):
             **from_pretrained_kwargs,
         )
         return model, tokenizer
+
 
 def patch_fastchat():
     global is_fastchat_patched
