@@ -271,8 +271,8 @@ jobs:
           mv build/quantize-starcoder amx_release/quantize-starcoder_amx
           mv build/libstarcoder.so amx_release/libstarcoder_amx.so
           # chatglm binary files
-          mv src/chatglm/build/main release/main-chatglm_amx
-          # mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+          mv src/chatglm/build/main amx_release/main-chatglm_amx
+          # mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so amx_release/chatglm_C.cpython-39-x86_64-linux-gnu.so
       - name: Archive amx build files
         uses: actions/upload-artifact@v3
         with:
