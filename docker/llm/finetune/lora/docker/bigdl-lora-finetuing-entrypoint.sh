@@ -8,7 +8,7 @@ if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
   export DATA_PATH="/ppml/data/$DATA_SUB_PATH"
-  export MODEL_SAVE_PATH="/ppml/output"
+  export SAVE_PATH="/ppml/output"
   sleep 10
   mpirun \
     -n $WORLD_SIZE \
@@ -22,9 +22,9 @@ then
     python /ppml/lora_finetune.py \
       --base_model '/ppml/model/'  \
       --data_path "$DATA_PATH" \
-      --output_dir "$MODEL_SAVE_PATH" \
+      --output_dir "$SAVE_PATH/finetuned_model" \
       --micro_batch_size $MICRO_BATCH_SIZE \
-      --bf16 > launcher.log 2>&1
+      --bf16 > $SAVE_PATH/launcher.log 2>&1
   exit_status=$?
   if [ $exit_status -ne 0 ];
   then
