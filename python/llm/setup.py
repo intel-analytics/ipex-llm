@@ -102,6 +102,10 @@ linux_binarys = [
     "libgptneox_avx512.so",
     "libbloom_avx512.so",
     "libstarcoder_avx512.so",
+    "libllama_amx.so",
+    "libgptneox_amx.so",
+    "libbloom_amx.so",
+    "libstarcoder_amx.so",
     "quantize-llama",
     "quantize-gptneox",
     "quantize-bloom",
@@ -116,6 +120,7 @@ linux_binarys = [
     "main-starcoder",
 
     "main-chatglm_vnni",
+    "main-chatglm_amx",
     "chatglm_C.cpython-39-x86_64-linux-gnu.so",
 ]
 
