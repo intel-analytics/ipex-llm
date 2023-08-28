@@ -215,6 +215,76 @@ jobs:
           make clean
           conda remove -n python39 --all -y
 
+  check-linux-amx-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: linux-amx
+
+  linux-build-amx:
+    runs-on: [self-hosted, amx, almalinux8]
+    needs: check-linux-amx-artifact
+    if: needs.check-linux-amx-artifact.outputs.if-exists == 'false'
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Install Build Environment
+        shell: bash
+        run: |
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          yum install -y gcc-toolset-12 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
+      - name: Build amx binary
+        shell: bash
+        run: |
+          scl enable gcc-toolset-12 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-12 "cmake --build build --config Release"
+          # build chatglm
+          source activate python39 || conda activate python39
+          cd src/chatglm
+          scl enable gcc-toolset-12 "cmake -B build"
+          scl enable gcc-toolset-12 "cmake --build build --config Release"
+      - name: Move amx release binary
+        shell: bash
+        run: |
+          mkdir amx_release
+          mv build/quantize-bloom amx_release/quantize-bloom_amx
+          mv build/libbloom.so amx_release/libbloom_amx.so
+          mv build/quantize-llama amx_release/quantize-llama_amx
+          mv build/libllama.so amx_release/libllama_amx.so
+          mv build/quantize-gptneox amx_release/quantize-gptneox_amx
+          mv build/libgptneox.so amx_release/libgptneox_amx.so
+          mv build/quantize-starcoder amx_release/quantize-starcoder_amx
+          mv build/libstarcoder.so amx_release/libstarcoder_amx.so
+          # chatglm binary files
+          mv src/chatglm/build/main amx_release/main-chatglm_amx
+          # mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so amx_release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+      - name: Archive amx build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-amx
+          path: |
+            amx_release
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          make clean
+          conda remove -n python39 --all -y
+          
   check-windows-avx2-artifact:
     runs-on: ubuntu-latest
     outputs:
