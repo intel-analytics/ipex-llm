@@ -126,7 +126,7 @@ class BaseModelWorker:
             "worker_status": self.get_status(),
         }
         r = requests.post(url, json=data)
-        invalidInputError(r.status_code==200, "Error register to Controller")
+        invalidInputError(r.status_code == 200, "Error register to Controller")
 
     def send_heart_beat(self):
         logger.info(
@@ -467,8 +467,8 @@ if __name__ == "__main__":
     logger.info(f"args: {args}")
 
     if args.gpus:
-        if len(args.gpus.split(",")) < args.num_gpus:
-            invalidInputError(False, f"Larger --num-gpus ({args.num_gpus}) than --gpus {args.gpus}!")
+        invalidInputError(len(args.gpus.split(",")) > args.num_gpus, f"Larger --num-gpus "
+                          "({args.num_gpus}) than --gpus {args.gpus}!")
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
 
     gptq_config = GptqConfig(
