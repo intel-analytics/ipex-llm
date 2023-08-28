@@ -28,14 +28,15 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     # Install FastChat from source requires PEP 660 support
     python3 get-pip.py && \
-    rm get-pip.py && \
+    rm get-pip.py 
     # Install FastChat
+RUN cd /ppml && \
     git clone https://github.com/analytics-zoo/FastChat.git && \
     cd /ppml/FastChat && \
-    git checkout dev-2023-08-01 && \
-    pip install -e . && \
+    git checkout attest_0801 && \
+    pip install -e . 
     # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
-    pip install --pre --upgrade gradio==3.36.1 && \
+RUN pip install --pre --upgrade gradio==3.36.1 && \
     pip install --pre --upgrade bigdl-nano && \
     # Install bigdl-ppml
     cd /root && \
@@ -61,6 +62,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
+RUN echo 'port=4050' | tee /etc/tdx-attest.conf
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 
