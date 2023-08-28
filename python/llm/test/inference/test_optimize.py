@@ -22,7 +22,7 @@ import time
 import torch
 from bigdl.llm import optimize_model
         
-class TestTransformersAPI(unittest.TestCase):
+class TestOptimizeAPI(unittest.TestCase):
 
     def setUp(self):        
         thread_num = os.environ.get('THREAD_NUM')
