@@ -28,27 +28,21 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
     patch -R /usr/local/lib/python3.9/dist-packages/bigdl/llm/utils/utils.py /opt/utils.diff && \
     patch -R /usr/local/bin/llm-cli /opt/llm_cli.diff && \
     # Gramine commands
-    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs
-
-
-ADD ./requirements.txt /opt/requirements.txt
-
-# Add bigdl-llm-demo dependencies
-RUN pip3 install -r /opt/requirements.txt && \
-    pip3 install typing-inspect==0.8.0 typing_extensions==4.5.0 && \
-    pip3 install ray==2.3.1 && \
-    pip3 install sentence-transformers --no-deps && \
-    pip3 install cmake ninja cpuid && \
-    pip3 install scikit-build && \
-    pip3 install cchardet && \
-    pip3 install cryptography && \
-    pip3 install pytorch_lightning==1.6.4 && \
-    pip3 uninstall -y torchvision && \
-    pip3 install https://download.pytorch.org/whl/nightly/cpu-cxx11-abi/torch-2.0.0.dev20230228%2Bcpu.cxx11.abi-cp39-cp39-linux_x86_64.whl && \
-    pip3 install --no-cache markupsafe==2.0.1 && \
-    cd /root && \
-    git clone https://github.com/intel-analytics/BigDL.git && \
-    mv /root/BigDL/python/ppml/src/bigdl/ppml/ /usr/local/lib/python3.9/dist-packages/bigdl/ && \
-    rm -rf /root/BigDL
+    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
+    cd /ppml/ && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    # Install FastChat from source requires PEP 660 support
+    python3 get-pip.py && \
+    rm get-pip.py && \
+    # Install FastChat
+    git clone https://github.com/analytics-zoo/FastChat.git && \
+    cd /ppml/FastChat && \
+    git checkout dev-2023-08-01 && \
+    pip install -e . && \
+    # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
+    pip install --pre --upgrade gradio==3.36.1 && \
+    pip install --pre --upgrade bigdl-nano && \
+    apt-get install -y libunwind8-dev && \
+    mkdir /ppml/data
 
 WORKDIR /ppml
