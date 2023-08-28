@@ -26,7 +26,7 @@ model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path="open
 ```
 ## Load Tokenizer
 
-You also need a tokenizer for inference. Just use the official `transformers`` API to load `LlamaTokenizer`:
+You also need a tokenizer for inference. Just use the official `transformers` API to load `LlamaTokenizer`:
 
 ```python
 from transformers import LlamaTokenizer
