@@ -53,10 +53,10 @@ Before running the following command, please modify the paths in `./build-custom
 The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to register your MREnclave in the following.
 
 ```log
-Attributes:
-    mr_enclave:  56ba......
-    mr_signer:   422c......
-........
+......
+[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
+mr_enclave       : c7a8a42af......
+mr_signer        : 6f0627955......
 ```
 
 ## Demo
@@ -80,7 +80,26 @@ In addition, if you want to enable SSL/TLS traffic to protect communication betw
 ![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/be4b17eb-6e4e-43c6-b9d1-5e2d622fbf33)
 
 
-Then, run the helm command to run it on k8s:
+#### Prepare
+
+First, you need to prepare the MAR , which contains model files and process logic. See [this page](https://github.com/pytorch/serve/tree/master/model-archiver) to build the MAR. You should place the MAR under  `/$nfsPath/model/torchserve/`.(`$nfsPath` is set in `service/values.yaml`)
+
+Then, prepare a sample input file to test the server for correct operation. The input file should be in JSON format as shown below:
+
+```json
+{"input":["This tastes good!"]}
+```
+
+We provide MAR encryption function for the security of the model when saved on disk. The encryption algorithms we support are Fernet for model encryption and AES for MAR encryption. To use them, you should prepare the key files and place them under `/$nfsPath/key/torchserve`. Then, several parameters should be set additional when building the MAR.
+```shell
+--encrypted-files Encrypted files that need to be decrypted by fernet with decryption-key.
+--decryption-key Path to key for decrypting model and other files.
+-e/--model-encryption If the model needs to be encrypted.
+--encryption-key Path to key for encrypting MAR.
+```
+#### Run
+
+Download the `servic` directory and run the helm command to run it on k8s:
 
 ```shell
 cd service
@@ -125,4 +144,5 @@ curl https://$clusterIP:$inferencePort/predictions/BERT_LARGE -T sample_input_be
 
 
 ### TensorFlow Serving (WIP)
+
 
