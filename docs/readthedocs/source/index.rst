@@ -151,4 +151,4 @@ Choosing the right BigDL library
 
 ------
 
-.. [*] Performance varies by use, configuration and other factors. ``bigdl-llm`` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
+.. [*] Performance varies by use, configuration and other factors. ``bigdl-llm`` may not optimize to the same degree for non-Intel products. Learn more at `www.Intel.com/PerformanceIndex <http://www.intel.com/PerformanceIndex>`_.
