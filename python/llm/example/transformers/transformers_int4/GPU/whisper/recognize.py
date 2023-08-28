@@ -15,13 +15,14 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers import WhisperProcessor
 from datasets import load_dataset
-import intel_extension_for_pytorch as ipex
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Recognize Tokens using `generate()` API for Whisper model')
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path,
                                                       load_in_4bit=True,
                                                       optimize_model=False)
-    model.half().to('xpu')
+    model.to('xpu')
     model.config.forced_decoder_ids = None
 
     # Load processor
@@ -61,7 +62,7 @@ if __name__ == '__main__':
 
         input_features = processor(sample["array"],
                                    sampling_rate=sample["sampling_rate"],
-                                   return_tensors="pt").input_features.half().to('xpu')
+                                   return_tensors="pt").input_features.to('xpu')
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,

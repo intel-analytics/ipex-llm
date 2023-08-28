@@ -15,12 +15,12 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
-import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
@@ -58,6 +58,11 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict)
+
+        # start inference
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,

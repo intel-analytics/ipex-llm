@@ -15,12 +15,12 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
-import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model
 QWEN_PROMPT_FORMAT = "<human>{prompt} <bot>"
@@ -44,7 +44,7 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=False,
                                                  trust_remote_code=True)
-    model = model.half().to('xpu')
+    model = model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -54,16 +54,17 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = QWEN_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict)
+
+        # start inference
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
-        # if your selected model has `"do_sample": true` in its generation config,
-        # it is important to set `do_sample=False` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
-                                do_sample=False,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()

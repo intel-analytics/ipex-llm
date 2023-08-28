@@ -23,56 +23,50 @@ import numpy as np
 from bigdl.llm.transformers import AutoModel
 from transformers import AutoTokenizer
 
-# you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/THUDM/chatglm2-6b/blob/main/modeling_chatglm.py#L1007
-CHATGLM_V2_PROMPT_FORMAT = "问：{prompt}\n\n答："
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM2 model')
+    parser = argparse.ArgumentParser(description='Stream Chat for ChatGLM2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm2-6b",
                         help='The huggingface repo id for the ChatGLM2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="AI是什么？",
-                        help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
-                        help='Max tokens to predict')
+    parser.add_argument('--question', type=str, default="晚上睡不着应该怎么办",
+                        help='Qustion you want to ask')
+    parser.add_argument('--disable-stream', action="store_true",
+                        help='Disable stream chat')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    disable_stream = args.disable_stream
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModel.from_pretrained(model_path,
                                       load_in_4bit=True,
-                                      optimize_model=False,
-                                      trust_remote_code=True)
-    model = model.to('xpu')
+                                      trust_remote_code=True,
+                                      optimize_model=False)
+    model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
 
-    # Generate predicted tokens
     with torch.inference_mode():
-        prompt = CHATGLM_V2_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = args.question
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
+                                max_new_tokens=32)
 
         # start inference
-        st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
-        output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
-        torch.xpu.synchronize()
-        end = time.time()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        print(f'Inference time: {end-st} s')
-        print('-'*20, 'Prompt', '-'*20)
-        print(prompt)
-        print('-'*20, 'Output', '-'*20)
-        print(output_str)
+        if disable_stream:
+            # Chat
+            response, history = model.chat(tokenizer, args.question, history=[])
+            print('-'*20, 'Chat Output', '-'*20)
+            print(response)
+        else:
+            # Stream chat
+            response_ = ""
+            print('-'*20, 'Stream Chat Output', '-'*20)
+            for response, history in model.stream_chat(tokenizer, args.question, history=[]):
+                print(response.replace(response_, ""), end="")
+                response_ = response

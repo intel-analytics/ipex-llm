@@ -14,6 +14,7 @@ usage() {
   echo "WORKER_HOST (default: localhost)."
   echo "WORKER_PORT (default: 21002)."
   echo "MODEL_PATH (default: empty)."
+  echo "ENABLE_ATTESTATION_API (default: empty)."
   exit 1
 }
 
@@ -102,6 +103,7 @@ worker_port="21002"
 model_path=""
 mode=""
 omp_num_threads=""
+attest_flag=""
 
 # Update rootCA config if needed
 update-ca-certificates
@@ -172,6 +174,10 @@ else
     model_path=$MODEL_PATH
   fi
 
+  if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
+    attest_flag="--attest"
+  fi
+
   controller_address="http://$controller_host:$controller_port"
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
@@ -181,9 +187,9 @@ else
     api_address="http://$api_host:$api_port"
     echo "Controller address: $controller_address"
     echo "OpenAI API address: $api_address"
-    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port &
+    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $attest_flag &
     # Boot openai api server
-    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address
+    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
@@ -210,7 +216,7 @@ else
     fi
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
+    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address $attest_flag
   fi
 fi
 
