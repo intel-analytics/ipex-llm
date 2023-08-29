@@ -7,7 +7,7 @@ To apply Intel® Arc™ A-Series Graphics acceleration, there’re several steps
 Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
 
 Step 2, please refer to our [driver installation](https://dgpu-docs.intel.com/installation-guides/index.html#intel-arc-gpus) for general purpose GPU capabilities.
-> **Note**: IPEX 2.0.110+xpu requires Intel GPU Drivers [Stable 647.21](https://dgpu-docs.intel.com/releases/stable_647_21_20230714.html).
+> **Note**: IPEX 2.0.110+xpu requires Intel GPU Driver version is [Stable 647.21](https://dgpu-docs.intel.com/releases/stable_647_21_20230714.html).
 
 Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html). OneMKL and DPC++ compiler are needed, others are optional.
 > **Note**: IPEX 2.0.110+xpu requires Intel® oneAPI Base Toolkit's version >= 2023.2.0.
