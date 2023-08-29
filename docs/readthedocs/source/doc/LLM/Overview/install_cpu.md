@@ -2,7 +2,7 @@
 
 ## Quick Installation
 
-Install BigDL-LLM for CPU support using pip through:
+Install BigDL-LLM for CPU supports using pip through:
 
 ```bash
 pip install bigdl-llm[all]
@@ -31,7 +31,7 @@ Here list the recommended hardware and OS for smooth BigDL-LLM optimization expe
 
 ## Environment Setup
 
-For optimal performance with LLM models using BigDL-LLM optimizations on Intel CPUs, here are some best practices for setting up environments:
+For optimal performance with LLM models using BigDL-LLM optimizations on Intel CPUs, here are some best practices for setting up environment:
 
 First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 

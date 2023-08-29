@@ -2,7 +2,7 @@
 
 ## Quick Installation
 
-Install BigDL-LLM for GPU support using pip through:
+Install BigDL-LLM for GPU supports using pip through:
 
 ```bash
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
@@ -16,12 +16,12 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 
 ## Recommended Requirements
 
-BigDL-LLM for GPU support has been verified on:
+BigDL-LLM for GPU supports has been verified on:
 
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
 
-To apply Intel GPU acceleration, there're several steps for tools installation and environment preparation.
+To apply Intel GPU acceleration, there're several steps for tools installation and environment preparation:
 
 * Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
 * Step 2, please refer to our [drive installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
@@ -40,7 +40,7 @@ To apply Intel GPU acceleration, there're several steps for tools installation a
 
 ## Environment Setup
 
-For optimal performance with LLM models using BigDL-LLM optimizations on Intel GPUs, here are some best practices for setting up environments:
+For optimal performance with LLM models using BigDL-LLM optimizations on Intel GPUs, here are some best practices for setting up environment:
 
 First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 

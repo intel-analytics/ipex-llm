@@ -28,7 +28,7 @@ model = model.to('xpu')
       model = model.to('xpu')
 ```
 
-After loading the Hugging Face Transformers model, you may easily run the optimized model as follows:
+After loading the Hugging Face *Transformers* model, you may easily run the optimized model as follows:
 
 ```python
 # run the optimized model

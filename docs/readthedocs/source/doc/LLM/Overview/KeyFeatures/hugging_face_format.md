@@ -10,7 +10,7 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 ```
 
-After loading the Hugging Face Transformers model, you may easily run the optimized model as follows:
+After loading the Hugging Face *Transformers* model, you may easily run the optimized model as follows:
 
 ```python
 # run the optimized model
