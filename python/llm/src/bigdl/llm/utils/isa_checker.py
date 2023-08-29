@@ -80,6 +80,7 @@ def check_avx512_vnni():
 def is_server():
     return check_avx512_vnni()
 
+
 # todo: use cpuid to check SPR
 # note: now only SPR supports both avxvnni and avx512vnni
 def is_spr():
