@@ -18,19 +18,20 @@ from .transformers import ggml_convert_quant
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
+
 def optimize_model(model, low_bit, optimize_llm=True):
     """
     A method to optimize any pytorch models.
-    
+
     :param model: The original PyTorch model (nn.module)
-    :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5", 
+    :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
         "asym_int5" or "sym_int8".
     :param optimize_llm: Whether to further optimize llm model.
-        
+
     return: The optimized model.
     """
     invalidInputError(low_bit in ggml_tensor_qtype,
-                    f"Unknown load_in_low_bit value: {low_bit}, expected:"
-                    f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+                      f"Unknown load_in_low_bit value: {low_bit}, expected:"
+                      f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
     qtype = ggml_tensor_qtype[low_bit]
     return ggml_convert_quant(model, qtype=qtype, optimize_model=optimize_llm)
