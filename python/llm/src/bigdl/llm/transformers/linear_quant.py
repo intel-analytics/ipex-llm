@@ -59,7 +59,7 @@ TORCH_LINEAR_THRESHOLD = 96
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
-def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=False):
+def ggml_convert_quant(tensor: torch.Tensor, qtype: int, device=None):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -75,12 +75,12 @@ def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=Fals
                       "Last dim of input tensor must be multiple of 64")
 
     dst_size = (n // QK) * block_size_in_bytes
-    dst_tensor = torch.empty(dst_size, dtype=torch.uint8)
-    dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+    dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                             device=device)
 
-    hist = (ctypes.c_int64 * 16)()
-
-    if not convert_shape_only:
+    if device != 'meta':
+        dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+        hist = (ctypes.c_int64 * 16)()
         ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
@@ -98,14 +98,16 @@ def ggml_int4_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int):
     return dst_tensor
 
 
-class ParamsQuant(torch.nn.Parameter):
+# Rename to FP4Params to trigger initializing
+# the params layer with all parameters on the CPU
+# https://github.com/huggingface/accelerate/blob/main/src/accelerate/utils/modeling.py#L333
+class FP4Params(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
-                requires_grad=True,
+                requires_grad=False,
                 old_data=None,
                 quantized=False,
                 _shape=None,
-                convert_shape_only=False,
                 qtype=None):
         if data is None:
             data = torch.empty(0)
@@ -114,16 +116,14 @@ class ParamsQuant(torch.nn.Parameter):
         self.data = data
         self.quantized = quantized
         self._shape = _shape
-        self.convert_shape_only = convert_shape_only
         self.qtype = qtype
         return self
 
-    def quantize(self, device):
+    def quantize(self, device=None):
         if not self.quantized:
             w = self.data.contiguous().float()
-            # self.old_data = self.data
             w_quantized = ggml_convert_quant(w, self.qtype,
-                                             convert_shape_only=self.convert_shape_only)
+                                             device=device)
             self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
@@ -147,28 +147,29 @@ class ParamsQuant(torch.nn.Parameter):
 
     def to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
-
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
-            return self.quantize(device)
+            return self.quantize(device.type)
+        elif device is not None and device.type == "meta" and self.data.device.type == "meta":
+            return self.quantize(device.type)
         elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
             # enter xpu logic, compile linear_int4 extension at first time
             q_tensor = self.quantize(device)  # tensor is cpu now
-            new_param = ParamsQuant(super().to(device=device,
-                                               dtype=dtype,
-                                               non_blocking=non_blocking),
-                                    requires_grad=self.requires_grad,
-                                    quantized=self.quantized,
-                                    _shape=self._shape,
-                                    qtype=self.qtype)
+            new_param = FP4Params(super().to(device=device,
+                                             dtype=dtype,
+                                             non_blocking=non_blocking),
+                                  requires_grad=self.requires_grad,
+                                  quantized=self.quantized,
+                                  _shape=self._shape,
+                                  qtype=self.qtype)
             return new_param
         else:
-            new_param = ParamsQuant(super().to(device=device,
-                                               dtype=dtype,
-                                               non_blocking=non_blocking),
-                                    requires_grad=self.requires_grad,
-                                    quantized=self.quantized,
-                                    _shape=self._shape,
-                                    qtype=self.qtype)
+            new_param = FP4Params(super().to(device=device,
+                                             dtype=dtype,
+                                             non_blocking=non_blocking),
+                                  requires_grad=self.requires_grad,
+                                  quantized=self.quantized,
+                                  _shape=self._shape,
+                                  qtype=self.qtype)
             return new_param
 
 
@@ -213,9 +214,10 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class LinearQuant(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True):
         super().__init__(input_features, output_features, bias)
-        self.weight = ParamsQuant(self.weight.data, requires_grad=False,
-                                  old_data=self.weight.data,
-                                  quantized=False, _shape=None, qtype=qtype)
+        self.weight = FP4Params(self.weight.data,
+                                requires_grad=False,
+                                old_data=self.weight.data,
+                                quantized=False, _shape=None, qtype=qtype)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
@@ -223,7 +225,6 @@ class LinearQuant(nn.Linear):
         self.qtype = qtype
 
     def forward(self, x: torch.Tensor):
-        # weights are cast automatically as Int8Params, but the bias has to be cast manually
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
