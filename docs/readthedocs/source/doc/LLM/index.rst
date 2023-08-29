@@ -16,6 +16,7 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
         :class: sd-text-center
 
         .. image:: https://github.com/bigdl-project/bigdl-project.github.io/raw/master/assets/chatglm2-6b.gif
+           :target: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif
         
         chatglm2-6b
 
@@ -23,6 +24,7 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
         :class: sd-text-center
 
         .. image:: https://github.com/bigdl-project/bigdl-project.github.io/raw/master/assets/llama-2-13b-chat.gif
+           :target: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif
         
         llama-2-13b-chat
 
@@ -30,6 +32,7 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
         :class: sd-text-center
 
         .. image:: https://github.com/bigdl-project/bigdl-project.github.io/raw/master/assets/llm-15b5.gif
+           :target: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif
         
         starcoder-15.5b
 
