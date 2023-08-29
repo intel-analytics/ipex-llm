@@ -7,7 +7,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 - Intel Data Center GPU Flex Series
 
 ## Recommended Requirements
-To apply Intel® GPU acceleration, there’re several steps for tools installation and environment preparation.
+To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation.
 
 Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
 
