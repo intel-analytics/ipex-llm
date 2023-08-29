@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 import unittest
 import os
 import pytest
@@ -24,7 +23,7 @@ from bigdl.llm import optimize_model
         
 class TestOptimizeAPI(unittest.TestCase):
 
-    def setUp(self):        
+    def setUp(self):   
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
@@ -32,8 +31,14 @@ class TestOptimizeAPI(unittest.TestCase):
             self.n_threads = 2
     
     def test_optimize_whisper(self):
+        dataset_path = os.environ.get('COMMON_VOICE_PATH')
+        reservation_audio = os.path.join(dataset_path,'reservation.mp3')
         import whisper
-        model = whisper.load_model("medium")
-        model = optimize_model(model, load_in_low_bit="sym_int4", optimize_atten=False)
-        result = model.transcribe("extracted_audio.wav", verbose=True, language="English")
-        print(result["text"])
+        model = whisper.load_model("tiny")
+        model = optimize_model(model, low_bit="sym_int4", optimize_llm=False)
+        result = model.transcribe(reservation_audio, verbose=True, language="English")
+        # assert "Reservation" or "reservation" in result["text"]
+        
+        
+if __name__ == '__main__':
+    pytest.main([__file__])
