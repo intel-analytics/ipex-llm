@@ -9,7 +9,7 @@ ARG https_proxy
 
 ADD ./examples/ /ppml/examples
 ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./start-scripts/ /ppml/work/start-scripts
+ADD ./scripts/ /ppml/scripts
 RUN pip3 install --upgrade pip && \
     pip3 install --no-cache-dir flask && \
     pip3 install --no-cache-dir numpy && \
@@ -22,7 +22,7 @@ RUN pip3 install --upgrade pip && \
     pip install --no-cache-dir -U matplotlib && \
     pip install --upgrade "protobuf<=3.20.1" && \
     chmod +x /opt/entrypoint.sh && \
-    chmod +x /ppml/work/start-scripts/* && \
+    chmod +x /ppml/scripts/* && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
 
 WORKDIR /ppml
