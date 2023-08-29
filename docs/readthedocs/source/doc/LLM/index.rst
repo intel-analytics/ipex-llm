@@ -59,7 +59,7 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
         +++
 
         :bdg-link:`transformers-style API <./Overview/KeyFeatures/transformers_style_api.html>` |
-        :bdg-link:`LangChain API <./Overview/KeyFeatures/langchain_api.html>` |
+        :bdg-link:`LangChain API <./Overview/KeyFeatures/langchain_api.html>`
 
     .. grid-item-card::
 
