@@ -1,4 +1,4 @@
-# Model Supports
+# Examples
 
 We may use any Hugging Face *Transfomers* models on `bigdl-llm`, and the following models have been verified on Intel laptops.
 

@@ -60,19 +60,17 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
 
         :bdg-link:`transformers-style API <./Overview/KeyFeatures/transformers_style_api.html>` |
         :bdg-link:`LangChain API <./Overview/KeyFeatures/langchain_api.html>` |
-        :bdg-link:`CLI <./Overview/KeyFeatures/cli.html>`
 
     .. grid-item-card::
 
         **Examples & Tutorials**
         ^^^
 
-        Model Supports contain example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community.
-        Tutorials will provide you in-depth hands-on experience for BigDL-LLM main usage.
+        Examples contain scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community.
 
         +++
 
-        :bdg-link:`Model Supports <./Overview/model_supports.html>`
+        :bdg-link:`Examples <./Overview/examples.html>`
 
     .. grid-item-card::
 

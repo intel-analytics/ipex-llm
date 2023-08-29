@@ -40,9 +40,9 @@ subtrees:
                       - file: doc/LLM/Overview/KeyFeatures/native_format
                         title: "Native Format"
                 - file: doc/LLM/Overview/KeyFeatures/langchain_api
-                - file: doc/LLM/Overview/KeyFeatures/cli
-          - file: doc/LLM/Overview/model_supports
-            title: "Model Supports"
+                # - file: doc/LLM/Overview/KeyFeatures/cli
+          - file: doc/LLM/Overview/examples
+            title: "Examples"
           - file: doc/LLM/Overview/known_issues
             title: "Tips and Known Issues"
           - file: doc/PythonAPI/LLM/index
