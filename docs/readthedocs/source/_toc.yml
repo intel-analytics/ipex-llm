@@ -24,7 +24,7 @@ subtrees:
       title: "LLM"
       subtrees:
         - entries:
-          - file: doc/LLM/Overview/quick_start
+          - file: doc/LLM/Overview/llm
             title: "LLM in 5 minutes"
           - file: doc/LLM/Overview/install
             title: "Installation"
