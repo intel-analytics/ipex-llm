@@ -14,7 +14,7 @@ pip install bigdl-llm[all]
    ``all`` option will trigger installation of all the dependencies for common LLM application development.
 ```
 
-## System Recommendation
+## Recommended Requirements
 
 Here list the recommended hardware and OS for smooth BigDL-LLM optimization experiences on CPU:
 

@@ -48,8 +48,8 @@ subtrees:
                 - file: doc/LLM/Overview/KeyFeatures/gpu_supports
           - file: doc/LLM/Overview/examples
             title: "Examples"
-          - file: doc/LLM/Overview/known_issues
-            title: "Tips and Known Issues"
+          # - file: doc/LLM/Overview/known_issues
+          #   title: "Tips and Known Issues"
           - file: doc/PythonAPI/LLM/index
             title: "API Reference"
 
