@@ -1,4 +1,4 @@
-# BigDL-LLM Installation
+# BigDL-LLM Installation: CPU
 
 ## Quick Installation
 

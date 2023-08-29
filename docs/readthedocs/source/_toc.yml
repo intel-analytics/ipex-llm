@@ -28,6 +28,12 @@ subtrees:
             title: "LLM in 5 minutes"
           - file: doc/LLM/Overview/install
             title: "Installation"
+            subtrees:
+              - entries:
+                - file: doc/LLM/Overview/install_cpu
+                  title: "CPU"
+                - file: doc/LLM/Overview/install_gpu
+                  title: "GPU"
           - file: doc/LLM/Overview/KeyFeatures/index
             title: "Key Features"
             subtrees:
@@ -39,6 +45,7 @@ subtrees:
                       - file: doc/LLM/Overview/KeyFeatures/native_format
                 - file: doc/LLM/Overview/KeyFeatures/langchain_api
                 # - file: doc/LLM/Overview/KeyFeatures/cli
+                - file: doc/LLM/Overview/KeyFeatures/gpu_supports
           - file: doc/LLM/Overview/examples
             title: "Examples"
           - file: doc/LLM/Overview/known_issues
