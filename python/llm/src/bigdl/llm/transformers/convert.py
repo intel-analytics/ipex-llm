@@ -85,12 +85,13 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
-            _, has_been_replaced = _replace_with_quant_linear(
+            _, _flag = _replace_with_quant_linear(
                 module,
                 qtype,
                 modules_to_not_convert,
                 current_key_name,
             )
+            has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
 
 
