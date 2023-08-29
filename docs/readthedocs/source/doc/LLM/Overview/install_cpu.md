@@ -2,43 +2,66 @@
 
 ## Quick Installation
 
-Install BigDL-LLM based on the device you choose:
+Install BigDL-LLM for CPU support using pip through:
+
+```bash
+pip install bigdl-llm[all]
+```
 
 ```eval_rst
-.. tabs::
+.. note::
 
-   .. tab:: CPU
-
-      .. code-block:: bash
-
-         pip install bigdl-llm[all]
-
-   .. tab:: GPU
-
-      .. code-block:: bash
-
-         pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+   ``all`` option will trigger installation of all the dependencies for common LLM application development.
 ```
 
 ## System Recommendation
-Here's a list of recommended hardware and OS.
 
-### ⚠️Hardware
+Here list the recommended hardware and OS for smooth BigDL-LLM optimization experiences on CPU:
 
-* PCs equipped with 12th Gen Intel® Core™ processor or higher, and at least 16GB RAM
-* Servers equipped with Intel® Xeon® processors, at least 32G RAM.
+* Hardware
 
-### ⚠️Operating System
+  * PCs equipped with 12th Gen Intel® Core™ processor or higher, and at least 16GB RAM
+  * Servers equipped with Intel® Xeon® processors, at least 32G RAM.
 
-* Ubuntu 20.04 or later
-* CentOS 7 or later
-* Windows 10/11, with or without WSL
+* Operating System
 
-## Environment Management
+  * Ubuntu 20.04 or later
+  * CentOS 7 or later
+  * Windows 10/11, with or without WSL
 
-We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment and install necessary libs.
+## Environment Setup
+
+For optimal performance with LLM models using BigDL-LLM optimizations on Intel CPUs, here are some best practices for setting up environments:
+
+First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
 ```bash
 conda create -n llm python=3.9
 conda activate llm
+
+pip install bigdl-llm[all] # install bigdl-llm for CPU with 'all' option
+```
+
+Then for running a LLM model with BigDL-LLM optimizations (taking an `example.py` an example):
+
+```eval_rst	
+.. tabs::
+
+   .. tab:: Client
+
+      It is recommended to run directly with full utilization of all CPU cores:
+
+      .. code-block:: bash
+
+         python example.py
+
+   .. tab:: Server
+
+      It is recommended to run with all the physical cores of a single socket:
+
+      .. code-block:: bash
+
+         # e.g. for a server with 48 cores per socket
+         export OMP_NUM_THREADS=48
+         numactl -C 0-47 -m 0 python example.py
 ```
