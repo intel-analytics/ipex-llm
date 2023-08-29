@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           scl enable gcc-toolset-11 "cmake -B build"
-          scl enable gcc-toolset-11 "cmake --build build --config Release"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move release binary
         shell: bash
         run: |
@@ -97,7 +97,7 @@ jobs:
           source activate python39 || conda activate python39
           cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
-          scl enable gcc-toolset-11 "cmake --build build --config Release"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move Chatglm binaries
         shell: bash
         run: |
@@ -152,7 +152,7 @@ jobs:
         shell: bash
         run: |
           scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
-          scl enable gcc-toolset-11 "cmake --build build --config Release"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move avx512 release binary
         shell: bash
         run: |
@@ -169,7 +169,7 @@ jobs:
         shell: bash
         run: |
           scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=ON -B build"
-          scl enable gcc-toolset-11 "cmake --build build --config Release"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move avx2 release binary
         shell: bash
         run: |
@@ -182,7 +182,7 @@ jobs:
         shell: bash
         run: |
           scl enable gcc-toolset-11 "cmake -DONLYAVX=ON -DONLYAVX2=OFF -B build"
-          scl enable gcc-toolset-11 "cmake --build build --config Release"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move avx release binary
         shell: bash
         run: |
@@ -252,12 +252,12 @@ jobs:
         shell: bash
         run: |
           scl enable gcc-toolset-12 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
-          scl enable gcc-toolset-12 "cmake --build build --config Release"
+          scl enable gcc-toolset-12 "cmake --build build --config Release -j"
           # build chatglm
           source activate python39 || conda activate python39
           cd src/chatglm
           scl enable gcc-toolset-12 "cmake -B build"
-          scl enable gcc-toolset-12 "cmake --build build --config Release"
+          scl enable gcc-toolset-12 "cmake --build build --config Release -j"
       - name: Move amx release binary
         shell: bash
         run: |
@@ -321,7 +321,7 @@ jobs:
         shell: powershell
         run: |
           cmake .
-          cmake --build . --config Release
+          cmake --build . --config Release -j
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -369,7 +369,7 @@ jobs:
         shell: powershell
         run: |
           cmake -DAVXVNNI=ON .
-          cmake --build . --config Release
+          cmake --build . --config Release -j
       - name: Move release binary
         shell: powershell
         run: |
@@ -395,7 +395,7 @@ jobs:
         run: |
           cd src/chatglm
           cmake -DAVXVNNI=ON -B build
-          cmake --build build --config Release
+          cmake --build build --config Release -j
       - name: Move Chatglm binaries
         shell: powershell
         run: |
@@ -444,7 +444,7 @@ jobs:
         shell: powershell
         run: |
           cmake -DONLYAVX=ON .
-          cmake --build . --config Release
+          cmake --build . --config Release -j
       - name: Move release binary
         shell: powershell
         run: |
