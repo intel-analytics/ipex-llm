@@ -36,9 +36,7 @@ subtrees:
                   subtrees:
                     - entries:
                       - file: doc/LLM/Overview/KeyFeatures/hugging_face_format
-                        title: "Hugging Face Format"
                       - file: doc/LLM/Overview/KeyFeatures/native_format
-                        title: "Native Format"
                 - file: doc/LLM/Overview/KeyFeatures/langchain_api
                 # - file: doc/LLM/Overview/KeyFeatures/cli
           - file: doc/LLM/Overview/examples

@@ -1,4 +1,4 @@
-# `transformers`-style API: Hugging Face Format
+# Hugging Face ``transformers`` Format
 
 ## Load in Low Precision
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows:

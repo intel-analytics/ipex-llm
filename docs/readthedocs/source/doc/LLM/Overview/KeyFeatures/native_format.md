@@ -1,11 +1,11 @@
-# `transformers`-style API: Native Format
+# Native Format
 
 You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
 ```eval_rst
 .. note::
 
-   Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; you may use the corresponding API to load the converted model. (For other models, you can use the Hugging Face format as described `here <./hugging_face_format.html>`_).
+   Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; you may use the corresponding API to load the converted model. (For other models, you can use the Hugging Face ``transformers`` format as described `here <./hugging_face_format.html>`_).
 ```
 
 ```python

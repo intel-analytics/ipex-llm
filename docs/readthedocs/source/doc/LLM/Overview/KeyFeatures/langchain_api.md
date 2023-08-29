@@ -2,7 +2,7 @@
 
 You may run the models using the LangChain API in `bigdl-llm`.
 
-## Using Hugging Face INT4 Format
+## Using Hugging Face `transformers` INT4 Format
 
 You may run any Hugging Face *Transformers* model (with INT4 optimiztions applied) using the LangChain API as follows:
 
