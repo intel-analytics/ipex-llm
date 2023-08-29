@@ -14,18 +14,14 @@
 # limitations under the License.
 #
 
-import gc
 import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, \
     load_state_dict, \
-    load, \
-    get_local_shard_files, \
-    fix_key
+    get_local_shard_files
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from bigdl.llm.utils.common import invalidInputError, MuteHFLogger
-import sys
-import importlib
+from bigdl.llm.utils.common import invalidInputError
+import torch
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -33,6 +29,15 @@ def save_low_bit(self, *args, **kwargs):
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
     self.save_pretrained(*args, **kwargs)
+    import json
+    import os
+    # We conveniently save all the keys of the model to have them on hand,
+    # so that when using 'low_cpumem load',
+    # it's not necessary to load the entire model to extract its keys
+    # and we can avoid gc not triggered potentially.
+    load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
+    with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
+        json.dump(load_keys, json_file)
 
 
 class _BaseAutoModelClass:
@@ -106,11 +111,44 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_low_bit(cls,
-                     *args,
+                     pretrained_model_name_or_path,
+                     *model_args,
                      **kwargs):
-        # Read bigdl_transformers_low_bit from config.json
-        pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
-            if len(args) == 0 else args[0]
+        from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
+        from transformers.dynamic_module_utils import resolve_trust_remote_code, \
+            get_class_from_dynamic_module
+        from transformers.models.auto.configuration_auto import AutoConfig
+        from transformers.utils.generic import ContextManagers
+        from transformers.generation.configuration_utils import GenerationConfig
+        from transformers.models.auto.auto_factory import _get_model_class
+        from accelerate.big_modeling import init_empty_weights
+        from .convert import ggml_convert_quant
+        import copy
+        import os
+
+        # Autofactory
+        trust_remote_code = kwargs.pop("trust_remote_code", None)
+        kwargs_orig = copy.deepcopy(kwargs)
+
+        config, kwargs = AutoConfig.from_pretrained(
+            pretrained_model_name_or_path,
+            return_unused_kwargs=True,
+            trust_remote_code=trust_remote_code,
+            **kwargs,
+        )
+
+        # if torch_dtype=auto was passed here, ensure to pass it on
+        if kwargs_orig.get("torch_dtype", None) == "auto":
+            kwargs["torch_dtype"] = "auto"
+
+        # Maybe needed when extract_local_archive_file
+        subfolder = kwargs.get("subfolder", "")
+        variant = kwargs.get("variant", None)
+        offload_folder = kwargs.pop("offload_folder", None)
+        offload_state_dict = kwargs.pop("offload_state_dict", False)
+        torch_dtype = kwargs.pop("torch_dtype", "auto")
+        sharded_metadata = None
+
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
 
@@ -123,89 +161,130 @@ class _BaseAutoModelClass:
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
 
-        # Speed up when loading model
-        kwargs["low_cpu_mem_usage"] = True
-
-        # set default torch_dtype='auto'
-        kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
-
         # set default optimize_model=True
         optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
-        # Note that the int4 linear layers cannot currently
-        # be recorded in huggingface Pretrained Model or AutoConfig,
-        # and huggingface transformers cls.HF_Model.from_pretrained
-        # could only restore the model in the original format,
-        # which is not quantized. we can Initialize original model first,
-        # convert the model to quantized int4 format later, and then load the quantized model.
 
-        # Avoid KeyError
-        kwargs["ignore_mismatched_sizes"] = True
+        has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
+        has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
+        trust_remote_code = resolve_trust_remote_code(
+            trust_remote_code, pretrained_model_name_or_path, has_local_code, has_remote_code
+        )
+        if has_remote_code and trust_remote_code:
+            class_ref = config.auto_map[cls.HF_Model.__name__]
+            model_class = get_class_from_dynamic_module(
+                class_ref, pretrained_model_name_or_path,  **kwargs
+            )
+            if os.path.isdir(pretrained_model_name_or_path):
+                model_class.register_for_auto_class(cls.HF_Model.__name__)
+            else:
+                cls.HF_Model.register(config.__class__, model_class, exist_ok=True)
+        elif type(config) in cls.HF_Model._model_mapping.keys():
+            model_class = _get_model_class(config, cls.HF_Model._model_mapping)
 
-        # Maybe needed when extract_local_archive_file
-        subfolder = kwargs.get("subfolder", "")
-        variant = kwargs.get("variant", None)
-
-        from .convert import ggml_convert_quant
-
-        with MuteHFLogger(logger=transformers.modeling_utils.logger):
-            model = cls.HF_Model.from_pretrained(*args, **kwargs)
-
-        # add save_low_bit to pretrained model dynamically
-        import types
-        model.save_low_bit = types.MethodType(save_low_bit, model)
-
-        # We forcefully modify the model's definition
-        # and the tensor shape of int4 weights without quantization.
-        model = ggml_convert_quant(model, qtype, optimize_model, convert_shape_only=True)
-        # Load the quantized model at last.
         resolved_archive_file, is_sharded = extract_local_archive_file(
             pretrained_model_name_or_path,
             subfolder,
             variant)
+
         if is_sharded:
             resolved_archive_file, sharded_metadata = \
                 get_local_shard_files(pretrained_model_name_or_path,
                                       resolved_archive_file,
                                       subfolder=subfolder)
-            start_prefix = ""
-            prefix = model.base_model_prefix
-            loaded_keys = [fix_key(key) for key in sharded_metadata["all_checkpoint_keys"]]
-            if len(prefix) > 0:
-                has_prefix_module = any(s.startswith(prefix) for s in loaded_keys)
-            else:
-                has_prefix_module = False
 
-            model_cls = type(model)
-            if len(model_cls.base_model_prefix) > 0 and \
-                not hasattr(model, model_cls.base_model_prefix) and \
-                    has_prefix_module:
-                start_prefix = model_cls.base_model_prefix + "."
-            from transformers.modeling_utils import _load_state_dict_into_model
-            error_msgs = []
-            for shard_file in resolved_archive_file:
-                state_dict = load_state_dict(shard_file)
-                error_msgs += _load_state_dict_into_model(model, state_dict, start_prefix)
-                # force memory release
-                del state_dict
-                gc.collect()
+        # set dtype to instantiate the model under:
+        # 1. If torch_dtype is not None, we use that dtype
+        # 2. If torch_dtype is "auto", we auto-detect dtype from the loaded state_dict,
+        #    by checking its first weights entry that is of a floating type
+        #    - we assume all floating dtype weights are of the same dtype
+        # we also may have config.torch_dtype available, but we won't rely on it till v5
+        dtype_orig = None
 
-            if len(error_msgs) > 0:
-                error_msg = "\n\t".join(error_msgs)
-                if "size mismatch" in error_msg:
-                    error_msg += (
-                        "\n\tYou may consider adding `ignore_mismatched_sizes=True`"
-                        " in the model `from_pretrained` method."
-                    )
-                invalidInputError(False, "Error(s) in loading state_dict"
-                                         f"for {model.__class__.__name__}:\n\t{error_msg}")
+        if torch_dtype is not None:
+            if isinstance(torch_dtype, str):
+                if torch_dtype == "auto":
+                    if hasattr(config, "torch_dtype") and config.torch_dtype is not None:
+                        torch_dtype = config.torch_dtype
 
+                    else:
+                        if is_sharded and "dtype" in sharded_metadata:
+                            torch_dtype = sharded_metadata["dtype"]
+                        else:
+                            one_state_dict = load_state_dict(resolved_archive_file[0])
+                            torch_dtype = get_state_dict_dtype(one_state_dict)
+                            del one_state_dict  # free CPU memory
+                else:
+                    invalidInputError(False,
+                                      f'`torch_dtype` can be either `torch.dtype` or `"auto"`,'
+                                      'but received {torch_dtype}')
+            dtype_orig = model_class._set_default_torch_dtype(torch_dtype)
+
+        # Pretrained Model
+        _fast_init = kwargs.pop("_fast_init", True)
+        init_contexts = [no_init_weights(_enable=_fast_init)]
+        init_contexts.append(init_empty_weights())
+
+        with ContextManagers(init_contexts):
+            model = model_class(config, *model_args, **kwargs)
+
+        model = ggml_convert_quant(model, qtype, optimize_model, device="meta")
+
+        if is_sharded:
+            loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
         else:
-            state_dict = load_state_dict(resolved_archive_file)
-            load(model, state_dict)
-            del state_dict
+            import os
+            import json
+            with open(os.path.join(pretrained_model_name_or_path,
+                                   "load_keys.json"), "r") as json_file:
+                loaded_data = json.load(json_file)
+            loaded_state_dict_keys = loaded_data["all_checkpoint_keys"]
 
+        # restore default dtype
+        if dtype_orig is not None:
+            torch.set_default_dtype(dtype_orig)
+
+        (
+            model,
+            missing_keys,
+            unexpected_keys,
+            mismatched_keys,
+            offload_index,
+            error_msgs,
+        ) = model_class._load_pretrained_model(
+            model,
+            None,
+            loaded_state_dict_keys,  # XXX: rename?
+            resolved_archive_file,
+            pretrained_model_name_or_path,
+            sharded_metadata=sharded_metadata,
+            _fast_init=_fast_init,
+            low_cpu_mem_usage=True,
+            offload_folder=offload_folder,
+            offload_state_dict=offload_state_dict,
+            dtype=torch_dtype,
+            keep_in_fp32_modules=[],
+        )
+
+        # make sure token embedding weights are still tied if needed
+        model.tie_weights()
+
+        # Set model in evaluation mode to deactivate DropOut modules by default
+        model.eval()
+
+        # If it is a model with generation capabilities, attempt to load the generation config
+        if model.can_generate():
+            try:
+                model.generation_config = GenerationConfig.from_pretrained(
+                    pretrained_model_name_or_path,
+                    subfolder=subfolder,
+                    **kwargs,
+                )
+            except (OSError, TypeError):
+                pass
+        for param in model.parameters():
+            param.requires_grad_(False)
         return model
 
 
