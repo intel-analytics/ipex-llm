@@ -1,11 +1,6 @@
 includes:
   - base.yaml
 targets:
-  - target: /
-    copy:
-      - dirs:
-          # python examples
-          - /opt/py-examples
   # JVM and class file
   - target: /usr/lib/jvm
     copy:
@@ -24,11 +19,6 @@ targets:
           - /lib/x86_64-linux-gnu/libnss_dns.so.2
           - /lib/x86_64-linux-gnu/libnss_files.so.2
           - /lib/x86_64-linux-gnu/libgomp.so.1
-  # Prepare BigDL
-  - target: /bin
-    copy:
-      - dirs:
-          - $BIGDL_HOME/jars
   # etc files
   - target: /etc
     copy:

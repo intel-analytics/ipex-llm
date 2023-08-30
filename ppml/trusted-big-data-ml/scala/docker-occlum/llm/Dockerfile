@@ -48,11 +48,11 @@ RUN apt-get update && \
     apt-get clean
 
 # Prepare BigDL
-RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
-    chmod a+x ./download-bigdl.sh && \
-    ./download-bigdl.sh && \
-    rm bigdl*.zip
+#RUN cd /opt && \
+#    wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
+#    chmod a+x ./download-bigdl.sh && \
+#    ./download-bigdl.sh && \
+#    rm bigdl*.zip
 
 # Copy scripts & other files
 ADD ./run_llm_on_occlum_glibc.sh /opt/run_llm_on_occlum_glibc.sh
