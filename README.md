@@ -9,14 +9,16 @@ _**Fast, Distributed, Secure AI for Big Data**_
 ---
 ## Latest News
 
-- **Try the latest [`bigdl-llm`](python/llm) library for running LLM (large language model) on your Intel laptop using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
+- **Try the latest [`bigdl-llm`](python/llm) library for running LLM (large language model) on your Intel laptop or GPU using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), etc., and supports any Hugging Face Transformers model)*
 
 <p align="center">
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png" width='76%'/>
 </p>
 
-- **[Update] Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
+- **[Update] `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](https://github.com/jason-dai/BigDL/tree/main/python/llm/example/gpu).**
+
+- **Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
 
 ---
 ## Overview
