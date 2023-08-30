@@ -1,0 +1,26 @@
+diff --git a/ppml/trusted-big-data-ml/scala/docker-occlum/llm/utils.py b/ppml/trusted-big-data-ml/scala/docker-occlum/llm/utils.py
+index 317de87c60..2f1f4e729f 100644
+--- a/ppml/trusted-big-data-ml/scala/docker-occlum/llm/utils.py
++++ b/ppml/trusted-big-data-ml/scala/docker-occlum/llm/utils.py
+@@ -161,14 +161,14 @@ def get_encoder_name():
+     """
+     Return enconder default application for system, either avconv or ffmpeg
+     """
+-    if which("avconv"):
+-        return "avconv"
+-    elif which("ffmpeg"):
+-        return "ffmpeg"
+-    else:
++    #if which("avconv"):
++    #    return "avconv"
++    #elif which("ffmpeg"):
++    return "ffmpeg"
++    #else:
+         # should raise exception
+-        warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+-        return "ffmpeg"
++    #    warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
++    #    return "ffmpeg"
+ 
+ 
+ def get_player_name():

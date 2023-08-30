@@ -90,6 +90,12 @@ RUN cd /opt && \
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
 ENV PATH=$PATH:/opt/miniconda/bin
+
+#patch for utils.py and cpuinfo.py
+ADD ./utils.diff /opt/utils.diff
+ADD ./cpuinfo.diff /opt/cpuinfo.diff
+RUN patch /opt/python-occlum/lib/python3.9/site-packages/pydub/utils.py /opt/utils.diff && \
+    patch /opt/python-occlum/lib/python3.9/site-packages/cpuinfo/cpuinfo.py /opt/cpuinfo.diff --ignore-whitespace
 #ADD ./py-examples /opt/py-examples
 
 # Prepare Bigdl python libs
