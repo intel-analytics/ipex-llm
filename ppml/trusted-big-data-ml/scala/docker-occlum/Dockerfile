@@ -176,7 +176,7 @@ RUN cd /opt && \
     tar -zxvf jindosdk-4.6.8-linux.tar.gz && \
     rm /opt/jindosdk-4.6.8-linux/lib/jindo-core-linux*
 
-FROM jessehui/occlum:occlum-ubuntu20.04-edmm-experiment-v2 as ppml
+FROM jessehui/occlum:occlum-ubuntu20.04-edmm-experiment-v6 as ppml
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION=2.4.0-SNAPSHOT

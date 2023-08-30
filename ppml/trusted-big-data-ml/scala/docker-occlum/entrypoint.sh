@@ -114,6 +114,7 @@ case "$SPARK_K8S_CMD" in
             -XX:-UseCompressedOops \
             -Djdk.lang.Process.launchMechanism=vfork \
             -cp "$SPARK_CLASSPATH" \
+            -Xms10m \
             -Xmx$SGX_DRIVER_JVM_MEM_SIZE \
             -XX:ActiveProcessorCount=4 \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
@@ -138,7 +139,7 @@ case "$SPARK_K8S_CMD" in
             -XX:-UseCompressedOops \
             -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
             -Divy.home=/tmp/.ivy \
-            -Xms$SPARK_EXECUTOR_MEMORY \
+            -Xms10m \
             -Xmx$SPARK_EXECUTOR_MEMORY \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
@@ -159,7 +160,7 @@ case "$SPARK_K8S_CMD" in
             -XX:-UseCompressedOops \
             -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
             -Divy.home=/tmp/.ivy \
-            -Xms$SGX_EXECUTOR_JVM_MEM_SIZE \
+            -Xms10m \
             -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE \
             -Dos.name=Linux \
             -Dio.netty.availableProcessors=$NETTY_THREAD \
