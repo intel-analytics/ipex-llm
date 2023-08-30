@@ -1,9 +1,12 @@
 ## BigDL-LLM
 
-**`bigdl-llm`** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** using INT4 with very low latency[^1] (for any Hugging Face *Transformers* model).
+**`bigdl-llm`** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** or ***GPU*** using INT4 with very low latency[^1] (for any Hugging Face *Transformers* model).
 
->*(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.)*
+> *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
+### Latest update
+ - `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](https://github.com/jason-dai/BigDL/tree/main/python/llm/example/gpu).
+    
 ### Demos
 See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
 
