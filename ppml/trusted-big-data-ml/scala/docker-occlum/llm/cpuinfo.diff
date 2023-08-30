@@ -1,30 +1,16 @@
-diff --git a/ppml/trusted-big-data-ml/scala/docker-occlum/llm/cpuinfo.py b/ppml/trusted-big-data-ml/scala/docker-occlum/llm/cpuinfo.py
-index 802451a77c..a3fd215164 100644
---- a/ppml/trusted-big-data-ml/scala/docker-occlum/llm/cpuinfo.py
-+++ b/ppml/trusted-big-data-ml/scala/docker-occlum/llm/cpuinfo.py
-@@ -360,11 +360,11 @@ def _read_windows_registry_key(key_name, field_name):
- # Make sure we are running on a supported system
- def _check_arch():
-     arch, bits = _parse_arch(DataSource.arch_string_raw)
--    if not arch in ['X86_32', 'X86_64', 'ARM_7', 'ARM_8',
--                    'PPC_64', 'S390X', 'MIPS_32', 'MIPS_64',
--                    "RISCV_32", "RISCV_64"]:
--        raise Exception("py-cpuinfo currently only works on X86 "
--                        "and some ARM/PPC/S390X/MIPS/RISCV CPUs.")
-+    #if not arch in ['X86_32', 'X86_64', 'ARM_7', 'ARM_8',
-+        #           'PPC_64', 'S390X', 'MIPS_32', 'MIPS_64',
-+        #            "RISCV_32", "RISCV_64"]:
-+        #raise Exception("py-cpuinfo currently only works on X86 "
-+        #               "and some ARM/PPC/S390X/MIPS/RISCV CPUs.")
- 
- def _obj_to_b64(thing):
-     import pickle
-@@ -999,7 +999,7 @@ class CPUID(object):
-             trace = Trace(False, False)
- 
-         # Figure out if SE Linux is on and in enforcing mode
--        self.is_selinux_enforcing = _is_selinux_enforcing(trace)
-+        self.is_selinux_enforcing = False
- 
-     def _asm_func(self, restype=None, argtypes=(), machine_code=[]):
-         asm = ASM(restype, argtypes, machine_code)
+363,367c363,367
+< 	if not arch in ['X86_32', 'X86_64', 'ARM_7', 'ARM_8',
+< 	               'PPC_64', 'S390X', 'MIPS_32', 'MIPS_64',
+< 				   "RISCV_32", "RISCV_64"]:
+< 		raise Exception("py-cpuinfo currently only works on X86 "
+< 		                "and some ARM/PPC/S390X/MIPS/RISCV CPUs.")
+---
+> #	if not arch in ['X86_32', 'X86_64', 'ARM_7', 'ARM_8',
+> #	               'PPC_64', 'S390X', 'MIPS_32', 'MIPS_64',
+> #				   "RISCV_32", "RISCV_64"]:
+> #		raise Exception("py-cpuinfo currently only works on X86 "
+> #		                "and some ARM/PPC/S390X/MIPS/RISCV CPUs.")
+1002c1002
+< 		self.is_selinux_enforcing = _is_selinux_enforcing(trace)
+---
+> 		self.is_selinux_enforcing = False
