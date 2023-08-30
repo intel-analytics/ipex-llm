@@ -11,7 +11,7 @@ export PATH=$PATH:/opt/miniconda/bin
 source activate
 conda activate /opt/python-occlum
 pip install synapseml==0.10.2
-mkdir -p /opt/occlum_spark/data/
+mkdir -p /opt/occlum_spark/data1/
 cd /opt/occlum_spark/data1/
 pip3 install fschat -i https://pypi.tuna.tsinghua.edu.cn/simple/
 git clone -b used-for-bench https://github.com/analytics-zoo/FastChat.git
