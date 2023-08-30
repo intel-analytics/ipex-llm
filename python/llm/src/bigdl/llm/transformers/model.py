@@ -302,3 +302,27 @@ class AutoModelForSpeechSeq2Seq(_BaseAutoModelClass):
 
 class AutoModelForSeq2SeqLM(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForSeq2SeqLM
+
+
+class AutoModelForSequenceClassification(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForSequenceClassification
+
+
+class AutoModelForMaskedLM(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForMaskedLM
+
+
+class AutoModelForQuestionAnswering(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForQuestionAnswering
+
+
+class AutoModelForNextSentencePrediction(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForNextSentencePrediction
+
+
+class AutoModelForMultipleChoice(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForMultipleChoice
+
+
+class AutoModelForTokenClassification(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForTokenClassification
