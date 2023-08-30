@@ -5,7 +5,7 @@
 > *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
 ### Latest update
- - `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](https://github.com/jason-dai/BigDL/tree/main/python/llm/example/gpu).
+ - `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](example/gpu).
     
 ### Demos
 See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
