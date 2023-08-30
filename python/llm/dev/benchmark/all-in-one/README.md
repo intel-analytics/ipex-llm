@@ -13,3 +13,5 @@ llama2: /path/to/llama2
 
 ## Run
 run `python run.py`, this will output results to `results.csv`.
+
+For SPR performance, run `bash run-spr.sh`.
