@@ -19,7 +19,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
 
-def optimize_model(model, low_bit, optimize_llm=True):
+def optimize_model(model, low_bit='sym_int4', optimize_llm=False):
     """
     A method to optimize any pytorch models.
 
