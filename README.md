@@ -16,7 +16,7 @@ _**Fast, Distributed, Secure AI for Big Data**_
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png" width='76%'/>
 </p>
 
-- **[Update] `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](https://github.com/jason-dai/BigDL/tree/main/python/llm/example/gpu).**
+- **[Update] `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](python/llm/example/gpu).**
 
 - **Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
 
