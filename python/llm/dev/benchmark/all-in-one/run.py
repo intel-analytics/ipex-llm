@@ -20,7 +20,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 
