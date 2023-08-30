@@ -25,6 +25,7 @@ import torch
 import copy
 import logging
 
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -110,8 +111,8 @@ class _BaseAutoModelClass:
         try:
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
         except NotImplementedError:
-            logger.warning("Failed to load models with `low_cpu_mem_usage` specified, "
-                           "will fall to traditional load method with higher memory consumption.")
+            logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
+                        "will fall to traditional load method with higher memory consumption.")
             _kwargs["low_cpu_mem_usage"] = False
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
