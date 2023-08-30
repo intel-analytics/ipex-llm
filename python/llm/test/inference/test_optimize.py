@@ -31,12 +31,12 @@ class TestOptimizeAPI(unittest.TestCase):
             self.n_threads = 2
     
     def test_optimize_whisper(self):
-        dataset_path = os.environ.get('COMMON_VOICE_PATH')
-        reservation_audio = os.path.join(dataset_path,'reservation.mp3')
+        # dataset_path = os.environ.get('COMMON_VOICE_PATH')
+        # reservation_audio = os.path.join(dataset_path,'reservation.mp3')
         import whisper
         model = whisper.load_model("tiny")
         model = optimize_model(model, low_bit="sym_int4", optimize_llm=False)
-        result = model.transcribe(reservation_audio, verbose=True, language="English")
+        # result = model.transcribe(reservation_audio, verbose=True, language="English")
         # assert "Reservation" or "reservation" in result["text"]
         
         

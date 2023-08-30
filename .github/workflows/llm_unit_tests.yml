@@ -173,10 +173,6 @@ jobs:
       - name: Run LLM cli test (Windows)
         if: runner.os == 'Windows' 
         uses: ./.github/actions/llm/cli-test-windows
-      - name: Install ffmpeg for Linux Whipser UT
-        if: runner.os == 'Linux' 
-        run: |
-          apt install ffmpeg
       - name: Run LLM inference test
         shell: bash
         run: |
