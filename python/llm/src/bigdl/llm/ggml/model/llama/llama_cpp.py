@@ -80,6 +80,10 @@ def _load_shared_library(lib_base_name: str):
     cdll_args = dict()  # type: ignore
     # Add the library directory to the DLL search path on Windows (if needed)
     if sys.platform == "win32" and sys.version_info >= (3, 8):
+        # On windows, pytorch and our native library use different OMP, we should
+        # set OMP_WAIT_POLICY=PASSIVE to avoid OMP waiting.
+        os.environ["OMP_WAIT_POLICY"] = "PASSIVE"
+
         os.add_dll_directory(str(_base_path))
         os.environ["PATH"] = str(_base_path) + ";" + os.environ["PATH"]
         if "CUDA_PATH" in os.environ:
