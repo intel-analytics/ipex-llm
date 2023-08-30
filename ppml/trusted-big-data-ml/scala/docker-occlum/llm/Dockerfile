@@ -86,6 +86,8 @@ RUN chmod a+x /opt/entrypoint.sh && \
 # Add python lib
 ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
+COPY --from=bigdl /opt/occlum_spark/data1/FastChat /opt/occlum_spark/data1/FastChat
+ADD ./bench.py /opt/occlum_spark/data1/bench.py
 RUN cd /opt && \
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
