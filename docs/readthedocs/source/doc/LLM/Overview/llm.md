@@ -8,7 +8,7 @@ Here, let's take a relatively small LLM model, i.e [open_llama_3b_v2](https://hu
 
 ## Load a Pretrained Model
 
-Simply use one-line `transformers`-style API in `bigdl-llm` to load `open_llama_3b_v2` with INT4 optimization (by specifying load_in_4bit=True) as follows:
+Simply use one-line `transformers`-style API in `bigdl-llm` to load `open_llama_3b_v2` with INT4 optimization (by specifying `load_in_4bit=True`) as follows:
 
 ```python
 from bigdl.llm.transformers import AutoModelForCausalLM
