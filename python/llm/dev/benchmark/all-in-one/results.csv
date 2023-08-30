@@ -1,0 +1,3 @@
+,model,1st token avg latency (ms/token),2+ avg latency (ms/token),input/output tokens
+0,llama2,232.42,56.19,32/32
+1,llama2,9465.57,68.67,1024/128
