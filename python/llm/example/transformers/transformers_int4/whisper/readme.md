@@ -27,6 +27,11 @@ Arguments info:
 - `--repo-id-or-data-path REPO_ID_OR_DATA_PATH`: argument defining the huggingface repo id for the audio dataset to be downloaded, or the path to the huggingface dataset folder. It is default to be `'hf-internal-testing/librispeech_asr_dummy'`.
 - `--language LANGUAGE`: argument defining language to be transcribed. It is default to be `english`.
 
+> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+>
+> Please select the appropriate size of the Whisper model based on the capabilities of your machine.
+
+
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
@@ -54,6 +59,7 @@ Inference time: xxxx s
 -------------------- Output --------------------
 [" Mr. Quilter is the Apostle of the Middle classes and we're glad to welcome his Gospel."]
 ```
+
 
 ## Example 2: Recognize Long Segment using `generate()` API
 In the example [long-segment-recognize.py](./long-segment-recognize.py), we show a basic use case for a Whisper model to conduct transcription using `pipeline()` API, with BigDL-LLM INT4 optimizations.
