@@ -12,6 +12,10 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 .. note::
 
    The above command will install ``intel_extension_for_pytorch==2.0.110+xpu`` as default. You can install specific ``ipex``/``torch`` version for your need.
+
+.. important::
+
+   ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
 ```
 
 ## Recommended Requirements

@@ -12,6 +12,10 @@ pip install bigdl-llm[all]
 .. note::
 
    ``all`` option will trigger installation of all the dependencies for common LLM application development.
+
+.. important::
+
+   ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
 ```
 
 ## Recommended Requirements
