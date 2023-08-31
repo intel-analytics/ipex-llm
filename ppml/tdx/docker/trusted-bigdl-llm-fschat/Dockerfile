@@ -32,8 +32,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # Install FastChat
     git clone https://github.com/analytics-zoo/FastChat.git && \
     cd /ppml/FastChat && \
-    git checkout dev-2023-08-01 && \
-    pip install -e . && \
+    git checkout dev-2023-08-31 && \
+    pip install -e ".[model_worker, webui]" && \
     # Pin gradio version because this error:https://github.com/lm-sys/FastChat/issues/1925
     pip install --pre --upgrade gradio==3.36.1 && \
     pip install --pre --upgrade bigdl-nano && \
