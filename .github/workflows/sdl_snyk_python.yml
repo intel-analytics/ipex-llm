@@ -21,12 +21,14 @@ on:
 
 jobs:
   scan-coverity:
-    uses: intel-innersource/frameworks.ai.infrastructure.code-scan-tools/.github/workflows/Scanner_Coverity.yml@one-ci-cd
-    with:
-      repos: intel-analytics/BigDL
-      refs: main
-      projectType: python
-      runner_label: SDL
+    runs-on: [self-hosted, SDL]
+    steps:
+    - uses: intel-innersource/frameworks.ai.infrastructure.code-scan-tools/.github/workflows/Scanner_Coverity.yml@one-ci-cd
+      with:
+        repos: intel-analytics/BigDL
+        refs: main
+        projectType: python
+        runner_label: SDL
       
   snyk-python:
     runs-on: [self-hosted, SDL]
