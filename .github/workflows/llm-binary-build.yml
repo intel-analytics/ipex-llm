@@ -239,7 +239,7 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          yum install -y gcc-toolset-12 cmake git
+          yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
       - uses: actions/checkout@v3
@@ -251,13 +251,13 @@ jobs:
       - name: Build amx binary
         shell: bash
         run: |
-          scl enable gcc-toolset-12 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
-          scl enable gcc-toolset-12 "cmake --build build --config Release -j"
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
           # build chatglm
           source activate python39 || conda activate python39
           cd src/chatglm
-          scl enable gcc-toolset-12 "cmake -B build"
-          scl enable gcc-toolset-12 "cmake --build build --config Release -j"
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move amx release binary
         shell: bash
         run: |
