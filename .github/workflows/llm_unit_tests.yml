@@ -126,7 +126,7 @@ jobs:
           fi
           # if [ ! -d $CHATGLM_INT4_CKPT_PATH ]; then
           #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-          #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $INT4_CKPT_DIR
+          #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_chatglm2_q4_0.bin -P $INT4_CKPT_DIR
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
