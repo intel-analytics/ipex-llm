@@ -24,7 +24,7 @@ from transformers.models.whisper import WhisperFeatureExtractor, WhisperTokenize
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Recognize Tokens using `generate()` API for Whisper model')
+    parser = argparse.ArgumentParser(description='Recognize Long Segment using `generate()` API for Whisper model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openai/whisper-medium",
                         help='The huggingface repo id for the Whisper model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
@@ -32,9 +32,12 @@ if __name__ == '__main__':
                         help='The path of the audio file to be recognized.')
     parser.add_argument('--language', type=str, default="english",
                         help='language to be transcribed')
-    parser.add_argument('--chunk-length', type=str, default=30,
-                        help="The maximum number of chuncks of sampling_rate samples used to trim"
-                             "and pad longer or shorter audio sequences.")
+    parser.add_argument('--batch-size', type=int, default=2,
+                        help='The batch_size of pipeline inference, '
+                             'it usually equals of length of the audio divided by chunk-length.')
+    parser.add_argument('--chunk-length', type=int, default=30,
+                        help="The maximum time lengths of chuncks of sampling_rate samples used to trim"
+                             "and pad longer or shorter audio sequences. Default to be 30s.")
 
     args = parser.parse_args()
 
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     )
 
     start = time.time()
-    prediction = pipe(audio, batch_size=2)["text"]
+    prediction = pipe(audio, batch_size=args.batch_size)["text"]
     print(f"inference time is {time.time()-start}")
 
     print(prediction)
