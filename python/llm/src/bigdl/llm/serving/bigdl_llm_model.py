@@ -47,7 +47,7 @@ def _get_patch_map():
     _mapping_fastchat += [
         [BaseModelAdapter, "load_model", load_model_base, None],
         [ChatGLMAdapter, "load_model", load_model_chatglm, None],
-        [fastchat.model.model_adapter, "load_model", load_model, None],
+        [model_adapter, "load_model", load_model, None],
     ]
 
     return _mapping_fastchat
