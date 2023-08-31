@@ -50,9 +50,11 @@ llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
-               'transformers == 4.31.0', 'sentencepiece',
+               'sentencepiece',
                'accelerate', 'tabulate']
-SERVING_DEP = ['fschat[model_worker] >= 0.2.24', 'py-cpuinfo', 'protobuf']
+# Pin transformers version because of this issue https://github.com/analytics-zoo/nano/issues/536
+SERVING_DEP = ['fschat[model_worker] >= 0.2.24', 'py-cpuinfo', 'protobuf',
+               'transformers == 4.31.0']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -258,6 +260,14 @@ def setup_package():
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
                      "bigdl-core-xe;platform_system=='Linux'"]
 
+    serving_requires = copy.deepcopy(SERVING_DEP)
+    # To support xpu inference.
+    serving_requires += ["torch==2.0.1a0",
+                         "torchvision==0.15.2a0",
+                         "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
+                         "bigdl-core-xe;platform_system=='Linux'"]
+
+
     metadata = dict(
         name='bigdl-llm',
         version=VERSION,
@@ -280,7 +290,7 @@ def setup_package():
         },
         extras_require={"all": all_requires,
                         "xpu": xpu_requires,
-                        "serving": SERVING_DEP},
+                        "serving": serving_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
