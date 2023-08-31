@@ -53,7 +53,7 @@ CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'sentencepiece',
                'accelerate', 'tabulate']
 # Pin transformers version because of this issue https://github.com/analytics-zoo/nano/issues/536
-SERVING_DEP = ['fschat[model_worker] >= 0.2.24', 'py-cpuinfo', 'protobuf',
+SERVING_DEP = ['fschat[model_worker, webui] >= 0.2.24', 'py-cpuinfo', 'protobuf',
                'transformers == 4.31.0']
 windows_binarys = [
     "llama.dll",
