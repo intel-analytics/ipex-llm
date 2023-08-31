@@ -176,6 +176,7 @@ else
 
   if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
     attest_flag="--attest"
+    echo 'port=4050' | tee /etc/tdx-attest.conf
   fi
 
   controller_address="http://$controller_host:$controller_port"
