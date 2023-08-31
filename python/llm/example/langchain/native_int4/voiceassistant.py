@@ -23,7 +23,7 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.llms import *
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -35,7 +35,6 @@ import argparse
 def prepare_chain(args):
 
     model_path = args.model_path
-    model_family = args.model_family
     n_threads = args.thread_num
     n_ctx = args.context_size
 
@@ -48,11 +47,23 @@ def prepare_chain(args):
     A:"""
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-    # We use our BigdlNativeLLM to subsititute OpenAI web-required API
+    # We use our BigDLCausalLLM to subsititute OpenAI web-required API
+    model_family_to_llm = {
+        "llama": LlamaLLM,
+        "gptneox": GptneoxLLM,
+        "bloom": BloomLLM,
+        "starcoder": StarcoderLLM,
+        "chatglm": ChatGLMLLM
+    }
+
+    if model_family in model_family_to_llm:
+        langchain_llm = model_family_to_llm[model_family]
+    else:
+        raise ValueError(f"Unknown model family: {model_family}")
+
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    llm = BigdlNativeLLM(
+    llm = langchain_llm(
             model_path=model_path,
-            model_family=model_family,
             n_threads=n_threads,
             callback_manager=callback_manager,
             verbose=True,
@@ -114,8 +125,9 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BigdlNativeLLM Langchain Voice Assistant Example')
+    parser = argparse.ArgumentParser(description='BigDLCausalLM Langchain Voice Assistant Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
+                        choices=["llama", "bloom", "gptneox", "chatglm", "starcoder"],
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
