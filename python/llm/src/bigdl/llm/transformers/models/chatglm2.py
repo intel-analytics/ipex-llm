@@ -201,7 +201,7 @@ def chatglm2_attention_forward_8eb45c(
 
 def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
     pytorch_major_version = int(torch.__version__.split('.')[0])
-    if pytorch_major_version >= 2 and (query_layer.devicex.type == 'xpu' or query_layer.size(0) > 1):
+    if pytorch_major_version >= 2 and (query_layer.device.type == 'xpu' or query_layer.size(0) > 1):
         query_layer = query_layer.permute(1, 2, 0, 3)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
 
