@@ -1,0 +1,11 @@
+imageName: intelanalytics/bigdl-lora-finetuning:2.4.0-SNAPSHOT
+trainerNum: 8
+microBatchSize: 8
+TEEMode: tdx # tdx or native
+nfsServerIp: your_nfs_server_ip
+nfsPath: a_nfs_shared_folder_path_on_the_server
+dataSubPath: alpaca_data_cleaned_archive.json # a subpath of the data file under nfs directory
+modelSubPath: llama-7b-hf # a subpath of the model file (dir) under nfs directory
+outputSubPath: output # a subpath of the empty directory under the nfs directory to save finetuned model, for example, if you make an empty dir named 'output' at the nfsPath, the value should be 'output'
+ompNumThreads: 14
+cpuPerPod: 42
