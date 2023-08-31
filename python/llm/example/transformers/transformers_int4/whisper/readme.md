@@ -62,7 +62,7 @@ Inference time: xxxx s
 
 
 ## Example 2: Recognize Long Segment using `generate()` API
-In the example [long-segment-recognize.py](./long-segment-recognize.py), we show a basic use case for a Whisper model to conduct transcription using `pipeline()` API, with BigDL-LLM INT4 optimizations.
+In the example [long-segment-recognize.py](./long-segment-recognize.py), we show a basic use case for a Whisper model to conduct transcription using `pipeline()` API for long audio input, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -83,7 +83,8 @@ Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Whisper model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openai/whisper-medium'`.
 - `--audio-file PATH_TO_THE_AUDIO_FILE`: argument defining the path of the audio file to be recognized.
 - `--language LANGUAGE`: argument defining language to be transcribed. It is default to be `english`.
-- `--chunk-length CHUNK_LENGTH`: argument defining The maximum number of chuncks of sampling_rate samples used to trim and pad longer or shorter audio sequences. It is default to be 30.
+- `--chunk-length CHUNK_LENGTH`: argument defining the maximum number of chuncks of sampling_rate samples used to trim and pad longer or shorter audio sequences. It is default to be 30, and chunk-length should not be larger than 30s for whisper model.
+- `--batch-size`: argument defining the batch_size of pipeline inference, it usually equals of length of the audio divided by chunk-length. It is default to be 2.
 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
@@ -105,6 +106,7 @@ E.g. on Linux,
 source bigdl-nano-init
 
 # e.g. long segment recognize for a server with 48 cores per socket
+export OMP_NUM_THREADS=48
 numactl -C 0-47 -m 0 python ./long-segment-recognize.py --audio-file /PATH/TO/AUDIO_FILE
 ```
 
