@@ -1,0 +1,13 @@
+name: Scanner_Coverity
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  scan-coverity:
+    uses: intel-innersource/frameworks.ai.infrastructure.code-scan-tools/.github/workflows/Scanner_Coverity.yml@one-ci-cd
+    with:
+      repos: intel-analytics/BigDL
+      refs: main
+      projectType: python
+      runner_label: SDL
