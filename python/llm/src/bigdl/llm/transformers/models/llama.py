@@ -129,11 +129,13 @@ def llama_attention_forward_4_31(
         # value_states = torch.cat([past_key_value[1], value_states], dim=2)
         if kv_seq_len > self.max_cache_length:
             new_cache_key = torch.empty(bsz, self.num_heads,
-                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim)
+                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim,
+                                        device=device)
             new_cache_key[:, :, :kv_seq_len-1, :] = self.kv_cache[0][:, :, :kv_seq_len-1, :]
 
             new_cache_value = torch.empty(bsz, self.num_heads,
-                                          kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim)
+                                          kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim,
+                                          device=device)
             new_cache_value[:, :, :kv_seq_len-1, :] = self.kv_cache[1][:, :, :kv_seq_len-1, :]
             self.kv_cache = (new_cache_key, new_cache_value)
             self.max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
@@ -146,8 +148,10 @@ def llama_attention_forward_4_31(
         # first token case
         self.max_cache_length = max(min(self.max_position_embeddings, 2 * kv_seq_len),
                                     kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH)
-        self.kv_cache = (torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim),
-                         torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim))
+        self.kv_cache = (torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim,
+                                     dtype=key_states.dtype, device=device),
+                         torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim,
+                                     dtype=key_states.dtype, device=device))
         self.kv_cache[0][:, :, :kv_seq_len, :] = key_states
         self.kv_cache[1][:, :, :kv_seq_len, :] = value_states
 

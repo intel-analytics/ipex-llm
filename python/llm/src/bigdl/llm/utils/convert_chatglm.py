@@ -413,8 +413,8 @@ def main():
         help="Model name or path used in AutoModel.from_pretrained",
     )
     parser.add_argument(
-        "-o", "--save_path", default="chatglm-ggml.bin",
-        type=Path, help="Path to save the generated GGML model"
+        "-o", "--save_path", default="",
+        type=str, help="Path to save the generated GGML model"
     )
     parser.add_argument(
         "-t",
@@ -426,6 +426,8 @@ def main():
     )
     args = parser.parse_args()
 
+    if args.save_path == "":
+        args.save_path = f"bigdl_llm_chatglm_{args.type.lower()}.bin"
     ggml_type = GGMLType[args.type.upper()]
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, trust_remote_code=True)
     model = AutoModel.from_pretrained(args.model_name_or_path, trust_remote_code=True)

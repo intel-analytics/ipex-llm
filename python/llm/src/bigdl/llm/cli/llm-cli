@@ -9,19 +9,6 @@ n_predict=128
 llm_dir="$(dirname "$(python -c "import bigdl.llm;print(bigdl.llm.__file__)")")"
 lib_dir="$llm_dir/libs"
 
-function get_avx_flags() {
-  avx="avx2"
-  if command -v lscpu &>/dev/null; then
-    msg=$(lscpu)
-    if [[ $msg == *"avx512_vnni"* ]]; then
-      avx="avx512"
-    fi
-  else
-    echo "lscpu command not found. Please make sure it is installed."
-  fi
-  echo $avx
-}
-
 # Function to display help message
 function display_help {
   echo "usage: ./llm-cli.sh -x MODEL_FAMILY [-h] [args]"
@@ -92,9 +79,6 @@ while [[ $# -gt 0 ]]; do
     ;;
   esac
 done
-
-avx_flag=$(get_avx_flags)
-echo "AVX Flags: $avx_flag"
 
 # Perform actions based on the model_family
 if [[ "$model_family" == "llama" ]]; then
