@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-fschat-a1234bd-worker-deployment
+spec:
+  # Change this to the number you want
+  replicas: 2
+  selector:
+    matchLabels:
+      fastchat: worker
+  template:
+    metadata:
+      labels:
+        fastchat: worker
+    spec:
+      dnsPolicy: "ClusterFirst"
+      nodeSelector:
+        icx-1: "true"
+      containers:
+        - name: fastchat-worker # fixed
+          image: intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT-k8s
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONTROLLER_HOST # fixed
+              value: 10.101.187.153 # get from controller service
+            - name: CONTROLLER_PORT # fixed
+              value: "21005"
+            - name: SGX_MEM_SIZE
+              value: "40GB"
+            - name: SGX_THREAD
+              value: "2048"
+            - name: SGX_KERNEL_HEAP
+              value: "2GB"
+            - name: WORKER_HOST # fixed
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: WORKER_PORT # fixed
+              value: "21841"
+            - name: MODEL_PATH # Change this
+              value: "/host/data/models/vicuna-7b-bigdl/"
+            - name: OMP_NUM_THREADS
+              value: "16"
+          resources:
+            requests:
+              memory: 32Gi
+              cpu: 16
+              sgx.intel.com/enclave: 1
+              sgx.intel.com/provision: 1
+            limits:
+              memory: 32Gi
+              cpu: 16
+              sgx.intel.com/enclave: 1
+              sgx.intel.com/provision: 1
+          args: ["-m", "worker"]
+          volumeMounts:
+            - name: ppml-models
+              mountPath: /opt/occlum_spark/data/
+      restartPolicy: "Always"
+      volumes:
+        - name: ppml-models
+          hostPath:
+            path: /mnt/sde/tpch-data/ # change this in other envs
