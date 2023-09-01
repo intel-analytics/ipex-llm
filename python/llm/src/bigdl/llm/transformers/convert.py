@@ -66,10 +66,10 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                     device_type = module.weight.data.device.type
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
-                                            requires_grad=False,
-                                            quantized=False,
-                                            _shape=None,
-                                            qtype=qtype).to(device_type)
+                                             requires_grad=False,
+                                             quantized=False,
+                                             _shape=None,
+                                             qtype=qtype).to(device_type)
                     new_linear._parameters['weight'] = paramsLowBit
 
                     if module.bias is not None:
