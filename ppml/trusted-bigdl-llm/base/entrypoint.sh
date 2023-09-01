@@ -48,15 +48,6 @@ if [ -z "$uidentry" ] ; then
     fi
 fi
 
-
-# We do not have any arguments, just run bash
-if [ "$#" == 0 ]; then
-  echo "[INFO] no command is passed in"
-  echo "[INFO] enter pass-through mode"
-  exec /usr/bin/tini -s -- "bash"
-fi
-
-
 # Attestation
 if [ -z "$ATTESTATION" ]; then
   echo "[INFO] Attestation is disabled!"
@@ -67,18 +58,156 @@ echo $SGX_ENABLED
 
 runtime_command="$@"
 SGX_ENABLED=true
+
 if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then
-    delete_file "/ppml/temp_command_file"
-    bash attestation.sh
-    echo $runtime_command >> temp_command_file
-    export sgx_command="bash temp_command_file"
-  else
-      export sgx_command=$runtime_command
+    bash /ppml/attestation.sh
   fi
-  ./init.sh && \
-  gramine-sgx bash 2>&1
-  delete_file "/ppml/temp_command_file"
+fi
+
+usage() {
+  echo "Usage: $0 [-m --mode <controller|worker>] [-h --help]"
+  echo "-h: Print help message."
+  echo "Controller mode reads the following env:"
+  echo "CONTROLLER_HOST (default: localhost)."
+  echo "CONTROLLER_PORT (default: 21001)."
+  echo "API_HOST (default: localhost)."
+  echo "API_PORT (default: 8000)."
+  echo "Worker mode reads the following env:"
+  echo "CONTROLLER_HOST (default: localhost)."
+  echo "CONTROLLER_PORT (default: 21001)."
+  echo "WORKER_HOST (default: localhost)."
+  echo "WORKER_PORT (default: 21002)."
+  echo "MODEL_PATH (default: empty)."
+  echo "ENABLE_ATTESTATION_API (default: empty)."
+  exit 1
+}
+
+# Default values
+controller_host="localhost"
+controller_port="21001"
+api_host="localhost"
+api_port="8000"
+worker_host="localhost"
+worker_port="21002"
+model_path=""
+mode=""
+omp_num_threads=""
+attest_flag=""
+
+# Update rootCA config if needed
+update-ca-certificates
+
+# Remember the value of `OMP_NUM_THREADS`:
+if [[ -n "${OMP_NUM_THREADS}" ]]; then
+  omp_num_threads="${OMP_NUM_THREADS}"
+fi
+
+# We do not have any arguments, just run bash
+if [ "$#" == 0 ]; then
+  echo "[INFO] no command is passed in"
+  echo "[INFO] enter pass-through mode"
+  exec /sbin/tini -s -- "bash"
 else
-  exec $runtime_command
+  # Parse command-line options
+  options=$(getopt -o "m:h" --long "mode:,help" -n "$0" -- "$@")
+  if [ $? != 0 ]; then
+    usage
+  fi
+  eval set -- "$options"
+
+  while true; do
+    case "$1" in
+      -m|--mode)
+        mode="$2"
+        [[ $mode == "controller" || $mode == "worker" ]] || usage
+        shift 2
+        break
+        ;;
+      -h|--help)
+        usage
+        ;;
+      --)
+        exec /sbin/tini -s "$@"
+        ;;
+      *)
+        usage
+        ;;
+    esac
+  done
+
+  if [[ -n $CONTROLLER_HOST ]]; then
+    controller_host=$CONTROLLER_HOST
+  fi
+
+  if [[ -n $CONTROLLER_PORT ]]; then
+    controller_port=$CONTROLLER_PORT
+  fi
+
+  if [[ -n $API_HOST ]]; then
+    api_host=$API_HOST
+  fi
+
+  if [[ -n $API_PORT ]]; then
+    api_port=$API_PORT
+  fi
+
+  if [[ -n $WORKER_HOST ]]; then
+    worker_host=$WORKER_HOST
+  fi
+
+  if [[ -n $WORKER_PORT ]]; then
+    worker_port=$WORKER_PORT
+  fi
+
+  if [[ -n $MODEL_PATH ]]; then
+    model_path=$MODEL_PATH
+  fi
+
+  if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
+    attest_flag="--attest"
+  fi
+
+  controller_address="http://$controller_host:$controller_port"
+  # Execute logic based on options
+  if [[ $mode == "controller" ]]; then
+    # init Gramine
+    /ppml/init.sh
+    # Logic for controller mode
+    # Boot Controller
+    # TODO: add dispatch-method
+    api_address="http://$api_host:$api_port"
+    echo "Controller address: $controller_address"
+    echo "OpenAI API address: $api_address"
+    cd /ppml
+    export sgx_command="python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $attest_flag &"
+    gramine-sgx bash &
+    # Boot openai api server
+    export sgx_command="python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag"
+    gramine-sgx bash &
+  elif [[ $mode == "worker" ]]; then
+    # init Gramine
+    /ppml/init.sh
+    # Logic for non-controller(worker) mode
+    worker_address="http://$worker_host:$worker_port"
+    # Apply optimizations from bigdl-nano
+    #source bigdl-nano-init -t
+    # First check if user have set OMP_NUM_THREADS by themselves
+    if [[ -n "${omp_num_threads}" ]]; then
+      echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
+      export OMP_NUM_THREADS=$omp_num_threads
+    else
+      # Use default settings
+      export OMP_NUM_THREADS=16
+    fi
+    if [[ -z "${model_path}" ]]; then
+          echo "Please set env MODEL_PATH used for worker"
+          usage
+    fi
+    echo "Worker address: $worker_address"
+    echo "Controller address: $controller_address"
+    cd /ppml
+    export sgx_command="python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address $attest_flag"
+    gramine-sgx bash &
+  fi
 fi
