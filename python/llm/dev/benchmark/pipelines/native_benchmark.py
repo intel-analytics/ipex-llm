@@ -4,7 +4,6 @@ import time
 import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
-from benchmark_util import BenchmarkWrapper
 from torch.profiler import profile, record_function, ProfilerActivity
 import psutil
 

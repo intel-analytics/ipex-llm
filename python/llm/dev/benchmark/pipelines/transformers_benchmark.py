@@ -1,12 +1,15 @@
 import torch
-import os
 import time
 import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
-from benchmark_util import BenchmarkWrapper
 from torch.profiler import profile, record_function, ProfilerActivity
 import psutil
+import os
+benchmark_util_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
+import sys
+sys.path.append(benchmark_util_path)
+from benchmark_util import BenchmarkWrapper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example')
