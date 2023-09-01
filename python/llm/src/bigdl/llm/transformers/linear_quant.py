@@ -211,7 +211,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
     return result_t
 
 
-class LinearQuant(nn.Linear):
+class LinearLowBit(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
