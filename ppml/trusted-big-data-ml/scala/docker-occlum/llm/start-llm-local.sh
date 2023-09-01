@@ -2,7 +2,7 @@
 sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum-llm-test
 
 # Run new command in container
-sudo docker run -it\
+sudo docker run -itd \
         --net=host \
         --name=bigdl-ppml-trusted-big-data-ml-scala-occlum-llm-test \
         -e LOCAL_IP=$LOCAL_IP \
@@ -15,4 +15,4 @@ sudo docker run -it\
         --device=/dev/sgx/provision \
         -e SGX_LOG_LEVEL=off \
         intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT \
-        bash \
+        bash

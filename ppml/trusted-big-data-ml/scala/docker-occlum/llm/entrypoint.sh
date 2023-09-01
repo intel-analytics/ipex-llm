@@ -84,7 +84,7 @@ fi
 if [ "$#" == 0 ]; then
   echo "[INFO] no command is passed in"
   echo "[INFO] enter pass-through mode"
-  exec /usr/bin/tini -s -- "bash"
+  exec /sbin/tini -s -- "bash"
 else
   # Parse command-line options
   options=$(getopt -o "m:h" --long "mode:,help" -n "$0" -- "$@")
@@ -99,13 +99,13 @@ else
         mode="$2"
         [[ $mode == "controller" || $mode == "worker" ]] || usage
         shift 2
+        break
         ;;
       -h|--help)
         usage
         ;;
       --)
-        shift
-        break
+        exec /sbin/tini -s "$@"
         ;;
       *)
         usage
