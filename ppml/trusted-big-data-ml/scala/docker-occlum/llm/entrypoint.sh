@@ -145,11 +145,11 @@ else
     attest_flag="--attest"
   fi
 
-  /opt/run_llm_on_occlum_glibc.sh init
-
   controller_address="http://$controller_host:$controller_port"
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
+    # init Occlum
+    /opt/run_llm_on_occlum_glibc.sh init
     # Logic for controller mode
     # Boot Controller
     # TODO: add dispatch-method
@@ -161,7 +161,9 @@ else
     occlum exec /bin/python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $attest_flag &
     # Boot openai api server
     occlum exec /bin/python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
-  else
+  elif [[ $mode == "worker" ]]; then
+    # init Occlum
+    /opt/run_llm_on_occlum_glibc.sh init
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
     # Apply optimizations from bigdl-nano
@@ -185,7 +187,3 @@ else
     occlum exec /bin/python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address $attest_flag
   fi
 fi
-
-
-
-/sbin/tini -s -- occlum run "${CMD[@]}"
