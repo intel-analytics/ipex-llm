@@ -67,7 +67,7 @@ class TestConvertModel(TestCase):
     def test_transformer_convert_llama(self):
         with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
             model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
-            model.save_pretrained(tempdir)
+            model.save_low_bit(tempdir)
             newModel = AutoModelForCausalLM.load_low_bit(tempdir)
             assert newModel is not None
 
