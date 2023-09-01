@@ -13,16 +13,16 @@ ARG https_proxy
 ADD utils.diff /opt/utils.diff
 ADD llm_cli.diff /opt/llm_cli.diff
 
-RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
+RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
     # Remove all dependencies from nvidia as we are supposed to run in SGX
     pip3 list | grep nvidia | awk '{print $1}' | xargs pip3 uninstall -y && \
-    # Replace bigdl-llm repo's with our our dependencies
-    cd /usr/local/lib/python3.9/dist-packages/bigdl/llm/libs && \
-    rm *avx512* && \
-    rm quantize* && \
-    curl "https://sourceforge.net/projects/analytics-zoo/rss?path=/ppml-llm" | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | while read url; do url=`echo $url | sed 's|/download$||'`; wget $url ; done && \
-    rm index.html && \
-    chmod +x * && \
+#    # Replace bigdl-llm repo's with our our dependencies
+#    cd /usr/local/lib/python3.9/dist-packages/bigdl/llm/libs && \
+#    rm *avx512* && \
+#    rm quantize* && \
+#    curl "https://sourceforge.net/projects/analytics-zoo/rss?path=/ppml-llm" | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | while read url; do url=`echo $url | sed 's|/download$||'`; wget $url ; done && \
+#    rm index.html && \
+#    chmod +x * && \
     cd /ppml && \
     # Patch subprocess call in bigdl-llm
     patch -R /usr/local/lib/python3.9/dist-packages/bigdl/llm/utils/utils.py /opt/utils.diff && \
