@@ -46,3 +46,4 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
     mkdir /ppml/data
 
 WORKDIR /ppml
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
