@@ -45,8 +45,8 @@ if __name__ == '__main__':
                                      )/(len(rest_token_time_list)-2)
             result_list.append({
                 'model_name': model_name,
-                'prompt_length': int(prompt_length),
-                'output_length': int(output_length),
+                'prompt_length': prompt_length,
+                'output_length': output_length,
                 'first_token_latency': first_token_latency,
                 'rest_token_latency': rest_token_latency,
             })
