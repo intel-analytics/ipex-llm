@@ -122,13 +122,13 @@ jobs:
           export https_proxy=${HTTPS_PROXY}
           rm -rf test-result || true
           mkdir test-result
-          python llama2.py --model-dir="${LLAMA2_7B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/llama2_7b-32-32.log
-          python llama2.py --model-dir="${LLAMA2_7B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/llama2_7b-1024-1024.log
-          python llama2.py --model-dir="${LLAMA2_13B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/llama2_13b-32-32.log
-          python llama2.py --model-dir="${LLAMA2_13B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/llama2_13b-1024-1024.log
-          python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/chatglm2_6b-32-32.log
-          python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/chatglm2_6b-1024-1024.log
-          python whisper.py --model-dir="${WHISPER_MEDIUM_ORIGIN_PATH}" > test-result/whisper_medium-default-default.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_7B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/llama2_7b-32-32.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_7B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/llama2_7b-1024-1024.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_13B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/llama2_13b-32-32.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_13B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/llama2_13b-1024-1024.log
+          taskset -c 0-$((THREAD_NUM - 1)) python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/chatglm2_6b-32-32.log
+          taskset -c 0-$((THREAD_NUM - 1)) python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/chatglm2_6b-1024-1024.log
+          taskset -c 0-$((THREAD_NUM - 1)) python whisper.py --model-dir="${WHISPER_MEDIUM_ORIGIN_PATH}" > test-result/whisper_medium-default-default.log
           python ../analyze_log_dir.py --log-dir=./test-result --output-path=./xpu_latency.csv
           timestamp=`date '+%Y%m%d'`
           curl -T ./xpu_latency.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/xpu_lantency_$timestamp.csv
