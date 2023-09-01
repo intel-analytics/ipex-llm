@@ -103,15 +103,14 @@ jobs:
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu"
 
-      - name: Install xpu version
+      - name: Test installed xpu version
         shell: bash
         run: |
-          whl_name=$(ls python/llm/dist)
-          pip install -i https://pypi.python.org/simple --force-reinstall --upgrade --pre "python/llm/dist/${whl_name}[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
-
       - name: Test on xpu
         shell: bash
         run: |
