@@ -128,4 +128,3 @@ jobs:
           python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/chatglm2_6b-1024-1024.log
           python whisper.py --model-dir="${WHISPER_MEDIUM_ORIGIN_PATH}" > test-result/whisper_medium-default-default.log
           python ../analyze_log_dir.py --log-dir=./test-result --output-path=./xpu_latency.csv
-          cat xpu_latency.csv
