@@ -118,7 +118,8 @@ def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
         try:
             model = optimize(model)
         except:
-            logger.info("It is not supported that optimizing a model isn't belong to huggingface transformers with `optimize_model=True` for now.")
+            logger.info("It is not supported that optimizing a model isn't belong to"
+                        "huggingface transformers with `optimize_model=True` for now.")
     return model
 
 
