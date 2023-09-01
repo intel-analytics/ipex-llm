@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-from .convert import ggml_convert_quant
+from .convert import ggml_convert_low_bit
 from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, AutoModelForSpeechSeq2Seq
 from .modelling_bigdl import *

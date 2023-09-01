@@ -59,7 +59,7 @@ TORCH_LINEAR_THRESHOLD = 96
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
-def ggml_convert_quant(tensor: torch.Tensor, qtype: int, device=None):
+def ggml_convert_qtype(tensor: torch.Tensor, qtype: int, device=None):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -122,7 +122,7 @@ class FP4Params(torch.nn.Parameter):
     def quantize(self, device=None):
         if not self.quantized:
             w = self.data.contiguous().float()
-            w_quantized = ggml_convert_quant(w, self.qtype,
+            w_quantized = ggml_convert_qtype(w, self.qtype,
                                              device=device)
             self.data = w_quantized
             self.quantized = True
@@ -211,7 +211,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
     return result_t
 
 
-class LinearLowBit(nn.Linear):
+class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,

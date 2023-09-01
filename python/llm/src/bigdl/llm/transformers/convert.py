@@ -43,9 +43,9 @@ import transformers
 import importlib
 
 
-def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
+def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                current_key_name=None):
-    from bigdl.llm.transformers.linear_quant import LinearLowBit, FP4Params
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -56,7 +56,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-                    new_linear = LinearLowBit(
+                    new_linear = LowBitLinear(
                         module.in_features,
                         module.out_features,
                         qtype,
@@ -85,7 +85,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
-            _, has_been_replaced = _replace_with_quant_linear(
+            _, has_been_replaced = _replace_with_low_bit_linear(
                 module,
                 qtype,
                 modules_to_not_convert,
@@ -94,9 +94,9 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
+def ggml_convert_low_bit(model, qtype, optimize_model=True, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
-    model, has_been_replaced = _replace_with_quant_linear(
+    model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert, None
     )
     if not has_been_replaced:
