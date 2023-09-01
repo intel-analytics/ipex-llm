@@ -21,7 +21,7 @@ runs:
           exit 1
         fi
         whl_name=$(ls python/llm/dist)
-        if [[ ${{ inputs.extra-dependency == 'xpu' }} ]]; then
+        if [[ ${{ inputs.extra-dependency }} == 'xpu' ]]; then
           pip install -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
           pip install pytest datasets librosa soundfile
         else
