@@ -52,6 +52,26 @@ RUN mkdir /ppml/data && mkdir /ppml/model && mkdir /ppml/output && \
     echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
     sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
 
+# Basic dependencies and DCAP
+RUN apt update && \
+    apt install -y build-essential apt-utils wget git && \
+    mkdir -p /opt/intel/ && \
+    cd /opt/intel && \ 
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu22.04-server/sgx_linux_x64_sdk_2.19.100.3.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.19.100.3.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.19.100.3.bin && \
+    . /opt/intel/sgxsdk/environment && \
+    cd /opt/intel && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu22.04-server/sgx_debian_local_repo.tgz && \
+    tar xzf sgx_debian_local_repo.tgz && \
+    echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo jammy main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
+    apt update && \
+    apt install -y libsgx-enclave-common-dev libsgx-qe3-logic libsgx-pce-logic libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev 
+
+ADD ./bigdl_aa.py /ppml/bigdl_aa.py
+ADD ./quote_generator.py /ppml/quote_generator.py
+
 ADD ./bigdl-lora-finetuing-entrypoint.sh /ppml/bigdl-lora-finetuing-entrypoint.sh
 ADD ./lora_finetune.py /ppml/lora_finetune.py
 RUN chown -R mpiuser /ppml
