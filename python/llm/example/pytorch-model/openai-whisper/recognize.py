@@ -6,8 +6,9 @@ from bigdl.llm import optimize_model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Recognize Tokens using `transcribe()` API for Openai Whisper model')
-    parser.add_argument('--model-size', type=str, default="tiny",
-                        help="one of the official model names listed by `whisper.available_models()`, or"
+    parser.add_argument('--model-name', type=str, default="tiny",
+                        help="The model name(tiny, medium, base, etc.) for the Whisper model to be downloaded."
+                             "It is one of the official model names listed by `whisper.available_models()`, or"
                              "path to a model checkpoint containing the model dimensions and the model state_dict.")
     parser.add_argument('--audio-file', type=str, required=True,
                         help='The path of the audio file to be recognized.')
