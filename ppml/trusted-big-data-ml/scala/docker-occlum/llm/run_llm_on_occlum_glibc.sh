@@ -246,8 +246,4 @@ case "$arg" in
         init_instance
         build_spark
         ;;
-    pi)
-        run_spark_pi
-        cd ../
-        ;;
 esac
