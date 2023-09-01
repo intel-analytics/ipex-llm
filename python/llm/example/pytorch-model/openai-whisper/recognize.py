@@ -1,4 +1,5 @@
 import whisper
+import time
 import librosa
 import argparse
 from bigdl.llm import optimize_model
@@ -26,11 +27,15 @@ if __name__ == '__main__':
                             target_sr=target_sr)
 
     # Load whisper model under pytorch framework
-    model = whisper.load_model(args.model_size)
+    model = whisper.load_model(args.model_name)
 
     # With only one line to enable bigdl optimize on a pytorch model
     model = optimize_model(model, low_bit="sym_int4", optimize_llm=True)
 
+    st = time.time()
     result = model.transcribe(audio, verbose=True, language=args.language)
+    end = time.time()
+    print(f'Inference time: {end-st} s')
 
+    print('-'*20, 'Output', '-'*20)
     print(result["text"])
