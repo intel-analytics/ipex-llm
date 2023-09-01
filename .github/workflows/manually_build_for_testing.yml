@@ -27,6 +27,7 @@ on:
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
+        - bigdl-ppml-trusted-llm-fastchat-occlum
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-trusted-bigdl-llm-tdx
@@ -520,7 +521,42 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-    
+
+  bigdl-ppml-trusted-llm-fastchat-occlum:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-llm-fastchat-occlum' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.sha }}
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-ppml-trusted-llm-fastchat-occlum
+        run: |
+          echo "########################################"
+          echo "####### llm-fastchat-occlum  ######"
+          echo "########################################"
+          cd ppml/trusted-big-data-ml/scala/docker-occlum/llm
+          export image=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum
+          pwd
+          docker build \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
+            --build-arg JDK_VERSION=8u192 \
+            --build-arg JDK_URL=${JDK_URL} \
+            --build-arg no_proxy=${NO_PROXY} \
+            -t ${image}:${TAG} -f ./Dockerfile .
+          sudo docker push ${image}:${TAG}
+          docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          docker push 10.239.45.10/arda/${image}:${TAG}
+          docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]

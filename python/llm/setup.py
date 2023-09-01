@@ -250,7 +250,7 @@ def setup_package():
             raise FileNotFoundError(
                 f'Could not find package dependency file: {file_path}')
 
-    all_requires = ['py-cpuinfo']
+    all_requires = ['py-cpuinfo', 'protobuf']
     all_requires += CONVERT_DEP
 
     # install with -f https://developer.intel.com/ipex-whl-stable-xpu
