@@ -25,7 +25,7 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
 #    chmod +x * && \
     cd /ppml && \
     # Patch subprocess call in bigdl-llm
-    patch -R /usr/local/lib/python3.9/dist-packages/bigdl/llm/utils/utils.py /opt/utils.diff && \
+    patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/utils/utils.py /opt/utils.diff && \
     patch -R /usr/local/bin/llm-cli /opt/llm_cli.diff && \
     # Gramine commands
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
