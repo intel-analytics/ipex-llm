@@ -44,7 +44,7 @@ import importlib
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
-                               current_key_name=None):
+                                 current_key_name=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
     has_been_replaced = False
 
