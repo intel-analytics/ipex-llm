@@ -43,13 +43,13 @@ if __name__ == '__main__':
                                       )/(len(first_token_time_list)-2)
             rest_token_latency = sum(rest_token_time_list[1:-1]
                                      )/(len(rest_token_time_list)-2)
-            result_list += {
+            result_list.append({
                 'model_name': model_name,
                 'prompt_length': int(prompt_length),
                 'output_length': int(output_length),
                 'first_token_latency': first_token_latency,
                 'rest_token_latency': rest_token_latency,
-            }
+            })
         except Exception as e:
             print(e.args)
             continue
