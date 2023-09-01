@@ -41,6 +41,7 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib
+from .utils import logger
 
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
@@ -114,7 +115,10 @@ def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
         pass
 
     if optimize_model:
-        model = optimize(model)
+        try:
+            model = optimize(model)
+        except:
+            logger.info("It is not supported that optimizing a model isn't belong to huggingface transformers with `optimize_model=True` for now.")
     return model
 
 
