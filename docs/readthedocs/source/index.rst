@@ -6,9 +6,11 @@ BigDL: fast, distributed, secure AI for Big Data
 
 Latest News
 ---------------------------------
-- **Try the latest** `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ **library for running LLM (large language model) on your Intel laptop using INT4 with very low latency!** [*]_. *(It is built on top of the excellent work of* `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, *etc., and supports any Hugging Face Transformers model.)*
+- **Try the latest** `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ **library for running LLM (large language model) on your Intel laptop or GPU using INT4 with very low latency!** [*]_. *(It is built on top of the excellent work of* `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, *etc., and supports any Hugging Face Transformers model.)*
 
-- **[Update] Over a dozen models have been verified on** `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
+- **[Update] `bigdl-llm` now supports Intel Arc and Flex GPU;** see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
+
+- **Over a dozen models have been verified on** `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
 ------
 
 Overview
