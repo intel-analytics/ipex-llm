@@ -14,26 +14,14 @@ BigDL-LLM
 
 Latest update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- bigdl-llm now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
-- Over a dozen models have been verified on `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
-
-bigdl-llm demo
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-test1
-
-.. image:: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true
-    :alt: my-picture1
-
-test2
-
-.. only:: html
-
-   .. figure:: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true
+- ``bigdl-llm`` now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
+- ``bigdl-llm`` tutorial tutorial is made availabe `here <https://github.com/intel-analytics/bigdl-llm-tutorial>`_.
+- Over a dozen models have been verified on ``bigdl-llm``, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
 
 bigdl-llm quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You may install bigdl-llm as follows:
+You may install ``bigdl-llm`` as follows:
 
 .. code-block:: console
 
@@ -41,7 +29,7 @@ You may install bigdl-llm as follows:
 
 .. note::
 
-   bigdl-llm has been tested on Python 3.9.
+   ``bigdl-llm`` has been tested on Python 3.9.
 
 You can then apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
@@ -58,7 +46,7 @@ You can then apply INT4 optimizations to any Hugging Face *Transformers* models 
    output_ids = model.generate(input_ids, ...)
    output = tokenizer.batch_decode(output_ids)
 
-**For more details, please refer to the bigdl-llm** `Readme <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ and `API Doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html>`_.
+**For more details, please refer to the bigdl-llm** `Readme <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, `Tutorial <https://github.com/intel-analytics/bigdl-llm-tutorial>`_ and `API Doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html>`_.
 
 ------
 
