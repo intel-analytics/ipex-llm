@@ -31,10 +31,6 @@ pip install --pre --upgrade bigdl-llm[all]
 ```
 > Note: `bigdl-llm` has been tested on Python 3.9
 
-#### Download Model
-
-You may download any PyTorch model in Hugging Face *Transformers* format (including *FP16* or *FP32* or *GPTQ-4bit*).
-
 #### Run Model
 
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
@@ -43,11 +39,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* models as fo
 #load Hugging Face Transformers model with INT4 optimizations
 from bigdl.llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
-```
 
-You may then easily run the optimized model as follows.
-
-```python
 #run the optimized model
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -55,24 +47,23 @@ input_ids = tokenizer.encode(input_str, ...)
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids)
 ```
-
-See the complete examples [here](python/llm/example/transformers/transformers_int4/).  
+*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
 
 >**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
   >```python
   >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
   >```
-  >See the complete example [here](python/llm/example/transformers/transformers_low_bit/).
+  >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
  
 
-After the model is optimizaed using INT4 (or INT8/INT5), you may save and load the optimized model as follows:
+After the model is optimizaed using INT4 (or INT8/INT5), you may also save and load the optimized model as follows:
 
 ```python
 model.save_low_bit(model_path)
 
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
-See the example [here](python/llm/example/transformers/transformers_low_bit/).
+*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
 
 ***For more details, please refer to the `bigdl-llm` [Readme](python/llm) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
