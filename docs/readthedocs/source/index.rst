@@ -19,10 +19,16 @@ Latest update
 
 bigdl-llm demo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test1
+
+.. image:: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true
+    :alt: my-picture1
+
+test2
 
 .. only:: html
 
-   .. figure:: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif
+   .. figure:: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true
 
 bigdl-llm quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
