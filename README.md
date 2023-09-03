@@ -2,26 +2,82 @@
 
 <p align="center"> <img src="docs/readthedocs/image/bigdl_logo.jpg" height="140px"><br></p>
 
-_**Fast, Distributed, Secure AI for Big Data**_
-
 </div>
 
 ---
-## Latest News
+## BigDL-LLM
 
-- **Try the latest [`bigdl-llm`](python/llm) library for running LLM (large language model) on your Intel laptop or GPU using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), etc., and supports any Hugging Face Transformers model)*
+**[`bigdl-llm`](python/llm)** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** or ***GPU*** using INT4 with very low latency[^1] (for any **PyTorch** model).
+> *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
+
+### Latest update
+- `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](python/llm/example/gpu).
+- Over 20 models have been optimized/verified on [`bigdl-llm`](python/llm), including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
+     
+### `bigdl-llm` Demos
+See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
 
 <p align="center">
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png" width='76%'/>
 </p>
 
-- **[Update] `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](python/llm/example/gpu).**
+### `bigdl-llm` quick start
 
-- **Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
+#### Install
+You may install **`bigdl-llm`** as follows:
+```bash
+pip install --pre --upgrade bigdl-llm[all]
+```
+> Note: `bigdl-llm` has been tested on Python 3.9
+
+#### Download Model
+
+You may download any PyTorch model in Hugging Face *Transformers* format (including *FP16* or *FP32* or *GPTQ-4bit*).
+
+#### Run Model
+
+You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+
+```python
+#load Hugging Face Transformers model with INT4 optimizations
+from bigdl.llm.transformers import AutoModelForCausalLM
+model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+```
+
+You may then easily run the optimized model as follows.
+
+```python
+#run the optimized model
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+input_ids = tokenizer.encode(input_str, ...)
+output_ids = model.generate(input_ids, ...)
+output = tokenizer.batch_decode(output_ids)
+```
+
+See the complete examples [here](python/llm/example/transformers/transformers_int4/).  
+
+>**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
+  >```python
+  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+  >```
+  >See the complete example [here](python/llm/example/transformers/transformers_low_bit/).
+ 
+
+After the model is optimizaed using INT4 (or INT8/INT5), you may save and load the optimized model as follows:
+
+```python
+model.save_low_bit(model_path)
+
+new_model = AutoModelForCausalLM.load_low_bit(model_path)
+```
+See the example [here](python/llm/example/transformers/transformers_low_bit/).
+
+***For more details, please refer to the `bigdl-llm` [Readme](python/llm) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
 ---
-## Overview
+## Overview of the complete BigDL project
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
