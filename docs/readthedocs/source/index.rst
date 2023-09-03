@@ -17,7 +17,14 @@ Latest update
 - bigdl-llm now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
 - Over a dozen models have been verified on `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
 
-bigdl-llm Quickstart
+bigdl-llm demo
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. only:: html
+
+   .. figure:: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif
+
+bigdl-llm quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You may install bigdl-llm as follows:
