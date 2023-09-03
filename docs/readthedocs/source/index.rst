@@ -20,13 +20,17 @@ Latest update
 bigdl-llm Quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You may install bigdl-llm as follows (bigdl-llm is current tested on Python 3.9):
+You may install bigdl-llm as follows:
 
 .. code-block:: console
 
    pip install --pre --upgrade bigdl-llm[all]
 
-You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+.. note::
+
+   bigdl-llm has been tested on Python 3.9.
+
+You can then apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
 .. code-block:: python
 
