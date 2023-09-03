@@ -12,8 +12,35 @@ BigDL-LLM
 
 Latest update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- `bigdl-llm` now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
+- bigdl-llm now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
 - Over a dozen models have been verified on `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
+
+bigdl-llm Quickstart
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You may install bigdl-llm as follows (bigdl-llm is current tested on Python 3.9):
+
+.. code-block:: console
+
+   pip install --pre --upgrade bigdl-llm[all]
+
+You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+
+.. code-block:: python
+
+   #load Hugging Face Transformers model with INT4 optimizations
+   from bigdl.llm.transformers import AutoModelForCausalLM
+   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+
+   #run the optimized model
+   from transformers import AutoTokenizer
+   tokenizer = AutoTokenizer.from_pretrained(model_path)
+   input_ids = tokenizer.encode(input_str, ...)
+   output_ids = model.generate(input_ids, ...)
+   output = tokenizer.batch_decode(output_ids)
+
+**For more details, please refer to the bigdl-llm** `Readme <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ and `API Doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html>`_.
+
 ------
 
 Overview of the complete BigDL project
