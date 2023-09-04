@@ -23,7 +23,7 @@ See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `s
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png?raw=true" width='76%'/>
 </p>
 
-### `bigdl-llm` quick start
+### `bigdl-llm` quickstart
 
 #### Install
 You may install **`bigdl-llm`** as follows:
