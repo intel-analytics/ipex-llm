@@ -1,10 +1,14 @@
 .. meta::
    :google-site-verification: S66K6GAclKw1RroxU0Rka_2d1LZFVe27M0gRneEsIVI
 
-BigDL: fast and secure AI
+=================================================
+The BigDL Project
 =================================================
 
-BigDL-LLM
+------
+
+---------------------------------
+BigDL-LLM: low-Bit LLM library
 ---------------------------------
 `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ is a library for running **LLM** (large language model) on your Intel **laptop** or **GPU** using INT4 with very low latency [*]_ (for any **PyTorch** model).
 
@@ -12,13 +16,29 @@ BigDL-LLM
 
    It is built on top of the excellent work of `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, `qlora <https://github.com/artidoro/qlora>`_, etc.
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Latest update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - ``bigdl-llm`` now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
-- ``bigdl-llm`` tutorial tutorial is made availabe `here <https://github.com/intel-analytics/bigdl-llm-tutorial>`_.
-- Over a dozen models have been verified on ``bigdl-llm``, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
+- ``bigdl-llm`` tutorial is released `here <https://github.com/intel-analytics/bigdl-llm-tutorial>`_.
+- Over 20 models have been verified on ``bigdl-llm``, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
 
-bigdl-llm quickstart
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``bigdl-llm`` demos
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and ``starcoder-15.5b`` models on a 12th Gen Intel Core CPU below.
+
+.. raw:: html
+   
+   <p align="center">
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif?raw=true" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif?raw=true" width='30%' />
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png?raw=true" width='76%'/>
+  </p>
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``bigdl-llm`` quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You may install ``bigdl-llm`` as follows:
@@ -50,6 +70,7 @@ You can then apply INT4 optimizations to any Hugging Face *Transformers* models 
 
 ------
 
+---------------------------------
 Overview of the complete BigDL project
 ---------------------------------
 `BigDL <https://github.com/intel-analytics/bigdl>`_ seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
@@ -64,6 +85,7 @@ Overview of the complete BigDL project
 
 ------
 
+---------------------------------
 Choosing the right BigDL library
 ---------------------------------
 
@@ -129,4 +151,4 @@ Choosing the right BigDL library
 
 ------
 
-.. [*] Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
+.. [*] Performance varies by use, configuration and other factors. ``bigdl-llm`` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
