@@ -25,7 +25,7 @@ Latest update
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-bigdl demos
+``bigdl-llm`` demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and ``starcoder-15.5b`` models on a 12th Gen Intel Core CPU below.
@@ -38,7 +38,7 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
   </p>
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-bigdl-llm quickstart
+``bigdl-llm`` quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You may install ``bigdl-llm`` as follows:
