@@ -26,7 +26,7 @@ Latest update
 bigdl demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and ``starcoder-15b`` models on a 12th Gen Intel Core CPU below.
+See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and ``starcoder-15.5b`` models on a 12th Gen Intel Core CPU below.
 
 .. raw:: html
    
