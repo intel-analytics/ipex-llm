@@ -6,12 +6,15 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
+ARG TINI_VERSION=v0.18.0
 
 ARG http_proxy
 ARG https_proxy
 
 ADD utils.diff /opt/utils.diff
 ADD llm_cli.diff /opt/llm_cli.diff
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+
 
 RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
     # Remove all dependencies from nvidia as we are supposed to run in SGX
@@ -45,5 +48,8 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
     apt-get install -y libunwind8-dev && \
     mkdir /ppml/data
 
+RUN  chmod +x /opt/entrypoint.sh && \
+     chmod +x /sbin/tini
+ADD ./entrypoint.sh /opt/entrypoint.sh
 WORKDIR /ppml
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
