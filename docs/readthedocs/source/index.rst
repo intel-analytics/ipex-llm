@@ -2,11 +2,11 @@
    :google-site-verification: S66K6GAclKw1RroxU0Rka_2d1LZFVe27M0gRneEsIVI
 
 =================================================
-BigDL: fast and secure AI
+The BigDL Project
 =================================================
 
 ---------------------------------
-BigDL-LLM
+BigDL-LLM: low-Bit LLM library
 ---------------------------------
 `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ is a library for running **LLM** (large language model) on your Intel **laptop** or **GPU** using INT4 with very low latency [*]_ (for any **PyTorch** model).
 
