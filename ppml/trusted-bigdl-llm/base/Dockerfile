@@ -48,8 +48,8 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
     apt-get install -y libunwind8-dev && \
     mkdir /ppml/data
 
+ADD ./entrypoint.sh /opt/entrypoint.sh
 RUN  chmod +x /opt/entrypoint.sh && \
      chmod +x /sbin/tini
-ADD ./entrypoint.sh /opt/entrypoint.sh
 WORKDIR /ppml
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
