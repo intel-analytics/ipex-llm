@@ -1006,7 +1006,7 @@ _lib.ggml_quantize_q4_0.restype = None
 # ):
 #     _lib.ggml_dequantize_nf4(src, dst, k)
 #
-# 
+#
 # _lib.ggml_dequantize_nf4.argtypes = [
 #     ctypes.c_void_p,
 #     ctypes.c_void_p,
