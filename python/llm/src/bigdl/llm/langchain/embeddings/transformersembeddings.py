@@ -68,9 +68,9 @@ class TransformersEmbeddings(BaseModel, Embeddings):
     """
 
     model: Any  #: :meta private:
-    """BigDL-LLM Transformer-INT4 model."""
+    """BigDL-LLM Transformers-INT4 model."""
     tokenizer: Any  #: :meta private:
-    """Huggingface tokenizer."""
+    """Huggingface tokenizer model."""
     model_id: str = DEFAULT_MODEL_NAME
     """Model name or model path to use."""
     model_kwargs: Dict[str, Any] = Field(default_factory=dict)

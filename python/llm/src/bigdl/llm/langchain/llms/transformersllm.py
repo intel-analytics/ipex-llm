@@ -73,7 +73,7 @@ class TransformersLLM(LLM):
     model_kwargs: Optional[dict] = None
     """Keyword arguments passed to the model."""
     model: Any  #: :meta private:
-    """BigDL-LLM Transformer-INT4 model."""
+    """BigDL-LLM Transformers-INT4 model."""
     tokenizer: Any  #: :meta private:
     """Huggingface tokenizer model."""
     streaming: bool = True
@@ -151,7 +151,7 @@ class TransformersLLM(LLM):
         **kwargs: Any,
     ) -> LLM:
         """
-        Construct object from low_bit model_id
+        Construct low_bit object from model_id
         
         Args:
         

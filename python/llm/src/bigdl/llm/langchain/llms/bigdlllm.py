@@ -659,7 +659,7 @@ class _BaseCausalLM(LLM):
             yield chunk
 
     def get_num_tokens(self, text: str) -> int:
-        """Get the number of tokens present in the text.
+        """Get the number of tokens that present in the text.
 
         Useful for checking if an input will fit in a model's context window.
 
@@ -667,7 +667,7 @@ class _BaseCausalLM(LLM):
             text: The string input to tokenize.
 
         Returns:
-            The integer number of tokens in the text.
+            The number of tokens in the text.
         """
         tokenized_text = self.client.tokenize(text.encode("utf-8"))
         return len(tokenized_text)
