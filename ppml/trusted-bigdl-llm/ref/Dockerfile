@@ -31,3 +31,5 @@ RUN cd /ppml && \
     gramine-sgx-get-token --output bash.token --sig bash.sig
 
 WORKDIR /ppml
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
