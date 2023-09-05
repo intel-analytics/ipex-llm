@@ -14,7 +14,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
-pip install -U openai-whisper # install bigdl-llm with 'all' option
+pip install -U openai-whisper
 pip install librosa # required by audio processing
 ```
 
