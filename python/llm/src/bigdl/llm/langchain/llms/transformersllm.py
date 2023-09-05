@@ -151,12 +151,11 @@ class TransformersLLM(LLM):
         **kwargs: Any,
     ) -> LLM:
         """
-        Construct object from model_id
+        Construct object from low_bit model_id
         
         Args:
         
-            model_id: Path for the huggingface repo id to be downloaded or
-                      the huggingface checkpoint folder.
+            model_id: Path for the bigdl transformers low-bit model checkpoint folder.
             model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
             kwargs: Extra arguments that will be passed to the model and tokenizer.
 
