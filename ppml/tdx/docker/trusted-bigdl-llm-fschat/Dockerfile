@@ -56,11 +56,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev && \
+    ln -s /usr/lib/x86_64-linux-gnu/libtdx_attest.so.1 /usr/lib/x86_64-linux-gnu/libtdx_attest.so && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /opt/attestation.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
-
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 
