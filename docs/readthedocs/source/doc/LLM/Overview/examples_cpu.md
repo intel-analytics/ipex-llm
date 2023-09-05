@@ -1,6 +1,10 @@
-# Examples
+# BigDL-LLM Examples: CPU
 
-We may use any Hugging Face *Transfomers* models on `bigdl-llm`, and the following models have been verified on Intel laptops.
+Here, we provide some examples on how you could apply BigDL-LLM INT4 optimizations on popular open-source models in the community.
+
+To run these examples, please first refer to [here](./install_cpu.html) for more information about how to install ``bigdl-llm``, requirements and best practices for setting up your environment.
+
+The following models have been verified on either servers or laptops with Intel CPUs.
 
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
