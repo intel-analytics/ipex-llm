@@ -5,8 +5,6 @@ llm.optimize
 ----------------------------------------
 
 .. automodule:: bigdl.llm.optimize
-    :members:
+    :members: optimize_model
     :undoc-members:
     :show-inheritance:
-
-    .. automethod::
