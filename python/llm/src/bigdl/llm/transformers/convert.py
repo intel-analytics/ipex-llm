@@ -43,9 +43,9 @@ import transformers
 import importlib
 
 
-def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
-                               current_key_name=None):
-    from bigdl.llm.transformers.linear_quant import LinearQuant, FP4Params
+def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
+                                 current_key_name=None):
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -56,7 +56,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-                    new_linear = LinearQuant(
+                    new_linear = LowBitLinear(
                         module.in_features,
                         module.out_features,
                         qtype,
@@ -65,12 +65,12 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
 
                     device_type = module.weight.data.device.type
                     # Copy the weights
-                    paramsQuant = FP4Params(data=module.weight.data,
-                                            requires_grad=False,
-                                            quantized=False,
-                                            _shape=None,
-                                            qtype=qtype).to(device_type)
-                    new_linear._parameters['weight'] = paramsQuant
+                    paramsLowBit = FP4Params(data=module.weight.data,
+                                             requires_grad=False,
+                                             quantized=False,
+                                             _shape=None,
+                                             qtype=qtype).to(device_type)
+                    new_linear._parameters['weight'] = paramsLowBit
 
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -85,7 +85,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
-            _, _flag = _replace_with_quant_linear(
+            _, _flag = _replace_with_low_bit_linear(
                 module,
                 qtype,
                 modules_to_not_convert,
@@ -95,9 +95,9 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
+def ggml_convert_low_bit(model, qtype, optimize_model=True, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
-    model, has_been_replaced = _replace_with_quant_linear(
+    model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert, None
     )
     if not has_been_replaced:
