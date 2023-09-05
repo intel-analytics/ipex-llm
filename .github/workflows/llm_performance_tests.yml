@@ -5,18 +5,19 @@ concurrency:
   group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   schedule:
-    - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - '.github/workflows/llm_performance_tests.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
+      - ".github/workflows/llm_performance_tests.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
+      - "python/llm/test/benchmark/**"
   workflow_dispatch:
   workflow_call:
 
@@ -31,7 +32,7 @@ jobs:
       matrix:
         python-version: ["3.9"]
         instruction: ["AVX512"]
-    runs-on: [ self-hosted, llm, perf ]
+    runs-on: [self-hosted, llm, perf]
     env:
       THREAD_NUM: 24
     steps:
@@ -54,13 +55,81 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run LLM Performance test        
+      - name: Run LLM Performance test
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        run:
-          bash python/llm/dev/benchmark/run-benchmark-tests.sh
+        run: bash python/llm/dev/benchmark/run-benchmark-tests.sh
 
       # - name: Clean up test environment
       #   uses: ./.github/actions/llm/remove-llm-env
       #   env:
       #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+  llm-performance-test-on-arc:
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    runs-on: [self-hosted, llm, perf]
+    env:
+      OMP_NUM_THREADS: 16
+      THREAD_NUM: 16
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    steps:
+      - name: Set model directories
+        shell: bash
+        run: |
+          echo "ORIGIN_DIR=/mnt/disk1/models" >> "$GITHUB_ENV"
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
+          echo "LLAMA2_13B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-13b-chat-hf" >> "$GITHUB_ENV"
+          echo "CHATGLM2_6B_ORIGIN_PATH=${ORIGIN_DIR}/chatglm2-6b" >> "$GITHUB_ENV"
+          echo "WHISPER_MEDIUM_ORIGIN_PATH=${ORIGIN_DIR}/whisper-medium" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          python -m pip install --upgrade wheel
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu"
+
+      - name: Test installed xpu version
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-install-tests.sh
+      - name: Test on xpu
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          cd python/llm/test/benchmark/gpu
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          rm -rf test-result || true
+          mkdir test-result
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_7B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/llama2_7b-32-32.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_7B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/llama2_7b-1024-1024.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_13B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/llama2_13b-32-32.log
+          taskset -c 0-$((THREAD_NUM - 1)) python llama2.py --model-dir="${LLAMA2_13B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/llama2_13b-1024-1024.log
+          taskset -c 0-$((THREAD_NUM - 1)) python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=32 --max-new-tokens=32 > test-result/chatglm2_6b-32-32.log
+          taskset -c 0-$((THREAD_NUM - 1)) python chatglm2.py --model-dir="${CHATGLM2_6B_ORIGIN_PATH}" --input-tokens=1024 --max-new-tokens=1024 > test-result/chatglm2_6b-1024-1024.log
+          taskset -c 0-$((THREAD_NUM - 1)) python whisper.py --model-dir="${WHISPER_MEDIUM_ORIGIN_PATH}" > test-result/whisper_medium-default-default.log
+          python ../analyze_log_dir.py --log-dir=./test-result --output-path=./xpu_latency.csv
+          timestamp=`date '+%Y%m%d'`
+          curl -T ./xpu_latency.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/xpu_lantency_$timestamp.csv
