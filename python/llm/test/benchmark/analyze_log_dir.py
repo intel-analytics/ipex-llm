@@ -21,7 +21,9 @@ import re
 import glob
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('OPT generation script', add_help=False)
+    parser = argparse.ArgumentParser(
+        'Process the logs of benchmark utils and output a csv file of performance data',
+        add_help=False)
     parser.add_argument('-m', '--log-dir',  default="./", type=str)
     parser.add_argument('--output-path',
                         default="./model_latency.csv", type=str)
@@ -39,6 +41,7 @@ if __name__ == '__main__':
                                                re.findall(r'First token cost (.*?)s', log)))
             rest_token_time_list = sorted(map(float,
                                               re.findall(r'Rest tokens cost average (.*?)s', log)))
+            # For fairness, remove the fastest and slowest data
             first_token_latency = sum(first_token_time_list[1:-1]
                                       )/(len(first_token_time_list)-2)
             rest_token_latency = sum(rest_token_time_list[1:-1]
@@ -58,4 +61,4 @@ if __name__ == '__main__':
         writer = csv.DictWriter(csvfile, fieldnames=result_list[0].keys())
         writer.writeheader()
         writer.writerows(result_list)
-    print('Log analyze finished!')
+    print('Log analysis finished!')
