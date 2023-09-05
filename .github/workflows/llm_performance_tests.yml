@@ -72,6 +72,7 @@ jobs:
         python-version: ["3.9"]
     runs-on: [self-hosted, llm, perf]
     env:
+      OMP_NUM_THREADS: 16
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
