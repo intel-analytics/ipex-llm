@@ -43,8 +43,9 @@ subtrees:
                     - entries:
                       - file: doc/LLM/Overview/KeyFeatures/hugging_face_format
                       - file: doc/LLM/Overview/KeyFeatures/native_format
+                - file: doc/LLM/Overview/KeyFeatures/optimize_model
                 - file: doc/LLM/Overview/KeyFeatures/langchain_api
-                # - file: doc/LLM/Overview/KeyFeatures/cli
+                - file: doc/LLM/Overview/KeyFeatures/cli
                 - file: doc/LLM/Overview/KeyFeatures/gpu_supports
           - file: doc/LLM/Overview/examples
             title: "Examples"

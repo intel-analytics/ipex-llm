@@ -4,37 +4,8 @@ BigDL-LLM
 .. raw:: html
 
     <p>
-        <strong>BigDL-LLM</strong> is a library for running <strong><em>LLM</em></strong> (Large Language Models) on your Intel <strong><em>laptop</em></strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any Hugging Face <em>Transformers</em> model).
+        <strong>BigDL-LLM</strong> is a library for running <strong>LLM</strong> (large language model) on your Intel <strong>laptop</strong> or <strong>GPU</strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
     </p>
-
-See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and ``starcoder-15b`` models on a 12th Gen Intel Core CPU below.
-
-.. grid:: 1 3 3 3
-    :gutter: 2
-
-    .. grid-item::
-        :class: sd-text-center
-
-        .. image:: https://github.com/bigdl-project/bigdl-project.github.io/raw/master/assets/chatglm2-6b.gif
-           :target: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif
-        
-        chatglm2-6b
-
-    .. grid-item::
-        :class: sd-text-center
-
-        .. image:: https://github.com/bigdl-project/bigdl-project.github.io/raw/master/assets/llama-2-13b-chat.gif
-           :target: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif
-        
-        llama-2-13b-chat
-
-    .. grid-item::
-        :class: sd-text-center
-
-        .. image:: https://github.com/bigdl-project/bigdl-project.github.io/raw/master/assets/llm-15b5.gif
-           :target: https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif
-        
-        starcoder-15.5b
 
 -------
 
@@ -62,7 +33,9 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
         +++
 
         :bdg-link:`transformers-style <./Overview/KeyFeatures/transformers_style_api.html>` |
+        :bdg-link:`Optimize Model<./Overview/KeyFeatures/optimize_model.html>` |
         :bdg-link:`LangChain <./Overview/KeyFeatures/langchain_api.html>` |
+        :bdg-link:`CLI <./Overview/KeyFeatures/cli.html>` |
         :bdg-link:`GPU <./Overview/KeyFeatures/gpu_supports.html>`
 
     .. grid-item-card::

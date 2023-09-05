@@ -8,7 +8,9 @@ You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
   * |hugging_face_transformers_format|_
   * `Native Format <./native_format.html>`_
 
+* `General PyTorch Model Supports <./langchain_api.html>`_
 * `LangChain API <./langchain_api.html>`_
+* `CLI (Command Line Interface) Tool <./cli.html>`_
 * `GPU Supports <./gpu_supports.html>`_
 
 .. |transformers_style_api| replace:: ``transformers``-style API

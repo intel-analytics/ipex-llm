@@ -13,7 +13,9 @@ BigDL-LLM: low-Bit LLM library
 
 .. raw:: html
 
-   <p><a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on your Intel <strong>laptop</strong> or <strong>GPU</strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).</p>
+   <p>
+      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on your Intel <strong>laptop</strong> or <strong>GPU</strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+   </p>
 
 .. note::
 
@@ -36,8 +38,8 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
 .. raw:: html
    
    <p align="center">
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif?raw=true" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif?raw=true" width='30%' />
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png?raw=true" width='76%'/>
+            <a href="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif"><img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif?raw=true" width='30%'></a> <a href="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif"><img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llama-2-13b-chat.gif?raw=true" width='30%' ></a> <a href="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif"><img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif?raw=true" width='30%' ></a>
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models3.png?raw=true" width='76%'>
   </p>
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
