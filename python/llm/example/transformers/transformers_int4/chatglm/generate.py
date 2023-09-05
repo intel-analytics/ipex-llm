@@ -63,7 +63,5 @@ if __name__ == '__main__':
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
-        print('-'*20, 'Prompt', '-'*20)
-        print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)

@@ -1,4 +1,4 @@
-Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. **BigDL PPML** (BigDL Privacy Preserving Machine Learning) combines various low-level hardware and software security technologies (e.g., Intel® Software Guard Extensions (Intel® SGX), Security Key Management, Remote Attestation, Data Encryption, Federated Learning, etc.) so that users can continue applying standard Big Data and AI technologies (such as Apache Spark, Apache Flink, TensorFlow, PyTorch, etc.) without sacrificing privacy. 
+Protecting privacy and confidentiality is critical for large-scale data analysis, AI, and increasingly important LLM applications. **BigDL PPML** (Privacy Preserving Machine Learning) combines various low-level hardware and software security technologies (e.g., Intel® SGX, Intel® TDX, Security Key Management, Remote Attestation, Data Encryption, etc.) so that users can continue applying standard Big Data, AI and LLM technologies (such as Apache Spark, Apache Flink, TensorFlow, PyTorch, BigDL-LLM etc.) without sacrificing privacy.
 
 - [1. What is BigDL PPML?](#1-what-is-bigdl-ppml)
 - [2. Why BigDL PPML?](#2-why-bigdl-ppml)
@@ -45,17 +45,18 @@ Among these security technologies, [Confidential computing](https://www.intel.co
 [PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) (Privacy Preserving Machine Learning) in [BigDL 2.0](https://github.com/intel-analytics/BigDL) provides a Trusted Cluster Environment for secure Big Data & AI applications, even on untrusted cloud environment. By combining Intel Software Guard Extensions (SGX) with several other security technologies (e.g., attestation, key management service, private set intersection, federated learning, homomorphic encryption, etc.), BigDL PPML ensures end-to-end security enabled for the entire distributed workflows, such as Apache Spark, Apache Flink, XGBoost, TensorFlow, PyTorch, etc.
 
 ## 2. Why BigDL PPML?
-PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS), and optional Federated Learning support. 
+PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, TDX VMs, TDX Confidential Containers, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS).
 
 <p align="left">
-  <img src="https://user-images.githubusercontent.com/61072813/177922914-f670111c-e174-40d2-b95a-aafe92485024.png" alt="data lifecycle" width='600px' />
+  <img src="https://github.com/intel-analytics/BigDL/assets/60865256/c5cde022-b530-4019-ade5-8adf3f5a02b2" alt="data lifecycle" width='800px' />
 </p>
 
 With BigDL PPML, you can run trusted Big Data & AI applications
-- **Trusted Spark SQL & Dataframe**: with trusted Big Data analytics and ML/DL support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, MLlib, etc.) in a secure and trusted fashion.
-- **Trusted ML (Machine Learning)**: with trusted Big Data analytics and ML/DL support, users can run distributed machine learning (such as MLlib, XGBoost) in a secure and trusted fashion.
-- **Trusted DL (Deep Learning)**: with trusted Big Data analytics and ML/DL support, users can run distributed deep learning (such as BigDL, Orca, Nano, and DLlib) in a secure and trusted fashion.
-- **Trusted FL (Federated Learning)**: with PSI (Private Set Intersection), Secured Aggregation and trusted federated learning support, users can build a united model across different parties without compromising privacy, even if these parties have different datasets or features.
+- **Trusted Spark SQL & Dataframe**: with trusted Big Data analytics support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, MLlib, etc.) in a secure and trusted fashion.
+- **Trusted ML (Machine Learning)**: with trusted Big Data analytics and ML support, users can run distributed machine learning (such as MLlib, LightGBM) in a secure and trusted fashion.
+- **Trusted DL (Deep Learning)**: with trusted Big Data analytics and DL support, users can run distributed deep learning (such as BigDL, Orca, Nano, and PyTorch, Tensorflow) in a secure and trusted fashion.
+- **Trusted DL Serving**: with trusted DL Serving support, users can run distributed DL serving (such as TorchServe, TF Serving, etc.) in a secure and trusted fashion.
+- **Trusted LLM (Large Language Model)**: with trusted LLM support, users can run distributed LLM serving and fine-tuning with BigDL-LLM in a secure and trusted fashion.
 
 ## 3. Getting Started with PPML
 
@@ -202,9 +203,9 @@ To build a secure PPML image that can be used in a production environment, BigDL
     The sensitive enclave key will not be saved in the built image. Two values `mr_enclave` and `mr_signer` are recorded while the Enclave is built, you can find `mr_enclave` and `mr_signer` values in the console log, which are hash values used to register your MREnclave in the following attestation step.
 
     ````bash
-    [INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
-    mr_enclave       : c7a8a42af......
-    mr_signer        : 6f0627955......
+Attributes:
+    mr_enclave:  56ba......
+    mr_signer:   422c......
     ````
 
     Note: you can also customize the image according to your own needs, e.g. install an extra python library, add code, or jars.

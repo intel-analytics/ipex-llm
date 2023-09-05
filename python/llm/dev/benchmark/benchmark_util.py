@@ -510,8 +510,9 @@ class BenchmarkWrapper:
     learn more about decoding strategies refer to the [text generation strategies guide](../generation_strategies).
     """
     
-    def __init__(self, model):
+    def __init__(self, model, do_print=True):
         self.model = model
+        self.do_print = do_print
         print(self.model.__class__)
 
     def __getattr__(self, attr):
@@ -2445,9 +2446,13 @@ class BenchmarkWrapper:
             if this_peer_finished and not synced_gpus:
                 break
         
-        print(f"=========First token cost {first_token_time:.4f}s=========")
+        if self.do_print:
+            print(f"=========First token cost {first_token_time:.4f}s=========")
         if len(last_token_time) > 1:
-            print(f"=========Rest tokens cost average {np.mean(last_token_time):.4f}s ({len(last_token_time)} tokens in all)=========")
+            self.first_cost = first_token_time
+            self.rest_cost_mean = np.mean(last_token_time)
+            if self.do_print:
+                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f}s ({len(last_token_time)} tokens in all)=========")
 
         if streamer is not None:
             streamer.end()
