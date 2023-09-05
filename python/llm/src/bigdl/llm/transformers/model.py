@@ -98,7 +98,7 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
-        from .convert import ggml_convert_quant
+        from .convert import ggml_convert_low_bit
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
@@ -117,7 +117,7 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
         model = model.to("cpu")
-        model = ggml_convert_quant(model, qtype, optimize_model)
+        model = ggml_convert_low_bit(model, qtype, optimize_model)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # add save_low_bit to pretrained model dynamically
@@ -139,7 +139,7 @@ class _BaseAutoModelClass:
         from transformers.generation.configuration_utils import GenerationConfig
         from transformers.models.auto.auto_factory import _get_model_class
         from accelerate.big_modeling import init_empty_weights
-        from .convert import ggml_convert_quant
+        from .convert import ggml_convert_low_bit
         import copy
         import os
 
@@ -252,7 +252,7 @@ class _BaseAutoModelClass:
 
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
-        model = ggml_convert_quant(model, qtype, optimize_model, device=quant_device)
+        model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
