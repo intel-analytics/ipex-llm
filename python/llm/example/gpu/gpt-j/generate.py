@@ -45,6 +45,7 @@ if __name__ == '__main__':
                                                  optimize_model=False,
                                                  trust_remote_code=True)
     model = model.to('xpu')
+    model = ipex.optimize(model.eval(), dtype="float16", inplace=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
