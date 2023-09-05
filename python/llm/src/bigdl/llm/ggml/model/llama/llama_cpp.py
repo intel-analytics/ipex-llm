@@ -998,6 +998,7 @@ _lib.ggml_dequantize_q4_0.argtypes = [
 ]
 _lib.ggml_quantize_q4_0.restype = None
 
+
 def ggml_q_format_convet_cpu2xpu(
     src: ctypes.c_void_p,
     dst: ctypes.c_void_p,
