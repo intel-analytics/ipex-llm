@@ -47,7 +47,7 @@ if __name__ == '__main__':
     model = whisper.load_model(args.model_name)
 
     # With only one line to enable bigdl optimize on a pytorch model
-    model = optimize_model(model, low_bit="sym_int4", optimize_llm=True)
+    model = optimize_model(model, low_bit="sym_int4")
 
     st = time.time()
     result = model.transcribe(audio, verbose=True, language=args.language)
