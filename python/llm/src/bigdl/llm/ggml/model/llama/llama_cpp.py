@@ -999,20 +999,20 @@ _lib.ggml_dequantize_q4_0.argtypes = [
 _lib.ggml_quantize_q4_0.restype = None
 
 
-def ggml_dequantize_nf4(
-    src: ctypes.c_void_p,
-    dst: ctypes.c_void_p,
-    k: ctypes.c_int,
-):
-    _lib.ggml_dequantize_nf4(src, dst, k)
-
-
-_lib.ggml_dequantize_nf4.argtypes = [
-    ctypes.c_void_p,
-    ctypes.c_void_p,
-    ctypes.c_int,
-]
-_lib.ggml_dequantize_nf4.restype = None
+# def ggml_dequantize_nf4(
+#     src: ctypes.c_void_p,
+#     dst: ctypes.c_void_p,
+#     k: ctypes.c_int,
+# ):
+#     _lib.ggml_dequantize_nf4(src, dst, k)
+#
+# 
+# _lib.ggml_dequantize_nf4.argtypes = [
+#     ctypes.c_void_p,
+#     ctypes.c_void_p,
+#     ctypes.c_int,
+# ]
+# _lib.ggml_dequantize_nf4.restype = None
 
 
 def ggml_compute_forward_mul_mat_q_fp32(src_0_ne,  # type: ctypes.Array[ctypes.c_int64]
