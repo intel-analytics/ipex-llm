@@ -1,4 +1,3 @@
-import whisper
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,6 +15,7 @@ import whisper
 #
 
 
+import whisper
 import time
 import librosa
 import argparse
