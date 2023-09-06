@@ -10,7 +10,6 @@ You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
 
 * `General PyTorch Model Supports <./langchain_api.html>`_
 * `LangChain API <./langchain_api.html>`_
-* `CLI (Command Line Interface) Tool <./cli.html>`_
 * `GPU Supports <./gpu_supports.html>`_
 
 .. |transformers_style_api| replace:: ``transformers``-style API

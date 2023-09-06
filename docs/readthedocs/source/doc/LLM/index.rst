@@ -33,9 +33,8 @@ BigDL-LLM
         +++
 
         :bdg-link:`transformers-style <./Overview/KeyFeatures/transformers_style_api.html>` |
-        :bdg-link:`Optimize Model<./Overview/KeyFeatures/optimize_model.html>` |
+        :bdg-link:`Optimize Model <./Overview/KeyFeatures/optimize_model.html>` |
         :bdg-link:`LangChain <./Overview/KeyFeatures/langchain_api.html>` |
-        :bdg-link:`CLI <./Overview/KeyFeatures/cli.html>` |
         :bdg-link:`GPU <./Overview/KeyFeatures/gpu_supports.html>`
 
     .. grid-item-card::
