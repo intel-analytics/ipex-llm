@@ -111,10 +111,10 @@ def setup_package():
 
     stock_tensorflow_212_requires = ["tensorflow==2.12.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')", "protobuf==3.19.5"]
 
     # default tensorflow_dep
-    tensorflow_212_requires += tensorflow_common_requires
+    tensorflow_212_requires += ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')", "protobuf==3.20.3"]
     tensorflow_210_requires += tensorflow_common_requires
     tensorflow_29_requires += tensorflow_common_requires
     tensorflow_28_requires += tensorflow_common_requires
@@ -165,7 +165,8 @@ def setup_package():
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms",
-                               "cryptography==41.0.3"]
+                               "cryptography==41.0.3",
+                               "protobuf==3.19.5"]
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
@@ -191,7 +192,6 @@ def setup_package():
 
     install_requires = ["intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
                         "cloudpickle",
-                        "protobuf==3.20.3",
                         "py-cpuinfo",
                         "pyyaml",
                         "packaging",
