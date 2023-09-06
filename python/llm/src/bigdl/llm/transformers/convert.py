@@ -115,11 +115,7 @@ def ggml_convert_quant(model, qtype, optimize_model=True, device="cpu"):
         pass
 
     if optimize_model:
-        try:
-            model = optimize(model)
-        except:
-            logger.info("It is not supported that optimizing a model isn't belong to"
-                        "huggingface transformers with `optimize_model=True` for now.")
+        model = optimize(model)
     return model
 
 
@@ -134,6 +130,14 @@ def convert_forward(m, target_m, new_forward):
 def optimize(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    from transformers.modeling_utils import PreTrainedModel
+
+    # All huggingface format models are inherited from `PreTrainedModel` 
+    if not isinstance(model, PreTrainedModel):
+        logger.info("It is not supported that optimizing a model isn't belong to"
+                    "huggingface transformers with `optimize_model=True` for now.")
+        return model
+
     trans_version = transformers.__version__
     if version.parse(trans_version) >= version.parse("4.31.0"):
         convert_forward(
