@@ -38,7 +38,7 @@ spec:
             - name: WORKER_PORT # fixed
               value: "21841"
             - name: MODEL_PATH # Change this
-              value: "/ppml/models/vicuna-7b-bigdl/"
+              value: "/ppml/data/models/vicuna-7b-bigdl/"
             - name: OMP_NUM_THREADS
               value: "16"
           resources:
@@ -55,7 +55,7 @@ spec:
           args: ["-m", "worker"]
           volumeMounts:
             - name: ppml-models
-              mountPath: /ppml/ # change this in other envs
+              mountPath: /ppml/data/ # change this in other envs
             - name: aesm-path
               mountPath: /var/run/aesmd/aesm.socket
       restartPolicy: "Always"
