@@ -42,7 +42,7 @@ if __name__ == '__main__':
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
 
     # With only one line to enable BigDL-LLM optimization on model
-    model = optimize_model(model, low_bit="sym_int4", optimize_llm=True)
+    model = optimize_model(model)
     
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
