@@ -58,10 +58,11 @@ with torch.inference_mode():
 ```
 
 ------
+
 <div>
     <p>
         <sup><a href="#ref-perf" id="footnote-perf">[1]</a>
-            Performance varies by use, configuration and other factors. <code><span>bigdl-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="http://www.intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>
+            Performance varies by use, configuration and other factors. <code><span>bigdl-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="https://www.Intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>.
         </sup>
     </p>
 </div>
