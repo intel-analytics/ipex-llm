@@ -95,7 +95,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
             model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
             kwargs: Extra arguments that will be passed to the model and tokenizer.
         
-        Returns: Instances of the embedding model and tokenizer.
+        Returns: An object of TransformersEmbeddings.
         """
         try:
             from bigdl.llm.transformers import AutoModel
