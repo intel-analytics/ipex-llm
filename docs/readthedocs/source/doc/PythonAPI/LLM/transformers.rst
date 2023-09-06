@@ -1,4 +1,4 @@
-BigDL-LLM Transformers API
+BigDL-LLM `transformers`-style API
 =====================
 
 llm.transformers.model
