@@ -106,19 +106,48 @@ def llama_attention_forward_4_31(
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
 
-    query_states = query_states.view(bsz, q_len,
-                                     self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,
-                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    if query_states.device.type == "xpu" and position_ids is not None:
 
-    kv_seq_len = key_states.shape[-2]
-    if past_key_value is not None:
-        kv_seq_len += past_key_value[0].shape[-2]
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                    cos, sin, position_ids, "llama")
+        query_states = query_states.view(bsz, q_len,
+                                        self.num_heads, self.head_dim)
+        key_states = key_states.view(bsz, q_len,
+                                    self.num_key_value_heads, self.head_dim)
+        value_states = value_states.view(bsz, q_len,
+                                        self.num_key_value_heads, self.head_dim)
+
+        kv_seq_len = key_states.shape[-3]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value[0].shape[-2]
+
+        if kv_seq_len > self.rotary_emb.max_seq_len_cached:
+            self.rotary_emb._set_cos_sin_cache(seq_len=kv_seq_len,
+                                               device=value_states.device,
+                                               dtype=value_states.dtype)
+
+        cos = self.rotary_emb.cos_cached[:, :, position_ids, :].squeeze(0)
+        sin = self.rotary_emb.sin_cached[:, :, position_ids, :].squeeze(0)
+
+        torch.ops.torch_ipex.apply_rotary_embedding(query_states, sin, cos, query_states)
+        torch.ops.torch_ipex.apply_rotary_embedding(key_states, sin, cos, key_states)
+
+        query_states = query_states.transpose(1, 2)
+        key_states = key_states.transpose(1, 2)
+        value_states = value_states.transpose(1, 2)
+    else:
+        query_states = query_states.view(bsz, q_len,
+                                         self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value[0].shape[-2]
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "llama")
+
 
     if past_key_value is not None:
         # reuse k, v, self_attention
