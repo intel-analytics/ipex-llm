@@ -111,22 +111,25 @@ def setup_package():
 
     stock_tensorflow_212_requires = ["tensorflow==2.12.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')", "protobuf==3.19.5"]
-    tensorflow_new_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')", "protobuf==3.20.3"]
+    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
     # default tensorflow_dep
     tensorflow_27_requires += tensorflow_common_requires
     tensorflow_28_requires += tensorflow_common_requires
     tensorflow_29_requires += tensorflow_common_requires
-    tensorflow_210_requires += tensorflow_common_requires
-    tensorflow_212_requires += tensorflow_new_common_requires
+    tensorflow_212_requires += tensorflow_common_requires
+
+    tensorflow_212_requires.remove("onnx==1.12.0")
+    tensorflow_212_requires.remove("onnxruntime==1.12.1")
+    tensorflow_212_requires.remove("protobuf==3.19.5")
+    tensorflow_212_requires.push("onnx==1.13.1")
+    tensorflow_212_requires.push("onnxruntime==1.13.1")
 
     stock_tensorflow_27_requires += tensorflow_common_requires
     stock_tensorflow_28_requires += tensorflow_common_requires
     stock_tensorflow_29_requires += tensorflow_common_requires
     stock_tensorflow_210_requires += tensorflow_common_requires
-    stock_tensorflow_212_requires += tensorflow_new_common_requires
-
+    stock_tensorflow_212_requires += tensorflow_common_requires
     tensorflow_requires = tensorflow_212_requires
 
     # ipex is only avaliable for linux now
@@ -168,8 +171,7 @@ def setup_package():
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms",
-                               "cryptography==41.0.3",
-                               "protobuf==3.19.5"]
+                               "cryptography==41.0.3"]
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
@@ -181,8 +183,8 @@ def setup_package():
     pytorch_110_requires += pytorch_common_requires
     pytorch_nightly_requires += pytorch_common_requires
 
-    inference_requires = ["onnx==1.13.1",
-                          "onnxruntime==1.13.1",
+    inference_requires = ["onnx==1.12.0",
+                          "onnxruntime==1.12.1",
                           "onnxruntime-extensions==0.7.0; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
@@ -196,6 +198,7 @@ def setup_package():
     install_requires = ["intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
                         "cloudpickle",
                         "py-cpuinfo",
+                        "protobuf==3.19.5",
                         "pyyaml",
                         "packaging",
                         "sigfig",
