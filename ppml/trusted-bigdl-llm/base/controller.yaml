@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bigdl-fschat-a1234bd-controller
+  labels:
+    fastchat-appid: a1234bd
+    fastchat-app-type: controller
+spec:
+  dnsPolicy: "ClusterFirst"
+  nodeSelector:
+    icx-1: "true"
+  containers:
+    - name: fastchat-controller # fixed
+      image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.4.0-SNAPSHOT
+      imagePullPolicy: IfNotPresent
+      env:
+        - name: CONTROLLER_HOST # fixed
+          value: "0.0.0.0"
+        - name: CONTROLLER_PORT # fixed
+          value: "21005"
+        - name: API_HOST # fixed
+          value: "0.0.0.0"
+        - name: API_PORT # fixed
+          value: "8000"
+      ports:
+        - containerPort: 21005
+          name: con-port
+        - containerPort: 8000
+          name: api-port
+      resources:
+        requests:
+          memory: 16Gi
+          cpu: 4
+          sgx.intel.com/enclave: 1
+          sgx.intel.com/provision: 1
+        limits:
+          memory: 16Gi
+          cpu: 4
+          sgx.intel.com/enclave: 1
+          sgx.intel.com/provision: 1
+      args: ["-m", "controller"]
+      volumeMounts:
+        - name: aesm-path
+          mountPath: /var/run/aesmd/aesm.socket
+  restartPolicy: "Never"
+  volumes:
+    - name: aesm-path
+      hostPath:
+        path: /var/run/aesmd/aesm.socket # change this in other envs
