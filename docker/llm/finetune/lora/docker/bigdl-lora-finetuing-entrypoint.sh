@@ -28,7 +28,7 @@ then
   exit_status=$?
   if [ $exit_status -ne 0 ];
   then
-    cat launcher.log
+    cat $SAVE_PATH/launcher.log
     exit $exit_status
   else
     while true
