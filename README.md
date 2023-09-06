@@ -18,10 +18,10 @@
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15.5b` models on a 12th Gen Intel Core CPU below.
 
-   <p align="center">
-            <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" width='30%'></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif" width='30%' ></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif" width='30%' ></a>
-            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-models3.png" width='76%'>
-  </p>
+<p align="center">
+          <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" width='30%'></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif" width='30%' ></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif" width='30%' ></a>
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-models3.png" width='76%'>
+</p>
 
 ### `bigdl-llm` quickstart
 
