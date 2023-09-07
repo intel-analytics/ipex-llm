@@ -144,7 +144,7 @@ COPY --from=temp /usr/local/bin/torch-model-archiver /usr/local/bin/torch-model-
 
 # Transformers
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg
-COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers* /usr/local/lib/python3.9/dist-packages/tokenizers.egg
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
