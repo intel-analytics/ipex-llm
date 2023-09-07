@@ -53,3 +53,36 @@ cat launcher.log # display logs collected from other workers
 ```
 
 From the log, you can see whether finetuning process has been invoked successfully in all MPI worker pods, and a progress bar with finetuning speed and estimated time will be showed after some data preprocessing steps (this may take quiet a while).
+
+
+### To run in TDX-CoCo and enable Remote Attestation API
+
+You can deploy this workload in TDX CoCo and enable Remote Attestation API Serving with the referance yaml configuration `./kubernetes/bigdl-lora-finetuning-job.yaml.tdx`. The main diffences are it's need to execute the pods as root and mount TDX device, and a flask service is responsible for generating launcher's quote and collecting workers' quotes. 
+
+To use RA Rest API, you need to get the IP of job-launcher:
+``` bash
+kubectl get all -n bigdl-lora-finetuning 
+```
+You will find a line like `service/bigdl-lora-finetuning-launcher-attestation-api-service   ClusterIP   10.109.87.248   <none>        9870/TCP   17m`, which shows IP and port of the Remote Attestation API service.
+
+The RA Rest API are listed below:
+1. Generate launcher's quote
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"user_report_data": "<your_user_report_data>"}' http://<your_ra_api_service_ip>:<your_ra_api_service_port>/gen_quote
+```
+
+Example responce:
+
+```json
+{"quote":"BAACAIEAAAAAAAA..."}
+```
+2. Collect all cluster components' quotes (launcher and workers)
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"user_report_data": "<your_user_report_data>"}' http://<your_ra_api_service_ip>:<your_ra_api_service_port>/attest
+```
+
+Example responce:
+
+```json
+{"quote_list":{"bigdl-lora-finetuning-job-worker-0":"BAACAIEAAAAAAA...","bigdl-lora-finetuning-job-worker-1":"BAACAIEAAAAAAA...","launcher":"BAACAIEAAAAAA..."}}
+```
