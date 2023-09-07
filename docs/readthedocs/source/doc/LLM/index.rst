@@ -20,7 +20,7 @@ BigDL-LLM
         Documents in these sections helps you getting started quickly with BigDL-LLM.
 
         +++
-        :bdg-link:`BigDL-LLM in 5 minutes <./Overview/quick_start.html>` |
+        :bdg-link:`BigDL-LLM in 5 minutes <./Overview/llm.html>` |
         :bdg-link:`Installation <./Overview/install.html>`
 
     .. grid-item-card::
