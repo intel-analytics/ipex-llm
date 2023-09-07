@@ -41,6 +41,7 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib
+from .utils import logger
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
@@ -129,6 +130,14 @@ def convert_forward(m, target_m, new_forward):
 def optimize(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    from transformers.modeling_utils import PreTrainedModel
+
+    # All huggingface format models are inherited from `PreTrainedModel`
+    if not isinstance(model, PreTrainedModel):
+        logger.info("It is not supported that optimizing a model isn't belong to"
+                    "huggingface transformers with `optimize_model=True` for now.")
+        return model
+
     trans_version = transformers.__version__
     if version.parse(trans_version) >= version.parse("4.31.0"):
         convert_forward(
