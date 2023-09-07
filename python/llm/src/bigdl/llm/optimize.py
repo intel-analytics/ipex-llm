@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from .transformers import ggml_convert_quant
+from .transformers import ggml_convert_low_bit
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
@@ -34,4 +34,4 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
                       f"Unknown load_in_low_bit value: {low_bit}, expected:"
                       f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
     qtype = ggml_tensor_qtype[low_bit]
-    return ggml_convert_quant(model, qtype=qtype, optimize_model=optimize_llm)
+    return ggml_convert_low_bit(model, qtype=qtype, optimize_model=optimize_llm)

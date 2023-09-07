@@ -478,12 +478,17 @@ class BeamSampleEncoderDecoderOutput(ModelOutput):
     decoder_hidden_states: Optional[Tuple[Tuple[torch.FloatTensor]]] = None
 
 
-GreedySearchOutput = Union[GreedySearchEncoderDecoderOutput, GreedySearchDecoderOnlyOutput]
+GreedySearchOutput = Union[GreedySearchEncoderDecoderOutput,
+                           GreedySearchDecoderOnlyOutput]
 SampleOutput = Union[SampleEncoderDecoderOutput, SampleDecoderOnlyOutput]
-BeamSearchOutput = Union[BeamSearchEncoderDecoderOutput, BeamSearchDecoderOnlyOutput]
-BeamSampleOutput = Union[BeamSampleEncoderDecoderOutput, BeamSampleDecoderOnlyOutput]
-ContrastiveSearchOutput = Union[ContrastiveSearchEncoderDecoderOutput, ContrastiveSearchDecoderOnlyOutput]
-GenerateOutput = Union[GreedySearchOutput, SampleOutput, BeamSearchOutput, BeamSampleOutput, ContrastiveSearchOutput]
+BeamSearchOutput = Union[BeamSearchEncoderDecoderOutput,
+                         BeamSearchDecoderOnlyOutput]
+BeamSampleOutput = Union[BeamSampleEncoderDecoderOutput,
+                         BeamSampleDecoderOnlyOutput]
+ContrastiveSearchOutput = Union[ContrastiveSearchEncoderDecoderOutput,
+                                ContrastiveSearchDecoderOnlyOutput]
+GenerateOutput = Union[GreedySearchOutput, SampleOutput,
+                       BeamSearchOutput, BeamSampleOutput, ContrastiveSearchOutput]
 
 
 class BenchmarkWrapper:
@@ -509,7 +514,7 @@ class BenchmarkWrapper:
     You do not need to call any of the above methods directly. Pass custom parameter values to 'generate' instead. To
     learn more about decoding strategies refer to the [text generation strategies guide](../generation_strategies).
     """
-    
+
     def __init__(self, model):
         self.model = model
         print(self.model.__class__)
@@ -518,7 +523,8 @@ class BenchmarkWrapper:
         if hasattr(self.model, attr):
             return getattr(self.model, attr)
         else:
-            raise AttributeError(f"'{type(self).__name__}' object and its model have no attribute '{attr}'")
+            raise AttributeError(
+                f"'{type(self).__name__}' object and its model have no attribute '{attr}'")
 
     def prepare_inputs_for_generation(self, *args, **kwargs):
         return self.model.prepare_inputs_for_generation(*args, **kwargs)
@@ -546,7 +552,8 @@ class BenchmarkWrapper:
         else:
             input_name = self.main_input_name
 
-        model_kwargs = {k: v for k, v in model_kwargs.items() if v is not None or k != input_name}
+        model_kwargs = {k: v for k, v in model_kwargs.items(
+        ) if v is not None or k != input_name}
 
         # 2. check whether model_input_name is passed as kwarg
         # if yes and `inputs` is None use kwarg inputs
@@ -568,7 +575,8 @@ class BenchmarkWrapper:
         if input_name == "input_ids" and "inputs_embeds" in model_kwargs:
             if not self.config.is_encoder_decoder:
                 has_inputs_embeds_forwarding = "inputs_embeds" in set(
-                    inspect.signature(self.prepare_inputs_for_generation).parameters.keys()
+                    inspect.signature(
+                        self.prepare_inputs_for_generation).parameters.keys()
                 )
                 if not has_inputs_embeds_forwarding:
                     raise ValueError(
@@ -583,11 +591,13 @@ class BenchmarkWrapper:
                 )
             else:
                 if inputs is not None:
-                    raise ValueError("You passed `inputs_embeds` and `input_ids` to `.generate()`. Please pick one.")
+                    raise ValueError(
+                        "You passed `inputs_embeds` and `input_ids` to `.generate()`. Please pick one.")
             inputs, input_name = model_kwargs["inputs_embeds"], "inputs_embeds"
 
         # 4. if `inputs` is still None, try to create `input_ids` from BOS token
-        inputs = self._maybe_initialize_input_ids_for_generation(inputs, bos_token_id, model_kwargs)
+        inputs = self._maybe_initialize_input_ids_for_generation(
+            inputs, bos_token_id, model_kwargs)
         return inputs, input_name, model_kwargs
 
     def adjust_logits_during_generation(self, logits: torch.FloatTensor, **kwargs) -> torch.FloatTensor:
@@ -613,7 +623,8 @@ class BenchmarkWrapper:
             return torch.ones(shape, dtype=torch.long, device=self.device) * -100
 
         if bos_token_id is None:
-            raise ValueError("`bos_token_id` has to be defined when no `input_ids` are provided.")
+            raise ValueError(
+                "`bos_token_id` has to be defined when no `input_ids` are provided.")
 
         # If there is some tensor in `model_kwargs`, we can infer the batch size from it. This is helpful with
         # soft-prompting or in multimodal implementations built on top of decoder-only language models.
@@ -630,11 +641,14 @@ class BenchmarkWrapper:
         pad_token_id: Optional[int],
         eos_token_id: Optional[Union[int, List[int]]],
     ) -> torch.LongTensor:
-        is_input_ids = len(inputs.shape) == 2 and inputs.dtype in [torch.int, torch.long]
-        is_pad_token_in_inputs = (pad_token_id is not None) and (pad_token_id in inputs)
+        is_input_ids = len(inputs.shape) == 2 and inputs.dtype in [
+            torch.int, torch.long]
+        is_pad_token_in_inputs = (pad_token_id is not None) and (
+            pad_token_id in inputs)
         if isinstance(eos_token_id, int):
             eos_token_id = [eos_token_id]
-        is_pad_token_not_equal_to_eos_token_id = (eos_token_id is None) or (pad_token_id not in eos_token_id)
+        is_pad_token_not_equal_to_eos_token_id = (
+            eos_token_id is None) or (pad_token_id not in eos_token_id)
 
         # Check if input is input_ids and padded -> only then is attention_mask defined
         if is_input_ids and is_pad_token_in_inputs and is_pad_token_not_equal_to_eos_token_id:
@@ -670,7 +684,8 @@ class BenchmarkWrapper:
         model_input_name = model_input_name if model_input_name is not None else self.main_input_name
         encoder_kwargs["return_dict"] = True
         encoder_kwargs[model_input_name] = inputs_tensor
-        model_kwargs["encoder_outputs"]: ModelOutput = encoder(**encoder_kwargs)
+        model_kwargs["encoder_outputs"]: ModelOutput = encoder(
+            **encoder_kwargs)
 
         return model_kwargs
 
@@ -694,10 +709,12 @@ class BenchmarkWrapper:
             decoder_input_ids = None
 
         # 2. Encoder-decoder models expect the `decoder_input_ids` to start with a special token. Let's ensure that.
-        decoder_start_token_id = self._get_decoder_start_token_id(decoder_start_token_id, bos_token_id)
+        decoder_start_token_id = self._get_decoder_start_token_id(
+            decoder_start_token_id, bos_token_id)
         if device is None:
             device = self.device
-        decoder_input_ids_start = torch.ones((batch_size, 1), dtype=torch.long, device=device) * decoder_start_token_id
+        decoder_input_ids_start = torch.ones(
+            (batch_size, 1), dtype=torch.long, device=device) * decoder_start_token_id
 
         # no user input -> use decoder_start_token_id as decoder_input_ids
         if decoder_input_ids is None:
@@ -708,11 +725,13 @@ class BenchmarkWrapper:
         # user input but doesn't start with decoder_start_token_id -> prepend decoder_start_token_id (and adjust
         # decoder_attention_mask if provided)
         elif (decoder_input_ids[:, 0] != decoder_start_token_id).all().item():
-            decoder_input_ids = torch.cat([decoder_input_ids_start, decoder_input_ids], dim=-1)
+            decoder_input_ids = torch.cat(
+                [decoder_input_ids_start, decoder_input_ids], dim=-1)
             if "decoder_attention_mask" in model_kwargs:
                 decoder_attention_mask = model_kwargs["decoder_attention_mask"]
                 decoder_attention_mask = torch.cat(
-                    (torch.ones_like(decoder_attention_mask)[:, :1], decoder_attention_mask),
+                    (torch.ones_like(decoder_attention_mask)
+                     [:, :1], decoder_attention_mask),
                     dim=-1,
                 )
                 model_kwargs["decoder_attention_mask"] = decoder_attention_mask
@@ -747,7 +766,8 @@ class BenchmarkWrapper:
         def _expand_dict_for_generation(dict_to_expand):
             for key in dict_to_expand:
                 if dict_to_expand[key] is not None and isinstance(dict_to_expand[key], torch.Tensor):
-                    dict_to_expand[key] = dict_to_expand[key].repeat_interleave(expand_size, dim=0)
+                    dict_to_expand[key] = dict_to_expand[key].repeat_interleave(
+                        expand_size, dim=0)
             return dict_to_expand
 
         if input_ids is not None:
@@ -757,8 +777,10 @@ class BenchmarkWrapper:
 
         if is_encoder_decoder:
             if model_kwargs.get("encoder_outputs") is None:
-                raise ValueError("If `is_encoder_decoder` is True, make sure that `encoder_outputs` is defined.")
-            model_kwargs["encoder_outputs"] = _expand_dict_for_generation(model_kwargs["encoder_outputs"])
+                raise ValueError(
+                    "If `is_encoder_decoder` is True, make sure that `encoder_outputs` is defined.")
+            model_kwargs["encoder_outputs"] = _expand_dict_for_generation(
+                model_kwargs["encoder_outputs"])
 
         return input_ids, model_kwargs
 
@@ -774,7 +796,8 @@ class BenchmarkWrapper:
         # Bloom fix: standardizes the cache format when requested
         if standardize_cache_format and hasattr(self, "_convert_to_standard_cache"):
             batch_size = outputs.logits.shape[0]
-            past_key_values = self._convert_to_standard_cache(past_key_values, batch_size=batch_size)
+            past_key_values = self._convert_to_standard_cache(
+                past_key_values, batch_size=batch_size)
         return past_key_values
 
     def _update_model_kwargs_for_generation(
@@ -796,7 +819,8 @@ class BenchmarkWrapper:
         # update token_type_ids with last value
         if "token_type_ids" in model_kwargs:
             token_type_ids = model_kwargs["token_type_ids"]
-            model_kwargs["token_type_ids"] = torch.cat([token_type_ids, token_type_ids[:, -1].unsqueeze(-1)], dim=-1)
+            model_kwargs["token_type_ids"] = torch.cat(
+                [token_type_ids, token_type_ids[:, -1].unsqueeze(-1)], dim=-1)
 
         if not is_encoder_decoder:
             # update attention mask
@@ -810,7 +834,8 @@ class BenchmarkWrapper:
             if "decoder_attention_mask" in model_kwargs:
                 decoder_attention_mask = model_kwargs["decoder_attention_mask"]
                 model_kwargs["decoder_attention_mask"] = torch.cat(
-                    [decoder_attention_mask, decoder_attention_mask.new_ones((decoder_attention_mask.shape[0], 1))],
+                    [decoder_attention_mask, decoder_attention_mask.new_ones(
+                        (decoder_attention_mask.shape[0], 1))],
                     dim=-1,
                 )
 
@@ -837,23 +862,29 @@ class BenchmarkWrapper:
         # the following idea is largely copied from this PR: https://github.com/huggingface/transformers/pull/5420/files
         # all samplers can be found in `generation_utils_samplers.py`
         if generation_config.temperature is not None and generation_config.temperature != 1.0:
-            warpers.append(TemperatureLogitsWarper(generation_config.temperature))
+            warpers.append(TemperatureLogitsWarper(
+                generation_config.temperature))
         min_tokens_to_keep = 2 if generation_config.num_beams > 1 else 1
         if generation_config.top_k is not None and generation_config.top_k != 0:
-            warpers.append(TopKLogitsWarper(top_k=generation_config.top_k, min_tokens_to_keep=min_tokens_to_keep))
+            warpers.append(TopKLogitsWarper(
+                top_k=generation_config.top_k, min_tokens_to_keep=min_tokens_to_keep))
         if generation_config.top_p is not None and generation_config.top_p < 1.0:
-            warpers.append(TopPLogitsWarper(top_p=generation_config.top_p, min_tokens_to_keep=min_tokens_to_keep))
+            warpers.append(TopPLogitsWarper(
+                top_p=generation_config.top_p, min_tokens_to_keep=min_tokens_to_keep))
         if generation_config.typical_p is not None and generation_config.typical_p < 1.0:
             warpers.append(
-                TypicalLogitsWarper(mass=generation_config.typical_p, min_tokens_to_keep=min_tokens_to_keep)
+                TypicalLogitsWarper(
+                    mass=generation_config.typical_p, min_tokens_to_keep=min_tokens_to_keep)
             )
         if generation_config.epsilon_cutoff is not None and 0.0 < generation_config.epsilon_cutoff < 1.0:
             warpers.append(
-                EpsilonLogitsWarper(epsilon=generation_config.epsilon_cutoff, min_tokens_to_keep=min_tokens_to_keep)
+                EpsilonLogitsWarper(
+                    epsilon=generation_config.epsilon_cutoff, min_tokens_to_keep=min_tokens_to_keep)
             )
         if generation_config.eta_cutoff is not None and 0.0 < generation_config.eta_cutoff < 1.0:
             warpers.append(
-                EtaLogitsWarper(epsilon=generation_config.eta_cutoff, min_tokens_to_keep=min_tokens_to_keep)
+                EtaLogitsWarper(epsilon=generation_config.eta_cutoff,
+                                min_tokens_to_keep=min_tokens_to_keep)
             )
         # `LogitNormalization` should always be the last logit processor, when present
         if generation_config.renormalize_logits is True:
@@ -895,9 +926,11 @@ class BenchmarkWrapper:
                 )
             )
         if generation_config.repetition_penalty is not None and generation_config.repetition_penalty != 1.0:
-            processors.append(RepetitionPenaltyLogitsProcessor(penalty=generation_config.repetition_penalty))
+            processors.append(RepetitionPenaltyLogitsProcessor(
+                penalty=generation_config.repetition_penalty))
         if generation_config.no_repeat_ngram_size is not None and generation_config.no_repeat_ngram_size > 0:
-            processors.append(NoRepeatNGramLogitsProcessor(generation_config.no_repeat_ngram_size))
+            processors.append(NoRepeatNGramLogitsProcessor(
+                generation_config.no_repeat_ngram_size))
         if (
             generation_config.encoder_no_repeat_ngram_size is not None
             and generation_config.encoder_no_repeat_ngram_size > 0
@@ -914,14 +947,16 @@ class BenchmarkWrapper:
                 )
         if generation_config.bad_words_ids is not None:
             processors.append(
-                NoBadWordsLogitsProcessor(generation_config.bad_words_ids, generation_config.eos_token_id)
+                NoBadWordsLogitsProcessor(
+                    generation_config.bad_words_ids, generation_config.eos_token_id)
             )
         if (
             generation_config.min_length is not None
             and generation_config.eos_token_id is not None
             and generation_config.min_length > 0
         ):
-            processors.append(MinLengthLogitsProcessor(generation_config.min_length, generation_config.eos_token_id))
+            processors.append(MinLengthLogitsProcessor(
+                generation_config.min_length, generation_config.eos_token_id))
         if (
             generation_config.min_new_tokens is not None
             and generation_config.eos_token_id is not None
@@ -939,10 +974,12 @@ class BenchmarkWrapper:
                 )
             )
         if generation_config.forced_bos_token_id is not None:
-            processors.append(ForcedBOSTokenLogitsProcessor(generation_config.forced_bos_token_id))
+            processors.append(ForcedBOSTokenLogitsProcessor(
+                generation_config.forced_bos_token_id))
         if generation_config.forced_eos_token_id is not None:
             processors.append(
-                ForcedEOSTokenLogitsProcessor(generation_config.max_length, generation_config.forced_eos_token_id)
+                ForcedEOSTokenLogitsProcessor(
+                    generation_config.max_length, generation_config.forced_eos_token_id)
             )
         if generation_config.remove_invalid_values is True:
             processors.append(InfNanRemoveLogitsProcessor())
@@ -955,7 +992,8 @@ class BenchmarkWrapper:
                 )
             )
         if generation_config.suppress_tokens is not None:
-            processors.append(SuppressTokensLogitsProcessor(generation_config.suppress_tokens))
+            processors.append(SuppressTokensLogitsProcessor(
+                generation_config.suppress_tokens))
         if generation_config.begin_suppress_tokens is not None:
             begin_index = input_ids_seq_length
             begin_index = (
@@ -967,11 +1005,14 @@ class BenchmarkWrapper:
                 # generation starts after the last token that is forced
                 begin_index += generation_config.forced_decoder_ids[-1][0]
             processors.append(
-                SuppressTokensAtBeginLogitsProcessor(generation_config.begin_suppress_tokens, begin_index)
+                SuppressTokensAtBeginLogitsProcessor(
+                    generation_config.begin_suppress_tokens, begin_index)
             )
         if generation_config.forced_decoder_ids is not None:
-            processors.append(ForceTokensLogitsProcessor(generation_config.forced_decoder_ids))
-        processors = self._merge_criteria_processor_list(processors, logits_processor)
+            processors.append(ForceTokensLogitsProcessor(
+                generation_config.forced_decoder_ids))
+        processors = self._merge_criteria_processor_list(
+            processors, logits_processor)
         # `LogitNormalization` should always be the last logit processor, when present
         if generation_config.renormalize_logits is True:
             processors.append(LogitNormalization())
@@ -982,10 +1023,13 @@ class BenchmarkWrapper:
     ) -> StoppingCriteriaList:
         criteria = StoppingCriteriaList()
         if generation_config.max_length is not None:
-            criteria.append(MaxLengthCriteria(max_length=generation_config.max_length))
+            criteria.append(MaxLengthCriteria(
+                max_length=generation_config.max_length))
         if generation_config.max_time is not None:
-            criteria.append(MaxTimeCriteria(max_time=generation_config.max_time))
-        criteria = self._merge_criteria_processor_list(criteria, stopping_criteria)
+            criteria.append(MaxTimeCriteria(
+                max_time=generation_config.max_time))
+        criteria = self._merge_criteria_processor_list(
+            criteria, stopping_criteria)
         return criteria
 
     def _merge_criteria_processor_list(
@@ -998,7 +1042,8 @@ class BenchmarkWrapper:
         for default in default_list:
             for custom in custom_list:
                 if type(custom) is type(default):
-                    object_type = "stopping criteria" if isinstance(custom, StoppingCriteria) else "logits processor"
+                    object_type = "stopping criteria" if isinstance(
+                        custom, StoppingCriteria) else "logits processor"
                     raise ValueError(
                         f"A custom {object_type} of type {type(custom)} with values {custom} has been passed to"
                         f" `.generate()`, but it has already been created with the values {default}. {default} has been"
@@ -1093,7 +1138,8 @@ class BenchmarkWrapper:
         # 1. In absence of `beam_indices`, we can assume that we come from e.g. greedy search, which is equivalent
         # to a beam search approach were the first (and only) beam is always selected
         if beam_indices is None:
-            beam_indices = torch.arange(scores[0].shape[0]).view(-1, 1).to(sequences.device)
+            beam_indices = torch.arange(
+                scores[0].shape[0]).view(-1, 1).to(sequences.device)
             beam_indices = beam_indices.expand(-1, len(scores))
 
         # 2. reshape scores as [batch_size*vocab_size, # generation steps] with # generation steps being
@@ -1102,7 +1148,8 @@ class BenchmarkWrapper:
 
         # 3. Optionally normalize the logits (across the vocab dimension)
         if normalize_logits:
-            scores = scores.reshape(-1, self.config.vocab_size, scores.shape[-1])
+            scores = scores.reshape(-1,
+                                    self.config.vocab_size, scores.shape[-1])
             scores = torch.nn.functional.log_softmax(scores, dim=1)
             scores = scores.reshape(-1, scores.shape[-1])
 
@@ -1145,7 +1192,8 @@ class BenchmarkWrapper:
             ]
             generate_compatible_classes = set()
             for model_mapping in generate_compatible_mappings:
-                supported_models = model_mapping.get(type(self.config), default=None)
+                supported_models = model_mapping.get(
+                    type(self.config), default=None)
                 if supported_models is not None:
                     generate_compatible_classes.add(supported_models.__name__)
             exception_message = (
@@ -1164,7 +1212,8 @@ class BenchmarkWrapper:
                 model_kwargs.pop(key, None)
 
         unused_model_args = []
-        model_args = set(inspect.signature(self.prepare_inputs_for_generation).parameters)
+        model_args = set(inspect.signature(
+            self.prepare_inputs_for_generation).parameters)
         # `kwargs`/`model_kwargs` is often used to handle optional forward pass inputs like `attention_mask`. If
         # `prepare_inputs_for_generation` doesn't accept them, then a stricter check can be made ;)
         if "kwargs" in model_args or "model_kwargs" in model_args:
@@ -1186,7 +1235,8 @@ class BenchmarkWrapper:
         generation_config: Optional[GenerationConfig] = None,
         logits_processor: Optional[LogitsProcessorList] = None,
         stopping_criteria: Optional[StoppingCriteriaList] = None,
-        prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]] = None,
+        prefix_allowed_tokens_fn: Optional[Callable[[
+            int, torch.Tensor], List[int]]] = None,
         synced_gpus: Optional[bool] = None,
         assistant_model: Optional["PreTrainedModel"] = None,
         streamer: Optional["BaseStreamer"] = None,
@@ -1287,7 +1337,8 @@ class BenchmarkWrapper:
             # legacy: users may modify the model configuration to control generation -- update the generation config
             # model attribute accordingly, if it was created from the model config
             if self.generation_config._from_model_config:
-                new_generation_config = GenerationConfig.from_model_config(self.config)
+                new_generation_config = GenerationConfig.from_model_config(
+                    self.config)
                 if new_generation_config != self.generation_config:
                     warnings.warn(
                         "You have modified the pretrained model configuration to control generation. This is a"
@@ -1299,7 +1350,8 @@ class BenchmarkWrapper:
             generation_config = self.generation_config
 
         generation_config = copy.deepcopy(generation_config)
-        model_kwargs = generation_config.update(**kwargs)  # All unused kwargs must be model kwargs
+        # All unused kwargs must be model kwargs
+        model_kwargs = generation_config.update(**kwargs)
         generation_config.validate()
         self._validate_model_kwargs(model_kwargs.copy())
 
@@ -1316,7 +1368,8 @@ class BenchmarkWrapper:
             eos_token_id = generation_config.eos_token_id
             if isinstance(eos_token_id, list):
                 eos_token_id = eos_token_id[0]
-            logger.warning(f"Setting `pad_token_id` to `eos_token_id`:{eos_token_id} for open-end generation.")
+            logger.warning(
+                f"Setting `pad_token_id` to `eos_token_id`:{eos_token_id} for open-end generation.")
             generation_config.pad_token_id = eos_token_id
 
         # 3. Define model inputs
@@ -1334,7 +1387,8 @@ class BenchmarkWrapper:
         model_kwargs["output_hidden_states"] = generation_config.output_hidden_states
         model_kwargs["use_cache"] = generation_config.use_cache
 
-        accepts_attention_mask = "attention_mask" in set(inspect.signature(self.forward).parameters.keys())
+        accepts_attention_mask = "attention_mask" in set(
+            inspect.signature(self.forward).parameters.keys())
         requires_attention_mask = "encoder_outputs" not in model_kwargs
 
         if model_kwargs.get("attention_mask", None) is None and requires_attention_mask and accepts_attention_mask:
@@ -1364,7 +1418,8 @@ class BenchmarkWrapper:
                 inputs_tensor, model_kwargs, model_input_name
             )
             enc_end = time.time()
-            print(f"=====================encoder cost {(enc_end - enc_st)*1000:.4f}ms=======================")
+            print(
+                f"=====================encoder cost {(enc_end - enc_st)*1000:.4f}ms=======================")
 
         # 5. Prepare `input_ids` which will be used for auto-regressive generation
         if self.config.is_encoder_decoder:
@@ -1377,14 +1432,16 @@ class BenchmarkWrapper:
                 device=inputs_tensor.device,
             )
         else:
-            input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop("input_ids")
+            input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop(
+                "input_ids")
 
         if streamer is not None:
             streamer.put(input_ids.cpu())
 
         # 6. Prepare `max_length` depending on other stopping criteria.
         input_ids_seq_length = input_ids.shape[-1]
-        has_default_max_length = kwargs.get("max_length") is None and generation_config.max_length is not None
+        has_default_max_length = kwargs.get(
+            "max_length") is None and generation_config.max_length is not None
         if has_default_max_length and generation_config.max_new_tokens is None:
             warnings.warn(
                 f"Using `max_length`'s default ({generation_config.max_length}) to control the generation length. "
@@ -1473,7 +1530,8 @@ class BenchmarkWrapper:
             is_assisted_gen_mode = True
 
         if generation_config.num_beam_groups > generation_config.num_beams:
-            raise ValueError("`num_beam_groups` has to be smaller or equal to `num_beams`")
+            raise ValueError(
+                "`num_beam_groups` has to be smaller or equal to `num_beams`")
         if is_group_beam_gen_mode and generation_config.do_sample is True:
             raise ValueError(
                 "Diverse beam search cannot be used in sampling mode. Make sure that `do_sample` is set to `False`."
@@ -1516,7 +1574,8 @@ class BenchmarkWrapper:
                     f"but is {generation_config.num_return_sequences}."
                 )
             if batch_size > 1:
-                raise ValueError("assisted generate is only supported for batch_size = 1")
+                raise ValueError(
+                    "assisted generate is only supported for batch_size = 1")
             if not model_kwargs["use_cache"]:
                 raise ValueError("assisted generate requires `use_cache=True`")
 
@@ -1537,7 +1596,8 @@ class BenchmarkWrapper:
                 assistant_model=assistant_model,
                 do_sample=generation_config.do_sample,
                 logits_processor=logits_processor,
-                logits_warper=self._get_logits_warper(generation_config) if generation_config.do_sample else None,
+                logits_warper=self._get_logits_warper(
+                    generation_config) if generation_config.do_sample else None,
                 stopping_criteria=stopping_criteria,
                 pad_token_id=generation_config.pad_token_id,
                 eos_token_id=generation_config.eos_token_id,
@@ -1575,7 +1635,8 @@ class BenchmarkWrapper:
                     f"but is {generation_config.num_return_sequences}."
                 )
             if not model_kwargs["use_cache"]:
-                raise ValueError("Contrastive search requires `use_cache=True`")
+                raise ValueError(
+                    "Contrastive search requires `use_cache=True`")
 
             return self.contrastive_search(
                 input_ids,
@@ -1621,10 +1682,12 @@ class BenchmarkWrapper:
 
         elif is_beam_gen_mode:
             if generation_config.num_return_sequences > generation_config.num_beams:
-                raise ValueError("`num_return_sequences` has to be smaller or equal to `num_beams`.")
+                raise ValueError(
+                    "`num_return_sequences` has to be smaller or equal to `num_beams`.")
 
             if stopping_criteria.max_length is None:
-                raise ValueError("`max_length` needs to be a stopping_criteria for now.")
+                raise ValueError(
+                    "`max_length` needs to be a stopping_criteria for now.")
 
             # 11. prepare beam search scorer
             beam_scorer = BeamSearchScorer(
@@ -1662,7 +1725,8 @@ class BenchmarkWrapper:
             logits_warper = self._get_logits_warper(generation_config)
 
             if stopping_criteria.max_length is None:
-                raise ValueError("`max_length` needs to be a stopping_criteria for now.")
+                raise ValueError(
+                    "`max_length` needs to be a stopping_criteria for now.")
             # 12. prepare beam search scorer
             beam_scorer = BeamSearchScorer(
                 batch_size=batch_size * generation_config.num_return_sequences,
@@ -1676,7 +1740,8 @@ class BenchmarkWrapper:
             # 13. interleave input_ids with `num_beams` additional sequences per batch
             input_ids, model_kwargs = self._expand_inputs_for_generation(
                 input_ids=input_ids,
-                expand_size=generation_config.num_beams * generation_config.num_return_sequences,
+                expand_size=generation_config.num_beams *
+                generation_config.num_return_sequences,
                 is_encoder_decoder=self.config.is_encoder_decoder,
                 **model_kwargs,
             )
@@ -1698,17 +1763,22 @@ class BenchmarkWrapper:
 
         elif is_group_beam_gen_mode:
             if generation_config.num_return_sequences > generation_config.num_beams:
-                raise ValueError("`num_return_sequences` has to be smaller or equal to `num_beams`.")
+                raise ValueError(
+                    "`num_return_sequences` has to be smaller or equal to `num_beams`.")
 
             if generation_config.num_beams % generation_config.num_beam_groups != 0:
-                raise ValueError("`num_beams` should be divisible by `num_beam_groups` for group beam search.")
+                raise ValueError(
+                    "`num_beams` should be divisible by `num_beam_groups` for group beam search.")
 
             if stopping_criteria.max_length is None:
-                raise ValueError("`max_length` needs to be a stopping_criteria for now.")
+                raise ValueError(
+                    "`max_length` needs to be a stopping_criteria for now.")
 
-            has_default_typical_p = kwargs.get("typical_p") is None and generation_config.typical_p == 1.0
+            has_default_typical_p = kwargs.get(
+                "typical_p") is None and generation_config.typical_p == 1.0
             if not has_default_typical_p:
-                raise ValueError("Decoder argument `typical_p` is not supported with beam groups.")
+                raise ValueError(
+                    "Decoder argument `typical_p` is not supported with beam groups.")
 
             # 11. prepare beam search scorer
             beam_scorer = BeamSearchScorer(
@@ -1744,19 +1814,24 @@ class BenchmarkWrapper:
 
         elif is_constraint_gen_mode:
             if generation_config.num_return_sequences > generation_config.num_beams:
-                raise ValueError("`num_return_sequences` has to be smaller or equal to `num_beams`.")
+                raise ValueError(
+                    "`num_return_sequences` has to be smaller or equal to `num_beams`.")
 
             if stopping_criteria.max_length is None:
-                raise ValueError("`max_length` needs to be a stopping_criteria for now.")
+                raise ValueError(
+                    "`max_length` needs to be a stopping_criteria for now.")
 
             if generation_config.num_beams <= 1:
-                raise ValueError("`num_beams` needs to be greater than 1 for constrained generation.")
+                raise ValueError(
+                    "`num_beams` needs to be greater than 1 for constrained generation.")
 
             if generation_config.do_sample:
-                raise ValueError("`do_sample` needs to be false for constrained generation.")
+                raise ValueError(
+                    "`do_sample` needs to be false for constrained generation.")
 
             if generation_config.num_beam_groups is not None and generation_config.num_beam_groups > 1:
-                raise ValueError("`num_beam_groups` not supported yet for constrained generation.")
+                raise ValueError(
+                    "`num_beam_groups` not supported yet for constrained generation.")
 
             final_constraints = []
             if generation_config.constraints is not None:
@@ -1783,7 +1858,8 @@ class BenchmarkWrapper:
                         if any(not isinstance(token_ids, list) for token_ids in word_ids):
                             typeerror()
                         if any(
-                            any((not isinstance(token_id, int) or token_id < 0) for token_id in token_ids)
+                            any((not isinstance(token_id, int) or token_id < 0)
+                                for token_id in token_ids)
                             for token_ids in word_ids
                         ):
                             typeerror()
@@ -1938,7 +2014,8 @@ class BenchmarkWrapper:
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
             eos_token_id = [eos_token_id]
-        eos_token_id_tensor = torch.tensor(eos_token_id).to(input_ids.device) if eos_token_id is not None else None
+        eos_token_id_tensor = torch.tensor(eos_token_id).to(
+            input_ids.device) if eos_token_id is not None else None
         output_scores = output_scores if output_scores is not None else self.generation_config.output_scores
         output_attentions = (
             output_attentions if output_attentions is not None else self.generation_config.output_attentions
@@ -1956,17 +2033,21 @@ class BenchmarkWrapper:
         scores = () if (return_dict_in_generate and output_scores) else None
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         # keep track of which sequences are already finished
-        unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
+        unfinished_sequences = torch.ones(
+            input_ids.shape[0], dtype=torch.long, device=input_ids.device)
 
         this_peer_finished = False  # used by synced_gpus only
         batch_size = input_ids.shape[0]
@@ -1975,7 +2056,8 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
@@ -1987,7 +2069,8 @@ class BenchmarkWrapper:
             if model_kwargs.get("past_key_values") is None:
                 # prepare inputs
                 model_kwargs["use_cache"] = True
-                model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+                model_inputs = self.prepare_inputs_for_generation(
+                    input_ids, **model_kwargs)
 
                 # encode the given prefix and prepare model inputs; encoder-decoder model process the prefix and save
                 # the `encoder_outputs`
@@ -2035,7 +2118,8 @@ class BenchmarkWrapper:
             # contrastive search decoding consists of two steps: (1) candidate tokens recall; (2) candidate re-rank by
             # degeneration penalty
 
-            logit_for_next_step = logits_processor(input_ids, logit_for_next_step)
+            logit_for_next_step = logits_processor(
+                input_ids, logit_for_next_step)
             logit_for_next_step = logits_warper(input_ids, logit_for_next_step)
             next_probs = nn.functional.softmax(logit_for_next_step, dim=-1)
             top_k_probs, top_k_ids = torch.topk(next_probs, dim=-1, k=top_k)
@@ -2046,7 +2130,8 @@ class BenchmarkWrapper:
                     scores += (logit_for_next_step,)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -2069,11 +2154,13 @@ class BenchmarkWrapper:
             model_kwargs["past_key_values"] = new_key_values
 
             # compute the candidate tokens by the language model and collects their hidden_states
-            next_model_inputs = self.prepare_inputs_for_generation(top_k_ids.view(-1, 1), **model_kwargs)
+            next_model_inputs = self.prepare_inputs_for_generation(
+                top_k_ids.view(-1, 1), **model_kwargs)
             outputs = self(
                 **next_model_inputs, return_dict=True, output_hidden_states=True, output_attentions=output_attentions
             )
-            next_past_key_values = self._extract_past_from_model_output(outputs, standardize_cache_format=True)
+            next_past_key_values = self._extract_past_from_model_output(
+                outputs, standardize_cache_format=True)
 
             logits = outputs.logits[:, -1, :]
             # name is different for encoder-decoder and decoder-only models
@@ -2087,19 +2174,23 @@ class BenchmarkWrapper:
 
             # compute the degeneration penalty and re-rank the candidates based on the degeneration penalty and the
             # model confidence
-            selected_idx = _ranking_fast(context_hidden, next_hidden, top_k_probs, penalty_alpha, top_k)
+            selected_idx = _ranking_fast(
+                context_hidden, next_hidden, top_k_probs, penalty_alpha, top_k)
 
             # prepare for the next step: (1) next token_id; (2) past_key_values; (3) last_hidden_states for computing
             # the degeneration penalty; (4) logits for selecting next top-k candidates; (5) selected tokens scores
             # (model confidence minus degeneration penalty); (6) decoder hidden_states
             next_tokens = top_k_ids[range(len(top_k_ids)), selected_idx]
-            next_hidden = torch.stack(torch.split(next_hidden.squeeze(dim=1), top_k))
+            next_hidden = torch.stack(torch.split(
+                next_hidden.squeeze(dim=1), top_k))
             next_hidden = next_hidden[range(batch_size), selected_idx, :]
-            last_hidden_states = torch.cat([last_hidden_states, next_hidden.unsqueeze(1)], dim=1)
+            last_hidden_states = torch.cat(
+                [last_hidden_states, next_hidden.unsqueeze(1)], dim=1)
 
             next_decoder_hidden_states = ()
             for layer in full_hidden_states:
-                layer = torch.stack(torch.split(layer, top_k))[range(batch_size), selected_idx, :]
+                layer = torch.stack(torch.split(layer, top_k))[
+                    range(batch_size), selected_idx, :]
                 next_decoder_hidden_states += (layer,)
 
             # select the past_key_value
@@ -2108,13 +2199,16 @@ class BenchmarkWrapper:
                 items = ()
                 # item is either the key or the value matrix
                 for item in layer:
-                    item = torch.stack(torch.split(item, top_k, dim=0))  # [B, K, num_head, seq_len, esz]
-                    item = item[range(batch_size), selected_idx, ...]  # [B, num_head, seq_len, esz]
+                    # [B, K, num_head, seq_len, esz]
+                    item = torch.stack(torch.split(item, top_k, dim=0))
+                    # [B, num_head, seq_len, esz]
+                    item = item[range(batch_size), selected_idx, ...]
                     items += (item,)
                 new_key_values += (items,)
             next_past_key_values = new_key_values
 
-            logit_for_next_step = torch.stack(torch.split(logits, top_k))[range(batch_size), selected_idx, :]
+            logit_for_next_step = torch.stack(torch.split(logits, top_k))[
+                range(batch_size), selected_idx, :]
 
             # Rebuilds the relevant parts of the model output for the selected token, for use in the next iteration
             if self.config.is_encoder_decoder:
@@ -2122,10 +2216,12 @@ class BenchmarkWrapper:
                 next_step_decoder_attentions = ()
                 if output_attentions:
                     for layer in outputs.cross_attentions:
-                        layer = torch.stack(torch.split(layer, top_k, dim=0))[range(batch_size), selected_idx, ...]
+                        layer = torch.stack(torch.split(layer, top_k, dim=0))[
+                            range(batch_size), selected_idx, ...]
                         next_step_cross_attentions += (layer,)
                     for layer in outputs.decoder_attentions:
-                        layer = torch.stack(torch.split(layer, top_k, dim=0))[range(batch_size), selected_idx, ...]
+                        layer = torch.stack(torch.split(layer, top_k, dim=0))[
+                            range(batch_size), selected_idx, ...]
                         next_step_decoder_attentions += (layer,)
                 outputs = Seq2SeqLMOutput(
                     past_key_values=next_past_key_values,
@@ -2137,7 +2233,8 @@ class BenchmarkWrapper:
                 next_step_attentions = ()
                 if output_attentions:
                     for layer in outputs.attentions:
-                        layer = torch.stack(torch.split(layer, top_k, dim=0))[range(batch_size), selected_idx, ...]
+                        layer = torch.stack(torch.split(layer, top_k, dim=0))[
+                            range(batch_size), selected_idx, ...]
                         next_step_attentions += (layer,)
                 outputs = CausalLMOutputWithPast(
                     past_key_values=next_past_key_values,
@@ -2152,8 +2249,10 @@ class BenchmarkWrapper:
             # finished sentences should have their next token be a padding token
             if eos_token_id is not None:
                 if pad_token_id is None:
-                    raise ValueError("If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
-                next_tokens = next_tokens * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
+                    raise ValueError(
+                        "If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
+                next_tokens = next_tokens * unfinished_sequences + \
+                    pad_token_id * (1 - unfinished_sequences)
 
             # update generated ids, model inputs, and length for next step
             input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
@@ -2166,7 +2265,8 @@ class BenchmarkWrapper:
             # if eos_token was found in one sentence, set sentence to finished
             if eos_token_id_tensor is not None:
                 unfinished_sequences = unfinished_sequences.mul(
-                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
+                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(
+                        eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
                 )
 
                 # stop when each sentence is finished
@@ -2321,12 +2421,14 @@ class BenchmarkWrapper:
                 " `stopping_criteria=StoppingCriteriaList([MaxLengthCriteria(max_length=max_length)])` instead.",
                 UserWarning,
             )
-            stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
+            stopping_criteria = validate_stopping_criteria(
+                stopping_criteria, max_length)
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
             eos_token_id = [eos_token_id]
-        eos_token_id_tensor = torch.tensor(eos_token_id).to(input_ids.device) if eos_token_id is not None else None
+        eos_token_id_tensor = torch.tensor(eos_token_id).to(
+            input_ids.device) if eos_token_id is not None else None
         output_scores = output_scores if output_scores is not None else self.generation_config.output_scores
         output_attentions = (
             output_attentions if output_attentions is not None else self.generation_config.output_attentions
@@ -2344,17 +2446,21 @@ class BenchmarkWrapper:
         scores = () if (return_dict_in_generate and output_scores) else None
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         # keep track of which sequences are already finished
-        unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
+        unfinished_sequences = torch.ones(
+            input_ids.shape[0], dtype=torch.long, device=input_ids.device)
 
         this_peer_finished = False  # used by synced_gpus only
 
@@ -2365,7 +2471,8 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
@@ -2373,7 +2480,8 @@ class BenchmarkWrapper:
                     break
 
             # prepare model inputs
-            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            model_inputs = self.prepare_inputs_for_generation(
+                input_ids, **model_kwargs)
 
             # forward pass to get next token
             outputs = self(
@@ -2397,7 +2505,8 @@ class BenchmarkWrapper:
                     scores += (next_tokens_scores,)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -2415,8 +2524,10 @@ class BenchmarkWrapper:
             # finished sentences should have their next token be a padding token
             if eos_token_id is not None:
                 if pad_token_id is None:
-                    raise ValueError("If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
-                next_tokens = next_tokens * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
+                    raise ValueError(
+                        "If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
+                next_tokens = next_tokens * unfinished_sequences + \
+                    pad_token_id * (1 - unfinished_sequences)
 
             # update generated ids, model inputs, and length for next step
             input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
@@ -2429,7 +2540,8 @@ class BenchmarkWrapper:
             # if eos_token was found in one sentence, set sentence to finished
             if eos_token_id_tensor is not None:
                 unfinished_sequences = unfinished_sequences.mul(
-                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
+                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(
+                        eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
                 )
 
                 # stop when each sentence is finished
@@ -2452,7 +2564,8 @@ class BenchmarkWrapper:
 
         print(f"=========First token cost {first_token_time:.4f}s=========")
         if len(last_token_time) > 1:
-            print(f"=========Rest tokens cost average {np.mean(last_token_time):.4f}s ({len(last_token_time)} tokens in all)=========")
+            print(
+                f"=========Rest tokens cost average {np.mean(last_token_time):.4f}s ({len(last_token_time)} tokens in all)=========")
 
         if streamer is not None:
             streamer.end()
@@ -2614,13 +2727,15 @@ class BenchmarkWrapper:
                 " `stopping_criteria=StoppingCriteriaList(MaxLengthCriteria(max_length=max_length))` instead.",
                 UserWarning,
             )
-            stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
+            stopping_criteria = validate_stopping_criteria(
+                stopping_criteria, max_length)
         logits_warper = logits_warper if logits_warper is not None else LogitsProcessorList()
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
             eos_token_id = [eos_token_id]
-        eos_token_id_tensor = torch.tensor(eos_token_id).to(input_ids.device) if eos_token_id is not None else None
+        eos_token_id_tensor = torch.tensor(eos_token_id).to(
+            input_ids.device) if eos_token_id is not None else None
         output_scores = output_scores if output_scores is not None else self.generation_config.output_scores
         output_attentions = (
             output_attentions if output_attentions is not None else self.generation_config.output_attentions
@@ -2638,17 +2753,21 @@ class BenchmarkWrapper:
         scores = () if (return_dict_in_generate and output_scores) else None
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         # keep track of which sequences are already finished
-        unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
+        unfinished_sequences = torch.ones(
+            input_ids.shape[0], dtype=torch.long, device=input_ids.device)
 
         this_peer_finished = False  # used by synced_gpus only
         # auto-regressive generation
@@ -2656,7 +2775,8 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
@@ -2664,7 +2784,8 @@ class BenchmarkWrapper:
                     break
 
             # prepare model inputs
-            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            model_inputs = self.prepare_inputs_for_generation(
+                input_ids, **model_kwargs)
 
             # forward pass to get next token
             outputs = self(
@@ -2689,7 +2810,8 @@ class BenchmarkWrapper:
                     scores += (next_token_scores,)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -2708,8 +2830,10 @@ class BenchmarkWrapper:
             # finished sentences should have their next token be a padding token
             if eos_token_id is not None:
                 if pad_token_id is None:
-                    raise ValueError("If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
-                next_tokens = next_tokens * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
+                    raise ValueError(
+                        "If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
+                next_tokens = next_tokens * unfinished_sequences + \
+                    pad_token_id * (1 - unfinished_sequences)
 
             # update generated ids, model inputs, and length for next step
             input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
@@ -2722,7 +2846,8 @@ class BenchmarkWrapper:
             # if eos_token was found in one sentence, set sentence to finished
             if eos_token_id_tensor is not None:
                 unfinished_sequences = unfinished_sequences.mul(
-                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
+                    next_tokens.tile(eos_token_id_tensor.shape[0], 1).ne(
+                        eos_token_id_tensor.unsqueeze(1)).prod(dim=0)
                 )
 
                 # stop when each sentence is finished
@@ -2891,9 +3016,11 @@ class BenchmarkWrapper:
                 " `stopping_criteria=StoppingCriteriaList(MaxLengthCriteria(max_length=max_length))` instead.",
                 UserWarning,
             )
-            stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
+            stopping_criteria = validate_stopping_criteria(
+                stopping_criteria, max_length)
         if len(stopping_criteria) == 0:
-            warnings.warn("You don't have defined any stopping_criteria, this will likely loop forever", UserWarning)
+            warnings.warn(
+                "You don't have defined any stopping_criteria, this will likely loop forever", UserWarning)
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
@@ -2924,22 +3051,27 @@ class BenchmarkWrapper:
         # init attention / hidden states / scores tuples
         scores = () if (return_dict_in_generate and output_scores) else None
         beam_indices = (
-            tuple(() for _ in range(batch_beam_size)) if (return_dict_in_generate and output_scores) else None
+            tuple(() for _ in range(batch_beam_size)) if (
+                return_dict_in_generate and output_scores) else None
         )
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
         # of the first beam are considered to avoid sampling the exact same tokens across all beams.
-        beam_scores = torch.zeros((batch_size, num_beams), dtype=torch.float, device=input_ids.device)
+        beam_scores = torch.zeros(
+            (batch_size, num_beams), dtype=torch.float, device=input_ids.device)
         beam_scores[:, 1:] = -1e9
         beam_scores = beam_scores.view((batch_size * num_beams,))
 
@@ -2951,14 +3083,16 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
                 if this_peer_finished_flag.item() == 0.0:
                     break
 
-            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            model_inputs = self.prepare_inputs_for_generation(
+                input_ids, **model_kwargs)
 
             outputs = self(
                 **model_inputs,
@@ -2974,13 +3108,16 @@ class BenchmarkWrapper:
             next_token_logits = outputs.logits[:, -1, :]
             # hack: adjust tokens for Marian. For Marian we have to make sure that the `pad_token_id`
             # cannot be generated both before and after the `nn.functional.log_softmax` operation.
-            next_token_logits = self.adjust_logits_during_generation(next_token_logits, cur_len=cur_len)
+            next_token_logits = self.adjust_logits_during_generation(
+                next_token_logits, cur_len=cur_len)
             next_token_scores = nn.functional.log_softmax(
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
 
-            next_token_scores_processed = logits_processor(input_ids, next_token_scores)
-            next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
+            next_token_scores_processed = logits_processor(
+                input_ids, next_token_scores)
+            next_token_scores = next_token_scores_processed + \
+                beam_scores[:, None].expand_as(next_token_scores)
 
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
@@ -2988,7 +3125,8 @@ class BenchmarkWrapper:
                     scores += (next_token_scores_processed,)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -3002,14 +3140,16 @@ class BenchmarkWrapper:
 
             # reshape for beam search
             vocab_size = next_token_scores.shape[-1]
-            next_token_scores = next_token_scores.view(batch_size, num_beams * vocab_size)
+            next_token_scores = next_token_scores.view(
+                batch_size, num_beams * vocab_size)
 
             # Sample 2 next tokens for each beam (so we have some spare tokens and match output of beam search)
             next_token_scores, next_tokens = torch.topk(
                 next_token_scores, 2 * num_beams, dim=1, largest=True, sorted=True
             )
 
-            next_indices = torch.div(next_tokens, vocab_size, rounding_mode="floor")
+            next_indices = torch.div(
+                next_tokens, vocab_size, rounding_mode="floor")
             next_tokens = next_tokens % vocab_size
 
             # stateless
@@ -3027,16 +3167,19 @@ class BenchmarkWrapper:
             beam_next_tokens = beam_outputs["next_beam_tokens"]
             beam_idx = beam_outputs["next_beam_indices"]
 
-            input_ids = torch.cat([input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
+            input_ids = torch.cat(
+                [input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
 
             model_kwargs = self._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
             )
             if model_kwargs["past_key_values"] is not None:
-                model_kwargs["past_key_values"] = self._reorder_cache(model_kwargs["past_key_values"], beam_idx)
+                model_kwargs["past_key_values"] = self._reorder_cache(
+                    model_kwargs["past_key_values"], beam_idx)
 
             if return_dict_in_generate and output_scores:
-                beam_indices = tuple((beam_indices[beam_idx[i]] + (beam_idx[i],) for i in range(len(beam_indices))))
+                beam_indices = tuple(
+                    (beam_indices[beam_idx[i]] + (beam_idx[i],) for i in range(len(beam_indices))))
 
             # increase cur_len
             cur_len = cur_len + 1
@@ -3067,7 +3210,8 @@ class BenchmarkWrapper:
 
         print(f"=========First token cost {first_token_time}s=========")
         if len(last_token_time) > 1:
-            print(f"=========Rest token cost average {np.mean(last_token_time)}s ({len(last_token_time)}tokens in all)=========")
+            print(
+                f"=========Rest token cost average {np.mean(last_token_time)}s ({len(last_token_time)}tokens in all)=========")
 
         if return_dict_in_generate:
             if not output_scores:
@@ -3241,7 +3385,8 @@ class BenchmarkWrapper:
                 " `stopping_criteria=StoppingCriteriaList(MaxLengthCriteria(max_length=max_length))` instead.",
                 UserWarning,
             )
-            stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
+            stopping_criteria = validate_stopping_criteria(
+                stopping_criteria, max_length)
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
@@ -3267,20 +3412,25 @@ class BenchmarkWrapper:
         # init attention / hidden states / scores tuples
         scores = () if (return_dict_in_generate and output_scores) else None
         beam_indices = (
-            tuple(() for _ in range(batch_beam_size)) if (return_dict_in_generate and output_scores) else None
+            tuple(() for _ in range(batch_beam_size)) if (
+                return_dict_in_generate and output_scores) else None
         )
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
-        beam_scores = torch.zeros((batch_size, num_beams), dtype=torch.float, device=input_ids.device)
+        beam_scores = torch.zeros(
+            (batch_size, num_beams), dtype=torch.float, device=input_ids.device)
         beam_scores = beam_scores.view((batch_size * num_beams,))
 
         this_peer_finished = False  # used by synced_gpus only
@@ -3288,14 +3438,16 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
                 if this_peer_finished_flag.item() == 0.0:
                     break
 
-            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            model_inputs = self.prepare_inputs_for_generation(
+                input_ids, **model_kwargs)
 
             outputs = self(
                 **model_inputs,
@@ -3312,13 +3464,16 @@ class BenchmarkWrapper:
 
             # hack: adjust tokens for Marian. For Marian we have to make sure that the `pad_token_id`
             # cannot be generated both before and after the `nn.functional.log_softmax` operation.
-            next_token_logits = self.adjust_logits_during_generation(next_token_logits, cur_len=cur_len)
+            next_token_logits = self.adjust_logits_during_generation(
+                next_token_logits, cur_len=cur_len)
             next_token_scores = nn.functional.log_softmax(
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
 
-            next_token_scores_processed = logits_processor(input_ids, next_token_scores)
-            next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
+            next_token_scores_processed = logits_processor(
+                input_ids, next_token_scores)
+            next_token_scores = next_token_scores_processed + \
+                beam_scores[:, None].expand_as(next_token_scores)
             # Note: logits warpers are intentionally applied after adding running beam scores. On some logits warpers
             # (like top_p) this is indiferent, but on others (like temperature) it is not. For reference, see
             # https://github.com/huggingface/transformers/pull/5420#discussion_r449779867
@@ -3327,10 +3482,12 @@ class BenchmarkWrapper:
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
                 if output_scores:
-                    scores += (logits_warper(input_ids, next_token_scores_processed),)
+                    scores += (logits_warper(input_ids,
+                               next_token_scores_processed),)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -3344,17 +3501,21 @@ class BenchmarkWrapper:
 
             # reshape for beam search
             vocab_size = next_token_scores.shape[-1]
-            next_token_scores = next_token_scores.view(batch_size, num_beams * vocab_size)
+            next_token_scores = next_token_scores.view(
+                batch_size, num_beams * vocab_size)
 
             probs = nn.functional.softmax(next_token_scores, dim=-1)
 
             next_tokens = torch.multinomial(probs, num_samples=2 * num_beams)
-            next_token_scores = torch.gather(next_token_scores, -1, next_tokens)
+            next_token_scores = torch.gather(
+                next_token_scores, -1, next_tokens)
 
-            next_token_scores, _indices = torch.sort(next_token_scores, descending=True, dim=1)
+            next_token_scores, _indices = torch.sort(
+                next_token_scores, descending=True, dim=1)
             next_tokens = torch.gather(next_tokens, -1, _indices)
 
-            next_indices = torch.div(next_tokens, vocab_size, rounding_mode="floor")
+            next_indices = torch.div(
+                next_tokens, vocab_size, rounding_mode="floor")
             next_tokens = next_tokens % vocab_size
 
             # stateless
@@ -3371,16 +3532,19 @@ class BenchmarkWrapper:
             beam_next_tokens = beam_outputs["next_beam_tokens"]
             beam_idx = beam_outputs["next_beam_indices"]
 
-            input_ids = torch.cat([input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
+            input_ids = torch.cat(
+                [input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
 
             model_kwargs = self._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
             )
             if model_kwargs["past_key_values"] is not None:
-                model_kwargs["past_key_values"] = self._reorder_cache(model_kwargs["past_key_values"], beam_idx)
+                model_kwargs["past_key_values"] = self._reorder_cache(
+                    model_kwargs["past_key_values"], beam_idx)
 
             if return_dict_in_generate and output_scores:
-                beam_indices = tuple((beam_indices[beam_idx[i]] + (beam_idx[i],) for i in range(len(beam_indices))))
+                beam_indices = tuple(
+                    (beam_indices[beam_idx[i]] + (beam_idx[i],) for i in range(len(beam_indices))))
 
             # increase cur_len
             cur_len = cur_len + 1
@@ -3567,7 +3731,8 @@ class BenchmarkWrapper:
                 " `stopping_criteria=StoppingCriteriaList(MaxLengthCriteria(max_length=max_length))` instead.",
                 UserWarning,
             )
-            stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
+            stopping_criteria = validate_stopping_criteria(
+                stopping_criteria, max_length)
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
@@ -3594,7 +3759,8 @@ class BenchmarkWrapper:
         batch_beam_size, cur_len = input_ids.shape
 
         if return_dict_in_generate and output_scores:
-            beam_indices = [tuple(() for _ in range(num_sub_beams * batch_size)) for _ in range(num_beam_groups)]
+            beam_indices = [tuple(() for _ in range(
+                num_sub_beams * batch_size)) for _ in range(num_beam_groups)]
         else:
             beam_indices = None
 
@@ -3607,18 +3773,22 @@ class BenchmarkWrapper:
         scores = () if (return_dict_in_generate and output_scores) else None
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         # initialise score of first beam of each group with 0 and the rest with -1e9. This ensures that the beams in
         # the same group don't produce same tokens everytime.
-        beam_scores = torch.full((batch_size, num_beams), -1e9, dtype=torch.float, device=device)
+        beam_scores = torch.full(
+            (batch_size, num_beams), -1e9, dtype=torch.float, device=device)
         beam_scores[:, ::num_sub_beams] = 0
         beam_scores = beam_scores.view((batch_size * num_beams,))
 
@@ -3627,7 +3797,8 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
@@ -3635,13 +3806,16 @@ class BenchmarkWrapper:
                     break
 
             # predicted tokens in cur_len step
-            current_tokens = torch.zeros(batch_size * num_beams, dtype=input_ids.dtype, device=device)
+            current_tokens = torch.zeros(
+                batch_size * num_beams, dtype=input_ids.dtype, device=device)
 
             # indices which will form the beams in the next time step
-            reordering_indices = torch.zeros(batch_size * num_beams, dtype=torch.long, device=device)
+            reordering_indices = torch.zeros(
+                batch_size * num_beams, dtype=torch.long, device=device)
 
             # do one decoder step on all beams of all sentences in batch
-            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            model_inputs = self.prepare_inputs_for_generation(
+                input_ids, **model_kwargs)
             outputs = self(
                 **model_inputs,
                 return_dict=True,
@@ -3666,7 +3840,8 @@ class BenchmarkWrapper:
 
                 for batch_idx in range(batch_size):
                     batch_group_indices.extend(
-                        [batch_idx * num_beams + idx for idx in range(group_start_idx, group_end_idx)]
+                        [batch_idx * num_beams +
+                            idx for idx in range(group_start_idx, group_end_idx)]
                     )
                 group_input_ids = input_ids[batch_group_indices]
 
@@ -3675,7 +3850,8 @@ class BenchmarkWrapper:
 
                 # hack: adjust tokens for Marian. For Marian we have to make sure that the `pad_token_id`
                 # cannot be generated both before and after the `nn.functional.log_softmax` operation.
-                next_token_logits = self.adjust_logits_during_generation(next_token_logits, cur_len=cur_len)
+                next_token_logits = self.adjust_logits_during_generation(
+                    next_token_logits, cur_len=cur_len)
                 next_token_scores = nn.functional.log_softmax(
                     next_token_logits, dim=-1
                 )  # (batch_size * group_size, vocab_size)
@@ -3684,25 +3860,30 @@ class BenchmarkWrapper:
                 next_token_scores_processed = logits_processor(
                     group_input_ids, next_token_scores, current_tokens=current_tokens, beam_group_idx=beam_group_idx
                 )
-                next_token_scores = next_token_scores_processed + beam_scores[batch_group_indices].unsqueeze(-1)
-                next_token_scores = next_token_scores.expand_as(next_token_scores_processed)
+                next_token_scores = next_token_scores_processed + \
+                    beam_scores[batch_group_indices].unsqueeze(-1)
+                next_token_scores = next_token_scores.expand_as(
+                    next_token_scores_processed)
 
                 if output_scores:
                     processed_score[batch_group_indices] = next_token_scores_processed
 
                 # reshape for beam search
-                next_token_scores = next_token_scores.view(batch_size, group_size * vocab_size)
+                next_token_scores = next_token_scores.view(
+                    batch_size, group_size * vocab_size)
 
                 # Sample 2 next tokens for each beam (so we have some spare tokens and match output of beam search)
                 next_token_scores, next_tokens = torch.topk(
                     next_token_scores, 2 * group_size, dim=1, largest=True, sorted=True
                 )
 
-                next_indices = torch.div(next_tokens, vocab_size, rounding_mode="floor")
+                next_indices = torch.div(
+                    next_tokens, vocab_size, rounding_mode="floor")
                 next_tokens = next_tokens % vocab_size
 
                 # stateless
-                process_beam_indices = sum(beam_indices, ()) if beam_indices is not None else None
+                process_beam_indices = sum(
+                    beam_indices, ()) if beam_indices is not None else None
                 beam_outputs = beam_scorer.process(
                     group_input_ids,
                     next_token_scores,
@@ -3722,13 +3903,15 @@ class BenchmarkWrapper:
                     )
 
                 input_ids[batch_group_indices] = group_input_ids[beam_idx]
-                group_input_ids = torch.cat([group_input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
+                group_input_ids = torch.cat(
+                    [group_input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
                 current_tokens[batch_group_indices] = group_input_ids[:, -1]
 
                 # (beam_idx // group_size) -> batch_idx
                 # (beam_idx % group_size) -> offset of idx inside the group
                 reordering_indices[batch_group_indices] = (
-                    num_beams * torch.div(beam_idx, group_size, rounding_mode="floor")
+                    num_beams * torch.div(beam_idx,
+                                          group_size, rounding_mode="floor")
                     + group_start_idx
                     + (beam_idx % group_size)
                 )
@@ -3739,7 +3922,8 @@ class BenchmarkWrapper:
                     scores += (processed_score,)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -3751,7 +3935,8 @@ class BenchmarkWrapper:
                         else (outputs.hidden_states,)
                     )
 
-            input_ids = torch.cat([input_ids, current_tokens.unsqueeze(-1)], dim=-1)
+            input_ids = torch.cat(
+                [input_ids, current_tokens.unsqueeze(-1)], dim=-1)
 
             model_kwargs = self._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
@@ -3770,7 +3955,8 @@ class BenchmarkWrapper:
                 else:
                     this_peer_finished = True
 
-        final_beam_indices = sum(beam_indices, ()) if beam_indices is not None else None
+        final_beam_indices = sum(
+            beam_indices, ()) if beam_indices is not None else None
         sequence_outputs = beam_scorer.finalize(
             input_ids,
             beam_scores,
@@ -3952,9 +4138,11 @@ class BenchmarkWrapper:
                 " `stopping_criteria=StoppingCriteriaList(MaxLengthCriteria(max_length=max_length))` instead.",
                 UserWarning,
             )
-            stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
+            stopping_criteria = validate_stopping_criteria(
+                stopping_criteria, max_length)
         if len(stopping_criteria) == 0:
-            warnings.warn("You don't have defined any stopping_criteria, this will likely loop forever", UserWarning)
+            warnings.warn(
+                "You don't have defined any stopping_criteria, this will likely loop forever", UserWarning)
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
@@ -3976,13 +4164,16 @@ class BenchmarkWrapper:
         scores = () if (return_dict_in_generate and output_scores) else None
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         batch_size = len(constrained_beam_scorer._beam_hyps)
@@ -3997,7 +4188,8 @@ class BenchmarkWrapper:
 
         # initialise score of first beam with 0 and the rest with -1e9. This makes sure that only tokens
         # of the first beam are considered to avoid sampling the exact same tokens across all beams.
-        beam_scores = torch.zeros((batch_size, num_beams), dtype=torch.float, device=input_ids.device)
+        beam_scores = torch.zeros(
+            (batch_size, num_beams), dtype=torch.float, device=input_ids.device)
         beam_scores[:, 1:] = -1e9
         beam_scores = beam_scores.view((batch_size * num_beams,))
 
@@ -4006,14 +4198,16 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
                 if this_peer_finished_flag.item() == 0.0:
                     break
 
-            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            model_inputs = self.prepare_inputs_for_generation(
+                input_ids, **model_kwargs)
 
             outputs = self(
                 **model_inputs,
@@ -4029,14 +4223,17 @@ class BenchmarkWrapper:
             next_token_logits = outputs.logits[:, -1, :]
             # hack: adjust tokens for Marian. For Marian we have to make sure that the `pad_token_id`
             # cannot be generated both before and after the `nn.functional.log_softmax` operation.
-            next_token_logits = self.adjust_logits_during_generation(next_token_logits, cur_len=cur_len)
+            next_token_logits = self.adjust_logits_during_generation(
+                next_token_logits, cur_len=cur_len)
             next_token_scores = nn.functional.log_softmax(
                 next_token_logits, dim=-1
             )  # (batch_size * num_beams, vocab_size)
 
-            next_token_scores_processed = logits_processor(input_ids, next_token_scores)
+            next_token_scores_processed = logits_processor(
+                input_ids, next_token_scores)
 
-            next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
+            next_token_scores = next_token_scores_processed + \
+                beam_scores[:, None].expand_as(next_token_scores)
 
             scores_for_all_vocab = next_token_scores.clone()
 
@@ -4046,7 +4243,8 @@ class BenchmarkWrapper:
                     scores += (next_token_scores,)
                 if output_attentions:
                     decoder_attentions += (
-                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (outputs.attentions,)
+                        (outputs.decoder_attentions,) if self.config.is_encoder_decoder else (
+                            outputs.attentions,)
                     )
                     if self.config.is_encoder_decoder:
                         cross_attentions += (outputs.cross_attentions,)
@@ -4060,7 +4258,8 @@ class BenchmarkWrapper:
 
             # reshape for beam search
             vocab_size = next_token_scores.shape[-1]
-            next_token_scores = next_token_scores.view(batch_size, num_beams * vocab_size)
+            next_token_scores = next_token_scores.view(
+                batch_size, num_beams * vocab_size)
 
             # Sample 2 next tokens for each beam (so we have some spare tokens and match output of beam search)
             next_token_scores, next_tokens = torch.topk(
@@ -4084,12 +4283,14 @@ class BenchmarkWrapper:
             beam_next_tokens = beam_outputs["next_beam_tokens"]
             beam_idx = beam_outputs["next_beam_indices"]
 
-            input_ids = torch.cat([input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
+            input_ids = torch.cat(
+                [input_ids[beam_idx, :], beam_next_tokens.unsqueeze(-1)], dim=-1)
             model_kwargs = self._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
             )
             if model_kwargs["past_key_values"] is not None:
-                model_kwargs["past_key_values"] = self._reorder_cache(model_kwargs["past_key_values"], beam_idx)
+                model_kwargs["past_key_values"] = self._reorder_cache(
+                    model_kwargs["past_key_values"], beam_idx)
 
             # increase cur_len
             cur_len = cur_len + 1
@@ -4253,7 +4454,8 @@ class BenchmarkWrapper:
         ```"""
         # Assistant: initialize assistant-related variables
         if not hasattr(assistant_model, "max_assistant_tokens"):
-            assistant_model.max_assistant_tokens = 5  # this value, which will be updated, persists across calls
+            # this value, which will be updated, persists across calls
+            assistant_model.max_assistant_tokens = 5
 
         # init values
         logits_processor = logits_processor if logits_processor is not None else LogitsProcessorList()
@@ -4262,10 +4464,12 @@ class BenchmarkWrapper:
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if eos_token_id is not None and pad_token_id is None:
-            raise ValueError("If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
+            raise ValueError(
+                "If `eos_token_id` is defined, make sure that `pad_token_id` is defined.")
         if isinstance(eos_token_id, int):
             eos_token_id = [eos_token_id]
-        eos_token_id_tensor = torch.tensor(eos_token_id).to(input_ids.device) if eos_token_id is not None else None
+        eos_token_id_tensor = torch.tensor(eos_token_id).to(
+            input_ids.device) if eos_token_id is not None else None
         output_scores = output_scores if output_scores is not None else self.generation_config.output_scores
         output_attentions = (
             output_attentions if output_attentions is not None else self.generation_config.output_attentions
@@ -4283,13 +4487,16 @@ class BenchmarkWrapper:
         scores = () if (return_dict_in_generate and output_scores) else None
         decoder_attentions = () if (return_dict_in_generate and output_attentions) else None
         cross_attentions = () if (return_dict_in_generate and output_attentions) else None
-        decoder_hidden_states = () if (return_dict_in_generate and output_hidden_states) else None
+        decoder_hidden_states = () if (
+            return_dict_in_generate and output_hidden_states) else None
 
         # if model is an encoder-decoder, retrieve encoder attention weights and hidden states
         if return_dict_in_generate and self.config.is_encoder_decoder:
-            encoder_attentions = model_kwargs["encoder_outputs"].get("attentions") if output_attentions else None
+            encoder_attentions = model_kwargs["encoder_outputs"].get(
+                "attentions") if output_attentions else None
             encoder_hidden_states = (
-                model_kwargs["encoder_outputs"].get("hidden_states") if output_hidden_states else None
+                model_kwargs["encoder_outputs"].get(
+                    "hidden_states") if output_hidden_states else None
             )
 
         # keep track of which sequences are already finished
@@ -4303,7 +4510,8 @@ class BenchmarkWrapper:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
-                this_peer_finished_flag = torch.tensor(0.0 if this_peer_finished else 1.0).to(input_ids.device)
+                this_peer_finished_flag = torch.tensor(
+                    0.0 if this_peer_finished else 1.0).to(input_ids.device)
                 # send 0.0 if we finished, 1.0 otherwise
                 dist.all_reduce(this_peer_finished_flag, op=dist.ReduceOp.SUM)
                 # did all peers finish? the reduced sum will be 0.0 then
@@ -4347,7 +4555,8 @@ class BenchmarkWrapper:
                             encoder_outputs=model_kwargs["assistant_encoder_outputs"],
                         )
                     else:
-                        assistant_model_outputs = assistant_model(candidate_input_ids)
+                        assistant_model_outputs = assistant_model(
+                            candidate_input_ids)
 
                 # 1.2. greedily select the next candidate token
                 model_kwargs["assistant_past_key_values"] = assistant_model_outputs.past_key_values
@@ -4355,21 +4564,26 @@ class BenchmarkWrapper:
                     assistant_model_outputs.logits[:, -1, :] = logits_processor(
                         candidate_input_ids, assistant_model_outputs.logits[:, -1, :]
                     )
-                new_token = assistant_model_outputs.logits[:, -1, :].argmax(dim=-1)
-                candidate_input_ids = torch.cat((candidate_input_ids, new_token[:, None]), dim=-1)
+                new_token = assistant_model_outputs.logits[:, -1, :].argmax(
+                    dim=-1)
+                candidate_input_ids = torch.cat(
+                    (candidate_input_ids, new_token[:, None]), dim=-1)
 
                 # 1.3. stop assistant generation on EOS
                 if eos_token_id_tensor is not None:
-                    last_assistant_token_is_eos = new_token.tile(eos_token_id_tensor.shape[0], 1)
+                    last_assistant_token_is_eos = new_token.tile(
+                        eos_token_id_tensor.shape[0], 1)
                     last_assistant_token_is_eos = (
-                        ~last_assistant_token_is_eos.ne(eos_token_id_tensor.unsqueeze(1)).prod(dim=0).bool()
+                        ~last_assistant_token_is_eos.ne(
+                            eos_token_id_tensor.unsqueeze(1)).prod(dim=0).bool()
                     )
                     if last_assistant_token_is_eos:
                         break
                 else:
                     last_assistant_token_is_eos = False
 
-            candidate_length = candidate_input_ids.shape[1] - input_ids.shape[1]
+            candidate_length = candidate_input_ids.shape[1] - \
+                input_ids.shape[1]
 
             # 2. Use the original model to obtain the next token logits given the candidate sequence. We obtain
             # `candidate_length + 1` relevant logits from this process: in the event that all candidates are correct,
@@ -4378,7 +4592,8 @@ class BenchmarkWrapper:
             # 2.1. Run a forward pass on the candidate sequence
             if "past_key_values" in model_kwargs:
                 model_attn = torch.ones_like(candidate_input_ids)
-                model_input_ids = candidate_input_ids[:, -candidate_length - 1 :]
+                model_input_ids = candidate_input_ids[:, -
+                                                      candidate_length - 1:]
                 if self.config.is_encoder_decoder:
                     outputs = self(
                         decoder_input_ids=model_input_ids,
@@ -4412,25 +4627,32 @@ class BenchmarkWrapper:
                     )
 
             # 2.2. Process the new logits
-            new_logits = outputs.logits[:, -candidate_length - 1 :]  # excludes the input prompt if present
+            # excludes the input prompt if present
+            new_logits = outputs.logits[:, -candidate_length - 1:]
             if len(logits_processor) > 0:
                 for i in range(candidate_length):
-                    new_logits[:, i, :] = logits_processor(candidate_input_ids[:, : cur_len + i], new_logits[:, i, :])
+                    new_logits[:, i, :] = logits_processor(
+                        candidate_input_ids[:, : cur_len + i], new_logits[:, i, :])
             if len(logits_warper) > 0:
                 for i in range(candidate_length):
-                    new_logits[:, i, :] = logits_warper(candidate_input_ids[:, : cur_len + i], new_logits[:, i, :])
+                    new_logits[:, i, :] = logits_warper(
+                        candidate_input_ids[:, : cur_len + i], new_logits[:, i, :])
 
             # 3. Obtain the next tokens from the original model logits.
             if do_sample:
-                probs = new_logits[:, -candidate_length - 1 :, :].softmax(dim=-1)
-                selected_tokens = torch.multinomial(probs[0, :, :], num_samples=1).squeeze(1)[None, :]
+                probs = new_logits[:, -candidate_length -
+                                   1:, :].softmax(dim=-1)
+                selected_tokens = torch.multinomial(
+                    probs[0, :, :], num_samples=1).squeeze(1)[None, :]
             else:
-                selected_tokens = new_logits[:, -candidate_length - 1 :, :].argmax(dim=-1)
+                selected_tokens = new_logits[:, -
+                                             candidate_length - 1:, :].argmax(dim=-1)
 
             # 4. Compare the argmax from the original model logits with the assistant forecasted tokens. We can keep
             # the assistant forecasted tokens until the first mismatch, or until the max length is reached.
             candidate_new_tokens = candidate_input_ids[:, -candidate_length:]
-            n_matches = ((~(candidate_new_tokens == selected_tokens[:, :-1])).cumsum(dim=-1) < 1).sum()
+            n_matches = (
+                (~(candidate_new_tokens == selected_tokens[:, :-1])).cumsum(dim=-1) < 1).sum()
 
             # 5. Update variables according to the number of matching assistant tokens. Remember: the token generated
             # by the model after the last candidate match is also valid, as it is generated from a correct sequence.
@@ -4451,7 +4673,8 @@ class BenchmarkWrapper:
 
             # 5.3. Discard past key values relative to unused assistant tokens
             new_cache_size = new_cur_len - 1
-            outputs.past_key_values = _crop_past_key_values(self, outputs.past_key_values, new_cache_size)
+            outputs.past_key_values = _crop_past_key_values(
+                self, outputs.past_key_values, new_cache_size)
             model_kwargs["assistant_past_key_values"] = _crop_past_key_values(
                 assistant_model, model_kwargs["assistant_past_key_values"], new_cache_size - 1
             )  # the assistant does not have the token after the last match, hence the -1
@@ -4462,7 +4685,8 @@ class BenchmarkWrapper:
             if n_matches == int(assistant_model.max_assistant_tokens):
                 assistant_model.max_assistant_tokens += 2.0
             else:
-                assistant_model.max_assistant_tokens = max(1.0, assistant_model.max_assistant_tokens - 1.0)
+                assistant_model.max_assistant_tokens = max(
+                    1.0, assistant_model.max_assistant_tokens - 1.0)
 
             # Assistant: main logic end
 
@@ -4473,7 +4697,8 @@ class BenchmarkWrapper:
             # Assistant: modified to append one tuple element per token, as in the other generation methods.
             if return_dict_in_generate:
                 if output_scores:
-                    scores += tuple(new_logits[:, i, :] for i in range(n_matches + 1))
+                    scores += tuple(new_logits[:, i, :]
+                                    for i in range(n_matches + 1))
 
                 if "past_key_values" not in model_kwargs:
                     added_len = new_cur_len
@@ -4585,10 +4810,12 @@ def _crop_past_key_values(model, past_key_values, maximum_length):
     elif "gptbigcode" in model.__class__.__name__.lower():  # gptbigcode is too
         if model.config.multi_query:
             for idx in range(len(past_key_values)):
-                past_key_values[idx] = past_key_values[idx][:, :maximum_length, :]
+                past_key_values[idx] = past_key_values[idx][:,
+                                                            :maximum_length, :]
         else:
             for idx in range(len(past_key_values)):
-                past_key_values[idx] = past_key_values[idx][:, :, :maximum_length, :]
+                past_key_values[idx] = past_key_values[idx][:,
+                                                            :, :maximum_length, :]
     else:
         for idx in range(len(past_key_values)):
             new_past.append(
@@ -4621,8 +4848,9 @@ def _split_model_outputs(outputs, new_outputs, cur_len, added_len, is_decoder_at
     for i in range(added_len):
         new_tuple = ()
         for layer in new_outputs:
-            last_dim_size = cur_len + i if is_decoder_attention else layer.shape[-1]
-            new_tuple += (layer[..., i : i + 1, :last_dim_size],)
+            last_dim_size = cur_len + \
+                i if is_decoder_attention else layer.shape[-1]
+            new_tuple += (layer[..., i: i + 1, :last_dim_size],)
         outputs += (new_tuple,)
     return outputs
 
@@ -4674,12 +4902,16 @@ def _ranking_fast(
     in the paper "A Contrastive Framework for Neural Text Generation". Returns the index of the best candidate for each
     row in the batch.
     """
-    norm_context_hidden = context_hidden / context_hidden.norm(dim=2, keepdim=True)
+    norm_context_hidden = context_hidden / \
+        context_hidden.norm(dim=2, keepdim=True)
     norm_next_hidden = next_hidden / next_hidden.norm(dim=2, keepdim=True)
-    cosine_matrix = torch.matmul(norm_context_hidden, norm_next_hidden.transpose(1, 2)).squeeze(-1)  # [B*K, S]
+    cosine_matrix = torch.matmul(
+        norm_context_hidden, norm_next_hidden.transpose(1, 2)).squeeze(-1)  # [B*K, S]
     degeneration_penalty, _ = torch.max(cosine_matrix, dim=-1)  # [B*K]
     next_top_k_probs = next_top_k_probs.view(-1)  # [B*K]
-    contrastive_score = (1.0 - alpha) * next_top_k_probs - alpha * degeneration_penalty
-    contrastive_score = torch.stack(torch.split(contrastive_score, beam_width))  # [B, K]
+    contrastive_score = (1.0 - alpha) * next_top_k_probs - \
+        alpha * degeneration_penalty
+    contrastive_score = torch.stack(torch.split(
+        contrastive_score, beam_width))  # [B, K]
     _, selected_idx = contrastive_score.max(dim=-1)  # [B]
     return selected_idx
