@@ -20,6 +20,7 @@
 import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -145,48 +146,42 @@ def chatglm2_attention_forward_8eb45c(
     # adjust key and value for inference
     if kv_cache is not None:
         cache_k, cache_v = kv_cache
-        past_length = cache_k.size(0)
+        cache_k = cache_k.permute(1, 2, 0, 3)
+        cache_v = cache_v.permute(1, 2, 0, 3)
+        past_length = cache_k.size(2)
 
-        if past_length != self.current_cache_length or past_length + cur_length > self.max_cache_length:
-            self.max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            self.kv_cache = (torch.empty(batch_size,
-                                         self.num_attention_heads_per_partition,
-                                         self.max_cache_length,
-                                         self.hidden_size_per_attention_head,
-                                         device=device),
-                             torch.empty(batch_size,
-                                         self.num_attention_heads_per_partition,
-                                         self.max_cache_length,
-                                         self.hidden_size_per_attention_head,
-                                         device=device))
-            self.kv_cache[0][:, :, :past_length, :] = cache_k.permute(1, 2, 0, 3)
-            self.kv_cache[1][:, :, :past_length, :] = cache_v.permute(1, 2, 0, 3)
-        self.kv_cache[0][:, :, past_length:past_length + cur_length, :] = key_layer
-        self.kv_cache[1][:, :, past_length:past_length + cur_length, :] = value_layer
+        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            print("expanding cache")
+            max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_cache_k, new_cache_v = create_kv_cache(batch_size,
+                                                       self.num_attention_heads_per_partition,
+                                                       self.hidden_size_per_attention_head,
+                                                       past_length,
+                                                       max_cache_length,
+                                                       dtype=query_layer.dtype,
+                                                       device=device)
+            new_cache_k[:] = cache_k
+            new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
 
-        key_layer = self.kv_cache[0][:, :, :past_length + cur_length, :]
-        value_layer = self.kv_cache[1][:, :, :past_length + cur_length, :]
-        self.current_cache_length = past_length + cur_length
+        key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
 
     elif use_cache:
-        self.max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
+
+        max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        self.kv_cache = (torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                     self.max_cache_length, self.hidden_size_per_attention_head,
-                                     device=device),
-                         torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                     self.max_cache_length, self.hidden_size_per_attention_head,
-                                     device=device))
-        self.kv_cache[0][:, :, :cur_length, :] = key_layer
-        self.kv_cache[1][:, :, :cur_length, :] = value_layer
-        self.current_cache_length = cur_length
+        key_cache, value_cache = create_kv_cache(batch_size, self.num_attention_heads_per_partition,
+                                                 self.hidden_size_per_attention_head, cur_length,
+                                                 max_cache_length,
+                                                 dtype=query_layer.dtype, device=device)
+        key_cache[:] = key_layer
+        value_cache[:] = value_layer
+        key_layer = key_cache
+        value_layer = value_cache
 
     if use_cache:
-        if kv_cache is not None:
-            cache_k, cache_v = kv_cache
-            # key_layer = torch.cat((cache_k.permute(1, 2, 0, 3), key_layer), dim=2)
-            # value_layer = torch.cat((cache_v.permute(1, 2, 0, 3), value_layer), dim=2)
-            kv_cache = (key_layer, value_layer)
+        kv_cache = (key_layer, value_layer)
     else:
         kv_cache = None
 
