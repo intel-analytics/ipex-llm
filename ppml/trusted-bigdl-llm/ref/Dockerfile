@@ -9,7 +9,7 @@ ARG SGX_LOG_LEVEL="error"
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
 ADD ./config.diff /opt/config.diff
-RUN patch /ppml/bash.manifest.template /opt/utils.diff
+RUN patch /ppml/bash.manifest.template /opt/config.diff
 
 # 1.1 make SGX and sign in a temp image
 RUN cd /ppml && \
