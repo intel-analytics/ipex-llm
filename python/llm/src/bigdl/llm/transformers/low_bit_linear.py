@@ -98,7 +98,17 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    dst_tensor = torch.empty_like(tensor)
+
+    if qtype == ggml_tensor_qtype["sym_int4"]:
+        dst_tensor = torch.empty_like(tensor)
+    elif qtype == ggml_tensor_qtype["sym_int5"]:
+        QK = ggml.ggml_qk_size(qtype)
+        block_size_in_bytes = ggml.ggml_type_size(ggml_tensor_qtype["asym_int5"])
+        dst_size = (num_elem // QK) * block_size_in_bytes
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                 device=torch.device('cpu'))
+    else: 
+        return tensor
     dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
     ggml.ggml_q_format_convet_cpu2xpu(src, dst, num_elem, qtype)
     return dst_tensor
@@ -114,7 +124,16 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    dst_tensor = torch.empty_like(tensor)
+    if qtype == ggml_tensor_qtype["sym_int4"]:
+        dst_tensor = torch.empty_like(tensor)
+    elif qtype == ggml_tensor_qtype["sym_int5"]:
+        QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
+        block_size_in_bytes = ggml.ggml_type_size(qtype)
+        dst_size = (num_elem // QK) * block_size_in_bytes
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                 device=torch.device('cpu'))
+    else:
+        return tensor
     dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
     ggml.ggml_q_format_convet_xpu2cpu(src, dst, num_elem, qtype)
     return dst_tensor
@@ -297,6 +316,7 @@ class LowBitLinear(nn.Linear):
                 x_2d = x_2d.half()
             # input format of linear_q4.forward is 1: input, 2: weight
             result = linear_q4_0.forward_new(x_2d, x0, self.qtype)
+            # result = linear_q4_0.forward(x_2d, x0, self.qtype)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
