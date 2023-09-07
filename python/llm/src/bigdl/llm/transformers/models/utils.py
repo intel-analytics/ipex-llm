@@ -16,6 +16,7 @@
 
 import torch
 
+
 def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size, num_heads,
                                     max_length, head_dim,
@@ -33,6 +34,7 @@ def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
                                                  value_cache_storage.stride(),
                                                  storage_offset=0)
     return key_cache, value_cache
+
 
 def append_kv_cache(cache_k, cache_v, key_states, value_states):
     new_size = (cache_k.size(0),
