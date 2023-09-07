@@ -1,11 +1,11 @@
 # ChatGLM
-In this directory, you will find examples on how you could apply BigDL-LLM general INT4 optimizations on ChatGLM models. For illustration purposes, we utilize the [THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b) as a reference ChatGLM model.
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate ChatGLM models. For illustration purposes, we utilize the [THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b) as a reference ChatGLM model.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM model to predict the next N tokens using `generate()` API, with BigDL-LLM general INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
