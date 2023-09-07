@@ -48,7 +48,7 @@ runs:
         if [ $OS = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
-        pip install intel-tensorflow==2.10.0 tf2onnx==1.13.0
+        pip install intel-tensorflow==2.9.1 tf2onnx==1.13.0
         if [ $IS_PR = "false" ]; then
           pip install --pre --upgrade bigdl-nano[inference]
         else

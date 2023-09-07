@@ -157,7 +157,7 @@ jobs:
         run: |
           $CONDA/bin/conda create -n example-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate example-tensorflow
-          pip install intel-tensorflow==2.10.0 tf2onnx==1.13.0
+          pip install intel-tensorflow==2.9.1 tf2onnx==1.13.0
           bash python/nano/dev/build_and_install.sh linux default false inference
           pip install tensorflow-datasets==4.4.0
           pip install protobuf==3.19.5
@@ -178,7 +178,7 @@ jobs:
             $CONDA/bin/conda create -n notebooks-tutorial-tensorflow -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-tensorflow
             $CONDA/bin/conda info
-            pip install intel-tensorflow==2.10.0 tf2onnx==1.13.0
+            pip install intel-tensorflow==2.9.1 tf2onnx==1.13.0
             bash python/nano/dev/build_and_install.sh linux default false inference
             source bigdl-nano-init
             pip install pytest nbmake

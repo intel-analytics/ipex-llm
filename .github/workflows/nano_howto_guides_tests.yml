@@ -120,7 +120,7 @@ jobs:
           $CONDA/bin/conda create -n howto-guides-inference-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-inference-tensorflow
           $CONDA/bin/conda info
-          pip install intel-tensorflow==2.10.0 tf2onnx==1.13.0
+          pip install intel-tensorflow==2.9.1 tf2onnx==1.13.0
           bash python/nano/dev/build_and_install.sh linux default false inference
           source bigdl-nano-init
           pip install pytest nbmake
@@ -137,7 +137,7 @@ jobs:
           $CONDA/bin/conda create -n howto-guides-training-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate howto-guides-training-tensorflow
           $CONDA/bin/conda info
-          pip install intel-tensorflow==2.10.0 tf2onnx==1.13.0
+          pip install iintel-tensorflow==2.9.1 tf2onnx==1.13.0
           bash python/nano/dev/build_and_install.sh linux default false basic
           source bigdl-nano-init
           pip install pytest nbmake
