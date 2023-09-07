@@ -132,7 +132,7 @@ def optimize(model):
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from transformers.modeling_utils import PreTrainedModel
 
-    # All huggingface format models are inherited from `PreTrainedModel` 
+    # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
         logger.info("It is not supported that optimizing a model isn't belong to"
                     "huggingface transformers with `optimize_model=True` for now.")
