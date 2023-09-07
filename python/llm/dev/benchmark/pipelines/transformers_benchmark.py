@@ -60,7 +60,7 @@ if __name__ == '__main__':
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True)
         end = time.time()
         print(">> loading of model costs {}s".format(end-st))
-        tokenizer = LlamaTokenizer.from_pretrained(model_path)
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
 
     end = time.time()
     print(">> loading and conversion of model costs {}s".format(end-st))
