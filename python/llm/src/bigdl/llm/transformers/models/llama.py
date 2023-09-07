@@ -127,8 +127,8 @@ def llama_attention_forward_4_31(
                                                device=value_states.device,
                                                dtype=value_states.dtype)
 
-        cos = self.rotary_emb.cos_cached[:, :, position_ids, :].squeeze(0)
-        sin = self.rotary_emb.sin_cached[:, :, position_ids, :].squeeze(0)
+        cos = self.rotary_emb.cos_cached[0, 0][position_ids].unsqueeze(2)
+        sin = self.rotary_emb.sin_cached[0, 0][position_ids].unsqueeze(2)
 
         torch.ops.torch_ipex.apply_rotary_embedding(query_states, sin, cos, query_states)
         torch.ops.torch_ipex.apply_rotary_embedding(key_states, sin, cos, key_states)
