@@ -47,4 +47,5 @@ def get_cluster_quote_list():
 
 if __name__ == '__main__':
     print("BigDL-AA: Agent Started.")
-    app.run(host='0.0.0.0', port=9870)
+    port = int(os.environ.get('ATTESTATION_API_SERVICE_PORT'))
+    app.run(host='0.0.0.0', port=port)

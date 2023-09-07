@@ -68,17 +68,17 @@ RUN mkdir /ppml/data && mkdir /ppml/model && mkdir /ppml/output && \
     sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
 
 RUN echo 'port=4050' | tee /etc/tdx-attest.conf && \
-    pip install flask 
-
-RUN echo "mpiuser ALL = NOPASSWD:SETENV: /opt/intel/oneapi/mpi/2021.9.0/bin/mpirun\nmpiuser ALL = NOPASSWD:SETENV: /usr/bin/python" > /etc/sudoers.d/mpivisudo && \
+    pip install flask && \
+    echo "mpiuser ALL = NOPASSWD:SETENV: /opt/intel/oneapi/mpi/2021.9.0/bin/mpirun\nmpiuser ALL = NOPASSWD:SETENV: /usr/bin/python" > /etc/sudoers.d/mpivisudo && \
     chmod 440 /etc/sudoers.d/mpivisudo
 
 ADD ./bigdl_aa.py /ppml/bigdl_aa.py
 ADD ./quote_generator.py /ppml/quote_generator.py
+ADD ./worker_quote_generate.py /ppml/worker_quote_generate.py
+ADD ./get_worker_quote.sh /ppml/get_worker_quote.sh
 
 ADD ./bigdl-lora-finetuing-entrypoint.sh /ppml/bigdl-lora-finetuing-entrypoint.sh
 ADD ./lora_finetune.py /ppml/lora_finetune.py
-ADD ./worker_quote_generate.py /ppml/worker_quote_generate.py
-ADD ./get_worker_quote.sh /ppml/get_worker_quote.sh
+
 RUN chown -R mpiuser /ppml
 USER mpiuser
