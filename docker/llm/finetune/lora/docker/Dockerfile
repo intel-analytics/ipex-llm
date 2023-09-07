@@ -81,5 +81,4 @@ ADD ./lora_finetune.py /ppml/lora_finetune.py
 ADD ./worker_quote_generate.py /ppml/worker_quote_generate.py
 ADD ./get_worker_quote.sh /ppml/get_worker_quote.sh
 RUN chown -R mpiuser /ppml
-RUN chmod -R a+rwx /root/.cache
 USER mpiuser
