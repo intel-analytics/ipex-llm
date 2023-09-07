@@ -11,3 +11,6 @@ in_out_pairs:
 test_api:
   - "transformer_int4"
   - "native_int4"
+  - "optimize_model"
+  # - "transformer_int4_gpu"
+  # - "optimize_model_gpu"

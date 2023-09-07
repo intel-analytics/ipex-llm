@@ -6,12 +6,30 @@ Before running, make sure to have [bigdl-llm](../../../README.md) installed.
 ## Config
 Config YAML file has following format
 ```yaml
-model_name: model_path
-# following is an example, with model name llama2
-llama2: /path/to/llama2
+repo_id:
+  - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+local_model_hub: 'path to your local model hub'
+warm_up: 1
+num_trials: 3
+test_case: 'transformer_int4' # or 'optimize_model', currently works when run on GPU
 ```
 
-## Run
+## Run on CPU
 run `python run.py`, this will output results to `results.csv`.
 
 For SPR performance, run `bash run-spr.sh`.
+
+## Run on GPU
+Configures OneAPI environment variables:
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+For optimal performance on Arc, it is recommended to set several environment variables.
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
+Run `python run_gpu.py`, this will output results to `results.csv`.
