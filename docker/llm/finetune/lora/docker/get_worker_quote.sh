@@ -14,4 +14,4 @@ mpirun \
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \
-    sudo -E python /ppml/worker_quote_generate.py --user_report_data ppml > $SAVE_PATH/quote.log 2>&1
+    sudo -E python /ppml/worker_quote_generate.py --user_report_data $1 > $SAVE_PATH/quote.log 2>&1
