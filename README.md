@@ -2,30 +2,82 @@
 
 <p align="center"> <img src="docs/readthedocs/image/bigdl_logo.jpg" height="140px"><br></p>
 
-_**Fast, Distributed, Secure AI for Big Data**_
-
 </div>
 
 ---
-## Latest News
+## BigDL-LLM
 
-- **Try the latest [`bigdl-llm`](python/llm) for running LLM (large language model) on your Intel laptop using INT4 with very low latency!**[^1] *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc., and supports any Hugging Face Transformers model)*
+**[`bigdl-llm`](python/llm)** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** or ***GPU*** using INT4 with very low latency[^1] (for any **PyTorch** model).
+> *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
+
+### Latest update
+- `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](python/llm/example/gpu).
+- `bigdl-llm` tutorial is released [here](https://github.com/intel-analytics/bigdl-llm-tutorial).
+- Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
+     
+### `bigdl-llm` Demos
+See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15.5b` models on a 12th Gen Intel Core CPU below.
 
 <p align="center">
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models2.png" width='76%'/>
+          <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" width='30%'></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif" width='30%' ></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif" width='30%' ></a>
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-models3.png" width='76%'>
 </p>
 
-- **[Update] Over a dozen models have been verified on [`bigdl-llm`](python/llm)**, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list [here](python/llm/README.md#verified-models).
+### `bigdl-llm` quickstart
+
+#### Install
+You may install **`bigdl-llm`** as follows:
+```bash
+pip install --pre --upgrade bigdl-llm[all]
+```
+> Note: `bigdl-llm` has been tested on Python 3.9
+
+#### Run Model
+
+You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+
+```python
+#load Hugging Face Transformers model with INT4 optimizations
+from bigdl.llm.transformers import AutoModelForCausalLM
+model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+
+#run the optimized model
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+input_ids = tokenizer.encode(input_str, ...)
+output_ids = model.generate(input_ids, ...)
+output = tokenizer.batch_decode(output_ids)
+```
+*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+
+>**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
+  >```python
+  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+  >```
+  >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+ 
+
+After the model is optimizaed using INT4 (or INT8/INT5), you may also save and load the optimized model as follows:
+
+```python
+model.save_low_bit(model_path)
+
+new_model = AutoModelForCausalLM.load_low_bit(model_path)
+```
+*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+
+***For more details, please refer to the `bigdl-llm` [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
 ---
-## Overview
+## Overview of the complete BigDL project
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
+- [LLM](python/llm): Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
+
 - [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
-- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on XPU
+- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
 
 - [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 
@@ -33,7 +85,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Friesian](#friesian): End-to-End Recommendation Systems
 
-- [PPML](#ppml): Secure Big Data and AI (with SGX Hardware Security)
+- [PPML](#ppml): Secure Big Data and AI (with SGX/TDX Hardware Security)
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
@@ -47,13 +99,15 @@ flowchart TD;
     Feature1-- "Yes"  -->ReferPPML([<em><strong>PPML</strong></em>]);
     Feature2-- Python -->Feature3{{What type of application?}};
     Feature2-- Scala/Java -->ReferDLlib([<em><strong>DLlib</strong></em>]);
-    Feature3-- "Distributed Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
+    Feature3-- "Large Language Model" -->ReferLLM([<em><strong>LLM</strong></em>]);
+    Feature3-- "Big Data + AI (TF/PyTorch)" -->ReferOrca([<em><strong>Orca</strong></em>]);
     Feature3-- Accelerate TensorFlow / PyTorch -->ReferNano([<em><strong>Nano</strong></em>]);
     Feature3-- DL for Spark MLlib -->ReferDLlib2([<em><strong>DLlib</strong></em>]);
     Feature3-- High Level App Framework -->Feature4{{Domain?}};
     Feature4-- Time Series -->ReferChronos([<em><strong>Chronos</strong></em>]);
     Feature4-- Recommender System -->ReferFriesian([<em><strong>Friesian</strong></em>]);
     
+    click ReferLLM "https://github.com/intel-analytics/bigdl/tree/main/python/llm"
     click ReferNano "https://github.com/intel-analytics/bigdl#nano"
     click ReferOrca "https://github.com/intel-analytics/bigdl#orca"
     click ReferDLlib "https://github.com/intel-analytics/bigdl#dllib"
@@ -64,7 +118,7 @@ flowchart TD;
     
     classDef ReferStyle1 fill:#5099ce,stroke:#5099ce;
     classDef Feature fill:#FFF,stroke:#08409c,stroke-width:1px;
-    class ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
+    class ReferLLM,ReferNano,ReferOrca,ReferDLlib,ReferDLlib2,ReferChronos,ReferFriesian,ReferPPML ReferStyle1;
     class Feature1,Feature2,Feature3,Feature4,Feature5,Feature6,Feature7 Feature;
     
 ```

@@ -41,29 +41,13 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib
+from .utils import logger
 
 
-def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
-                               current_key_name=None, convert_shape_only=False):
-    from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
+def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
+                                 current_key_name=None):
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
     has_been_replaced = False
-
-    # Through our method, certain layers that were initialized on the device "meta"
-    # (associated with the lazy initialization strategy of low_cpu_mem_usage) are not
-    # being correctly moved back to the CPU device for some reason. Therefore, we are
-    # moving these layers back to the CPU here in order to prevent the occurrence
-    # of NoImplementnError. Details refer to:
-    # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L3110
-    model_state_dict = model.state_dict()
-    for name, param in model.named_parameters():
-        if param.data.device == torch.device('meta'):
-            from accelerate.utils.modeling import set_module_tensor_to_device
-            param = model_state_dict[name]
-            set_module_tensor_to_device(model,
-                                        name,
-                                        "cpu",
-                                        torch.empty(*param.size(), dtype=torch.float32))
-    del model_state_dict
 
     for name, module in model.named_children():
         if current_key_name is None:
@@ -73,24 +57,25 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-                    new_linear = LinearQuant(
+                    new_linear = LowBitLinear(
                         module.in_features,
                         module.out_features,
                         qtype,
                         module.bias is not None,
                     )
 
+                    device_type = module.weight.data.device.type
                     # Copy the weights
-                    paramsQuant = ParamsQuant(data=module.weight.data,
-                                              requires_grad=False,
-                                              quantized=False,
-                                              convert_shape_only=convert_shape_only,
-                                              _shape=None,
-                                              qtype=qtype).to("cpu")
-                    new_linear._parameters['weight'] = paramsQuant
+                    paramsLowBit = FP4Params(data=module.weight.data,
+                                             requires_grad=False,
+                                             quantized=False,
+                                             _shape=None,
+                                             qtype=qtype).to(device_type)
+                    new_linear._parameters['weight'] = paramsLowBit
 
                     if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to("cpu")
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            .to(device_type)
 
                     model._modules[name] = new_linear
                     has_been_replaced = True
@@ -101,20 +86,20 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
-            _, has_been_replaced = _replace_with_quant_linear(
+            _, _flag = _replace_with_low_bit_linear(
                 module,
                 qtype,
                 modules_to_not_convert,
                 current_key_name,
-                convert_shape_only,
             )
+            has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
 
 
-def ggml_convert_quant(model, qtype, optimize_model=True, convert_shape_only=False):
+def ggml_convert_low_bit(model, qtype, optimize_model=True, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
-    model, has_been_replaced = _replace_with_quant_linear(
-        model, qtype, modules_to_not_convert, None, convert_shape_only=convert_shape_only
+    model, has_been_replaced = _replace_with_low_bit_linear(
+        model, qtype, modules_to_not_convert, None
     )
     if not has_been_replaced:
         warnings.warn(
@@ -123,8 +108,11 @@ def ggml_convert_quant(model, qtype, optimize_model=True, convert_shape_only=Fal
             "instead of Linear layers. Please double check your model architecture, or submit "
             "an issue on github if you think this is a bug."
         )
-    else:
+    elif device == "cpu":
         model.to(torch.float32)
+    elif device == "meta":
+        # Do nothing here for weights are empty.
+        pass
 
     if optimize_model:
         model = optimize(model)
@@ -142,6 +130,14 @@ def convert_forward(m, target_m, new_forward):
 def optimize(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    from transformers.modeling_utils import PreTrainedModel
+
+    # All huggingface format models are inherited from `PreTrainedModel`
+    if not isinstance(model, PreTrainedModel):
+        logger.info("It is not supported that optimizing a model isn't belong to"
+                    "huggingface transformers with `optimize_model=True` for now.")
+        return model
+
     trans_version = transformers.__version__
     if version.parse(trans_version) >= version.parse("4.31.0"):
         convert_forward(
@@ -155,13 +151,22 @@ def optimize(model):
     if "chatglm2" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward_8eb45c
-        from bigdl.llm.transformers.models.chatglm import core_attn_forward_8eb45c
+        from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
+        from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
         convert_forward(model,
                         module.SelfAttention,
-                        chatglm_attention_forward_8eb45c
+                        chatglm2_attention_forward_8eb45c
                         )
         convert_forward(model,
                         module.CoreAttention,
                         core_attn_forward_8eb45c)
+    elif "chatglm" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
+        convert_forward(model,
+                        module.SelfAttention,
+                        chatglm_attention_forward
+                        )
+
     return model

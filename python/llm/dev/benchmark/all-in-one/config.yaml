@@ -1,0 +1,6 @@
+repo_id:
+  - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+local_model_hub: 'path to your local model hub'
+warm_up: 1
+num_trials: 3

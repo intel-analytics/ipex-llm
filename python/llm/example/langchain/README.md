@@ -72,6 +72,51 @@ When you see output says
 
 Please say something through your microphone (e.g. What is AI). The programe will automatically detect when you have completed your speech and recogize them.
 
+#### Known Issues
+The speech_recognition library may occasionally skip recording due to low volume. An alternative option is to save the recording in WAV format using `PyAudio` and read the file as an input. Here is an example using PyAudio:
+```python
+import pyaudio
+import speech_recognition as sr
+
+CHUNK = 1024
+FORMAT = pyaudio.paInt16
+CHANNELS = 1                # The desired number of input channels
+RATE = 16000                # The desired rate (in Hz)
+RECORD_SECONDS = 10         # Recording time (in second)
+WAVE_OUTPUT_FILENAME = "/path/to/pyaudio_out.wav"
+p = pyaudio.PyAudio()
+                
+stream = p.open(format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                input=True,
+                frames_per_buffer=CHUNK)
+
+print("*"*10, "Listening\n")
+frames = []
+data =0
+for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+  data = stream.read(CHUNK)  ## <class 'bytes'> ,exception_on_overflow = False
+  frames.append(data)   ## <class 'list'>
+print("*"*10, "Stop recording\n")
+
+stream.stop_stream()
+stream.close()
+p.terminate()
+
+wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+wf.setnchannels(CHANNELS)
+wf.setsampwidth(p.get_sample_size(FORMAT))
+wf.setframerate(RATE)
+wf.writeframes(b''.join(frames))
+wf.close()
+
+r = sr.Recognizer()
+with sr.AudioFile(WAVE_OUTPUT_FILENAME) as source1:
+    audio = r.record(source1)  # read the entire audio file   
+frame_data = np.frombuffer(audio.frame_data, np.int16).flatten().astype(np.float32) / 32768.0
+```
+
 ### 4. Math
 
 This is an example using `LLMMathChain`. This example has been validated using [phoenix-7b](https://huggingface.co/FreedomIntelligence/phoenix-inst-chat-7b).

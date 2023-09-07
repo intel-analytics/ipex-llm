@@ -61,10 +61,13 @@ class RayTuneSearchEngine(SearchEngine):
         if ray_ctx.is_local:
             return None
         else:
-            default_remote_dir = f"hdfs:///tmp/{name}"
-            process(command=f"hadoop fs -mkdir -p {default_remote_dir}; "
-                            f"hadoop fs -chmod 777 {default_remote_dir}")
-            return default_remote_dir
+            try:
+                default_remote_dir = f"hdfs:///tmp/{name}"
+                process(command=f"hadoop fs -mkdir -p {default_remote_dir}; "
+                                f"hadoop fs -chmod 777 {default_remote_dir}")
+                return default_remote_dir
+            except Exception:
+                return None
 
     def compile(self,
                 data,

@@ -31,10 +31,8 @@ ADD ./pslinux.patch /ppml/pslinux.patch
 
 # 2.2 output mr_enclave and mr_signer to customer
 RUN cd /ppml && \
-    echo "[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:" && \
-    gramine-sgx-quote-dump -m bash.sig|grep mr_enclave && \
-    gramine-sgx-quote-dump -m bash.sig|grep mr_signer && \
-    patch /usr/local/lib/python3.9/dist-packages/psutil/_pslinux.py pslinux.patch
+    patch /usr/local/lib/python3.9/dist-packages/psutil/_pslinux.py pslinux.patch && \
+    gramine-sgx-get-token --output bash.token --sig bash.sig
 
 WORKDIR /ppml
 

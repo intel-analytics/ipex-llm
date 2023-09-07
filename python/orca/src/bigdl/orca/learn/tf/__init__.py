@@ -13,3 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import logging
+
+logging.warning("TF1 API has been deprecated, you may use TF2 Estimator instead.")

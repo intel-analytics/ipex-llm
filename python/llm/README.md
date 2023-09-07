@@ -1,16 +1,20 @@
 ## BigDL-LLM
 
-**`bigdl-llm`** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** using INT4 with very low latency[^1] (for any Hugging Face *Transformers* model).
+**`bigdl-llm`** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** or ***GPU*** using INT4 with very low latency[^1] (for any Hugging Face *Transformers* model).
 
->*(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.)*
+> *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
+### Latest update
+ - `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](example/gpu).
+    
 ### Demos
-See the ***optimized performance*** of `chatglm2-6b`, `vicuna-13b-v1.1`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
+See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15.5b` models on a 12th Gen Intel Core CPU below.
 
 <p align="center">
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/chatglm2-6b.gif" width='33%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='33%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='33%' />
-            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models2.png" width='85%'/>
+          <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" width='33%'></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif" width='33%' ></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif" width='33%' ></a>
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-models3.png" width='85%'>
 </p>
+
 
 ### Verified models
 We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following models have been verified on Intel laptops.
@@ -111,13 +115,9 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
-  >**Notes**: 
+  >**Notes**: Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; you may use the corresponding API to load the converted model. (For other models, you can use the Transformers INT4 format as described above).
   
-  * Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Transformers INT4 format as described above).
-  
-  * You may choose the corresponding API developed for specific native models to load the converted model.
-
-  ```python
+   ```python
   #convert the model
   from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
@@ -126,7 +126,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   #load the converted model
   #switch to ChatGLMForCausalLM/GptneoxForCausalLM/BloomForCausalLM/StarcoderForCausalLM to load other models
   from bigdl.llm.transformers import LlamaForCausalLM
-  llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", ...)
+  llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", native=True, ...)
   
   #run the converted model
   input_ids = llm.tokenize(prompt)
@@ -158,19 +158,23 @@ You may run the models using the LangChain API in `bigdl-llm`.
  
 - **Using native INT4 format**
 
-  You may also convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API as follows.
+  You may also convert Hugging Face *Transformers* models into *native INT4* format, and then run the converted models using the LangChain API as follows.
   
-  >**Note**: Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).
+  >**Notes**: 
+  
+   >* Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face `transformers` INT4 format as described above).
+
+   >* You may choose the corresponding API developed for specific native models to load the converted model.
 
   ```python
-  from bigdl.llm.langchain.llms import BigdlNativeLLM
-  from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+  from bigdl.llm.langchain.llms import LlamaLLM
+  from bigdl.llm.langchain.embeddings import LlamaEmbeddings
   from langchain.chains.question_answering import load_qa_chain
 
-  embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
-                            model_family="llama",...)
-  bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
-                       model_family="llama",...)
+  #switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
+  embeddings = LlamaEmbeddings(model_path='/path/to/converted/model.bin')
+  #switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
+  bigdl_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
 
   doc_chain = load_qa_chain(bigdl_llm, ...)
   doc_chain.run(...)
