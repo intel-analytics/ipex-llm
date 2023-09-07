@@ -65,9 +65,8 @@ RUN mkdir /ppml/data && mkdir /ppml/model && mkdir /ppml/output && \
 # Disabling StrictModes avoids directory and files read permission checks.
     sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config && \
     echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
-    sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
-
-RUN echo 'port=4050' | tee /etc/tdx-attest.conf && \
+    sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config && \
+    echo 'port=4050' | tee /etc/tdx-attest.conf && \
     pip install flask && \
     echo "mpiuser ALL = NOPASSWD:SETENV: /opt/intel/oneapi/mpi/2021.9.0/bin/mpirun\nmpiuser ALL = NOPASSWD:SETENV: /usr/bin/python" > /etc/sudoers.d/mpivisudo && \
     chmod 440 /etc/sudoers.d/mpivisudo
