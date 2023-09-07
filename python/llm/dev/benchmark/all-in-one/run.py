@@ -19,8 +19,6 @@
 import torch
 import time
 
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
-from transformers import AutoTokenizer
 import numpy as np
 from datetime import date
 
@@ -41,6 +39,12 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'native_int4':
         run_native_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
+    elif test_api == 'optimize_model':
+        result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
+    elif test_api == 'transformer_int4_gpu':
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
+    elif test_api == 'optimize_model_gpu':
+        result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
 
     for in_out_pair in in_out_pairs:
         results.append([repo_id,
@@ -101,6 +105,9 @@ def run_transformer_int4(repo_id,
                          in_out_pairs,
                          warm_up,
                          num_trials):
+    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from transformers import AutoTokenizer
+
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -132,6 +139,167 @@ def run_transformer_int4(repo_id,
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len)
                 end = time.perf_counter()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    return result
+
+
+def run_optimize_model(repo_id,
+                       local_model_hub,
+                       in_out_pairs,
+                       warm_up,
+                       num_trials):
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from bigdl.llm import optimize_model
+
+    model_path = get_model_path(repo_id, local_model_hub)
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
+    st = time.perf_counter()
+    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+        model = optimize_model(model)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True)
+        model = optimize_model(model)
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = open(f"prompt/{in_len}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len)
+                end = time.perf_counter()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    return result
+
+
+def run_transformer_int4_gpu(repo_id,
+                             local_model_hub,
+                             in_out_pairs,
+                             warm_up,
+                             num_trials):
+    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from transformers import AutoTokenizer
+    import intel_extension_for_pytorch as ipex
+    if local_model_hub:
+        repo_model_name = repo_id.split("/")[1]
+        model_path = local_model_hub + "/" + repo_model_name
+    else:
+        model_path = repo_id
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
+    st = time.perf_counter()
+    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True)
+        model = model.to('xpu')
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True)
+        model = model.to('xpu')
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = open(f"prompt/{in_len}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt").to('xpu')
+            input_ids = input_ids[:, :in_len]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len)
+                torch.xpu.synchronize()
+                end = time.perf_counter()
+                output_ids = output_ids.cpu()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    return result
+
+
+def run_optimize_model_gpu(repo_id,
+                           local_model_hub,
+                           in_out_pairs,
+                           warm_up,
+                           num_trials):
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from bigdl.llm import optimize_model
+    import intel_extension_for_pytorch as ipex
+    if local_model_hub:
+        repo_model_name = repo_id.split("/")[1]
+        model_path = local_model_hub + "/" + repo_model_name
+    else:
+        model_path = repo_id
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
+    st = time.perf_counter()
+    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+        model = optimize_model(model)
+        model = model.to('xpu')
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True)
+        model = optimize_model(model)
+        model = model.to('xpu')
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = open(f"prompt/{in_len}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt").to('xpu')
+            input_ids = input_ids[:, :in_len]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len)
+                torch.xpu.synchronize()
+                end = time.perf_counter()
+                output_ids = output_ids.cpu()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
                 print(output[0])
