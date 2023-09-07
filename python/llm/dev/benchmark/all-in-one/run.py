@@ -39,15 +39,15 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     # TODO: make a parameter
     if test_api == 'transformer_int4':
         result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
-        for in_out_pair in in_out_pairs:
-            results.append([repo_id,
-                            np.mean(result[in_out_pair], axis=0)[0],
-                            np.mean(result[in_out_pair], axis=0)[1],
-                            np.mean(result[in_out_pair], axis=0)[2],
-                            in_out_pair])
     elif test_api == 'native_int4':
         run_native_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
 
+    for in_out_pair in in_out_pairs:
+        results.append([repo_id,
+                        np.mean(result[in_out_pair], axis=0)[0],
+                        np.mean(result[in_out_pair], axis=0)[1],
+                        np.mean(result[in_out_pair], axis=0)[2],
+                        in_out_pair])
 
 def run_native_int4(repo_id,
                     local_model_hub,
@@ -151,3 +151,4 @@ if __name__ == '__main__':
             run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (s)', '2+ avg latency (s/token)', 'encoder time (s)', 'input/output tokens'])
         df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
+        result = []
