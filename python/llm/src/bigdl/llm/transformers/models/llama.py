@@ -196,7 +196,8 @@ def llama_attention_forward_4_31(
 
     if self.config.pretraining_tp > 1:
         attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
-        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp, dim=1)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
+                                                 dim=1)
         attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
                            for i in range(self.config.pretraining_tp)])
     else:
