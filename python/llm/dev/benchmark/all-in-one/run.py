@@ -49,16 +49,20 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                         np.mean(result[in_out_pair], axis=0)[2],
                         in_out_pair])
 
+def get_model_path(repo_id, local_model_hub):
+    if local_model_hub:
+        repo_model_name = repo_id.split("/")[1]
+        return local_model_hub + os.path.sep + repo_model_name
+    else:
+        return repo_id
+
+
 def run_native_int4(repo_id,
                     local_model_hub,
                     in_out_pairs,
                     warm_up,
                     num_trials):
-    if local_model_hub:
-        repo_model_name = repo_id.split("/")[1]
-        model_path = local_model_hub + os.path.sep + repo_model_name
-    else:
-        model_path = repo_id
+    model_path = get_model_path(repo_id, local_model_hub)
     from bigdl.llm.transformers import BigdlNativeForCausalLM
     from bigdl.llm import llm_convert
     if "chatglm" in repo_id.lower():
@@ -97,11 +101,7 @@ def run_transformer_int4(repo_id,
                          in_out_pairs,
                          warm_up,
                          num_trials):
-    if local_model_hub:
-        repo_model_name = repo_id.split("/")[1]
-        model_path = local_model_hub + "/" + repo_model_name
-    else:
-        model_path = repo_id
+    model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
