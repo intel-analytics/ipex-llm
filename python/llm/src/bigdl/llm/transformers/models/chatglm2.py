@@ -147,7 +147,7 @@ def chatglm2_attention_forward_8eb45c(
         cache_k, cache_v = kv_cache
         past_length = cache_k.size(0)
 
-        if past_length + cur_length > self.max_cache_length:
+        if past_length != self.current_cache_length or past_length + cur_length > self.max_cache_length:
             self.max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             self.kv_cache = (torch.empty(batch_size,
                                          self.num_attention_heads_per_partition,
@@ -166,6 +166,7 @@ def chatglm2_attention_forward_8eb45c(
 
         key_layer = self.kv_cache[0][:, :, :past_length + cur_length, :]
         value_layer = self.kv_cache[1][:, :, :past_length + cur_length, :]
+        self.current_cache_length = past_length + cur_length
 
     elif use_cache:
         self.max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
@@ -178,9 +179,14 @@ def chatglm2_attention_forward_8eb45c(
                                      device=device))
         self.kv_cache[0][:, :, :cur_length, :] = key_layer
         self.kv_cache[1][:, :, :cur_length, :] = value_layer
+        self.current_cache_length = cur_length
 
     if use_cache:
-        kv_cache = (key_layer, value_layer)
+        if kv_cache is not None:
+            cache_k, cache_v = kv_cache
+            # key_layer = torch.cat((cache_k.permute(1, 2, 0, 3), key_layer), dim=2)
+            # value_layer = torch.cat((cache_v.permute(1, 2, 0, 3), value_layer), dim=2)
+            kv_cache = (key_layer, value_layer)
     else:
         kv_cache = None
 
@@ -227,13 +233,15 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                                                  is_causal=True)
         else:
             if attention_mask is not None:
-                attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
+                attention_mask = ~attention_mask
 
             if torch.is_autocast_cpu_enabled():
                 query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
                 key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
                 value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
-                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
+                if attention_mask is not None:
+                    attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
+
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
