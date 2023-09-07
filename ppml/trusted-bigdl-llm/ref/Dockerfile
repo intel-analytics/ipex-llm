@@ -4,10 +4,12 @@ ARG BASE_IMAGE_TAG
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
-ARG SGX_MEM_SIZE="64G"
+ARG SGX_MEM_SIZE="32G"
 ARG SGX_LOG_LEVEL="error"
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
+ADD ./config.diff /opt/config.diff
+RUN patch /ppml/bash.manifest.template /opt/utils.diff
 
 # 1.1 make SGX and sign in a temp image
 RUN cd /ppml && \

@@ -1,0 +1,4 @@
+16c16
+< sgx.remote_attestation = "dcap"
+---
+> sgx.remote_attestation = "none"
