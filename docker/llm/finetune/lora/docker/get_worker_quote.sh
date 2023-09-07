@@ -1,6 +1,4 @@
 #!/bin/bash
-sleep 30
-
 set -x
 source /opt/intel/oneapi/setvars.sh
 export CCL_WORKER_COUNT=$WORLD_SIZE
