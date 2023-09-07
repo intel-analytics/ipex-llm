@@ -42,6 +42,7 @@ then
   export LOCAL_RANK=$(cut -d "-" -f6 <<< "$LOCAL_POD_NAME")
   export PMI_SIZE=$WORLD_SIZE
   export PMI_RANK=$LOCAL_RANK
-  /usr/sbin/sshd -De -f /home/mpiuser/.sshd_config
+  chown nobody /home/mpiuser/.ssh/id_rsa
+  sudo -u mpiuser /usr/sbin/sshd -De -f /home/mpiuser/.sshd_config
 fi
 

@@ -33,7 +33,7 @@ spec:
              args:
                - |
                   nohup python /ppml/bigdl_aa.py > /ppml/bigdl_aa.log 2>&1 &
-                  sudo -E -u mpiuser bash /ppml/bigdl-lora-finetuing-entrypoint.sh
+                  sudo -E -u mpiuser bash /ppml/bigdl-lora-finetuing-tdx-entrypoint.sh
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -80,7 +80,7 @@ spec:
             securityContext:
               runAsUser: 0
               privileged: true
-            command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
+            command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-tdx-entrypoint.sh']
             env:
             - name: WORKER_ROLE
               value: "trainer"
