@@ -183,6 +183,8 @@ def run_optimize_model(repo_id,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
             result[in_out] = []
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
