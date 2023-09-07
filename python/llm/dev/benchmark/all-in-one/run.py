@@ -321,4 +321,4 @@ if __name__ == '__main__':
             run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (s)', '2+ avg latency (s/token)', 'encoder time (s)', 'input/output tokens'])
         df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
-        result = []
+        results = []
