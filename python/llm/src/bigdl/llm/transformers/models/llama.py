@@ -112,11 +112,11 @@ def llama_attention_forward_4_31(
     if query_states.device.type == "xpu" and position_ids is not None:
 
         query_states = query_states.view(bsz, q_len,
-                                        self.num_heads, self.head_dim)
+                                         self.num_heads, self.head_dim)
         key_states = key_states.view(bsz, q_len,
-                                    self.num_key_value_heads, self.head_dim)
+                                     self.num_key_value_heads, self.head_dim)
         value_states = value_states.view(bsz, q_len,
-                                        self.num_key_value_heads, self.head_dim)
+                                         self.num_key_value_heads, self.head_dim)
 
         kv_seq_len = key_states.shape[-3]
         if past_key_value is not None:
@@ -148,8 +148,8 @@ def llama_attention_forward_4_31(
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
-
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids)
 
     if past_key_value is not None:
         # reuse k, v, self_attention
