@@ -121,7 +121,7 @@ jobs:
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
           pip install ${{matrix.tf-version}} tf2onnx==1.13.0
-          bash python/nano/dev/build_and_install.sh linux default false
+          bash python/nano/dev/build_and_install.sh linux default false basic
           HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
           pip install pytest
           source bigdl-nano-init
