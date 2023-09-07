@@ -23,7 +23,8 @@ export WORKLOAD_DIR=${NANO_BENCHMARK_DIR}/keras_inference_optimizer
 set -e
 
 # install dependencies
-bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false tensorflow,inference --force-reinstall
+pip install intel-tensorflow==2.10.0 tf2onnx==1.13.0
+bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false inference --force-reinstall
 pip install tensorboard==2.9
 
 # set nano's environment variables

@@ -30,15 +30,15 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.8"]
         tf-version: [
-          "tensorflow_27",
-          "tensorflow_28",
-          "tensorflow_29",
-          "tensorflow_210",
-          "stock_tensorflow_27",
-          "stock_tensorflow_28",
-          "stock_tensorflow_29",
-          "stock_tensorflow_210"
-          ]
+          "intel-tensorflow==2.7.0",
+          "intel-tensorflow==2.8.0",
+          "intel-tensorflow==2.9.1",
+          "intel-tensorflow==2.10.0",
+          "tensorflow==2.7.4",
+          "tensorflow==2.8.4",
+          "tensorflow==2.9.3",
+          "tensorflow==2.10.1"
+        ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -61,9 +61,8 @@ jobs:
           $CONDA/bin/conda create -n nano-tensorflow -y python==3.8.16
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false basic
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-train-tests.sh
@@ -78,9 +77,8 @@ jobs:
           $CONDA/bin/conda create -n nano-tensorflow -y python==3.8.16
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false inference
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-inference-tests.sh
@@ -98,15 +96,15 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         tf-version: [
-          "tensorflow_27",
-          "tensorflow_28",
-          "tensorflow_29",
-          "tensorflow_210",
-          "stock_tensorflow_27",
-          "stock_tensorflow_28",
-          "stock_tensorflow_29",
-          "stock_tensorflow_210"
-          ]
+          "intel-tensorflow==2.7.0",
+          "intel-tensorflow==2.8.0",
+          "intel-tensorflow==2.9.1",
+          "intel-tensorflow==2.10.0",
+          "tensorflow==2.7.4",
+          "tensorflow==2.8.4",
+          "tensorflow==2.9.3",
+          "tensorflow==2.10.1"
+        ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -122,9 +120,8 @@ jobs:
           $CONDA/bin/conda create -n horovod-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false
           HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
           pip install pytest
           source bigdl-nano-init
@@ -140,9 +137,8 @@ jobs:
           $CONDA/bin/conda create -n ray-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate ray-tf
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false basic
           pip install pytest
           # fix issue, see https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/Nano/Overview/known_issues.md#ray-issues
           pip install google-api-core==2.8.2
@@ -160,9 +156,8 @@ jobs:
           $CONDA/bin/conda create -n nano-automl-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate nano-automl-tf
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false basic
           pip install pytest
           pip install ConfigSpace
           pip install 'optuna<=3.1.1'
@@ -180,9 +175,8 @@ jobs:
           $CONDA/bin/conda create -n inc-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate inc-tf
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false inference
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-inc-tests.sh
@@ -197,9 +191,8 @@ jobs:
           $CONDA/bin/conda create -n openvino-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate openvino-tensorflow
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false inference
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-openvino-tests.sh
@@ -214,9 +207,8 @@ jobs:
           $CONDA/bin/conda create -n onnx-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate onnx-tensorflow
           $CONDA/bin/conda info
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
-          fi
+          pip install ${{matrix.tf-version}} tf2onnx==1.13.0
+          bash python/nano/dev/build_and_install.sh linux default false inference
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-onnx-tests.sh
