@@ -1,6 +1,13 @@
 repo_id:
+  - 'THUDM/chatglm-6b'
   - 'THUDM/chatglm2-6b'
   - 'meta-llama/Llama-2-7b-chat-hf'
-local_model_hub: 'path to your local model hub'
-warm_up: 1
-num_trials: 3
+local_model_hub: '/home/xin/IntelAnalytics/models'
+warm_up: 2
+num_trials: 5
+in_out_pairs:
+  - '32-32'
+mode:
+  - "transformer_int4"
+  - "native_int4"
+# - '1024-128'
