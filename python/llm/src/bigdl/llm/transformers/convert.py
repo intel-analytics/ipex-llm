@@ -134,8 +134,8 @@ def optimize(model):
 
     # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
-        logger.info("It is not supported that optimizing a model isn't belong to"
-                    "huggingface transformers with `optimize_model=True` for now.")
+        logger.info("Only HuggingFace Transformers models are currently "
+                    "supported for further optimizations")
         return model
 
     trans_version = transformers.__version__
