@@ -40,6 +40,10 @@ spec:
           value: "{{ .Values.modelDecryption }}"
         - name: AES_KEY
           value: "{{ .Values.aesKey }}"
+        - name: SAVED_ON_DISK
+          value: "{{ .Values.savedOnDisk }}"
+        - name: SECURED_DIR
+          value: "{{ .Values.securedDir }}"
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"

@@ -156,6 +156,8 @@ COPY --from=min_container /dl-serving /
 #TF-Serving
 COPY --from=tf-serving /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server
 
+Add ./pslinux.patch /ppml/pslinux.patch
+
 # Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev libpython3-dev && \
@@ -188,6 +190,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # which is then required by our third-layer gramine make command
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
     ls /opt/tritonserver/backends/pytorch && \
-    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
+    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so && \
+    patch /usr/local/lib/python3.9/dist-packages/psutil/_pslinux.py pslinux.patch
 
 ENTRYPOINT [ "/ppml/torchserve/frontend-entrypoint.sh" ]

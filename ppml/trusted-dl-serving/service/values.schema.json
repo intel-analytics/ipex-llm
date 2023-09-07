@@ -59,6 +59,12 @@
       },
       "tlsEnable": {
         "type": "boolean"
+      },
+      "savedOnDisk": {
+        "type": "boolean"
+      },
+      "securedDir": {
+        "type": "string"
       }
     }
 }
