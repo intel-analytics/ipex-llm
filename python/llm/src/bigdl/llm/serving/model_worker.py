@@ -57,7 +57,6 @@ import uvicorn
 from fastchat.constants import WORKER_HEART_BEAT_INTERVAL, ErrorCode, SERVER_ERROR_MSG
 from fastchat.conversation import get_conv_template
 from fastchat.model.model_adapter import (
-    load_model,
     add_model_args,
     get_conversation_template,
     get_generate_stream_function,
@@ -224,6 +223,7 @@ class ModelWorker(BaseModelWorker):
         )
 
         logger.info(f"Loading the model {self.model_names} on worker {worker_id} ...")
+        from fastchat.model.model_adapter import load_model
         self.model, self.tokenizer = load_model(
             model_path,
             device=device,

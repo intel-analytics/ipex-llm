@@ -135,6 +135,7 @@ def load_model(
         # Avoid bugs in mps backend by not using in-place operations.
         replace_llama_attn_with_non_inplace_operations()
     elif device == "xpu":
+        kwargs = {}
         # Try to load ipex, while it looks unused, it links into torch for xpu support
         try:
             import intel_extension_for_pytorch as ipex
