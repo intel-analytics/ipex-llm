@@ -1,6 +1,6 @@
 <div align="center">
 
-<p align="center"> <img src="docs/readthedocs/image/bigdl_logo.jpg" height="140px"><br></p>
+<p align="center"> <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigdl_logo.jpg" height="140px"><br></p>
 
 </div>
 
