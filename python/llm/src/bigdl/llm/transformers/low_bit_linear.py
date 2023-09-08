@@ -100,6 +100,12 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     if qtype == ggml_tensor_qtype["sym_int4"]:
         dst_tensor = torch.empty_like(tensor)
+    elif qtype == ggml_tensor_qtype["sym_int5"]:
+        QK = ggml.ggml_qk_size(qtype)
+        block_size_in_bytes = ggml.ggml_type_size(ggml_tensor_qtype["asym_int5"])
+        dst_size = (num_elem // QK) * block_size_in_bytes
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                 device=torch.device('cpu'))
     else:
         return tensor
     dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
@@ -119,6 +125,12 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     if qtype == ggml_tensor_qtype["sym_int4"]:
         dst_tensor = torch.empty_like(tensor)
+    elif qtype == ggml_tensor_qtype["sym_int5"]:
+        QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
+        block_size_in_bytes = ggml.ggml_type_size(qtype)
+        dst_size = (num_elem // QK) * block_size_in_bytes
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                 device=torch.device('cpu'))
     else:
         return tensor
     dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
