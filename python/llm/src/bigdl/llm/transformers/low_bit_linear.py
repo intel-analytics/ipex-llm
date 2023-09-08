@@ -98,7 +98,6 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-
     if qtype == ggml_tensor_qtype["sym_int4"]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
@@ -107,7 +106,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
         dst_size = (num_elem // QK) * block_size_in_bytes
         dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
                                  device=torch.device('cpu'))
-    else: 
+    else:
         return tensor
     dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
     ggml.ggml_q_format_convet_cpu2xpu(src, dst, num_elem, qtype)
