@@ -45,6 +45,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
+    elif test_api == 'bf16':
+        result = run_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
 
     for in_out_pair in in_out_pairs:
         results.append([repo_id,
@@ -59,6 +61,55 @@ def get_model_path(repo_id, local_model_hub):
         return local_model_hub + os.path.sep + repo_model_name
     else:
         return repo_id
+
+
+def run_bf16(repo_id,
+             local_model_hub,
+             in_out_pairs,
+             warm_up,
+             num_trials):
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoTokenizer
+    import intel_extension_for_pytorch as ipex
+
+    model_path = get_model_path(repo_id, local_model_hub)
+
+    st = time.perf_counter()
+    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = open(f"prompt/{in_len}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len)
+                end = time.perf_counter()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    return result
 
 
 def run_native_int4(repo_id,
