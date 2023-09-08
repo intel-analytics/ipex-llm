@@ -999,6 +999,58 @@ _lib.ggml_dequantize_q4_0.argtypes = [
 _lib.ggml_quantize_q4_0.restype = None
 
 
+def ggml_q_format_convet_cpu2xpu(
+    src: ctypes.c_void_p,
+    dst: ctypes.c_void_p,
+    n: ctypes.c_int,
+    qtype: ctypes.c_int
+):
+    _lib.ggml_q_format_convet_cpu2xpu(src, dst, n, qtype)
+
+
+_lib.ggml_q_format_convet_cpu2xpu.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_lib.ggml_q_format_convet_cpu2xpu.restype = None
+
+
+def ggml_q_format_convet_xpu2cpu(
+    src: ctypes.c_void_p,
+    dst: ctypes.c_void_p,
+    n: ctypes.c_int,
+    qtype: ctypes.c_int
+):
+    _lib.ggml_q_format_convet_xpu2cpu(src, dst, n, qtype)
+
+
+_lib.ggml_q_format_convet_xpu2cpu.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int
+]
+_lib.ggml_q_format_convet_xpu2cpu.restype = None
+
+
+# def ggml_dequantize_nf4(
+#     src: ctypes.c_void_p,
+#     dst: ctypes.c_void_p,
+#     k: ctypes.c_int,
+# ):
+#     _lib.ggml_dequantize_nf4(src, dst, k)
+#
+#
+# _lib.ggml_dequantize_nf4.argtypes = [
+#     ctypes.c_void_p,
+#     ctypes.c_void_p,
+#     ctypes.c_int,
+# ]
+# _lib.ggml_dequantize_nf4.restype = None
+
+
 def ggml_compute_forward_mul_mat_q_fp32(src_0_ne,  # type: ctypes.Array[ctypes.c_int64]
                                         src_0_data,  # type: ctypes.c_void_p
                                         src_0_qtype,  # type: int
