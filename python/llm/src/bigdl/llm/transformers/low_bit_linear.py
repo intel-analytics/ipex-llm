@@ -316,7 +316,6 @@ class LowBitLinear(nn.Linear):
                 x_2d = x_2d.half()
             # input format of linear_q4.forward is 1: input, 2: weight
             result = linear_q4_0.forward_new(x_2d, x0, self.qtype)
-            # result = linear_q4_0.forward(x_2d, x0, self.qtype)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
