@@ -10,6 +10,7 @@ Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tr
 ```bash
 pip install langchain==0.0.184
 pip install -U chromadb==0.3.25
+pip install -U pandas==2.0.3
 pip install -U typing_extensions==4.5.0
 ```
 
