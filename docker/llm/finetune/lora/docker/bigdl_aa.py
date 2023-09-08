@@ -7,7 +7,6 @@ import requests
 import subprocess
 
 app = Flask(__name__)
-use_secure_cert = False
 
 @app.route('/gen_quote', methods=['POST'])
 def gen_quote():
@@ -48,4 +47,10 @@ def get_cluster_quote_list():
 if __name__ == '__main__':
     print("BigDL-AA: Agent Started.")
     port = int(os.environ.get('ATTESTATION_API_SERVICE_PORT'))
-    app.run(host='0.0.0.0', port=port)
+    enable_tls = os.environ.get('ENABLE_TLS')
+    if enable_tls == 'true':
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context.load_cert_chain(certfile='/ppml/server.crt', keyfile='/ppml/server.key')
+        app.run(host='0.0.0.0', port=port, ssl_context=context)
+    else:
+        app.run(host='0.0.0.0', port=port)
