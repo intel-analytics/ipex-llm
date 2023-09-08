@@ -169,6 +169,7 @@ def attention_fn(
         matmul_result = torch.empty(
             output_size[0] * output_size[1],
             output_size[2], output_size[3], dtype=query_layer.dtype,
+            device=query_layer.device
         )
 
         torch.baddbmm(
@@ -218,7 +219,8 @@ def attention_fn(
         # matmul: [b * np, sq, hn]
         context_layer = torch.empty(
             output_size[0] * output_size[1],
-            output_size[2], value_layer.size(-1), dtype=value_layer.dtype,)
+            output_size[2], value_layer.size(-1), dtype=value_layer.dtype,
+            device=query_layer.device)
         torch.bmm(attention_probs, value_layer, out=context_layer)
 
         # change view [b, np, sq, hn]
