@@ -1,4 +1,4 @@
-{{- if eq .Values.TEEMode "native" }}
+{{- if eq .Values.TEEMode "tdx" }}
 apiVersion: kubeflow.org/v2beta1
 kind: MPIJob
 metadata:
@@ -19,12 +19,21 @@ spec:
            - name: nfs-storage
              persistentVolumeClaim:
                claimName: nfs-pvc
+           - name: dev
+             hostPath:
+               path: /dev
+           runtimeClassName: kata-qemu-tdx
            containers:
            - image: {{ .Values.imageName }}
              name: bigdl-ppml-finetuning-launcher
              securityContext:
-              runAsUser: 1000
-             command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
+              runAsUser: 0
+              privileged: true
+             command: ["/bin/sh", "-c"]
+             args:
+               - |
+                  nohup python /ppml/bigdl_aa.py > /ppml/bigdl_aa.log 2>&1 &
+                  sudo -E -u mpiuser bash /ppml/bigdl-lora-finetuing-entrypoint.sh
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -44,6 +53,10 @@ spec:
                valueFrom:
                  fieldRef:
                    fieldPath: metadata.name
+             - name: HF_DATASETS_CACHE
+               value: "/ppml/output/cache"
+             - name: ATTESTATION_API_SERVICE_PORT
+               value: "{{ .Values.attestionApiServicePort }}"
              volumeMounts:
              - name: nfs-storage
                subPath: {{ .Values.modelSubPath }}
@@ -54,16 +67,24 @@ spec:
              - name: nfs-storage
                subPath: {{ .Values.outputSubPath }}
                mountPath: "/ppml/output"
+             - name: dev
+               mountPath: /dev
     Worker:
       replicas: {{ .Values.trainerNum }}
       template:
         spec:
+          runtimeClassName: kata-qemu-tdx
           containers:
           - image: {{ .Values.imageName }}
             name: bigdl-ppml-finetuning-worker
             securityContext:
-              runAsUser: 1000
-            command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
+              runAsUser: 0
+              privileged: true
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                  chown nobody /home/mpiuser/.ssh/id_rsa &
+                  sudo -E -u mpiuser bash /ppml/bigdl-lora-finetuing-entrypoint.sh
             env:
             - name: WORKER_ROLE
               value: "trainer"
@@ -89,11 +110,35 @@ spec:
             - name: nfs-storage
               subPath: {{ .Values.outputSubPath }}
               mountPath: "/ppml/output"
+            - name: dev
+              mountPath: /dev
             resources:
               requests:
+                cpu: {{ .Values.cpuPerPod }}
+              limits:
                 cpu: {{ .Values.cpuPerPod }}
           volumes:
           - name: nfs-storage
             persistentVolumeClaim:
               claimName: nfs-pvc
+          - name: dev
+            hostPath:
+              path: /dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-lora-finetuning-launcher-attestation-api-service
+  namespace: bigdl-lora-finetuning
+spec:
+  selector:
+    job-name: bigdl-lora-finetuning-job-launcher
+    training.kubeflow.org/job-name: bigdl-lora-finetuning-job
+    training.kubeflow.org/job-role: launcher
+  ports:
+    - name: launcher-attestation-api-service-port
+      protocol: TCP
+      port: {{ .Values.attestionApiServicePort }}
+      targetPort: {{ .Values.attestionApiServicePort }}
+  type: ClusterIP
 {{- end }}

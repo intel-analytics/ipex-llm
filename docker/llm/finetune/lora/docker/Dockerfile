@@ -75,7 +75,6 @@ ADD ./bigdl_aa.py /ppml/bigdl_aa.py
 ADD ./quote_generator.py /ppml/quote_generator.py
 ADD ./worker_quote_generate.py /ppml/worker_quote_generate.py
 ADD ./get_worker_quote.sh /ppml/get_worker_quote.sh
-ADD ./bigdl-lora-finetuing-tdx-entrypoint.sh /ppml/bigdl-lora-finetuing-tdx-entrypoint.sh
 
 ADD ./bigdl-lora-finetuing-entrypoint.sh /ppml/bigdl-lora-finetuing-entrypoint.sh
 ADD ./lora_finetune.py /ppml/lora_finetune.py
