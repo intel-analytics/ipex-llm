@@ -98,7 +98,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype == ggml_tensor_qtype["sym_int4"]:
+    if qtype in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["nf4"]]:
         dst_tensor = torch.empty_like(tensor)
     else:
         return tensor
@@ -117,7 +117,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype == ggml_tensor_qtype["sym_int4"]:
+    if qtype in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["nf4"]]:
         dst_tensor = torch.empty_like(tensor)
     else:
         return tensor
