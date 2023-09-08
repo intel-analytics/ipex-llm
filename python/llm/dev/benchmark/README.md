@@ -13,7 +13,7 @@ from benchmark_util import BenchmarkWrapper
 
 model_path ='THUDM/chatglm-6b'
 model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
-model = BenchmarkWrapper(model)
+model = BenchmarkWrapper(model, do_print=True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 prompt = "今天睡不着怎么办"
  
@@ -40,8 +40,8 @@ from benchmark_util import BenchmarkWrapper
 
 model_path ='THUDM/chatglm-6b'
 model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
-model = model.half().to('xpu')
-model = BenchmarkWrapper(model)
+model = model.to('xpu')
+model = BenchmarkWrapper(model, do_print=True)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 prompt = "今天睡不着怎么办"
  
