@@ -212,7 +212,7 @@ class RayServiceFuncGenerator(object):
     @staticmethod
     def start_ray_daemon(python_loc, pid_to_watch, pgid_to_kill):
         daemon_path = os.path.join(os.path.dirname(__file__), "ray_daemon.py")
-        invalidInputError(os.path.isdir(python_loc),
+        invalidInputError(os.path.exists(python_loc),
                           "python_loc should be a valid directory path.")
         invalidInputError(os.path.isdir(daemon_path),
                           "daemon_path should be a valid directory path.")
