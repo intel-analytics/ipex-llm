@@ -9,3 +9,4 @@ modelSubPath: llama-7b-hf # a subpath of the model file (dir) under nfs director
 outputSubPath: output # a subpath of the empty directory under the nfs directory to save finetuned model, for example, if you make an empty dir named 'output' at the nfsPath, the value should be 'output'
 ompNumThreads: 14
 cpuPerPod: 42
+attestionApiServicePort: 9870
