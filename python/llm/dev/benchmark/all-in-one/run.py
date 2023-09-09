@@ -75,11 +75,18 @@ def run_bf16(repo_id,
     model_path = get_model_path(repo_id, local_model_hub)
 
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
+    if repo_id in ['THUDM/chatglm-6b']:
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True,
+                                          low_cpu_mem_usage=True).bfloat16()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif repo_id in ['THUDM/chatglm2-6b']:
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True,
+                                          torch_dtype=torch.bfloat16)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
+                                                     low_cpu_mem_usage=True,
+                                                     torch_dtype=torch.bfloat16)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
