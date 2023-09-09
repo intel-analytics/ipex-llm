@@ -30,14 +30,13 @@ See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `s
 
 #### CPU Quickstart
 ##### Install
-You may install **`bigdl-llm`** as follows:
+You may install **`bigdl-llm`** on Intel CPU as follows:
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
 > Note: `bigdl-llm` has been tested on Python 3.9
 
 ##### Run Model
-
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
 ```python
@@ -45,7 +44,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* models as fo
 from bigdl.llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
-#run the optimized model
+#run the optimized model on CPU
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 input_ids = tokenizer.encode(input_str, ...)
@@ -56,7 +55,52 @@ output = tokenizer.batch_decode(output_ids)
 
 >**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
   >```python
-  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
+  >```
+  >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+ 
+
+After the model is optimized using INT4 (or INT8/INT5), you may also save and load the optimized model as follows:
+
+```python
+model.save_low_bit(model_path)
+
+new_model = AutoModelForCausalLM.load_low_bit(model_path)
+```
+*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+
+#### GPU Quickstart
+##### Install
+You may install **`bigdl-llm`** on Intel GPU as follows:
+```bash
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+```
+> Note: `bigdl-llm` has been tested on Python 3.9
+
+##### Run Model
+You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+
+```python
+#load Hugging Face Transformers model with INT4 optimizations
+from bigdl.llm.transformers import AutoModelForCausalLM
+model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+
+#run the optimized model on Intel GPU
+model = model.to('xpu')
+
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+input_ids = tokenizer.encode(input_str, ...).to('xpu')
+output_ids = model.generate(input_ids, ...)
+output = tokenizer.batch_decode(output_ids.cpu())
+```
+*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+
+>**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
+  >```python
+  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
   >```
   >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
  
@@ -70,7 +114,7 @@ new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
 *See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
 
-#### GPU Quickstart
+
 
 ***For more details, please refer to the `bigdl-llm` [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
