@@ -25,14 +25,19 @@ See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `s
 
 ### `bigdl-llm` quickstart
 
-#### Install
+[CPU Quickstart](#cpu_quickstart)
+
+[GPU Quickstart](#gpu_quickstart)
+
+#### CPU Quickstart
+##### Install
 You may install **`bigdl-llm`** as follows:
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
 > Note: `bigdl-llm` has been tested on Python 3.9
 
-#### Run Model
+##### Run Model
 
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
@@ -65,6 +70,8 @@ model.save_low_bit(model_path)
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
 *See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+
+#### GPU Quickstart
 
 ***For more details, please refer to the `bigdl-llm` [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
