@@ -46,6 +46,9 @@ See the **optimized performance** of ``chatglm2-6b``, ``llama-2-13b-chat``, and 
 ``bigdl-llm`` quickstart
 ============================================
 
+- `CPU <#cpu-quickstart>`_
+- `GPU <#gpu-quickstart>`_
+
 --------------------------------------------
 CPU Quickstart
 --------------------------------------------
