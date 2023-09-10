@@ -13,12 +13,12 @@ from bigdl.llm.transformers.qlora import TrainingArguments
 
 from datasets import load_dataset
 
-if __file__ == "__main__":
+if __name__ == "__main__":
 
-    model_path = "meta-llama/Llama-2-13b-chat-hf"
+    model_path = "/mnt/disk1/models/Llama-2-13b-chat-hf"
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    data = load_dataset("Abirate/english_quotes")
+    data = load_dataset("/home/arda/yang/BigDL/python/llm/example/gpu/qlora_finetuning/english_quotes")
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                 load_in_4bit=True,
@@ -54,4 +54,5 @@ if __file__ == "__main__":
         data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
-    trainer.train()
+    result = trainer.train()
+    print(result)
