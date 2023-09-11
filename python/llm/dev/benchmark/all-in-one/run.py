@@ -45,8 +45,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
-    elif test_api == 'transformer_bf16':
-        result = run_transformer_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
+    elif test_api == 'pytorch_autocast_bf16':
+        result = run_pytorch_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
 
     for in_out_pair in in_out_pairs:
         results.append([repo_id,
@@ -161,7 +161,7 @@ def run_transformer_int4(repo_id,
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
     return result
 
-def run_transformer_bf16(repo_id,
+def run_pytorch_autocast_bf16(repo_id,
                          local_model_hub,
                          in_out_pairs,
                          warm_up,
