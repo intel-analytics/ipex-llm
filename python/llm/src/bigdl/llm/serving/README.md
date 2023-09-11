@@ -21,6 +21,14 @@ You may install **`bigdl-llm`** with `FastChat` as follows:
 
 ```bash
 pip install --pre --upgrade bigdl-llm[serving]
+
+# Or
+pip install --pre --upgrade bigdl-llm[all]
+```
+
+To add GPU support for FastChat, you may install **`bigdl-llm`** as follows:
+```bash
+pip install --pre --upgrade bigdl-llm[xpu, serving] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 #### Models
@@ -31,6 +39,8 @@ FastChat determines the Model adapter to use through path matching. Therefore, i
 
 For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `BigDL-LLM` as backend, you need to change name from `llama-7b-hf` to `bigdl-7b`.
 The key point here is that the model's path should include "bigdl" and should not include paths matched by other model adapters.
+
+A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `BigDL-LLM` backend will be used automatically.
 
 
 #### Start the service
@@ -51,6 +61,8 @@ This controller manages the distributed workers.
 python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
 ```
 Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
+
+> To run model worker using Intel GPU, simple change the --device cpu option to --device xpu
 
 ###### Launch the Gradio web server
 

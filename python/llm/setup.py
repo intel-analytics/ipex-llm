@@ -259,12 +259,8 @@ def setup_package():
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
                      "bigdl-core-xe;platform_system=='Linux'"]
 
-    # serving_requires = copy.deepcopy(SERVING_DEP)
-    # # To support xpu inference.
-    # serving_requires += ["torch==2.0.1a0",
-    #                      "torchvision==0.15.2a0",
-    #                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-    #                      "bigdl-core-xe;platform_system=='Linux'"]
+    serving_requires = ['py-cpuinfo']
+    serving_requires += SERVING_DEP
 
 
     metadata = dict(
@@ -288,7 +284,8 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires},
+                        "xpu": xpu_requires,
+                        "serving": serving_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
