@@ -59,6 +59,27 @@ From the log, you can see whether finetuning process has been invoked successful
 
 You can deploy this workload in TDX CoCo and enable Remote Attestation API Serving with setting `TEEMode` in `./kubernetes/values.yaml` to `TDX`. The main diffences are it's need to execute the pods as root and mount TDX device, and a flask service is responsible for generating launcher's quote and collecting workers' quotes. 
 
+### (Optional) Enable TLS
+To enable TLS in Remote Attestation API Serving, you should provide a TLS certificate and setting `enableTLS` in `./kubernetes/values.yaml` to `true`.
+```bash
+# Generate a self-signed TLS certificate (DEBUG USE ONLY)
+export COUNTRY_NAME=CN 
+export CITY_NAME=Shanghai 
+export ORGANIZATION_NAME=Intel 
+export COMMON_NAME='Xiangyu Tian' 
+export EMAIL_ADDRESS='xiangyu.tian@intel.com' 
+export HTTPS_CERT_PASSWORD=ppml 
+
+openssl req -x509 -newkey rsa:4096 -nodes -out server.crt -keyout server.key -days 365 -subj "/C=$COUNTRY_NAME/ST=$CITY_NAME/L=$CITY_NAME/O=$ORGANIZATION_NAME/OU=$ORGANIZATION_NAME/CN=$COMMON_NAME/emailAddress=$EMAIL_ADDRESS/"
+
+# Submit TLS certificate through k8s secret
+kubectl create secret generic ssl-keys \
+  --from-file=server.crt \
+  --from-file=server.key \
+  --namespace=bigdl-lora-finetuning
+```
+
+
 To use RA Rest API, you need to get the IP of job-launcher:
 ``` bash
 kubectl get all -n bigdl-lora-finetuning 
