@@ -11,4 +11,6 @@ ompNumThreads: 14
 cpuPerPod: 42
 attestionApiServicePort: 9870
 
-enableTLS: false
+enableTLS: false # true or false
+base64ServerCrt: "your_base64_format_server_crt"
+base64ServerKey: "your_base64_format_server_key"

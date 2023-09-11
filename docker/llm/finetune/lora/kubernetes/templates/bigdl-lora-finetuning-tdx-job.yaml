@@ -152,4 +152,17 @@ spec:
       port: {{ .Values.attestionApiServicePort }}
       targetPort: {{ .Values.attestionApiServicePort }}
   type: ClusterIP
+---
+{{- if eq .Values.enableTLS true }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ssl-keys
+  namespace: bigdl-lora-finetuning
+type: Opaque
+data:
+  server.crt: {{ .Values.base64ServerCrt }}
+  server.key: {{ .Values.base64ServerKey }}
+{{- end }}
+
 {{- end }}
