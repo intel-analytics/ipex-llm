@@ -49,9 +49,10 @@ if __name__ == '__main__':
     port = int(os.environ.get('ATTESTATION_API_SERVICE_PORT'))
     enable_tls = os.environ.get('ENABLE_TLS')
     if enable_tls == 'true':
-        https_key_store_token = os.environ.get('HTTPS_KEY_STORE_TOKEN')
         context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-        context.load_cert_chain(certfile='/ppml/keys/server.crt', keyfile='/ppml/keys/server.key', password=https_key_store_token)
+        context.load_cert_chain(certfile='/ppml/keys/server.crt', keyfile='/ppml/keys/server.key')
+        # https_key_store_token = os.environ.get('HTTPS_KEY_STORE_TOKEN')
+        # context.load_cert_chain(certfile='/ppml/keys/server.crt', keyfile='/ppml/keys/server.key', password=https_key_store_token)
         app.run(host='0.0.0.0', port=port, ssl_context=context)
     else:
         app.run(host='0.0.0.0', port=port)
