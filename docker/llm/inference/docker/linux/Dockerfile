@@ -29,9 +29,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     # Install bigdl-llm and pin its version as we have made certain changes to llm.cpp
-    pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
-    patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama.py /opt/llama.patch && \
-    patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama_cpp.py /opt/llama_cpp.patch && \
+    pip3 install --pre --upgrade bigdl-llm[all] && \
+    # patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama.py /opt/llama.patch && \
+    # patch /usr/local/lib/python3.9/dist-packages/bigdl/llm/ggml/model/llama/llama_cpp.py /opt/llama_cpp.patch && \
     cd /usr/local/lib/python3.9/dist-packages/bigdl/llm/libs && \
     rm *avx512* && \
     rm quantize* && \
