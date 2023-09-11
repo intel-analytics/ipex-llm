@@ -1,0 +1,16 @@
+363,367c363,367
+< 	if not arch in ['X86_32', 'X86_64', 'ARM_7', 'ARM_8',
+< 	               'PPC_64', 'S390X', 'MIPS_32', 'MIPS_64',
+< 				   "RISCV_32", "RISCV_64"]:
+< 		raise Exception("py-cpuinfo currently only works on X86 "
+< 		                "and some ARM/PPC/S390X/MIPS/RISCV CPUs.")
+---
+> #	if not arch in ['X86_32', 'X86_64', 'ARM_7', 'ARM_8',
+> #	               'PPC_64', 'S390X', 'MIPS_32', 'MIPS_64',
+> #				   "RISCV_32", "RISCV_64"]:
+> #		raise Exception("py-cpuinfo currently only works on X86 "
+> #		                "and some ARM/PPC/S390X/MIPS/RISCV CPUs.")
+1002c1002
+< 		self.is_selinux_enforcing = _is_selinux_enforcing(trace)
+---
+> 		self.is_selinux_enforcing = False

@@ -1,0 +1,18 @@
+164,168c164,168
+<     if which("avconv"):
+<         return "avconv"
+<     elif which("ffmpeg"):
+<         return "ffmpeg"
+<     else:
+---
+>     #if which("avconv"):
+>     #    return "avconv"
+>     #elif which("ffmpeg"):
+>     return "ffmpeg"
+>     #else:
+170,171c170,171
+<         warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+<         return "ffmpeg"
+---
+>     #    warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+>     #    return "ffmpeg"
