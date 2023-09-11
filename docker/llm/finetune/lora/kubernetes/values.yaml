@@ -10,3 +10,5 @@ outputSubPath: output # a subpath of the empty directory under the nfs directory
 ompNumThreads: 14
 cpuPerPod: 42
 attestionApiServicePort: 9870
+
+enableTLS: false
