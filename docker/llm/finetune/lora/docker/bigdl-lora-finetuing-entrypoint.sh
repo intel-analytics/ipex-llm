@@ -4,18 +4,6 @@ source /opt/intel/oneapi/setvars.sh
 export CCL_WORKER_COUNT=$WORLD_SIZE
 export CCL_WORKER_AFFINITY=auto
 
-if [ $ENABLE_TLS = "true" ]
-  pushd /ppml
-  mkdir -p keys && cd keys
-  openssl genrsa -aes256 -passout pass:$HTTPS_CERT_PASSWORD -out server.key 3072
-  openssl req -new -x509 -key server.key -out ca.crt -days 3650 -passin pass:$HTTPS_CERT_PASSWORD -subj "/C=$COUNTRY_NAME/ST=$CITY_NAME/L=$CITY_NAME/O=$ORGANIZATION_NAME/OU=$ORGANIZATION_NAME/CN=$COMMON_NAME/emailAddress=$EMAIL_ADDRESS/" -passout pass:$HTTPS_CERT_PASSWORD
-  openssl req -new -key server.key -out server.csr -passin pass:$HTTPS_CERT_PASSWORD -subj "/C=$COUNTRY_NAME/ST=$CITY_NAME/L=$CITY_NAME/O=$ORGANIZATION_NAME/OU=$ORGANIZATION_NAME/CN=$COMMON_NAME/emailAddress=$EMAIL_ADDRESS/"
-  openssl x509 -req -days 3650 -in server.csr -CA ca.crt -CAkey server.key -CAcreateserial -out server.crt -passin pass:$HTTPS_CERT_PASSWORD
-  cat server.key server.crt > server.pem
-  openssl pkcs12 -export -clcerts -in server.crt -inkey server.key -out server.p12 -passin pass:$HTTPS_CERT_PASSWORD -passout pass:$HTTPS_CERT_PASSWORD
-  popd
-fi
-
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
