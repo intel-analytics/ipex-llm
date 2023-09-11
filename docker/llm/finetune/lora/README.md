@@ -57,7 +57,7 @@ From the log, you can see whether finetuning process has been invoked successful
 
 ## To run in TDX-CoCo and enable Remote Attestation API
 
-You can deploy this workload in TDX CoCo and enable Remote Attestation API Serving with setting `TEEMode` in `./kubernetes/values.yaml` to `TDX`. The main diffences are it's need to execute the pods as root and mount TDX device, and a flask service is responsible for generating launcher's quote and collecting workers' quotes. 
+You can deploy this workload in TDX CoCo and enable Remote Attestation API Serving with setting `TEEMode` in `./kubernetes/values.yaml` to `tdx`. The main diffences are it's need to execute the pods as root and mount TDX device, and a flask service is responsible for generating launcher's quote and collecting workers' quotes. 
 
 ### (Optional) Enable TLS
 To enable TLS in Remote Attestation API Serving, you should provide a TLS certificate and setting `enableTLS` in `./kubernetes/values.yaml` to `true`.

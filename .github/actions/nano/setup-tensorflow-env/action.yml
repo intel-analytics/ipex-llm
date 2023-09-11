@@ -48,14 +48,15 @@ runs:
         if [ $OS = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
+        pip install intel-tensorflow==2.9.1 tf2onnx==1.13.0
         if [ $IS_PR = "false" ]; then
-          pip install --pre --upgrade bigdl-nano[tensorflow,inference]
+          pip install --pre --upgrade bigdl-nano[inference]
         else
           pip install wheel
           if [ ! $OS = "windows" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+            bash python/nano/dev/build_and_install.sh linux default false inference
           else
-            bash python/nano/dev/build_and_install.sh windows default false tensorflow,inference
+            bash python/nano/dev/build_and_install.sh windows default false inference
           fi
         fi
         if [ $OS = "centos" ]; then
