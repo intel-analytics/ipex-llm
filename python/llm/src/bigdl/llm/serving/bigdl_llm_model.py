@@ -19,7 +19,7 @@ from fastchat.modules.gptq import GptqConfig, load_gptq_quantized
 import accelerate
 from fastchat.modules.awq import AWQConfig, load_awq_quantized
 from fastchat.model.model_adapter import (
-    get_model_adapter, 
+    get_model_adapter,
     raise_warning_for_incompatible_cpu_offloading_configuration,
 )
 from fastchat.model.monkey_patch_non_inplace import (
@@ -31,7 +31,9 @@ import torch
 import warnings
 from transformers import AutoTokenizer
 from typing import Dict, List, Optional
-import math, psutil
+import math
+import psutil
+from bigdl.llm.utils.common import invalidInputError
 
 is_fastchat_patched = False
 _mapping_fastchat = None
@@ -55,7 +57,6 @@ def _get_patch_map():
 
 def load_model_base(self, model_path: str, from_pretrained_kwargs: dict):
     revision = from_pretrained_kwargs.get("revision", "main")
-    # TODO: remove
     print("Customized bigdl-llm loader")
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
@@ -71,7 +72,6 @@ def load_model_base(self, model_path: str, from_pretrained_kwargs: dict):
 
 def load_model_chatglm(self, model_path: str, from_pretrained_kwargs: dict):
     revision = from_pretrained_kwargs.get("revision", "main")
-    # TODO: remove
     print("Customized bigdl-llm loader")
     tokenizer = AutoTokenizer.from_pretrained(
         model_path, trust_remote_code=True, revision=revision
@@ -112,7 +112,8 @@ def load_model(
                 kwargs = {"torch_dtype": torch.bfloat16}
             except ImportError:
                 warnings.warn(
-                    "Intel Extension for PyTorch is not installed, it can be installed to accelerate cpu inference"
+                    "Intel Extension for PyTorch is not installed, "
+                    "it can be installed to accelerate cpu inference"
                 )
     elif device == "cuda":
         kwargs = {"torch_dtype": torch.float16}
@@ -144,7 +145,7 @@ def load_model(
                 "Intel Extension for PyTorch is not installed, but is required for xpu inference."
             )
     else:
-        raise ValueError(f"Invalid device: {device}")
+        invalidInputError(False, f"Invalid device: {device}")
 
     if cpu_offloading:
         # raises an error on incompatible platforms
@@ -174,9 +175,8 @@ def load_model(
                 print(model)
             return model, tokenizer
     elif awq_config and awq_config.wbits < 16:
-        assert (
-            awq_config.wbits == 4
-        ), "Currently we only support 4-bit inference for AWQ."
+        invalidInputError(awq_config.wbits != 4,
+                          "Currently we only support 4-bit inference for AWQ.")
         model, tokenizer = load_awq_quantized(model_path, awq_config, device)
         if num_gpus != 1:
             device_map = accelerate.infer_auto_device_map(
@@ -245,7 +245,6 @@ class BigDLLLMAdapter(BaseModelAdapter):
         tokenizer = AutoTokenizer.from_pretrained(
             model_path, use_fast=False, revision=revision
         )
-        # TODO: remove
         print("Customized bigdl-llm loader")
         from bigdl.llm.transformers import AutoModelForCausalLM
         model = AutoModelForCausalLM.from_pretrained(
@@ -270,4 +269,3 @@ def patch_fastchat():
         setattr(mapping_iter[0], mapping_iter[1], mapping_iter[2])
 
     is_fastchat_patched = True
-
