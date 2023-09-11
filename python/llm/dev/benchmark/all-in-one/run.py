@@ -137,7 +137,7 @@ def run_transformer_int4(repo_id,
     model = BenchmarkWrapper(model)
 
     result = {}
-    with torch.inference_mode():
+    with torch.inference_mode(), torch.autocast("cpu"):
         for in_out in in_out_pairs:
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
