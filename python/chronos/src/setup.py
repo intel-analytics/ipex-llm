@@ -38,6 +38,10 @@ ORCA_AUTOML_DEP = ['ray[default]==1.9.2', 'aiohttp==3.8.1', 'async-timeout==4.0.
                    'aioredis==1.3.1', 'hiredis==2.0.0', 'setproctitle', 'psutil',
                    'prometheus-client==0.11.0', 'protobuf==3.19.5', 'ray[tune]==1.9.2',
                    'scikit-learn', 'tensorboard']
+TF_DEP = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') \
+          and platform_system!='Darwin'",
+          "tensorflow==2.7.0; platform_machine=='x86_64' and platform_system=='Darwin'",
+          "tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
 
 def get_bigdl_packages():
@@ -70,14 +74,14 @@ def setup_package():
         install_requires=['pandas>=1.0.5, <=1.3.5', 'scikit-learn>=0.22.0, <=1.0.2',
                           'bigdl-nano==' + VERSION],
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
-                        'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
+                        'tensorflow': ['bigdl-nano=='+VERSION] + TF_DEP,
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],
                         'distributed:platform_system!="Windows"': ['bigdl-orca-spark3==' + VERSION,
                                                                    'grpcio==1.53.0', 'pyarrow'] +
                         ORCA_AUTOML_DEP,
                         'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
-                                'bigdl-nano[tensorflow_27]=='+VERSION,
+                                TF_DEP,
                                 'optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27',
                                 'bigdl-orca-spark3==' + VERSION +
                                 ';platform_system!="Windows"',
