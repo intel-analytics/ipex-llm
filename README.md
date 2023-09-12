@@ -19,24 +19,32 @@
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on a 12th Gen Intel Core CPU and a Intel Arc A770 Graphics below.
 
-<div style="display: flex; width: 100%;">
-  <div style="text-align: center; margin: 0px 10px 0px 0px">
-    <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"></a>
-    <p><code>chatglm2-6b</code> on Intel CPU</p>
-  </div>
-  <div style="text-align: center; margin: 0px 10px 0px 0px">
-    <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
-    <p><code>chatglm2-6b</code> on Intel GPU</p>
-  </div>
-  <div style="text-align: center; margin: 0px 10px 0px 0px">
-    <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
-    <p><code>llama-2-13b-chat</code> on Intel CPU</p>
-  </div>
-  <div style="text-align: center; margin: 0px">
-    <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
-    <p><code>llama-2-13b-chat</code> on Intel GPU</p>
-  </div>
-</div>
+<table>
+  <tr>
+    <td align="center" colspan="2"><code>chatglm2-6b</code>
+    <td align="center" colspan="2"><code>llama-2-13b-chat</code>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" ></a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Intel CPU</td>
+    <td align="center">Intel GPU</td>
+    <td align="center">Intel CPU</td>
+    <td align="center">Intel GPU</td>
+  </tr>
+</table>
 
 ### `bigdl-llm` quickstart
 
