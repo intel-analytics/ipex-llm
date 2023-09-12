@@ -103,7 +103,7 @@ model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit=
 *See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
 
 
-***For more details, please refer to the `bigdl-llm` [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
+***For more details, please refer to the `bigdl-llm` [Document](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html), [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
 ---
 ## Overview of the complete BigDL project
