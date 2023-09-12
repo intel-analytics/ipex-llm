@@ -45,7 +45,7 @@ from .utils import logger
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
-                                 current_key_name=None):
+                                 current_key_name=None, convert_shape_only=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
     has_been_replaced = False
 
@@ -70,6 +70,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                              requires_grad=False,
                                              quantized=False,
                                              _shape=None,
+                                             convert_shape_only=convert_shape_only,
                                              qtype=qtype).to(device_type)
                     new_linear._parameters['weight'] = paramsLowBit
 
@@ -91,15 +92,18 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 qtype,
                 modules_to_not_convert,
                 current_key_name,
+                convert_shape_only,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
 
 
-def ggml_convert_low_bit(model, qtype, optimize_model=True, device="cpu"):
+def ggml_convert_low_bit(model, qtype, optimize_model=True,
+                         convert_shape_only=False, device="cpu"):
     modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_low_bit_linear(
-        model, qtype, modules_to_not_convert, None
+        model, qtype, modules_to_not_convert,
+        None, convert_shape_only,
     )
     if not has_been_replaced:
         warnings.warn(
