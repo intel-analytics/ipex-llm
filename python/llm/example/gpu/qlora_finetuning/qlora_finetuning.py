@@ -36,12 +36,14 @@ if __name__ == "__main__":
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--dataset', type=str, default="Abirate/english_quotes")
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    dataset_path = args.dataset
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    data = load_dataset("Abirate/english_quotes")
+    data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                 load_in_4bit=True,

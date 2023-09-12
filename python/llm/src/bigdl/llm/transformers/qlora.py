@@ -15,7 +15,7 @@
 #
 # Some parts of this file is adapted from
 # https://github.com/huggingface/peft/blob/v0.5.0/src/peft/tuners/lora.py
-# 
+#
 # coding=utf-8
 # Copyright 2023-present the HuggingFace Inc. team.
 #
@@ -35,6 +35,7 @@
 import torch
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear
 from peft.tuners.lora import LoraLayer
+from bigdl.llm.utils.common import invalidInputError
 
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
@@ -110,16 +111,15 @@ def _create_new_module(lora_config, adapter_name, target, **kwargs):
                                       bias=bias,
                                       **low_bit_kwargs)
     else:
-        raise ValueError(
-            f"Target module {target} is not supported. "
-            f"Currently, only `torch.nn.Linear` and `Conv1D` are supported."
-        )
-
+        invalidInputError(False,
+                          f"Target module {target} is not supported. "
+                          f"Currently, only `LowBitLinear` are supported.")
 
     return new_module
 
 
 from peft.tuners.lora import LoraModel
+
 
 def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
