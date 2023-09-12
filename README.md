@@ -39,9 +39,9 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
     </td>
   </tr>
   <tr>
-    <td align="center" width="25%"><code>chatglm2-6b     </code></td>
+    <td align="center" width="25%"><code>chatglm2-6b</code></td>
     <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
-    <td align="center" width="25%"><code>chatglm2-6b     </code></td>
+    <td align="center" width="25%"><code>chatglm2-6b</code></td>
     <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
   </tr>
 </table>
