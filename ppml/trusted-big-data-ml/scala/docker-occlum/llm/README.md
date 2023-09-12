@@ -3,6 +3,7 @@ For running fastchat using bigdl-llm transformers int4 in Occlum
 
 ## Prerequisites
 1.Check SGX and Kubernetes env.
+
 2.Pull image from dockerhub.
 ```bash
 docker pull intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT
@@ -10,7 +11,10 @@ docker pull intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT
 
 ## Deploy fastchat with openAI restful API
 
-0. prepare model and models_path.
+0. prepare model and models_path(host or nfs), change model_name with bigdl.
+```bash
+mv vicuna-7b-hf vicuna-7b-bigdl
+```
 1. get `controller-service.yaml` and `controller.yaml` and `worker.yaml`.
 2. deploy controller-service and controller.
 ```bash
