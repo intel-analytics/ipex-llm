@@ -61,6 +61,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
+RUN cd /ppml && \
+    git clone https://github.com/wg/wrk.git && \
+    cd wrk && \
+    make && \
+    cp wrk /usr/local/bin
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 
