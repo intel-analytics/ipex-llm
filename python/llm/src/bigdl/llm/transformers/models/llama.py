@@ -37,6 +37,7 @@ from typing import Optional, Tuple
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 def rotate_half(x):
@@ -125,35 +126,37 @@ def llama_attention_forward_4_31(
 
     if past_key_value is not None:
         # reuse k, v, self_attention
-        # key_states = torch.cat([past_key_value[0], key_states], dim=2)
-        # value_states = torch.cat([past_key_value[1], value_states], dim=2)
-        if kv_seq_len > self.max_cache_length:
-            new_cache_key = torch.empty(bsz, self.num_heads,
-                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim,
-                                        device=device)
-            new_cache_key[:, :, :kv_seq_len-1, :] = self.kv_cache[0][:, :, :kv_seq_len-1, :]
+        cache_k = past_key_value[0]
+        cache_v = past_key_value[1]
+        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            # allocate new
+            new_cache_k, new_cache_v = create_kv_cache(bsz,
+                                                       self.num_heads,
+                                                       self.head_dim,
+                                                       cache_k.size(2),
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                       dtype=cache_k.dtype,
+                                                       device=device)
+            new_cache_k[:] = cache_k
+            new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
 
-            new_cache_value = torch.empty(bsz, self.num_heads,
-                                          kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim,
-                                          device=device)
-            new_cache_value[:, :, :kv_seq_len-1, :] = self.kv_cache[1][:, :, :kv_seq_len-1, :]
-            self.kv_cache = (new_cache_key, new_cache_value)
-            self.max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
-        self.kv_cache[0][:, :, kv_seq_len-1:kv_seq_len, :] = key_states
-        self.kv_cache[1][:, :, kv_seq_len-1:kv_seq_len, :] = value_states
-        key_states = self.kv_cache[0][:, :, :kv_seq_len, :]
-        value_states = self.kv_cache[1][:, :, :kv_seq_len, :]
     elif use_cache:
-        # first token case
-        self.max_cache_length = max(min(self.max_position_embeddings, 2 * kv_seq_len),
-                                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH)
-        self.kv_cache = (torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim,
-                                     dtype=key_states.dtype, device=device),
-                         torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim,
-                                     dtype=key_states.dtype, device=device))
-        self.kv_cache[0][:, :, :kv_seq_len, :] = key_states
-        self.kv_cache[1][:, :, :kv_seq_len, :] = value_states
+        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+        new_key_states, new_value_states = create_kv_cache(bsz,
+                                                           self.num_heads,
+                                                           self.head_dim,
+                                                           kv_seq_len,
+                                                           max_cache_length,
+                                                           dtype=key_states.dtype,
+                                                           device=device)
+        new_key_states[:] = key_states
+        new_value_states[:] = value_states
+        key_states = new_key_states
+        value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
 
