@@ -21,28 +21,28 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 
 <table>
   <tr>
-    <td align="center" colspan="2"><code>chatglm2-6b</code>
-    <td align="center" colspan="2"><code>llama-2-13b-chat</code>
+    <td align="center" colspan="2">12th Gen Intel Core CPU</td>
+    <td align="center" colspan="2">Intel Arc A770 GPU</td>
   </tr>
   <tr>
     <td>
       <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" ></a>
     </td>
     <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
     </td>
     <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
     </td>
     <td>
       <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
     </td>
   </tr>
   <tr>
-    <td align="center">Intel CPU</td>
-    <td align="center">Intel GPU</td>
-    <td align="center">Intel CPU</td>
-    <td align="center">Intel GPU</td>
+    <td align="center"><code>chatglm2-6b</code></td>
+    <td align="center"><code>llama-2-13b-chat</code></td>
+    <td align="center"><code>chatglm2-6b</code></td>
+    <td align="center"><code>llama-2-13b-chat</code></td>
   </tr>
 </table>
 
