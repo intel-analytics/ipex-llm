@@ -19,7 +19,7 @@
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc A770 GPU below.
 
-<table>
+<table width="100%">
   <tr>
     <td align="center" colspan="2">12th Gen Intel Core CPU</td>
     <td align="center" colspan="2">Intel Arc A770 GPU</td>
@@ -39,10 +39,10 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
     </td>
   </tr>
   <tr>
-    <td align="center"><code>chatglm2-6b</code></td>
-    <td align="center"><code>llama-2-13b-chat</code></td>
-    <td align="center"><code>chatglm2-6b</code></td>
-    <td align="center"><code>llama-2-13b-chat</code></td>
+    <td align="center" width="25%"><code>chatglm2-6b     </code></td>
+    <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
+    <td align="center" width="25%"><code>chatglm2-6b     </code></td>
+    <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
   </tr>
 </table>
 
