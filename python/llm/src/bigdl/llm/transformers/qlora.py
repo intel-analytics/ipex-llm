@@ -117,15 +117,32 @@ def _create_new_module(lora_config, adapter_name, target, **kwargs):
 
     return new_module
 
-def get_peft_model(*args, **kwargs):
-    from peft.tuners.lora import LoraModel
-    from peft import get_peft_model
 
+from peft.tuners.lora import LoraModel
+
+def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
     LoraModel._create_new_module = _create_new_module
     try:
-        model = get_peft_model(*args, **kwargs)
+        from peft import get_peft_model as get_peft_model_original
+        model = get_peft_model_original(*args, **kwargs)
     finally:
         LoraModel._create_new_module = old_create_new_module
 
     return model
+
+
+class PeftModel:
+
+    @staticmethod
+    def from_pretrained(*args,
+                        **kwargs):
+        old_create_new_module = LoraModel._create_new_module
+        LoraModel._create_new_module = _create_new_module
+        from peft import PeftModel
+        try:
+            model = PeftModel.from_pretrained(*args, **kwargs)
+        finally:
+            LoraModel._create_new_module = old_create_new_module
+
+        return model
