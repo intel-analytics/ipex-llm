@@ -3,9 +3,9 @@ BigDL-LLM
 
 .. raw:: html
 
-    <p>
-        <strong>BigDL-LLM</strong> is a library for running <strong>LLM</strong> (large language model) on your Intel <strong>laptop</strong> or <strong>GPU</strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
-    </p>
+   <p>
+      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+   </p>
 
 -------
 
