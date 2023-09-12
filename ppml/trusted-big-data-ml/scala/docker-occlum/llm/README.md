@@ -41,6 +41,3 @@ curl http://$controller_ip:8000/v1/completions \
   }'
 ```
 More api details refer to [here](https://github.com/lm-sys/FastChat/blob/main/docs/openai_api.md)
-
-## Benchmark
-Refer to [here](https://github.com/gc-fu/FastChat-bench/tree/master)
