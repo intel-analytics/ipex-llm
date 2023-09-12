@@ -25,7 +25,7 @@ from transformers import LlamaTokenizer
 from peft import LoraConfig
 import intel_extension_for_pytorch as ipex
 from peft import prepare_model_for_kbit_training
-from bigdl.llm.transformers.qlora import get_peft_model
+from bigdl.llm.transformers.qlora import get_peft_model, TrainingArguments
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
 import argparse
@@ -64,13 +64,13 @@ if __name__ == "__main__":
     trainer = transformers.Trainer(
         model=model,
         train_dataset=data["train"],
-        args=transformers.TrainingArguments(
+        args=TrainingArguments(
             per_device_train_batch_size=4,
             gradient_accumulation_steps= 1,
             warmup_steps=20,
             max_steps=200,
             learning_rate=2e-4,
-            fp16=False,
+            fp16=True,
             logging_steps=20,
             output_dir="outputs",
             optim="adamw_hf", # we currently do not have paged_adamw_8bit
