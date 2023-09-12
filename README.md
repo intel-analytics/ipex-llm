@@ -7,7 +7,8 @@
 ---
 ## BigDL-LLM
 
-**[`bigdl-llm`](python/llm)** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** or ***GPU*** using INT4 with very low latency[^1] (for any **PyTorch** model).
+**[`bigdl-llm`](python/llm)** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4** with very low latency[^1] (for any **PyTorch** model).
+
 > *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
 ### Latest update
@@ -25,15 +26,19 @@ See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `s
 
 ### `bigdl-llm` quickstart
 
-#### Install
-You may install **`bigdl-llm`** as follows:
+- [CPU INT4](#cpu-int4)
+- [GPU INT4](#gpu-int4)
+- [More Low-Bit Support](#more-low-bit-support)
+
+#### CPU INT4
+##### Install
+You may install **`bigdl-llm`** on Intel CPU as follows:
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
 > Note: `bigdl-llm` has been tested on Python 3.9
 
-#### Run Model
-
+##### Run Model
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
 ```python
@@ -41,7 +46,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* models as fo
 from bigdl.llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
-#run the optimized model
+#run the optimized model on CPU
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 input_ids = tokenizer.encode(input_str, ...)
@@ -50,23 +55,55 @@ output = tokenizer.batch_decode(output_ids)
 ```
 *See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
 
->**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
-  >```python
-  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
-  >```
-  >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
- 
+#### GPU INT4
+##### Install
+You may install **`bigdl-llm`** on Intel GPU as follows:
+```bash
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+```
+> Note: `bigdl-llm` has been tested on Python 3.9
 
-After the model is optimizaed using INT4 (or INT8/INT5), you may also save and load the optimized model as follows:
+##### Run Model
+You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
 ```python
-model.save_low_bit(model_path)
+#load Hugging Face Transformers model with INT4 optimizations
+from bigdl.llm.transformers import AutoModelForCausalLM
+model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
+#run the optimized model on Intel GPU
+model = model.to('xpu')
+
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+input_ids = tokenizer.encode(input_str, ...).to('xpu')
+output_ids = model.generate(input_ids, ...)
+output = tokenizer.batch_decode(output_ids.cpu())
+```
+*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+
+#### More Low-Bit Support
+##### Save and load
+
+After the model is optimized using `bigdl-llm`, you may save and load the model as follows:
+```python
+model.save_low_bit(model_path)
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
 *See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
 
-***For more details, please refer to the `bigdl-llm` [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
+##### Additonal data types
+ 
+In addition to INT4, You may apply other low bit optimizations (such as *INT8*, *INT5*, *NF4*, etc.) as follows: 
+```python
+model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
+```
+*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+
+
+***For more details, please refer to the `bigdl-llm` [Document](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html), [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
 ---
 ## Overview of the complete BigDL project
