@@ -22,3 +22,4 @@ from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, \
         AutoModelForNextSentencePrediction, AutoModelForMultipleChoice, \
         AutoModelForTokenClassification
 from .modelling_bigdl import *
+from .training_args import TrainingArguments
