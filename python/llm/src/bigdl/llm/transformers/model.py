@@ -61,6 +61,7 @@ class _BaseAutoModelClass:
                                 or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
+        :param optimize_model: boolean value, Whether to further optimize llm model.
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
