@@ -17,7 +17,7 @@
 - Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
      
 ### `bigdl-llm` Demos
-See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on a 12th Gen Intel Core CPU and a Intel Arc A770 Graphics below.
+See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc A770 GPU below.
 
 <table>
   <tr>
