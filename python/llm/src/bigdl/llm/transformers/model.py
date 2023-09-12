@@ -57,11 +57,15 @@ class _BaseAutoModelClass:
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
+                             Default to False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
                                 or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize llm model.
+                               Default to True to optimize the model.
+
+        :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
@@ -132,9 +136,11 @@ class _BaseAutoModelClass:
         """
         Load a low bit optimized model (including INT8, INT5 and INT4) from a saved ckpt.
 
-        :param pretrained_model_name_or_path: str value, path to load the low bit optimized model
-                                              ckpt.
+        :param pretrained_model_name_or_path: str value, Path to load the optimized model ckpt.
         :param optimize_model: boolean value, Whether to further optimize llm model.
+                               Default to True to optimize the model.
+
+        :return: a model instance
         """
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
         from transformers.dynamic_module_utils import resolve_trust_remote_code, \
