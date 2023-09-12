@@ -42,8 +42,8 @@ def get_prompt(message: str, chat_history: list[tuple[str, str]],
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="ziqingyang/chinese-llama-2-7b",
-                        help='The huggingface repo id for the chinese-llama-2-7b (e.g. `ziqingyang/chinese-llama-2-7b`) to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="LinkSoul/Chinese-Llama-2-7b",
+                        help='The huggingface repo id for the Chinese Llama2 (e.g. `LinkSoul/Chinese-Llama-2-7b`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')

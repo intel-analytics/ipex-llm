@@ -1,5 +1,5 @@
 # Llama2
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Chinese LLaMA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [ziqingyang/chinese-llama-2-7b](https://huggingface.co/ziqingyang/chinese-llama-2-7b) as reference Chinese LLaMA models.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Chinese LLaMA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [LinkSoul/Chinese-Llama-2-7b](https://huggingface.co/LinkSoul/Chinese-Llama-2-7b) as reference Chinese LLaMA models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -34,12 +34,12 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `ziqingyang/chinese-llama-2-7b`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'ziqingyang/chinese-llama-2-7b'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Chinese Llama2 model (e.g. `LinkSoul/Chinese-Llama-2-7b`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'LinkSoul/Chinese-Llama-2-7b'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
-#### [ziqingyang/chinese-llama-2-7b](https://huggingface.co/ziqingyang/chinese-llama-2-7b)
+#### [LinkSoul/Chinese-Llama-2-7b](https://huggingface.co/LinkSoul/Chinese-Llama-2-7b)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
