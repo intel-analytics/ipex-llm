@@ -26,10 +26,11 @@ See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `s
 
 ### `bigdl-llm` quickstart
 
-- [CPU](#cpu-quickstart)
-- [GPU](#gpu-quickstart)
+- [CPU INT4](#cpu-int4)
+- [GPU INT4](#gpu-int4)
+- [More Low-Bit Support](#more-low-bit-support)
 
-#### CPU Quickstart
+#### CPU INT4
 ##### Install
 You may install **`bigdl-llm`** on Intel CPU as follows:
 ```bash
@@ -54,23 +55,7 @@ output = tokenizer.batch_decode(output_ids)
 ```
 *See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
 
->**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
-  >```python
-  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
-  >```
-  >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
- 
-
-After the model is optimized using INT4 (or INT8/INT5), you may also save and load the optimized model as follows:
-
-```python
-model.save_low_bit(model_path)
-
-new_model = AutoModelForCausalLM.load_low_bit(model_path)
-```
-*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
-
-#### GPU Quickstart
+#### GPU INT4
 ##### Install
 You may install **`bigdl-llm`** on Intel GPU as follows:
 ```bash
@@ -99,22 +84,23 @@ output = tokenizer.batch_decode(output_ids.cpu())
 ```
 *See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
 
->**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
-  >```python
-  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
-  >```
-  >*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
- 
+#### More Low-Bit Support
+##### Save and load
 
-After the model is optimizaed using INT4 (or INT8/INT5), you may also save and load the optimized model as follows:
-
+After the model is optimized using `bigdl-llm`, you may save and load the model as follows:
 ```python
 model.save_low_bit(model_path)
-
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
 *See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
 
+##### Additonal data types
+ 
+In addition to INT4, You may apply other low bit optimizations (such as *INT8*, *INT5*, *NF4*, etc.) as follows: 
+```python
+model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
+```
+*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
 
 
 ***For more details, please refer to the `bigdl-llm` [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
