@@ -51,7 +51,8 @@ github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers == 4.31.0', 'sentencepiece',
-               'accelerate', 'tabulate']
+               # TODO: Support accelerate 0.22.0
+               'accelerate == 0.21.0', 'tabulate']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
