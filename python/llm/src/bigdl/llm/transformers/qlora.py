@@ -33,21 +33,8 @@
 
 
 import torch
-
-import transformers
-from transformers.utils import cached_property
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear
 from peft.tuners.lora import LoraLayer
-
-class TrainingArguments(transformers.TrainingArguments):
-
-    @cached_property
-    def _setup_devices(self) -> "torch.device":
-        device = super()._setup_devices
-        from accelerate.utils import is_xpu_available
-        if is_xpu_available():
-            device = torch.device("xpu")
-        return device
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
     # Lora implemented in a dense layer
@@ -130,5 +117,15 @@ def _create_new_module(lora_config, adapter_name, target, **kwargs):
 
     return new_module
 
-from peft.tuners.lora import LoraModel
-LoraModel._create_new_module = _create_new_module
+def get_peft_model(*args, **kwargs):
+    from peft.tuners.lora import LoraModel
+    from peft import get_peft_model
+
+    old_create_new_module = LoraModel._create_new_module
+    LoraModel._create_new_module = _create_new_module
+    try:
+        model = get_peft_model(*args, **kwargs)
+    finally:
+        LoraModel._create_new_module = old_create_new_module
+
+    return model
