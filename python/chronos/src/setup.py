@@ -31,8 +31,7 @@ See [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.h
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
-# VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
-VERSION = '2.4.0b20230910'
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 # Temporarily workaround to conflict on protobuf version of nano and orca
 ORCA_AUTOML_DEP = ['ray[default]==1.9.2', 'aiohttp==3.8.1', 'async-timeout==4.0.1',
