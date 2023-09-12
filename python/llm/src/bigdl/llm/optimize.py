@@ -28,6 +28,9 @@ CONFIG_NAME = "bigdl_config.json"
 
 
 def _save_low_bit(self, save_dir, *args, **kwargs):
+    invalidInputError(self._bigdl_config.get("bigdl_transformers_low_bit", False),
+                      f"Detected this model is not a low-bit model, please use from_pretrained's"
+                      f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
     os.makedirs(save_dir, exist_ok=True)
     model_path = os.path.join(save_dir, PYTORCH_MODEL_NAME)
     torch.save(self.state_dict(), model_path, *args, **kwargs)
@@ -36,10 +39,21 @@ def _save_low_bit(self, save_dir, *args, **kwargs):
 
 
 def load_low_bit(model, model_path):
+    invalidInputError(isinstance(model, torch.nn.Module),
+                      "model should be a instance of `torch.nn.Module`.")
+    invalidInputError(os.path.isdir(model_path),
+                      "model_path should be a valid directory path.")
+    invalidInputError(os.path.isdir(os.path.join(model_path, CONFIG_NAME)),
+                      "bigdl_config.json should be under your model directory,"
+                      "please check your input path.")
     with open(os.path.join(model_path, CONFIG_NAME), 'r') as f:
         _config = json.load(f)
     
     low_bit = _config.get("bigdl_transformers_low_bit", None)
+    invalidInputError(low_bit,
+                      "Detect this model is not a low-bit model, Please use `optimize_model`"
+                      " with low_bit to get a low-bit model , and "
+                      " serialize the model using save_low_bit first.")
 
     if low_bit:
         qtype = ggml_tensor_qtype[low_bit]
