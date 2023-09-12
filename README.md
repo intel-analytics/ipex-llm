@@ -17,12 +17,26 @@
 - Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
      
 ### `bigdl-llm` Demos
-See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15.5b` models on a 12th Gen Intel Core CPU below.
+See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on a 12th Gen Intel Core CPU and a Intel Arc A770 Graphics below.
 
-<p align="center">
-          <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" width='30%'></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif" width='30%' ></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif" width='30%' ></a>
-          <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-models3.png" width='76%'>
-</p>
+<div style="display: flex; width: 100%;">
+  <div style="text-align: center; margin: 0px 5px">
+    <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"></a>
+    <p><code>chatglm2-6b</code> on Intel CPU</p>
+  </div>
+  <div style="text-align: center; margin: 0px 5px">
+    <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
+    <p><code>chatglm2-6b</code> on Intel GPU</p>
+  </div>
+  <div style="text-align: center; margin: 0px 5px">
+    <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
+    <p><code>llama-2-13b-chat</code> on Intel CPU</p>
+  </div>
+  <div style="text-align: center; margin: 0px 5px">
+    <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
+    <p><code>llama-2-13b-chat</code> on Intel GPU</p>
+  </div>
+</div>
 
 ### `bigdl-llm` quickstart
 
