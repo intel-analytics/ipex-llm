@@ -23,7 +23,7 @@ spec:
         - name: API_PORT # fixed
           value: "8000"
         - name: SGX_MEM_SIZE
-          value: "40GB"
+          value: "30GB"
         - name: SGX_THREAD
           value: "2048"
         - name: SGX_KERNEL_HEAP
