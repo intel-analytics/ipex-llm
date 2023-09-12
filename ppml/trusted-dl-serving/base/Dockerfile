@@ -144,7 +144,7 @@ COPY --from=temp /usr/local/bin/torch-model-archiver /usr/local/bin/torch-model-
 
 # Transformers
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.9.egg
-COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg /usr/local/lib/python3.9/dist-packages/tokenizers-0.13.3-py3.9-linux-x86_64.egg
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers* /usr/local/lib/python3.9/dist-packages/tokenizers.egg
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
@@ -155,6 +155,8 @@ COPY --from=min_container /dl-serving /
 
 #TF-Serving
 COPY --from=tf-serving /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server
+
+Add ./pslinux.patch /ppml/pslinux.patch
 
 # Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -188,6 +190,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # which is then required by our third-layer gramine make command
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
     ls /opt/tritonserver/backends/pytorch && \
-    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
+    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so && \
+    patch /usr/local/lib/python3.9/dist-packages/psutil/_pslinux.py pslinux.patch
 
 ENTRYPOINT [ "/ppml/torchserve/frontend-entrypoint.sh" ]

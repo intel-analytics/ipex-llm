@@ -13,3 +13,5 @@ istioTLSEnabled: false # istio TLS protects pod communication between backend an
 modelDecryption: true
 aesKey: your_key_file_name
 tlsEnable: true
+savedOnDisk: true
+securedDir: your_secure_dir

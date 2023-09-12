@@ -1778,7 +1778,7 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
 
 def _convert_chatglm_hf_to_ggml(model_path, outfile_dir, outtype):
     filestem = Path(model_path).stem
-    outfile = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
+    outfile = os.path.join(outfile_dir, f"bigdl_llm_chatglm_{outtype}.bin")
     invalidInputError(outtype in ["q4_0", "q4_1"],
                       "For now we only support quantization type 'q4_0' and 'q4_1' "
                       "in chatglm family.")

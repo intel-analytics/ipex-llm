@@ -20,6 +20,7 @@
 import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -86,6 +87,7 @@ def chatglm2_attention_forward_8eb45c(
     # =====================
 
     # Attention heads [sq, b, h] --> [sq, b, (np * 3 * hn)]
+    device = hidden_states.device
     mixed_x_layer = self.query_key_value(hidden_states)
 
     if self.multi_query_attention:
@@ -144,35 +146,38 @@ def chatglm2_attention_forward_8eb45c(
     # adjust key and value for inference
     if kv_cache is not None:
         cache_k, cache_v = kv_cache
+        cache_k = cache_k.permute(1, 2, 0, 3)
+        cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
 
-        if past_length + cur_length > self.max_cache_length:
-            self.max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            self.kv_cache = (torch.empty(batch_size,
-                                         self.num_attention_heads_per_partition,
-                                         self.max_cache_length,
-                                         self.hidden_size_per_attention_head,),
-                             torch.empty(batch_size,
-                                         self.num_attention_heads_per_partition,
-                                         self.max_cache_length,
-                                         self.hidden_size_per_attention_head,))
-            self.kv_cache[0][:, :, :past_length, :] = cache_k
-            self.kv_cache[1][:, :, :past_length, :] = cache_v
-        self.kv_cache[0][:, :, past_length:past_length + cur_length, :] = key_layer
-        self.kv_cache[1][:, :, past_length:past_length + cur_length, :] = value_layer
+        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_cache_k, new_cache_v = create_kv_cache(batch_size,
+                                                       self.num_attention_heads_per_partition,
+                                                       self.hidden_size_per_attention_head,
+                                                       past_length,
+                                                       max_cache_length,
+                                                       dtype=query_layer.dtype,
+                                                       device=device)
+            new_cache_k[:] = cache_k
+            new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
 
-        key_layer = self.kv_cache[0][:, :, :past_length + cur_length, :]
-        value_layer = self.kv_cache[1][:, :, :past_length + cur_length, :]
+        key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
 
     elif use_cache:
-        self.max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
+
+        max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        self.kv_cache = (torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                     self.max_cache_length, self.hidden_size_per_attention_head,),
-                         torch.empty(batch_size, self.num_attention_heads_per_partition,
-                                     self.max_cache_length, self.hidden_size_per_attention_head,))
-        self.kv_cache[0][:, :, :cur_length, :] = key_layer
-        self.kv_cache[1][:, :, :cur_length, :] = value_layer
+        key_cache, value_cache = create_kv_cache(batch_size, self.num_attention_heads_per_partition,
+                                                 self.hidden_size_per_attention_head, cur_length,
+                                                 max_cache_length,
+                                                 dtype=query_layer.dtype, device=device)
+        key_cache[:] = key_layer
+        value_cache[:] = value_layer
+        key_layer = key_cache
+        value_layer = value_cache
 
     if use_cache:
         kv_cache = (key_layer, value_layer)
@@ -191,44 +196,22 @@ def chatglm2_attention_forward_8eb45c(
 
     output = self.dense(context_layer)
 
-    return output, kv_cache
+    return output, (key_layer.permute(2, 0, 1, 3), value_layer.permute(2, 0, 1, 3))
 
 
 def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
     pytorch_major_version = int(torch.__version__.split('.')[0])
-    if query_layer.size(0) > 1 and pytorch_major_version >= 2:
+    if pytorch_major_version >= 2 and (query_layer.device.type == 'xpu' or query_layer.size(0) > 1):
         query_layer = query_layer.permute(1, 2, 0, 3)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
-
-            if torch.is_autocast_cpu_enabled():
-                attention_mask = torch.ones(query_layer.shape[2],
-                                            key_layer.shape[2],
-                                            dtype=torch.bool).tril(diagonal=0)
-                attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
-                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
-                query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
-                key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
-                value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
-                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                 key_layer,
-                                                                                 value_layer,
-                                                                                 attention_mask,
-                                                                                 is_causal=False)
-            else:
-                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                 key_layer,
-                                                                                 value_layer,
-                                                                                 attention_mask,
-                                                                                 is_causal=True)
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             attention_mask,
+                                                                             is_causal=True)
         else:
             if attention_mask is not None:
                 attention_mask = ~attention_mask
-            attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
-            if torch.is_autocast_cpu_enabled():
-                query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
-                key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
-                value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
-                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
@@ -258,6 +241,7 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         matmul_result = torch.empty(
             output_size[0] * output_size[1],
             output_size[2], output_size[3], dtype=query_layer.dtype,
+            device=query_layer.device
         )
 
         # Raw attention scores. [b * np, sq, sk]
@@ -313,6 +297,7 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         context_layer = torch.empty(
             output_size[0] * output_size[1],
             output_size[2], value_layer.size(-1), dtype=value_layer.dtype,
+            device=value_layer.device,
         )
         torch.bmm(attention_probs, value_layer, out=context_layer)
         # change view [b, np, sq, hn]

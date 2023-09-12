@@ -51,8 +51,8 @@ github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers == 4.31.0', 'sentencepiece',
-               'accelerate', 'tabulate']
-# Pin transformers version because of this issue https://github.com/analytics-zoo/nano/issues/536
+               # TODO: Support accelerate 0.22.0
+               'accelerate == 0.21.0', 'tabulate']
 SERVING_DEP = ['fschat[model_worker, webui] >= 0.2.24', 'protobuf']
 windows_binarys = [
     "llama.dll",
@@ -104,6 +104,10 @@ linux_binarys = [
     "libgptneox_avx512.so",
     "libbloom_avx512.so",
     "libstarcoder_avx512.so",
+    "libllama_amx.so",
+    "libgptneox_amx.so",
+    "libbloom_amx.so",
+    "libstarcoder_amx.so",
     "quantize-llama",
     "quantize-gptneox",
     "quantize-bloom",
@@ -118,6 +122,7 @@ linux_binarys = [
     "main-starcoder",
 
     "main-chatglm_vnni",
+    "main-chatglm_amx",
     "chatglm_C.cpython-39-x86_64-linux-gnu.so",
 ]
 
@@ -247,7 +252,7 @@ def setup_package():
             raise FileNotFoundError(
                 f'Could not find package dependency file: {file_path}')
 
-    all_requires = ['py-cpuinfo']
+    all_requires = ['py-cpuinfo', 'protobuf']
     all_requires += CONVERT_DEP
     all_requires += SERVING_DEP
 
@@ -257,7 +262,7 @@ def setup_package():
     xpu_requires += ["torch==2.0.1a0",
                      "torchvision==0.15.2a0",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                     "bigdl-core-xe;platform_system=='Linux'"]
+                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'"]
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP

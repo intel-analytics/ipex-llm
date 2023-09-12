@@ -80,6 +80,10 @@ def _load_shared_library(lib_base_name: str):
     cdll_args = dict()  # type: ignore
     # Add the library directory to the DLL search path on Windows (if needed)
     if sys.platform == "win32" and sys.version_info >= (3, 8):
+        # On windows, pytorch and our native library use different OMP, we should
+        # set OMP_WAIT_POLICY=PASSIVE to avoid OMP waiting.
+        os.environ["OMP_WAIT_POLICY"] = "PASSIVE"
+
         os.add_dll_directory(str(_base_path))
         os.environ["PATH"] = str(_base_path) + ";" + os.environ["PATH"]
         if "CUDA_PATH" in os.environ:
@@ -993,6 +997,58 @@ _lib.ggml_dequantize_q4_0.argtypes = [
     ctypes.c_int,
 ]
 _lib.ggml_quantize_q4_0.restype = None
+
+
+def ggml_q_format_convet_cpu2xpu(
+    src: ctypes.c_void_p,
+    dst: ctypes.c_void_p,
+    n: ctypes.c_int,
+    qtype: ctypes.c_int
+):
+    _lib.ggml_q_format_convet_cpu2xpu(src, dst, n, qtype)
+
+
+_lib.ggml_q_format_convet_cpu2xpu.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+]
+_lib.ggml_q_format_convet_cpu2xpu.restype = None
+
+
+def ggml_q_format_convet_xpu2cpu(
+    src: ctypes.c_void_p,
+    dst: ctypes.c_void_p,
+    n: ctypes.c_int,
+    qtype: ctypes.c_int
+):
+    _lib.ggml_q_format_convet_xpu2cpu(src, dst, n, qtype)
+
+
+_lib.ggml_q_format_convet_xpu2cpu.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int
+]
+_lib.ggml_q_format_convet_xpu2cpu.restype = None
+
+
+# def ggml_dequantize_nf4(
+#     src: ctypes.c_void_p,
+#     dst: ctypes.c_void_p,
+#     k: ctypes.c_int,
+# ):
+#     _lib.ggml_dequantize_nf4(src, dst, k)
+#
+#
+# _lib.ggml_dequantize_nf4.argtypes = [
+#     ctypes.c_void_p,
+#     ctypes.c_void_p,
+#     ctypes.c_int,
+# ]
+# _lib.ggml_dequantize_nf4.restype = None
 
 
 def ggml_compute_forward_mul_mat_q_fp32(src_0_ne,  # type: ctypes.Array[ctypes.c_int64]
