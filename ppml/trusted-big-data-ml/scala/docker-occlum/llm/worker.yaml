@@ -26,7 +26,7 @@ spec:
             - name: CONTROLLER_PORT # fixed
               value: "21005"
             - name: SGX_MEM_SIZE
-              value: "40GB"
+              value: "32GB"
             - name: SGX_THREAD
               value: "2048"
             - name: SGX_KERNEL_HEAP
