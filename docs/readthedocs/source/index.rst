@@ -14,7 +14,7 @@ BigDL-LLM: low-Bit LLM library
 .. raw:: html
 
    <p>
-      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on your Intel <strong>laptop</strong> or <strong>GPU</strong> using INT4 with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
    </p>
 
 .. note::
@@ -111,7 +111,7 @@ You can then apply INT4 optimizations to any Hugging Face *Transformers* models 
    output_ids = model.generate(input_ids, ...)
    output = tokenizer.batch_decode(output_ids.cpu())
 
-**For more details, please refer to the bigdl-llm** `Document <doc/LLM/index.html>`_, `Tutorial <https://github.com/intel-analytics/bigdl-llm-tutorial>`_ and `API Doc <doc/PythonAPI/LLM/index.html>`_.
+**For more details, please refer to the bigdl-llm** `Document <doc/LLM/index.html>`_, `Readme <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, `Tutorial <https://github.com/intel-analytics/bigdl-llm-tutorial>`_ and `API Doc <doc/PythonAPI/LLM/index.html>`_.
 
 ------
 
