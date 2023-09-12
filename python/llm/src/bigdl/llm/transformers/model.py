@@ -54,7 +54,7 @@ class _BaseAutoModelClass:
         Load a model from a directory or the HF Hub. Use load_in_4bit or load_in_low_bit parameter
         the weight of model's linears can be loaded to low-bit format, like int4, int5 and int8.
 
-        Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
+        Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
@@ -129,6 +129,13 @@ class _BaseAutoModelClass:
                      pretrained_model_name_or_path,
                      *model_args,
                      **kwargs):
+        """
+        Load a low bit optimized model (including INT8, INT5 and INT4) from a saved ckpt.
+
+        :param pretrained_model_name_or_path: str value, path to load the low bit optimized model
+                                              ckpt.
+        :param optimize_model: boolean value, Whether to further optimize llm model.
+        """
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
         from transformers.dynamic_module_utils import resolve_trust_remote_code, \
             get_class_from_dynamic_module
