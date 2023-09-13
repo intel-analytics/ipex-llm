@@ -9,13 +9,13 @@ For running fastchat using bigdl-llm transformers int4 in Occlum
 docker pull intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT
 ```
 
-## Deploy fastchat with openAI restful API
+## Deploy fastchat with openAI restful API in K8S cluster
 
 0. prepare model and models_path(host or nfs), change model_name with bigdl.
 ```bash
 mv vicuna-7b-hf vicuna-7b-bigdl
 ```
-1. get `controller-service.yaml` and `controller.yaml` and `worker.yaml`.
+1. get `controller-service.yaml` and `controller.yaml` and `worker.yaml`, and update the `nodeSelector`.
 2. deploy controller-service and controller.
 ```bash
 kubectl apply -f controller-service.yaml
@@ -41,3 +41,7 @@ curl http://$controller_ip:8000/v1/completions \
   }'
 ```
 More api details refer to [here](https://github.com/lm-sys/FastChat/blob/main/docs/openai_api.md)
+
+## Deploy fastchat in Docker
+Please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/src/bigdl/llm/serving#start-the-service)
+To run inside SGX, need to make corresponding changes like k8s deployment.
