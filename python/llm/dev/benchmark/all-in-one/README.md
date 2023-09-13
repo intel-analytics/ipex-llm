@@ -20,6 +20,7 @@ test_api:
   - "transformer_int4"
   - "native_int4"
   - "optimize_model"
+  - "pytorch_autocast_bf16"
   # - "transformer_int4_gpu"  # on arc
   # - "optimize_model_gpu"  # on arc
 ```
