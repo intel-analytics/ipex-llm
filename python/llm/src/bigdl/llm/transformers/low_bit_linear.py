@@ -173,7 +173,7 @@ class FP4Params(torch.nn.Parameter):
         self.quantized = quantized
         self._shape = _shape
         self.qtype = qtype
-        self.convert_shape_only=convert_shape_only
+        self.convert_shape_only = convert_shape_only
         return self
 
     def quantize(self, device=None):

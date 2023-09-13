@@ -48,7 +48,7 @@ def load_low_bit(model, model_path):
                       "please check your input path.")
     with open(os.path.join(model_path, CONFIG_NAME), 'r') as f:
         _config = json.load(f)
-    
+
     low_bit = _config.get("bigdl_transformers_low_bit", None)
     invalidInputError(low_bit,
                       "Detect this model is not a low-bit model, Please use `optimize_model`"
@@ -59,7 +59,7 @@ def load_low_bit(model, model_path):
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
-    state_dict= torch.load(os.path.join(model_path, PYTORCH_MODEL_NAME))
+    state_dict = torch.load(os.path.join(model_path, PYTORCH_MODEL_NAME))
     model.load_state_dict(state_dict=state_dict)
     return model
 
