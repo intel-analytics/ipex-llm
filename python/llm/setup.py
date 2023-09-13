@@ -53,6 +53,7 @@ CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers == 4.31.0', 'sentencepiece',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
+SERVING_DEP = ['fschat[model_worker, webui] >= 0.2.24', 'protobuf']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -253,6 +254,7 @@ def setup_package():
 
     all_requires = ['py-cpuinfo', 'protobuf']
     all_requires += CONVERT_DEP
+    all_requires += SERVING_DEP
 
     # install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_requires = copy.deepcopy(all_requires)
@@ -261,6 +263,10 @@ def setup_package():
                      "torchvision==0.15.2a0",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
                      "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'"]
+
+    serving_requires = ['py-cpuinfo']
+    serving_requires += SERVING_DEP
+
 
     metadata = dict(
         name='bigdl-llm',
@@ -283,7 +289,8 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires},
+                        "xpu": xpu_requires,
+                        "serving": serving_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
