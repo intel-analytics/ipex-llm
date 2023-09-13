@@ -134,7 +134,7 @@ class _BaseAutoModelClass:
                      *model_args,
                      **kwargs):
         """
-        Load a low bit optimized model (including INT8, INT5 and INT4) from a saved ckpt.
+        Load a low bit optimized model (including INT4, INT5 and INT8) from a saved ckpt.
 
         :param pretrained_model_name_or_path: str value, Path to load the optimized model ckpt.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
