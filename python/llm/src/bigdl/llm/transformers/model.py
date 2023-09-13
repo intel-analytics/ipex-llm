@@ -57,7 +57,7 @@ class _BaseAutoModelClass:
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
-                             Default to False.
+                             Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
                                 or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
