@@ -12,6 +12,7 @@ docker pull intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT
 ## Deploy fastchat with openAI restful API in K8S cluster
 
 0. prepare model and models_path(host or nfs), change model_name with bigdl.
+Refer to [bigdl-llm](https://github.com/intel-analytics/BigDL/tree/main/python/llm) for more  information.
 ```bash
 mv vicuna-7b-hf vicuna-7b-bigdl
 ```
