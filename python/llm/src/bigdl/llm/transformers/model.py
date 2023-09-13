@@ -62,8 +62,8 @@ class _BaseAutoModelClass:
                                 or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
-        :param optimize_model: boolean value, Whether to further optimize llm model.
-                               Default to True to optimize the model.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be True.
 
         :return: a model instance
         """
@@ -137,8 +137,8 @@ class _BaseAutoModelClass:
         Load a low bit optimized model (including INT8, INT5 and INT4) from a saved ckpt.
 
         :param pretrained_model_name_or_path: str value, Path to load the optimized model ckpt.
-        :param optimize_model: boolean value, Whether to further optimize llm model.
-                               Default to True to optimize the model.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be True.
 
         :return: a model instance
         """
