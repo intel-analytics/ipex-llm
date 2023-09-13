@@ -129,6 +129,8 @@ def llama_attention_forward_4_31(
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if device == torch.device('xpu:0'):
+                torch.xpu.empty_cache()
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
                                                        self.num_key_value_heads,  # Support GQA
