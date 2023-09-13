@@ -1,20 +1,20 @@
-# BigDL-LLM INT4 Optimization for Large Language Model on Intel GPUs
-You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. Moreover, you can also use `optimize_model` API to accelerate general PyTorch models on Intel GPUs.
+# BigDL-LLM Transformers INT4 Optimization for Large Language Model on Intel GPUs
+You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
 ## Verified models
 | Model      | Example                                                  |
 |------------|----------------------------------------------------------|
-| Baichuan   | [link](transformers/transformers_int4/baichuan)          | 
-| ChatGLM2   | [link](transformers/transformers_int4/chatglm2)          |
-| Chinese Llama2 | [link](transformers/transformers_int4/chinese-llama2)|
-| Falcon     | [link](transformers/transformers_int4/falcon)            |
-| GPT-J      | [link](transformers/transformers_int4/gpt-j)             |
-| InternLM   | [link](transformers/transformers_int4/internlm)          |
-| LLaMA 2    | [link](transformers/transformers_int4/llama2)            |
-| MPT        | [link](transformers/transformers_int4/mpt)               |
-| Qwen       | [link](transformers/transformers_int4/qwen)              |
-| StarCoder  | [link](transformers/transformers_int4/starcoder)         |
-| Whisper    | [link](transformers/transformers_int4/whisper)           |
+| Baichuan   | [link](baichuan)          | 
+| ChatGLM2   | [link](chatglm2)          |
+| Chinese Llama2 | [link](chinese-llama2)|
+| Falcon     | [link](falcon)            |
+| GPT-J      | [link](gpt-j)             |
+| InternLM   | [link](internlm)          |
+| LLaMA 2    | [link](llama2)            |
+| MPT        | [link](mpt)               |
+| Qwen       | [link](qwen)              |
+| StarCoder  | [link](starcoder)         |
+| Whisper    | [link](whisper)           |
 
 ## Verified Hardware Platforms
 
