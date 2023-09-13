@@ -41,6 +41,8 @@ spec:
               value: "/host/data/models/vicuna-7b-bigdl/"
             - name: OMP_NUM_THREADS
               value: "16"
+            - name: ENABLE_PERF_OUTPUT
+              value: "true"
           resources:
             requests:
               memory: 32Gi
