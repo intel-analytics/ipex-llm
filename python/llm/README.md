@@ -8,12 +8,34 @@
  - `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](example/gpu).
     
 ### Demos
-See the ***optimized performance*** of `chatglm2-6b`, `llama-2-13b-chat`, and `starcoder-15.5b` models on a 12th Gen Intel Core CPU below.
+See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
 
-<p align="center">
-          <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" width='33%'></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif" width='33%' ></a> <a href="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-15b5.gif" width='33%' ></a>
-          <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-models3.png" width='85%'>
-</p>
+<table width="100%">
+  <tr>
+    <td align="center" colspan="2">12th Gen Intel Core CPU</td>
+    <td align="center" colspan="2">Intel Arc GPU</td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" ></a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><code>chatglm2-6b</code></td>
+    <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
+    <td align="center" width="25%"><code>chatglm2-6b</code></td>
+    <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
+  </tr>
+</table>
 
 
 ### Verified models
