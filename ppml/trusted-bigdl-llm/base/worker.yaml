@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-fschat-a1234bd-worker-deployment
+spec:
+  # Change this to the number you want
+  replicas: 1
+  selector:
+    matchLabels:
+      fastchat: worker
+  template:
+    metadata:
+      labels:
+        fastchat: worker
+    spec:
+      dnsPolicy: "ClusterFirst"
+      nodeSelector:
+        icx-1: "true"
+      containers:
+        - name: fastchat-worker # fixed
+          image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.4.0-SNAPSHOT
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONTROLLER_HOST # fixed
+              value: bigdl-a1234bd-fschat-controller-service # fix or get ip from controller service
+            - name: CONTROLLER_PORT # fixed
+              value: "21005"
+            - name: WORKER_HOST # fixed
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: WORKER_PORT # fixed
+              value: "21841"
+            - name: MODEL_PATH # Change this
+              value: "/ppml/data/models/vicuna-7b-bigdl/"
+            - name: OMP_NUM_THREADS
+              value: "16"
+          resources:
+            requests:
+              memory: 32Gi
+              cpu: 16
+              sgx.intel.com/enclave: 1
+              sgx.intel.com/provision: 1
+            limits:
+              memory: 32Gi
+              cpu: 16
+              sgx.intel.com/enclave: 1
+              sgx.intel.com/provision: 1
+          args: ["-m", "worker"]
+          volumeMounts:
+            - name: ppml-models
+              mountPath: /ppml/data/ # change this in other envs
+            - name: aesm-path
+              mountPath: /var/run/aesmd/aesm.socket
+      restartPolicy: "Always"
+      volumes:
+        - name: ppml-models
+          hostPath:
+            path: /mnt/sde/tpch-data/ # change this in other envs
+        - name: aesm-path
+          hostPath:
+            path: /var/run/aesmd/aesm.socket # change this in other envs
