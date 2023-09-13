@@ -4,17 +4,17 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 ## Verified models
 | Model      | Example                                                  |
 |------------|----------------------------------------------------------|
-| Baichuan   | [link](transformers/transformers_int4/baichuan)          | 
-| ChatGLM2   | [link](transformers/transformers_int4/chatglm2)          |
-| Chinese Llama2 | [link](transformers/transformers_int4/chinese-llama2)|
-| Falcon     | [link](transformers/transformers_int4/falcon)            |
-| GPT-J      | [link](transformers/transformers_int4/gpt-j)             |
-| InternLM   | [link](transformers/transformers_int4/internlm)          |
-| LLaMA 2    | [link](transformers/transformers_int4/llama2)            |
-| MPT        | [link](transformers/transformers_int4/mpt)               |
-| Qwen       | [link](transformers/transformers_int4/qwen)              |
-| StarCoder  | [link](transformers/transformers_int4/starcoder)         |
-| Whisper    | [link](transformers/transformers_int4/whisper)           |
+| Baichuan   | [link](hf-transformers-models/baichuan)          | 
+| ChatGLM2   | [link](hf-transformers-models/chatglm2)          |
+| Chinese Llama2 | [link](hf-transformers-models/chinese-llama2)|
+| Falcon     | [link](hf-transformers-models/falcon)            |
+| GPT-J      | [link](hf-transformers-models/gpt-j)             |
+| InternLM   | [link](hf-transformers-models/internlm)          |
+| LLaMA 2    | [link](hf-transformers-models/llama2)            |
+| MPT        | [link](hf-transformers-models/mpt)               |
+| Qwen       | [link](hf-transformers-models/qwen)              |
+| StarCoder  | [link](hf-transformers-models/starcoder)         |
+| Whisper    | [link](hf-transformers-models/whisper)           |
 
 ## Verified Hardware Platforms
 
