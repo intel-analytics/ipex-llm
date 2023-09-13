@@ -1,4 +1,4 @@
-# Llama2
+# Chinese Llama2
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Chinese LLaMA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [LinkSoul/Chinese-Llama-2-7b](https://huggingface.co/LinkSoul/Chinese-Llama-2-7b) as reference Chinese LLaMA models.
 
 ## 0. Requirements
