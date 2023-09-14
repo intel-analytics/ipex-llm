@@ -16,17 +16,16 @@
 
 import torch
 import os
-os.environ["ACCELERATE_USE_IPEX"] = "1"
-os.environ["ACCELERATE_USE_XPU"] = "1"
+os.environ["ACCELERATE_USE_IPEX"] = "true"
+os.environ["ACCELERATE_USE_XPU"] = "true"
 
 import transformers
 from transformers import LlamaTokenizer
 
 from peft import LoraConfig
 import intel_extension_for_pytorch as ipex
-from peft import prepare_model_for_kbit_training
-from bigdl.llm.transformers.qlora import get_peft_model
-from bigdl.llm.transformers import AutoModelForCausalLM, TrainingArguments
+from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
+from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
 import argparse
 
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                 load_in_4bit=True,
                                                 optimize_model=False,
-                                                trust_remote_code=True)
+                                                modules_to_not_convert=["lm_head"],)
     model = model.to('xpu')
     model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
@@ -66,16 +65,17 @@ if __name__ == "__main__":
     trainer = transformers.Trainer(
         model=model,
         train_dataset=data["train"],
-        args=TrainingArguments(
+        args=transformers.TrainingArguments(
             per_device_train_batch_size=4,
             gradient_accumulation_steps= 1,
             warmup_steps=20,
             max_steps=200,
             learning_rate=2e-4,
-            fp16=True,
+            fp16=False, # fp16 is not supported yet
             logging_steps=20,
             output_dir="outputs",
-            optim="adamw_hf", # we currently do not have paged_adamw_8bit
+            optim="adamw_hf", # paged_adamw_8bit is not supported yet
+            # gradient_checkpointing=True, # can further reduce memory but slower
         ),
         data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
