@@ -121,6 +121,7 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model)
         model.config.update({"bigdl_transformers_low_bit": q_k})
+        model.config.update({"tie_word_embeddings": False})
 
         # add save_low_bit to pretrained model dynamically
         import types
