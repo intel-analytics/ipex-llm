@@ -947,7 +947,7 @@ def ggml_quantize_tensor(
     src,  # type: ctypes.Array[ctypes.c_float] # type: ignore
     dst: ctypes.c_void_p,
     qtype: ctypes.c_int,
-    n: ctypes.c_int,
+    n: ctypes.c_size_t,
     k: ctypes.c_int,
     hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
 ) -> int:
@@ -958,7 +958,7 @@ _lib.ggml_quantize_tensor.argtypes = [
     ctypes.POINTER(ctypes.c_float),
     ctypes.c_void_p,
     ctypes.c_int,
-    ctypes.c_int,
+    ctypes.c_size_t,
     ctypes.c_int,
     ctypes.POINTER(ctypes.c_int64),
 ]
@@ -986,7 +986,7 @@ _lib.ggml_qk_size.restype = ctypes.c_int
 def ggml_dequantize_q4_0(
     src: ctypes.c_void_p,
     dst: ctypes.c_void_p,
-    k: ctypes.c_int,
+    k: ctypes.c_size_t,
 ):
     _lib.ggml_dequantize_q4_0(src, dst, k)
 
@@ -994,7 +994,7 @@ def ggml_dequantize_q4_0(
 _lib.ggml_dequantize_q4_0.argtypes = [
     ctypes.c_void_p,
     ctypes.c_void_p,
-    ctypes.c_int,
+    ctypes.c_size_t,
 ]
 _lib.ggml_quantize_q4_0.restype = None
 
@@ -1002,7 +1002,7 @@ _lib.ggml_quantize_q4_0.restype = None
 def ggml_q_format_convet_cpu2xpu(
     src: ctypes.c_void_p,
     dst: ctypes.c_void_p,
-    n: ctypes.c_int,
+    n: ctypes.c_size_t,
     qtype: ctypes.c_int
 ):
     _lib.ggml_q_format_convet_cpu2xpu(src, dst, n, qtype)
@@ -1011,7 +1011,7 @@ def ggml_q_format_convet_cpu2xpu(
 _lib.ggml_q_format_convet_cpu2xpu.argtypes = [
     ctypes.c_void_p,
     ctypes.c_void_p,
-    ctypes.c_int,
+    ctypes.c_size_t,
     ctypes.c_int,
 ]
 _lib.ggml_q_format_convet_cpu2xpu.restype = None
@@ -1020,7 +1020,7 @@ _lib.ggml_q_format_convet_cpu2xpu.restype = None
 def ggml_q_format_convet_xpu2cpu(
     src: ctypes.c_void_p,
     dst: ctypes.c_void_p,
-    n: ctypes.c_int,
+    n: ctypes.c_size_t,
     qtype: ctypes.c_int
 ):
     _lib.ggml_q_format_convet_xpu2cpu(src, dst, n, qtype)
@@ -1029,7 +1029,7 @@ def ggml_q_format_convet_xpu2cpu(
 _lib.ggml_q_format_convet_xpu2cpu.argtypes = [
     ctypes.c_void_p,
     ctypes.c_void_p,
-    ctypes.c_int,
+    ctypes.c_size_t,
     ctypes.c_int
 ]
 _lib.ggml_q_format_convet_xpu2cpu.restype = None
