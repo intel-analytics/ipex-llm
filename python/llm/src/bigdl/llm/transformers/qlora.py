@@ -56,6 +56,7 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
             out_features,
             qtype=kwargs.get("qtype"),
             bias=kwargs.get("bias", True),
+            conver_to_half=False,
         )
         LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
 
