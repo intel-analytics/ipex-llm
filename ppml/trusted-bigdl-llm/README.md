@@ -21,10 +21,8 @@ mv vicuna-7b-hf vicuna-7b-bigdl
 ```bash
 kubectl apply -f controller-service.yaml
 kubectl apply -f controller.yaml
-kcbectl get service | grep bigdl
-# get controller-service's cluster-ip
 ```
-3. modify `worker.yaml`, set CONTROLLER_HOST=controller-service's cluster-ip, set models mount path and `MODEL_PATH`.
+3. modify `worker.yaml`, set models mount path and `MODEL_PATH`.
 ```bash
 kubectl apply -f worker.yaml
 ```
