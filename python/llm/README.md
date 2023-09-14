@@ -80,6 +80,9 @@ You may install **`bigdl-llm`** as follows:
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
+
+> **Note**: `bigdl-llm` is tested with Python 3.9, which is recommended for best practices.
+
 #### Download Model
 
 You may download any PyTorch model in Hugging Face *Transformers* format (including *FP16* or *FP32* or *GPTQ-4bit*).
