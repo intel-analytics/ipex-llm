@@ -108,6 +108,7 @@ class _BaseAutoModelClass:
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
         # and lead to args missing.
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         try:
@@ -119,7 +120,8 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
         model = model.to("cpu")
-        model = ggml_convert_low_bit(model, qtype, optimize_model)
+        model = ggml_convert_low_bit(model, qtype, optimize_model,
+                                     modules_to_not_convert=modules_to_not_convert)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # add save_low_bit to pretrained model dynamically
@@ -154,6 +156,7 @@ class _BaseAutoModelClass:
         import copy
         import os
 
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -263,7 +266,8 @@ class _BaseAutoModelClass:
 
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
-        model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device)
+        model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
+                                     modules_to_not_convert=modules_to_not_convert)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

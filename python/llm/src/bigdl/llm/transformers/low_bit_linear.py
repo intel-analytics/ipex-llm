@@ -284,7 +284,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
     return result_t
 
 
-class MatMul4Bit(torch.autograd.Function):
+class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, A, weight):
@@ -314,7 +314,8 @@ class MatMul4Bit(torch.autograd.Function):
 
 
 class LowBitLinear(nn.Linear):
-    def __init__(self, input_features, output_features, qtype, bias=True):
+    def __init__(self, input_features, output_features, qtype, bias=True,
+                 conver_to_half=True):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -324,6 +325,7 @@ class LowBitLinear(nn.Linear):
         self.weight_shape = (self.out_len, self.in_len)
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
+        self.conver_to_half = conver_to_half
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -346,9 +348,11 @@ class LowBitLinear(nn.Linear):
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
             # current workaround to reduce first token latency of fp32 input
-            if x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+            # sometimes fp16 cause nan and training instability
+            # disable the conversion when training
+            if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
                 x_2d = x_2d.half()
-            result = MatMul4Bit.apply(x_2d, self.weight)
+            result = MatMulLowBit.apply(x_2d, self.weight)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:

@@ -99,8 +99,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
 
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
-                         convert_shape_only=False, device="cpu"):
-    modules_to_not_convert = []  # ["lm_head"]
+                         convert_shape_only=False, device="cpu",
+                         modules_to_not_convert=None):
+    modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only,
