@@ -104,6 +104,7 @@ model_path=""
 mode=""
 omp_num_threads=""
 attest_flag=""
+dispatch_method="shortest_queue" # shortest_queue or lottery
 
 # Update rootCA config if needed
 update-ca-certificates
@@ -174,6 +175,10 @@ else
     model_path=$MODEL_PATH
   fi
 
+  if [[ -n $DISPATCH_METHOD ]]; then
+    dispatch_method=$DISPATCH_METHOD
+  fi
+
   if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
     attest_flag="--attest"
     echo 'port=4050' | tee /etc/tdx-attest.conf
@@ -184,11 +189,10 @@ else
   if [[ $mode == "controller" ]]; then
     # Logic for controller mode
     # Boot Controller
-    # TODO: add dispatch-method
     api_address="http://$api_host:$api_port"
     echo "Controller address: $controller_address"
     echo "OpenAI API address: $api_address"
-    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $attest_flag &
+    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method $attest_flag &
     # Boot openai api server
     python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
   else
