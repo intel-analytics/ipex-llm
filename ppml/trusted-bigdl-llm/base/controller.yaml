@@ -22,6 +22,8 @@ spec:
           value: "0.0.0.0"
         - name: API_PORT # fixed
           value: "8000"
+        - name: ENABLE_PERF_OUTPUT
+          value: "true"
       ports:
         - containerPort: 21005
           name: con-port

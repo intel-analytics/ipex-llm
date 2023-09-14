@@ -28,6 +28,8 @@ spec:
           value: "2048"
         - name: SGX_KERNEL_HEAP
           value: "2GB"
+        - name: ENABLE_PERF_OUTPUT
+          value: "true"
       ports:
         - containerPort: 21005
           name: con-port
