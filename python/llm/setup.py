@@ -254,7 +254,6 @@ def setup_package():
 
     all_requires = ['py-cpuinfo', 'protobuf']
     all_requires += CONVERT_DEP
-    all_requires += SERVING_DEP
 
     # install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_requires = copy.deepcopy(all_requires)
