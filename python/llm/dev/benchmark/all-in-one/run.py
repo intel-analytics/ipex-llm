@@ -294,7 +294,7 @@ def run_transformer_int4_gpu(repo_id,
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
-    model = BenchmarkWrapper(model)
+    model = BenchmarkWrapper(model, do_print=True)
 
     result = {}
     with torch.inference_mode():

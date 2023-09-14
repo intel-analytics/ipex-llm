@@ -1,17 +1,17 @@
 repo_id:
-  - 'THUDM/chatglm-6b'
-  - 'THUDM/chatglm2-6b'
+  # - 'THUDM/chatglm-6b'
+  # - 'THUDM/chatglm2-6b'
   - 'meta-llama/Llama-2-7b-chat-hf'
-local_model_hub: 'path to your local model hub'
+local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
 in_out_pairs:
   - '32-32'
-  - '1024-128'
+  # - '1024-128'
 test_api:
-  - "transformer_int4"
-  - "native_int4"
-  - "optimize_model"
-  - "pytorch_autocast_bf16"
-  # - "transformer_int4_gpu"  # on arc
+  #- "transformer_int4"
+  #- "native_int4"
+  #- "optimize_model"
+  #- "pytorch_autocast_bf16"
+  - "transformer_int4_gpu"  # on arc
   # - "optimize_model_gpu"  # on arc
