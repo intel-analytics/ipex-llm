@@ -24,10 +24,10 @@ on:
         - bigdl-ppml-trusted-big-data-ml-python-gramine
         - bigdl-ppml-trusted-big-data-ml-python-gramine-noattest
         - bigdl-ppml-trusted-big-data-ml-python-graphene
+        - bigdl-ppml-trusted-llm-fastchat-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
-        - bigdl-ppml-trusted-llm-fastchat-occlum
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
         - bigdl-ppml-trusted-bigdl-llm-tdx
@@ -542,6 +542,7 @@ jobs:
           export image=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum
           pwd
           docker build \
+            --no-cache=true \
             --build-arg http_proxy=${HTTP_PROXY} \
             --build-arg https_proxy=${HTTPS_PROXY} \
             --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
