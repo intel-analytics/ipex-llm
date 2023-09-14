@@ -133,17 +133,20 @@ def get_peft_model(*args, **kwargs):
 
     return model
 
+
 def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
     r"""
-    This method wraps the entire protocol for preparing a model before running a training. This includes:
-        1- Cast the layernorm in fp32 2- making output embedding layer require grads 3- Add the upcasting of the lm
-        head to fp32
+    This method wraps the entire protocol for preparing a model before running a training.
+    This includes:
+        1- Cast the layernorm in fp32
+        2- making output embedding layer require grads
+        3- Add the upcasting of the lm head to fp32
 
     Args:
         model, (`transformers.PreTrainedModel`):
             The loaded model from `transformers`
     """
-    loaded_in_kbit = getattr(model, "is_loaded_in_8bit", False) or getattr(model, "is_loaded_in_4bit", False)
+
     is_gptq_quantized = getattr(model, "quantization_method", None) == "gptq"
     for name, param in model.named_parameters():
         # freeze base model's layers
