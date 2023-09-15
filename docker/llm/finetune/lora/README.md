@@ -52,7 +52,7 @@ kubectl exec -it <launcher_pod_name> bash -n bigdl-ppml-finetuning # enter launc
 cat launcher.log # display logs collected from other workers
 ```
 
-From the log, you can see whether finetuning process has been invoked successfully in all MPI worker pods, and a progress bar with finetuning speed and estimated time will be showed after some data preprocessing steps (this may take quiet a while).
+From the log, you can see whether finetuning process has been invoked successfully in all MPI worker pods, and a progress bar with finetuning speed and estimated time will be showed after some data preprocessing steps (this may take quiet a while). For the fine-tuned model, it is written by the worker 0 (who holds rank 0), so you can find the model output inside the pod or the `output` folder under the NFS path (because it has been mounted to worker 0 as output path).
 
 
 ## To run in TDX-CoCo and enable Remote Attestation API
