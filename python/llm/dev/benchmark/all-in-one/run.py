@@ -285,16 +285,15 @@ def run_transformer_int4_gpu(repo_id,
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True)
-        model = model.to('xpu')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True)
-        model = model.to('xpu')
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
-    model = BenchmarkWrapper(model, do_print=True)
+    model = model.to('xpu')
+    model = BenchmarkWrapper(model)
 
     result = {}
     with torch.inference_mode():
@@ -305,8 +304,10 @@ def run_transformer_int4_gpu(repo_id,
             input_str = open(f"prompt/{in_len}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
-            input_ids = tokenizer.encode(input_str, return_tensors="pt").to('xpu')
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             result[in_out] = []
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
@@ -319,6 +320,7 @@ def run_transformer_int4_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    torch.xpu.empty_cache()
     return result
 
 
@@ -376,6 +378,7 @@ def run_optimize_model_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    torch.xpu.empty_cache()
     return result
 
 
