@@ -61,7 +61,7 @@ def get_model_path(repo_id, local_model_hub):
         local_model_path = local_model_hub + os.path.sep + repo_model_name
         invalidInputError(os.path.isdir(local_model_path),
                           local_model_path + " not exists!, Please check your models' folder.")
-        return local_model_hub + os.path.sep + repo_model_name
+        return local_model_path
     else:
         return repo_id
 
