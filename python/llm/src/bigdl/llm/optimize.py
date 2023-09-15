@@ -31,6 +31,17 @@ PYTORCH_MODEL_NAME = "pytorch_model.bin"
 CONFIG_NAME = "bigdl_config.json"
 
 
+def _save_low_bit(self, save_dir, *args, **kwargs):
+    invalidInputError(self._bigdl_config.get("bigdl_transformers_low_bit", False),
+                      f"Detected this model is not a low-bit model, please use from_pretrained's"
+                      f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    os.makedirs(save_dir, exist_ok=True)
+    model_path = os.path.join(save_dir, PYTORCH_MODEL_NAME)
+    torch.save(self.state_dict(), model_path, *args, **kwargs)
+    with open(os.path.join(save_dir, CONFIG_NAME), "w") as json_file:
+        json.dump(self._bigdl_config, json_file)
+
+
 # Under `init_empty_weights()`, we need to disable all actions
 # that may lead to any parameter allocation", otherwise may need to error:
 # NotImplementedError: Cannot copy out of meta tensor; no data!
@@ -65,25 +76,14 @@ def low_bit_sanity_check(model_path):
     return low_bit
 
 
-def _save_low_bit(self, save_dir, *args, **kwargs):
-    invalidInputError(self._bigdl_config.get("bigdl_transformers_low_bit", False),
-                      f"Detected this model is not a low-bit model, please use from_pretrained's"
-                      f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
-    os.makedirs(save_dir, exist_ok=True)
-    model_path = os.path.join(save_dir, PYTORCH_MODEL_NAME)
-    torch.save(self.state_dict(), model_path, *args, **kwargs)
-    with open(os.path.join(save_dir, CONFIG_NAME), "w") as json_file:
-        json.dump(self._bigdl_config, json_file)
-
-
 def load_low_bit(model_or_creator, model_path, **kwargs):
     is_creator = not isinstance(model_or_creator, torch.nn.Module) \
-                 and callable(model_or_creator)
+        and callable(model_or_creator)
     low_bit = low_bit_sanity_check(model_path)
 
     if low_bit:
         # a creator
-        if is_creator: 
+        if is_creator:
             with init_empty_weights(), DisableTorchAllocTensor():
                 model = model_or_creator(**kwargs)
         else:
