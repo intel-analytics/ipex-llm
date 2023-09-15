@@ -45,7 +45,8 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path,
                                                       load_in_4bit=True,
-                                                      optimize_model=False)
+                                                      optimize_model=False,
+                                                      use_cache=True)
     model.to('xpu')
     model.config.forced_decoder_ids = None
 

@@ -45,7 +45,8 @@ if __name__ == '__main__':
     model = AutoModel.from_pretrained(model_path,
                                       load_in_4bit=True,
                                       optimize_model=True,
-                                      trust_remote_code=True)
+                                      trust_remote_code=True,
+                                      use_cache=True)
     model = model.to('xpu')
 
     # Load tokenizer
