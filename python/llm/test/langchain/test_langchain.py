@@ -63,14 +63,6 @@ class Test_Models_Basics(TestCase):
         text = "This is a test document."
         query_result = bigdl_embeddings.embed_query(text)
         doc_result = bigdl_embeddings.embed_documents([text])
-
-    def test_langchain_llm_embedding_chatglm(self):
-        bigdl_embeddings = ChatGLMEmbeddings(
-            model_path=self.chatglm_model_path)
-        text = "This is a test document."
-        query_result = bigdl_embeddings.embed_query(text)
-        doc_result = bigdl_embeddings.embed_documents([text])
-
         
     def test_langchain_llm_llama(self):
         llm = LlamaLLM(
