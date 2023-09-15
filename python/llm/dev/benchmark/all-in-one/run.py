@@ -277,6 +277,7 @@ def run_transformer_int4_gpu(repo_id,
                              num_trials):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer
+    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -329,6 +330,7 @@ def run_optimize_model_gpu(repo_id,
                            num_trials):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
     from bigdl.llm import optimize_model
+    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
