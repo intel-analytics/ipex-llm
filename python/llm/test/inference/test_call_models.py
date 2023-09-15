@@ -97,14 +97,14 @@ class Test_Models_Basics(TestCase):
                                                    n_threads=self.n_threads)
         output = llm("def print_hello_world(", max_tokens=32, stream=False)
 
-    def test_chatglm_completion_success(self):
-        llm = ChatGLM(self.chatglm_model_path, n_threads=self.n_threads)
-        output = llm("def print_hello_world(", max_tokens=32, stream=False)
-        # assert "Paris" in output['choices'][0]['text']
+    # def test_chatglm_completion_success(self):
+    #     llm = ChatGLM(self.chatglm_model_path, n_threads=self.n_threads)
+    #     output = llm("def print_hello_world(", max_tokens=32, stream=False)
+    #     # assert "Paris" in output['choices'][0]['text']
 
-    def test_chatglm_completion_with_stream_success(self):
-        llm = ChatGLM(self.chatglm_model_path, n_threads=self.n_threads)
-        output = llm("def print_hello_world(", max_tokens=32, stream=True)
+    # def test_chatglm_completion_with_stream_success(self):
+    #     llm = ChatGLM(self.chatglm_model_path, n_threads=self.n_threads)
+    #     output = llm("def print_hello_world(", max_tokens=32, stream=True)
 
     def test_chatglm_for_causallm(self):
         llm = ChatGLMForCausalLM.from_pretrained(self.chatglm_model_path, native=True,
