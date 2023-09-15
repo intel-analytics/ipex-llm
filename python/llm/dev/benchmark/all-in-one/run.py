@@ -58,6 +58,9 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
 def get_model_path(repo_id, local_model_hub):
     if local_model_hub:
         repo_model_name = repo_id.split("/")[1]
+        local_model_path = local_model_hub + os.path.sep + repo_model_name
+        invalidInputError(not os.path.isdir(local_model_path),
+                          local_model_path + "not exists!, Please check your models' folder.")
         return local_model_hub + os.path.sep + repo_model_name
     else:
         return repo_id
