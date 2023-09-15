@@ -23,10 +23,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 import torch
 import copy
-import logging
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
+from .utils import logger
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -57,13 +54,18 @@ class _BaseAutoModelClass:
         Load a model from a directory or the HF Hub. Use load_in_4bit or load_in_low_bit parameter
         the weight of model's linears can be loaded to low-bit format, like int4, int5 and int8.
 
-        Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
+        Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
+                             Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
                                 or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be True.
+
+        :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
@@ -98,7 +100,7 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
-        from .convert import ggml_convert_quant
+        from .convert import ggml_convert_low_bit
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
@@ -117,8 +119,9 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
         model = model.to("cpu")
-        model = ggml_convert_quant(model, qtype, optimize_model)
+        model = ggml_convert_low_bit(model, qtype, optimize_model)
         model.config.update({"bigdl_transformers_low_bit": q_k})
+        model.config.update({"tie_word_embeddings": False})
 
         # add save_low_bit to pretrained model dynamically
         import types
@@ -131,6 +134,15 @@ class _BaseAutoModelClass:
                      pretrained_model_name_or_path,
                      *model_args,
                      **kwargs):
+        """
+        Load a low bit optimized model (including INT4, INT5 and INT8) from a saved ckpt.
+
+        :param pretrained_model_name_or_path: str value, Path to load the optimized model ckpt.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be True.
+
+        :return: a model instance
+        """
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
         from transformers.dynamic_module_utils import resolve_trust_remote_code, \
             get_class_from_dynamic_module
@@ -139,7 +151,7 @@ class _BaseAutoModelClass:
         from transformers.generation.configuration_utils import GenerationConfig
         from transformers.models.auto.auto_factory import _get_model_class
         from accelerate.big_modeling import init_empty_weights
-        from .convert import ggml_convert_quant
+        from .convert import ggml_convert_low_bit
         import copy
         import os
 
@@ -252,7 +264,7 @@ class _BaseAutoModelClass:
 
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
-        model = ggml_convert_quant(model, qtype, optimize_model, device=quant_device)
+        model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

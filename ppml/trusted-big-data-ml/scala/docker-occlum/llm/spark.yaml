@@ -1,0 +1,32 @@
+includes:
+  - base.yaml
+targets:
+  # JVM and class file
+  - target: /usr/lib/jvm
+    copy:
+      - dirs:
+          - /usr/lib/jvm/java-8-openjdk-amd64
+  # K8s secret
+  # - target: /var/run
+  #   copy:
+  #     - dirs:
+  #       - /var/run/secrets
+  # extra libs
+  - target: /opt/occlum/glibc/lib
+    copy:
+      - files:
+          - /opt/libhadoop.so
+          - /lib/x86_64-linux-gnu/libnss_dns.so.2
+          - /lib/x86_64-linux-gnu/libnss_files.so.2
+          - /lib/x86_64-linux-gnu/libgomp.so.1
+  # etc files
+  - target: /etc
+    copy:
+      - dirs:
+          - /etc/java-8-openjdk
+          - /etc/ssl
+      - files:
+          - /etc/nsswitch.conf
+          - /etc/passwd
+          - /etc/group
+          - /etc/hosts

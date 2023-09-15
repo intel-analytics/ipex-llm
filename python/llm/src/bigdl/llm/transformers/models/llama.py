@@ -37,6 +37,7 @@ from typing import Optional, Tuple
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 def rotate_half(x):
@@ -85,23 +86,23 @@ def llama_attention_forward_4_31(
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
 
-    if self.pretraining_tp > 1:
-        key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.pretraining_tp
+    if self.config.pretraining_tp > 1:
+        key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
         query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-                                                // self.pretraining_tp, dim=0)
+                                                // self.config.pretraining_tp, dim=0)
         key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
         value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
 
         query_states = [F.linear(hidden_states, query_slices[i])
-                        for i in range(self.pretraining_tp)]
+                        for i in range(self.config.pretraining_tp)]
         query_states = torch.cat(query_states, dim=-1)
 
         key_states = [F.linear(hidden_states, key_slices[i])
-                      for i in range(self.pretraining_tp)]
+                      for i in range(self.config.pretraining_tp)]
         key_states = torch.cat(key_states, dim=-1)
 
         value_states = [F.linear(hidden_states, value_slices[i])
-                        for i in range(self.pretraining_tp)]
+                        for i in range(self.config.pretraining_tp)]
         value_states = torch.cat(value_states, dim=-1)
 
     else:
@@ -125,35 +126,39 @@ def llama_attention_forward_4_31(
 
     if past_key_value is not None:
         # reuse k, v, self_attention
-        # key_states = torch.cat([past_key_value[0], key_states], dim=2)
-        # value_states = torch.cat([past_key_value[1], value_states], dim=2)
-        if kv_seq_len > self.max_cache_length:
-            new_cache_key = torch.empty(bsz, self.num_heads,
-                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim,
-                                        device=device)
-            new_cache_key[:, :, :kv_seq_len-1, :] = self.kv_cache[0][:, :, :kv_seq_len-1, :]
+        cache_k = past_key_value[0]
+        cache_v = past_key_value[1]
+        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if device.type == 'xpu':
+                torch.xpu.empty_cache()
+            # allocate new
+            new_cache_k, new_cache_v = create_kv_cache(bsz,
+                                                       self.num_key_value_heads,  # Support GQA
+                                                       self.head_dim,
+                                                       cache_k.size(2),
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                       dtype=cache_k.dtype,
+                                                       device=device)
+            new_cache_k[:] = cache_k
+            new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
 
-            new_cache_value = torch.empty(bsz, self.num_heads,
-                                          kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim,
-                                          device=device)
-            new_cache_value[:, :, :kv_seq_len-1, :] = self.kv_cache[1][:, :, :kv_seq_len-1, :]
-            self.kv_cache = (new_cache_key, new_cache_value)
-            self.max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
-        self.kv_cache[0][:, :, kv_seq_len-1:kv_seq_len, :] = key_states
-        self.kv_cache[1][:, :, kv_seq_len-1:kv_seq_len, :] = value_states
-        key_states = self.kv_cache[0][:, :, :kv_seq_len, :]
-        value_states = self.kv_cache[1][:, :, :kv_seq_len, :]
     elif use_cache:
-        # first token case
-        self.max_cache_length = max(min(self.max_position_embeddings, 2 * kv_seq_len),
-                                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH)
-        self.kv_cache = (torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim,
-                                     dtype=key_states.dtype, device=device),
-                         torch.empty(bsz, self.num_heads, self.max_cache_length, self.head_dim,
-                                     dtype=key_states.dtype, device=device))
-        self.kv_cache[0][:, :, :kv_seq_len, :] = key_states
-        self.kv_cache[1][:, :, :kv_seq_len, :] = value_states
+        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+        new_key_states, new_value_states = create_kv_cache(bsz,
+                                                           self.num_key_value_heads,
+                                                           self.head_dim,
+                                                           kv_seq_len,
+                                                           max_cache_length,
+                                                           dtype=key_states.dtype,
+                                                           device=device)
+        new_key_states[:] = key_states
+        new_value_states[:] = value_states
+        key_states = new_key_states
+        value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
 
@@ -194,11 +199,12 @@ def llama_attention_forward_4_31(
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
-    if self.pretraining_tp > 1:
-        attn_output = attn_output.split(self.hidden_size // self.pretraining_tp, dim=2)
-        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.pretraining_tp, dim=1)
+    if self.config.pretraining_tp > 1:
+        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
+                                                 dim=1)
         attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
-                           for i in range(self.pretraining_tp)])
+                           for i in range(self.config.pretraining_tp)])
     else:
         attn_output = self.o_proj(attn_output)
 

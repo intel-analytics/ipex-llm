@@ -184,5 +184,6 @@ jobs:
         run: |
           pip install -U langchain==0.0.184
           pip install -U chromadb==0.3.25
+          pip install -U pandas==2.0.3
           pip install -U typing_extensions==4.5.0
           bash python/llm/test/run-llm-langchain-tests.sh

@@ -51,7 +51,9 @@ github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers == 4.31.0', 'sentencepiece',
-               'accelerate', 'tabulate']
+               # TODO: Support accelerate 0.22.0
+               'accelerate == 0.21.0', 'tabulate']
+SERVING_DEP = ['fschat[model_worker, webui] == 0.2.28', 'protobuf']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -259,7 +261,11 @@ def setup_package():
     xpu_requires += ["torch==2.0.1a0",
                      "torchvision==0.15.2a0",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                     "bigdl-core-xe;platform_system=='Linux'"]
+                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'"]
+
+    serving_requires = ['py-cpuinfo']
+    serving_requires += SERVING_DEP
+
 
     metadata = dict(
         name='bigdl-llm',
@@ -282,7 +288,8 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires},
+                        "xpu": xpu_requires,
+                        "serving": serving_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

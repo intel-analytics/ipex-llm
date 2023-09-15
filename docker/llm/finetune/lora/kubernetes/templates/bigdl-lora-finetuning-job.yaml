@@ -1,3 +1,4 @@
+{{- if eq .Values.TEEMode "native" }}
 apiVersion: kubeflow.org/v2beta1
 kind: MPIJob
 metadata:
@@ -95,3 +96,4 @@ spec:
           - name: nfs-storage
             persistentVolumeClaim:
               claimName: nfs-pvc
+{{- end }}
