@@ -5,6 +5,8 @@ ATTESTATION=$ATTESTATION
 FRONTEND_IP=$FRONTEND_IP
 FRONTEND_PORT=$FRONTEND_PORT
 MODEL_NAME=$MODEL_NAME
+SAVED_ON_DISK=$SAVED_ON_DISK
+SECURED_DIR=$SECURED_DIR
 local_pod_ip=$( hostname -I | awk '{print $1}' )
 
 cd /ppml || exit
@@ -19,23 +21,27 @@ fi
 MODEL_FILE="/tmp/model/torchserve/${MODEL_NAME}.mar"
 DECRYPTION_KEY="/tmp/key/torchserve/${AES_KEY}"
 
+cmd="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port ${port} --host ${local_pod_ip} --metrics-config /ppml/metrics.yaml --frontend-ip ${FRONTEND_IP} --frontend-port ${FRONTEND_PORT} --model-name ${MODEL_NAME} --model-file ${MODEL_FILE}"
+
+if [[ $MODEL_DECRYPTION == "true" ]]; then
+    cmd+=" --model-decryption --decryption-key ${DECRYPTION_KEY}"
+fi
+
+if [[ $SAVED_ON_DISK == "true" ]]; then
+    cmd+=" -s --secured_dir ${SECURED_DIR}"
+fi
+
+echo $cmd
+
 if [[ $SGX_ENABLED == "false" ]]; then
     if [ "$ATTESTATION" = "true" ]; then
         rm /ppml/temp_command_file || true
         bash attestation.sh
         bash temp_command_file
     fi
-    if [[ $MODEL_DECRYPTION == "true" ]]; then
-        /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE --model-decryption --decryption-key $DECRYPTION_KEY
-    else
-        /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE
-    fi
+    eval $cmd
 else
-    if [[ $MODEL_DECRYPTION == "true" ]]; then
-        export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE --model-decryption  --decryption-key $DECRYPTION_KEY"
-    else
-        export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE"
-    fi
+    export sgx_command=$cmd
     if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
           rm /ppml/temp_command_file || true

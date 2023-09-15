@@ -45,6 +45,10 @@ from ..utils.common import invalidInputError
 from typing import Union
 import torch
 from torch import nn
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 WEIGHTS_NAME = "pytorch_model.bin"

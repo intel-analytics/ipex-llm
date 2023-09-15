@@ -73,50 +73,6 @@ def download_libs(url: str):
 
 
 def setup_package():
-
-    # all intel-tensorflow is only avaliable for linux and windows now
-    tensorflow_27_requires = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
-                              platform_system!='Darwin'",
-                              "tensorflow==2.7.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'"]
-
-    tensorflow_28_requires = ["intel-tensorflow==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
-                              platform_system!='Darwin'",
-                              "tensorflow==2.8.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'"]
-
-    tensorflow_29_requires = ["intel-tensorflow==2.9.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
-                              platform_system!='Darwin'",
-                              "tensorflow==2.9.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'"]
-
-    tensorflow_210_requires = ["intel-tensorflow==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
-                               platform_system!='Darwin'",
-                               "tensorflow==2.10.0; platform_machine=='x86_64' and \
-                               platform_system=='Darwin'"]
-
-    # options for stock tensorflow
-    stock_tensorflow_27_requires = ["tensorflow==2.7.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-
-    stock_tensorflow_28_requires = ["tensorflow==2.8.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-
-    stock_tensorflow_29_requires = ["tensorflow==2.9.3; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-
-    stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-
-    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-
-    # default tensorflow_dep
-    tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
-    tensorflow_210_requires += tensorflow_common_requires
-    tensorflow_29_requires += tensorflow_common_requires
-    tensorflow_28_requires += tensorflow_common_requires
-    tensorflow_27_requires += tensorflow_common_requires
-    stock_tensorflow_27_requires += tensorflow_common_requires
-    stock_tensorflow_28_requires += tensorflow_common_requires
-    stock_tensorflow_29_requires += tensorflow_common_requires
-    stock_tensorflow_210_requires += tensorflow_common_requires
-
     # ipex is only avaliable for linux now
     pytorch_20_requires = ["torch==2.0.0",
                            "torchvision==0.15.1",
@@ -213,16 +169,7 @@ def setup_package():
         author_email='bigdl-user-group@googlegroups.com',
         url='https://github.com/intel-analytics/BigDL',
         install_requires=install_requires,
-        extras_require={"tensorflow": tensorflow_requires,
-                        "tensorflow_27": tensorflow_27_requires,
-                        "tensorflow_28": tensorflow_28_requires,
-                        "tensorflow_29": tensorflow_29_requires,
-                        "tensorflow_210": tensorflow_210_requires,
-                        "stock_tensorflow_27": stock_tensorflow_27_requires,
-                        "stock_tensorflow_28": stock_tensorflow_28_requires,
-                        "stock_tensorflow_29": stock_tensorflow_29_requires,
-                        "stock_tensorflow_210": stock_tensorflow_210_requires,
-                        "pytorch": pytorch_requires,
+        extras_require={"pytorch": pytorch_requires,
                         "pytorch_20": pytorch_20_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,

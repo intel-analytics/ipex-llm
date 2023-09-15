@@ -1,5 +1,20 @@
-# BigDL-LLM Transformers INT4 Optimization for Large Language Model on Intel GPUs
-You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
+# BigDL-LLM INT4 Optimization for Large Language Model on Intel GPUs
+You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. Moreover, you can also use `optimize_model` API to accelerate general PyTorch models on Intel GPUs.
+
+## Verified models
+| Model      | Example                                                  |
+|------------|----------------------------------------------------------|
+| Baichuan   | [link](hf-transformers-models/baichuan)          | 
+| ChatGLM2   | [link](hf-transformers-models/chatglm2)          |
+| Chinese Llama2 | [link](hf-transformers-models/chinese-llama2)|
+| Falcon     | [link](hf-transformers-models/falcon)            |
+| GPT-J      | [link](hf-transformers-models/gpt-j)             |
+| InternLM   | [link](hf-transformers-models/internlm)          |
+| LLaMA 2    | [link](hf-transformers-models/llama2)            |
+| MPT        | [link](hf-transformers-models/mpt)               |
+| Qwen       | [link](hf-transformers-models/qwen)              |
+| StarCoder  | [link](hf-transformers-models/starcoder)         |
+| Whisper    | [link](hf-transformers-models/whisper)           |
 
 ## Verified Hardware Platforms
 

@@ -1,18 +1,145 @@
 .. meta::
    :google-site-verification: S66K6GAclKw1RroxU0Rka_2d1LZFVe27M0gRneEsIVI
 
-BigDL: fast, distributed, secure AI for Big Data
-=================================================
+################################################
+The BigDL Project
+################################################
 
-Latest News
----------------------------------
-- **Try the latest** `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_ **library for running LLM (large language model) on your Intel laptop using INT4 with very low latency!** [*]_. *(It is built on top of the excellent work of* `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, *etc., and supports any Hugging Face Transformers model.)*
-
-- **[Update] Over a dozen models have been verified on** `bigdl-llm <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
 ------
 
-Overview
----------------------------------
+************************************************
+BigDL-LLM: low-Bit LLM library
+************************************************
+
+.. raw:: html
+
+   <p>
+      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+   </p>
+
+.. note::
+
+   It is built on top of the excellent work of `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, `qlora <https://github.com/artidoro/qlora>`_, etc.
+
+============================================
+Latest update
+============================================
+- ``bigdl-llm`` now supports Intel Arc and Flex GPU; see the the latest GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu>`_.
+- ``bigdl-llm`` tutorial is released `here <https://github.com/intel-analytics/bigdl-llm-tutorial>`_.
+- Over 20 models have been verified on ``bigdl-llm``, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan,* and more; see the complete list `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/README.md#verified-models>`_.
+
+
+============================================
+``bigdl-llm`` demos
+============================================
+
+See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
+
+.. raw:: html
+   
+   <table width="100%">
+      <tr>
+         <td align="center" colspan="2">12th Gen Intel Core CPU</td>
+         <td align="center" colspan="2">Intel Arc GPU</td>
+      </tr>
+      <tr>
+         <td>
+            <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" ></a>
+         </td>
+         <td>
+            <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
+         </td>
+         <td>
+            <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
+         </td>
+         <td>
+            <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
+         </td>
+      </tr>
+      <tr>
+         <td align="center" width="25%"><code>chatglm2-6b</code></td>
+         <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
+         <td align="center" width="25%"><code>chatglm2-6b</code></td>
+         <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
+      </tr>
+   </table>
+
+============================================
+``bigdl-llm`` quickstart
+============================================
+
+- `CPU <#cpu-quickstart>`_
+- `GPU <#gpu-quickstart>`_
+
+--------------------------------------------
+CPU Quickstart
+--------------------------------------------
+
+You may install ``bigdl-llm`` on Intel CPU as follows as follows:
+
+.. code-block:: console
+
+   pip install --pre --upgrade bigdl-llm[all]
+
+.. note::
+
+   ``bigdl-llm`` has been tested on Python 3.9.
+
+You can then apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+
+.. code-block:: python
+
+   #load Hugging Face Transformers model with INT4 optimizations
+   from bigdl.llm.transformers import AutoModelForCausalLM
+   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+
+   #run the optimized model on Intel CPU
+   from transformers import AutoTokenizer
+   tokenizer = AutoTokenizer.from_pretrained(model_path)
+   input_ids = tokenizer.encode(input_str, ...)
+   output_ids = model.generate(input_ids, ...)
+   output = tokenizer.batch_decode(output_ids)
+
+--------------------------------------------
+GPU Quickstart
+--------------------------------------------
+
+You may install ``bigdl-llm`` on Intel GPU as follows as follows:
+
+.. code-block:: console
+
+   # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+   # you can install specific ipex/torch version for your need
+   pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+
+.. note::
+
+   ``bigdl-llm`` has been tested on Python 3.9.
+
+You can then apply INT4 optimizations to any Hugging Face *Transformers* models on Intel GPU as follows.
+
+.. code-block:: python
+
+   #load Hugging Face Transformers model with INT4 optimizations
+   from bigdl.llm.transformers import AutoModelForCausalLM
+   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+
+   #run the optimized model on Intel GPU
+   model = model.to('xpu')
+
+   from transformers import AutoTokenizer
+   tokenizer = AutoTokenizer.from_pretrained(model_path)
+   input_ids = tokenizer.encode(input_str, ...).to('xpu')
+   output_ids = model.generate(input_ids, ...)
+   output = tokenizer.batch_decode(output_ids.cpu())
+
+**For more details, please refer to the bigdl-llm** `Document <doc/LLM/index.html>`_, `Readme <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_, `Tutorial <https://github.com/intel-analytics/bigdl-llm-tutorial>`_ and `API Doc <doc/PythonAPI/LLM/index.html>`_.
+
+------
+
+************************************************
+Overview of the complete BigDL project
+************************************************
 `BigDL <https://github.com/intel-analytics/bigdl>`_ seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 
 - `LLM <https://github.com/intel-analytics/BigDL/tree/main/python/llm>`_: Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
@@ -25,8 +152,9 @@ Overview
 
 ------
 
+************************************************
 Choosing the right BigDL library
----------------------------------
+************************************************
 
 .. graphviz::
 
@@ -90,4 +218,12 @@ Choosing the right BigDL library
 
 ------
 
-.. [*] Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
+.. raw:: html
+
+    <div>
+        <p>
+            <sup><a href="#ref-perf" id="footnote-perf">[1]</a>
+               Performance varies by use, configuration and other factors. <code><span>bigdl-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="https://www.Intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>.
+            </sup>
+        </p>
+    </div>

@@ -1,6 +1,10 @@
 name: "Setup BigDL-LLM Env"
 description: "BigDL-LLM installation"
-
+inputs:
+  extra-dependency:
+    description: "Name of extra dependencies filled in brackets"
+    required: false
+    default: "all"
 runs:
   using: "composite"
   steps:
@@ -17,6 +21,11 @@ runs:
           exit 1
         fi
         whl_name=$(ls python/llm/dist)
-        pip install -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
-        pip install pytest
-        bash python/llm/test/run-llm-install-tests.sh
+        if [[ ${{ inputs.extra-dependency }} == 'xpu' ]]; then
+          pip install -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install pytest datasets librosa soundfile
+        else
+          pip install -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
+          pip install pytest
+          bash python/llm/test/run-llm-install-tests.sh
+        fi
