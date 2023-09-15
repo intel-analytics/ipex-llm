@@ -191,7 +191,7 @@ else
   fi
 
   if [[ $ENABLE_TLS = "true" ]]; then
-    tls_flag="--enable_tls"
+    tls_flag="--enable-tls --ssl-keyfile $ssl_keyfile --ssl-keyfile $ssl_keyfile"
   fi
 
   if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
