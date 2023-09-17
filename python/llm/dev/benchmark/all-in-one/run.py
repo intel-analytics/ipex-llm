@@ -283,10 +283,12 @@ def run_transformer_int4_gpu(repo_id,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True)
+        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True,
+                                          use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True,
+                                                     trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
@@ -336,11 +338,13 @@ def run_optimize_model_gpu(repo_id,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
+                                          trust_remote_code=True, use_cache=True)
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
+                                                     trust_remote_code=True, use_cache=True)
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
