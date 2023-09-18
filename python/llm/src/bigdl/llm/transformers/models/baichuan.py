@@ -24,6 +24,7 @@ from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
@@ -82,8 +83,6 @@ def baichuan_attention_forward(
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
                                                        self.num_heads,  # Support GQA
