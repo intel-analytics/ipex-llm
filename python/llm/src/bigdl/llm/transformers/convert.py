@@ -173,21 +173,21 @@ def optimize(model):
                         chatglm_attention_forward
                         )
     
+    elif "Baichuan2" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward
+        convert_forward(model,
+                        module.Attention,
+                        baichuan_attention_forward
+                        )
+    
     elif "Baichuan" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward
         convert_forward(model,
                         module.Attention,
-                        baichuan_attention_forward
-                        )
-    
-    elif "Baichuan2" in model.config._name_or_path:
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward
-        convert_forward(model,
-                        module.SelfAttention,
                         baichuan_attention_forward
                         )
 
