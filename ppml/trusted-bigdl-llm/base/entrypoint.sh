@@ -187,7 +187,7 @@ else
     echo "Controller address: $controller_address"
     echo "OpenAI API address: $api_address"
     cd /ppml
-    export sgx_command="python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $dispatch_method $attest_flag"
+    export sgx_command="python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method $attest_flag"
     gramine-sgx bash &
     # Boot openai api server
     export sgx_command="python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag"
