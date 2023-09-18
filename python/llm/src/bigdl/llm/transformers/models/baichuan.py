@@ -25,6 +25,7 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
+KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
@@ -85,7 +86,7 @@ def baichuan_attention_forward(
                 torch.xpu.empty_cache()
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
+                                                       self.num_heads,  # Support GQA
                                                        self.head_dim,
                                                        cache_k.size(2),
                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
@@ -101,7 +102,7 @@ def baichuan_attention_forward(
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = create_kv_cache(bsz,
-                                                           self.num_key_value_heads,
+                                                           self.num_heads,
                                                            self.head_dim,
                                                            kv_seq_len,
                                                            max_cache_length,
