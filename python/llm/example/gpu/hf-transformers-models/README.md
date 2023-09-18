@@ -4,7 +4,8 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 ## Verified models
 | Model      | Example                                                  |
 |------------|----------------------------------------------------------|
-| Baichuan   | [link](baichuan)          | 
+| Baichuan   | [link](baichuan)          |
+| Baichuan2   | [link](baichuan2)        |
 | ChatGLM2   | [link](chatglm2)          |
 | Chinese Llama2 | [link](chinese-llama2)|
 | Falcon     | [link](falcon)            |
