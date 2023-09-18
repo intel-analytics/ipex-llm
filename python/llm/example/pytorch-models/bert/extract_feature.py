@@ -27,14 +27,16 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="bert-large-uncased",
                         help='The huggingface repo id for the BERT (e.g. `bert-large-uncased`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--text', type=str, default="What is AI?",
+    parser.add_argument('--text', type=str, default="This is an example text for feature extraction.",
                         help='Text to extract features')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
     # Load model
-    model = BertModel.from_pretrained(model_path)
+    model = BertModel.from_pretrained(model_path,
+                                      torch_dtype="auto",
+                                      low_cpu_mem_usage=True)
     
     # With only one line to enable BigDL-LLM optimization on model
     model = optimize_model(model)

@@ -23,7 +23,7 @@ After setting up the Python environment, you could run the example by following 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./extract_feature.py --text 'What is AI?'
+python ./extract_feature.py --text 'This is an example text for feature extraction.'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section.
 
@@ -37,7 +37,7 @@ source bigdl-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./extract_feature.py --text 'What is AI?'
+numactl -C 0-47 -m 0 python ./extract_feature.py --text 'This is an example text for feature extraction.'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section.
 
@@ -45,4 +45,4 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the BERT model (e.g. `bert-large-uncased`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'bert-large-uncased'`.
-- `--text TEXT`: argument defining the text to be extracted features. It is default to be `'What is AI?'`.
+- `--text TEXT`: argument defining the text to be extracted features. It is default to be `'This is an example text for feature extraction.'`.
