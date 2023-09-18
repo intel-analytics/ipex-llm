@@ -3,7 +3,8 @@
 ## Supported models
 
 - ChatGLM2-6b
-- Baichuan2-6b-chat
+- Baichuan-13B-Chat
+- Baichuan2-7B-Chat
 
 ## How to use
 
