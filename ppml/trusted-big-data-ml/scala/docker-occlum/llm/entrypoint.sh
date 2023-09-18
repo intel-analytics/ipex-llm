@@ -71,9 +71,15 @@ model_path=""
 mode=""
 omp_num_threads=""
 attest_flag=""
+dispatch_method="shortest_queue" # shortest_queue or lottery
 
 # Update rootCA config if needed
 update-ca-certificates
+
+# choose dispatch_method, default is shortest_queue
+if [[ -n $DISPATCH_METHOD ]]; then
+  dispatch_method=$DISPATCH_METHOD
+fi
 
 # Remember the value of `OMP_NUM_THREADS`:
 if [[ -n "${OMP_NUM_THREADS}" ]]; then
@@ -158,7 +164,7 @@ else
     echo "OpenAI API address: $api_address"
     cd /opt/occlum_spark
     occlum start
-    occlum exec /bin/python3 -m fastchat.serve.controller --host $controller_host --port $controller_port $attest_flag &
+    occlum exec /bin/python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method $attest_flag &
     # Boot openai api server
     occlum exec /bin/python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
   elif [[ $mode == "worker" ]]; then
