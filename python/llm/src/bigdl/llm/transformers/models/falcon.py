@@ -30,6 +30,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""PyTorch Falcon model."""
+
+from typing import Optional, Tuple, Union
+
+import torch
 
 def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size*num_heads,

@@ -177,7 +177,7 @@ def optimize(model):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.falcon import falcon_attention_forward
         convert_forward(model,
-                        module.SelfAttention,
+                        module.FalconAttention,
                         falcon_attention_forward
                         )
     return model
