@@ -22,6 +22,7 @@ from .utils import extract_local_archive_file, \
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 import torch
+from .lazy_load_torch import LazyLoadTensors
 import copy
 import inspect
 from accelerate.utils import (
@@ -29,6 +30,10 @@ from accelerate.utils import (
     set_module_tensor_to_device,
 )
 from .utils import logger
+
+from .convert import ggml_convert_low_bit
+from bigdl.llm.transformers.low_bit_linear import LowBitLinear, ggml_convert_qtype
+
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -98,8 +103,15 @@ def _load_state_dict_into_meta_model(
             new_keys.append(new_key)
     for old_key, new_key in zip(old_keys, new_keys):
         state_dict[new_key] = state_dict.pop(old_key)
+    
+    # Todo: wrap this with function tools
+    qtype = ggml_tensor_qtype["sym_int4"]
+    if not hasattr(model, "bigdl_meta_convert"):
+        # quant/convert linear to QX_X in meta device
+        model = ggml_convert_low_bit(model, qtype, True, device="meta")
+        model.bigdl_meta_convert = True
 
-    for param_name, param in state_dict.items():
+    for param_name, param_ld in state_dict.items():
         # First part of the test is always true as load_state_dict_keys always contains state_dict keys.
         if param_name not in loaded_state_dict_keys or param_name not in expected_keys:
             continue
@@ -112,20 +124,39 @@ def _load_state_dict_into_meta_model(
 
         # We convert floating dtypes to the `dtype` passed. We want to keep the buffers/params
         # in int/uint/bool and not cast them.
-        if dtype is not None and torch.is_floating_point(param):
+        if dtype is not None and torch.is_floating_point(param_ld):
             if (
                 keep_in_fp32_modules is not None
                 and any(module_to_keep_in_fp32 in param_name for module_to_keep_in_fp32 in keep_in_fp32_modules)
                 and dtype == torch.float16
             ):
-                param = param.to(torch.float32)
+                param_ld = param_ld.to(torch.float32)
 
                 # For backward compatibility with older versions of `accelerate`
                 # TODO: @sgugger replace this check with version check at the next `accelerate` release
                 if "dtype" in list(inspect.signature(set_module_tensor_to_device).parameters):
                     set_module_kwargs["dtype"] = torch.float32
             else:
-                param = param.to(dtype)
+                param_ld = param_ld.to(dtype)
+
+        param = None
+        # The pickled data will be actually loaded into RAM here.
+        param_ld = param_ld.load()
+        if "." in param_name:
+            splits = param_name.split(".")
+            module = model
+            for split in splits[:-1]:
+                new_module = getattr(module, split)
+                if new_module is None:
+                    raise ValueError(f"{module} has no attribute {split}.")
+                module = new_module
+            if isinstance(module, LowBitLinear) and splits[-1] == 'weight':
+                # quantize its param if this param is corresponding to LowBitLinear
+                param = ggml_convert_qtype(param_ld.contiguous().float(), qtype,
+                                           device="cpu")
+            else:
+                param = param_ld
+
 
         # For compatibility with PyTorch load_state_dict which converts state dict dtype to existing dtype in model
         if dtype is None:
@@ -226,8 +257,14 @@ class _BaseAutoModelClass:
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
         else:
             # load default
-            model = cls.HF_Model.from_pretrained(*args, **kwargs)
-
+            # Todo: make following a python context-manager
+            old_func = transformers.modeling_utils._load_state_dict_into_meta_model
+            transformers.modeling_utils._load_state_dict_into_meta_model = _load_state_dict_into_meta_model
+            kwargs["low_cpu_mem_usage"] = True
+            with LazyLoadTensors():
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            model.to("cpu")
+            transformers.modeling_utils._load_state_dict_into_meta_model= old_func
         return model
 
     @classmethod
