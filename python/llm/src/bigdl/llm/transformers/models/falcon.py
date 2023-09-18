@@ -32,38 +32,10 @@
 # limitations under the License.
 """PyTorch Falcon model."""
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import torch
-
-def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
-    key_cache_storage = torch.empty(batch_size*num_heads,
-                                    max_length, head_dim,
-                                    dtype=dtype, device=device)
-    value_cache_storage = torch.empty(batch_size*num_heads,
-                                    max_length, head_dim,
-                                    dtype=dtype, device=device)
-
-    key_cache = key_cache_storage.as_strided((batch_size*num_heads,
-                                            current_length, head_dim),
-                                            key_cache_storage.stride(),
-                                            storage_offset=0)
-    value_cache = value_cache_storage.as_strided((batch_size*num_heads,
-                                                current_length, head_dim),
-                                                value_cache_storage.stride(),
-                                                storage_offset=0)
-    return key_cache, value_cache
-
-
-def append_kv_cache(cache_k, cache_v, key_states, value_states):
-    new_size = (cache_k.size(0),
-                cache_k.size(1) + key_states.size(1),
-                cache_k.size(2))
-    new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
-    new_cache_k[:, cache_k.size(1):cache_k.size(1) + key_states.size(1), :] = key_states
-    new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-    new_cache_v[:, cache_v.size(1):cache_k.size(1) + key_states.size(1), :] = value_states
-    return new_cache_k, new_cache_v
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -98,18 +70,20 @@ def falcon_attention_forward(
 
         _, kv_length, _ = key_layer.shape
 
-        bsz, q_len, _ = hidden_states.size()
+        query_layer = query_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
+        key_layer = key_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
+        value_layer = value_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
         device = hidden_states.device
         if layer_past is not None:
             # reuse k, v, self_attention
-            cache_k = layer_past[0]
-            cache_v = layer_past[1]
-            if cache_k.stride()[0] / bsz <= cache_k.size(1) * cache_k.size(2):
+            cache_k = layer_past[0].view(batch_size, self.num_heads, -1, self.head_dim)
+            cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
+            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
                 # allocate new
-                new_cache_k, new_cache_v = create_kv_cache(bsz,
+                new_cache_k, new_cache_v = create_kv_cache(batch_size,
                                                         self.num_heads,  # Support GQA
                                                         self.head_dim,
-                                                        cache_k.size(1),
+                                                        cache_k.size(2),
                                                         kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
                                                         dtype=cache_k.dtype,
                                                         device=device)
@@ -122,7 +96,7 @@ def falcon_attention_forward(
 
         elif use_cache:
             max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_key_states, new_value_states = create_kv_cache(bsz,
+            new_key_states, new_value_states = create_kv_cache(batch_size,
                                                             self.num_heads,
                                                             self.head_dim,
                                                             kv_length,
@@ -134,6 +108,9 @@ def falcon_attention_forward(
             key_layer = new_key_states
             value_layer = new_value_states
 
+        query_layer = query_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+        key_layer = key_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+        value_layer = value_layer.view(batch_size*self.num_heads, -1, self.head_dim)
         if use_cache:
             present = (key_layer, value_layer)
         else:
