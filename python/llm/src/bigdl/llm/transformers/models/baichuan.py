@@ -14,7 +14,8 @@
 # limitations under the License.
 
 # This file is adapted from
-# https://huggingface.co/baichuan-inc/Baichuan-7B/blob/
+# https://huggingface.co/baichuan-inc/Baichuan-7B/blob/c1a5c7d5b7f50ecc51bb0e08150a9f12e5656756/modeling_baichuan.py
+
 
 import math
 from typing import List, Optional, Tuple, Union
