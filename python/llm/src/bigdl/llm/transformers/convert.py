@@ -172,7 +172,7 @@ def optimize(model):
                         module.SelfAttention,
                         chatglm_attention_forward
                         )
-    
+
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
         modeling_module_name = model.__class__.__module__
@@ -182,7 +182,7 @@ def optimize(model):
                         module.Attention,
                         baichuan_attention_forward
                         )
-    
+
     elif model.config.model_type == "baichuan":
         # baichuan1
         modeling_module_name = model.__class__.__module__

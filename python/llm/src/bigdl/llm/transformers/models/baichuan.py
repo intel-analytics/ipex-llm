@@ -44,18 +44,19 @@ def baichuan_attention_forward(
 
     proj = self.W_pack(hidden_states)
     proj = proj.unflatten(-1, (3, self.hidden_size)).unsqueeze(0).transpose(0, -2).squeeze(-2)
-    query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                        2)  # batch_size x source_len x hidden_size
-    key_states = proj[1].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                    2)  # batch_size x target_len x head_size
-    value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                        2)  # batch_size x source_len x hidden_size
+    # batch_size x source_len x hidden_size
+    query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    # batch_size x target_len x head_size
+    key_states = proj[1].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    # batch_size x source_len x hidden_size
+    value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                    cos, sin, position_ids)
     # [bsz, nh, t, hd]
 
     # if past_key_value is not None:
@@ -101,28 +102,27 @@ def baichuan_attention_forward(
     attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        raise ValueError(
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-            f" {attn_weights.size()}"
-        )
+        invalidInputError(False,
+                          f"Attention weights should be of size "
+                          f"{(bsz, self.num_heads, q_len, kv_seq_len)}"
+                          f", but is {attn_weights.size()}")
 
     if attention_mask is not None:
-        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-            )
+        invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                          f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                          f"but is {attention_mask.size()}")
         attn_weights = attn_weights + attention_mask
         attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
 
     # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+    attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                         dtype=torch.float32).to(query_states.dtype)
     attn_output = torch.matmul(attn_weights, value_states)
 
-    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-            f" {attn_output.size()}"
-        )
+    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
+                      f"`attn_output` should be of size "
+                      f"{(bsz, self.num_heads, q_len, self.head_dim)},"
+                      f"but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

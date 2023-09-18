@@ -35,7 +35,8 @@ try:
 except ImportError:
     xops = None
     logger.warning(
-        "Xformers is not installed correctly. If you want to use memory_efficient_attention to accelerate training use the following command to install Xformers\npip install xformers."
+        "Xformers is not installed correctly. If you want to use memory_efficient_attention to "
+        "accelerate training use the following command to install Xformers\npip install xformers."
     )
 
 
@@ -56,18 +57,19 @@ def baichuan_attention_forward(
 
     proj = self.W_pack(hidden_states)
     proj = proj.unflatten(-1, (3, self.hidden_size)).unsqueeze(0).transpose(0, -2).squeeze(-2)
-    query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                        2)  # batch_size x source_len x hidden_size
-    key_states = proj[1].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                    2)  # batch_size x target_len x head_size
-    value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                        2)  # batch_size x source_len x hidden_size
+    # batch_size x source_len x hidden_size
+    query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    # batch_size x target_len x head_size
+    key_states = proj[1].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    # batch_size x source_len x hidden_size
+    value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                    cos, sin, position_ids)
     # [bsz, nh, t, hd]
 
     # if past_key_value is not None:
@@ -119,8 +121,10 @@ def baichuan_attention_forward(
             query_states, key_states, value_states, attn_bias=xops.LowerTriangularMask()
         )
     else:
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
-            attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states, attn_mask = attention_mask)
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True,
+                                            enable_mem_efficient=True):
+            attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states,
+                                                         attn_mask=attention_mask)
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     attn_output = self.o_proj(attn_output)
