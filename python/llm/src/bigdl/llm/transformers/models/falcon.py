@@ -17,7 +17,7 @@
 # https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/falcon/modeling_falcon.py
 # which is licensed under Apache License 2.0:
 #
-# Copyright 2021 The HuggingFace Inc. team. All rights reserved.
+# Copyright 2023 the Falcon authors and HuggingFace Inc. team.  All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
