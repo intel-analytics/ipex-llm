@@ -15,6 +15,7 @@
 #
 
 import torch
+from bigdl.llm.utils.common import invalidInputError
 
 
 def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
@@ -57,7 +58,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family="llama"):
+def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -67,3 +68,6 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family="llama"):
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
+    else:
+        invalidInputError(False,
+                          f"{model_family} is not supported.")
