@@ -63,9 +63,13 @@ ADD ./attestation/dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
 ADD ./attestation/dcap-ppml.yaml /root/demos/remote_attestation/dcap/
 ADD ./attestation/get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
 
-# For attestation
+# For attestation, add ppml libs
 #ADD ./verify-attestation-service.sh /opt
 ADD ./attestation/print_enclave_signer.sh /opt
+RUN cd /root && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    mv /root/BigDL/python/ppml/src/bigdl/ppml/ /opt/python-occlum/lib/python3.9/site-packages/bigdl/ && \
+    rm -rf /root/BigDL
 #ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
