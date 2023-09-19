@@ -1,4 +1,4 @@
-FROM intel/oneapi-basekit:latest
+FROM intel/oneapi-basekit:2023.2.1-devel-ubuntu22.04
 
 ENV http_proxy $HTTP_PROXY
 ENV https_proxy $HTTP_PROXY
@@ -11,7 +11,7 @@ RUN apt-get update && \
     echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     rm /etc/apt/sources.list.d/intel-graphics.list && \
 # Install PYTHON 3.9 and BigDL-LLM[xpu]
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
