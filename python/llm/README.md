@@ -65,7 +65,6 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 <details><summary>Table of Contents</summary>
 
 - [Install](#install)
-- [Download Model](#download-model)
 - [Run Model](#run-model)
   - [Hugging Face `transformers` API](#hugging-face-transformers-api)
   - [LangChain API](#langchain-api)
@@ -76,14 +75,22 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 </details>
 
 #### Install
-You may install **`bigdl-llm`** as follows:
-```bash
-pip install --pre --upgrade bigdl-llm[all]
-```
-#### Download Model
+- CPU
 
-You may download any PyTorch model in Hugging Face *Transformers* format (including *FP16* or *FP32* or *GPTQ-4bit*).
+  You may install **`bigdl-llm`** on Intel CPU as follows:
+  ```bash
+  pip install --pre --upgrade bigdl-llm[all]
+  ```
+- GPU
 
+  You may install **`bigdl-llm`** on Intel GPU as follows:
+  ```bash
+  # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+  # you can install specific ipex/torch version for your need
+  pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+  ```
+
+> Note: `bigdl-llm` has been tested on Python 3.9
 #### Run Model
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
