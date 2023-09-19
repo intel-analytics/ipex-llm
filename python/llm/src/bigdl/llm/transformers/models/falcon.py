@@ -35,10 +35,164 @@
 from typing import Optional, Tuple
 
 import torch
+from torch.nn import functional as F
 from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+
+def rw_attention_forward(
+        self,
+        hidden_states: torch.Tensor,
+        alibi: torch.Tensor,
+        attention_mask: torch.Tensor,
+        layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
+        head_mask: Optional[torch.Tensor] = None,
+        use_cache: bool = False,
+        output_attentions: bool = False,
+    ):
+        fused_qkv = self.query_key_value(hidden_states)  # [batch_size, seq_length, 3 x hidden_size]
+
+        # 3 x [batch_size, seq_length, num_heads, head_dim]
+        (query_layer, key_layer, value_layer) = self._split_heads(fused_qkv)
+
+        batch_size, q_length, _, _ = query_layer.shape
+
+        query_layer = query_layer.transpose(1, 2).reshape(batch_size * self.num_heads, q_length, self.head_dim)
+        key_layer = key_layer.transpose(1, 2).reshape(
+            batch_size * self.num_heads,
+            q_length,
+            self.head_dim,
+        )
+        value_layer = value_layer.transpose(1, 2).reshape(batch_size * self.num_heads, q_length, self.head_dim)
+
+        # query_layer, key_layer = self.maybe_rotary(query_layer, key_layer)
+        _, seq_len, _ = query_layer.shape
+        if layer_past is not None:
+            _, seq_len_past, _ = layer_past[0].shape
+
+            seq_len = seq_len + seq_len_past
+        query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
+
+        _, kv_length, _ = key_layer.shape
+        query_layer = query_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
+        key_layer = key_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
+        value_layer = value_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
+
+        device = hidden_states.device
+        if layer_past is not None:
+            # reuse k, v, self_attention
+            cache_k = layer_past[0].view(batch_size, self.num_heads, -1, self.head_dim)
+            cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
+            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+                # allocate new
+                new_cache_k, new_cache_v = create_kv_cache(batch_size,
+                                                        self.num_heads,  # Support GQA
+                                                        self.head_dim,
+                                                        cache_k.size(2),
+                                                        kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                        dtype=cache_k.dtype,
+                                                        device=device)
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
+
+            key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
+
+        elif use_cache:
+            max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_key_states, new_value_states = create_kv_cache(batch_size,
+                                                            self.num_heads,
+                                                            self.head_dim,
+                                                            kv_length,
+                                                            max_cache_length,
+                                                            dtype=key_layer.dtype,
+                                                            device=device)
+            new_key_states[:] = key_layer
+            new_value_states[:] = value_layer
+            key_layer = new_key_states
+            value_layer = new_value_states
+
+        query_layer = query_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+        key_layer = key_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+        value_layer = value_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+        if use_cache is True:
+            present = (key_layer, value_layer)
+        else:
+            present = None
+
+        if alibi is None:
+            query_layer_ = query_layer.reshape(batch_size, self.num_heads, -1, self.head_dim)
+            key_layer_ = key_layer.reshape(batch_size, self.num_heads, -1, self.head_dim)
+            value_layer_ = value_layer.reshape(batch_size, self.num_heads, -1, self.head_dim)
+
+            # attn_output = F.scaled_dot_product_attention(
+            #     query_layer_, key_layer_, value_layer_, None, 0.0, is_causal=True
+            # )
+            if present is not None:
+                L = query_layer_.shape[-2]
+                S = key_layer_.shape[-2]
+                attn_mask = torch.ones(L, S, dtype=torch.bool, device=query_layer_.device)
+                attn_output = F.scaled_dot_product_attention(
+                    query_layer_, key_layer_, value_layer_, attn_mask, 0.0, is_causal=False
+                )
+            else:
+                attn_output = F.scaled_dot_product_attention(
+                    query_layer_, key_layer_, value_layer_, None, 0.0, is_causal=True
+                )
+
+            x = attn_output.view(batch_size, self.num_heads, q_length, self.head_dim)
+            x = x.permute(0, 2, 1, 3)
+            attn_output = x.reshape(batch_size, q_length, self.num_heads * self.head_dim)
+
+            output_tensor = self.dense(attn_output)
+
+            outputs = (output_tensor, present)
+            assert not output_attentions  # not supported.
+            return outputs
+        else:
+            attention_mask_float = (attention_mask * 1.0).masked_fill(attention_mask, -1e9).to(torch.bfloat16)
+            matmul_result = query_layer @ key_layer.transpose(-1, -2)
+
+            # change view to [batch_size, num_heads, q_length, kv_length]
+            attention_scores = matmul_result.view(batch_size, self.num_heads, q_length, kv_length)
+
+            # cast attention scores to fp32, compute scaled softmax and cast back to initial dtype - [batch_size, num_heads, q_length, kv_length]
+            input_dtype = attention_scores.dtype
+            # `float16` has a minimum value of -65504.0, whereas `bfloat16` and `float32` have a minimum value of `-3.4e+38`
+            if input_dtype == torch.float16 or input_dtype == torch.bfloat16:
+                attention_scores = attention_scores.to(torch.float32)
+            # attn_weights = torch.masked_fill(attention_scores, attention_mask, torch.finfo(attention_scores.dtype).min)
+            attention_probs = F.softmax(
+                (attention_scores + alibi.view(batch_size, self.num_heads, 1, -1)) * self.inv_norm_factor
+                + attention_mask_float,
+                dim=-1,
+                dtype=hidden_states.dtype,
+            )
+            # [batch_size, num_heads, q_length, kv_length]
+            attention_probs = self.attention_dropout(attention_probs)
+
+            if head_mask is not None:
+                attention_probs = attention_probs * head_mask
+
+            # change view [batch_size x num_heads, q_length, kv_length]
+            attention_probs_reshaped = attention_probs.view(batch_size * self.num_heads, q_length, kv_length)
+
+            # matmul: [batch_size * num_heads, q_length, head_dim]
+            context_layer = attention_probs_reshaped @ value_layer
+
+            # change view [batch_size, num_heads, q_length, head_dim]
+            context_layer = self._merge_heads(context_layer)
+
+            output_tensor = self.dense(context_layer)
+
+            outputs = (output_tensor, present)
+            if output_attentions:
+                outputs += (attention_probs,)
+            return outputs
+
 
 def falcon_attention_forward(
         self,

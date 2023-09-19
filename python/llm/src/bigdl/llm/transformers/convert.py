@@ -175,9 +175,16 @@ def optimize(model):
     elif "falcon" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.falcon import falcon_attention_forward
-        convert_forward(model,
-                        module.FalconAttention,
-                        falcon_attention_forward
-                        )
+        if "RWForCausalLM" in model.config.architectures:
+            from bigdl.llm.transformers.models.falcon import rw_attention_forward
+            convert_forward(model,
+                            module.Attention,
+                            rw_attention_forward
+                            )
+        elif "FalconForCausalLM" in model.config.architectures:
+            from bigdl.llm.transformers.models.falcon import falcon_attention_forward
+            convert_forward(model,
+                            module.FalconAttention,
+                            falcon_attention_forward
+                            )
     return model
