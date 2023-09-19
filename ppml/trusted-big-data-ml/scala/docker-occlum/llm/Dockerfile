@@ -58,14 +58,14 @@ RUN apt-get update && \
 ADD ./run_llm_on_occlum_glibc.sh /opt/run_llm_on_occlum_glibc.sh
 
 # For get_quote C compile
-#RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
-#ADD ./dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
-#ADD ./dcap-ppml.yaml /root/demos/remote_attestation/dcap/
-#ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
+ADD ./attestation/dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
+ADD ./attestation/dcap-ppml.yaml /root/demos/remote_attestation/dcap/
+ADD ./attestation/get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
 
 # For attestation
 #ADD ./verify-attestation-service.sh /opt
-#ADD ./print_enclave_signer.sh /opt
+ADD ./attestation/print_enclave_signer.sh /opt
 #ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
@@ -76,10 +76,10 @@ RUN chmod a+x /opt/entrypoint.sh && \
 #    chmod a+x /opt/ehsm_entry.sh && \
     chmod a+x /opt/run_llm_on_occlum_glibc.sh && \
 #    chmod a+x /opt/verify-attestation-service.sh && \
-#    chmod a+x /opt/print_enclave_signer.sh && \
+    chmod a+x /opt/print_enclave_signer.sh && \
 #    chmod a+x /opt/register.sh && \
-#    chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
-#    chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
+    chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
+    chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
