@@ -1,4 +1,4 @@
-# Baichuan
+# Baichuan2
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Baichuan2 models. For illustration purposes, we utilize the [baichuan-inc/Baichuan2-13B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-13B-Chat) as a reference Baichuan model.
 
 ## 0. Requirements
