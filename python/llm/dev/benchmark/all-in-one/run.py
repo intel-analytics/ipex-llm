@@ -276,7 +276,7 @@ def run_transformer_int4_gpu(repo_id,
                              warm_up,
                              num_trials):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
-    from transformers import AutoTokenizer
+    from transformers import AutoTokenizer, GPTJForCausalLM
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
@@ -294,6 +294,9 @@ def run_transformer_int4_gpu(repo_id,
     print(">> loading of model costs {}s".format(end - st))
 
     model = model.to('xpu')
+    if isinstance(model, GPTJForCausalLM):
+        # For gpt-j model family, this optimization can provide a better performance.
+        model = ipex.optimize(model.eval(), inplace=True)
     model = BenchmarkWrapper(model)
 
     result = {}
@@ -330,7 +333,7 @@ def run_optimize_model_gpu(repo_id,
                            in_out_pairs,
                            warm_up,
                            num_trials):
-    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM
     from bigdl.llm import optimize_model
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
@@ -351,6 +354,9 @@ def run_optimize_model_gpu(repo_id,
     print(">> loading of model costs {}s".format(end - st))
 
     model = model.to('xpu')
+    if isinstance(model, GPTJForCausalLM):
+        # For gpt-j model family, this optimization can provide a better performance.
+        model = ipex.optimize(model.eval(), inplace=True)
     model = BenchmarkWrapper(model)
 
     result = {}
