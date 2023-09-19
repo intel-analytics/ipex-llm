@@ -16,6 +16,7 @@
 
 import torch
 import argparse
+import sys
 
 # todo: support more model class
 from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, AutoConfig
@@ -68,20 +69,24 @@ def stream_chat(model,
     chat_history.append((input_str, "".join(output_str).replace(f"{HUMAN_ID}", "").rstrip()))
 
 def auto_select_model(model_name):
-    config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-
-    if "AutoModelForCausalLM" in config.auto_map:
-        return AutoModelForCausalLM.from_pretrained(model_path,
-                                                    low_cpu_mem_usage=True,
-                                                    torch_dtype="auto",
-                                                    trust_remote_code=True,
-                                                    use_cache=True)
-    else:
-        return AutoModel.from_pretrained(model_path,
-                                         low_cpu_mem_usage=True,
-                                         torch_dtype="auto",
-                                         trust_remote_code=True,
-                                         use_cache=True)
+    try:
+        try:
+            model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                        low_cpu_mem_usage=True,
+                                                        torch_dtype="auto",
+                                                        trust_remote_code=True,
+                                                        use_cache=True)
+        except:
+            model = AutoModel.from_pretrained(model_path,
+                                             low_cpu_mem_usage=True,
+                                             torch_dtype="auto",
+                                             trust_remote_code=True,
+                                             use_cache=True)
+    except:
+        print("Sorry, the model you entered is not supported in installer.")
+        sys.exit()
+    
+    return model
   
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
