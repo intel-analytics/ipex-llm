@@ -2,19 +2,24 @@
 
 This one-click installer includes everything you need to run LLM (except models). Please refer to How to use section to get started.
 
-## 13B model running on an Intel 11-Gen Core PC (real-time screen capture)
+## 7B model running on an Intel 11-Gen Core PC (real-time screen capture)
 
-![](./screenshots/screen_capture.gif)
+<p align="left">
+            <img src=./screenshots/screen_capture.gif width='80%' />
+
+</p>
 
 ## Verified Models
 
 - ChatGLM2-6b
 - Baichuan-13B-Chat
 - Baichuan2-7B-Chat
+- internlm-chat-7b-8k
+- Llama-2-7b-chat-hf
 
 ## How to use
 
-1. Download models to your computer, e.g. Baichuan2-7B-Chat.
+1. Download the model to your computer. Please ensure there is a file named `config.json` in the model folder, otherwise the script won't work.
    ![](./screenshots/user_guide_step1.png)
 2. Run `chat.bat` in Terminal and input the path of the model (e.g. `path\to\model`, note that there's no slash at the end of the path).
    ![](./screenshots/user_guide_step2.png)
