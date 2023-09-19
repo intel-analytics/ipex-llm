@@ -49,6 +49,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Qwen      | [link](example/transformers/transformers_int4/qwen)      |
 | MOSS      | [link](example/transformers/transformers_int4/moss)      | 
 | Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
+| Baichuan2 | [link](example/transformers/transformers_int4/baichuan2) |
 | Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
 | Dolly-v2  | [link](example/transformers/transformers_int4/dolly_v2)  | 
 | RedPajama | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/redpajama) | 
