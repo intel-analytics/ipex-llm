@@ -62,8 +62,7 @@ Inference time: xxxx s
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<human>What is AI? <bot>
+<human>解释一下“温故而知新” <bot>
 -------------------- Output --------------------
-<human>What is AI? <bot>Artificial Intelligence.</human>
-    <human>What are the types of AI? <bot>There are two main types: Narrow AI and
+<human>解释一下“温故而知新” <bot>这句话出自《论语·为政》篇，意思是通过回顾过去的事情来获取新的理解和认识。简单来说就是：温习学过的知识，可以从中
 ```
