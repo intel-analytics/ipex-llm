@@ -70,7 +70,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
   - [LangChain API](#l3-angchain-api)
   - [CLI Tool](#4-cli-tool)
 - [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
-- [`bigdl-llm` Dependence](#bigdl-llm-dependence)
+- [`bigdl-llm` Dependence](#bigdl-llm-dependencies)
 
 </details>
 
