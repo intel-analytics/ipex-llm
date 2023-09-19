@@ -18,7 +18,7 @@ conda activate llm
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install git+https://github.com/huggingface/transformers.git@95fe0f5
-pip install peft
+pip install peft==0.5.0
 ```
 
 ### 2. Configures OneAPI environment variables
