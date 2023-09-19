@@ -1,6 +1,6 @@
 # BigDL-LLM One-Click Installer For Windows
 
-## Supported models
+## Verified Models
 
 - ChatGLM2-6b
 - Baichuan-13B-Chat
