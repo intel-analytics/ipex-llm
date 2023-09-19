@@ -17,4 +17,4 @@ powershell -Command "(gc python39._pth) -replace '%search%', '%replace%' | Out-F
 cd ..
 
 :: install pip packages
-%python-embed% -m pip install bigdl-llm[all] transformers_stream_generator
+%python-embed% -m pip install bigdl-llm[all] transformers_stream_generator tiktoken einops
