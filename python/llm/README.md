@@ -70,7 +70,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
   - [LangChain API](#l3-angchain-api)
   - [CLI Tool](#4-cli-tool)
 - [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
-- [`bigdl-llm` Dependence](#bigdl-llm-dependencies)
+- [`bigdl-llm` Dependency](#bigdl-llm-dependency)
 
 </details>
 
@@ -265,7 +265,7 @@ See the inital `bigdl-llm` API Doc [here](https://bigdl.readthedocs.io/en/latest
 
 [^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
-### `bigdl-llm` Dependencies 
+### `bigdl-llm` Dependency
 The native code/lib in `bigdl-llm` has been built using the following tools.
 Note that lower  `LIBC` version on your Linux system may be incompatible with `bigdl-llm`.
 
