@@ -162,7 +162,7 @@ See the complete examples [here](example/gpu/).
  
 You may also convert Hugging Face *Transformers* models into native INT4 model format for maximum performance as follows.
 
->**Notes**: Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; you may use the corresponding API to load the converted model.
+>**Notes**: Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face `transformers` model format as described above).
   
 ```python
 #convert the model
@@ -207,9 +207,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
 
   You may also convert Hugging Face *Transformers* models into *native INT4* format, and then run the converted models using the LangChain API as follows.
   
-  >**Notes**: 
-   >* Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face `transformers` INT4 format as described above).
-   >* You may choose the corresponding API developed for specific native models to load the converted model.
+  >**Notes**:* Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face `transformers` model format as described above).
 
   ```python
   from bigdl.llm.langchain.llms import LlamaLLM
