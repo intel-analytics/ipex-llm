@@ -14,7 +14,7 @@
 ### Latest update
 - `bigdl-llm` now supports Intel GPU (including Arc, Flex and MAx); see the the latest GPU examples [here](python/llm/example/gpu).
 - `bigdl-llm` tutorial is released [here](https://github.com/intel-analytics/bigdl-llm-tutorial).
-- Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
+- Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, InternLM, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
      
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
