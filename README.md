@@ -104,7 +104,7 @@ input_ids = tokenizer.encode(input_str, ...).to('xpu')
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids.cpu())
 ```
-*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+*See the complete examples [here](python/llm/example/gpu/).*
 
 #### More Low-Bit Support
 ##### Save and load
