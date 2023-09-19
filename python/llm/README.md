@@ -95,14 +95,14 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
 1. [Hugging Face `transformers` API](#hugging-face-transformers-api)
-2. [Native INT4 Model]
+2. [Native INT4 Model](native-int4-model)
 3. [LangChain API](#langchain-api)
 4. [CLI (command line interface) Tool](#cli-tool)
 
-#### Hugging Face `transformers` API
+##### 1. Hugging Face `transformers` API
 You may run any Hugging Face *Transformers* model as follows:
 
-##### CPU INT4
+###### CPU INT4
 You may apply INT4 optimizations to any Hugging Face *Transformers* model on Intel CPU as follows.
 
 ```python
@@ -120,7 +120,7 @@ output = tokenizer.batch_decode(output_ids)
 
 See the complete examples [here](example/transformers/transformers_int4/).  
 
-##### GPU INT4
+###### GPU INT4
 You may apply INT4 optimizations to any Hugging Face *Transformers* model on Intel GPU as follows.
 
 ```python
@@ -139,7 +139,7 @@ output = tokenizer.batch_decode(output_ids.cpu())
 ```
 See the complete examples [here](example/gpu/).
 
-##### More Low-Bit Support
+###### More Low-Bit Support
 - Save and load
 
   After the model is optimized using `bigdl-llm`, you may save and load the model as follows:
@@ -158,7 +158,7 @@ See the complete examples [here](example/gpu/).
   ```
   *See the complete example [here](example/transformers/transformers_low_bit/).*
 
-#### Native INT4 model
+##### 2. Native INT4 model
  
 You may also convert Hugging Face *Transformers* models into native INT4 model format for maximum performance as follows.
 
@@ -183,7 +183,7 @@ output = llm.batch_decode(output_ids)
 
 See the complete example [here](example/transformers/native_int4/native_int4_pipeline.py). 
 
-#### LangChain API
+##### 3. LangChain API
 You may run the models using the LangChain API in `bigdl-llm`.
 
 - **Using Hugging Face `transformers` INT4 format**
@@ -229,7 +229,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
 
   See the examples [here](example/langchain/native_int4).
 
-#### CLI Tool
+##### 4. CLI Tool
 >**Note**: Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the Hugging Face `transformers` or LangChain APIs.
 
  - ##### Convert model
