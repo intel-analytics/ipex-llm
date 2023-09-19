@@ -1,0 +1,5 @@
+# BigDL-LLM One-Click Installer Setup Script For Windows
+
+# How to use
+
+Just simply run `setup.bat` and it will download and install all dependency.

@@ -18,3 +18,6 @@ cd ..
 
 :: install pip packages
 %python-embed% -m pip install bigdl-llm[all] transformers_stream_generator tiktoken einops
+
+:: compress the python and scripts
+powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\portable-installer.zip"
