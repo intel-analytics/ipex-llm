@@ -286,17 +286,18 @@ def run_transformer_int4_gpu(repo_id,
         model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True,
                                           use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True,
                                                      trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        if isinstance(model, GPTJForCausalLM):
+            # For gpt-j model family, this optimization can provide a better performance.
+            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
-    model = model.to('xpu')
-    if isinstance(model, GPTJForCausalLM):
-        # For gpt-j model family, this optimization can provide a better performance.
-        model = ipex.optimize(model.eval(), inplace=True)
     model = BenchmarkWrapper(model)
 
     result = {}
@@ -345,18 +346,19 @@ def run_optimize_model_gpu(repo_id,
                                           trust_remote_code=True, use_cache=True)
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
                                                      trust_remote_code=True, use_cache=True)
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        if isinstance(model, GPTJForCausalLM):
+            # For gpt-j model family, this optimization can provide a better performance.
+            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
-    model = model.to('xpu')
-    if isinstance(model, GPTJForCausalLM):
-        # For gpt-j model family, this optimization can provide a better performance.
-        model = ipex.optimize(model.eval(), inplace=True)
     model = BenchmarkWrapper(model)
 
     result = {}
