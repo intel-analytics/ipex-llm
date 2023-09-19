@@ -62,6 +62,8 @@ RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
 ADD ./attestation/dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
 ADD ./attestation/dcap-ppml.yaml /root/demos/remote_attestation/dcap/
 ADD ./attestation/get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+ADD ./attestation/attestation_cli.py /opt/attestation_cli.py
+ADD ./attestation/attestation.sh /opt/attestation.sh
 
 # For attestation, add ppml libs
 #ADD ./verify-attestation-service.sh /opt
@@ -84,6 +86,7 @@ RUN chmod a+x /opt/entrypoint.sh && \
 #    chmod a+x /opt/register.sh && \
     chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
     chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
+    chmod a+x /opt/attestation.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
