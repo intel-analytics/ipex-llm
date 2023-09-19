@@ -3,9 +3,6 @@
 **`bigdl-llm`** is a library for running ***LLM*** (large language model) on your Intel ***laptop*** or ***GPU*** using INT4 with very low latency[^1] (for any Hugging Face *Transformers* model).
 
 > *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
-
-### Latest update
- - `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](example/gpu).
     
 ### Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
@@ -37,9 +34,9 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
   </tr>
 </table>
 
-
 ### Verified models
-We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following models have been verified on Intel laptops.
+Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, InternLM, QWen, Baichuan, MOSS,* and more; see the complete list below.
+<details><summary>Table of verified models</summary>
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
 | LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/vicuna)    |
@@ -58,7 +55,7 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
 | InternLM  | [link](example/transformers/transformers_int4/internlm)  |
 | Whisper   | [link](example/transformers/transformers_int4/whisper)   |
-
+</details>
 
 ### Working with `bigdl-llm`
 
@@ -66,9 +63,10 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 
 - [Install](#install)
 - [Run Model](#run-model)
-  - [Hugging Face `transformers` API](#hugging-face-transformers-api)
-  - [LangChain API](#langchain-api)
-  - [CLI Tool](#cli-tool)
+  - [Hugging Face `transformers` API](#1-hugging-face-transformers-api)
+  - [Native INT4 Model](#2-native-int4-model)
+  - [LangChain API](#l3-angchain-api)
+  - [CLI Tool](#4-cli-tool)
 - [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
 - [`bigdl-llm` Dependence](#bigdl-llm-dependence)
 
@@ -94,10 +92,10 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 #### Run Model
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
-1. [Hugging Face `transformers` API](#hugging-face-transformers-api)
-2. [Native INT4 Model](native-int4-model)
-3. [LangChain API](#langchain-api)
-4. [CLI (command line interface) Tool](#cli-tool)
+1. [Hugging Face `transformers` API](#1-hugging-face-transformers-api)
+2. [Native INT4 Model](#2-native-int4-model)
+3. [LangChain API](#3-langchain-api)
+4. [CLI (command line interface) Tool](#4-cli-tool)
 
 ##### 1. Hugging Face `transformers` API
 You may run any Hugging Face *Transformers* model as follows:
@@ -186,7 +184,7 @@ See the complete example [here](example/transformers/native_int4/native_int4_pip
 ##### 3. LangChain API
 You may run the models using the LangChain API in `bigdl-llm`.
 
-- **Using Hugging Face `transformers` INT4 format**
+- **Using Hugging Face `transformers` model**
 
   You may run any Hugging Face *Transformers* model (with INT4 optimiztions applied) using the LangChain API as follows:
 
@@ -203,14 +201,12 @@ You may run the models using the LangChain API in `bigdl-llm`.
   ```
   See the examples [here](example/langchain/transformers_int4).
  
-- **Using native INT4 format**
+- **Using native INT4 model**
 
   You may also convert Hugging Face *Transformers* models into *native INT4* format, and then run the converted models using the LangChain API as follows.
   
   >**Notes**: 
-  
    >* Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face `transformers` INT4 format as described above).
-
    >* You may choose the corresponding API developed for specific native models to load the converted model.
 
   ```python
