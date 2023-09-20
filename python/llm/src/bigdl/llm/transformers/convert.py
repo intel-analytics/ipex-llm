@@ -178,10 +178,10 @@ def optimize(model):
         module = importlib.import_module(modeling_module_name)
         if "GPTJForCausalLM" in model.config.architectures:
             # dolly-v1-6b
-            from bigdl.llm.transformers.models.gptj import gptj_attention_forward 
+            from bigdl.llm.transformers.models.gptj import gptj_attention_forward
             convert_forward(model,
                             module.GPTJAttention,
-                            gptj_attention_forward
+                            gptj_attention_forward)
     elif "falcon" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
