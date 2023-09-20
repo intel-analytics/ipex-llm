@@ -3,6 +3,12 @@ All in one benchmark test allows users to test all the benchmarks and record the
 
 Before running, make sure to have [bigdl-llm](../../../README.md) and [bigdl-nano](../../../../nano/README.md) installed.
 
+## Dependencies
+```bash
+pip install omageconfig
+pip install pandas
+```
+
 ## Config
 Config YAML file has following format
 ```yaml
