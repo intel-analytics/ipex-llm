@@ -19,26 +19,13 @@
 
 import torch
 from typing import Optional, Tuple, Union
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache, \
+    apply_rotary_pos_emb
 from transformers.utils.import_utils import is_torch_fx_proxy
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 KV_CACHE_ALLOC_MIN_LENGTH = 512
-
-
-def apply_rotary_pos_emb(tensor: torch.Tensor, sin: torch.Tensor,
-                         cos: torch.Tensor) -> torch.Tensor:
-    sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
-    cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
-    return (tensor * cos) + (rotate_every_two(tensor) * sin)
-
-
-def rotate_every_two(x: torch.Tensor) -> torch.Tensor:
-    x1 = x[:, :, :, ::2]
-    x2 = x[:, :, :, 1::2]
-    x = torch.stack((-x2, x1), dim=-1)
-    return x.flatten(-2)  # in einsum notation: rearrange(x, '... d j -> ... (d j)')
 
 
 def _get_embed_positions(self, position_ids):
@@ -132,14 +119,12 @@ def gptj_attention_forward(
         q_rot = query[:, :, :, : self.rotary_dim]
         q_pass = query[:, :, :, self.rotary_dim:]
 
-        k_rot = apply_rotary_pos_emb(k_rot, sin, cos)
-        q_rot = apply_rotary_pos_emb(q_rot, sin, cos)
+        q_rot, k_rot = apply_rotary_pos_emb(q_rot, k_rot, cos, sin, position_ids, "gptj")
 
         key = torch.cat([k_rot, k_pass], dim=-1)
         query = torch.cat([q_rot, q_pass], dim=-1)
     else:
-        key = apply_rotary_pos_emb(key, sin, cos)
-        query = apply_rotary_pos_emb(query, sin, cos)
+        query, key = apply_rotary_pos_emb(query, k_rot, cos, sin, position_ids, "gptj")
 
     batch_size, cur_length = query.shape[0], query.shape[1]
 
