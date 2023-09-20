@@ -5,7 +5,7 @@ This one-click installer includes everything you need to run LLM (except models)
 ## 7B model running on an Intel 11-Gen Core PC (real-time screen capture)
 
 <p align="left">
-            <img src=./screenshots/screen_capture.gif width='80%' />
+            <img src=https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-screen-capture.gif width='80%' />
 
 </p>
 
@@ -20,9 +20,9 @@ This one-click installer includes everything you need to run LLM (except models)
 ## How to use
 
 1. Download the model to your computer. Please ensure there is a file named `config.json` in the model folder, otherwise the script won't work.
-   ![](./screenshots/user_guide_step1.png)
+   ![](https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-user-guide-step1.png)
 2. Run `chat.bat` in Terminal and input the path of the model (e.g. `path\to\model`, note that there's no slash at the end of the path).
-   ![](./screenshots/user_guide_step2.png)
+   ![](https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-user-guide-step2.png)
 3. Press Enter and wait until model finishes loading. Then enjoy chatting with the model!
 4. If you want to stop chatting, just input `stop` and the model will stop running.
-   ![](./screenshots/user_guide_step34.png)
+   ![](https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-user-guide-step34.png)
