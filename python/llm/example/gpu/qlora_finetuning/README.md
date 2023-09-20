@@ -7,7 +7,7 @@ To run this example with BigDL-LLM on Intel GPUs, we have some recommended requi
 
 ## Example: Finetune llama2-7b using qlora
 
-This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k?usp=sharing)
+This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k?usp=sharing). The `export_merged_model.py` is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/export_hf_checkpoint.py).
 
 ### 1. Install
 
@@ -52,7 +52,7 @@ TrainOutput(global_step=200, training_loss=1.211241865158081, metrics={'train_ru
 ### 4. Merge the adapter into the original model
 
 ```
-python ./export_merged_model --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
