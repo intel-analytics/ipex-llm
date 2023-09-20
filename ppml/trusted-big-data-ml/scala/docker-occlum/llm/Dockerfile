@@ -100,7 +100,7 @@ ENV PATH=$PATH:/opt/miniconda/bin
 ADD ./utils.diff /opt/utils.diff
 ADD ./cpuinfo.diff /opt/cpuinfo.diff
 RUN patch /opt/python-occlum/lib/python3.9/site-packages/pydub/utils.py /opt/utils.diff && \
-    patch /opt/python-occlum/lib/python3.9/site-packages/cpuinfo/cpuinfo.py /opt/cpuinfo.diff \
+    patch /opt/python-occlum/lib/python3.9/site-packages/cpuinfo/cpuinfo.py /opt/cpuinfo.diff
 
 RUN cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
