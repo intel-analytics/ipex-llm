@@ -151,6 +151,8 @@ def optimize(model):
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
+    
+    print(model.config._name_or_path)
 
     if "chatglm2" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
@@ -171,6 +173,14 @@ def optimize(model):
         convert_forward(model,
                         module.SelfAttention,
                         chatglm_attention_forward
+                        )
+    elif "dolly" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.gptj import gptj_attention_forward 
+        convert_forward(model,
+                        module.GPTJAttention,
+                        gptj_attention_forward
                         )
 
     return model
