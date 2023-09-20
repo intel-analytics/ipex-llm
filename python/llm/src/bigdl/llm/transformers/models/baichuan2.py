@@ -179,12 +179,12 @@ def baichuan_attention_forward_13b(
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
-                                                    self.num_heads,
-                                                    self.head_dim,
-                                                    cache_k.size(2),
-                                                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                    dtype=cache_k.dtype,
-                                                    device=device)
+                                                       self.num_heads,
+                                                       self.head_dim,
+                                                       cache_k.size(2),
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                       dtype=cache_k.dtype,
+                                                       device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
             cache_k = new_cache_k
@@ -195,12 +195,12 @@ def baichuan_attention_forward_13b(
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = create_kv_cache(bsz,
-                                                        self.num_heads,
-                                                        self.head_dim,
-                                                        kv_seq_len,
-                                                        max_cache_length,
-                                                        dtype=key_states.dtype,
-                                                        device=device)
+                                                           self.num_heads,
+                                                           self.head_dim,
+                                                           kv_seq_len,
+                                                           max_cache_length,
+                                                           dtype=key_states.dtype,
+                                                           device=device)
         new_key_states[:] = key_states
         new_value_states[:] = value_states
         key_states = new_key_states
@@ -215,8 +215,10 @@ def baichuan_attention_forward_13b(
         # attn_output = xops.memory_efficient_attention(
         #     query_states, key_states, value_states, attn_bias=attention_mask
         # )
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
-            attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states, attn_mask = attention_mask)
+        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True,
+                                            enable_mem_efficient=True):
+            attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states,
+                                                         attn_mask=attention_mask)
         attn_output = attn_output.transpose(1, 2)
     else:
         attn_weights = torch.matmul(
