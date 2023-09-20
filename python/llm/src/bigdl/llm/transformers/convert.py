@@ -174,13 +174,15 @@ def optimize(model):
                         module.SelfAttention,
                         chatglm_attention_forward
                         )
-    elif "dolly" in model.config._name_or_path:
+    elif "gptj" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.gptj import gptj_attention_forward 
-        convert_forward(model,
-                        module.GPTJAttention,
-                        gptj_attention_forward
-                        )
+        if "GPTJForCausalLM" in model.config.architectures:
+            # dolly-v1-6b
+            from bigdl.llm.transformers.models.gptj import gptj_attention_forward 
+            convert_forward(model,
+                            module.GPTJAttention,
+                            gptj_attention_forward
+                            )
 
     return model

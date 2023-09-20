@@ -1,3 +1,22 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# This file is adapted from
+# https://github.com/huggingface/transformers/blob/main/src/transformers/models/gptj/modeling_gptj.py
+#
+
 import torch
 from typing import Optional, Tuple, Union
 from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
@@ -6,6 +25,7 @@ from transformers.utils.import_utils import is_torch_fx_proxy
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 KV_CACHE_ALLOC_MIN_LENGTH = 512
+
 
 def apply_rotary_pos_emb(tensor: torch.Tensor, sin: torch.Tensor, cos: torch.Tensor) -> torch.Tensor:
     sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
@@ -18,6 +38,7 @@ def rotate_every_two(x: torch.Tensor) -> torch.Tensor:
     x2 = x[:, :, :, 1::2]
     x = torch.stack((-x2, x1), dim=-1)
     return x.flatten(-2)  # in einsum notation: rearrange(x, '... d j -> ... (d j)')
+
 
 def _get_embed_positions(self, position_ids):
     embed_positions = self.embed_positions
@@ -117,7 +138,7 @@ def gptj_attention_forward(
     else:
         key = apply_rotary_pos_emb(key, sin, cos)
         query = apply_rotary_pos_emb(query, sin, cos)
-    
+
     batch_size, cur_length = query.shape[0], query.shape[1]
 
     key = key.permute(0, 2, 1, 3).contiguous()
@@ -141,37 +162,33 @@ def gptj_attention_forward(
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
 
             new_cache_k, new_cache_v = create_kv_cache(batch_size,
-                                                        self.num_attention_heads,
-                                                        self.head_dim,
-                                                        cur_length,
-                                                        max_cache_length,
-                                                        dtype=query.dtype,
-                                                        device=device)
+                                                       self.num_attention_heads,
+                                                       self.head_dim,
+                                                       cur_length,
+                                                       max_cache_length,
+                                                       dtype=query.dtype,
+                                                       device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
             cache_k = new_cache_k
             cache_v = new_cache_v
         key, value = append_kv_cache(cache_k, cache_v, key, value)
 
-
     elif use_cache:
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
         
         key_cache, value_cache = create_kv_cache(batch_size,
-                                                    self.num_attention_heads,
-                                                    self.head_dim,
-                                                    cur_length,
-                                                    max_cache_length,
-                                                    dtype=query.dtype,
-                                                    device=device)
-
-
+                                                 self.num_attention_heads,
+                                                 self.head_dim,
+                                                 cur_length,
+                                                 max_cache_length,
+                                                 dtype=query.dtype,
+                                                 device=device)
         key_cache[:] = key
         value_cache[:] = value
         key = key_cache
         value = value_cache
-
 
     if use_cache is True:
         present = (key.permute(0, 2, 1, 3), value.permute(0, 2, 1, 3))
