@@ -99,8 +99,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
 
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
-                         convert_shape_only=False, device="cpu"):
-    modules_to_not_convert = []  # ["lm_head"]
+                         convert_shape_only=False, device="cpu",
+                         modules_to_not_convert=None):
+    modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only,
@@ -197,4 +198,24 @@ def optimize(model):
                             module.FalconAttention,
                             falcon_attention_forward
                             )
+    elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
+        # baichuan2
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward
+        convert_forward(model,
+                        module.Attention,
+                        baichuan_attention_forward
+                        )
+
+    elif model.config.model_type == "baichuan":
+        # baichuan1
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward
+        convert_forward(model,
+                        module.Attention,
+                        baichuan_attention_forward
+                        )
+
     return model
