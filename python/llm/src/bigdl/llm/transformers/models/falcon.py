@@ -345,7 +345,7 @@ def rw_attention_forward_40b(
         outputs = (output_tensor, present)
         if output_attentions:
             invalidInputError(False,
-                                f"'output_attentions' are not supported yet")
+                              f"'output_attentions' are not supported yet")
         return outputs
     else:
         attention_mask_float = (attention_mask * 1.0) \
