@@ -33,17 +33,8 @@
 
 import torch
 from typing import Optional, Tuple
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache, rotate_half
-
-
-def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
-    gather_indices = position_ids[:, None, :, None]  # [bs, 1, seq_len, 1]
-    gather_indices = gather_indices.repeat(1, cos.shape[1], 1, cos.shape[3])
-    cos = torch.gather(cos.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
-    sin = torch.gather(sin.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
-    q_embed = (q * cos) + (rotate_half(q) * sin)
-    k_embed = (k * cos) + (rotate_half(k) * sin)
-    return q_embed, k_embed
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -90,7 +81,7 @@ def gptneox_attention_forward(
     if has_layer_past:
         seq_len += layer_past[0].shape[-2]
     cos, sin = self.rotary_emb(value, seq_len=seq_len)
-    query, key = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids)
+    query, key = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids, "gpt_neox")
     query = torch.cat((query, query_pass), dim=-1)
     key = torch.cat((key, key_pass), dim=-1)
 
