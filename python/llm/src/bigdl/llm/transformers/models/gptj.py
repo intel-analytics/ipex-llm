@@ -25,7 +25,6 @@ from transformers.utils.import_utils import is_torch_fx_proxy
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
-KV_CACHE_ALLOC_MIN_LENGTH = 512
 
 
 def _get_embed_positions(self, position_ids):
@@ -131,26 +130,27 @@ def gptj_attention_forward(
     key = key.permute(0, 2, 1, 3).contiguous()
     query = query.permute(0, 2, 1, 3).contiguous()
 
-    device = query.device
+    kv_seq_len = key.size(-2)
+    device = hidden_states.device
+
+    if layer_past is not None:
+        kv_seq_len += layer_past[0].size(-2)
 
     if layer_past is not None:
         cache_k = layer_past[0]
         cache_v = layer_past[1]
-
         cache_k = cache_k.permute(0, 2, 1, 3)
         cache_v = cache_v.permute(0, 2, 1, 3)
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-
-            max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = create_kv_cache(batch_size,
                                                        self.num_attention_heads,
                                                        self.head_dim,
-                                                       cur_length,
+                                                       past_length,
                                                        max_cache_length,
-                                                       dtype=query.dtype,
+                                                       dtype=cache_k.dtype,
                                                        device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
@@ -159,15 +159,13 @@ def gptj_attention_forward(
         key, value = append_kv_cache(cache_k, cache_v, key, value)
 
     elif use_cache:
-        max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
-            + KV_CACHE_ALLOC_BLOCK_LENGTH
-
+        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         key_cache, value_cache = create_kv_cache(batch_size,
                                                  self.num_attention_heads,
                                                  self.head_dim,
-                                                 cur_length,
+                                                 kv_seq_len,
                                                  max_cache_length,
-                                                 dtype=query.dtype,
+                                                 dtype=key.dtype,
                                                  device=device)
         key_cache[:] = key
         value_cache[:] = value
