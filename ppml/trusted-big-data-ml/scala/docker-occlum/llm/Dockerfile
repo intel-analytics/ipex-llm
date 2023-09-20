@@ -68,10 +68,6 @@ ADD ./attestation/attestation.sh /opt/attestation.sh
 # For attestation, add ppml libs
 #ADD ./verify-attestation-service.sh /opt
 ADD ./attestation/print_enclave_signer.sh /opt
-RUN cd /root && \
-    git clone https://github.com/intel-analytics/BigDL.git && \
-    mv /root/BigDL/python/ppml/src/bigdl/ppml/ /opt/python-occlum/lib/python3.9/site-packages/bigdl/ && \
-    rm -rf /root/BigDL
 #ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
@@ -104,7 +100,12 @@ ENV PATH=$PATH:/opt/miniconda/bin
 ADD ./utils.diff /opt/utils.diff
 ADD ./cpuinfo.diff /opt/cpuinfo.diff
 RUN patch /opt/python-occlum/lib/python3.9/site-packages/pydub/utils.py /opt/utils.diff && \
-    patch /opt/python-occlum/lib/python3.9/site-packages/cpuinfo/cpuinfo.py /opt/cpuinfo.diff
+    patch /opt/python-occlum/lib/python3.9/site-packages/cpuinfo/cpuinfo.py /opt/cpuinfo.diff \
+
+RUN cd /root && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    mv /root/BigDL/python/ppml/src/bigdl/ppml/ /opt/python-occlum/lib/python3.9/site-packages/bigdl/ && \
+    rm -rf /root/BigDL
 #ADD ./py-examples /opt/py-examples
 
 # Prepare Bigdl python libs
