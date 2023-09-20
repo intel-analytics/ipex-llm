@@ -176,22 +176,44 @@ def optimize(model):
 
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward
-        convert_forward(model,
-                        module.Attention,
-                        baichuan_attention_forward
-                        )
+        if model.config.hidden_size == 4096:
+            # baichuan2-7B
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_7b
+            convert_forward(model,
+                            module.Attention,
+                            baichuan_attention_forward
+                            )
+        elif model.config.hidden_size == 5120:
+            # baichuan2-13B
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
+            convert_forward(model,
+                            module.BaichuanAttention,
+                            baichuan_attention_forward_13b
+                            )
 
     elif model.config.model_type == "baichuan":
         # baichuan1
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward
-        convert_forward(model,
-                        module.Attention,
-                        baichuan_attention_forward
-                        )
+        if model.config.hidden_size == 4096:
+            # baichuan-7B
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_7b
+            convert_forward(model,
+                            module.Attention,
+                            baichuan_attention_forward_7b
+                            )
+        elif model.config.hidden_size == 5120:
+            # baichuan-13B
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_13b
+            convert_forward(model,
+                            module.BaichuanAttention,
+                            baichuan_attention_forward_13b
+                            )
 
     return model
