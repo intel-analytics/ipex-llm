@@ -276,7 +276,7 @@ def rw_attention_forward_40b(
                 # allocate new
                 new_cache_k, new_cache_v = create_kv_cache(
                     batch_size,
-                    self.num_heads,  # Support GQA
+                    self.num_heads,
                     self.head_dim,
                     cache_k.size(2),
                     kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
@@ -292,13 +292,15 @@ def rw_attention_forward_40b(
 
         elif use_cache:
             max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_key_states, new_value_states = create_kv_cache(batch_size,
-                                                            self.num_heads,
-                                                            self.head_dim,
-                                                            kv_length,
-                                                            max_cache_length,
-                                                            dtype=key_layer.dtype,
-                                                            device=device)
+            new_key_states, new_value_states = create_kv_cache(
+                batch_size,
+                self.num_heads,
+                self.head_dim,
+                kv_length,
+                max_cache_length,
+                dtype=key_layer.dtype,
+                device=device
+            )
             new_key_states[:] = key_layer
             new_value_states[:] = value_layer
             key_layer = new_key_states
@@ -444,29 +446,33 @@ def falcon_attention_forward(
             cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
             if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
                 # allocate new
-                new_cache_k, new_cache_v = create_kv_cache(batch_size,
-                                                        self.num_heads,  # Support GQA
-                                                        self.head_dim,
-                                                        cache_k.size(2),
-                                                        kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                        dtype=cache_k.dtype,
-                                                        device=device)
+                new_cache_k, new_cache_v = create_kv_cache(
+                    batch_size,
+                    self.num_heads,
+                    self.head_dim,
+                    cache_k.size(2),
+                    kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                    dtype=cache_k.dtype,
+                    device=device
+                )
                 new_cache_k[:] = cache_k
                 new_cache_v[:] = cache_v
                 cache_k = new_cache_k
                 cache_v = new_cache_v
-            
+
             key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
 
         elif use_cache:
             max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_key_states, new_value_states = create_kv_cache(batch_size,
-                                                            self.num_heads,
-                                                            self.head_dim,
-                                                            kv_length,
-                                                            max_cache_length,
-                                                            dtype=key_layer.dtype,
-                                                            device=device)
+            new_key_states, new_value_states = create_kv_cache(
+                batch_size,
+                self.num_heads,
+                self.head_dim,
+                kv_length,
+                max_cache_length,
+                dtype=key_layer.dtype,
+                device=device
+            )
             new_key_states[:] = key_layer
             new_value_states[:] = value_layer
             key_layer = new_key_states
