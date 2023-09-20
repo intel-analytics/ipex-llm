@@ -48,6 +48,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
+
 def gptneox_attention_forward(
         self,
         hidden_states: torch.FloatTensor,
@@ -72,7 +73,8 @@ def gptneox_attention_forward(
     new_qkv_shape = qkv.size()[:-1] + (self.num_attention_heads, 3 * self.head_size)
     qkv = qkv.view(*new_qkv_shape)
 
-    # [batch, seq_len, num_attention_heads, 3 * head_size] --> 3 [batch, num_attention_heads, seq_len, head_size]
+    # [batch, seq_len, num_attention_heads, 3 * head_size]
+    #   --> 3 [batch, num_attention_heads, seq_len, head_size]
     query = qkv[..., : self.head_size].permute(0, 2, 1, 3)
     key = qkv[..., self.head_size: 2 * self.head_size].permute(0, 2, 1, 3)
     value = qkv[..., 2 * self.head_size:].permute(0, 2, 1, 3)

@@ -59,7 +59,8 @@ if __name__ == '__main__':
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(**inputs,
                                 max_new_tokens=args.n_predict,
-                                do_sample=True,
+                                do_sample=False,
+                                use_cache=True,
                                 temperature=0.7,
                                 top_p=0.7,
                                 top_k=50,
