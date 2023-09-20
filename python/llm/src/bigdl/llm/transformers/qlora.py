@@ -36,6 +36,7 @@ import torch
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
+import functools
 
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
@@ -94,13 +95,11 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         return result
 
 
-@staticmethod
-def _create_new_module(lora_config, adapter_name, target, **kwargs):
-
-    bias = kwargs.pop("bias", False)
+def _create_new_module(create_new_module_func, lora_config, adapter_name, target, **kwargs):
 
     if isinstance(target, LowBitLinear):
         low_bit_kwargs = kwargs.copy()
+        bias = low_bit_kwargs.pop("bias", False)
         low_bit_kwargs.update(
             {
                 "qtype": target.qtype,
@@ -112,19 +111,16 @@ def _create_new_module(lora_config, adapter_name, target, **kwargs):
                                       bias=bias,
                                       **low_bit_kwargs)
     else:
-        invalidInputError(False,
-                          f"Target module {target} is not supported. "
-                          f"Currently, only `LowBitLinear` are supported.")
+        new_module = create_new_module_func(lora_config, adapter_name, target, **kwargs)
 
     return new_module
 
 
 from peft.tuners.lora import LoraModel
-
-
 def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
-    LoraModel._create_new_module = _create_new_module
+    LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
+                                                                  old_create_new_module))
     try:
         from peft import get_peft_model as get_peft_model_original
         model = get_peft_model_original(*args, **kwargs)
@@ -181,7 +177,8 @@ class PeftModel:
     def from_pretrained(*args,
                         **kwargs):
         old_create_new_module = LoraModel._create_new_module
-        LoraModel._create_new_module = _create_new_module
+        LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
+                                                                    old_create_new_module))
         from peft import PeftModel
         try:
             model = PeftModel.from_pretrained(*args, **kwargs)

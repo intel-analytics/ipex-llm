@@ -45,8 +45,9 @@ if __name__ == "__main__":
     data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                load_in_4bit=True,
+                                                load_in_low_bit="nf4",
                                                 optimize_model=False,
+                                                torch_dtype=torch.float16,
                                                 modules_to_not_convert=["lm_head"],)
     model = model.to('xpu')
     model.gradient_checkpointing_enable()
@@ -71,7 +72,8 @@ if __name__ == "__main__":
             warmup_steps=20,
             max_steps=200,
             learning_rate=2e-4,
-            fp16=False, # fp16 is not supported yet
+            save_steps=100,
+            fp16=True, # fp16 is not supported yet
             logging_steps=20,
             output_dir="outputs",
             optim="adamw_hf", # paged_adamw_8bit is not supported yet

@@ -1,4 +1,4 @@
-# Q-Lora (experimental support)
+# Finetuning LLAMA Using Q-Lora (experimental support)
 
 This example demonstrates how to finetune a llama2-7b model use Big-LLM 4bit optimizations using [Intel GPUs](../README.md).
 
@@ -26,13 +26,13 @@ pip install peft==0.5.0
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Run
+### 3. Finetune model
 
 ```
 python ./qlora_finetuning.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 ```
 
-### Sample Output
+#### Sample Output
 ```log
 {'loss': 1.6134, 'learning_rate': 0.0002, 'epoch': 0.03}                                                                                 
 {'loss': 1.3038, 'learning_rate': 0.00017777777777777779, 'epoch': 0.06}                                                                 
@@ -48,3 +48,11 @@ python ./qlora_finetuning.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [03:45<00:00,  1.13s/it]
 TrainOutput(global_step=200, training_loss=1.211241865158081, metrics={'train_runtime': 225.8005, 'train_samples_per_second': 3.543, 'train_steps_per_second': 0.886, 'train_loss': 1.211241865158081, 'epoch': 0.32})
 ```
+
+### 4. Merge the adapter into the original model
+
+```
+python ./export_merged_model --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+```
+
+Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
