@@ -194,4 +194,11 @@ def optimize(model):
                         baichuan_attention_forward
                         )
 
+    elif model.config.model_type == "gpt_neox":
+        from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
+        convert_forward(model,
+                        transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention,
+                        gptneox_attention_forward
+                        )
+
     return model
