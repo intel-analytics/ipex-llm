@@ -49,13 +49,13 @@ def _get_embed_positions(self, position_ids):
 
 
 def _attn(
-        self,
-        query,
-        key,
-        value,
-        attention_mask=None,
-        head_mask=None,
-    ):
+    self,
+    query,
+    key,
+    value,
+    attention_mask=None,
+    head_mask=None,
+):
     # compute causal mask from causal mask buffer
     query_length, key_length = query.size(-2), key.size(-2)
     causal_mask = self.bias[:, :, key_length - query_length : key_length, :key_length]
