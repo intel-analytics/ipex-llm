@@ -155,9 +155,6 @@ def gptj_attention_forward(
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            # allocate new
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
 
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
 
