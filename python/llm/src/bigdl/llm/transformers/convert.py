@@ -173,7 +173,31 @@ def optimize(model):
                         module.SelfAttention,
                         chatglm_attention_forward
                         )
-
+    elif "falcon" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        if "RWForCausalLM" in model.config.architectures:
+            if hasattr(model.config, "multi_query"):
+                # falcon-7b
+                from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
+                convert_forward(model,
+                                module.Attention,
+                                rw_attention_forward_7b
+                                )
+            else:
+                # falcon-40b
+                from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b
+                convert_forward(model,
+                                module.Attention,
+                                rw_attention_forward_40b
+                                )
+        elif "FalconForCausalLM" in model.config.architectures:
+            # falcon-180b
+            from bigdl.llm.transformers.models.falcon import falcon_attention_forward
+            convert_forward(model,
+                            module.FalconAttention,
+                            falcon_attention_forward
+                            )
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
         if model.config.hidden_size == 4096:
