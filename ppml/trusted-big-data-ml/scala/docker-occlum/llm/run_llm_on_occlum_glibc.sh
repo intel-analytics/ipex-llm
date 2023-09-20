@@ -173,24 +173,10 @@ build_spark() {
                 #generate dcap quote
                 cd /opt/occlum_spark
                 occlum start
-                occlum exec /bin/dcap_c_test $REPORT_DATA
-                echo "generate quote success"
-                #attest quote
-                occlum exec /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                            -XX:-UseCompressedOops \
-                            -XX:ActiveProcessorCount=4 \
-                            -Divy.home="/tmp/.ivy" \
-                            -Dos.name="Linux" \
-                            -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                            -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
-                            -u $ATTESTATION_URL \
-                            -i $APP_ID \
-                            -k $API_KEY \
-                            -c $CHALLENGE \
-                            -O occlum \
-                            -o $policy_Id
-                if [ $? -gt 0 ]; then
-                    echo "attest fail, exit"
+                bash /opt/attestation.sh
+                bash /opt/temp_command_file
+                if [ $? -ne 0 ]; then
+                    echo "[ERROR] Attestation Failed!"
                     exit 1;
                 fi
                 echo "verify success"
