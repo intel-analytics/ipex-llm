@@ -183,7 +183,7 @@ def optimize(model):
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_7b
             convert_forward(model,
                             module.Attention,
-                            baichuan_attention_forward
+                            baichuan_attention_forward_7b
                             )
         elif model.config.hidden_size == 5120:
             # baichuan2-13B
