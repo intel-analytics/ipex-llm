@@ -62,7 +62,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.###Human: AI是什么？###Assistant:
+Human: AI是什么？###Assistant:
 -------------------- Output --------------------
-A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.###Human: AI是什么？###Assistant: AI，全称为人工智能（Artificial Intelligence），是指一种能够模拟人类智能的技术和方法。它通过计算机程序和算法来实现人类智力的某些方面
+Human: AI是什么？###Assistant: AI是人工智能的缩写。人工智能是一种技术，旨在使计算机能够像人类一样思考、学习和执行任务。AI包括许多不同的技术和方法，例如机器
 ```

@@ -23,7 +23,7 @@ from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/BAAI/AquilaChat-7B/blob/13577616fd4ff0d21c5735a88d350a68dae120e5/cyg_conversation.py
-AQUILA_PROMPT_FORMAT = "A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.###Human: {prompt}###Assistant:"
+AQUILA_PROMPT_FORMAT = "Human: {prompt}###Assistant:"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Aquila model')
