@@ -43,7 +43,7 @@ from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
-def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: bool) -> torch.Tensor:
+def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: bool):
     """
     Dropout add function
 
@@ -68,10 +68,10 @@ def bloom_attention_forward(
         residual: torch.Tensor,
         alibi: torch.Tensor,
         attention_mask: torch.Tensor,
-        layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
-        head_mask: Optional[torch.Tensor] = None,
-        use_cache: bool = False,
-        output_attentions: bool = False,
+        layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]]=None,
+        head_mask: Optional[torch.Tensor]=None,
+        use_cache: bool=False,
+        output_attentions: bool=False,
 ):
     fused_qkv = self.query_key_value(hidden_states)  # [batch_size, seq_length, 3 x hidden_size]
 
@@ -106,13 +106,15 @@ def bloom_attention_forward(
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(batch_size,
-                                                    self.num_heads,  # Support GQA
-                                                    self.head_dim,
-                                                    cache_k.size(2),
-                                                    kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                    dtype=cache_k.dtype,
-                                                    device=device)
+            new_cache_k, new_cache_v = create_kv_cache(
+                batch_size,
+                self.num_heads,
+                self.head_dim,
+                cache_k.size(2),
+                kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                dtype=cache_k.dtype,
+                device=device
+            )
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
             cache_k = new_cache_k
@@ -122,13 +124,15 @@ def bloom_attention_forward(
 
     elif use_cache:
         max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(batch_size,
-                                                        self.num_heads,
-                                                        self.head_dim,
-                                                        kv_length,
-                                                        max_cache_length,
-                                                        dtype=key_layer.dtype,
-                                                        device=device)
+        new_key_states, new_value_states = create_kv_cache(
+            batch_size,
+            self.num_heads,
+            self.head_dim,
+            kv_length,
+            max_cache_length,
+            dtype=key_layer.dtype,
+            device=device
+        )
         new_key_states[:] = key_layer
         new_value_states[:] = value_layer
         key_layer = new_key_states
@@ -196,8 +200,8 @@ def bloom_attention_forward(
         output_tensor = torch.zeros_like(context_layer)
         for i in range(self.pretraining_tp):
             output_tensor = output_tensor + F.linear(
-                context_layer[:, :, int(i * slices) : int((i + 1) * slices)],
-                self.dense.weight[:, int(i * slices) : int((i + 1) * slices)],
+                context_layer[:, :, int(i * slices): int((i + 1) * slices)],
+                self.dense.weight[:, int(i * slices): int((i + 1) * slices)],
             )
     else:
         output_tensor = self.dense(context_layer)
