@@ -27,7 +27,8 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 KV_CACHE_ALLOC_MIN_LENGTH = 512
 
 
-def apply_rotary_pos_emb(tensor: torch.Tensor, sin: torch.Tensor, cos: torch.Tensor) -> torch.Tensor:
+def apply_rotary_pos_emb(tensor: torch.Tensor, sin: torch.Tensor,
+                         cos: torch.Tensor) -> torch.Tensor:
     sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
     cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
     return (tensor * cos) + (rotate_every_two(tensor) * sin)
@@ -58,7 +59,7 @@ def _attn(
 ):
     # compute causal mask from causal mask buffer
     query_length, key_length = query.size(-2), key.size(-2)
-    causal_mask = self.bias[:, :, key_length - query_length : key_length, :key_length]
+    causal_mask = self.bias[:, :, key_length - query_length: key_length, :key_length]
 
     # Keep the attention weights computation in fp32 to avoid overflow issues
     query = query.to(torch.float32)
@@ -67,7 +68,8 @@ def _attn(
     attn_weights = torch.matmul(query, key.transpose(-1, -2))
 
     mask_value = torch.finfo(attn_weights.dtype).min
-    # Need to be a tensor, otherwise we get error: `RuntimeError: expected scalar type float but found double`.
+    # Need to be a tensor, otherwise we get error:
+    # `RuntimeError: expected scalar type float but found double`.
     # Need to be on the same device, otherwise `RuntimeError: ..., x and y to be on the same device`
     mask_value = torch.tensor(mask_value, dtype=attn_weights.dtype).to(attn_weights.device)
     attn_weights = torch.where(causal_mask, attn_weights, mask_value)
@@ -125,10 +127,10 @@ def gptj_attention_forward(
 
     if self.rotary_dim is not None:
         k_rot = key[:, :, :, : self.rotary_dim]
-        k_pass = key[:, :, :, self.rotary_dim :]
+        k_pass = key[:, :, :, self.rotary_dim:]
 
         q_rot = query[:, :, :, : self.rotary_dim]
-        q_pass = query[:, :, :, self.rotary_dim :]
+        q_pass = query[:, :, :, self.rotary_dim:]
 
         k_rot = apply_rotary_pos_emb(k_rot, sin, cos)
         q_rot = apply_rotary_pos_emb(q_rot, sin, cos)
@@ -174,7 +176,7 @@ def gptj_attention_forward(
     elif use_cache:
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        
+
         key_cache, value_cache = create_kv_cache(batch_size,
                                                  self.num_attention_heads,
                                                  self.head_dim,
