@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--as_type", type=str, help='the type of attestation service', default='BigDL')
     parser.add_argument("-i", "--app_id", type=str, help='the app id for attestation service', default='')
     parser.add_argument('-k', '--api_key', type=str, help='the api key for attestation service', default='')
-    parser.add_argument('-O', '--quote_type', type=str, help='quote type', default='TDX')
+    parser.add_argument('-O', '--quote_type', type=str, help='quote type', default='Occlum')
     parser.add_argument('-o', '--policy_id', type=str, help='policy id', default='')
     parser.add_argument('-p', '--user_report', type=str, help='user report', default='ppml')
     parser.add_argument('--proxy', type=str, help='proxy', default='')
@@ -38,6 +38,8 @@ if __name__ == "__main__":
         quote = quote_generator.generate_tdx_quote(args.user_report)
     elif args.quote_type == "Gramine":
         quote = quote_generator.generate_gramine_quote(args.user_report)
+    elif args.quote_type == "Occlum":
+        quote = quote_generator.generate_occlum_quote()
 
     attestation_result = -1
     if args.as_type == "BigDLRemoteAttestationService":
