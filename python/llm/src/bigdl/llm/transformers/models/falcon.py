@@ -38,7 +38,7 @@ from typing import Optional, Tuple
 import torch
 from torch.nn import functional as F
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -98,10 +98,8 @@ def rw_attention_forward_7b(
         cache_k = layer_past[0].view(batch_size, self.num_kv, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_kv, -1, self.head_dim)
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(
+            new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
                 self.num_kv,
                 self.head_dim,
@@ -119,7 +117,7 @@ def rw_attention_forward_7b(
 
     elif use_cache:
         max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(
+        new_key_states, new_value_states = init_kv_cache(
             batch_size,
             self.num_kv,
             self.head_dim,
@@ -280,7 +278,7 @@ def rw_attention_forward_40b(
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(
+            new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
                 self.num_heads,
                 self.head_dim,
@@ -298,7 +296,7 @@ def rw_attention_forward_40b(
 
     elif use_cache:
         max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(
+        new_key_states, new_value_states = init_kv_cache(
             batch_size,
             self.num_heads,
             self.head_dim,
@@ -454,7 +452,7 @@ def falcon_attention_forward(
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(
+            new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
                 self.num_heads,
                 self.head_dim,
@@ -472,7 +470,7 @@ def falcon_attention_forward(
 
     elif use_cache:
         max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(
+        new_key_states, new_value_states = init_kv_cache(
             batch_size,
             self.num_heads,
             self.head_dim,

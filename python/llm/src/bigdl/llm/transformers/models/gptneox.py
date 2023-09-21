@@ -34,7 +34,7 @@
 import torch
 from typing import Optional, Tuple
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -90,10 +90,8 @@ def gptneox_attention_forward(
         past_key = layer_past[0]
         past_value = layer_past[1]
         if past_key.stride()[1] <= past_key.size(2) * past_key.size(3):
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
             # allocate new
-            new_past_key, new_past_value = create_kv_cache(bsz,
+            new_past_key, new_past_value = extend_kv_cache(bsz,
                                                            self.num_attention_heads,
                                                            self.head_size,
                                                            past_key.size(2),
@@ -108,13 +106,13 @@ def gptneox_attention_forward(
         key, value = append_kv_cache(past_key, past_value, key, value)
     elif use_cache:
         max_cache_length = seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key, new_value = create_kv_cache(bsz,
-                                             self.num_attention_heads,
-                                             self.head_size,
-                                             seq_len,
-                                             max_cache_length,
-                                             dtype=key.dtype,
-                                             device=device)
+        new_key, new_value = init_kv_cache(bsz,
+                                           self.num_attention_heads,
+                                           self.head_size,
+                                           seq_len,
+                                           max_cache_length,
+                                           dtype=key.dtype,
+                                           device=device)
         new_key[:] = key
         new_value[:] = value
         key = new_key
