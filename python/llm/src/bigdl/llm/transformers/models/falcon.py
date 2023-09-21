@@ -86,7 +86,8 @@ def rw_attention_forward_7b(
     query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
 
     _, kv_length, _ = key_layer.shape
-
+    if layer_past is not None:
+        kv_length += layer_past[0].shape[-2]
     query_layer = query_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
     key_layer = key_layer.view(batch_size, self.num_kv, q_length, self.head_dim)
     value_layer = value_layer.view(batch_size, self.num_kv, q_length, self.head_dim)
@@ -266,6 +267,8 @@ def rw_attention_forward_40b(
     query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
 
     _, kv_length, _ = key_layer.shape
+    if layer_past is not None:
+        kv_length += layer_past[0].shape[-2]
     query_layer = query_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
     key_layer = key_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
     value_layer = value_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
@@ -439,7 +442,8 @@ def falcon_attention_forward(
     query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, past_kv_length)
 
     _, kv_length, _ = key_layer.shape
-
+    if layer_past is not None:
+        kv_length += layer_past[0].shape[-2]
     query_layer = query_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
     key_layer = key_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
     value_layer = value_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
