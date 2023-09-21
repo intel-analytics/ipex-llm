@@ -2,7 +2,7 @@
 
 This one-click installer includes everything you need to run LLM (except models). Please refer to How to use section to get started.
 
-## 7B model running on an Intel 11-Gen Core PC (real-time screen capture)
+## 13B model running on an Intel 11-Gen Core PC (real-time screen capture)
 
 <p align="left">
             <img src=https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-screen-capture.gif width='80%' />
