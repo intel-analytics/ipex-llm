@@ -151,6 +151,8 @@ def chatglm2_attention_forward_8eb45c(
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if device.type == 'xpu':
+                torch.xpu.empty_cache()
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = create_kv_cache(batch_size,
                                                        self.num_attention_heads_per_partition,

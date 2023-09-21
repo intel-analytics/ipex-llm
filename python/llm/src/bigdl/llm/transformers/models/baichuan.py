@@ -70,6 +70,8 @@ def baichuan_attention_forward_7b(
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if device.type == 'xpu':
+                torch.xpu.empty_cache()
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
                                                        self.num_heads,
@@ -168,6 +170,8 @@ def baichuan_attention_forward_13b(
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if device.type == 'xpu':
+                torch.xpu.empty_cache()
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
                                                        self.num_heads,
