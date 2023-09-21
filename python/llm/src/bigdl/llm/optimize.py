@@ -24,6 +24,10 @@ from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+import transformers
+from transformers import PreTrainedModel
+from .utils.common import MuteHFLogger
+from contextlib import ExitStack
 
 
 # Simulate the Hugging Face format
@@ -37,7 +41,11 @@ def _save_low_bit(self, save_dir, *args, **kwargs):
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
     os.makedirs(save_dir, exist_ok=True)
     model_path = os.path.join(save_dir, PYTORCH_MODEL_NAME)
-    torch.save(self.state_dict(), model_path, *args, **kwargs)
+    if isinstance(self, PreTrainedModel):
+        # Todo: extend this
+        self.save_pretrained(save_dir)
+    else:
+        torch.save(self.state_dict(), model_path, *args, **kwargs)
     with open(os.path.join(save_dir, CONFIG_NAME), "w") as json_file:
         json.dump(self._bigdl_config, json_file)
 
@@ -50,16 +58,38 @@ class DisableTorchAllocTensor():
         self._old_torch_load_state_dict = Module.load_state_dict
         self._old_torch_to_device = Module.to
         self._old_torch_load_from_state_dict = Module._load_from_state_dict
+        # Todo: Mute Load safetensors also
+        self._old_torch_load = torch.load
 
     def __enter__(self):
         Module.load_state_dict = lambda *args, **kwargs: _IncompatibleKeys([], [])
         Module._load_from_state_dict = lambda *args, **kwargs: None
         Module.to = lambda self, *args, **kwargs: self
+        torch.load = lambda *args, **kwargs: {}
 
     def __exit__(self, exc_type, exc_value, traceback):
         Module.load_state_dict = self._old_torch_load_state_dict
         Module._load_from_state_dict = self._old_torch_load_from_state_dict
         Module.to = self._old_torch_to_device
+        torch.load = self._old_torch_load
+
+
+class ContextManagers:
+    """
+    Wrapper for `contextlib.ExitStack` which enters a collection of context managers. Adaptation of `ContextManagers`
+    in the `fastcore` library.
+    """
+
+    def __init__(self, context_managers):
+        self.context_managers = context_managers
+        self.stack = ExitStack()
+
+    def __enter__(self):
+        for context_manager in self.context_managers:
+            self.stack.enter_context(context_manager)
+
+    def __exit__(self, *args, **kwargs):
+        self.stack.__exit__(*args, **kwargs)
 
 
 def low_bit_sanity_check(model_path):
@@ -87,7 +117,15 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
     if low_bit:
         # a creator
         if is_creator:
-            with init_empty_weights(), DisableTorchAllocTensor():
+            init_contexts = []
+            init_contexts.extend([init_empty_weights(), DisableTorchAllocTensor()])
+            # As we have mute the `torch.load`, this will trigger a key missing warning in hf
+            # but this matters not for we will load again later.
+            # Todo: Better not involve here if it is not a transformer model
+            init_contexts.append(MuteHFLogger(logger=transformers.modeling_utils.logger))
+
+            # print_mem_swap("before model init")
+            with ContextManagers(init_contexts):
                 model = model_or_creator(**kwargs)
             # Sometimes transformers remote-code models 
             # still mark itself in cpu even it is actually not.
@@ -101,6 +139,7 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
+    # TODO: Support shards models
     state_dict = torch.load(os.path.join(model_path, PYTORCH_MODEL_NAME))
     if is_creator:
         for param_name, param in state_dict.items():
