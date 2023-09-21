@@ -31,4 +31,4 @@ sudo docker run -itd \
 
 After the container is booted, you could get into the container through `docker exec`.
 
-
+To run inference using `BigDL-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm#cpu-int4).
