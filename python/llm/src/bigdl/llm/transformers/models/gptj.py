@@ -125,7 +125,7 @@ def gptj_attention_forward(
     else:
         query, key = apply_rotary_pos_emb(query, k_rot, cos, sin, position_ids, "gptj")
 
-    batch_size, cur_length = query.shape[0], query.shape[1]
+    batch_size, q_len, _ = hidden_states.size()
 
     key = key.permute(0, 2, 1, 3).contiguous()
     query = query.permute(0, 2, 1, 3).contiguous()
@@ -144,12 +144,11 @@ def gptj_attention_forward(
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = create_kv_cache(batch_size,
                                                        self.num_attention_heads,
                                                        self.head_dim,
                                                        past_length,
-                                                       max_cache_length,
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
                                                        dtype=cache_k.dtype,
                                                        device=device)
             new_cache_k[:] = cache_k
@@ -159,12 +158,11 @@ def gptj_attention_forward(
         key, value = append_kv_cache(cache_k, cache_v, key, value)
 
     elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         key_cache, value_cache = create_kv_cache(batch_size,
                                                  self.num_attention_heads,
                                                  self.head_dim,
                                                  kv_seq_len,
-                                                 max_cache_length,
+                                                 kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
                                                  dtype=key.dtype,
                                                  device=device)
         key_cache[:] = key
