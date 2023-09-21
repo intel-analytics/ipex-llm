@@ -30,6 +30,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# This file is adapted from
+# https://huggingface.co/mosaicml/mpt-7b/blob/main/attention.py
+#
 
 import warnings
 import torch
@@ -39,37 +43,6 @@ import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
 
-
-# def rotate_half(x):
-#     """Rotates half the hidden dims of the input."""
-#     x1 = x[..., :x.shape[-1] // 2]
-#     x2 = x[..., x.shape[-1] // 2:]
-#     return torch.cat((-x2, x1), dim=-1)
-#
-#
-# def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
-#     # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
-#     cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
-#     sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
-#     cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-#     sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-#     q_embed = (q * cos) + (rotate_half(q) * sin)
-#     k_embed = (k * cos) + (rotate_half(k) * sin)
-#     return q_embed, k_embed
-#
-#
-# def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
-#     """
-#     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states
-#     go from (batch, num_key_value_heads, seqlen, head_dim) to
-#     (batch, num_attention_heads, seqlen, head_dim)
-#     """
-#     batch, num_key_value_heads, slen, head_dim = hidden_states.shape
-#     if n_rep == 1:
-#         return hidden_states
-#     hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads,
-#                                                            n_rep, slen, head_dim)
-#     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
