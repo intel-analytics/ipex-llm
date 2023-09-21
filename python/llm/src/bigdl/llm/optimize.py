@@ -141,7 +141,6 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
-    # TODO: Support transformer shards models
     resolved_archive_file, is_sharded = extract_local_archive_file(model_path, subfolder="")
     if is_sharded:
         # For now only shards transformers models
