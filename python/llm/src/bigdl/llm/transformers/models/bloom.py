@@ -96,6 +96,8 @@ def bloom_attention_forward(
         self.head_dim
     )
     _, _, kv_length = key_layer.shape
+    if layer_past is not None:
+        kv_length += layer_past[0].shape[-1]
     query_layer = query_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
     key_layer = key_layer.transpose(1, 2).view(batch_size, self.num_heads, q_length, self.head_dim)
     value_layer = value_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
