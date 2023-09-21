@@ -18,9 +18,7 @@ import torch
 from bigdl.llm.utils.common import invalidInputError
 
 
-def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
-    if device.type == 'xpu':
-        torch.xpu.empty_cache()
+def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size, num_heads,
                                     max_length, head_dim,
                                     dtype=dtype, device=device)
@@ -29,7 +27,7 @@ def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
                                       dtype=dtype, device=device)
 
     key_cache = key_cache_storage.as_strided((batch_size, num_heads,
-                                             current_length, head_dim),
+                                              current_length, head_dim),
                                              key_cache_storage.stride(),
                                              storage_offset=0)
     value_cache = value_cache_storage.as_strided((batch_size, num_heads,
@@ -37,6 +35,13 @@ def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
                                                  value_cache_storage.stride(),
                                                  storage_offset=0)
     return key_cache, value_cache
+
+
+def extend_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
+    # empty cache to reduce gpu memory
+    if device.type == 'xpu':
+        torch.xpu.empty_cache()
+    return init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device)
 
 
 def append_kv_cache(cache_k, cache_v, key_states, value_states):
@@ -58,6 +63,13 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
+def rotate_every_two(x):
+    x1 = x[:, :, :, ::2]
+    x2 = x[:, :, :, 1::2]
+    x = torch.stack((-x2, x1), dim=-1)
+    return x.flatten(-2)  # in einsum notation: rearrange(x, '... d j -> ... (d j)')
+
+
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
@@ -67,6 +79,12 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
+        return q_embed, k_embed
+    elif model_family == "gptj":
+        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
+        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
+        q_embed = (q * cos) + (rotate_every_two(q) * sin)
+        k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     elif model_family == "gpt_neox":
         gather_indices = position_ids[:, None, :, None]  # [bs, 1, seq_len, 1]

@@ -30,6 +30,7 @@ def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    self.to('cpu')
     self.save_pretrained(*args, **kwargs)
     import json
     import os

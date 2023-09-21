@@ -8,6 +8,7 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel s
 | ChatGLM   | [link](chatglm)   | 
 | Openai Whisper | [link](openai-whisper)   | 
 | BERT | [link](bert)   | 
+| Bark | [link](bark)   |
 
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).

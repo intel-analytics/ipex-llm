@@ -182,8 +182,15 @@ def optimize(model):
                         module.MultiheadAttention,
                         mpt_multihead_attention_forward
                         )
-
-    elif "bloom" in model.config._name_or_path:
+    elif "gptj" in model.config.model_type:
+        # dolly-v1-6b
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.gptj import gptj_attention_forward
+        convert_forward(model,
+                        module.GPTJAttention,
+                        gptj_attention_forward)
+    elif "bloom" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.bloom import bloom_attention_forward
@@ -191,17 +198,18 @@ def optimize(model):
                         module.BloomAttention,
                         bloom_attention_forward
                         )
-    elif "falcon" in model.config._name_or_path:
+    elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         if "RWForCausalLM" in model.config.architectures:
             if hasattr(model.config, "multi_query"):
-                # falcon-7b
-                from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
-                convert_forward(model,
-                                module.Attention,
-                                rw_attention_forward_7b
-                                )
+                # falcon-7b need to check performance drop after kv cache support.
+                # from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
+                # convert_forward(model,
+                #                 module.Attention,
+                #                 rw_attention_forward_7b
+                #                 )
+                pass
             else:
                 # falcon-40b
                 from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b

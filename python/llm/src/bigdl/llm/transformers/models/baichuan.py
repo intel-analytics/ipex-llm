@@ -26,7 +26,7 @@ import torch.utils.checkpoint
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -71,7 +71,7 @@ def baichuan_attention_forward_7b(
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(bsz,
+            new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
                                                        self.head_dim,
                                                        cache_k.size(2),
@@ -87,13 +87,13 @@ def baichuan_attention_forward_7b(
 
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(bsz,
-                                                           self.num_heads,
-                                                           self.head_dim,
-                                                           kv_seq_len,
-                                                           max_cache_length,
-                                                           dtype=key_states.dtype,
-                                                           device=device)
+        new_key_states, new_value_states = init_kv_cache(bsz,
+                                                         self.num_heads,
+                                                         self.head_dim,
+                                                         kv_seq_len,
+                                                         max_cache_length,
+                                                         dtype=key_states.dtype,
+                                                         device=device)
         new_key_states[:] = key_states
         new_value_states[:] = value_states
         key_states = new_key_states
@@ -169,7 +169,7 @@ def baichuan_attention_forward_13b(
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(bsz,
+            new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
                                                        self.head_dim,
                                                        cache_k.size(2),
@@ -185,13 +185,13 @@ def baichuan_attention_forward_13b(
 
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(bsz,
-                                                           self.num_heads,
-                                                           self.head_dim,
-                                                           kv_seq_len,
-                                                           max_cache_length,
-                                                           dtype=key_states.dtype,
-                                                           device=device)
+        new_key_states, new_value_states = init_kv_cache(bsz,
+                                                         self.num_heads,
+                                                         self.head_dim,
+                                                         kv_seq_len,
+                                                         max_cache_length,
+                                                         dtype=key_states.dtype,
+                                                         device=device)
         new_key_states[:] = key_states
         new_value_states[:] = value_states
         key_states = new_key_states

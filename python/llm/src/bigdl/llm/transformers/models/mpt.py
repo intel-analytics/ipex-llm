@@ -23,7 +23,7 @@ from einops import rearrange
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -73,10 +73,8 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
             cache_v = past_key_value[1]
             kv_seq_len += cache_k.shape[-2]
             if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-                if device.type == 'xpu':
-                    torch.xpu.empty_cache()
                 # allocate new
-                new_cache_k, new_cache_v = create_kv_cache(bsz,
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                            kv_n_heads,  # Support GQA
                                                            head_dim,
                                                            cache_k.size(2),
@@ -92,7 +90,7 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
             v = value_states
         else:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_key_states, new_value_states = create_kv_cache(bsz,
+            new_key_states, new_value_states = init_kv_cache(bsz,
                                                                kv_n_heads,
                                                                head_dim,
                                                                kv_seq_len,
