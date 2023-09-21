@@ -5,6 +5,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | Model      | Example                                                  |
 |------------|----------------------------------------------------------|
 | Baichuan   | [link](hf-transformers-models/baichuan)          | 
+| Baichuan2   | [link](hf-transformers-models/baichuan2)          | 
 | ChatGLM2   | [link](hf-transformers-models/chatglm2)          |
 | Chinese Llama2 | [link](hf-transformers-models/chinese-llama2)|
 | Falcon     | [link](hf-transformers-models/falcon)            |

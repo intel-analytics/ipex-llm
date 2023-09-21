@@ -3,6 +3,12 @@ All in one benchmark test allows users to test all the benchmarks and record the
 
 Before running, make sure to have [bigdl-llm](../../../README.md) and [bigdl-nano](../../../../nano/README.md) installed.
 
+## Dependencies
+```bash
+pip install omageconfig
+pip install pandas
+```
+
 ## Config
 Config YAML file has following format
 ```yaml
@@ -34,5 +40,9 @@ For SPR performance, run `bash run-spr.sh`.
 > In `run-spr.sh`, we set optimal environment varaible by `source bigdl-nano-init -c`, `-c` stands for disabling jemalloc. Enabling jemalloc may lead to latency increasement after multiple trials.
 >
 > The value of `OMP_NUM_THREADS` should be the same as the cpu cores specified by `numactl -C`.
+
+> **Note**
+>
+> Please install torch nightly version to avoid `Illegal instruction (core dumped)` issue, you can follow the following command to install: `pip install --pre --upgrade torch --index-url https://download.pytorch.org/whl/nightly/cpu`
 
 For ARC performance, run `bash run-arc.sh`.

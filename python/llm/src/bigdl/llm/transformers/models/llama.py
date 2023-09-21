@@ -38,24 +38,7 @@ import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
-
-
-def rotate_half(x):
-    """Rotates half the hidden dims of the input."""
-    x1 = x[..., :x.shape[-1] // 2]
-    x2 = x[..., x.shape[-1] // 2:]
-    return torch.cat((-x2, x1), dim=-1)
-
-
-def apply_rotary_pos_emb(q, k, cos, sin, position_ids):
-    # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
-    cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
-    sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
-    cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-    sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-    q_embed = (q * cos) + (rotate_half(q) * sin)
-    k_embed = (k * cos) + (rotate_half(k) * sin)
-    return q_embed, k_embed
+from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -122,15 +105,13 @@ def llama_attention_forward_4_31(
         kv_seq_len += past_key_value[0].shape[-2]
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
     query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                    cos, sin, position_ids)
+                                                    cos, sin, position_ids, "llama")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
             # allocate new
             new_cache_k, new_cache_v = create_kv_cache(bsz,
                                                        self.num_key_value_heads,  # Support GQA
