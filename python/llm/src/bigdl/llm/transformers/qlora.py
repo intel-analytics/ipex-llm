@@ -117,6 +117,8 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
 
 
 from peft.tuners.lora import LoraModel
+
+
 def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
     LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
@@ -178,7 +180,7 @@ class PeftModel:
                         **kwargs):
         old_create_new_module = LoraModel._create_new_module
         LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
-                                                                    old_create_new_module))
+                                                                      old_create_new_module))
         from peft import PeftModel
         try:
             model = PeftModel.from_pretrained(*args, **kwargs)

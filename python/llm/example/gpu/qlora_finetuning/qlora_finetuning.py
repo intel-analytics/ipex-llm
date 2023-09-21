@@ -73,7 +73,7 @@ if __name__ == "__main__":
             max_steps=200,
             learning_rate=2e-4,
             save_steps=100,
-            fp16=True, # fp16 is not supported yet
+            fp16=True,
             logging_steps=20,
             output_dir="outputs",
             optim="adamw_hf", # paged_adamw_8bit is not supported yet
