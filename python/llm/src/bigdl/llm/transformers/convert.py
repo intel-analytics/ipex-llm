@@ -172,5 +172,14 @@ def optimize(model):
                         module.SelfAttention,
                         chatglm_attention_forward
                         )
+    elif "mpt" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
+        convert_forward(model,
+                        module.MultiheadAttention,
+                        mpt_multihead_attention_forward
+                        )
+
 
     return model
