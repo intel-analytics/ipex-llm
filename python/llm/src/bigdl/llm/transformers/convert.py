@@ -181,6 +181,14 @@ def optimize(model):
         convert_forward(model,
                         module.GPTJAttention,
                         gptj_attention_forward)
+    elif "bloom" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.bloom import bloom_attention_forward
+        convert_forward(model,
+                        module.BloomAttention,
+                        bloom_attention_forward
+                        )
     elif "falcon" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -247,5 +255,12 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
+
+    elif model.config.model_type == "gpt_neox":
+        from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
+        convert_forward(model,
+                        transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention,
+                        gptneox_attention_forward
+                        )
 
     return model
