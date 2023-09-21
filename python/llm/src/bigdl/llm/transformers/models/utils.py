@@ -41,7 +41,7 @@ def extend_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
     # empty cache to reduce gpu memory
     if device.type == 'xpu':
         torch.xpu.empty_cache()
-    return init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, device)
+    return init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device)
 
 
 def append_kv_cache(cache_k, cache_v, key_states, value_states):
