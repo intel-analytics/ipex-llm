@@ -49,13 +49,16 @@ class DisableTorchAllocTensor():
     def __init__(self) -> None:
         self._old_torch_load_state_dict = Module.load_state_dict
         self._old_torch_to_device = Module.to
+        self._old_torch_load_from_state_dict = Module._load_from_state_dict
 
     def __enter__(self):
         Module.load_state_dict = lambda *args, **kwargs: _IncompatibleKeys([], [])
+        Module._load_from_state_dict = lambda *args, **kwargs: None
         Module.to = lambda self, *args, **kwargs: self
 
     def __exit__(self, exc_type, exc_value, traceback):
         Module.load_state_dict = self._old_torch_load_state_dict
+        Module._load_from_state_dict = self._old_torch_load_from_state_dict
         Module.to = self._old_torch_to_device
 
 
@@ -86,6 +89,9 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
         if is_creator:
             with init_empty_weights(), DisableTorchAllocTensor():
                 model = model_or_creator(**kwargs)
+            # Sometimes transformers remote-code models 
+            # still mark itself in cpu even it is actually not.
+            model = model.to("meta")
         else:
             model = model_or_creator
         invalidInputError(isinstance(model, torch.nn.Module),
