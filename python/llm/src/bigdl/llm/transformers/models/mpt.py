@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://huggingface.co/mosaicml/mpt-7b/blob/main/attention.py
+# https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/attention.py
 #
 
 import warnings
@@ -69,7 +69,7 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
         if len(past_key_value) != 0:
         #     k = torch.cat([past_key_value[0], k], dim=3)
         #     v = torch.cat([past_key_value[1], v], dim=2)
-            cache_k = past_key_value[0].permute(0, 1, 3, 2)
+            cache_k = past_key_value[0].transpose(2, 3)
             cache_v = past_key_value[1]
             kv_seq_len += cache_k.shape[-2]
             if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
@@ -87,8 +87,8 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
                 new_cache_v[:] = cache_v
                 cache_k = new_cache_k
                 cache_v = new_cache_v
-            key_states, value_states = append_kv_cache(cache_k, cache_v, k.permute(0, 1, 3, 2), v)
-            k = key_states.permute(0, 1, 3, 2)
+            key_states, value_states = append_kv_cache(cache_k, cache_v, k.transpose(2, 3), v)
+            k = key_states.transpose(2, 3)
             v = value_states
         else:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
@@ -99,9 +99,9 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
                                                                max_cache_length,
                                                                dtype=k.dtype,
                                                                device=device)
-            new_key_states[:] = k.permute(0, 1, 3, 2)
+            new_key_states[:] = k.transpose(2, 3)
             new_value_states[:] = v
-            k = new_key_states
+            k = new_key_states.transpose(2, 3)
             v = new_value_states
         past_key_value = (k, v)
     (b, _, s_q, d) = q.shape

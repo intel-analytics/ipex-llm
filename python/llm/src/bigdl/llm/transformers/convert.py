@@ -175,7 +175,8 @@ def optimize(model):
                         )
     elif "mpt" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
+        attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
+        module = importlib.import_module(attention_module_name)
         from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
         convert_forward(model,
                         module.MultiheadAttention,
