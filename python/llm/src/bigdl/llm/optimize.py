@@ -24,6 +24,7 @@ from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.transformers.utils import extract_local_archive_file, get_local_shard_files
 import transformers
 from transformers import PreTrainedModel
 from .utils.common import MuteHFLogger
@@ -42,9 +43,12 @@ def _save_low_bit(self, save_dir, *args, **kwargs):
     os.makedirs(save_dir, exist_ok=True)
     model_path = os.path.join(save_dir, PYTORCH_MODEL_NAME)
     if isinstance(self, PreTrainedModel):
-        # Todo: extend this
+        # We borrowed this method to adapt to Transformer model cases
+        # as much as possible, and later we may merge these two situations
         self.save_pretrained(save_dir)
     else:
+        # TODO: For the lowbit model still larger than 8GB,
+        #       save it into shards.
         torch.save(self.state_dict(), model_path, *args, **kwargs)
     with open(os.path.join(save_dir, CONFIG_NAME), "w") as json_file:
         json.dump(self._bigdl_config, json_file)
@@ -58,7 +62,6 @@ class DisableTorchAllocTensor():
         self._old_torch_load_state_dict = Module.load_state_dict
         self._old_torch_to_device = Module.to
         self._old_torch_load_from_state_dict = Module._load_from_state_dict
-        # Todo: Mute Load safetensors also
         self._old_torch_load = torch.load
 
     def __enter__(self):
@@ -76,8 +79,8 @@ class DisableTorchAllocTensor():
 
 class ContextManagers:
     """
-    Wrapper for `contextlib.ExitStack` which enters a collection of context managers. Adaptation of `ContextManagers`
-    in the `fastcore` library.
+    Wrapper for `contextlib.ExitStack` which enters a collection of context managers.
+    Adaptation of `ContextManagers` in the `fastcore` library.
     """
 
     def __init__(self, context_managers):
@@ -121,13 +124,12 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
             init_contexts.extend([init_empty_weights(), DisableTorchAllocTensor()])
             # As we have mute the `torch.load`, this will trigger a key missing warning in hf
             # but this matters not for we will load again later.
-            # Todo: Better not involve here if it is not a transformer model
             init_contexts.append(MuteHFLogger(logger=transformers.modeling_utils.logger))
 
             # print_mem_swap("before model init")
             with ContextManagers(init_contexts):
                 model = model_or_creator(**kwargs)
-            # Sometimes transformers remote-code models 
+            # Sometimes transformers remote-code models
             # still mark itself in cpu even it is actually not.
             model = model.to("meta")
         else:
@@ -139,13 +141,26 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
-    # TODO: Support shards models
-    state_dict = torch.load(os.path.join(model_path, PYTORCH_MODEL_NAME))
-    if is_creator:
-        for param_name, param in state_dict.items():
-            set_module_tensor_to_device(model, param_name, "cpu", param)
+    # TODO: Support transformer shards models
+    resolved_archive_file, is_sharded = extract_local_archive_file(model_path, subfolder="")
+    if is_sharded:
+        # For now only shards transformers models
+        # can run in this branch.
+        resolved_archive_file, sharded_metadata = \
+            get_local_shard_files(model_path,
+                                  resolved_archive_file,
+                                  subfolder="")
     else:
-        model.load_state_dict(state_dict=state_dict)
+        resolved_archive_file = [os.path.join(model_path, PYTORCH_MODEL_NAME)]
+
+    from transformers.modeling_utils import _load_state_dict_into_model
+    for model_file in resolved_archive_file:
+        state_dict = torch.load(model_file)
+        if is_creator:
+            for param_name, param in state_dict.items():
+                set_module_tensor_to_device(model, param_name, "cpu", param)
+        else:
+            _load_state_dict_into_model(model, state_dict, start_prefix="")
     return model
 
 
