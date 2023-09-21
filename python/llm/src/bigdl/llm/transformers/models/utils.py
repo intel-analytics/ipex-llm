@@ -58,6 +58,13 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
+def rotate_every_two(x):
+    x1 = x[:, :, :, ::2]
+    x2 = x[:, :, :, 1::2]
+    x = torch.stack((-x2, x1), dim=-1)
+    return x.flatten(-2)  # in einsum notation: rearrange(x, '... d j -> ... (d j)')
+
+
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
@@ -67,6 +74,12 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
+        return q_embed, k_embed
+    elif model_family == "gptj":
+        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
+        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
+        q_embed = (q * cos) + (rotate_every_two(q) * sin)
+        k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     elif model_family == "gpt_neox":
         gather_indices = position_ids[:, None, :, None]  # [bs, 1, seq_len, 1]
