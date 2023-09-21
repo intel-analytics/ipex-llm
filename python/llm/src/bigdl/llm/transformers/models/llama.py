@@ -37,7 +37,7 @@ from typing import Optional, Tuple
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, expand_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 
 
@@ -112,10 +112,8 @@ def llama_attention_forward_4_31(
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
             # allocate new
-            new_cache_k, new_cache_v = create_kv_cache(bsz,
+            new_cache_k, new_cache_v = expand_kv_cache(bsz,
                                                        self.num_key_value_heads,  # Support GQA
                                                        self.head_dim,
                                                        cache_k.size(2),
@@ -131,13 +129,13 @@ def llama_attention_forward_4_31(
 
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = create_kv_cache(bsz,
-                                                           self.num_key_value_heads,
-                                                           self.head_dim,
-                                                           kv_seq_len,
-                                                           max_cache_length,
-                                                           dtype=key_states.dtype,
-                                                           device=device)
+        new_key_states, new_value_states = init_kv_cache(bsz,
+                                                         self.num_key_value_heads,
+                                                         self.head_dim,
+                                                         kv_seq_len,
+                                                         max_cache_length,
+                                                         dtype=key_states.dtype,
+                                                         device=device)
         new_key_states[:] = key_states
         new_value_states[:] = value_states
         key_states = new_key_states

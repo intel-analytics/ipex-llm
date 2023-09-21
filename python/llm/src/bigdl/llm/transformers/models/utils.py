@@ -18,7 +18,7 @@ import torch
 from bigdl.llm.utils.common import invalidInputError
 
 
-def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
+def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size, num_heads,
                                     max_length, head_dim,
                                     dtype=dtype, device=device)
@@ -27,7 +27,28 @@ def create_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
                                       dtype=dtype, device=device)
 
     key_cache = key_cache_storage.as_strided((batch_size, num_heads,
-                                             current_length, head_dim),
+                                              current_length, head_dim),
+                                             key_cache_storage.stride(),
+                                             storage_offset=0)
+    value_cache = value_cache_storage.as_strided((batch_size, num_heads,
+                                                  current_length, head_dim),
+                                                 value_cache_storage.stride(),
+                                                 storage_offset=0)
+    return key_cache, value_cache
+
+
+def expand_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
+    if device.type == 'xpu':
+        torch.xpu.empty_cache()
+    key_cache_storage = torch.empty(batch_size, num_heads,
+                                    max_length, head_dim,
+                                    dtype=dtype, device=device)
+    value_cache_storage = torch.empty(batch_size, num_heads,
+                                      max_length, head_dim,
+                                      dtype=dtype, device=device)
+
+    key_cache = key_cache_storage.as_strided((batch_size, num_heads,
+                                              current_length, head_dim),
                                              key_cache_storage.stride(),
                                              storage_offset=0)
     value_cache = value_cache_storage.as_strided((batch_size, num_heads,
