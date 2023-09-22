@@ -93,7 +93,7 @@ def internlm_attention_forward(
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 bsz,
-                self.num_key_value_heads,
+                self.num_heads,
                 self.head_dim,
                 cache_k.size(2),
                 kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
@@ -111,7 +111,7 @@ def internlm_attention_forward(
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = init_kv_cache(
             bsz,
-            self.num_key_value_heads,
+            self.num_heads,
             self.head_dim,
             kv_seq_len,
             max_cache_length,
