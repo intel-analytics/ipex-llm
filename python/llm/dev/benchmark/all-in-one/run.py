@@ -176,18 +176,18 @@ def run_pytorch_autocast_bf16(repo_id,
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         # TODO: need verify chatglm family run bf16.
-        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype='auto').float()
-        #model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype='auto').bfloat()
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16).float()
+        #model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16).bfloat()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
                      'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
                      'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
                      'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype='auto')
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
         # Need to use LlamaTokenizer, reason please refer to issue: https://github.com/intel-analytics/BigDL/issues/8944
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype='auto')
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
