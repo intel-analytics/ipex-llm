@@ -27,6 +27,9 @@ if __name__ == "__main__":
     parser.add_argument('-O', '--quote_type', type=str, help='quote type', default='Occlum')
     parser.add_argument('-o', '--policy_id', type=str, help='policy id', default='')
     parser.add_argument('-p', '--user_report', type=str, help='user report', default='ppml')
+    parser.add_argument("-T", "--as_Type", type=str, help="the type of attestation behavior: attest or register", default='attest')
+    parser.add_argument("-e", "--mr_enclave", type=str, help="mrEnclave", default='')
+    parser.add_argument("-s", "--mr_signer", type=str, help="mrSigner", default='')
     parser.add_argument('--proxy', type=str, help='proxy', default='')
     args = parser.parse_args()
 
@@ -41,18 +44,29 @@ if __name__ == "__main__":
     elif args.quote_type == "Occlum":
         quote = quote_generator.generate_occlum_quote()
 
-    attestation_result = -1
-    if args.as_type == "BigDL":
-        attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
-    elif args.as_type == "Amber":
-        policy_list = args.policy_id.split(",")
-        attestation_result = attestation_service.amber(args.url, args.api_key, quote, policy_list, proxies)
+    if args.as_Type == "attest":
+        attestation_result = -1
+        if args.as_type == "BigDL":
+            attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
+        elif args.as_type == "Amber":
+            policy_list = args.policy_id.split(",")
+            attestation_result = attestation_service.amber(args.url, args.api_key, quote, policy_list, proxies)
 
-    if attestation_result == 0:
-        print("Attestation Success!")
-    if attestation_result == 1:
-        print("WARNING: Attestation pass but BIOS or the software is out of date.")
-        print("Attestation Success!")
-    if attestation_result == -1:
-        print("Attestation Failed!")
-        sys.exit(1)
+        if attestation_result == 0:
+            print("Attestation Success!")
+        if attestation_result == 1:
+            print("WARNING: Attestation pass but BIOS or the software is out of date.")
+            print("Attestation Success!")
+        if attestation_result == -1:
+            print("Attestation Failed!")
+            sys.exit(1)
+    elif args.as_Type == "register":
+        register_result = -1
+        if args.as_type == "BigDL":
+            register_result = attestation_service.bigdl_attestation_register(args.url, args.app_id, args.api_key, "SGXMREnclavePolicy", args.mr_enclave, args.mr_signer)
+        if register_result == -1:
+            print("register Failed!")
+            sys.exit(1)
+        else:
+            print("register Success!")
+            print("policyID: " + register_result)
