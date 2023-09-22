@@ -28,6 +28,7 @@ from bigdl.llm.transformers.utils import extract_local_archive_file, get_local_s
 import transformers
 from transformers import PreTrainedModel
 from .utils.common import MuteHFLogger
+from .utils.lazy_load_torch import LazyLoadTensors
 from contextlib import ExitStack, contextmanager
 
 
@@ -62,7 +63,6 @@ class DisableTorchAllocTensor():
         self._old_torch_load_state_dict = Module.load_state_dict
         self._old_torch_to_device = Module.to
         self._old_torch_load_from_state_dict = Module._load_from_state_dict
-        self._old_torch_load = torch.load
         # Chatglm2 init weights manually,
         # and `skip_init` init on `cpu` by default
         self._old_skip_init = torch.nn.utils.skip_init
@@ -71,7 +71,6 @@ class DisableTorchAllocTensor():
         Module.load_state_dict = lambda *args, **kwargs: _IncompatibleKeys([], [])
         Module._load_from_state_dict = lambda *args, **kwargs: None
         Module.to = lambda self, *args, **kwargs: self
-        torch.load = lambda *args, **kwargs: {}
 
         def skip_init_on_meta(module_cls, *args, **kwargs):
             kwargs['device'] = 'meta'
@@ -82,7 +81,6 @@ class DisableTorchAllocTensor():
         Module.load_state_dict = self._old_torch_load_state_dict
         Module._load_from_state_dict = self._old_torch_load_from_state_dict
         Module.to = self._old_torch_to_device
-        torch.load = self._old_torch_load
         torch.nn.utils.skip_init = self._old_skip_init
 
 
@@ -125,6 +123,8 @@ def low_bit_sanity_check(model_path):
 def low_memory_init():
     init_contexts = []
     init_contexts.extend([init_empty_weights(), DisableTorchAllocTensor()])
+    # Load everything except Tensors' parameters
+    init_contexts.append(LazyLoadTensors())
     # As we have muted the `torch.load`, this will trigger a key missing warning in hf
     # but this matters not for we will load again later.
     init_contexts.append(MuteHFLogger(logger=transformers.modeling_utils.logger))
