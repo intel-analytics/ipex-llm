@@ -91,7 +91,6 @@ def generate_occlum_quote():
         return ""
     with open(QUOTE_PATH, "rb") as f:
         quote = f.read()
-    print(quote)
     return quote
 
 
