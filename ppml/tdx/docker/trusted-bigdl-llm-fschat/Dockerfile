@@ -15,7 +15,7 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt install software-properties-common libunwind8-dev vim less -y && \
+    apt install software-properties-common libunwind8-dev vim less unzip -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3.9 git curl wget && \
     rm /usr/bin/python3 && \
@@ -61,6 +61,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
+RUN cd /ppml && \
+    git clone https://github.com/wg/wrk.git && \
+    cd wrk && \
+    make && \
+    cp wrk /usr/local/bin
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 
