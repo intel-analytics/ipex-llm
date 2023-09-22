@@ -72,8 +72,8 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
     kv_seq_len = k.shape[-1]
     if past_key_value is not None:
         if len(past_key_value) != 0:
-        #     k = torch.cat([past_key_value[0], k], dim=3)
-        #     v = torch.cat([past_key_value[1], v], dim=2)
+            # k = torch.cat([past_key_value[0], k], dim=3)
+            # v = torch.cat([past_key_value[1], v], dim=2)
             cache_k = past_key_value[0].transpose(2, 3)
             cache_v = past_key_value[1]
             kv_seq_len += cache_k.shape[-2]
@@ -96,12 +96,12 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
         else:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_key_states, new_value_states = init_kv_cache(bsz,
-                                                               kv_n_heads,
-                                                               head_dim,
-                                                               kv_seq_len,
-                                                               max_cache_length,
-                                                               dtype=k.dtype,
-                                                               device=device)
+                                                             kv_n_heads,
+                                                             head_dim,
+                                                             kv_seq_len,
+                                                             max_cache_length,
+                                                             dtype=k.dtype,
+                                                             device=device)
             new_key_states[:] = k.transpose(2, 3)
             new_value_states[:] = v
             k = new_key_states.transpose(2, 3)
@@ -117,8 +117,8 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
         _s_k = max(0, attn_bias.size(3) - s_k)
         attn_bias = attn_bias[:, :, _s_q:, _s_k:]
         if attn_bias.size(-1) != 1 and attn_bias.size(-1) != s_k \
-            or (attn_bias.size(-2) != 1 and attn_bias.size(-2) != s_q):
-            raise RuntimeError(f'attn_bias (shape: {attn_bias.shape}) '
+                or (attn_bias.size(-2) != 1 and attn_bias.size(-2) != s_q):
+            invalidInputError(False, f'attn_bias (shape: {attn_bias.shape}) '
                                f'is expected to broadcast to shape: {attn_weight.shape}.')
         attn_weight = attn_weight + attn_bias
     min_val = torch.finfo(q.dtype).min
