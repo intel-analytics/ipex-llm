@@ -11,6 +11,8 @@ sudo docker run -itd \
         -e SGX_MEM_SIZE=60GB \
         -e SGX_THREAD=2048 \
         -e SGX_KERNEL_HEAP=3GB \
+        -e PCCS_URL=https://PCCS_IP:PCCS_PORT \
+        -e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -e SGX_LOG_LEVEL=off \

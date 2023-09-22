@@ -42,9 +42,9 @@ if __name__ == "__main__":
         quote = quote_generator.generate_occlum_quote()
 
     attestation_result = -1
-    if args.as_type == "BigDLRemoteAttestationService":
+    if args.as_type == "BigDL":
         attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
-    elif args.as_type == "AmberAttestationService":
+    elif args.as_type == "Amber":
         policy_list = args.policy_id.split(",")
         attestation_result = attestation_service.amber(args.url, args.api_key, quote, policy_list, proxies)
 

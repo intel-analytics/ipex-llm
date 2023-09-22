@@ -97,7 +97,7 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
-           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v4/' > /etc/sgx_default_qcnl.conf
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
            cp /etc/sgx_default_qcnl.conf /opt/occlum_spark/image/etc/
            cd /root/demos/remote_attestation/dcap/

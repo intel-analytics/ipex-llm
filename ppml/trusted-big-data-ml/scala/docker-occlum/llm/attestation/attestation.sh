@@ -29,6 +29,7 @@ elif [ "$ATTESTATION" = "true" ]; then
   cd /opt/occlum_spark
   occlum exec /bin/dcap_c_test $REPORT_DATA
   echo "generate quote success"
+  echo "cd /opt/occlum_spark" > /opt/temp_command_file
   ATTESTATION_COMMAND="occlum exec /bin/python3 /opt/attestation_cli.py -u ${ATTESTATION_URL} -i ${APP_ID} -k ${API_KEY} -O Occlum"
   ## default is null
   if [ -n "$ATTESTATION_POLICYID" ]; then
@@ -38,8 +39,8 @@ elif [ "$ATTESTATION" = "true" ]; then
   if [ -n "$ATTESTATION_TYPE" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -t ${ATTESTATION_TYPE}"
   fi
-  echo $ATTESTATION_COMMAND > temp_command_file
-  echo 'if [ $? -gt 0 ]; then ' >> temp_command_file
-  echo '  exit 1' >> temp_command_file
-  echo 'fi' >> temp_command_file
+  echo $ATTESTATION_COMMAND >> /opt/temp_command_file
+  echo 'if [ $? -gt 0 ]; then ' >> /opt/temp_command_file
+  echo '  exit 1' >> /opt/temp_command_file
+  echo 'fi' >> /opt/temp_command_file
 fi
