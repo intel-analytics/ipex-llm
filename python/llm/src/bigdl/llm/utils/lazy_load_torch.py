@@ -48,6 +48,7 @@ import zipfile
 import io
 from typing import Dict, IO, Any, Callable
 from dataclasses import dataclass
+from .common import invalidInputError
 
 
 item_size = {torch.bfloat16: 2,
@@ -57,11 +58,13 @@ item_size = {torch.bfloat16: 2,
              torch.float32: 4,
              torch.int8: 1}
 
+
 @dataclass
 class LazyStorage:
     load: Callable[[int, int], torch.Tensor]
     kind: StorageType
     description: str
+
 
 @dataclass
 class LazyTensor:
@@ -82,6 +85,7 @@ class LazyTensor:
             return self.load().to(data_type)
         return LazyTensor(load, self.shape, data_type, f'convert({data_type}) {self.description}')
 
+
 def _load(pickle_fp, map_location, picklemoudle, pickle_file='data.pkl', zip_file=None):
 
     load_module_mapping: Dict[str, str] = {
@@ -94,10 +98,7 @@ def _load(pickle_fp, map_location, picklemoudle, pickle_file='data.pkl', zip_fil
             self.data_base_path = data_base_path
             self.zip_file = zip_file
 
-
         def persistent_load(self, pid):
-            assert pid[0] == 'storage'
-            assert isinstance(pid[1], StorageType)
             data_type = pid[1].dtype
             filename_stem = pid[2]
             filename = f'{self.data_base_path}/{filename_stem}'
@@ -109,16 +110,22 @@ def _load(pickle_fp, map_location, picklemoudle, pickle_file='data.pkl', zip_fil
                 fp.seek(offset * item_size[dtype])
                 size = elm_count * item_size[dtype]
                 data = fp.read(size)
-                assert len(data) == size
                 return torch.frombuffer(bytearray(data), dtype=dtype)
-            description = f'storage data_type={data_type} path-in-zip={filename} path={self.zip_file.filename}'
+            description = f'storage data_type={data_type} ' \
+                          'path-in-zip={filename} path={self.zip_file.filename}'
             return LazyStorage(load=load, kind=pid[1], description=description)
 
-
         @staticmethod
-        def lazy_rebuild_tensor_v2(storage: Any, storage_offset: Any, size: Any, stride: Any,
-                                requires_grad: Any, backward_hooks: Any, metadata: Any = None) -> LazyTensor:
-            assert isinstance(storage, LazyStorage)
+        def lazy_rebuild_tensor_v2(storage: Any,
+                                   storage_offset: Any,
+                                   size: Any,
+                                   stride: Any,
+                                   requires_grad: Any,
+                                   backward_hooks: Any,
+                                   metadata: Any = None) -> LazyTensor:
+            invalidInputError(isinstance(storage, LazyStorage),
+                              "storage should be an instance of class `LazyStorage`, "
+                              f"but get {type(storage)}.")
 
             def load() -> torch.Tensor:
                 elm_count = stride[0] * size[0]
@@ -126,18 +133,15 @@ def _load(pickle_fp, map_location, picklemoudle, pickle_file='data.pkl', zip_fil
             description = f'pickled storage_offset={storage_offset} in {storage.description}'
             return LazyTensor(load, list(size), storage.kind.dtype, description)
 
-
         @staticmethod
         def rebuild_from_type_v2(func, new_type, args, state):
             return func(*args)
-
 
         CLASSES: dict[tuple[str, str], Any] = {
             ('torch._tensor', '_rebuild_from_type_v2'): getattr(rebuild_from_type_v2, '__func__'),
             ('torch._utils', '_rebuild_tensor_v2'): getattr(lazy_rebuild_tensor_v2, '__func__'),
             ('torch', 'Tensor'): LazyTensor,
         }
-
 
         def find_class(self, mod_name, name):
             if (mod_name, name) in self.CLASSES:
@@ -170,9 +174,11 @@ def lazyload(
         fp = open(f, 'rb')
     zf = zipfile.ZipFile(fp)
     pickle_paths = [name for name in zf.namelist() if name.endswith('.pkl')]
-    assert len(pickle_paths) == 1, pickle_paths
+    invalidInputError(len(pickle_paths) == 1,
+                      "There should be only one pickle_paths found, "
+                      f"but get {pickle_paths}. ")
     pickle_fp = zf.open(pickle_paths[0], 'r')
-    state_dict= _load(pickle_fp, None, pickle, pickle_file=pickle_paths[0][:-4], zip_file=zf)
+    state_dict = _load(pickle_fp, None, pickle, pickle_file=pickle_paths[0][:-4], zip_file=zf)
     return state_dict
 
 
