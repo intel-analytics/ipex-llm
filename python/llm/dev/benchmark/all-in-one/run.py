@@ -176,7 +176,7 @@ def run_pytorch_autocast_bf16(repo_id,
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         # TODO: need verify chatglm family run bf16.
-        invalidInputError(False, "Currently pytorch do not support bfloat 16 on cpu for chatglm models.")
+        invalidInputError(False, "Currently pytorch do not support bfloat16 on cpu for chatglm models.")
     elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
                      'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
                      'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
