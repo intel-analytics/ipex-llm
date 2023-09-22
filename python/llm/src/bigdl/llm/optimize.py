@@ -28,7 +28,7 @@ from bigdl.llm.transformers.utils import extract_local_archive_file, get_local_s
 import transformers
 from transformers import PreTrainedModel
 from .utils.common import MuteHFLogger
-from contextlib import ExitStack
+from contextlib import ExitStack, contextmanager
 
 
 # Simulate the Hugging Face format
@@ -63,6 +63,9 @@ class DisableTorchAllocTensor():
         self._old_torch_to_device = Module.to
         self._old_torch_load_from_state_dict = Module._load_from_state_dict
         self._old_torch_load = torch.load
+        # Chatglm2 init weights manually,
+        # and `skip_init` init on `cpu` by default
+        self._old_skip_init = torch.nn.utils.skip_init
 
     def __enter__(self):
         Module.load_state_dict = lambda *args, **kwargs: _IncompatibleKeys([], [])
@@ -70,11 +73,17 @@ class DisableTorchAllocTensor():
         Module.to = lambda self, *args, **kwargs: self
         torch.load = lambda *args, **kwargs: {}
 
+        def skip_init_on_meta(module_cls, *args, **kwargs):
+            kwargs['device'] = 'meta'
+            return self._old_skip_init(module_cls, *args, **kwargs)
+        torch.nn.utils.skip_init = skip_init_on_meta
+
     def __exit__(self, exc_type, exc_value, traceback):
         Module.load_state_dict = self._old_torch_load_state_dict
         Module._load_from_state_dict = self._old_torch_load_from_state_dict
         Module.to = self._old_torch_to_device
         torch.load = self._old_torch_load
+        torch.nn.utils.skip_init = self._old_skip_init
 
 
 class ContextManagers:
@@ -112,32 +121,23 @@ def low_bit_sanity_check(model_path):
     return low_bit
 
 
-def load_low_bit(model_or_creator, model_path, **kwargs):
-    is_creator = not isinstance(model_or_creator, torch.nn.Module) \
-        and callable(model_or_creator)
+@contextmanager
+def low_memory_init():
+    init_contexts = []
+    init_contexts.extend([init_empty_weights(), DisableTorchAllocTensor()])
+    # As we have muted the `torch.load`, this will trigger a key missing warning in hf
+    # but this matters not for we will load again later.
+    init_contexts.append(MuteHFLogger(logger=transformers.modeling_utils.logger))
+    with ContextManagers(init_contexts):
+        yield
+
+
+def load_low_bit(model, model_path):
     low_bit = low_bit_sanity_check(model_path)
-
+    invalidInputError(isinstance(model, torch.nn.Module),
+                      "model should be a instance of "
+                      f"`torch.nn.Module`, but got {type(model)} at last.")
     if low_bit:
-        # a creator
-        if is_creator:
-            init_contexts = []
-            init_contexts.extend([init_empty_weights(), DisableTorchAllocTensor()])
-            # As we have mute the `torch.load`, this will trigger a key missing warning in hf
-            # but this matters not for we will load again later.
-            init_contexts.append(MuteHFLogger(logger=transformers.modeling_utils.logger))
-
-            # print_mem_swap("before model init")
-            with ContextManagers(init_contexts):
-                model = model_or_creator(**kwargs)
-            # Sometimes transformers remote-code models
-            # still mark itself in cpu even it is actually not.
-            model = model.to("meta")
-        else:
-            model = model_or_creator
-        invalidInputError(isinstance(model, torch.nn.Module),
-                          "model_or_creator should be a instance of "
-                          "`torch.nn.Module`or a method that returns "
-                          f"an instance of `torch.nn.Module`, but got {type(model)} at last.")
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
@@ -145,21 +145,17 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
     if is_sharded:
         # For now only shards transformers models
         # can run in this branch.
-        resolved_archive_file, sharded_metadata = \
+        resolved_archive_file, _ = \
             get_local_shard_files(model_path,
                                   resolved_archive_file,
                                   subfolder="")
     else:
         resolved_archive_file = [os.path.join(model_path, PYTORCH_MODEL_NAME)]
 
-    from transformers.modeling_utils import _load_state_dict_into_model
     for model_file in resolved_archive_file:
         state_dict = torch.load(model_file)
-        if is_creator:
-            for param_name, param in state_dict.items():
-                set_module_tensor_to_device(model, param_name, "cpu", param)
-        else:
-            _load_state_dict_into_model(model, state_dict, start_prefix="")
+        for param_name, param in state_dict.items():
+            set_module_tensor_to_device(model, param_name, "cpu", param)
     return model
 
 
