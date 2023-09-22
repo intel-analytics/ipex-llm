@@ -29,7 +29,8 @@ from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
-def mpt_multihead_attention_forward(self, x, past_key_value=None, attn_bias=None, attention_mask=None, is_causal=True, needs_weights=False):
+def mpt_multihead_attention_forward(self, x, past_key_value=None, attn_bias=None,
+                                    attention_mask=None, is_causal=True, needs_weights=False):
     qkv = self.Wqkv(x)
     if self.clip_qkv:
         qkv.clamp_(min=-self.clip_qkv, max=self.clip_qkv)
@@ -39,12 +40,16 @@ def mpt_multihead_attention_forward(self, x, past_key_value=None, attn_bias=None
         dtype = query.dtype
         query = self.q_ln(query).to(dtype)
         key = self.k_ln(key).to(dtype)
-    (context, attn_weights, past_key_value) = mpt_scaled_multihead_dot_product_attention(query, key, value, self.n_heads,
-                                                           past_key_value=past_key_value,
-                                                           softmax_scale=self.softmax_scale, attn_bias=attn_bias,
-                                                           key_padding_mask=key_padding_mask, is_causal=is_causal,
-                                                           dropout_p=self.attn_dropout_p, training=self.training,
-                                                           needs_weights=needs_weights)
+    (context, attn_weights, past_key_value) = \
+        mpt_scaled_multihead_dot_product_attention(query, key, value, self.n_heads,
+                                                   past_key_value=past_key_value,
+                                                   softmax_scale=self.softmax_scale,
+                                                   attn_bias=attn_bias,
+                                                   key_padding_mask=key_padding_mask,
+                                                   is_causal=is_causal,
+                                                   dropout_p=self.attn_dropout_p,
+                                                   training=self.training,
+                                                   needs_weights=needs_weights)
     return (self.out_proj(context), attn_weights, past_key_value)
 
 
@@ -111,13 +116,19 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
         _s_q = max(0, attn_bias.size(2) - s_q)
         _s_k = max(0, attn_bias.size(3) - s_k)
         attn_bias = attn_bias[:, :, _s_q:, _s_k:]
-        if attn_bias.size(-1) != 1 and attn_bias.size(-1) != s_k or (attn_bias.size(-2) != 1 and attn_bias.size(-2) != s_q):
-            raise RuntimeError(f'attn_bias (shape: {attn_bias.shape}) is expected to broadcast to shape: {attn_weight.shape}.')
+        if attn_bias.size(-1) != 1 and attn_bias.size(-1) != s_k \
+            or (attn_bias.size(-2) != 1 and attn_bias.size(-2) != s_q):
+            raise RuntimeError(f'attn_bias (shape: {attn_bias.shape}) '
+                               f'is expected to broadcast to shape: {attn_weight.shape}.')
         attn_weight = attn_weight + attn_bias
     min_val = torch.finfo(q.dtype).min
     if key_padding_mask is not None:
         if attn_bias is not None:
-            warnings.warn('Propogating key_padding_mask to the attention module ' + 'and applying it within the attention module can cause ' + 'unneccessary computation/memory usage. Consider integrating ' + 'into attn_bias once and passing that to each attention ' + 'module instead.')
+            warnings.warn('Propogating key_padding_mask to the attention module '
+                          + 'and applying it within the attention module can cause '
+                          + 'unneccessary computation/memory usage. Consider integrating '
+                          + 'into attn_bias once and passing that to each attention '
+                          + 'module instead.')
         attn_weight = attn_weight.masked_fill(~key_padding_mask.view((b, 1, 1, s_k)), min_val)
     if is_causal and (not q.size(2) == 1):
         s = max(s_q, s_k)
@@ -129,7 +140,8 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
         attn_weight = attn_weight.masked_fill(causal_mask.view(1, 1, s_q, s_k), min_val)
     attn_weight = torch.softmax(attn_weight, dim=-1)
     if dropout_p:
-        attn_weight = torch.nn.functional.dropout(attn_weight, p=dropout_p, training=training, inplace=True)
+        attn_weight = torch.nn.functional.dropout(attn_weight, p=dropout_p,
+                                                  training=training, inplace=True)
     out = attn_weight.to(v.dtype).matmul(v)
     out = rearrange(out, 'b h s d -> b s (h d)')
     if needs_weights:
