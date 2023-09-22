@@ -1,6 +1,6 @@
 # BigDL-LLM Portable Executable For Windows: User Guide
 
-This one-click installer includes everything you need to run LLM (except models). Please refer to How to use section to get started.
+This portable executable includes everything you need to run LLM (except models). Please refer to How to use section to get started.
 
 ## 13B model running on an Intel 11-Gen Core PC (real-time screen capture)
 

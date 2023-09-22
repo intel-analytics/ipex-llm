@@ -1,4 +1,4 @@
-# BigDL-LLM One-Click Installer Setup Script For Windows
+# BigDL-LLM Portable Executable Setup Script For Windows
 
 # How to use
 
