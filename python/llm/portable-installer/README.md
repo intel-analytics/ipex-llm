@@ -1,4 +1,4 @@
-# BigDL-LLM One-Click Installer For Windows: User Guide
+# BigDL-LLM Portable Executable For Windows: User Guide
 
 This one-click installer includes everything you need to run LLM (except models). Please refer to How to use section to get started.
 
