@@ -119,7 +119,7 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
         if attn_bias.size(-1) != 1 and attn_bias.size(-1) != s_k \
                 or (attn_bias.size(-2) != 1 and attn_bias.size(-2) != s_q):
             invalidInputError(False, f'attn_bias (shape: {attn_bias.shape}) '
-                               f'is expected to broadcast to shape: {attn_weight.shape}.')
+                                     f'is expected to broadcast to shape: {attn_weight.shape}.')
         attn_weight = attn_weight + attn_bias
     min_val = torch.finfo(q.dtype).min
     if key_padding_mask is not None:
