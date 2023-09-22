@@ -13,6 +13,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
     pip3 install --no-cache --upgrade requests argparse urllib3 && \
-    pip3 install --pre --upgrade bigdl-llm[all] 
+    pip3 install --pre --upgrade bigdl-llm[all] && \
+    pip3 install --pre --upgrade bigdl-nano
 
 ENTRYPOINT ["/bin/bash"]
