@@ -80,7 +80,8 @@ def internlm_attention_forward(
         key_states,
         cos,
         sin,
-        position_ids
+        position_ids,
+        "internlm"
     )
     # [bsz, nh, t, hd]
 
