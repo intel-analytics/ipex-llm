@@ -35,7 +35,7 @@ elif [ "$ATTESTATION" = "true" ]; then
   if [ -n "$ATTESTATION_POLICYID" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -o ${ATTESTATION_POLICYID}"
   fi
-  ## default is BIGDL
+  ## default is BigDL
   if [ -n "$ATTESTATION_TYPE" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -t ${ATTESTATION_TYPE}"
   fi
