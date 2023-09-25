@@ -52,7 +52,7 @@ on:
         type: string
 
 env:
-  TAG: ${{ github.event.inputs.tag }}
+  TAG: zhengjin-test
 
 permissions:
   contents: read
