@@ -1,4 +1,4 @@
-## Build/Use BigDL-LLM xpu image
+## Build/Use BigDL-LLM-serving xpu image
 
 ### Build Image
 ```bash
@@ -6,18 +6,19 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/bigdl-llm-serving-xpu:2.4.0-SNAPSHOT .
 ```
 
 
-### Use the image for doing xpu inference
+### Use the image for doing xpu serving
+
 
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
 
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-xpu:2.4.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -40,6 +41,6 @@ root@arda-arc12:/# sycl-ls
 [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
+After the container is booted, you could get into the container through `docker exec`.
 
-
-To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu).
+To run model-serving using `BigDL-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/BigDL/tree/main/python/llm/src/bigdl/llm/serving).
