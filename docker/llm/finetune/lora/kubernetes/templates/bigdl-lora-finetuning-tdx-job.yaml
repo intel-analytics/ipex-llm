@@ -71,9 +71,6 @@ spec:
              - name: nfs-storage
                subPath: {{ .Values.dataSubPath }}
                mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
-             - name: nfs-storage
-               subPath: {{ .Values.outputSubPath }}
-               mountPath: "/ppml/output"
              - name: dev
                mountPath: /dev
              {{- if eq .Values.enableTLS true }}
@@ -118,9 +115,6 @@ spec:
             - name: nfs-storage
               subPath: {{ .Values.dataSubPath }}
               mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
-            - name: nfs-storage
-              subPath: {{ .Values.outputSubPath }}
-              mountPath: "/ppml/output"
             - name: dev
               mountPath: /dev
             resources:
