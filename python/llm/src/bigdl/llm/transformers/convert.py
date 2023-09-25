@@ -272,4 +272,12 @@ def optimize(model):
                         transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention,
                         gptneox_attention_forward
                         )
+    elif model.config.model_type == "internlm":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.internlm import internlm_attention_forward
+        convert_forward(model,
+                        module.InternLMAttention,
+                        internlm_attention_forward
+                        )
     return model
