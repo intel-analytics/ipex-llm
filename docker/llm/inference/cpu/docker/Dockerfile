@@ -14,6 +14,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
     pip3 install --no-cache --upgrade requests argparse urllib3 && \
     pip3 install --pre --upgrade bigdl-llm[all] && \
-    pip3 install --pre --upgrade bigdl-nano
+    pip3 install --pre --upgrade bigdl-nano && \
+# Download chat.py script
+    cd /root && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-executable/chat.py && \
+    export PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["/bin/bash"]
