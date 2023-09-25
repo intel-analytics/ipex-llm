@@ -10,10 +10,10 @@ docker build \
 ```
 
 
-### Use the image for doing cpu serving
+### Use the image for doing xpu serving
 
 
-To map the `xpu` into the cotainer, you need to specify `--device=/dev/dri` when booting the container.
+To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
 
 An example could be:
 ```bash
