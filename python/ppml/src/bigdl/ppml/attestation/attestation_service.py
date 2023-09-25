@@ -37,7 +37,7 @@ def bigdl_attestation_service(base_url, app_id, api_key, quote, policy_id):
         result = -1
     return result
 
-def bigdl_attestation_register(base_url, app_id, api_key, policy_type, mr_enclave, mr_signer):
+def bigdl_attestation_service_register(base_url, app_id, api_key, policy_type, mr_enclave, mr_signer):
     headers = {"Content-Type":"application/json"}
     payload = OrderedDict()
     payload["appID"] = app_id
