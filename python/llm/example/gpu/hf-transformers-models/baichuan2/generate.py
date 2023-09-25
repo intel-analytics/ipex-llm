@@ -46,7 +46,6 @@ if __name__ == '__main__':
     # to obtain optimal performance with BigDL-LLM INT4 optimizations
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 optimize_model=False,
                                                  trust_remote_code=True,
                                                  use_cache=True)
     model = model.to('xpu')

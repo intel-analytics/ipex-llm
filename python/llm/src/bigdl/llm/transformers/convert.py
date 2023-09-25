@@ -173,6 +173,15 @@ def optimize(model):
                         module.SelfAttention,
                         chatglm_attention_forward
                         )
+    elif "mpt" in model.config._name_or_path:
+        modeling_module_name = model.__class__.__module__
+        attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
+        module = importlib.import_module(attention_module_name)
+        from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
+        convert_forward(model,
+                        module.MultiheadAttention,
+                        mpt_multihead_attention_forward
+                        )
     elif "gptj" in model.config.model_type:
         # dolly-v1-6b
         modeling_module_name = model.__class__.__module__
@@ -181,7 +190,7 @@ def optimize(model):
         convert_forward(model,
                         module.GPTJAttention,
                         gptj_attention_forward)
-    elif "bloom" in model.config._name_or_path:
+    elif "bloom" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.bloom import bloom_attention_forward
@@ -189,17 +198,18 @@ def optimize(model):
                         module.BloomAttention,
                         bloom_attention_forward
                         )
-    elif "falcon" in model.config._name_or_path:
+    elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         if "RWForCausalLM" in model.config.architectures:
             if hasattr(model.config, "multi_query"):
-                # falcon-7b
-                from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
-                convert_forward(model,
-                                module.Attention,
-                                rw_attention_forward_7b
-                                )
+                # falcon-7b need to check performance drop after kv cache support.
+                # from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
+                # convert_forward(model,
+                #                 module.Attention,
+                #                 rw_attention_forward_7b
+                #                 )
+                pass
             else:
                 # falcon-40b
                 from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b
@@ -262,5 +272,4 @@ def optimize(model):
                         transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention,
                         gptneox_attention_forward
                         )
-
     return model
