@@ -27,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument('-O', '--quote_type', type=str, help='quote type', default='TDX')
     parser.add_argument('-o', '--policy_id', type=str, help='policy id', default='')
     parser.add_argument('-p', '--user_report', type=str, help='user report', default='ppml')
-    parser.add_argument("-T", "--as_Type", type=str, help="the type of attestation behavior: attest or register", default='attest')
+    parser.add_argument("-b", "--behavior", type=str, help="the type of attestation behavior: attest or register", default='attest')
     parser.add_argument("-e", "--mr_enclave", type=str, help="mrEnclave", default='')
     parser.add_argument("-s", "--mr_signer", type=str, help="mrSigner", default='')
     parser.add_argument('--proxy', type=str, help='proxy', default='')
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         'https': args.proxy
     }
 
-    if args.as_Type == "attest":
+    if args.behavior == "attest":
         if args.quote_type == "TDX":
             quote = quote_generator.generate_tdx_quote(args.user_report)
         elif args.quote_type == "Gramine":
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         if attestation_result == -1:
             print("Attestation Failed!")
             sys.exit(1)
-    elif args.as_Type == "register":
+    elif args.behavior == "register":
         register_result = -1
         if args.as_type == "BigDL":
             register_result = attestation_service.bigdl_attestation_service_register(args.url, args.app_id, args.api_key, "SGXMREnclavePolicy", args.mr_enclave, args.mr_signer)
