@@ -52,7 +52,7 @@ To run inside SGX, need to make corresponding changes like k8s deployment.
 Bigdl ppml use BigDL Remote Attestation Server as reference AS, you can deploy it following the [guide](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/attestation#how-to-deploy-a-bigdl-remote-attestation-service)
 We assume you have already set up environment and enroll yourself on BigDL Remote Attestation Server.
 
-In [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh). Set `ATTESTATION` = true and modify `PCCL_URL`, `ATTESTATION_URL` to the env value you have set,
+In [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/llm/start-llm-local.sh). Set `ATTESTATION` = true and modify `PCCL_URL`, `ATTESTATION_URL` to the env value you have set,
 and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then you can add `REPORT_DATA` for attestation.
 
 ``` bash

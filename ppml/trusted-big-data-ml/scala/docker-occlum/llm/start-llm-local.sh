@@ -13,7 +13,7 @@ sudo docker run -itd \
         -e SGX_KERNEL_HEAP=3GB \
         -e ATTESTATION=false \
         -e PCCS_URL=https://PCCS_IP:PCCS_PORT \
-        -e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
+        -e ATTESTATION_URL=AS_IP:AS_PORT \
         -e APP_ID=your_app_id \
         -e API_KEY=your_api_key \
         --device=/dev/sgx/enclave \
