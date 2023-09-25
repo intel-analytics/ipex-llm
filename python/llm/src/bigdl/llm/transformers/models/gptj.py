@@ -19,8 +19,8 @@
 
 import torch
 from typing import Optional, Tuple, Union
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache, \
-    apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
+    apply_rotary_pos_emb, append_kv_cache
 from transformers.utils.import_utils import is_torch_fx_proxy
 
 
@@ -144,7 +144,7 @@ def gptj_attention_forward(
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            new_cache_k, new_cache_v = create_kv_cache(batch_size,
+            new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads,
                                                        self.head_dim,
                                                        past_length,
@@ -158,13 +158,13 @@ def gptj_attention_forward(
         key, value = append_kv_cache(cache_k, cache_v, key, value)
 
     elif use_cache:
-        key_cache, value_cache = create_kv_cache(batch_size,
-                                                 self.num_attention_heads,
-                                                 self.head_dim,
-                                                 kv_seq_len,
-                                                 kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                 dtype=key.dtype,
-                                                 device=device)
+        key_cache, value_cache = init_kv_cache(batch_size,
+                                               self.num_attention_heads,
+                                               self.head_dim,
+                                               kv_seq_len,
+                                               kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                               dtype=key.dtype,
+                                               device=device)
         key_cache[:] = key
         value_cache[:] = value
         key = key_cache

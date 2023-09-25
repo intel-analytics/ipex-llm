@@ -38,9 +38,9 @@ if __name__ == "__main__":
     elif args.quote_type == "Gramine":
         quote = quote_generator.generate_gramine_quote(args.user_report)
 
-    if args.as_type == "bigdl":
+    if args.as_type == "BigDL":
         attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
-    elif args.as_type == "amber":
+    elif args.as_type == "Amber":
         policy_list = args.policy_id.split(",")
         attestation_result = attestation_service.amber(args.url, args.api_key, quote, policy_list, proxies)
 
