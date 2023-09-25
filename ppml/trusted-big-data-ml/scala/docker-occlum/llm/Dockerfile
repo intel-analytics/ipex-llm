@@ -106,7 +106,7 @@ RUN cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv /root/BigDL/python/ppml/src/bigdl/ppml/ /opt/python-occlum/lib/python3.9/site-packages/bigdl/ && \
     cp  /opt/python-occlum/lib/python3.9/site-packages/bigdl/ppml/attestation/attestation_cli.py /opt/ && \
-    rm -rf /root/BigDL && \
+    rm -rf /root/BigDL
 #ADD ./py-examples /opt/py-examples
 
 # Prepare Bigdl python libs
