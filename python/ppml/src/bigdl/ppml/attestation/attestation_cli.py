@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import attestation_service, quote_generator
+from bigdl.ppml.attestation import attestation_service, quote_generator
 import argparse
 import sys
 
@@ -37,14 +37,14 @@ if __name__ == "__main__":
         'http': args.proxy,
         'https': args.proxy
     }
-    if args.quote_type == "TDX":
-        quote = quote_generator.generate_tdx_quote(args.user_report)
-    elif args.quote_type == "Gramine":
-        quote = quote_generator.generate_gramine_quote(args.user_report)
-    elif args.quote_type == "Occlum":
-        quote = quote_generator.generate_occlum_quote()
 
     if args.as_Type == "attest":
+        if args.quote_type == "TDX":
+            quote = quote_generator.generate_tdx_quote(args.user_report)
+        elif args.quote_type == "Gramine":
+            quote = quote_generator.generate_gramine_quote(args.user_report)
+        elif args.quote_type == "Occlum":
+            quote = quote_generator.generate_occlum_quote()
         attestation_result = -1
         if args.as_type == "BigDL":
             attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
