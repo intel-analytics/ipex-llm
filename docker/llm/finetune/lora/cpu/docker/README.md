@@ -13,8 +13,8 @@ export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 
 docker build \
-  --build-arg HTTP_PROXY=${HTTP_PROXY} \
-  --build-arg HTTPS_PROXY=${HTTPS_PROXY} \
+  --build-arg http_proxy=${HTTP_PROXY} \
+  --build-arg https_proxy=${HTTPS_PROXY} \
   -t intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
   -f ./Dockerfile .
 ```

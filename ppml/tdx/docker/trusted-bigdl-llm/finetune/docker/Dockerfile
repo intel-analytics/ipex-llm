@@ -1,24 +1,21 @@
 ARG BIGDL_LLM_IMAGE_NAME
 ARG BIGDL_LLM_IMAGE_TAG
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
+ARG http_proxy
+ARG https_proxy
 
 FROM $BIGDL_LLM_IMAGE_NAME:$BIGDL_LLM_IMAGE_TAG as native
 
 FROM mpioperator/intel as builder
 
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
+ARG http_proxy
+ARG https_proxy
+ENV PIP_NO_CACHE_DIR=false
 COPY --from=native /ppml/requirements.txt /ppml/requirements.txt
 
 RUN mkdir /ppml/data && mkdir /ppml/model && \
-# install pytorch 2.0.1
-    export http_proxy=$HTTP_PROXY && \
-    export https_proxy=$HTTPS_PROXY && \
-    apt-get update && \
 # Basic dependencies and DCAP
     apt-get update && \
-    apt install -y build-essential apt-utils wget git sudo vim && \
+    apt install -y build-essential apt-utils wget git sudo vim git software-properties-common python3.9 python3-pip python3.9-dev python3-wheel && \
     mkdir -p /opt/intel/ && \
     cd /opt/intel && \
     wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.19.100.3.bin && \
@@ -39,22 +36,16 @@ RUN mkdir /ppml/data && mkdir /ppml/model && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
 # install transformers etc.
     cd /ppml && \
-    apt-get update && \
-    apt-get install -y git && \
     git clone https://github.com/huggingface/transformers.git && \
     cd transformers && \
     git reset --hard 057e1d74733f52817dc05b673a340b4e3ebea08c && \
     pip install . && \
     pip install -r /ppml/requirements.txt && \
 # install python
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip install --upgrade pip && \
     pip install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install --upgrade requests && \
