@@ -62,7 +62,7 @@ permissions:
 
 jobs:
   bigdl-llm-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
