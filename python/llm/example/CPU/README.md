@@ -2,7 +2,7 @@
 
 We provide detailed examples to help you run popular open-source models using BigDL-LLM on Intel CPUs. Please refer to the appropriate guide based on different BigDL-LLM key feature:
 
-## Pytorch API
+## PyTorch API
 
 In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. See the complete example [here](PyTorch-Models), including:
 
@@ -12,7 +12,7 @@ In general, you just need one-line `optimize_model` to easily optimize any loade
 
 ## Transformers-style API
 
-#### Huggingface transformers Format
+### Huggingface transformers Format
 
 Many popular open-source PyTorch large language models can be loaded using the Huggingface Transformers API (such as AutoModel, AutoModelForCasualLM, etc). For such models, BigDL-LLM also provides a set of APIs to support them. See the complete example [here](HF-Transformers-AutoModels), including:
 
@@ -20,7 +20,7 @@ Many popular open-source PyTorch large language models can be loaded using the H
 - [More-Data-Types](HF-Transformers-AutoModels/More-Data-Types): examples of how to apply other low bit optimizations.
 - [Save-Load](HF-Transformers-AutoModels/Save-Load): examples about how to save and load optimized model.
 
-#### Native Format
+### Native Format
 
 Especially, for `llama`/`bloom`/`gptneox`/`starcoder`/`chatglm` model families, BigDL-LLM supports native INT4 format on Intel CPUs to realize maximum performance and examples can be found [here](Native-Models).
 

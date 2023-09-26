@@ -2,7 +2,7 @@
 
 We provide detailed examples to help you run popular open-source models using BigDL-LLM on Intel GPUs. Please refer to the appropriate guide based on different BigDL-LLM key feature:
 
-## Pytorch API
+## PyTorch API
 
 In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. See the complete example [here](PyTorch-Models), including:
 
