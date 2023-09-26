@@ -6,7 +6,7 @@ By constract, BigDL here provides a CPU optimization to accelerate the lora fine
 
 The architecture is illustrated in the following:
 
-![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/139cf9be-10e6-48df-bc84-8872457e83dd)
+![image](https://github.com/Jasonzzt/BigDL/assets/60865256/b66416bc-ad07-49af-8cb0-8967dffb5f58)
 
 As above, BigDL implements its MPI training build on [Kubeflow MPI operator](https://github.com/kubeflow/mpi-operator/tree/master), which encapsulates the deployment as MPIJob CRD, and assists users to handle the construction of a MPI worker cluster on Kubernetes, such as public key distribution, SSH connection, and log collection. 
 
