@@ -1,7 +1,7 @@
 FROM intel/oneapi-basekit:2023.2.1-devel-ubuntu22.04
 
-ENV http_proxy $HTTP_PROXY
-ENV https_proxy $HTTP_PROXY
+ARG http_proxy
+ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 
