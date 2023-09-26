@@ -51,8 +51,8 @@ runs:
     - name: Spark K8S Examples Test
       shell: bash
       run: |
-        docker exec -i $CONTAINER_NAME bash -c "sed '/--master $RUNTIME_SPARK_MASTER \\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\' -i /ppml/scripts/start-spark-simplequery-on-k8s-client-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "sed '/--master $RUNTIME_SPARK_MASTER \\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\' -i /ppml/scripts/start-pyspark-simplequery-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "sed '/--master \$RUNTIME_SPARK_MASTER \\\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\\' -i /ppml/scripts/start-spark-simplequery-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "sed '/--master \$RUNTIME_SPARK_MASTER \\\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\\' -i /ppml/scripts/start-pyspark-simplequery-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-simplequery-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-simplequery-on-k8s-client-sgx.sh"
