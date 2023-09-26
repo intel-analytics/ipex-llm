@@ -40,24 +40,24 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
     
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-AutoModels/transformers_int4/vicuna)    |
-| LLaMA 2   | [link](example/CPU/HF-AutoModels/transformers_int4/llama2)    |
-| MPT       | [link](example/CPU/HF-AutoModels/transformers_int4/mpt)       |
-| Falcon    | [link](example/CPU/HF-AutoModels/transformers_int4/falcon)    |
-| ChatGLM   | [link](example/CPU/HF-AutoModels/transformers_int4/chatglm)   | 
-| ChatGLM2  | [link](example/CPU/HF-AutoModels/transformers_int4/chatglm2)  | 
-| Qwen      | [link](example/CPU/HF-AutoModels/transformers_int4/qwen)      |
-| MOSS      | [link](example/CPU/HF-AutoModels/transformers_int4/moss)      | 
-| Baichuan  | [link](example/CPU/HF-AutoModels/transformers_int4/baichuan)  | 
-| Baichuan2 | [link](example/CPU/HF-AutoModels/transformers_int4/baichuan2) |
-| Dolly-v1  | [link](example/CPU/HF-AutoModels/transformers_int4/dolly_v1)  | 
-| Dolly-v2  | [link](example/CPU/HF-AutoModels/transformers_int4/dolly_v2)  | 
-| RedPajama | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-AutoModels/transformers_int4/redpajama) | 
-| Phoenix   | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-AutoModels/transformers_int4/phoenix)   | 
-| StarCoder | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-AutoModels/transformers_int4/starcoder) | 
-| InternLM  | [link](example/CPU/HF-AutoModels/transformers_int4/internlm)  |
-| Whisper   | [link](example/CPU/HF-AutoModels/transformers_int4/whisper)   |
-| Aquila    | [link](example/CPU/HF-AutoModels/transformers_int4/aquila)    |
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna)    |
+| LLaMA 2   | [link](example/CPU/HF-Transformers-AutoModels/Model/llama2)    |
+| MPT       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       |
+| Falcon    | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    |
+| ChatGLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   | 
+| ChatGLM2  | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | 
+| Qwen      | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      |
+| MOSS      | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      | 
+| Baichuan  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | 
+| Baichuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) |
+| Dolly-v1  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | 
+| Dolly-v2  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | 
+| RedPajama | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/redpajama) | 
+| Phoenix   | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/phoenix)   | 
+| StarCoder | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/starcoder) | 
+| InternLM  | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  |
+| Whisper   | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   |
+| Aquila    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    |
 
 </details>
 
@@ -120,7 +120,7 @@ output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids)
 ```
 
-See the complete examples [here](example/CPU/HF-AutoModels/transformers_int4).  
+See the complete examples [here](example/CPU/HF-Transformers-AutoModels/Model/).  
 
 ###### GPU INT4
 You may apply INT4 optimizations to any Hugging Face *Transformers* model on Intel GPU as follows.
@@ -149,7 +149,7 @@ See the complete examples [here](example/GPU).
   model.save_low_bit(model_path)
   new_model = AutoModelForCausalLM.load_low_bit(model_path)
   ```
-  *See the complete example [here](example/CPU/HF-AutoModels/transformers_low_bit).*
+  *See the complete example [here](example/CPU/HF-Transformers-AutoModels/Save-Load).*
 
 - Additonal data types
  
@@ -158,7 +158,7 @@ See the complete examples [here](example/GPU).
   ```python
   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
   ```
-  *See the complete example [here](example/CPU/HF-AutoModels/transformers_low_bit).*
+  *See the complete example [here](example/CPU/HF-Transformers-AutoModels/More-Data-Types).*
 
 ##### 2. Native INT4 model
  

@@ -14,6 +14,7 @@
 ### Latest update
 - **[New]** `bigdl-llm` now supports QLoRA fintuning on Intel GPU; see the the example [here](python/llm/example/gpu/qlora_finetuning).
 - `bigdl-llm` now supports Intel GPU (including Arc, Flex and MAX); see the the latest GPU examples [here](python/llm/example/gpu).
+- `bigdl-llm` now supports Intel GPU (including Arc, Flex and MAX); see the the latest GPU examples [here](python/llm/example/GPU).
 - `bigdl-llm` tutorial is released [here](https://github.com/intel-analytics/bigdl-llm-tutorial).
 - Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly, StarCoder, Whisper, InternLM, QWen, Baichuan, Aquila, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
      
@@ -76,7 +77,7 @@ input_ids = tokenizer.encode(input_str, ...)
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids)
 ```
-*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+*See the complete examples [here](python/llm/example/CPU/HF-Transformers-AutoModels/Model).*
 
 #### GPU INT4
 ##### Install
@@ -105,7 +106,7 @@ input_ids = tokenizer.encode(input_str, ...).to('xpu')
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids.cpu())
 ```
-*See the complete examples [here](python/llm/example/gpu/).*
+*See the complete examples [here](python/llm/example/GPU).*
 
 #### More Low-Bit Support
 ##### Save and load
@@ -115,7 +116,7 @@ After the model is optimized using `bigdl-llm`, you may save and load the model 
 model.save_low_bit(model_path)
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
-*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+*See the complete example [here](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load).*
 
 ##### Additonal data types
  
@@ -123,7 +124,7 @@ In addition to INT4, You may apply other low bit optimizations (such as *INT8*, 
 ```python
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
 ```
-*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+*See the complete example [here](python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types).*
 
 
 ***For more details, please refer to the `bigdl-llm` [Document](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html), [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
