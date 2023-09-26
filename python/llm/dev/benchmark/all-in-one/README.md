@@ -37,8 +37,6 @@ run `python run.py`, this will output results to `results.csv`.
 For SPR performance, run `bash run-spr.sh`.
 > **Note**
 >
-> In `run-spr.sh`, we set optimal environment varaible by `source bigdl-nano-init -c`, `-c` stands for disabling jemalloc. Enabling jemalloc may lead to latency increasement after multiple trials.
->
 > The value of `OMP_NUM_THREADS` should be the same as the cpu cores specified by `numactl -C`.
 
 > **Note**
