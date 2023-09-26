@@ -203,7 +203,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
   doc_chain = load_qa_chain(bigdl_llm, ...)
   output = doc_chain.run(...)
   ```
-  See the examples [here](example/CPU/langchain/transformers_int4).
+  See the examples [here](example/CPU/LangChain/transformers_int4).
  
 - **Using native INT4 model**
 
@@ -225,7 +225,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
   doc_chain.run(...)
   ```
 
-  See the examples [here](example/CPU/langchain/native_int4).
+  See the examples [here](example/CPU/LangChain/native_int4).
 
 ##### 4. CLI Tool
 >**Note**: Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the Hugging Face `transformers` or LangChain APIs.

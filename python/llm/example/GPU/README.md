@@ -6,9 +6,9 @@ We provide detailed examples to help you run popular open-source models using Bi
 
 In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. See the complete example [here](PyTorch-Models), including:
 
-- [Model](Pytorch-Models/Model): examples to run some popular models with INT4 optimizations.
-- [More-Data-Types](Pytorch-Models/More-Data-Types): examples of how to apply other low bit optimizations.
-- [Save-Load](Pytorch-Models/Save-Load): examples about how to save and load optimized model.
+- [Model](PyTorch-Models/Model): examples to run some popular models with INT4 optimizations.
+- [More-Data-Types](PyTorch-Models/More-Data-Types): examples of how to apply other low bit optimizations.
+- [Save-Load](PyTorch-Models/Save-Load): examples about how to save and load optimized model.
 
 ## Transformers-style API
 
