@@ -400,13 +400,14 @@ class FP16Linear(nn.Linear):
 
         x0 = self.weight.data
         # only work for GPU
-        assert x0.device.type == "xpu"
+        invalidInputError(x0.device.type == "xpu",
+                          "FP16 only works for GPU")
         try:
             import intel_extension_for_pytorch
             import linear_fp16_esimd
         except ModuleNotFoundError:
             invalidInputError(False,
-                                "Please `pip install bigdl_core_xe` first.")
+                              "Please `pip install bigdl_core_xe` first.")
 
         if x_2d.is_contiguous() is False:
             x_2d = x_2d.contiguous()
@@ -415,8 +416,8 @@ class FP16Linear(nn.Linear):
         # disable the conversion when training
         if x_2d.shape[0] > 1:
             # first token, re-convert weight
-            original_weight = self.weight.data.transpose(1, 2).reshape(self.out_len, self.in_len).contiguous()
-            result = F.linear(x_2d, original_weight)
+            original_weight = self.weight.data.transpose(1, 2).reshape(self.out_len, self.in_len)
+            result = F.linear(x_2d, original_weight.contiguous())
             del original_weight
         else:
             # rest token, use esimd optimization

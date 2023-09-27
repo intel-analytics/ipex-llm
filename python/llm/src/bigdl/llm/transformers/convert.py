@@ -68,11 +68,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         device_type = module.weight.data.device.type
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
-                                                requires_grad=False,
-                                                quantized=False,
-                                                _shape=None,
-                                                convert_shape_only=convert_shape_only,
-                                                qtype=qtype).to(device_type)
+                                                 requires_grad=False,
+                                                 quantized=False,
+                                                 _shape=None,
+                                                 convert_shape_only=convert_shape_only,
+                                                 qtype=qtype).to(device_type)
                         new_linear._parameters['weight'] = paramsLowBit
                     else:
                         # esimd fp16 path
@@ -84,8 +84,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         )
                         # convert here
                         m, n = module.weight.data.shape
-                        trans_weight = module.weight.data.reshape(m//16, 16, n).transpose(1, 2).contiguous()
-                        new_linear._parameters['weight'] = nn.Parameter(trans_weight)
+                        trans_weight = module.weight.data.reshape(m//16, 16, n).transpose(1, 2)
+                        new_linear._parameters['weight'] = nn.Parameter(trans_weight.contiguous())
 
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
