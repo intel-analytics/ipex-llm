@@ -46,7 +46,7 @@ from .utils import logger
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False):
-    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -57,22 +57,35 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-                    new_linear = LowBitLinear(
-                        module.in_features,
-                        module.out_features,
-                        qtype,
-                        module.bias is not None,
-                    )
+                    if qtype != "fp16":
+                        new_linear = LowBitLinear(
+                            module.in_features,
+                            module.out_features,
+                            qtype,
+                            module.bias is not None,
+                        )
 
-                    device_type = module.weight.data.device.type
-                    # Copy the weights
-                    paramsLowBit = FP4Params(data=module.weight.data,
-                                             requires_grad=False,
-                                             quantized=False,
-                                             _shape=None,
-                                             convert_shape_only=convert_shape_only,
-                                             qtype=qtype).to(device_type)
-                    new_linear._parameters['weight'] = paramsLowBit
+                        device_type = module.weight.data.device.type
+                        # Copy the weights
+                        paramsLowBit = FP4Params(data=module.weight.data,
+                                                requires_grad=False,
+                                                quantized=False,
+                                                _shape=None,
+                                                convert_shape_only=convert_shape_only,
+                                                qtype=qtype).to(device_type)
+                        new_linear._parameters['weight'] = paramsLowBit
+                    else:
+                        # esimd fp16 path
+                        new_linear = FP16Linear(
+                            module.in_features,
+                            module.out_features,
+                            qtype,
+                            module.bias is not None,
+                        )
+                        # convert here
+                        m, n = module.weight.data.shape
+                        trans_weight = module.weight.data.reshape(m//16, 16, n).transpose(1, 2).contiguous()
+                        new_linear._parameters['weight'] = nn.Parameter(trans_weight)
 
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
