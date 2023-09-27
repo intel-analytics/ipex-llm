@@ -1,4 +1,4 @@
-BigDL-LLM Optimize API
+BigDL-LLM PyTorch API
 =====================
 
 llm.optimize
