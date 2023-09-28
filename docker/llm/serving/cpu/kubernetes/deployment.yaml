@@ -88,7 +88,7 @@ spec:
         - name: WORKER_PORT # fixed
           value: "21841"
         - name: MODEL_PATH # Change this
-          value: "/llm/model/lmsys-vicuna-7b-v1.5-bigdl/"
+          value: "/llm/models/vicuna-7b-v1.5-bigdl/"
         - name: OMP_NUM_THREADS
           value: "16"
         resources:
@@ -100,10 +100,10 @@ spec:
             cpu: 16
         args: ["-m", "worker"]
         volumeMounts:
-          - name: ppml-models
-            mountPath: /ppml/models/
+          - name: llm-models
+            mountPath: /llm/models/
       restartPolicy: "Always"
       volumes:
-      - name: ppml-models
+      - name: llm-models
         hostPath:
-          path: /root/models # change this in other envs
+          path: /home/llm/models # change this in other envs

@@ -9,9 +9,9 @@ To deploy BigDL-LLM-serving cpu in Kubernetes environment, please use this image
 
 ### Models
 
-In this document, we will use `llama-7b-v1.5` as the deployment model.
+In this document, we will use `vicuna-7b-v1.5` as the deployment model.
 
-After downloading the model, please change name from `llama-7b-v1.5` to `lmsys-vicuna-7b-v1.5-bigdl` to use `bigdl-llm` as the backend. The `bigdl-llm` backend will be used if model path contains `bigdl`. Otherwise, the original transformer-backend will be used.
+After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna-7b-v1.5-bigdl` to use `bigdl-llm` as the backend. The `bigdl-llm` backend will be used if model path contains `bigdl`. Otherwise, the original transformer-backend will be used.
 
 You can download the model from [here](https://huggingface.co/decapoda-research/llama-7b-hf).
 
@@ -38,9 +38,9 @@ We use the following yaml file for controller deployment:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: bigdl-fschat-ab1234cd-controller
+  name: bigdl-fschat-a1234bd-controller
   labels:
-    fastchat-appid: ab1234cd
+    fastchat-appid: a1234bd
     fastchat-app-type: controller
 spec:
   dnsPolicy: "ClusterFirst"
@@ -76,12 +76,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: bigdl-ab1234cd-fschat-controller-service
+  name: bigdl-a1234bd-fschat-controller-service
 spec:
   # You may also want to change this to use the cluster's feature
   type: NodePort
   selector:
-    fastchat-appid: ab1234cd
+    fastchat-appid: a1234bd
     fastchat-app-type: controller
   ports:
     - name: cont-port
@@ -102,7 +102,7 @@ We use the following deployment for worker deployment:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bigdl-fschat-ab1234cd-worker-deployment
+  name: bigdl-fschat-a1234bd-worker-deployment
 spec:
   # Change this to the number you want
   replicas: 1
@@ -121,7 +121,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed
-          value: bigdl-ab1234cd-fschat-controller-service
+          value: bigdl-a1234bd-fschat-controller-service
         - name: CONTROLLER_PORT # fixed
           value: "21005"
         - name: WORKER_HOST # fixed
@@ -131,7 +131,7 @@ spec:
         - name: WORKER_PORT # fixed
           value: "21841"
         - name: MODEL_PATH # Change this
-          value: "/llm/model/lmsys-vicuna-7b-v1.5-bigdl/"
+          value: "/llm/models/vicuna-7b-v1.5-bigdl/"
         - name: OMP_NUM_THREADS
           value: "16"
         resources:
@@ -149,7 +149,7 @@ spec:
       volumes:
       - name: llm-models
         hostPath:
-          path: /root/models # change this in other envs
+          path: /home/llm/models # change this in other envs
 ```
 
 You may want to change the `MODEL_PATH` variable in the yaml.  Also, please remember to change the volume path accordingly.
@@ -170,7 +170,7 @@ import openai
 openai.api_key = "EMPTY"
 openai.api_base = "http://localhost:8000/v1"
 
-model = "llama-7b-bigdl"
+model = "llama-7b-v1.5-bigdl"
 prompt = "Once upon a time"
 
 # create a completion
@@ -195,6 +195,11 @@ For the following examples, you may also change the service deployment address.
 List Models:
 ```bash
 curl http://localhost:8000/v1/models
+```
+
+If you have `jq` installed, you can use it to format the output like this:
+```bash
+curl http://localhost:8000/v1/models | jq
 ```
 
 Chat Completions:
