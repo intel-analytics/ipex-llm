@@ -91,6 +91,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             m, n = module.weight.data.shape
                             trans_weight = module.weight.data.reshape(m//16, 16, n).transpose(1, 2)
                             new_linear._parameters['weight'] = nn.Parameter(trans_weight.contiguous())
+                        else:
+                            new_linear._parameters['weight'] = nn.Parameter(module.weight.data)
 
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
