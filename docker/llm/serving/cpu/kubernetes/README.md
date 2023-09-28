@@ -13,7 +13,7 @@ In this document, we will use `vicuna-7b-v1.5` as the deployment model.
 
 After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna-7b-v1.5-bigdl` to use `bigdl-llm` as the backend. The `bigdl-llm` backend will be used if model path contains `bigdl`. Otherwise, the original transformer-backend will be used.
 
-You can download the model from [here](https://huggingface.co/decapoda-research/llama-7b-hf).
+You can download the model from [here](https://huggingface.co/lmsys/vicuna-7b-v1.5).
 
 ### Kubernetes config
 
@@ -164,13 +164,13 @@ First, install openai-python:
 pip install --upgrade openai
 ```
 
-Then, interact with model llama-7b-bigdl:
+Then, interact with model vicuna-7b-v1.5-bigdl:
 ```python
 import openai
 openai.api_key = "EMPTY"
 openai.api_base = "http://localhost:8000/v1"
 
-model = "llama-7b-v1.5-bigdl"
+model = "vicuna-7b-v1.5-bigdl"
 prompt = "Once upon a time"
 
 # create a completion
@@ -217,7 +217,7 @@ Text Completions:
 curl http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "llama-7b-bigdl",
+    "model": "YOUR_MODEL",
     "prompt": "Once upon a time",
     "max_tokens": 41,
     "temperature": 0.5
