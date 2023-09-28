@@ -38,9 +38,9 @@ We use the following yaml file for controller deployment:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: bigdl-fschat-a1234bd-controller
+  name: bigdl-fschat-ab1234cd-controller
   labels:
-    fastchat-appid: a1234bd
+    fastchat-appid: ab1234cd
     fastchat-app-type: controller
 spec:
   dnsPolicy: "ClusterFirst"
@@ -76,12 +76,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: bigdl-a1234bd-fschat-controller-service
+  name: bigdl-ab1234cd-fschat-controller-service
 spec:
   # You may also want to change this to use the cluster's feature
   type: NodePort
   selector:
-    fastchat-appid: a1234bd
+    fastchat-appid: ab1234cd
     fastchat-app-type: controller
   ports:
     - name: cont-port
@@ -102,7 +102,7 @@ We use the following deployment for worker deployment:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bigdl-fschat-a1234bd-worker-deployment
+  name: bigdl-fschat-ab1234cd-worker-deployment
 spec:
   # Change this to the number you want
   replicas: 1
@@ -121,7 +121,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed
-          value: bigdl-a1234bd-fschat-controller-service
+          value: bigdl-ab1234cd-fschat-controller-service
         - name: CONTROLLER_PORT # fixed
           value: "21005"
         - name: WORKER_HOST # fixed
@@ -143,11 +143,11 @@ spec:
             cpu: 16
         args: ["-m", "worker"]
         volumeMounts:
-          - name: ppml-models
-            mountPath: /ppml/models/
+          - name: llm-models
+            mountPath: /llm/models/
       restartPolicy: "Always"
       volumes:
-      - name: ppml-models
+      - name: llm-models
         hostPath:
           path: /root/models # change this in other envs
 ```
