@@ -154,7 +154,7 @@ def optimize(model):
         pass
 
     if "chatglm-18b" in model.config._name_or_path or "chatglm2" in model.config._name_or_path:
-        # chatglm-18b or chatglm2
+        # chatglm-18b or chatglm2-6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
@@ -167,7 +167,7 @@ def optimize(model):
                         module.CoreAttention,
                         core_attn_forward_8eb45c)
     elif "chatglm" in model.config._name_or_path:
-        # chatglm
+        # chatglm-6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
