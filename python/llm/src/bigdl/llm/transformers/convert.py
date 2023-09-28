@@ -153,29 +153,28 @@ def optimize(model):
         # todo implement 4.28.0 ~ 4.30.2
         pass
 
-    if "chatglm" in model.config._name_or_path:
-        if model.config.hidden_size == 6144 or "chatglm2" in model.config._name_or_path:
-            # chatglm-18b or chatglm2-6b
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-            from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
-            convert_forward(model,
-                            module.SelfAttention,
-                            chatglm2_attention_forward_8eb45c
-                            )
-            convert_forward(model,
-                            module.CoreAttention,
-                            core_attn_forward_8eb45c)
-        elif model.config.hidden_size == 4096:
-            # chatglm-6b
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
-            convert_forward(model,
-                            module.SelfAttention,
-                            chatglm_attention_forward
-                            )
+    if "chatglm-18b" in model.config._name_or_path or "chatglm2" in model.config._name_or_path:
+        # chatglm-18b or chatglm2
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
+        from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+        convert_forward(model,
+                        module.SelfAttention,
+                        chatglm2_attention_forward_8eb45c
+                        )
+        convert_forward(model,
+                        module.CoreAttention,
+                        core_attn_forward_8eb45c)
+    elif "chatglm" in model.config._name_or_path:
+        # chatglm
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
+        convert_forward(model,
+                        module.SelfAttention,
+                        chatglm_attention_forward
+                        )
     elif "mpt" in model.config._name_or_path:
         modeling_module_name = model.__class__.__module__
         attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
