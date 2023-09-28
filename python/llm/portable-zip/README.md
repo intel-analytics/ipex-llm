@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This portable zip includes everything you need to run LLM (except models). Please refer to How to use section to get started.
+This portable zip includes everything you need to run an LLM with BigDL-LLM optimizations (except models) . Please refer to [How to use](#how-to-use) section to get started.
 
 ### 13B model running on an Intel 11-Gen Core PC (real-time screen capture)
 
@@ -28,7 +28,7 @@ This portable zip includes everything you need to run LLM (except models). Pleas
 
    ![](https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-user-guide-step1.png)
 
-5. Run `chat.bat` in Terminal and input the path of the model (e.g. `path\to\model`, note that there's no slash at the end of the path). Press Enter and wait until model finishes loading. Then enjoy chatting with the model!
+5. Go into the unzipped folder and double click `chat.bat`. Input the path of the model (e.g. `path\to\model`, note that there's no slash at the end of the path). Press Enter and wait until model finishes loading. Then enjoy chatting with the model!
 
    ![](https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-user-guide-step2.png)
 
