@@ -60,11 +60,9 @@ class _BaseAutoModelClass:
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
+                                , sym_int8 or fp16. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
-        :param load_in_fp16: boolean value, True means load linear's weight to transposed format to
-                             take advantage of esimd optimizations of float16. Default to be False.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be True.
 
@@ -83,10 +81,9 @@ class _BaseAutoModelClass:
         # we can convert the model to quantized later.
         load_in_4bit = kwargs.pop("load_in_4bit", False)
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
-        load_in_fp16 = kwargs.pop("load_in_fp16", False)
         optimize_model = kwargs.pop("optimize_model", True)
 
-        if load_in_4bit or load_in_low_bit or load_in_fp16:
+        if load_in_4bit or load_in_low_bit:
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
             # set default torch_dtype='auto'
@@ -94,14 +91,7 @@ class _BaseAutoModelClass:
             # Avoid tensor parallel F.Linear Operations
             if "pretraining_tp" in config_dict:
                 kwargs["pretraining_tp"] = 1
-            if not load_in_fp16:
-                q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
-            else:
-                invalidInputError(not load_in_4bit,
-                                  "can't set load_in_4bit and load_in_fp16 at the same time")
-                invalidInputError(load_in_low_bit is None,
-                                  "can't set load_in_low_bit and load_in_fp16 at the same time")
-                q_k = "fp16"
+            q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
         else:
             # load default

@@ -75,36 +75,36 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  qtype=qtype).to(device_type)
                         new_linear._parameters['weight'] = paramsLowBit
                     else:
-                        # esimd fp16 path
-                        new_linear = FP16Linear(
-                            module.in_features,
-                            module.out_features,
-                            qtype,
-                            module.bias is not None,
-                        )
-                        device_type = module.weight.data.device.type
                         #  only support two size now
                         #  may generalize to other sizes
                         if module.in_features in [4096, 11008]:
-                            new_linear.convert = True
+                            # esimd fp16 path
+                            new_linear = FP16Linear(
+                                module.in_features,
+                                module.out_features,
+                                qtype,
+                                module.bias is not None,
+                            )
+                            device_type = module.weight.data.device.type
+
                             # convert here
                             m, n = module.weight.data.shape
                             trans_weight = module.weight.data.reshape(m//16, 16, n)
                             trans_weight = trans_weight.transpose(1, 2).contiguous()
                             new_linear._parameters['weight'] = nn.Parameter(trans_weight)
-                        else:
-                            new_linear._parameters['weight'] = nn.Parameter(module.weight.data)
 
-                    if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                            .to(device_type)
+                    #  fp16 may generalize to other sizes later
+                    if qtype != "fp16" or module.in_features in [4096, 11008]:
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
 
-                    model._modules[name] = new_linear
-                    has_been_replaced = True
-                    # Force requires grad to False to avoid unexpected errors
-                    model._modules[name].requires_grad_(False)
+                        model._modules[name] = new_linear
+                        has_been_replaced = True
+                        # Force requires grad to False to avoid unexpected errors
+                        model._modules[name].requires_grad_(False)
 
-                    module.weight = None
+                        module.weight = None
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
