@@ -82,10 +82,15 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype,
                             module.bias is not None,
                         )
-                        # convert here
-                        m, n = module.weight.data.shape
-                        trans_weight = module.weight.data.reshape(m//16, 16, n).transpose(1, 2)
-                        new_linear._parameters['weight'] = nn.Parameter(trans_weight.contiguous())
+                        device_type = module.weight.data.device.type
+                        #  only support two size now
+                        #  may generalize to other sizes
+                        if module.in_features in [4096, 11008]:
+                            new_linear.convert = True
+                            # convert here
+                            m, n = module.weight.data.shape
+                            trans_weight = module.weight.data.reshape(m//16, 16, n).transpose(1, 2)
+                            new_linear._parameters['weight'] = nn.Parameter(trans_weight.contiguous())
 
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
