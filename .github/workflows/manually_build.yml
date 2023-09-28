@@ -124,7 +124,7 @@ jobs:
     - name: bigdl-llm-cpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-cpu ########"
+        echo "####### bigdl-llm-serving-cpu ########"
         echo "##############################################################"
         export image=intelanalytics/bigdl-llm-serving-cpu
         cd docker/llm/serving/cpu/docker
