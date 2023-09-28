@@ -105,6 +105,9 @@ mode=""
 omp_num_threads=""
 attest_flag=""
 dispatch_method="shortest_queue" # shortest_queue or lottery
+tls_flag=""
+ssl_certfile="/ppml/keys/server.crt"
+ssl_keyfile="/ppml/keys/server.key"
 
 # Update rootCA config if needed
 update-ca-certificates
@@ -179,6 +182,18 @@ else
     dispatch_method=$DISPATCH_METHOD
   fi
 
+  if [[ -n $SSL_CERTFILE ]]; then
+    ssl_certfile=$SSL_CERTFILE
+  fi
+
+  if [[ -n $SSL_KEYFILE ]]; then
+    ssl_keyfile=$SSL_KEYFILE
+  fi
+
+  if [[ $ENABLE_TLS = "true" ]]; then
+    tls_flag="--enable-tls --ssl-keyfile $ssl_keyfile --ssl-certfile $ssl_certfile"
+  fi
+
   if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
     attest_flag="--attest"
     echo 'port=4050' | tee /etc/tdx-attest.conf
@@ -194,7 +209,7 @@ else
     echo "OpenAI API address: $api_address"
     python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method $attest_flag &
     # Boot openai api server
-    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
+    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag $tls_flag
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
