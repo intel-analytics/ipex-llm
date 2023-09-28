@@ -36,6 +36,15 @@ jobs:
     env:
       THREAD_NUM: 24
     steps:
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
+      - name: Download LLMs
+          if [ ! -d $LLAMA2_7B_ORIGIN_PATH ]; then
+            echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf" -P $ORIGIN_DIR
+          fi
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -76,10 +85,6 @@ jobs:
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - name: Set model directories
-        shell: bash
-        run: |
-          echo "ORIGIN_DIR=/mnt/disk1/models" >> "$GITHUB_ENV"
       - name: Set environment variables
         shell: bash
         run: |
@@ -87,6 +92,23 @@ jobs:
           echo "LLAMA2_13B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-13b-chat-hf" >> "$GITHUB_ENV"
           echo "CHATGLM2_6B_ORIGIN_PATH=${ORIGIN_DIR}/chatglm2-6b" >> "$GITHUB_ENV"
           echo "WHISPER_MEDIUM_ORIGIN_PATH=${ORIGIN_DIR}/whisper-medium" >> "$GITHUB_ENV"
+      - name: Download LLMs
+          if [ ! -d $LLAMA2_7B_ORIGIN_PATH ]; then
+            echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf" -P $ORIGIN_DIR
+          fi
+          if [ ! -d $LLAMA2_13B_ORIGIN_PATH]; then
+            echo "Directory $LLAMA2_13B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-13b-chat-hf -P $ORIGIN_DIR
+          fi
+          if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
+            echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+          fi
+          if [ ! -d $WHISPER_MEDIUM_ORIGIN_PATH ]; then
+            echo "Directory $WHISPER_MEDIUM_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-medium -P $ORIGIN_DIR
+          fi
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
