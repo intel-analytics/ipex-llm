@@ -10,7 +10,6 @@ RUN mkdir -p /ppml/
 ADD ./fschat.diff /opt/fschat.diff
 ADD ./requirements.txt /opt/requirements.txt
 ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./attestation_cli.py /opt/attestation_cli.py
 ADD ./attestation.sh /opt/attestation.sh
 ADD ./llama_cpp.patch /opt/llama_cpp.patch
 ADD ./llama.patch /opt/llama.patch
@@ -75,6 +74,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev && \
+    cd /opt && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/ppml/src/bigdl/ppml/attestation/attestation_cli.py && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /opt/attestation.sh && \
     chmod +x /sbin/tini && \
