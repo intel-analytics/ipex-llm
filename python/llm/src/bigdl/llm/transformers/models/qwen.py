@@ -95,6 +95,7 @@ def qwen_attention_forward(
     value = self._split_heads(value, self.num_heads, self.head_dim)
 
     kv_seq_len = hidden_states.size()[1]
+
     if layer_past:
         # layer past[0] shape: bs * seq_len * head_num * dim
         kv_seq_len += layer_past[0].shape[1]
@@ -109,7 +110,7 @@ def qwen_attention_forward(
         self._ntk_cached = ntk_alpha
     else:
         ntk_alpha = self._ntk_cached
-        rotary_pos_emb = self.rotary_emb(kv_seq_len, ntk_alpha=ntk_alpha).to(
+    rotary_pos_emb = self.rotary_emb(kv_seq_len, ntk_alpha=ntk_alpha).to(
         hidden_states.device
     )
 
@@ -129,8 +130,7 @@ def qwen_attention_forward(
         key = apply_rotary_pos_emb(key, k_pos_emb)
 
     bsz, _, n_heads, head_dim = key.size()
-    print("key size: ", key.size())
-    print(f"self.num_heads: {self.num_heads}  self.head_dim: {self.head_dim}")
+
     if layer_past is not None:
         # past_key, past_value = layer_past[0], layer_past[1]
         # key = torch.cat((past_key, key), dim=1)
