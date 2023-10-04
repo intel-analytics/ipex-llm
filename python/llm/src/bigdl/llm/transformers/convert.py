@@ -282,4 +282,12 @@ def optimize(model):
                         module.InternLMAttention,
                         internlm_attention_forward
                         )
+    elif model.config.model_type == "aquila":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.aquila import aquila_attention_forward
+        convert_forward(model,
+                        module.AquilaAttention,
+                        aquila_attention_forward
+                        )
     return model
