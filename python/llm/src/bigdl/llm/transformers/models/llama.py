@@ -58,12 +58,15 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
 def llama_rms_norm_forward(self, hidden_states):
-    # input_dtype = hidden_states.dtype
-    # hidden_states = hidden_states.to(torch.float32)
-    # variance = hidden_states.pow(2).mean(-1, keepdim=True)
-    # hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
-    # return self.weight * hidden_states.to(input_dtype)
-    hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states, [self.weight.size(0)], self.weight)
+    if hidden_states.device.type == "xpu":
+        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                         [self.weight.size(0)], self.weight)
+    else:
+        input_dtype = hidden_states.dtype
+        hidden_states = hidden_states.to(torch.float32)
+        variance = hidden_states.pow(2).mean(-1, keepdim=True)
+        hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+        return self.weight * hidden_states.to(input_dtype)
     return hidden_states
 
 
