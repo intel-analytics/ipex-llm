@@ -143,8 +143,3 @@ def aquila_attention_forward(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
-
-
-
-
-
