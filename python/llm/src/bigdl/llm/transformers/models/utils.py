@@ -98,6 +98,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         invalidInputError(False,
                           f"{model_family} is not supported.")
 
+
 def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
     if q.device.type != "xpu":
         invalidInputError(False,
