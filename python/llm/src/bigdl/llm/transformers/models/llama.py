@@ -39,6 +39,7 @@ import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -116,15 +117,16 @@ def llama_attention_forward_4_31(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
-    # cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    # query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-    #                                                 cos, sin, position_ids, "llama")
-    q_embed = torch.empty(query_states.shape, dtype=query_states.dtype, device=query_states.device)
-    k_embed = torch.empty(key_states.shape, dtype=key_states.dtype, device=key_states.device)
-    
-    linear_q4_0.apply_rotary_embedding_half_qk(query_states, key_states, position_ids, q_embed, k_embed)
-    query_states = q_embed
-    key_states = k_embed
+
+    if query_states.device.type == "xpu":
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "llama")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "llama")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
@@ -167,35 +169,22 @@ def llama_attention_forward_4_31(
                                                                      dtype=hidden_states.dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=hidden_states.dtype)
-    
-    # if attention_mask is None:
-    #     attn_output = torch.nn.functional.scaled_dot_product_attention(query_states,
-    #                                                                       key_states,
-    #                                                                       value_states,
-    #                                                                       attention_mask,
-    #                                                                       is_causal=True,)
-    # else:
-    #     attn_output = torch.nn.functional.scaled_dot_product_attention(query_states,
-    #                                                                       key_states,
-    #                                                                       value_states,
-    #                                                                       attention_mask,
-    #                                                                       is_causal=False)
 
     attn_weights = torch.matmul(query_states,
                                 key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    # attn_weights_size = (bsz, self.num_heads, q_len, kv_seq_len)
-    # if attn_weights.size() != attn_weights_size:
-    #     invalidInputError(False,
-    #                       f"Attention weights should be of size {attn_weights_size}, "
-    #                       f"but is {attn_weights.size()}")
+    attn_weights_size = (bsz, self.num_heads, q_len, kv_seq_len)
+    if attn_weights.size() != attn_weights_size:
+        invalidInputError(False,
+                          f"Attention weights should be of size {attn_weights_size}, "
+                          f"but is {attn_weights.size()}")
 
     if attention_mask is not None:
-        # attn_mask_size = (bsz, 1, q_len, kv_seq_len)
-        # if attention_mask.size() != attn_mask_size:
-        #     invalidInputError(False,
-        #                       f"Attention mask should be of size {attn_mask_size}, "
-        #                       f"but is {attention_mask.size()}")
+        attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+        if attention_mask.size() != attn_mask_size:
+            invalidInputError(False,
+                              f"Attention mask should be of size {attn_mask_size}, "
+                              f"but is {attention_mask.size()}")
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
@@ -203,11 +192,11 @@ def llama_attention_forward_4_31(
                                          dtype=torch.float32).to(query_states.dtype)
     attn_output = torch.matmul(attn_weights, value_states)
 
-    # attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
-    # if attn_output.size() != attn_output_size:
-    #     invalidInputError(False,
-    #                       f"`attn_output` should be of size {attn_output_size},"
-    #                       f" but is {attn_output.size()}")
+    attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
+    if attn_output.size() != attn_output_size:
+        invalidInputError(False,
+                          f"`attn_output` should be of size {attn_output_size},"
+                          f" but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

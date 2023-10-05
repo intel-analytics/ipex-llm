@@ -45,17 +45,14 @@ def extend_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
 
 
 def append_kv_cache(cache_k, cache_v, key_states, value_states):
-    size_0, size_1, old_length, size_3 = cache_k.size()
-    k_size_2 = key_states.size(2)
-    new_length = old_length + k_size_2
-    new_size = (size_0,
-                size_1,
-                new_length,
-                size_3)
+    new_size = (cache_k.size(0),
+                cache_k.size(1),
+                cache_k.size(2) + key_states.size(2),
+                cache_k.size(3))
     new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
-    new_cache_k[:, :, old_length:new_length, :] = key_states
+    new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
     new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-    new_cache_v[:, :, old_length:new_length, :] = value_states
+    new_cache_v[:, :, cache_v.size(2):cache_k.size(2) + key_states.size(2), :] = value_states
     return new_cache_k, new_cache_v
 
 
@@ -96,6 +93,20 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         sin = torch.gather(sin.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
+        return q_embed, k_embed
+    else:
+        invalidInputError(False,
+                          f"{model_family} is not supported.")
+
+def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
+    if q.device.type != "xpu":
+        invalidInputError(False,
+                          f"only xpu is supported in this function")
+    import linear_q4_0
+    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
+    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
+    if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox"]:
+        linear_q4_0.apply_rotary_embedding_half_qk(q, k, position_ids, q_embed, k_embed)
         return q_embed, k_embed
     else:
         invalidInputError(False,
