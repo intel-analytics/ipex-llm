@@ -43,9 +43,11 @@ import torch.utils.checkpoint
 from torch import nn
 
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import  apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
+from bigdl.dllib.utils import log4Error
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
 
 def aquila_attention_forward(
     self,
@@ -58,15 +60,22 @@ def aquila_attention_forward(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
 
-    query_states = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = self.k_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    value_states = self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    query_states = self.q_proj(hidden_states)\
+        .view(bsz, q_len, self.num_heads, self.head_dim)\
+        .transpose(1, 2)
+    key_states = self.k_proj(hidden_states)\
+        .view(bsz, q_len, self.num_heads, self.head_dim)\
+        .transpose(1, 2)
+    value_states = self.v_proj(hidden_states)\
+        .view(bsz, q_len, self.num_heads, self.head_dim)\
+        .transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids, "aquila")
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                    cos, sin, position_ids, "aquila")
     # [bsz, nh, t, hd]
 
     if past_key_value is not None:
@@ -109,29 +118,32 @@ def aquila_attention_forward(
 
     attn_weights = torch.clamp(attn_weights, min=-1024., max=1024.)
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        raise ValueError(
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-            f" {attn_weights.size()}"
+        log4Error.invalidInputError(
+            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, "
+            f"but is {attn_weights.size()}"
         )
 
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+            log4Error.invalidInputError(
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                f"but is {attention_mask.size()}"
             )
         attn_weights = attn_weights + attention_mask
         attn_weights = torch.max(
-            attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min, device=attn_weights.device)
+            attn_weights,
+            torch.tensor(torch.finfo(attn_weights.dtype).min, device=attn_weights.device)
         )
 
     # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32)\
+        .to(query_states.dtype)
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-            f" {attn_output.size()}"
+        log4Error.invalidInputError(
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, "
+            f"but is {attn_output.size()}"
         )
 
     attn_output = attn_output.transpose(1, 2)
