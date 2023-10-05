@@ -287,6 +287,14 @@ def optimize(model):
                         module.InternLMAttention,
                         internlm_attention_forward
                         )
+    elif model.config.model_type == "qwen":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.qwen import qwen_attention_forward
+        convert_forward(model,
+                        module.QWenAttention,
+                        qwen_attention_forward
+                        )
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
