@@ -37,17 +37,13 @@ except ImportError:
     rearrange = None
 
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
+from bigdl.llm.utils.common import invalidInputError
 
 apply_rotary_emb_func = None
 
 flash_attn_unpadded_func = None
 
 logger = logging.get_logger(__name__)
-
-_CHECKPOINT_FOR_DOC = "qwen"
-_CONFIG_FOR_DOC = "QWenConfig"
-
-QWen_PRETRAINED_MODEL_ARCHIVE_LIST = ["qwen-7b"]
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
@@ -58,6 +54,7 @@ def _rotate_half(x):
     x = rearrange(x, "... (j d) -> ... j d", j=2)
     x1, x2 = x.unbind(dim=-2)
     return torch.cat((-x2, x1), dim=-1)
+
 
 def apply_rotary_pos_emb(t, freqs):
     if apply_rotary_emb_func is not None:
@@ -151,7 +148,8 @@ def qwen_attention_forward(
             cache_k = new_cache_k
             cache_v = new_cache_v
 
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key.transpose(1, 2), value.transpose(1, 2))
+        key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                   key.transpose(1, 2), value.transpose(1, 2))
         key = key_states.transpose(1, 2)
         value = value_states.transpose(1, 2)
     elif use_cache:
@@ -208,11 +206,11 @@ def qwen_attention_forward(
     outputs = (attn_output, present)
     if output_attentions:
         if (
-                    self.use_flash_attn
-                and flash_attn_unpadded_func is not None
+            self.use_flash_attn
+            and flash_attn_unpadded_func is not None
             and not self.is_fp32
         ):
-            raise ValueError("Cannot output attentions while using flash-attn")
+            invalidInputError("Cannot output attentions while using flash-attn")
         else:
             outputs += (attn_weight,)
 
