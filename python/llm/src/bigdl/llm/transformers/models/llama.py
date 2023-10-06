@@ -118,7 +118,10 @@ def llama_attention_forward_4_31(
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
 
-    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+    use_fuse_rope = query_states.device.type == "xpu" and not (self.training and query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+
+    if use_fuse_rope:
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                      key_states,
                                                                      position_ids,
