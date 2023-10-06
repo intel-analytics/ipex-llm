@@ -97,3 +97,18 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+
+
+def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
+    if q.device.type != "xpu":
+        invalidInputError(False,
+                          f"only xpu is supported in this function")
+    import linear_q4_0
+    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
+    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
+    if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox"]:
+        linear_q4_0.apply_rotary_embedding_half_qk(q, k, position_ids, q_embed, k_embed)
+        return q_embed, k_embed
+    else:
+        invalidInputError(False,
+                          f"{model_family} is not supported.")
