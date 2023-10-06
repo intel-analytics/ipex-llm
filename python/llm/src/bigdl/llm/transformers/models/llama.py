@@ -39,6 +39,7 @@ import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -58,7 +59,7 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
 def llama_rms_norm_forward(self, hidden_states):
-    if hidden_states.device.type == "xpu":
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
                                                          [self.weight.size(0)], self.weight)
     else:
@@ -116,9 +117,16 @@ def llama_attention_forward_4_31(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                    cos, sin, position_ids, "llama")
+
+    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "llama")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "llama")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
