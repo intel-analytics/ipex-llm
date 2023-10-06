@@ -59,7 +59,7 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
 def llama_rms_norm_forward(self, hidden_states):
-    if hidden_states.device.type == "xpu":
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
                                                          [self.weight.size(0)], self.weight)
     else:
@@ -118,7 +118,7 @@ def llama_attention_forward_4_31(
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
 
-    if query_states.device.type == "xpu":
+    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                      key_states,
                                                                      position_ids,
