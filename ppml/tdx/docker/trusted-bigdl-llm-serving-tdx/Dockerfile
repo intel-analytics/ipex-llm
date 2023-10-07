@@ -7,7 +7,6 @@ RUN mkdir -p /ppml/
 
 
 ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./attestation_cli.py /opt/attestation_cli.py
 ADD ./attestation.sh /opt/attestation.sh
 
 
@@ -17,6 +16,7 @@ RUN cp -r /llm/FastChat /ppml/FastChat && \
     cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv /root/BigDL/python/ppml/src/bigdl/ppml/ /usr/local/lib/python3.9/dist-packages/bigdl/ && \
+    cp /usr/local/lib/python3.9/dist-packages/bigdl/ppml/attestation/attestation_cli.py /opt/ && \
     rm -rf /root/BigDL && \
     # Remote attestation dependencies
     mkdir -p /opt/intel/ && \
