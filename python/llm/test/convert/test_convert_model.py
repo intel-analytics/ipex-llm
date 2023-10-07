@@ -32,6 +32,7 @@ starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
 
 def optimize_transformers_llm_test_pipeline(output_dir, model_path):
+
     with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
         model = AutoModelForCausalLM.from_pretrained(model_path,
                                         torch_dtype="auto",
