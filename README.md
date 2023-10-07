@@ -12,8 +12,7 @@
 > *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [ggml](https://github.com/ggerganov/ggml), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
 ### Latest update
-- **[New]** `bigdl-llm` now supports QLoRA fintuning on Intel GPU; see the the example [here](python/llm/example/gpu/qlora_finetuning).
-- `bigdl-llm` now supports Intel GPU (including Arc, Flex and MAX); see the the latest GPU examples [here](python/llm/example/gpu).
+- **[New]** `bigdl-llm` now supports QLoRA fintuning on Intel GPU; see the the example [here](python/llm/example/GPU/QLoRA-FineTuning).
 - `bigdl-llm` now supports Intel GPU (including Arc, Flex and MAX); see the the latest GPU examples [here](python/llm/example/GPU).
 - `bigdl-llm` tutorial is released [here](https://github.com/intel-analytics/bigdl-llm-tutorial).
 - Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly, StarCoder, Whisper, InternLM, QWen, Baichuan, Aquila, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
