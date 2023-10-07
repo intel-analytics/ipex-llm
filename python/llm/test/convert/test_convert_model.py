@@ -51,7 +51,7 @@ def optimize_transformers_llm_test_pipeline(output_dir, model_path):
         assert new_model is not None
     finally:
         if os.path.exists(tempdir):
-            os.rmdir(tempdir)
+            shutil.rmtree(tempdir)
 
 class TestConvertModel(TestCase):
     
