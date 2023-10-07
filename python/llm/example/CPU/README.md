@@ -1,22 +1,8 @@
-# BigDL-LLM Optimization for Large Language Model on Intel CPUs
+# BigDL-LLM Examples on Intel CPU
 
-We provide detailed examples to help you run popular open-source models using BigDL-LLM on Intel CPUs. Please refer to the appropriate guide based on different BigDL-LLM key feature:
+This folder contains examples of running BigDL-LLM on Intel CPU:
 
-## PyTorch API
-
-In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. See the complete example in [PyTorch-Models Folder](PyTorch-Models).
-
-## Transformers-style API
-
-### Huggingface transformers Format
-
-Many popular open-source PyTorch large language models can be loaded using the Huggingface Transformers API (such as AutoModel, AutoModelForCasualLM, etc). For such models, BigDL-LLM also provides a set of APIs to support them. See the complete example in [HF-Transformers-AutoModels Folder](HF-Transformers-AutoModels).
-
-### Native Format
-
-Especially, for `llama`/`bloom`/`gptneox`/`starcoder`/`chatglm` model families, BigDL-LLM supports native INT4 format on Intel CPUs to realize maximum performance and examples can be found in [Native-Models Folder](Native-Models).
-
-
-## LangChain API
-
-BigDL-LLM also provides LangChain integrations (i.e. LLM wrappers and embeddings) and complete examples can be found in [LangChain Folder](LangChain).
+- [HF-Transformers-AutoModels](HF-Transformers-AutoModels): running any Hugging Face Transformers model on BigDL-LLM (using the standard AutoModel APIs)
+- [PyTorch-Models](PyTorch-Models): running any PyTorch model on BigDL-LLM (with "one-line code change")
+- [Native-Models](Native-Models): converting & running LLM in `llama`/`chatglm`/`bloom`/`gptneox`/`starcoder` model family using native (cpp) implementation
+- [LangChain](LangChain): running LangChain applications on BigDL-LLM
