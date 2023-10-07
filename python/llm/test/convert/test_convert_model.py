@@ -22,6 +22,7 @@ import shutil
 
 from bigdl.llm import llm_convert
 from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.optimize import optimize_model, load_low_bit, low_memory_init
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
@@ -29,6 +30,22 @@ gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
 bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
 starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
+
+def optimize_transformers_llm_test_pipeline(output_dir, model_path):
+    with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
+        model = AutoModelForCausalLM.from_pretrained(model_path,
+                                        torch_dtype="auto",
+                                        low_cpu_mem_usage=True,
+                                        trust_remote_code=True)
+        model = optimize_model(model)
+        model.save_low_bit(tempdir)
+        with low_memory_init():
+            new_model = AutoModelForCausalLM.from_pretrained(tempdir,
+                                            torch_dtype="auto",
+                                            trust_remote_code=True)
+        new_model = load_low_bit(new_model,
+                            model_path=tempdir)
+        assert new_model is not None
 
 class TestConvertModel(TestCase):
     
@@ -86,6 +103,12 @@ class TestConvertModel(TestCase):
             model.save_low_bit(tempdir)
             newModel = AutoModelForCausalLM.load_low_bit(tempdir)
             assert newModel is not None
+
+    def test_optimize_transformers_llama(self):
+        optimize_transformers_llm_test_pipeline(llama_model_path)
+
+    def test_optimize_transformers_bloom(self):
+        optimize_transformers_llm_test_pipeline(bloom_model_path)
 
 if __name__ == '__main__':
     pytest.main([__file__])
