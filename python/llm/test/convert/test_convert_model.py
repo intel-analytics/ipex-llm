@@ -50,6 +50,8 @@ def optimize_transformers_llm_test_pipeline(output_dir, model_path):
                             model_path=tempdir)
         assert new_model is not None
     finally:
+        import time
+        time.sleep(1)
         if os.path.exists(tempdir):
             print(os.getcwd())
             shutil.rmtree(tempdir)
