@@ -18,7 +18,7 @@ runs:
       env:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
-        echo "CONTAINER_NAME=spark-k8s-exmaples-test-gramine" >> $GITHUB_ENV
+        echo "CONTAINER_NAME=spark-k8s-examples-test-gramine" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
 
     - name: Start Container
@@ -51,6 +51,10 @@ runs:
     - name: Spark K8S Examples Test
       shell: bash
       run: |
+        docker exec -i $CONTAINER_NAME bash -c "sed '/--master \$RUNTIME_SPARK_MASTER \\\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\\' -i /ppml/scripts/start-spark-pi-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "sed '/--master \$RUNTIME_SPARK_MASTER \\\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\\' -i /ppml/scripts/start-spark-sqlexamples-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "sed '/--master \$RUNTIME_SPARK_MASTER \\\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\\' -i /ppml/scripts/start-pyspark-sqlexamples-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "sed '/--master \$RUNTIME_SPARK_MASTER \\\/a\    --conf spark.kubernetes.node.selector.icx-3=true \\\' -i /ppml/scripts/start-pyspark-pi-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-sqlexamples-on-k8s-client-sgx.sh"
