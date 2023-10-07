@@ -71,7 +71,7 @@ def rotate_every_two(x):
 
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
-    if model_family in ["llama", "baichuan", "internlm"]:
+    if model_family in ["llama", "baichuan", "internlm", "aquila"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -93,6 +93,21 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         sin = torch.gather(sin.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
+        return q_embed, k_embed
+    else:
+        invalidInputError(False,
+                          f"{model_family} is not supported.")
+
+
+def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
+    if q.device.type != "xpu":
+        invalidInputError(False,
+                          f"only xpu is supported in this function")
+    import linear_q4_0
+    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
+    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
+    if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox"]:
+        linear_q4_0.apply_rotary_embedding_half_qk(q, k, position_ids, q_embed, k_embed)
         return q_embed, k_embed
     else:
         invalidInputError(False,

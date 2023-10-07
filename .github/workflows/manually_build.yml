@@ -60,6 +60,7 @@ jobs:
   bigdl-llm-xpu:
     if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
+    
     steps:
     - uses: actions/checkout@v3
     - name: docker login
@@ -88,6 +89,7 @@ jobs:
   bigdl-llm-cpu:
     if: ${{ github.event.inputs.artifact == 'bigdl-llm-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
+
     steps:
     - uses: actions/checkout@v3
     - name: docker login

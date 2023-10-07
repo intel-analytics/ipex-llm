@@ -135,6 +135,7 @@ def convert_forward(m, target_m, new_forward):
 def optimize(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
     from transformers.modeling_utils import PreTrainedModel
 
     # All huggingface format models are inherited from `PreTrainedModel`
@@ -149,11 +150,16 @@ def optimize(model):
             model,
             transformers.models.llama.modeling_llama.LlamaAttention,
             llama_attention_forward_4_31,)
+        convert_forward(
+            model,
+            transformers.models.llama.modeling_llama.LlamaRMSNorm,
+            llama_rms_norm_forward,)
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
 
-    if "chatglm2" in model.config._name_or_path:
+    if "chatglm-18b" in model.config._name_or_path or "chatglm2" in model.config._name_or_path:
+        # chatglm-18b or chatglm2-6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
@@ -166,6 +172,7 @@ def optimize(model):
                         module.CoreAttention,
                         core_attn_forward_8eb45c)
     elif "chatglm" in model.config._name_or_path:
+        # chatglm-6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
@@ -279,5 +286,21 @@ def optimize(model):
         convert_forward(model,
                         module.InternLMAttention,
                         internlm_attention_forward
+                        )
+    elif model.config.model_type == "qwen":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.qwen import qwen_attention_forward
+        convert_forward(model,
+                        module.QWenAttention,
+                        qwen_attention_forward
+                        )
+    elif model.config.model_type == "aquila":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.aquila import aquila_attention_forward
+        convert_forward(model,
+                        module.AquilaAttention,
+                        aquila_attention_forward
                         )
     return model
