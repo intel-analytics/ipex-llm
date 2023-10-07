@@ -1,5 +1,5 @@
-name: 'Run PPML Occlum ExampleTests'
-description: 'Run PPML Occlum ExampleTests'
+name: 'Run PPML Occlum EDMM ExampleTests'
+description: 'Run PPML Occlum EDMM ExampleTests'
 inputs:
   image:
     description: 'image'
@@ -20,8 +20,8 @@ runs:
         whoami
 
         export LOCAL_IP=172.168.0.207
-        export CPUSET="12-16"
-        export CONTAINER_NAME="spark-occlum-jenkins"
+        export CPUSET="6-10"
+        export CONTAINER_NAME="spark-occlum-edmm-jenkins"
 
         export DATA_PATH=/home/icx/glorysdj/data
         export KEYS_PATH=/home/icx/glorysdj/keys
