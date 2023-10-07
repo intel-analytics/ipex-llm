@@ -10,10 +10,8 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./attestation.sh /opt/attestation.sh
 
 
-# Change workdir
-RUN cp -r /llm/FastChat /ppml/FastChat && \
-    # Install bigdl-ppml
-    cd /root && \
+# Install bigdl-ppml
+RUN cd /root && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv /root/BigDL/python/ppml/src/bigdl/ppml/ /usr/local/lib/python3.9/dist-packages/bigdl/ && \
     cp /usr/local/lib/python3.9/dist-packages/bigdl/ppml/attestation/attestation_cli.py /opt/ && \
