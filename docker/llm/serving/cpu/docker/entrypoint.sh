@@ -1,46 +1,4 @@
 #!/bin/bash
-set -ex
-
-# Check whether there is a passwd entry for the container UID
-myuid=$(id -u)
-mygid=$(id -g)
-# turn off -e for getent because it will return error code in anonymous uid case
-set +e
-uidentry=$(getent passwd $myuid)
-set -e
-
-# To use sgx_sign in k8s env
-source /opt/intel/sgxsdk/environment
-# If there is no passwd entry for the container UID, attempt to create one
-if [ -z "$uidentry" ] ; then
-    if [ -w /etc/passwd ] ; then
-        echo "$myuid:x:$myuid:$mygid:anonymous uid:$SPARK_HOME:/bin/false" >> /etc/passwd
-    else
-        echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
-    fi
-fi
-
-#check glic ENV MALLOC_ARENA_MAX for k8s
-if [[ -z "$MALLOC_ARENA_MAX" ]]; then
-    echo "No MALLOC_ARENA_MAX specified, set to 1."
-    export MALLOC_ARENA_MAX=1
-fi
-
-# check occlum log level for k8s
-if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
-    echo "No ENABLE_SGX_DEBUG specified, set to off."
-    export ENABLE_SGX_DEBUG=false
-fi
-export OCCLUM_LOG_LEVEL=off
-if [[ -z "$SGX_LOG_LEVEL" ]]; then
-    echo "No SGX_LOG_LEVEL specified, set to off."
-else
-    echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-    if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
-        export ENABLE_SGX_DEBUG=true
-        export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
-    fi
-fi
 
 usage() {
   echo "Usage: $0 [-m --mode <controller|worker>] [-h --help]"
@@ -56,8 +14,62 @@ usage() {
   echo "WORKER_HOST (default: localhost)."
   echo "WORKER_PORT (default: 21002)."
   echo "MODEL_PATH (default: empty)."
-  echo "ENABLE_ATTESTATION_API (default: empty)."
   exit 1
+}
+
+# Acquire correct core_nums if using cpuset-cpus, return -1 if file not exist
+calculate_total_cores() {
+  local cpuset_file="/sys/fs/cgroup/cpuset/cpuset.cpus"
+
+  if [[ -f "$cpuset_file" ]]; then
+    local cpuset_cpus=$(cat "$cpuset_file")
+    cpuset_cpus=$(echo "${cpuset_cpus}" | tr -d '\n')
+
+    local total_cores=0
+    IFS=',' read -ra cpu_list <<< "$cpuset_cpus"
+    for cpu in "${cpu_list[@]}"; do
+      if [[ $cpu =~ - ]]; then
+        # Range of CPUs
+        local start_cpu=$(echo "$cpu" | cut -d'-' -f1)
+        local end_cpu=$(echo "$cpu" | cut -d'-' -f2)
+        local range_cores=$((end_cpu - start_cpu + 1))
+        total_cores=$((total_cores + range_cores))
+      else
+        # Single CPU
+        total_cores=$((total_cores + 1))
+      fi
+    done
+
+    echo $total_cores
+    return
+  fi
+  # Kubernetes core-binding will use this file
+  cpuset_file="/sys/fs/cgroup/cpuset.cpus"
+  if [[ -f "$cpuset_file" ]]; then
+    local cpuset_cpus=$(cat "$cpuset_file")
+    cpuset_cpus=$(echo "${cpuset_cpus}" | tr -d '\n')
+
+    local total_cores=0
+    IFS=',' read -ra cpu_list <<< "$cpuset_cpus"
+    for cpu in "${cpu_list[@]}"; do
+      if [[ $cpu =~ - ]]; then
+        # Range of CPUs
+        local start_cpu=$(echo "$cpu" | cut -d'-' -f1)
+        local end_cpu=$(echo "$cpu" | cut -d'-' -f2)
+        local range_cores=$((end_cpu - start_cpu + 1))
+        total_cores=$((total_cores + range_cores))
+      else
+        # Single CPU
+        total_cores=$((total_cores + 1))
+      fi
+    done
+
+    echo $total_cores
+    return
+  else
+    echo -1
+    return
+  fi
 }
 
 # Default values
@@ -70,16 +82,10 @@ worker_port="21002"
 model_path=""
 mode=""
 omp_num_threads=""
-attest_flag=""
 dispatch_method="shortest_queue" # shortest_queue or lottery
 
 # Update rootCA config if needed
 update-ca-certificates
-
-# choose dispatch_method, default is shortest_queue
-if [[ -n $DISPATCH_METHOD ]]; then
-  dispatch_method=$DISPATCH_METHOD
-fi
 
 # Remember the value of `OMP_NUM_THREADS`:
 if [[ -n "${OMP_NUM_THREADS}" ]]; then
@@ -90,7 +96,7 @@ fi
 if [ "$#" == 0 ]; then
   echo "[INFO] no command is passed in"
   echo "[INFO] enter pass-through mode"
-  exec /sbin/tini -s -- "bash"
+  exec /usr/bin/tini -s -- "bash"
 else
   # Parse command-line options
   options=$(getopt -o "m:h" --long "mode:,help" -n "$0" -- "$@")
@@ -105,13 +111,13 @@ else
         mode="$2"
         [[ $mode == "controller" || $mode == "worker" ]] || usage
         shift 2
-        break
         ;;
       -h|--help)
         usage
         ;;
       --)
-        exec /sbin/tini -s "$@"
+        shift
+        break
         ;;
       *)
         usage
@@ -147,42 +153,40 @@ else
     model_path=$MODEL_PATH
   fi
 
-  if [[ $ENABLE_ATTESTATION_API = "true" ]]; then
-    attest_flag="--attest"
+  if [[ -n $DISPATCH_METHOD ]]; then
+    dispatch_method=$DISPATCH_METHOD
   fi
 
   controller_address="http://$controller_host:$controller_port"
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
-    # init Occlum
-    /opt/run_llm_on_occlum_glibc.sh init
     # Logic for controller mode
     # Boot Controller
-    # TODO: add dispatch-method
     api_address="http://$api_host:$api_port"
     echo "Controller address: $controller_address"
     echo "OpenAI API address: $api_address"
-    cd /opt/occlum_spark
-    if [[ $ATTESTATION != "true" ]]; then
-        occlum start
-    fi
-    occlum exec /bin/python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method $attest_flag &
+    python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method &
     # Boot openai api server
-    occlum exec /bin/python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
-  elif [[ $mode == "worker" ]]; then
-    # init Occlum
-    /opt/run_llm_on_occlum_glibc.sh init
+    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address
+  else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
     # Apply optimizations from bigdl-nano
-    #source bigdl-nano-init -t
+    source bigdl-nano-init -t
     # First check if user have set OMP_NUM_THREADS by themselves
     if [[ -n "${omp_num_threads}" ]]; then
       echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
       export OMP_NUM_THREADS=$omp_num_threads
     else
-      # Use default settings
-      export OMP_NUM_THREADS=16
+      # Use calculate_total_cores to acquire cpuset settings
+      # Set OMP_NUM_THREADS to correct numbers
+      cores=$(calculate_total_cores)
+      if [[ $cores == -1 || $cores == 0 ]]; then
+        echo "Failed to obtain the number of cores, will use the default settings OMP_NUM_THREADS=$OMP_NUM_THREADS"
+      else
+        echo "Setting OMP_NUM_THREADS to $cores"
+        export OMP_NUM_THREADS=$cores
+      fi
     fi
     if [[ -z "${model_path}" ]]; then
           echo "Please set env MODEL_PATH used for worker"
@@ -190,10 +194,7 @@ else
     fi
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    cd /opt/occlum_spark
-    if [[ $ATTESTATION != "true" ]]; then
-        occlum start
-    fi
-    occlum exec /bin/python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address $attest_flag
+    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
   fi
 fi
+

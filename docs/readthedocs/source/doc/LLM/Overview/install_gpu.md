@@ -5,8 +5,10 @@
 Install BigDL-LLM for GPU supports using pip through:
 
 ```bash
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for GPU
 ```
+
+Please refer to [Environment Setup](#environment-setup) for more information.
 
 ```eval_rst
 .. note::
@@ -24,6 +26,12 @@ BigDL-LLM for GPU supports has been verified on:
 
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
+
+```eval_rst
+.. note::
+
+   We currently supoort the Ubuntu 20.04 operating system or later. Windows supoort is in progress.
+```
 
 To apply Intel GPU acceleration, there're several steps for tools installation and environment preparation:
 
