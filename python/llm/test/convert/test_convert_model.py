@@ -105,10 +105,10 @@ class TestConvertModel(TestCase):
             assert newModel is not None
 
     def test_optimize_transformers_llama(self):
-        optimize_transformers_llm_test_pipeline(llama_model_path)
+        optimize_transformers_llm_test_pipeline(output_dir, llama_model_path)
 
     def test_optimize_transformers_bloom(self):
-        optimize_transformers_llm_test_pipeline(bloom_model_path)
+        optimize_transformers_llm_test_pipeline(output_dir, bloom_model_path)
 
 if __name__ == '__main__':
     pytest.main([__file__])
