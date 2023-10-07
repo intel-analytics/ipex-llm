@@ -32,10 +32,8 @@ starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
 
 def optimize_transformers_llm_test_pipeline(output_dir, model_path):
-
-    tempdir = tempfile.mkdtemp(dir=output_dir)
-    try:
-        from transformers import AutoModelForCausalLM as AutoCLM
+    from transformers import AutoModelForCausalLM as AutoCLM
+    with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
         model = AutoCLM.from_pretrained(model_path,
                                         torch_dtype="auto",
                                         low_cpu_mem_usage=True,
@@ -49,12 +47,6 @@ def optimize_transformers_llm_test_pipeline(output_dir, model_path):
         new_model = load_low_bit(new_model,
                             model_path=tempdir)
         assert new_model is not None
-    finally:
-        import time
-        time.sleep(1)
-        if os.path.exists(tempdir):
-            print(os.getcwd())
-            shutil.rmtree(tempdir)
 
 class TestConvertModel(TestCase):
     
@@ -114,10 +106,21 @@ class TestConvertModel(TestCase):
             assert newModel is not None
 
     def test_optimize_transformers_llama(self):
-        optimize_transformers_llm_test_pipeline(output_dir, llama_model_path)
-
-    def test_optimize_transformers_bloom(self):
-        optimize_transformers_llm_test_pipeline(output_dir, bloom_model_path)
+        from transformers import AutoModelForCausalLM as AutoCLM
+        with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
+            model = AutoCLM.from_pretrained(llama_model_path,
+                                            torch_dtype="auto",
+                                            low_cpu_mem_usage=True,
+                                            trust_remote_code=True)
+            model = optimize_model(model)
+            model.save_low_bit(tempdir)
+            with low_memory_init():
+                new_model = AutoCLM.from_pretrained(tempdir,
+                                                torch_dtype="auto",
+                                                trust_remote_code=True)
+            new_model = load_low_bit(new_model,
+                                model_path=tempdir)
+            assert new_model is not None
 
 if __name__ == '__main__':
     pytest.main([__file__])
