@@ -19,7 +19,9 @@ runs:
       run: |
         whoami
 
-        export LOCAL_IP=172.168.0.207
+        # icx-6's kernel support EDMM
+        export LOCAL_IP=172.168.0.210
+        ssh icx@172.168.0.210
         export CPUSET="6-10"
         export CONTAINER_NAME="spark-occlum-edmm-jenkins"
 
