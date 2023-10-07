@@ -357,7 +357,7 @@ class LowBitLinear(nn.Linear):
             if self.training and x_2d.requires_grad:
                 result = MatMulLowBit.apply(x_2d, self.weight)
             else:
-                result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype, 
+                result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                  is_first_token)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
