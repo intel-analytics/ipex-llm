@@ -89,7 +89,7 @@ def load_low_bit(model_or_creator, model_path, **kwargs):
         else:
             model = model_or_creator
         invalidInputError(isinstance(model, torch.nn.Module),
-                          "model_or_creator should be a instance of "
+                          "model_or_creator should be an instance of "
                           "`torch.nn.Module`or a method that returns "
                           f"an instance of `torch.nn.Module`, but got {type(model)} at last.")
         qtype = ggml_tensor_qtype[low_bit]
@@ -118,6 +118,12 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
     invalidInputError(low_bit in ggml_tensor_qtype,
                       f"Unknown load_in_low_bit value: {low_bit}, expected:"
                       f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+    invalidInputError(isinstance(model, torch.nn.Module),
+                      "model should be an instance of "
+                      f"`torch.nn.Module`, but got {type(model)} at last.")
+    invalidInputError(model.device.type == 'cpu',
+                      "Expect model on device `cpu`, "
+                      f"but got device type {model.device.type}")
     qtype = ggml_tensor_qtype[low_bit]
     model = ggml_convert_low_bit(model, qtype=qtype, optimize_model=optimize_llm)
     # add save_low_bit to pretrained model dynamically
