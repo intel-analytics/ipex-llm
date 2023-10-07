@@ -35,7 +35,7 @@ def generate_tdx_quote(user_report_data):
         _fields_ = [("d", ctypes.c_uint8 * TDX_REPORT_SIZE)]
 
     # Load the library
-    tdx_attest = ctypes.cdll.LoadLibrary("/usr/lib/x86_64-linux-gnu/libtdx_attest.so")
+    tdx_attest = ctypes.cdll.LoadLibrary("/usr/lib/x86_64-linux-gnu/libtdx_attest.so.1")
 
     # Set the argument and return types for the function
     tdx_attest.tdx_att_get_report.argtypes = [ctypes.POINTER(TdxReportData), ctypes.POINTER(TdxReport)]
@@ -83,4 +83,14 @@ def generate_gramine_quote(user_report_data):
     with open(QUOTE_PATH, "rb") as f:
         quote = f.read()
     return quote
+
+def generate_occlum_quote():
+    QUOTE_PATH = "/etc/occlum_attestation/quote"
+    if not os.path.isfile(QUOTE_PATH):
+        print(f"File {QUOTE_PATH} not found.")
+        return ""
+    with open(QUOTE_PATH, "rb") as f:
+        quote = f.read()
+    return quote
+
 

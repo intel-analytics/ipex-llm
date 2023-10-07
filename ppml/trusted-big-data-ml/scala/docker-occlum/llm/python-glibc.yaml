@@ -2,6 +2,11 @@ includes:
   - base.yaml
 targets:
   # for attestation
+  - target: /opt/
+    copy:
+      - dirs:
+          # python examples
+          - /opt/attestation_cli.py
   - target: /bin
     copy:
       - files:

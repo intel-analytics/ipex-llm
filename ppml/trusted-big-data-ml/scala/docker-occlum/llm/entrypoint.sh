@@ -163,7 +163,9 @@ else
     echo "Controller address: $controller_address"
     echo "OpenAI API address: $api_address"
     cd /opt/occlum_spark
-    occlum start
+    if [[ $ATTESTATION != "true" ]]; then
+        occlum start
+    fi
     occlum exec /bin/python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method $attest_flag &
     # Boot openai api server
     occlum exec /bin/python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
@@ -189,7 +191,9 @@ else
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
     cd /opt/occlum_spark
-    occlum start
+    if [[ $ATTESTATION != "true" ]]; then
+        occlum start
+    fi
     occlum exec /bin/python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address $attest_flag
   fi
 fi
