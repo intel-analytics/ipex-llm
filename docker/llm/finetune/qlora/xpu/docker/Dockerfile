@@ -32,7 +32,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # install huggingface dependencies
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
-    pip install peft==0.5.0 datasets
+    pip install peft==0.5.0 datasets && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/gpu/qlora_finetuning/qlora_finetuning.py
 
-ADD ./qlora_finetune_xpu.py /qlora_finetune_xpu.py
 ADD ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh

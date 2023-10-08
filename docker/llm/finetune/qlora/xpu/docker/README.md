@@ -7,7 +7,7 @@ The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-xpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-finetune-qlora-xpu:2.4.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -19,7 +19,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-xpu:2.4.0-SNAPSHOT \
+  -t intelanalytics/bigdl-llm-finetune-qlora-xpu:2.4.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -35,11 +35,11 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=bigdl-llm-fintune-xpu \
+   --name=bigdl-llm-fintune-qlora-xpu \
    -v $BASE_MODE_PATH:/model \
-   -v $DATA_PATH:/data \
+   -v $DATA_PATH:/data/english_quotes \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-xpu:2.4.0-SNAPSHOT
+   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.4.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -49,9 +49,9 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=bigdl-llm-fintune-xpu \
+   --name=bigdl-llm-fintune-qlora-xpu \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-xpu:2.4.0-SNAPSHOT
+   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.4.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -61,7 +61,7 @@ However, we do recommend you to handle them manually, because the automatical do
 Enter the running container:
 
 ```bash
-docker exec -it bigdl-llm-fintune-xpu bash
+docker exec -it bigdl-llm-fintune-qlora-xpu bash
 ```
 
 Then, start QLoRA fine-tuning:
