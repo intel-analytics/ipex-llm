@@ -1,0 +1,14 @@
+name: Manually Release Portable Executable Zip
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-zip:
+    runs-on: [self-hosted, windows]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: run bat
+        run: ./python/llm/portable-executable/setup.bat
+        shell: pwsh
