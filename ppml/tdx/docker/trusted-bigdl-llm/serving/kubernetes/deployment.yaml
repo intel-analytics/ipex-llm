@@ -7,12 +7,16 @@ metadata:
     fastchat-app-type: controller
 spec:
   dnsPolicy: "ClusterFirst"
+  runtimeClassName: kata-qemu-tdx
+  nodeSelector:
+    tdx-ac: "1"
   containers:
   - name: trusted-bigdl-llm-serving-tdx-controller # fixed
     image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT
     securityContext:
       privileged: true
-    imagePullPolicy: IfNotPresent
+      runAsUser: 0
+    imagePullPolicy: Always
     env:
     - name: CONTROLLER_HOST # fixed
       value: "0.0.0.0"
@@ -22,16 +26,8 @@ spec:
       value: "0.0.0.0"
     - name: API_PORT # fixed
       value: "8000"
-    - name: "ATTESTATION"
-      value: "false"
     - name: "ENABLE_ATTESTATION_API"
-      value: "false"
-    - name: "ATTESTATION_URL"
-      value: "YOUR_ATTESTATION_URL"
-    - name: "APP_ID"
-      value: "YOUR_APP_ID"
-    - name: "API_KEY"
-      value: "YOUR_API_KEY"
+      value: "true"
     ports:
       - containerPort: 21005
         name: con-port
@@ -46,13 +42,13 @@ spec:
         cpu: 4
     args: ["-m", "controller"]
     volumeMounts:
-      - name: tdx-guest
-        mountPath: /dev/tdx-guest
+      - name: dev
+        mountPath: /dev
   restartPolicy: "Never"
   volumes:
-  - name: tdx-guest
+  - name: dev
     hostPath:
-      path: /dev/tdx-guest
+      path: /dev
 ---
 # Service for the controller
 apiVersion: v1
@@ -81,7 +77,7 @@ metadata:
   name: trusted-bigdl-llm-serving-tdx-a1234bd-worker-deployment
 spec:
   # Change this to the number you want
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       fastchat: worker
@@ -91,12 +87,16 @@ spec:
         fastchat: worker
     spec:
       dnsPolicy: "ClusterFirst"
+      runtimeClassName: kata-qemu-tdx
+      nodeSelector:
+        tdx-ac: "1"
       containers:
       - name: trusted-bigdl-llm-serving-tdx-worker # fixed
         image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT
         securityContext:
+          runAsUser: 0
           privileged: true
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: CONTROLLER_HOST # fixed
           value: trusted-bigdl-llm-serving-tdx-a1234bd-controller-service
@@ -109,19 +109,11 @@ spec:
         - name: WORKER_PORT # fixed
           value: "21841"
         - name: MODEL_PATH # Change this
-          value: "/llm/models/vicuna-7b-v1.5-bigdl/"
+          value: "/ppml/models/vicuna-7b-bigdl/"
         - name: OMP_NUM_THREADS
           value: "16"
-        - name: "ATTESTATION"
-          value: "false"
         - name: "ENABLE_ATTESTATION_API"
-          value: "false"
-        - name: "ATTESTATION_URL"
-          value: "YOUR_ATTESTATION_URL"
-        - name: "APP_ID"
-          value: "YOUR_APP_ID"
-        - name: "API_KEY"
-          value: "YOUR_API_KEY"
+          value: "true"
         resources:
           requests:
             memory: 32Gi
@@ -131,15 +123,15 @@ spec:
             cpu: 16
         args: ["-m", "worker"]
         volumeMounts:
-          - name: tdx-guest
-            mountPath: /dev/tdx-guest
-          - name: llm-models
-            mountPath: /llm/models/
+          - name: dev
+            mountPath: /dev
+          - name: ppml-models
+            mountPath: /ppml/models/
       restartPolicy: "Always"
       volumes:
-      - name: tdx-guest
+      - name: dev
         hostPath:
-          path: /dev/tdx-guest
-      - name: llm-models
+          path: /dev
+      - name: ppml-models
         hostPath:
-          path: /home/llm/models # change this in other envs
+          path: /chatllm/models # change this in other envs

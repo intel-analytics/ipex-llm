@@ -44,12 +44,16 @@ metadata:
     fastchat-app-type: controller
 spec:
   dnsPolicy: "ClusterFirst"
+  runtimeClassName: kata-qemu-tdx
+  nodeSelector:
+    tdx-ac: "1"
   containers:
   - name: trusted-bigdl-llm-serving-tdx-controller # fixed
     image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT
     securityContext:
       privileged: true
-    imagePullPolicy: IfNotPresent
+      runAsUser: 0
+    imagePullPolicy: Always
     env:
     - name: CONTROLLER_HOST # fixed
       value: "0.0.0.0"
@@ -59,16 +63,8 @@ spec:
       value: "0.0.0.0"
     - name: API_PORT # fixed
       value: "8000"
-    - name: "ATTESTATION"
-      value: "false"
     - name: "ENABLE_ATTESTATION_API"
-      value: "false"
-    - name: "ATTESTATION_URL"
-      value: "YOUR_ATTESTATION_URL"
-    - name: "APP_ID"
-      value: "YOUR_APP_ID"
-    - name: "API_KEY"
-      value: "YOUR_API_KEY"
+      value: "true"
     ports:
       - containerPort: 21005
         name: con-port
@@ -83,13 +79,34 @@ spec:
         cpu: 4
     args: ["-m", "controller"]
     volumeMounts:
-      - name: tdx-guest
-        mountPath: /dev/tdx-guest
+      - name: dev
+        mountPath: /dev
   restartPolicy: "Never"
   volumes:
-  - name: tdx-guest
+  - name: dev
     hostPath:
-      path: /dev/tdx-guest
+      path: /dev
+---
+# Service for the controller
+apiVersion: v1
+kind: Service
+metadata:
+  name: trusted-bigdl-llm-serving-tdx-a1234bd-controller-service
+spec:
+  # You may also want to change this to use the cluster's feature
+  type: NodePort
+  selector:
+    fastchat-appid: a1234bd
+    fastchat-app-type: controller
+  ports:
+    - name: cont-port
+      protocol: TCP
+      port: 21005
+      targetPort: 21005
+    - name: api-port
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
 ---
 # Service for the controller
 apiVersion: v1
@@ -124,7 +141,7 @@ metadata:
   name: trusted-bigdl-llm-serving-tdx-a1234bd-worker-deployment
 spec:
   # Change this to the number you want
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       fastchat: worker
@@ -134,12 +151,16 @@ spec:
         fastchat: worker
     spec:
       dnsPolicy: "ClusterFirst"
+      runtimeClassName: kata-qemu-tdx
+      nodeSelector:
+        tdx-ac: "1"
       containers:
       - name: trusted-bigdl-llm-serving-tdx-worker # fixed
         image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT
         securityContext:
+          runAsUser: 0
           privileged: true
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: CONTROLLER_HOST # fixed
           value: trusted-bigdl-llm-serving-tdx-a1234bd-controller-service
@@ -152,19 +173,11 @@ spec:
         - name: WORKER_PORT # fixed
           value: "21841"
         - name: MODEL_PATH # Change this
-          value: "/llm/models/vicuna-7b-v1.5-bigdl/"
+          value: "/ppml/models/vicuna-7b-bigdl/"
         - name: OMP_NUM_THREADS
           value: "16"
-        - name: "ATTESTATION"
-          value: "false"
         - name: "ENABLE_ATTESTATION_API"
-          value: "false"
-        - name: "ATTESTATION_URL"
-          value: "YOUR_ATTESTATION_URL"
-        - name: "APP_ID"
-          value: "YOUR_APP_ID"
-        - name: "API_KEY"
-          value: "YOUR_API_KEY"
+          value: "true"
         resources:
           requests:
             memory: 32Gi
@@ -174,101 +187,83 @@ spec:
             cpu: 16
         args: ["-m", "worker"]
         volumeMounts:
-          - name: tdx-guest
-            mountPath: /dev/tdx-guest
-          - name: llm-models
-            mountPath: /llm/models/
+          - name: dev
+            mountPath: /dev
+          - name: ppml-models
+            mountPath: /ppml/models/
       restartPolicy: "Always"
       volumes:
-      - name: tdx-guest
+      - name: dev
         hostPath:
-          path: /dev/tdx-guest
-      - name: llm-models
+          path: /dev
+      - name: ppml-models
         hostPath:
-          path: /home/llm/models # change this in other envs
+          path: /chatllm/models # change this in other envs
 ```
 
 You may want to change the `MODEL_PATH` variable in the yaml.  Also, please remember to change the volume path accordingly.
 
 ## Attestation
-
+Please make sure your environment has been configured according to the `tdx-coco` specifications to enable attestation.
 
 
 ### Testing
-
-#### Using openai-python
-
-First, install openai-python:
+#### Apply the deployment.yaml
 ```bash
-pip install --upgrade openai
+kubectl apply -f deployment.yaml
 ```
 
-Then, interact with model vicuna-7b-v1.5-bigdl:
-```python
-import openai
-openai.api_key = "EMPTY"
-openai.api_base = "http://localhost:8000/v1"
-
-model = "vicuna-7b-v1.5-bigdl"
-prompt = "Once upon a time"
-
-# create a completion
-completion = openai.Completion.create(model=model, prompt=prompt, max_tokens=64)
-# print the completion
-print(prompt + completion.choices[0].text)
-
-# create a chat completion
-completion = openai.ChatCompletion.create(
-  model=model,
-  messages=[{"role": "user", "content": "Hello! What is your name?"}]
-)
-# print the completion
-print(completion.choices[0].message.content)
-```
-
-#### cURL
-cURL is another good tool for observing the output of the api.
-
-For the following examples, you may also change the service deployment address.
-
-List Models:
+#### Test using cURL
+Find the cluster ip
+Your should run this command:
 ```bash
-curl http://localhost:8000/v1/models
+kubectl get nodes -o wide
 ```
-
-If you have `jq` installed, you can use it to format the output like this:
+Then you can see output like this
 ```bash
-curl http://localhost:8000/v1/models | jq
+NAME     STATUS   ROLES                  AGE   VERSION   INTERNAL-IP
+tdx-ac   Ready    control-plane,worker   32d   v1.24.0   172.168.0.216
 ```
+The INTERNAL-IP `172.168.0.216` is ip we need to use
 
-Chat Completions:
+Then find the api-port
 ```bash
-curl http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "YOUR_MODEL",
-    "messages": [{"role": "user", "content": "Hello! What is your name?"}]
-  }'
+kubectl get svc
 ```
-
-Text Completions:
+You can see output like this
 ```bash
-curl http://localhost:8000/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "YOUR_MODEL",
-    "prompt": "Once upon a time",
-    "max_tokens": 41,
-    "temperature": 0.5
-  }'
+NAME                                                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                          AGE
+trusted-bigdl-llm-serving-tdx-a1234bd-controller-service   NodePort    10.107.252.231   <none>        21005:30811/TCP,8000:31717/TCP   44m
 ```
+The controller's port 8000 is mapped to the local port 31717.
 
-Embeddings:
+You can use this command
 ```bash
-curl http://localhost:8000/v1/embeddings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "YOUR_MODEL",
-    "input": "Hello world!"
-  }'
+curl --location 'http://host_ip:port/api/v1/attest' \  # Replace the host_ip and port
+--header 'Content-Type: application/json' \
+--data '{"userdata": "ppml"}'
+```
+If you get output like this, it indicates that your attestation was successful.
+```json
+{
+  "message": "Success",
+  "quote_list": [
+    {
+      "role": "openai_api_server",
+      "quote": "***"
+    },
+    {
+      "role": "controller",
+      "quote": "***"
+    },
+    {
+      "role": "worker-http://ip1:port",
+      "quote": "***"
+    },
+    {
+      "role": "worker-http://ip2:port",
+      "quote": "***"
+    }
+  ]
+}
 ```
