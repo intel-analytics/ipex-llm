@@ -1,0 +1,24 @@
+name: BigDL Release Portable Executable Zip
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/bigdl-release-portable-executable-zip.yml"
+      - "python/llm/portable-executable/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/bigdl-release-portable-executable-zip.yml"
+      - "python/llm/portable-executable/**"
+  workflow_dispatch:
+
+jobs:
+  build-zip:
+    runs-on: [self-hosted, llm, windows]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: run bat
+        run: ./python/llm/portable-executable/setup.bat
+        shell: pwsh
