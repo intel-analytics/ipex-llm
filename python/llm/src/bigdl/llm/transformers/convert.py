@@ -41,6 +41,7 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 
 
@@ -57,7 +58,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-                    if qtype != "fp16":
+                    new_linear = None
+                    if qtype != ggml_tensor_qtype["fp16"]:
                         new_linear = LowBitLinear(
                             module.in_features,
                             module.out_features,
@@ -94,7 +96,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear._parameters['weight'] = nn.Parameter(trans_weight)
 
                     #  fp16 may generalize to other sizes later
-                    if qtype != "fp16" or module.in_features in [4096, 11008]:
+                    if new_linear is not None:
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)

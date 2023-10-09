@@ -413,7 +413,7 @@ class FP16Linear(nn.Linear):
             x_2d = x_2d.contiguous()
 
         if x_2d.shape[0] > 1:
-            # first token, re-convert weight
+            # first token or batch size > 1, re-convert weight
             original_weight = self.weight.data.transpose(1, 2)
             original_weight = original_weight.reshape(self.out_len, self.in_len)
             result = F.linear(x_2d, original_weight.contiguous())

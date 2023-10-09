@@ -102,13 +102,11 @@ class _BaseAutoModelClass:
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
         from .convert import ggml_convert_low_bit
-        invalidInputError(q_k in ggml_tensor_qtype or q_k == "fp16",
+        invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8 or fp16.")
-        if q_k != "fp16":
-            qtype = ggml_tensor_qtype[q_k]
-        else:
-            qtype = "fp16"
+        qtype = ggml_tensor_qtype[q_k]
+
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
         # and lead to args missing.
