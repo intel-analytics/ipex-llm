@@ -1,7 +1,7 @@
 BigDL-LLM PyTorch API
 =====================
 
-llm.optimize
+optimize model
 ----------------------------------------
 
 .. automodule:: bigdl.llm.optimize

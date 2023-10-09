@@ -1,8 +1,14 @@
-BigDL-LLM `transformers`-style API
-=====================
+BigDL-LLM ``transformers``-style API
+====================================
 
-llm.transformers.model
----------------------------
+Hugging Face ``transformers`` Format
+------------------------------------
+
+You can apply BigDL-LLM optimizations on any Hugging Face Transformers models by using the standard AutoModel APIs.
+
+
+AutoModelForCausalLM
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: bigdl.llm.transformers.model.AutoModelForCausalLM
     :members:
@@ -13,6 +19,8 @@ llm.transformers.model
     .. automethod:: load_convert
     .. automethod:: load_low_bit
 
+AutoModel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: bigdl.llm.transformers.model.AutoModel
     :members:
@@ -23,6 +31,8 @@ llm.transformers.model
     .. automethod:: load_convert
     .. automethod:: load_low_bit
 
+AutoModelForSpeechSeq2Seq
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: bigdl.llm.transformers.model.AutoModelForSpeechSeq2Seq
     :members:
@@ -33,6 +43,8 @@ llm.transformers.model
     .. automethod:: load_convert
     .. automethod:: load_low_bit
 
+AutoModelForSeq2SeqLM
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: bigdl.llm.transformers.model.AutoModelForSeq2SeqLM
     :members:
@@ -45,48 +57,59 @@ llm.transformers.model
 
 
 
-llm.transformers.modelling_bigdl
+Native Format
 ----------------------------------------
 
-.. autoclass:: bigdl.llm.transformers.modelling_bigdl.LlamaForCausalLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: GGML_Model, GGML_Module, HF_Class
-
-    .. automethod:: from_pretrained
+For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, you may also convert and run LLM using the native (cpp) implementation for maximum performance.
 
 
-.. autoclass:: bigdl.llm.transformers.modelling_bigdl.ChatGLMForCausalLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: GGML_Model, GGML_Module, HF_Class
+.. tabs::
 
-    .. automethod:: from_pretrained
+    .. tab:: Llama
 
+        .. autoclass:: bigdl.llm.transformers.modelling_bigdl.LlamaForCausalLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: GGML_Model, GGML_Module, HF_Class
 
-.. autoclass:: bigdl.llm.transformers.modelling_bigdl.GptneoxForCausalLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: GGML_Model, GGML_Module, HF_Class
+            .. automethod:: from_pretrained
 
-    .. automethod:: from_pretrained
+    .. tab:: ChatGLM
 
+        .. autoclass:: bigdl.llm.transformers.modelling_bigdl.ChatGLMForCausalLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: GGML_Model, GGML_Module, HF_Class
 
-.. autoclass:: bigdl.llm.transformers.modelling_bigdl.BloomForCausalLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: GGML_Model, GGML_Module, HF_Class    
+            .. automethod:: from_pretrained
 
-    .. automethod:: from_pretrained
+    .. tab:: Gptneox
 
-.. autoclass:: bigdl.llm.transformers.modelling_bigdl.StarcoderForCausalLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: GGML_Model, GGML_Module, HF_Class
+        .. autoclass:: bigdl.llm.transformers.modelling_bigdl.GptneoxForCausalLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: GGML_Model, GGML_Module, HF_Class
 
-    .. automethod:: from_pretrained
+            .. automethod:: from_pretrained
+
+    .. tab:: Bloom
+        .. autoclass:: bigdl.llm.transformers.modelling_bigdl.BloomForCausalLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: GGML_Model, GGML_Module, HF_Class    
+
+            .. automethod:: from_pretrained
+
+    .. tab:: Starcoder
+
+        .. autoclass:: bigdl.llm.transformers.modelling_bigdl.StarcoderForCausalLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: GGML_Model, GGML_Module, HF_Class
+
+            .. automethod:: from_pretrained
