@@ -139,9 +139,8 @@ def load_low_bit(model, model_path):
                       f"`torch.nn.Module`, but got {type(model)} at last.")
     if low_bit:
         invalidInputError(isinstance(model, torch.nn.Module),
-                          "model_or_creator should be an instance of "
-                          "`torch.nn.Module`or a method that returns "
-                          f"an instance of `torch.nn.Module`, but got {type(model)} at last.")
+                          "model should be an instance of `torch.nn.Module`, "
+                          f"but got {type(model)} at last.")
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
