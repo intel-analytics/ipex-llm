@@ -13,7 +13,7 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 - Intel Data Center GPU Flex Series
 
 **Operating System**:
-- Ubuntu 20.04 or later (Ubuntu 22.04 is prefered)
+- Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
 
 ## Requirements
 To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation.
