@@ -30,6 +30,7 @@ def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    self.to('cpu')
     self.save_pretrained(*args, **kwargs)
     import json
     import os
@@ -59,7 +60,7 @@ class _BaseAutoModelClass:
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
+                                , sym_int8 or fp16. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
@@ -103,8 +104,9 @@ class _BaseAutoModelClass:
         from .convert import ggml_convert_low_bit
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
-                          f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8 or fp16.")
         qtype = ggml_tensor_qtype[q_k]
+
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
         # and lead to args missing.

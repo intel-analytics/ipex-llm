@@ -5,8 +5,10 @@
 Install BigDL-LLM for CPU supports using pip through:
 
 ```bash
-pip install bigdl-llm[all]
+pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 ```
+
+Please refer to [Environment Setup](#environment-setup) for more information.
 
 ```eval_rst
 .. note::
@@ -43,7 +45,7 @@ First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html)
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm for CPU with 'all' option
+pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 ```
 
 Then for running a LLM model with BigDL-LLM optimizations (taking an `example.py` an example):

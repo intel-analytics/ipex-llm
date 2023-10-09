@@ -1,9 +1,12 @@
 FROM intel/oneapi-basekit:2023.2.1-devel-ubuntu22.04
 
-ENV http_proxy $HTTP_PROXY
-ENV https_proxy $HTTP_PROXY
+ARG http_proxy
+ARG https_proxy
 
 ENV TZ=Asia/Shanghai
+
+# Disable pip's cache behavior
+ARG PIP_NO_CACHE_DIR=false
 
 RUN apt-get update && \
     apt-get install -y curl wget git gnupg gpg-agent && \
@@ -20,8 +23,12 @@ RUN apt-get update && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
-    pip3 install --no-cache --upgrade requests argparse urllib3 && \
-    pip3 install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    # Install FastChat from source requires PEP 660 support
+    python3 get-pip.py && \
+    rm get-pip.py && \
+    pip install --upgrade requests argparse urllib3 && \
+    pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # Install opencl-related repos
     apt-get update && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev

@@ -97,7 +97,7 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
-           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
+           echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v4/' > /etc/sgx_default_qcnl.conf
            echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
            cp /etc/sgx_default_qcnl.conf /opt/occlum_spark/image/etc/
            cd /root/demos/remote_attestation/dcap/
@@ -163,62 +163,20 @@ build_spark() {
     occlum build
 
     #before start occlum app after occlum build
+
+    #attestation
     if [[ $ATTESTATION == "true" ]]; then
         if [[ $PCCS_URL == "" ]]; then
             echo "[ERROR] Attestation set to true but NO PCCS"
             exit 1
         else
-            #verify ehsm service
-            cd /opt/
-            bash verify-attestation-service.sh
-            #register application
-
-            #get mrenclave mrsigner
-            MR_ENCLAVE_temp=$(bash print_enclave_signer.sh | grep mr_enclave)
-            MR_ENCLAVE_temp_arr=(${MR_ENCLAVE_temp})
-            export MR_ENCLAVE=${MR_ENCLAVE_temp_arr[1]}
-            MR_SIGNER_temp=$(bash print_enclave_signer.sh | grep mr_signer)
-            MR_SIGNER_temp_arr=(${MR_SIGNER_temp})
-            export MR_SIGNER=${MR_SIGNER_temp_arr[1]}
-
-            #register and get policy_Id
-            policy_Id_temp=$(bash register.sh | grep policy_Id)
-            policy_Id_temp_arr=(${policy_Id_temp})
-            export policy_Id=${policy_Id_temp_arr[1]}
-        fi
-        #register error
-        if [[ $? -gt 0 || -z "$policy_Id" ]]; then
-            echo "can not get policy_Id, register fail"
-            exit 1;
-        fi
-    fi
-
-    #attestation
-    if [[ $ATTESTATION == "true" ]]; then
-        if [[ $PCCS_URL == "" ]]; then
-            echo "[ERROR] Attestation set to /root/demos/remote_attestation/dcaprue but NO PCCS"
-            exit 1
-        else
                 #generate dcap quote
                 cd /opt/occlum_spark
-                occlum run /bin/dcap_c_test $REPORT_DATA
-                echo "generate quote success"
-                #attest quote
-                occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                            -XX:-UseCompressedOops \
-                            -XX:ActiveProcessorCount=4 \
-                            -Divy.home="/tmp/.ivy" \
-                            -Dos.name="Linux" \
-                            -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                            -Xmx1g com.intel.analytics.bigdl.ppml.attestation.AttestationCLI \
-                            -u $ATTESTATION_URL \
-                            -i $APP_ID \
-                            -k $API_KEY \
-                            -c $CHALLENGE \
-                            -O occlum \
-                            -o $policy_Id
-                if [ $? -gt 0 ]; then
-                    echo "attest fail, exit"
+                occlum start
+                bash /opt/attestation.sh
+                bash /opt/temp_command_file
+                if [ $? -ne 0 ]; then
+                    echo "[ERROR] Attestation Failed!"
                     exit 1;
                 fi
                 echo "verify success"

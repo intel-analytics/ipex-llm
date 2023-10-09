@@ -22,7 +22,7 @@ import torch
 import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 
 def rotate_half(x):
@@ -68,7 +68,7 @@ def attention_fn(
         past_length = cache_k.size(2)
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_cache_k, new_cache_v = create_kv_cache(batch_size,
+            new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads_per_partition,
                                                        self.hidden_size_per_attention_head,
                                                        past_length,
@@ -82,10 +82,10 @@ def attention_fn(
     elif use_cache:
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        key_cache, value_cache = create_kv_cache(batch_size, self.num_attention_heads_per_partition,
-                                                 self.hidden_size_per_attention_head, cur_length,
-                                                 max_cache_length,
-                                                 dtype=query_layer.dtype, device=device)
+        key_cache, value_cache = init_kv_cache(batch_size, self.num_attention_heads_per_partition,
+                                               self.hidden_size_per_attention_head, cur_length,
+                                               max_cache_length,
+                                               dtype=query_layer.dtype, device=device)
         key_cache[:] = key_layer
         value_cache[:] = value_layer
         key_layer = key_cache
