@@ -15,6 +15,8 @@ After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna
 
 You can download the model from [here](https://huggingface.co/lmsys/vicuna-7b-v1.5).
 
+For ChatGLM models, users do not need to add `bigdl` into model path.  We have already used the `BigDL-LLM` backend for this model. 
+
 ### Kubernetes config
 
 We recommend to setup your kubernetes cluster before deployment.  Mostly importantly, please set `cpu-management-policy` to `static` by using this [tutorial](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/).  Also, it would be great to also set the `topology management policy` to `single-numa-node`.
