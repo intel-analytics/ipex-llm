@@ -20,5 +20,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: run bat
-        run: ./python/llm/portable-executable/setup.bat
+        run: '& $env:GITHUB_ACTION_PATH/python/llm/portable-executable/setup.bat'
         shell: powershell
