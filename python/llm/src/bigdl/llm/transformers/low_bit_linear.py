@@ -288,10 +288,10 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, A, weight, is_first_token=True):
+    def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
         import linear_q4_0
-        result = linear_q4_0.forward_new(A, weight.data, weight.qtype, is_first_token)
+        result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
         else:
@@ -353,12 +353,12 @@ class LowBitLinear(nn.Linear):
             # disable the conversion when training
             if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
                 x_2d = x_2d.half()
-            is_first_token = (x_shape[1] > 1)
+            input_seq_size = x_shape[1]
             if self.training and x_2d.requires_grad:
-                result = MatMulLowBit.apply(x_2d, self.weight, is_first_token)
+                result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
             else:
                 result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                 is_first_token)
+                                                 input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
