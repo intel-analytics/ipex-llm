@@ -40,23 +40,24 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
     
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/vicuna)    |
-| LLaMA 2   | [link](example/transformers/transformers_int4/llama2)    |
-| MPT       | [link](example/transformers/transformers_int4/mpt)       |
-| Falcon    | [link](example/transformers/transformers_int4/falcon)    |
-| ChatGLM   | [link](example/transformers/transformers_int4/chatglm)   | 
-| ChatGLM2  | [link](example/transformers/transformers_int4/chatglm2)  | 
-| Qwen      | [link](example/transformers/transformers_int4/qwen)      |
-| MOSS      | [link](example/transformers/transformers_int4/moss)      | 
-| Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
-| Baichuan2 | [link](example/transformers/transformers_int4/baichuan2) |
-| Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
-| Dolly-v2  | [link](example/transformers/transformers_int4/dolly_v2)  | 
-| RedPajama | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/redpajama) | 
-| Phoenix   | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/phoenix)   | 
-| StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
-| InternLM  | [link](example/transformers/transformers_int4/internlm)  |
-| Whisper   | [link](example/transformers/transformers_int4/whisper)   |
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna)    |
+| LLaMA 2   | [link](example/CPU/HF-Transformers-AutoModels/Model/llama2)    |
+| MPT       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       |
+| Falcon    | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    |
+| ChatGLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   | 
+| ChatGLM2  | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | 
+| Qwen      | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      |
+| MOSS      | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      | 
+| Baichuan  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | 
+| Baichuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) |
+| Dolly-v1  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | 
+| Dolly-v2  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | 
+| RedPajama | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/redpajama) | 
+| Phoenix   | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/phoenix)   | 
+| StarCoder | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/starcoder) | 
+| InternLM  | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  |
+| Whisper   | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   |
+| Aquila    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    |
 
 </details>
 
@@ -119,7 +120,7 @@ output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids)
 ```
 
-See the complete examples [here](example/transformers/transformers_int4/).  
+See the complete examples [here](example/CPU/HF-Transformers-AutoModels/Model/).  
 
 ###### GPU INT4
 You may apply INT4 optimizations to any Hugging Face *Transformers* model on Intel GPU as follows.
@@ -138,7 +139,7 @@ input_ids = tokenizer.encode(input_str, ...).to('xpu')
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids.cpu())
 ```
-See the complete examples [here](example/gpu/).
+See the complete examples [here](example/GPU).
 
 ###### More Low-Bit Support
 - Save and load
@@ -148,7 +149,7 @@ See the complete examples [here](example/gpu/).
   model.save_low_bit(model_path)
   new_model = AutoModelForCausalLM.load_low_bit(model_path)
   ```
-  *See the complete example [here](example/transformers/transformers_low_bit/).*
+  *See the complete example [here](example/CPU/HF-Transformers-AutoModels/Save-Load).*
 
 - Additonal data types
  
@@ -157,7 +158,7 @@ See the complete examples [here](example/gpu/).
   ```python
   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
   ```
-  *See the complete example [here](example/transformers/transformers_low_bit/).*
+  *See the complete example [here](example/CPU/HF-Transformers-AutoModels/More-Data-Types).*
 
 ##### 2. Native INT4 model
  
@@ -182,7 +183,7 @@ output_ids = llm.generate(input_ids, ...)
 output = llm.batch_decode(output_ids)
 ``` 
 
-See the complete example [here](example/transformers/native_int4/native_int4_pipeline.py). 
+See the complete example [here](example/CPU/Native-Models/native_int4_pipeline.py). 
 
 ##### 3. LangChain API
 You may run the models using the LangChain API in `bigdl-llm`.
@@ -202,7 +203,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
   doc_chain = load_qa_chain(bigdl_llm, ...)
   output = doc_chain.run(...)
   ```
-  See the examples [here](example/langchain/transformers_int4).
+  See the examples [here](example/CPU/LangChain/transformers_int4).
  
 - **Using native INT4 model**
 
@@ -224,7 +225,7 @@ You may run the models using the LangChain API in `bigdl-llm`.
   doc_chain.run(...)
   ```
 
-  See the examples [here](example/langchain/native_int4).
+  See the examples [here](example/CPU/LangChain/native_int4).
 
 ##### 4. CLI Tool
 >**Note**: Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the Hugging Face `transformers` or LangChain APIs.

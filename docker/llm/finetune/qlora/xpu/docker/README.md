@@ -28,14 +28,18 @@ docker build \
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [English Quotes](https://huggingface.co/datasets/Abirate/english_quotes) dataset, and please download them and start a docker container with files mounted like below:
 
 ```bash
-export BASE_MODE_PATH=<your_downloaded_base_model_path>
-export DATA_PATH=<your_downloaded_data_path>
+export BASE_MODE_PATH=your_downloaded_base_model_path
+export DATA_PATH=your_downloaded_data_path
+export HTTP_PROXY=your_http_proxy
+export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
    --name=bigdl-llm-fintune-qlora-xpu \
+   -e http_proxy=${HTTP_PROXY} \
+   -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/english_quotes \
    --shm-size="16g" \
@@ -45,11 +49,16 @@ docker run -itd \
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
 
 ```bash
+export HTTP_PROXY=your_http_proxy
+export HTTPS_PROXY=your_https_proxy
+
 docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
    --name=bigdl-llm-fintune-qlora-xpu \
+   -e http_proxy=${HTTP_PROXY} \
+   -e https_proxy=${HTTPS_PROXY} \
    --shm-size="16g" \
    intelanalytics/bigdl-llm-fintune-qlora-xpu:2.4.0-SNAPSHOT
 ```
