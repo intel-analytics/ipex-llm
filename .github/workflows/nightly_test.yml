@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  pull_request:
-    branches: [ main ]
+  #pull_request:
+  #  branches: [ main ]
 
   schedule:
     - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
@@ -1404,7 +1404,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   PPML-Occlum-EDMM-ExampleTests:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-EDMM-ExampleTests' || github.event.inputs.artifact == 'all-test' }}
+    if: ${{ github.event.inputs.artifact == 'PPML-Occlum-EDMM-ExampleTests' }}
     runs-on: [self-hosted, EDMM]
 
     steps:
@@ -1416,7 +1416,7 @@ jobs:
       - name: set env
         env:
           DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
-          DEFAULT_TAG: '2.4.0-SNAPSHOT-EDMM6'
+          DEFAULT_TAG: '2.4.0-SNAPSHOT-EDMM'
         run: |
           echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
           echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
