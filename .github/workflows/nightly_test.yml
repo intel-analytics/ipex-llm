@@ -1405,7 +1405,7 @@ jobs:
 
   PPML-Occlum-EDMM-ExampleTests:
     #if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-EDMM-ExampleTests' || github.event.inputs.artifact == 'all-test' }}
-    runs-on: [self-hosted, SGX, Wilwarin]
+    runs-on: [self-hosted, EDMM]
 
     steps:
       - uses: actions/checkout@v3
