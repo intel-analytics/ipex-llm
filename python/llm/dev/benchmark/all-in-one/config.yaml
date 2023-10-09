@@ -15,5 +15,5 @@ test_api:
   - "pytorch_autocast_bf16"
   # - "transformer_int4_gpu"  # on arc
   # - "optimize_model_gpu"  # on arc
-  # - "original_model_cpu"
-  # - "original_model_gpu"
+  # - "original_model_cpu"  # on cpu without optimization
+  # - "original_model_gpu"  # on gpu without optimization
