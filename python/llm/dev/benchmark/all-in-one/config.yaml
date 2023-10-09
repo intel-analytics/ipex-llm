@@ -9,11 +9,11 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
 test_api:
-  - "transformer_int4"
-  - "native_int4"
-  - "optimize_model"
-  - "pytorch_autocast_bf16"
-  # - "transformer_int4_gpu"  # on arc
-  # - "optimize_model_gpu"  # on arc
-  # - "original_model_cpu"  # on cpu without optimization
-  # - "original_model_gpu"  # on gpu without optimization
+  - "transformer_int4"      # on CPU with load_in_4bit=True
+  - "transformer_int4_gpu"  # on GPU with load_in_4bit=True
+  - "native_int4"           # on CPU with BigdlNativeForCausalLM
+  - "pytorch_autocast_bf16" # on GPU with torch.bfloat16
+  - "optimize_model"        # on CPU with optimize_model
+  - "optimize_model_gpu"    # on GPU with optimize_model
+  - "original_model_cpu"    # on CPU without any bigdl-llm optimization
+  - "original_model_gpu"    # on GPU without any bigdl-llm optimization
