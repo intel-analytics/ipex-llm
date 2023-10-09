@@ -22,9 +22,10 @@ from .utils import extract_local_archive_file, \
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 import torch
-from .lazy_load_torch import LazyLoadTensors
+from bigdl.llm.utils.lazy_load_torch import LazyLoadTensors
 import copy
 import inspect
+from functools import partial
 from accelerate.utils import (
     offload_weight,
     set_module_tensor_to_device,
@@ -34,6 +35,18 @@ from .utils import logger
 from .convert import ggml_convert_low_bit
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear, ggml_convert_qtype
 
+
+class HFLoadMetaModelManager:
+    def __init__(self, q_k="sym_int4"):
+        self.q_k = q_k
+        self.old_loadmethod = transformers.modeling_utils._load_state_dict_into_meta_model
+
+    def __enter__(self):
+        _stream_load = partial(_stream_load_meta_model, q_k=self.q_k)
+        transformers.modeling_utils._load_state_dict_into_meta_model = _stream_load
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        transformers.modeling_utils._load_state_dict_into_meta_model = self.old_loadmethod
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -53,7 +66,7 @@ def save_low_bit(self, *args, **kwargs):
         json.dump(load_keys, json_file)
 
 
-def _load_state_dict_into_meta_model(
+def _stream_load_meta_model(
     model,
     state_dict,
     loaded_state_dict_keys,  # left for now but could be removed, see below
@@ -68,6 +81,7 @@ def _load_state_dict_into_meta_model(
     is_quantized=False,
     is_safetensors=False,
     keep_in_fp32_modules=None,
+    q_k = "sym_int4",
 ):
     """
     This is somewhat similar to `_load_state_dict_into_model`, but deals with a model that has some or all of its
@@ -106,7 +120,7 @@ def _load_state_dict_into_meta_model(
         state_dict[new_key] = state_dict.pop(old_key)
     
     # Todo: wrap this with function tools
-    qtype = ggml_tensor_qtype["sym_int4"]
+    qtype = ggml_tensor_qtype[q_k]
     if not hasattr(model, "bigdl_meta_convert"):
         # quant/convert linear to QX_X in meta device
         model = ggml_convert_low_bit(model, qtype, True, device="meta")
@@ -247,25 +261,30 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         if load_in_4bit or load_in_low_bit:
-            # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
-            # set default torch_dtype='auto'
-            kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
             # Avoid tensor parallel F.Linear Operations
             if "pretraining_tp" in config_dict:
                 kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
-            model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+            # Try 1xlowbit memory convert first,
+            # may occur NotImplementedError when doing layernorm
+            try:
+                _args = copy.deepcopy(args)
+                _kwargs = copy.deepcopy(kwargs)
+                with HFLoadMetaModelManager(q_k=q_k), LazyLoadTensors():
+                    model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
+            except:
+                # In with case we backup to traditional convert method
+                logger.info("Failed to load models with 1x lowbit peak memory, "
+                            "will fall to traditional load method with higher memory consumption.")
+                # load int x-bit
+                # set default torch_dtype='auto'
+                kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+                model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+            model.to("cpu") # may remove
         else:
             # load default
-            # Todo: make following a python context-manager
-            old_func = transformers.modeling_utils._load_state_dict_into_meta_model
-            transformers.modeling_utils._load_state_dict_into_meta_model = _load_state_dict_into_meta_model
-            kwargs["low_cpu_mem_usage"] = True
-            with LazyLoadTensors():
-                model = cls.HF_Model.from_pretrained(*args, **kwargs)
-            model.to("cpu")
-            transformers.modeling_utils._load_state_dict_into_meta_model= old_func
+            model = cls.HF_Model.from_pretrained(*args, **kwargs)
         return model
 
     @classmethod
