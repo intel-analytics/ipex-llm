@@ -21,4 +21,4 @@ jobs:
       - uses: actions/checkout@v3
       - name: run bat
         run: ./python/llm/portable-executable/setup.bat
-        shell: pwsh
+        shell: powershell
