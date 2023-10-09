@@ -41,12 +41,13 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False):
-    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -57,33 +58,55 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
-                    new_linear = LowBitLinear(
-                        module.in_features,
-                        module.out_features,
-                        qtype,
-                        module.bias is not None,
-                    )
+                    new_linear = None
+                    if qtype != ggml_tensor_qtype["fp16"]:
+                        new_linear = LowBitLinear(
+                            module.in_features,
+                            module.out_features,
+                            qtype,
+                            module.bias is not None,
+                        )
 
-                    device_type = module.weight.data.device.type
-                    # Copy the weights
-                    paramsLowBit = FP4Params(data=module.weight.data,
-                                             requires_grad=False,
-                                             quantized=False,
-                                             _shape=None,
-                                             convert_shape_only=convert_shape_only,
-                                             qtype=qtype).to(device_type)
-                    new_linear._parameters['weight'] = paramsLowBit
+                        device_type = module.weight.data.device.type
+                        # Copy the weights
+                        paramsLowBit = FP4Params(data=module.weight.data,
+                                                 requires_grad=False,
+                                                 quantized=False,
+                                                 _shape=None,
+                                                 convert_shape_only=convert_shape_only,
+                                                 qtype=qtype).to(device_type)
+                        new_linear._parameters['weight'] = paramsLowBit
+                    else:
+                        #  only support two size now
+                        #  may generalize to other sizes
+                        if module.in_features in [4096, 11008]:
+                            # esimd fp16 path
+                            new_linear = FP16Linear(
+                                module.in_features,
+                                module.out_features,
+                                qtype,
+                                module.bias is not None,
+                            )
+                            device_type = module.weight.data.device.type
 
-                    if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                            .to(device_type)
+                            # convert here
+                            m, n = module.weight.data.shape
+                            trans_weight = module.weight.data.reshape(m//16, 16, n)
+                            trans_weight = trans_weight.transpose(1, 2).contiguous()
+                            new_linear._parameters['weight'] = nn.Parameter(trans_weight)
 
-                    model._modules[name] = new_linear
-                    has_been_replaced = True
-                    # Force requires grad to False to avoid unexpected errors
-                    model._modules[name].requires_grad_(False)
+                    #  fp16 may generalize to other sizes later
+                    if new_linear is not None:
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
 
-                    module.weight = None
+                        model._modules[name] = new_linear
+                        has_been_replaced = True
+                        # Force requires grad to False to avoid unexpected errors
+                        model._modules[name].requires_grad_(False)
+
+                        module.weight = None
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:

@@ -378,3 +378,53 @@ class LowBitLinear(nn.Linear):
                     result += self.bias
 
         return result.to(x.dtype)
+
+
+class FP16Linear(nn.Linear):
+    def __init__(self, input_features, output_features, qtype, bias=True,
+                 conver_to_half=True):
+        super().__init__(input_features, output_features, bias)
+        self.in_len = input_features
+        self.out_len = output_features
+        self.weight_shape = (self.out_len, self.in_len)
+        self.weight_length = self.out_len * self.in_len
+        self.qtype = qtype
+        self.conver_to_half = conver_to_half
+
+    def forward(self, x: torch.Tensor):
+        if self.bias is not None and self.bias.dtype != x.dtype:
+            self.bias.data = self.bias.data.to(x.dtype)
+
+        x_shape = x.shape
+        x_2d = x.view(-1, x_shape[-1])
+
+        x0 = self.weight.data
+        # only work for GPU
+        invalidInputError(x0.device.type == "xpu",
+                          "FP16 only works for GPU")
+        try:
+            import intel_extension_for_pytorch
+            import linear_fp16_esimd
+        except ModuleNotFoundError:
+            invalidInputError(False,
+                              "Please `pip install bigdl_core_xe` first.")
+
+        if x_2d.is_contiguous() is False:
+            x_2d = x_2d.contiguous()
+
+        if x_2d.shape[0] > 1:
+            # first token or batch size > 1, re-convert weight
+            original_weight = self.weight.data.transpose(1, 2)
+            original_weight = original_weight.reshape(self.out_len, self.in_len)
+            result = F.linear(x_2d, original_weight.contiguous())
+            del original_weight
+        else:
+            # rest token, use esimd optimization
+            result = linear_fp16_esimd.forward(x_2d, self.weight.data)
+
+        new_shape = x_shape[:-1] + (self.out_len,)
+        result = result.view(new_shape)
+        if self.bias is not None:
+            result += self.bias
+
+        return result.to(x.dtype)
