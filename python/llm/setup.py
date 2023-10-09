@@ -50,10 +50,10 @@ llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch',
-               'transformers == 4.31.0', 'sentencepiece',
+               'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
-SERVING_DEP = ['fschat[model_worker, webui] >= 0.2.24', 'protobuf']
+SERVING_DEP = ['fschat[model_worker, webui] == 0.2.28', 'protobuf']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -254,7 +254,6 @@ def setup_package():
 
     all_requires = ['py-cpuinfo', 'protobuf']
     all_requires += CONVERT_DEP
-    all_requires += SERVING_DEP
 
     # install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_requires = copy.deepcopy(all_requires)

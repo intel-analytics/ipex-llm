@@ -58,7 +58,10 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
 def get_model_path(repo_id, local_model_hub):
     if local_model_hub:
         repo_model_name = repo_id.split("/")[1]
-        return local_model_hub + os.path.sep + repo_model_name
+        local_model_path = local_model_hub + os.path.sep + repo_model_name
+        invalidInputError(os.path.isdir(local_model_path),
+                          local_model_path + " not exists!, Please check your models' folder.")
+        return local_model_path
     else:
         return repo_id
 
@@ -173,18 +176,16 @@ def run_pytorch_autocast_bf16(repo_id,
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         # TODO: need verify chatglm family run bf16.
-        model = AutoModel.from_pretrained(model_path, trust_remote_code=True).float()
-        #model = AutoModel.from_pretrained(model_path, trust_remote_code=True).bfloat()
-        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        invalidInputError(False, "Currently pytorch do not support bfloat16 on cpu for chatglm models.")
     elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
                      'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
                      'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
                      'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
         # Need to use LlamaTokenizer, reason please refer to issue: https://github.com/intel-analytics/BigDL/issues/8944
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
@@ -273,24 +274,25 @@ def run_transformer_int4_gpu(repo_id,
                              warm_up,
                              num_trials):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
-    from transformers import AutoTokenizer
+    from transformers import AutoTokenizer, GPTJForCausalLM
     import intel_extension_for_pytorch as ipex
-    if local_model_hub:
-        repo_model_name = repo_id.split("/")[1]
-        model_path = local_model_hub + "/" + repo_model_name
-    else:
-        model_path = repo_id
+    model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True)
-        model = model.to('xpu')
+        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True, trust_remote_code=True,
+                                          use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True)
         model = model.to('xpu')
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True,
+                                                     trust_remote_code=True, use_cache=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        if isinstance(model, GPTJForCausalLM):
+            # For gpt-j model family, this optimization can provide a better performance.
+            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
@@ -305,8 +307,10 @@ def run_transformer_int4_gpu(repo_id,
             input_str = open(f"prompt/{in_len}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
-            input_ids = tokenizer.encode(input_str, return_tensors="pt").to('xpu')
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             result[in_out] = []
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
@@ -319,6 +323,7 @@ def run_transformer_int4_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    torch.xpu.empty_cache()
     return result
 
 
@@ -327,27 +332,28 @@ def run_optimize_model_gpu(repo_id,
                            in_out_pairs,
                            warm_up,
                            num_trials):
-    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM
     from bigdl.llm import optimize_model
     import intel_extension_for_pytorch as ipex
-    if local_model_hub:
-        repo_model_name = repo_id.split("/")[1]
-        model_path = local_model_hub + "/" + repo_model_name
-    else:
-        model_path = repo_id
+    model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
+                                          trust_remote_code=True, use_cache=True)
         model = optimize_model(model)
-        model = model.to('xpu')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True)
-        model = optimize_model(model)
         model = model.to('xpu')
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
+                                                     trust_remote_code=True, use_cache=True)
+        model = optimize_model(model)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        if isinstance(model, GPTJForCausalLM):
+            # For gpt-j model family, this optimization can provide a better performance.
+            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
@@ -362,8 +368,10 @@ def run_optimize_model_gpu(repo_id,
             input_str = open(f"prompt/{in_len}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
-            input_ids = tokenizer.encode(input_str, return_tensors="pt").to('xpu')
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             result[in_out] = []
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
@@ -376,6 +384,7 @@ def run_optimize_model_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time])
+    torch.xpu.empty_cache()
     return result
 
 

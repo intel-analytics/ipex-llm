@@ -1,22 +1,27 @@
-## General PyTorch Model Supports
+## PyTorch API
 
-You may apply BigDL-LLM optimizations on any Pytorch models, not only Hugging Face *Transformers* models for acceleration. With BigDL-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4/INT5/INT8).
+In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. With BigDL-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4, INT5, INT8, etc).
 
-You can easily enable BigDL-LLM INT4 optimizations on any Pytorch models just as follows:
+First, use any PyTorch APIs you like to load your model. To help you better understand the process, here we use [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) library `LlamaForCausalLM` to load a popular model [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as an example:
 
 ```python
-# Create or load any Pytorch model
-model = ...
+# Create or load any Pytorch model, take Llama-2-7b-chat-hf as an example
+from transformers import LlamaForCausalLM
+model = LlamaForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', torch_dtype='auto', low_cpu_mem_usage=True)
+```
 
-# Add only two lines to enable BigDL-LLM INT4 optimizations on model
+Then, just need to call `optimize_model` to optimize the loaded model and INT4 optimization is applied on model by default: 
+```python
 from bigdl.llm import optimize_model
+
+# With only one line to enable BigDL-LLM INT4 optimization
 model = optimize_model(model)
 ```
 
-After optimizing the model, you may straightly run the optimized model with no API changed and less inference latency.
+After optimizing the model, BigDL-LLM does not require any change in the inference code. You can use any libraries to run the optimized model with very low latency.
 
 ```eval_rst
 .. seealso::
 
-   See the examples for Hugging Face *Transformers* models `here <https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/transformers/general_int4>`_. And examples for other general Pytorch models can be found `here <https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/pytorch-model>`_.
+   * For more detailed usage of ``optimize_model``, please refer to the `API documentation <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html>`_.
 ```

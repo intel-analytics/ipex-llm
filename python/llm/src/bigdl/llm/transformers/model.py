@@ -40,6 +40,7 @@ def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    self.to('cpu')
     self.save_pretrained(*args, **kwargs)
     import json
     import os
@@ -222,7 +223,7 @@ class _BaseAutoModelClass:
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                or sym_int8. sym_int4 means symmetric int 4, asym_int4 means
+                                , sym_int8 or fp16. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
@@ -272,11 +273,13 @@ class _BaseAutoModelClass:
         from .convert import ggml_convert_low_bit
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
-                          f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8 or fp16.")
         qtype = ggml_tensor_qtype[q_k]
+
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
         # and lead to args missing.
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         try:
@@ -288,8 +291,10 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
         model = model.to("cpu")
-        model = ggml_convert_low_bit(model, qtype, optimize_model)
+        model = ggml_convert_low_bit(model, qtype, optimize_model,
+                                     modules_to_not_convert=modules_to_not_convert)
         model.config.update({"bigdl_transformers_low_bit": q_k})
+        model.config.update({"tie_word_embeddings": False})
 
         # add save_low_bit to pretrained model dynamically
         import types
@@ -323,6 +328,7 @@ class _BaseAutoModelClass:
         import copy
         import os
 
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -432,7 +438,8 @@ class _BaseAutoModelClass:
 
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
-        model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device)
+        model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
+                                     modules_to_not_convert=modules_to_not_convert)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

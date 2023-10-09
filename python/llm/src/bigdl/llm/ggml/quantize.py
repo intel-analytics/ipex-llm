@@ -30,7 +30,9 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "sym_int5": 6,   # q5_0 in ggml
                      "asym_int5": 7,  # q5_1 in ggml
                      "sym_int8": 8,   # q8_0 in ggml
-                     "nf4": 10}
+                     "nf4": 10,
+                     "nf3": 11,
+                     "fp16": 12}
 
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
@@ -70,7 +72,7 @@ def quantize(input_path: str, output_path: str,
     :param dtype: Quantization method which differs in the resulting model disk size and
             inference speed. Defalut to `q4_0`. Difference model family may support
             different types, now the supported list is:
-            llama : "q4_0", "q4_1", "q4_2"
+            llama : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
             bloom : "q4_0", "q4_1"
             gptneox : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
             starcoder : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
