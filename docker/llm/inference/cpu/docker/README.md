@@ -32,3 +32,13 @@ sudo docker run -itd \
 After the container is booted, you could get into the container through `docker exec`.
 
 To run inference using `BigDL-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm#cpu-int4).
+
+### Use chat.py
+
+chat.py can be used to initiate a conversation with a specified model. The file is under directory '/root'.
+
+To run chat.py:
+```
+cd /root
+python chat.py --model-path YOUR_MODEL_PATH
+```
