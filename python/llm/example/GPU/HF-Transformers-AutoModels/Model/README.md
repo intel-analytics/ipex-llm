@@ -21,6 +21,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 
 - Intel Arc™ A-Series Graphics
 - Intel Data Center GPU Flex Series
+- Intel Data Center GPU Max Series
 
 ## Recommended Requirements
 To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation.
