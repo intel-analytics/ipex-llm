@@ -10,10 +10,13 @@ ADD ./requirements.txt /ppml/requirements.txt
 
 RUN mkdir /ppml/data && mkdir /ppml/model && \
 # install pytorch 2.0.1
+    curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list && \
     apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
     pip3 install --upgrade pip && \
-    pip install torch==2.0.1 && \
+    export PIP_DEFAULT_TIMEOUT=100 && \
+    pip install --upgrade torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu && \
 # install ipex and oneccl
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
@@ -50,3 +53,4 @@ ADD ./lora_finetune.py /ppml/lora_finetune.py
 
 RUN chown -R mpiuser /ppml
 USER mpiuser
+ENTRYPOINT ["/bin/bash"]
