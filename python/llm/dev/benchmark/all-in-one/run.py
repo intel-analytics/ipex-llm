@@ -450,6 +450,7 @@ def run_original_model_gpu(repo_id,
                            warm_up,
                            num_trials):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM
+    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
 
     st = time.perf_counter()
