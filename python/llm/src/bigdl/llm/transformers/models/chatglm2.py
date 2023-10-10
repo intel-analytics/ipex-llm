@@ -128,28 +128,6 @@ def chatglm2_attention_forward_8eb45c(
     # print("-----attention position ids:", position_ids)
 
     # apply relative positional encoding (rotary embedding)
-    # if rotary_pos_emb is not None:
-    #     query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
-    #     key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
-    #     rot_dim = rotary_pos_emb.shape[-2] * 2
-    #     cos, sin = torch.unbind(rotary_pos_emb, dim=-1)
-    #     cos = cos.permute(1, 0, 2).unsqueeze(0)
-    #     cos = torch.cat([cos, cos], dim=-1)
-    #     sin = sin.permute(1, 0, 2).unsqueeze(0)
-    #     sin = torch.cat([sin, sin], dim=-1)
-    #     query_layer = query_layer.permute(1, 2, 0, 3)
-    #     query_layer, query_layer_pass = query_layer[..., :rot_dim], query_layer[..., rot_dim:]
-    #     key_layer = key_layer.permute(1, 2, 0, 3)
-    #     key_layer, key_layer_pass = key_layer[..., :rot_dim], key_layer[..., rot_dim:]
-    #     query_layer, key_layer = apply_rotary_pos_emb(query_layer, key_layer, cos, sin, None, "llama")
-    #     if query_layer_pass.shape[-1] > 0:
-    #         query_layer = torch.cat((query_layer, query_layer_pass), dim=-1)
-    #     query_layer = query_layer.permute(2, 0, 1, 3)
-    #     if key_layer_pass.shape[-1] > 0:
-    #         key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
-    #     key_layer = key_layer.permute(2, 0, 1, 3)
-    # print("----query", query_layer.shape)
-    # print("----key", key_layer.shape)
     use_fuse_rope = query_layer.device.type == "xpu"
     use_fuse_rope = use_fuse_rope and not (self.training and query_layer.requires_grad)
     # use_fuse_rope = False
