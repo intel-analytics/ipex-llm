@@ -16,6 +16,7 @@ on:
         - all
         - bigdl-llm-xpu
         - bigdl-llm-cpu
+        - bigdl-llm-serving-xpu
         - bigdl-ppml-gramine-base
         - bigdl-ppml-trusted-bigdl-llm-gramine-base
         - bigdl-ppml-trusted-bigdl-llm-gramine-ref
@@ -102,6 +103,37 @@ jobs:
         echo "##############################################################"
         export image=intelanalytics/bigdl-llm-cpu
         cd docker/llm/inference/cpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-serving-xpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-serving-xpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-serving-xpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-serving-xpu
+        cd docker/llm/serving/xpu/docker
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
