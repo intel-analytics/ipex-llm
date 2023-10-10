@@ -413,13 +413,21 @@ def run_ipex_fp16_gpu(repo_id,
                       warm_up,
                       num_trials):
     from transformers import AutoModel, AutoModelForCausalLM
-    from transformers import AutoTokenizer, GPTJForCausalLM
+    from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.half().to('xpu')
+    elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
+                     'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
+                     'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
+                     'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
+                                                     use_cache=True)
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half().to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
