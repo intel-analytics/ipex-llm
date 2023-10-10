@@ -31,7 +31,7 @@ docker run -itd \
  -e STANDALONE_DOCKER=TRUE \
  -v your_downloaded_base_model_path:/ppml/model \
  -v your_downloaded_data_path:/ppml/data/alpaca_data_cleaned_archive.json \
- alpaca_data_cleaned_archive.json 10.239.45.10/arda/intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
+ 10.239.45.10/arda/intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
  bash
 ```
 
