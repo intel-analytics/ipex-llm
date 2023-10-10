@@ -20,7 +20,7 @@
 import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache, apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache, apply_rotary_pos_emb, apply_rotary_pos_emb_no_cache_xpu
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -53,25 +53,25 @@ def split_tensor_along_last_dim(
     return tensor_list
 
 
-# @torch.jit.script
-# def apply_rotary_pos_emb(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Tensor:
-#     # x: [sq, b, np, hn]
-#     sq, b, np, hn = x.size(0), x.size(1), x.size(2), x.size(3)
-#     rot_dim = rope_cache.shape[-2] * 2
-#     x, x_pass = x[..., :rot_dim], x[..., rot_dim:]
-#     # truncate to support variable sizes
-#     rope_cache = rope_cache[:sq]
-#     xshaped = x.reshape(sq, -1, np, rot_dim // 2, 2)
-#     rope_cache = rope_cache.view(sq, -1, 1, xshaped.size(3), 2)
-#     x_out2 = torch.stack(
-#         [
-#             xshaped[..., 0] * rope_cache[..., 0] - xshaped[..., 1] * rope_cache[..., 1],
-#             xshaped[..., 1] * rope_cache[..., 0] + xshaped[..., 0] * rope_cache[..., 1],
-#         ],
-#         -1,
-#     )
-#     x_out2 = x_out2.flatten(3)
-#     return torch.cat((x_out2, x_pass), dim=-1)
+@torch.jit.script
+def apply_rotary_pos_emb_chatglm(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Tensor:
+    # x: [sq, b, np, hn]
+    sq, b, np, hn = x.size(0), x.size(1), x.size(2), x.size(3)
+    rot_dim = rope_cache.shape[-2] * 2
+    x, x_pass = x[..., :rot_dim], x[..., rot_dim:]
+    # truncate to support variable sizes
+    rope_cache = rope_cache[:sq]
+    xshaped = x.reshape(sq, -1, np, rot_dim // 2, 2)
+    rope_cache = rope_cache.view(sq, -1, 1, xshaped.size(3), 2)
+    x_out2 = torch.stack(
+        [
+            xshaped[..., 0] * rope_cache[..., 0] - xshaped[..., 1] * rope_cache[..., 1],
+            xshaped[..., 1] * rope_cache[..., 0] + xshaped[..., 0] * rope_cache[..., 1],
+        ],
+        -1,
+    )
+    x_out2 = x_out2.flatten(3)
+    return torch.cat((x_out2, x_pass), dim=-1)
 
 
 def chatglm2_attention_forward_8eb45c(
@@ -119,36 +119,78 @@ def chatglm2_attention_forward_8eb45c(
         # [sq, b, np, 3 * hn] --> 3 [sq, b, np, hn]
         (query_layer, key_layer, value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3)
 
-    # apply relative positional encoding (rotary embedding)
-    if rotary_pos_emb is not None:
-        # query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
-        # key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
-        rot_dim = rotary_pos_emb.shape[-2] * 2
-        cos, sin = torch.unbind(rotary_pos_emb, dim=-1)
-        cos = cos.permute(1, 0, 2).unsqueeze(0)
-        cos = torch.cat([cos, cos], dim=-1)
-        sin = sin.permute(1, 0, 2).unsqueeze(0)
-        sin = torch.cat([sin, sin], dim=-1)
-        query_layer = query_layer.permute(1, 2, 0, 3)
-        query_layer, query_layer_pass = query_layer[..., :rot_dim], query_layer[..., rot_dim:]
-        key_layer = key_layer.permute(1, 2, 0, 3)
-        key_layer, key_layer_pass = key_layer[..., :rot_dim], key_layer[..., rot_dim:]
-        query_layer, key_layer = apply_rotary_pos_emb(query_layer, key_layer, cos, sin, None, "llama")
-        if query_layer_pass.shape[-1] > 0:
-            query_layer = torch.cat((query_layer, query_layer_pass), dim=-1)
-        query_layer = query_layer.permute(2, 0, 1, 3)
-        if key_layer_pass.shape[-1] > 0:
-            key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
-        key_layer = key_layer.permute(2, 0, 1, 3)
-
     cur_length, batch_size = query_layer.shape[0], query_layer.shape[1]
+
+    if kv_cache is not None:  # rest tokens
+        position_ids = torch.tensor([[kv_cache[0].shape[0]]], dtype=torch.long).to(query_layer.device)
+    else:
+        position_ids = torch.tensor([range(0, cur_length)], dtype=torch.long).to(query_layer.device)
+    # print("-----attention position ids:", position_ids)
+
+    # apply relative positional encoding (rotary embedding)
+    # if rotary_pos_emb is not None:
+    #     query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
+    #     key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
+    #     rot_dim = rotary_pos_emb.shape[-2] * 2
+    #     cos, sin = torch.unbind(rotary_pos_emb, dim=-1)
+    #     cos = cos.permute(1, 0, 2).unsqueeze(0)
+    #     cos = torch.cat([cos, cos], dim=-1)
+    #     sin = sin.permute(1, 0, 2).unsqueeze(0)
+    #     sin = torch.cat([sin, sin], dim=-1)
+    #     query_layer = query_layer.permute(1, 2, 0, 3)
+    #     query_layer, query_layer_pass = query_layer[..., :rot_dim], query_layer[..., rot_dim:]
+    #     key_layer = key_layer.permute(1, 2, 0, 3)
+    #     key_layer, key_layer_pass = key_layer[..., :rot_dim], key_layer[..., rot_dim:]
+    #     query_layer, key_layer = apply_rotary_pos_emb(query_layer, key_layer, cos, sin, None, "llama")
+    #     if query_layer_pass.shape[-1] > 0:
+    #         query_layer = torch.cat((query_layer, query_layer_pass), dim=-1)
+    #     query_layer = query_layer.permute(2, 0, 1, 3)
+    #     if key_layer_pass.shape[-1] > 0:
+    #         key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
+    #     key_layer = key_layer.permute(2, 0, 1, 3)
+    # print("----query", query_layer.shape)
+    # print("----key", key_layer.shape)
+    use_fuse_rope = query_layer.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_layer.requires_grad)
+    # use_fuse_rope = False
+    if rotary_pos_emb is not None:
+        if use_fuse_rope:
+            rot_dim = rotary_pos_emb.shape[-2] * 2
+            query_layer = query_layer.permute(1, 2, 0, 3)
+            query_layer, query_layer_pass = query_layer[..., :rot_dim], query_layer[..., rot_dim:]
+            key_layer = key_layer.permute(1, 2, 0, 3)
+            key_layer, key_layer_pass = key_layer[..., :rot_dim], key_layer[..., rot_dim:]
+            dummy_q = torch.empty(query_layer.shape, dtype=query_layer.dtype, device=query_layer.device)
+            dummy_k = torch.empty(key_layer.shape, dtype=key_layer.dtype, device=key_layer.device)
+            _, query_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_q,
+                                                               query_layer,
+                                                               position_ids,
+                                                               "llama")
+            _, key_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_k,
+                                                             key_layer,
+                                                             position_ids,
+                                                             "llama")
+            if query_layer_pass.shape[-1] > 0:
+                query_layer = torch.cat((query_layer, query_layer_pass), dim=-1)
+            query_layer = query_layer.permute(2, 0, 1, 3)
+            if key_layer_pass.shape[-1] > 0:
+                key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
+            key_layer = key_layer.permute(2, 0, 1, 3)
+        else:
+            query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
+            key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
     if self.multi_query_attention:
         key_length = key_layer.size(0)
         query_group_size = self.num_attention_heads_per_partition // \
             self.num_multi_query_groups_per_partition
+        # if rotary_pos_emb is not None and use_fuse_rope:
+        #     key_layer = key_layer.unsqueeze(-3)
+        # else:
+        #     key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
         key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
         key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
+        # print("----key", key_layer.shape)
         key_layer = key_layer.contiguous().view((batch_size,
                                                  self.num_attention_heads_per_partition,
                                                  key_length,
@@ -204,7 +246,8 @@ def chatglm2_attention_forward_8eb45c(
     # ==================================
     # core attention computation
     # ==================================
-
+    # print("----query", query_layer.shape)
+    # print("----key", key_layer.shape)
     context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
