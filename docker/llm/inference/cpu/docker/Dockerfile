@@ -22,7 +22,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --pre --upgrade bigdl-llm[all] && \
     pip install --pre --upgrade bigdl-nano && \
 # Download chat.py script
-    wget -P /root https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-executable/chat.py && \
+    pip install --upgrade colorama && \
+    wget -P /root https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py && \
     export PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["/bin/bash"]
