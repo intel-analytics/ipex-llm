@@ -27,8 +27,9 @@ test_api:
   - "native_int4"
   - "optimize_model"
   - "pytorch_autocast_bf16"
-  # - "transformer_int4_gpu"  # on arc
-  # - "optimize_model_gpu"  # on arc
+  # - "ipex_fp16_gpu" # on Intel GPU
+  # - "transformer_int4_gpu"  # on Intel GPU
+  # - "optimize_model_gpu"  # on Intel GPU
 ```
 
 ## Run
