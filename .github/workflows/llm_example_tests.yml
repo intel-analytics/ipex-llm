@@ -18,6 +18,8 @@ on:
       - '.github/actions/llm/setup-llm-env/action.yml'
       - '.github/actions/llm/remove-llm-env/action.yml'
       - '.github/actions/llm/download-llm-binary/action.yml'
+      - 'python/llm/dev/test/run-example-tests.sh'
+      - 'python/llm/example/**'
   workflow_dispatch:
   workflow_call:
 
