@@ -46,7 +46,7 @@ from torch.serialization import StorageType
 import pickle
 import zipfile
 import io
-from typing import Dict, IO, Any, Callable
+from typing import Dict, IO, Any, Callable, List
 from dataclasses import dataclass
 from .common import invalidInputError
 
@@ -69,7 +69,7 @@ class LazyStorage:
 @dataclass
 class LazyTensor:
     _load: Callable[[], torch.Tensor]
-    shape: list[int]
+    shape: List[int]
     data_type: torch.dtype
     description: str
 
