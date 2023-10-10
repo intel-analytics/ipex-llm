@@ -38,7 +38,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     if test_api == 'transformer_int4':
         result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'native_int4':
-        run_native_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
+        result = run_native_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'optimize_model':
         result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'transformer_int4_gpu':
