@@ -1,22 +1,10 @@
-# BigDL-LLM Transformers INT4 Optimization for Large Language Model on Intel GPUs
-You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
+# BigDL-LLM INT4 Optimization for Large Language Model on Intel GPUs
+You can use `optimize_model` API to accelerate general PyTorch models on Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
 ## Verified models
 | Model          | Example                                                  |
 |----------------|----------------------------------------------------------|
-| Baichuan       | [link](baichuan)                                         |
-| Baichuan2      | [link](baichuan2)                                        |
-| ChatGLM2       | [link](chatglm2)                                         |
-| Chinese Llama2 | [link](chinese-llama2)                                   |
-| Falcon         | [link](falcon)                                           |
-| GPT-J          | [link](gpt-j)                                            |
-| InternLM       | [link](internlm)                                         |
-| LLaMA 2        | [link](llama2)                                           |
 | Mistral        | [link](mistral)                                          |
-| MPT            | [link](mpt)                                              |
-| Qwen           | [link](qwen)                                             |
-| StarCoder      | [link](starcoder)                                        |
-| Whisper        | [link](whisper)                                          |
 
 ## Verified Hardware Platforms
 
