@@ -15,6 +15,7 @@ on:
         options:
         - all
         - PPML-Occlum-k8s-ExampleTests
+        - PPML-Occlum-EDMM-k8s-ExampleTests
         - PPML-Spark-K8S-Example-On-Gramine
         - PPML-Spark-K8S-SimpleQuery-On-Gramine
         - PPML-Spark-PySpark-Local-Sql-UT-On-Gramine
@@ -70,6 +71,36 @@ jobs:
         type: job
         job-name: PPML-Occlum-k8s-ExampleTests
         runner-hosted-on: 'Shanghai'
+
+  PPML-Occlum-EDMM-k8s-ExampleTests:
+    if: ${{ github.event.inputs.artifact == 'PPML-Occlum-k8s-ExampleTests'}}
+    runs-on: [self-hosted, EDMM]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: set env
+        env:
+          DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+          DEFAULT_TAG: '2.4.0-SNAPSHOT-EDMM'
+        run: |
+          echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+      - name: Run Test
+        uses: ./.github/actions/ppml/ppml-occlum-EDMM-k8s-exampletests-action
+        with:
+          image: ${{env.IMAGE}}
+          image-tag: ${{env.TAG}}
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: PPML-Occlum-EDMM-k8s-ExampleTests.json
+          type: job
+          job-name: PPML-Occlum-EDMM-k8s-ExampleTests
+          runner-hosted-on: 'Shanghai'
 
   PPML-Spark-K8S-Example-On-Gramine:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-Example-On-Gramine' || github.event.inputs.artifact == 'all' }}
