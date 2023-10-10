@@ -179,6 +179,7 @@ def lazyload(
                       f"but get {pickle_paths}. ")
     pickle_fp = zf.open(pickle_paths[0], 'r')
     state_dict = _load(pickle_fp, None, pickle, pickle_file=pickle_paths[0][:-4], zip_file=zf)
+    fp.close()  # Otherwise on windows this may be marked as reading
     return state_dict
 
 
