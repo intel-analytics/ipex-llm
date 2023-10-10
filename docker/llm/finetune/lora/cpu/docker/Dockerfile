@@ -1,5 +1,11 @@
+FROM ubuntu:20.04 as key-getter
 ARG http_proxy
 ARG https_proxy
+
+RUN apt-get update && \
+    apt-get install -y curl gpg && \
+    curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /root/intel-oneapi-archive-keyring.gpg
+
 
 FROM mpioperator/intel as builder
 
@@ -8,10 +14,12 @@ ARG https_proxy
 ENV PIP_NO_CACHE_DIR=false
 ADD ./requirements.txt /ppml/requirements.txt
 
+# add public key
+COPY --from=key-getter /root/intel-oneapi-archive-keyring.gpg /usr/share/keyrings/intel-oneapi-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list
+
 RUN mkdir /ppml/data && mkdir /ppml/model && \
 # install pytorch 2.0.1
-    curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list && \
     apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
     pip3 install --upgrade pip && \
