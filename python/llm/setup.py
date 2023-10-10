@@ -261,7 +261,8 @@ def setup_package():
     xpu_requires += ["torch==2.0.1a0",
                      "torchvision==0.15.2a0",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'"]
+                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'",
+                     "bigdl-core-xe-esimd==" + VERSION + ";platform_system=='Linux'"]
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
