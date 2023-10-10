@@ -77,8 +77,6 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
@@ -108,8 +106,6 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
@@ -139,8 +135,6 @@ jobs:
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
