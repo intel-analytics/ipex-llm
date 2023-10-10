@@ -294,7 +294,32 @@ class Attention(nn.Module):
             _, seq_len_past, _ = layer_past[0].shape
 
             seq_len = seq_len + seq_len_past
-        query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
+            position_ids = torch.tensor([range(seq_len_past, seq_len)], dtype=torch.long).to(query_layer.device)
+        else:
+            position_ids = torch.tensor([range(0, seq_len)], dtype=torch.long).to(query_layer.device)
+
+        use_fuse_rope = query_layer.device.type == "xpu"
+        use_fuse_rope = use_fuse_rope and not (self.training and query_layer.requires_grad)
+        if use_fuse_rope:
+            # resize qk to 4D to match apply_rotary_pos_emb_no_cache_xpu's requirements.
+            query_layer = query_layer.reshape(batch_size, self.num_heads, q_length, self.head_dim)
+            key_layer = key_layer.reshape(batch_size, self.num_kv, q_length, self.head_dim)
+            from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+            dummy_q = torch.empty(query_layer.shape, dtype=query_layer.dtype, device=query_layer.device)
+            dummy_k = torch.empty(key_layer.shape, dtype=key_layer.dtype, device=key_layer.device)
+            # use dummy q k, as qk should be the same sizes in apply_rotary_pos_emb_no_cache_xpu.
+            _, query_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_q,
+                                                               query_layer,
+                                                               position_ids,
+                                                               "gpt_neox")
+            _, key_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_k,
+                                                             key_layer,
+                                                             position_ids,
+                                                             "gpt_neox")
+            query_layer = query_layer.reshape(batch_size * self.num_heads, q_length, self.head_dim)
+            key_layer = key_layer.reshape(batch_size * self.num_kv, q_length, self.head_dim)
+        else:
+            query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
 
         if layer_past is not None:
             past_key, past_value = layer_past
