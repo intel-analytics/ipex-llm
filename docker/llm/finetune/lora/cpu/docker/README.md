@@ -37,6 +37,8 @@ docker run -itd \
  bash
 ```
 
+You can adjust the configuration according to your own environment. After our testing, we recommend you set worker_count=1, and then allocate 80G memory to Docker.
+
 ### 3. Start Finetuning
 
 Enter the running container:
