@@ -209,7 +209,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
     >>> model = optimize_model(model) # With only one line code change
     >>> # Use the optimized model without other API change
     >>> result = model.transcribe(audio, verbose=True, language="English")
-    >>> # (Optional) you can also save the optimized model
+    >>> # (Optional) you can also save the optimized model by calling 'save_low_bit'
     >>> model.save_low_bit(saved_dir)
     """
     invalidInputError(low_bit in ggml_tensor_qtype,
