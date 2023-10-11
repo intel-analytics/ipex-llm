@@ -155,7 +155,7 @@ else
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
     # init Occlum
-    /opt/run_llm_on_occlum_glibc.sh init
+    /opt/run_llm_on_occlum_glibc.sh initController
     # Logic for controller mode
     # Boot Controller
     # TODO: add dispatch-method
@@ -171,7 +171,7 @@ else
     occlum exec /bin/python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address $attest_flag
   elif [[ $mode == "worker" ]]; then
     # init Occlum
-    /opt/run_llm_on_occlum_glibc.sh init
+    /opt/run_llm_on_occlum_glibc.sh initWorker
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
     # Apply optimizations from bigdl-nano

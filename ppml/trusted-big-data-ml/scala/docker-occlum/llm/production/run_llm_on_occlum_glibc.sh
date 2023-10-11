@@ -51,6 +51,9 @@ init_instance() {
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
+    # add mount conf and mkdir source mount files
+    bash add_conf.sh
+
     #copy python lib and attestation lib
     copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
@@ -161,9 +164,16 @@ build_spark() {
 
     # Build
     occlum build
+}
 
+attestation_init() {
+    #occlum build done
+    # make source mount file exit to avoid occlum mout fail
     #before start occlum app after occlum build
 
+    cd /opt/occlum_spark
+    bash /opt/mount.sh
+    
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
         if [[ $PCCS_URL == "" ]]; then
@@ -194,14 +204,10 @@ case "$arg" in
         init_instance
         build_spark
         ;;
-    initDriver)
-        init_instance
-        build_spark
+    initController)
+        attestation_init
         ;;
-    initExecutor)
-        # to do
-        # now executor have to register again
-        init_instance
-        build_spark
+    initWorker)
+        attestation_init
         ;;
 esac
