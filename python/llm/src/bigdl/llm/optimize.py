@@ -143,14 +143,14 @@ def load_low_bit(model, model_path):
     
     >>> Example 1:
     >>> # Take OpenAI Whisper model as an example
-    >>> # Make sure you have saved the optimizedd model by calling 'save_low_bit'
+    >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
     >>> from bigdl.llm.optimize import load_low_bit
     >>> model = whisper.load_model('tiny') # A model instance
     >>> model = load_low_bit(model, saved_dir) # Load the optimized model
     
     >>> Example 2:
     >>> # Take ChatGLM2-6B model as an example
-    >>> # Make sure you have saved the optimizedd model by calling 'save_low_bit'
+    >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
     >>> from bigdl.llm.optimize import low_memory_init, load_low_bit
     >>> with low_memory_init(): # Load model on meta device
     >>>     model = AutoModel.from_pretrained(saved_dir,
@@ -192,7 +192,7 @@ def load_low_bit(model, model_path):
 
 def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
     """
-    A method to optimize any pytorch models.
+    A method to optimize any pytorch model.
 
     :param model: The original PyTorch model (nn.module)
     :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
