@@ -150,7 +150,10 @@ def run_transformer_int4(repo_id,
             # As different tokenizer has different encodings,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
-            input_str = open(f"prompt/{min(in_len*2, 8192)}.txt", 'r').read()
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -204,7 +207,10 @@ def run_pytorch_autocast_bf16(repo_id,
             # As different tokenizer has different encodings,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
-            input_str = open(f"prompt/{min(in_len*2, 8192)}.txt", 'r').read()
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -266,7 +272,10 @@ def run_optimize_model(repo_id,
             # As different tokenizer has different encodings,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
-            input_str = open(f"prompt/{min(in_len*2, 8192)}.txt", 'r').read()
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -333,7 +342,10 @@ def run_transformer_int4_gpu(repo_id,
             # As different tokenizer has different encodings,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
-            input_str = open(f"prompt/{min(in_len*2, 8192)}.txt", 'r').read()
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -406,7 +418,10 @@ def run_optimize_model_gpu(repo_id,
             # As different tokenizer has different encodings,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
-            input_str = open(f"prompt/{min(in_len*2, 8192)}.txt", 'r').read()
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -472,7 +487,10 @@ def run_ipex_fp16_gpu(repo_id,
             # As different tokenizer has different encodings,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
-            input_str = open(f"prompt/{min(in_len*2, 8192)}.txt", 'r').read()
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
