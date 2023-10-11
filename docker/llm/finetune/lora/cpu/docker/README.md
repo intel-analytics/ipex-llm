@@ -28,7 +28,9 @@ Here, we try to finetune [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7
 ```
 docker run -itd \
  --name=bigdl-llm-fintune-lora-cpu \
+ --cpus=your_expected_number_of_cpus \
  -e STANDALONE_DOCKER=TRUE \
+ -e WORKER_COUNT_DOCKER=your_worker_count \
  -v your_downloaded_base_model_path:/ppml/model \
  -v your_downloaded_data_path:/ppml/data/alpaca_data_cleaned_archive.json \
  intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
