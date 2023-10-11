@@ -30,7 +30,7 @@ sudo docker rm -f $container_name
 sudo docker run -i \
         --net=host \
         --name=$container_name \
-        -e SGX_MEM_SIZE=15GB \
+        -e SGX_MEM_SIZE=32GB \
         -e SGX_THREAD=2048 \
         -e SGX_HEAP=1GB \
         -e SGX_KERNEL_HEAP=1GB \
@@ -38,7 +38,7 @@ sudo docker run -i \
         -e ATTESTATION=true \
         -e USING_TMP_HOSTFS=false \
         $image_name \
-        bash /opt/run_spark_on_occlum_glibc.sh init
+        bash /opt/run_llm_on_occlum_glibc.sh init
 echo "build finish"
 docker commit $container_name $final_name
 #clean up
