@@ -19,6 +19,7 @@ repo_id:
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
+num_beams: 1 # default to greedy search
 in_out_pairs:
   - '32-32'
   - '1024-128'
