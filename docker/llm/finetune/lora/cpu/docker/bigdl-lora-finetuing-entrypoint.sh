@@ -2,14 +2,16 @@
 set -x
 if [ "$STANDALONE_DOCKER" = "TRUE" ]
 then
+  export CONTAINER_IP=$(hostname -i)
+  export CPU_CORES=$(nproc)
   source /opt/intel/oneapi/setvars.sh
-  export CCL_WORKER_COUNT=2
+  export CCL_WORKER_COUNT=$WORKER_COUNT_DOCKER
   export CCL_WORKER_AFFINITY=auto
-  export MASTER_ADDR=172.18.0.3
+  export MASTER_ADDR=$CONTAINER_IP
   mpirun \
-     -n 2 \
+     -n $CCL_WORKER_COUNT \
      -ppn 2 \
-     -genv OMP_NUM_THREADS=24 \
+     -genv OMP_NUM_THREADS=$((CPU_CORES / CCL_WORKER_COUNT)) \
      -genv KMP_AFFINITY="granularity=fine,none" \
      -genv KMP_BLOCKTIME=1 \
      -genv TF_ENABLE_ONEDNN_OPTS=1 \
@@ -18,7 +20,7 @@ then
        --data_path "/ppml/data/alpaca_data_cleaned_archive.json" \
        --output_dir "/home/mpiuser/finetuned_model" \
        --micro_batch_size 8 \
-       --bf16 > /home/mpiuser/launcher.log 2>&1
+       --bf16 
 
 else
   source /opt/intel/oneapi/setvars.sh
