@@ -140,14 +140,14 @@ def load_low_bit(model, model_path):
     :param model_path: The path of saved optimized model
 
     return: The optimized model.
-    
+
     >>> Example 1:
     >>> # Take OpenAI Whisper model as an example
     >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
     >>> from bigdl.llm.optimize import load_low_bit
     >>> model = whisper.load_model('tiny') # A model instance
     >>> model = load_low_bit(model, saved_dir) # Load the optimized model
-    
+
     >>> Example 2:
     >>> # Take ChatGLM2-6B model as an example
     >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
@@ -200,7 +200,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
     :param optimize_llm: Whether to further optimize llm model.
 
     return: The optimized model.
-    
+
     >>> Example:
     >>> # Take OpenAI Whisper model as an example
     >>> from bigdl.llm import optimize_model
