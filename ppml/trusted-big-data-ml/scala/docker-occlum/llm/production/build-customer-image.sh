@@ -9,8 +9,6 @@ export image_customer=${image}-customer
 pwd
 docker build \
   --no-cache=true \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
   --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
   --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
   --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \

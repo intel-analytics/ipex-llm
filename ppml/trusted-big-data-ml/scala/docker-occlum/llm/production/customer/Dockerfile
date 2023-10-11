@@ -13,15 +13,15 @@ ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV SGX_MEM_SIZE=32GB
 
+#copy occlum runable instance
+COPY --from=tini /opt/occlum_spark /opt/occlum_spark
+
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 ARG HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ARG HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
-
-#copy occlum runable instance
-COPY --from=tini /opt/occlum_spark /opt/occlum_spark
 
 # Configure sgx and occlum deb repo
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends vim ca-certificates gnupg2 jq make gdb wget libfuse-dev libtool tzdata && \
