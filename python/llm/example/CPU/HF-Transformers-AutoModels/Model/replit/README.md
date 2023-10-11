@@ -7,33 +7,25 @@ To run these examples with BigDL-LLM, we have some recommended requirements for 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for an Replit model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage environment:
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+
+After installing conda, create a Python environment for BigDL-LLM:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 ```
 
 ### 2. Run
-```
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
-```
-
-Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Replit model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'replit/replit-code-v1-3b'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'def print_hello_world():'`.
-- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
-
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
->
-> Please select the appropriate size of the Replit model based on the capabilities of your machine.
+After setting up the Python environment, you could run the example by following steps.
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./generate.py 
+python ./generate.py --prompt 'def print_hello_world():'
 ```
+More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
 #### 2.2 Server
 For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration-on-linux) for more information), and run the example with all the physical cores of a single socket.
@@ -47,8 +39,16 @@ source bigdl-nano-init
 export OMP_NUM_THREADS=48
 numactl -C 0-47 -m 0 python ./generate.py
 ```
+More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
-#### 2.3 Sample Output
+#### 2.3 Arguments Info
+In the example, several arguments can be passed to satisfy your requirements:
+
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Replit model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'replit/replit-code-v1-3b'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'def print_hello_world():'`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+
+#### 2.4 Sample Output
 #### [replit/replit-code-v1-3b](https://huggingface.co/bigcode/replit/replit-code-v1-3b)
 ```log
 -------------------- Prompt --------------------
