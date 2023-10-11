@@ -139,23 +139,25 @@ def load_low_bit(model, model_path):
     :param model: The PyTorch model instance
     :param model_path: The path of saved optimized model
 
-    return: The optimized model.
+    :return: The optimized model.
 
-    >>> Example 1:
-    >>> # Take OpenAI Whisper model as an example
-    >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
-    >>> from bigdl.llm.optimize import load_low_bit
-    >>> model = whisper.load_model('tiny') # A model instance
-    >>> model = load_low_bit(model, saved_dir) # Load the optimized model
-
-    >>> Example 2:
+    >>> # Example 1:
     >>> # Take ChatGLM2-6B model as an example
     >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
     >>> from bigdl.llm.optimize import low_memory_init, load_low_bit
-    >>> with low_memory_init(): # Load model on meta device
+    >>> with low_memory_init(): # Fast and low cost by loading model on meta device
     >>>     model = AutoModel.from_pretrained(saved_dir,
     >>>                                       torch_dtype="auto",
     >>>                                       trust_remote_code=True)
+    >>> model = load_low_bit(model, saved_dir) # Load the optimized model
+
+    >>> # Example 2:
+    >>> # If the model doesn't fit 'low_memory_init' method,
+    >>> # alternatively, you can obtain the model instance through traditional loading method.
+    >>> # Take OpenAI Whisper model as an example
+    >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
+    >>> from bigdl.llm.optimize import load_low_bit
+    >>> model = whisper.load_model('tiny') # A model instance through traditional loading method
     >>> model = load_low_bit(model, saved_dir) # Load the optimized model
     """
     low_bit = low_bit_sanity_check(model_path)
@@ -199,9 +201,8 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
         "asym_int5" or "sym_int8".
     :param optimize_llm: Whether to further optimize llm model.
 
-    return: The optimized model.
+    :return: The optimized model.
 
-    >>> Example:
     >>> # Take OpenAI Whisper model as an example
     >>> from bigdl.llm import optimize_model
     >>> model = whisper.load_model('tiny') # Load whisper model under pytorch framework
