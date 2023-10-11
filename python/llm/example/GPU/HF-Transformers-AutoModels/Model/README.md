@@ -4,10 +4,13 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 ## Verified models
 | Model          | Example                                                  |
 |----------------|----------------------------------------------------------|
+| Aquila         | [link](aquila)                                           |
 | Baichuan       | [link](baichuan)                                         |
 | Baichuan2      | [link](baichuan2)                                        |
 | ChatGLM2       | [link](chatglm2)                                         |
 | Chinese Llama2 | [link](chinese-llama2)                                   |
+| Dolly v1       | [link](dolly-v1)                                         |
+| Dolly v2       | [link](dolly-v2)                                         |
 | Falcon         | [link](falcon)                                           |
 | GPT-J          | [link](gpt-j)                                            |
 | InternLM       | [link](internlm)                                         |
@@ -16,6 +19,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | MPT            | [link](mpt)                                              |
 | Qwen           | [link](qwen)                                             |
 | StarCoder      | [link](starcoder)                                        |
+| Vicuna         | [link](vicuna)                                           |
 | Whisper        | [link](whisper)                                          |
 
 ## Verified Hardware Platforms
