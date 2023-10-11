@@ -5,7 +5,10 @@ ARG https_proxy
 ARG PIP_NO_CACHE_DIR=false
 
 ENV PYTHONUNBUFFERED=1
-ENV BIGDL_HOME=/llm
+
+RUN mkdir /llm 
+ADD ./start-notebook.sh /llm/start-notebook.sh
+RUN chmod +x /llm/start-notebook.sh
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -25,12 +28,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --pre --upgrade bigdl-llm[all] && \
     pip install --pre --upgrade bigdl-nano && \
 # Download bigdl-llm-tutorial
-    mkdir /llm && cd /llm && \
+    cd /llm && \
     pip install --upgrade jupyterlab && \
     git clone https://github.com/intel-analytics/bigdl-llm-tutorial && \
-    mv bigdl-llm-tutorial apps && \
-    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/docker/bigdl/start-notebook.sh && \
-    chmod +x start-notebook.sh && \
 # Download chat.py script
     pip install --upgrade colorama && \
     wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py
