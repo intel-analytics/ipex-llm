@@ -6,9 +6,7 @@ ARG PIP_NO_CACHE_DIR=false
 
 ENV PYTHONUNBUFFERED=1
 
-RUN mkdir /llm 
 ADD ./start-notebook.sh /llm/start-notebook.sh
-RUN chmod +x /llm/start-notebook.sh
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -31,6 +29,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /llm && \
     pip install --upgrade jupyterlab && \
     git clone https://github.com/intel-analytics/bigdl-llm-tutorial && \
+    chmod +x /llm/start-notebook.sh && \
 # Download chat.py script
     pip install --upgrade colorama && \
     wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py
