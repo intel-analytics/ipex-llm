@@ -10,7 +10,7 @@ then
   export MASTER_ADDR=$CONTAINER_IP
   mpirun \
      -n $CCL_WORKER_COUNT \
-     -ppn 2 \
+     -ppn $CCL_WORKER_COUNT \
      -genv OMP_NUM_THREADS=$((CPU_CORES / CCL_WORKER_COUNT)) \
      -genv KMP_AFFINITY="granularity=fine,none" \
      -genv KMP_BLOCKTIME=1 \
