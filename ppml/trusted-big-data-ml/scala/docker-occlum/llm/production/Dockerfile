@@ -1,5 +1,5 @@
-FROM intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT AS llm
-
+ARG LLM_NAME
+FROM ${LLM_NAME} as llm
 RUN rm -rf /opt/entrypoint.sh
 
 ADD ./entrypoint.sh /opt/entrypoint.sh
