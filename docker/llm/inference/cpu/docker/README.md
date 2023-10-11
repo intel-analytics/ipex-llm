@@ -35,7 +35,7 @@ To run inference using `BigDL-LLM` using cpu, you could refer to this [documenta
 
 ### Use chat.py
 
-chat.py can be used to initiate a conversation with a specified model. The file is under directory '/root'.
+chat.py can be used to initiate a conversation with a specified model. The file is under directory '/llm'.
 
 You can download models and bind the model directory from host machine to container when start a container.
 
@@ -58,11 +58,11 @@ sudo docker run -itd \
 
 After entering the container through `docker exec`, you can run chat.py by:
 ```bash
-cd /root
+cd /llm
 python chat.py --model-path YOUR_MODEL_PATH
 ```
 In the example above, it can be:
 ```bash
-cd /root
+cd /llm
 python chat.py --model-path /llm/models/MODEL_NAME
 ```
