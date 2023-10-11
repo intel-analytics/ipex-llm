@@ -30,6 +30,11 @@ sys.path.append(benchmark_util_path)
 from benchmark_util import BenchmarkWrapper
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
+LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
+             'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
+             'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
+             'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']
+
 results = []
 
 
@@ -128,10 +133,7 @@ def run_transformer_int4(repo_id,
                                                      trust_remote_code=True, optimize_model=False)
         # Need to use LlamaTokenizer, reason please refer to issue: https://github.com/intel-analytics/BigDL/issues/8944
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
-                     'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
-                     'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
-                     'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
+    elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
@@ -179,10 +181,7 @@ def run_pytorch_autocast_bf16(repo_id,
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         # TODO: need verify chatglm family run bf16.
         invalidInputError(False, "Currently pytorch do not support bfloat16 on cpu for chatglm models.")
-    elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
-                     'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
-                     'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
-                     'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
+    elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16)
         # Need to use LlamaTokenizer, reason please refer to issue: https://github.com/intel-analytics/BigDL/issues/8944
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -224,7 +223,7 @@ def run_optimize_model(repo_id,
                        in_out_pairs,
                        warm_up,
                        num_trials):
-    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer
     from bigdl.llm import optimize_model
 
     model_path = get_model_path(repo_id, local_model_hub)
@@ -235,6 +234,11 @@ def run_optimize_model(repo_id,
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif repo_id in LLAMA_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+                                                     use_cache=True, low_cpu_mem_usage=True)
+        model = optimize_model(model)
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True)
         model = optimize_model(model)
@@ -287,10 +291,7 @@ def run_transformer_int4_gpu(repo_id,
                                           trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-    elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
-                     'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
-                     'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
-                     'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
+    elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
                                                      use_cache=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -355,10 +356,7 @@ def run_optimize_model_gpu(repo_id,
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-    elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
-                     'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
-                     'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
-                     'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
+    elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
                                                      use_cache=True, low_cpu_mem_usage=True)
         model = optimize_model(model)
@@ -421,10 +419,7 @@ def run_ipex_fp16_gpu(repo_id,
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half().to('xpu')
-    elif repo_id in ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
-                     'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
-                     'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
-                     'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']:
+    elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                      use_cache=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
