@@ -4,6 +4,9 @@ ARG http_proxy
 ARG https_proxy
 ARG PIP_NO_CACHE_DIR=false
 
+ENV PYTHONUNBUFFERED=1
+ENV BIGDL_HOME=/llm
+
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
@@ -21,9 +24,15 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip install --pre --upgrade bigdl-llm[all] && \
     pip install --pre --upgrade bigdl-nano && \
+# Download bigdl-llm-tutorial
+    mkdir /llm && cd /llm && \
+    pip install --upgrade jupyterlab && \
+    git clone https://github.com/intel-analytics/bigdl-llm-tutorial && \
+    mv bigdl-llm-tutorial apps && \
+    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/docker/bigdl/start-notebook.sh && \
+    chmod +x start-notebook.sh && \
 # Download chat.py script
     pip install --upgrade colorama && \
-    wget -P /root https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py && \
-    export PYTHONUNBUFFERED=1
+    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py
 
 ENTRYPOINT ["/bin/bash"]
