@@ -441,7 +441,7 @@ def run_optimize_model_gpu(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt").[:, :in_len].to('xpu')
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len].to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
