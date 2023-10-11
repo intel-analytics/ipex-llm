@@ -173,7 +173,7 @@ attestation_init() {
 
     cd /opt/occlum_spark
     bash /opt/mount.sh
-    
+
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
         if [[ $PCCS_URL == "" ]]; then
