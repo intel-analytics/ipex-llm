@@ -821,7 +821,7 @@ class BenchmarkWrapper:
         return model_kwargs
 
     def _reorder_cache(self, past_key_values, beam_idx):
-        return self.model(past_key_values, beam_idx)
+        return self.model._reorder_cache(past_key_values, beam_idx)
 
     def _get_logits_warper(
         self,
