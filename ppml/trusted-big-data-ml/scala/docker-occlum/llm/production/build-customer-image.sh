@@ -10,4 +10,4 @@ docker build \
   --build-arg https_proxy=${HTTP_PROXYS} \
   --build-arg no_proxy=${NO_PROXY} \
   --build-arg FINAL_NAME=${image}:${TAG} \
-  -t ${image_customer}:${TAG} -f ./production/customer/Dockerfile .
+  -t ${image_customer}:${TAG} -f ./customer/Dockerfile .
