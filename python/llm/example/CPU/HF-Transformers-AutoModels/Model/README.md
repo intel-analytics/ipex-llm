@@ -22,6 +22,7 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 | Whisper   | [link](whisper)   |
 | Qwen      | [link](qwen)      |
 | Aquila    | [link](aquila)    |
+| Replit    | [link](replit)    |
 | Mistral   | [link](mistral)   |
 
 ## Recommended Requirements
