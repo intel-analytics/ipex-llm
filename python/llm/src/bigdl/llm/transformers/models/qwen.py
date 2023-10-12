@@ -79,7 +79,7 @@ def qwen_attention_forward(
     query = self._split_heads(query, self.num_heads, self.head_dim)
     key = self._split_heads(key, self.num_heads, self.head_dim)
     value = self._split_heads(value, self.num_heads, self.head_dim)
-    
+
     kv_seq_len = hidden_states.size()[1]
 
     if rotary_pos_emb_list is not None:
@@ -171,7 +171,7 @@ def qwen_attention_forward(
         context_layer = self.core_attention_flash(q, k, v, attention_mask=attention_mask)
 
         # b s h d -> b s (h d)
-        context_layer = context_layer.flatten(2,3).contiguous()
+        context_layer = context_layer.flatten(2, 3).contiguous()
 
     else:
         query = query.permute(0, 2, 1, 3)
@@ -185,7 +185,7 @@ def qwen_attention_forward(
             and not self.is_fp32
             and not query.is_cuda
         ):
-            raise Exception(_ERROR_INPUT_CPU_QUERY_WITH_FLASH_ATTN_ACTIVATED)
+            invalidInputError(False, _ERROR_INPUT_CPU_QUERY_WITH_FLASH_ATTN_ACTIVATED)
         attn_output, attn_weight = self._attn(
             query, key, value, registered_causal_mask, attention_mask, head_mask
         )
@@ -202,7 +202,7 @@ def qwen_attention_forward(
             and flash_attn_unpadded_func is not None
             and not self.is_fp32
         ):
-            raise ValueError("Cannot output attentions while using flash-attn")
+            invalidInputError(False, "Cannot output attentions while using flash-attn")
         else:
             outputs += (attn_weight,)
 
