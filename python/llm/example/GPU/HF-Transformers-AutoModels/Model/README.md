@@ -2,6 +2,7 @@
 You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
 ## Verified models
+
 | Model          | Example                                                  |
 |----------------|----------------------------------------------------------|
 | Aquila         | [link](aquila)                                           |
@@ -21,6 +22,8 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | StarCoder      | [link](starcoder)                                        |
 | Vicuna         | [link](vicuna)                                           |
 | Whisper        | [link](whisper)                                          |
+| Replit         | [link](replit)                                           |
+
 
 ## Verified Hardware Platforms
 
