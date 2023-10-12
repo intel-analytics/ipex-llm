@@ -68,7 +68,7 @@ function display-help {
     echo "Optional options:"
     echo "    -h, --help                Display this help message and exit."
     echo "    -o, --gomp                Disable intel-openmp and use default openmp (i.e. gomp)"
-    echo "    -j, --jemalloc            Use jemalloc as allocator (enabled by default)"
+    echo "    -j, --jemalloc            Use jemalloc as allocator"
     echo "    -t, --tcmalloc            Use tcmalloc as allocator"
     echo "    -c, --disable-allocator   Use the system default allocator"
     echo "    -g, --gpu                 Enable OneAPI and other settings for GPU support"
@@ -82,7 +82,7 @@ function display-error {
 }
 
 enable_iomp
-enable_gpu
+disable_gpu
 disable_jemalloc
 disable_tcmalloc
 LD_PRELOAD=""
