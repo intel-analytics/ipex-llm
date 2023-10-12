@@ -2,9 +2,9 @@
 
 ### Install docker
 
-The docker install package can be downloaded from [here](https://www.docker.com/get-started/)
+New users can quickly get started with Docker using this [official link](https://www.docker.com/get-started/).
 
-For Windows users, make sure Hyper-V is enabled on your computer.
+For Windows users, make sure Hyper-V is enabled on your computer. The instructions for installing on Windows can be accessed from [here](https://docs.docker.com/desktop/install/windows-install/).
 
 ### Pull and run bigdl-llm-cpu image
 
