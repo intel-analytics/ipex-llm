@@ -188,3 +188,10 @@ class PeftModel:
             LoraModel._create_new_module = old_create_new_module
 
         return model
+
+def patch_prepare_ipex(self, *args):
+    return tuple(args)
+
+# workaround a IPEX bug that prevents resume training in bf16
+from accelerate import Accelerator
+Accelerator._prepare_ipex = patch_prepare_ipex
