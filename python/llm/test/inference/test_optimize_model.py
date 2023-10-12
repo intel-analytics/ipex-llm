@@ -16,97 +16,40 @@
 
 import pytest
 import os
-from unittest import TestCase
 
-class TestOptimizeModel(TestCase):
+from bigdl.llm.transformers import AutoModelForCausalLM
+from transformers import LlamaTokenizer, BloomTokenizerFast, GPTNeoXTokenizerFast, AutoTokenizer
 
-    def setUp(self):        
-        self.llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
-        self.bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
-        self.gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
-        self.starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 
-        self.prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
+llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
+bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
+gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
+starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 
-    def test_optimize_llama(self):
-        from bigdl.llm.transformers import AutoModelForCausalLM
-        from transformers import LlamaTokenizer
+prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
-        tokenizer = LlamaTokenizer.from_pretrained(self.llama_model_path)
-        input_ids = tokenizer.encode(self.prompt, return_tensors="pt")
+@pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
+    (AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt),
+    (AutoModelForCausalLM, BloomTokenizerFast, bloom_model_path, prompt),
+    (AutoModelForCausalLM, GPTNeoXTokenizerFast, gptneox_model_path, prompt),
+    (AutoModelForCausalLM, AutoTokenizer, starcoder_model_path, prompt),
+])
+def test_optimize_llama(Model, Tokenizer, model_path, prompt):
+    tokenizer = Tokenizer.from_pretrained(model_path)
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
 
-        model = AutoModelForCausalLM.from_pretrained(self.llama_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=False)
-        logits_base_model = (model(input_ids)).logits
+    model = Model.from_pretrained(model_path,
+                                load_in_4bit=True,
+                                optimize_model=False)
+    logits_base_model = (model(input_ids)).logits
 
-        model = AutoModelForCausalLM.from_pretrained(self.llama_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=True)
-        logits_optimized_model = (model(input_ids)).logits
-        diff = abs(logits_base_model - logits_optimized_model).flatten()
+    model = Model.from_pretrained(model_path,
+                                load_in_4bit=True,
+                                optimize_model=True)
+    logits_optimized_model = (model(input_ids)).logits
+    diff = abs(logits_base_model - logits_optimized_model).flatten()
 
-        assert any(diff) is False
-
-    def test_optimize_bloom(self):
-        from bigdl.llm.transformers import AutoModelForCausalLM
-        from transformers import BloomTokenizerFast
-
-        tokenizer = BloomTokenizerFast.from_pretrained(self.bloom_model_path)
-        input_ids = tokenizer.encode(self.prompt, return_tensors="pt")
-
-        model = AutoModelForCausalLM.from_pretrained(self.bloom_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=False)
-        logits_base_model = (model(input_ids)).logits
-
-        model = AutoModelForCausalLM.from_pretrained(self.bloom_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=True)
-        logits_optimized_model = (model(input_ids)).logits
-        diff = abs(logits_base_model - logits_optimized_model).flatten()
-
-        assert any(diff) is False
-
-    def test_optimize_gptneox(self):
-        from bigdl.llm.transformers import AutoModelForCausalLM
-        from transformers import GPTNeoXTokenizerFast
-
-        tokenizer = GPTNeoXTokenizerFast.from_pretrained(self.gptneox_model_path)
-        input_ids = tokenizer.encode(self.prompt, return_tensors="pt")
-
-        model = AutoModelForCausalLM.from_pretrained(self.gptneox_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=False)
-        logits_base_model = (model(input_ids)).logits
-
-        model = AutoModelForCausalLM.from_pretrained(self.gptneox_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=True)
-        logits_optimized_model = (model(input_ids)).logits
-        diff = abs(logits_base_model - logits_optimized_model).flatten()
-
-        assert any(diff) is False
-
-    def test_optimize_starcoder(self):
-        from bigdl.llm.transformers import AutoModelForCausalLM
-        from transformers import AutoTokenizer
-
-        tokenizer = AutoTokenizer.from_pretrained(self.starcoder_model_path)
-        input_ids = tokenizer.encode(self.prompt, return_tensors="pt")
-
-        model = AutoModelForCausalLM.from_pretrained(self.starcoder_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=False)
-        logits_base_model = (model(input_ids)).logits
-
-        model = AutoModelForCausalLM.from_pretrained(self.starcoder_model_path,
-                                             load_in_4bit=True,
-                                             optimize_model=True)
-        logits_optimized_model = (model(input_ids)).logits
-        diff = abs(logits_base_model - logits_optimized_model).flatten()
-
-        assert any(diff) is False
+    assert any(diff) is False
 
 
 if __name__ == '__main__':
