@@ -186,7 +186,7 @@ def optimize(model):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-        from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+        from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c, chatglm2_model_forward
         convert_forward(model,
                         module.SelfAttention,
                         chatglm2_attention_forward_8eb45c
@@ -194,6 +194,9 @@ def optimize(model):
         convert_forward(model,
                         module.CoreAttention,
                         core_attn_forward_8eb45c)
+        convert_forward(model,
+                        module.ChatGLMModel,
+                        chatglm2_model_forward)
     elif "chatglm" in model.config._name_or_path:
         # chatglm-6b
         modeling_module_name = model.__class__.__module__
