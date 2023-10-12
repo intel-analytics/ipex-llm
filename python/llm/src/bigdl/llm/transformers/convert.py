@@ -183,7 +183,7 @@ def optimize(model):
 
     if model.config.architectures[0] == "ChatGLMModel":
         if hasattr(model.config, "padded_vocab_size") and model.config.padded_vocab_size == 65024:
-            # chatglm-18b or chatglm2-6b
+            # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
