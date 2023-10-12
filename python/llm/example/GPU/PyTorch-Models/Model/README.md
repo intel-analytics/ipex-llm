@@ -5,6 +5,8 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel G
 | Model          | Example                                                  |
 |----------------|----------------------------------------------------------|
 | Mistral        | [link](mistral)                                          |
+| LLaMA 2        | [link](llama2)                                           |
+| ChatGLM2       | [link](chatglm2)                                         |
 
 ## Verified Hardware Platforms
 
