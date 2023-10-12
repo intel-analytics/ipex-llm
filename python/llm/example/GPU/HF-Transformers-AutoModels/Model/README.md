@@ -16,6 +16,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | Qwen       | [link](qwen)              |
 | StarCoder  | [link](starcoder)         |
 | Whisper    | [link](whisper)           |
+| Replit     | [link](replit)            |
 
 ## Verified Hardware Platforms
 
