@@ -17,35 +17,37 @@
 import pytest
 import os
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, BloomTokenizerFast, GPTNeoXTokenizerFast, AutoTokenizer
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
 bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
-gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
-starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
+chatglm2_6b_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
+replit_code_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
 
 prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
 @pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
     (AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt),
     (AutoModelForCausalLM, BloomTokenizerFast, bloom_model_path, prompt),
-    (AutoModelForCausalLM, GPTNeoXTokenizerFast, gptneox_model_path, prompt),
-    (AutoModelForCausalLM, AutoTokenizer, starcoder_model_path, prompt),
+    (AutoModel, AutoTokenizer, chatglm2_6b_model_path, prompt),
+    (AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt),
 ])
-def test_optimize_llama(Model, Tokenizer, model_path, prompt):
-    tokenizer = Tokenizer.from_pretrained(model_path)
+def test_optimize_model(Model, Tokenizer, model_path, prompt):
+    tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(prompt, return_tensors="pt")
 
     model = Model.from_pretrained(model_path,
                                 load_in_4bit=True,
-                                optimize_model=False)
+                                optimize_model=False,
+                                trust_remote_code=True)
     logits_base_model = (model(input_ids)).logits
 
     model = Model.from_pretrained(model_path,
                                 load_in_4bit=True,
-                                optimize_model=True)
+                                optimize_model=True,
+                                trust_remote_code=True)
     logits_optimized_model = (model(input_ids)).logits
     diff = abs(logits_base_model - logits_optimized_model).flatten()
 
