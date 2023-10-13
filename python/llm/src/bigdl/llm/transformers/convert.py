@@ -311,6 +311,10 @@ def optimize(model):
                         module.InternLMAttention,
                         internlm_attention_forward
                         )
+        convert_forward(model,
+                        module.InternLMRMSNorm,
+                        llama_rms_norm_forward
+                        )
     elif model.config.model_type == "qwen":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
