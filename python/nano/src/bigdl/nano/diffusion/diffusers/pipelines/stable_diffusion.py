@@ -35,7 +35,7 @@ from bigdl.nano.diffusion.common.optimize import load_optimized_unet, load_optim
 
 def inference_autocast(forward):
     """Inference autocast."""
-    
+
     @functools.wraps(forward)
     def wrapper(self, *args, **kwargs):
         # TODO handle cases if unet/vae has different precision
