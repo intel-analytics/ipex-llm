@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 import os
 import time
@@ -27,214 +28,246 @@ from bigdl.nano.pytorch import InferenceOptimizer
 
 # convert unet to optimized nano unet
 def optimize_unet(
-        unet,
-        unet_attributes, 
-        accelerator="jit", 
-        ipex=True, 
-        precision='float32',
-        device='CPU',
-        samples=None,
-        height=512,
-        width=512,
-        low_memory=False,
-        cache=False, 
-        fail_if_no_cache=False, 
-        channels_last=False, 
-        cache_dir=None,
-        lora_name=None,
-        return_model=True):
-        """
-        Trace a torch.nn.Module and convert it into an accelerated module for inference.
-        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
-        :param low_memory: only valid when accelerator="jit" and ipex=True, model will use less memory during inference
-        :cache_dir: the directory to save the converted model
-        """
-        generator = torch.Generator(device="cpu")
-        generator.manual_seed(1)
+    unet,
+    unet_attributes,
+    accelerator="jit",
+    ipex=True,
+    precision='float32',
+    device='CPU',
+    samples=None,
+    height=512,
+    width=512,
+    low_memory=False,
+    cache=False,
+    fail_if_no_cache=False,
+    channels_last=False,
+    cache_dir=None,
+    lora_name=None,
+    return_model=True):
+    """
+    Trace a torch.nn.Module and convert it into an accelerated module for inference.
+    For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+    :param low_memory: only valid when accelerator="jit"
+        and ipex=True,model will use less memory during inference
+    :cache_dir: the directory to save the converted model
+    """
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(1)
 
-        conv_in = OrderedDict()
-        conv_in.in_channels = unet.conv_in.in_channels
-        if cache_dir is None:
-            cache_dir = unet_attributes["config"]._name_or_path
+    conv_in = OrderedDict()
+    conv_in.in_channels = unet.conv_in.in_channels
+    if cache_dir is None:
+        cache_dir = unet_attributes["config"]._name_or_path
 
-        latent_shape = (2, unet.in_channels, height // 8, width // 8)
-        image_latents = torch.randn(latent_shape, generator=generator, device="cpu", dtype=torch.float32)
-        cross_attention_dim = unet.config.cross_attention_dim
-        encoder_hidden_states = torch.randn((2, 77, cross_attention_dim), generator=generator, device="cpu", dtype=torch.float32)
-        down_block_additional_residuals, mid_block_additional_residual = get_dummy_unet_additional_residuals()
-        
-        input_sample = [image_latents, torch.Tensor([980]).long(), encoder_hidden_states, None, None, None, None, down_block_additional_residuals, mid_block_additional_residual]
-        unet_input_names = ["sample", "timestep", "encoder_hidden_states", "down_block_additional_residuals", "mid_block_additional_residual"]
-        unet_output_names = ["unet_output"]
-        # unet_dynamic_axes = {"sample": [0], "encoder_hidden_states": [0], "unet_output": [0]}
-        unet_dynamic_axes = False
+    latent_shape = (2, unet.in_channels,
+        height // 8, width // 8)
+    image_latents = torch.randn(latent_shape,
+        generator=generator, device="cpu", dtype=torch.float32)
+    cross_attention_dim = unet.config.cross_attention_dim
+    encoder_hidden_states = torch.randn(
+        (2, 77, cross_attention_dim), generator=generator,
+        device="cpu", dtype=torch.float32)
+    
+    temp = get_dummy_unet_additional_residuals()
+    down_block_additional_residuals, mid_block_additional_residual = temp
 
-        if lora_name is not None:
-            input_sample[6] = torch.Tensor([0.8]).float()
-            unet_input_names.insert(3, "cross_attn_scale")
+    input_sample = [image_latents, torch.Tensor([980]).long(),
+        encoder_hidden_states, None, None, None, None,
+        down_block_additional_residuals, mid_block_additional_residual]
 
-        nano_unet = None
+    unet_input_names = ["sample", "timestep",
+        "encoder_hidden_states", "down_block_additional_residuals",
+        "mid_block_additional_residual"]
+    unet_output_names = ["unet_output"]
+    # unet_dynamic_axes = {"sample": [0], "encoder_hidden_states": [0], "unet_output": [0]}
+    unet_dynamic_axes = False
+
+    if lora_name is not None:
+        input_sample[6] = torch.Tensor([0.8]).float()
+        unet_input_names.insert(3, "cross_attn_scale")
+
+    nano_unet = None
+    if cache:
+        nano_unet, cache_path = try_load_existing_model(unet_attributes,
+        cache_dir, accelerator=accelerator,
+        ipex=ipex, precision=precision,
+        low_memory=low_memory, device=device,
+        lora_name=lora_name, return_model=return_model)
+
+    if nano_unet is None:
+        if fail_if_no_cache:
+            raise Exception(f"`fail_if_no_cache` is set to True, \
+                but failed to find the model at \
+                {unet_attributes['config']._name_or_path}, \
+                optimization stopped.")
+
+        nano_unet = nano_optimize_model(unet, input_sample,
+            input_names=unet_input_names, output_names=unet_output_names,
+            dynamic_axes=unet_dynamic_axes, accelerator=accelerator,
+            ipex=ipex, precision=precision, device=device, samples=samples,
+            low_memory=low_memory, channels_last=channels_last)
+
+        # Save model if cache=True
         if cache:
-            nano_unet, cache_path = try_load_existing_model(unet_attributes, cache_dir, accelerator=accelerator, ipex=ipex, precision=precision, 
-                                                            low_memory=low_memory, device=device, lora_name=lora_name, return_model=return_model)           
+            import pickle
+            print(f"Caching the converted unet model to {cache_path}")
+            InferenceOptimizer.save(nano_unet, cache_path)
+            with open(os.path.join(cache_dir, "attrs.pkl"), "wb") as f:
+                pickle.dump(unet_attributes, f)
 
-        if nano_unet is None:
-            if fail_if_no_cache:
-                raise Exception(f"`fail_if_no_cache` is set to True, but failed to find the model at {unet_attributes['config']._name_or_path}, optimization stopped.")
-                
-            nano_unet = nano_optimize_model(unet, input_sample, input_names=unet_input_names, output_names=unet_output_names, 
-                                            dynamic_axes=unet_dynamic_axes, accelerator=accelerator, ipex=ipex, precision=precision, 
-                                            device=device, samples=samples, low_memory=low_memory, channels_last=channels_last)
-
-            # Save model if cache=True
-            if cache:
-                import pickle
-                print(f"Caching the converted unet model to {cache_path}")
-                InferenceOptimizer.save(nano_unet, cache_path)
-                with open(os.path.join(cache_dir, "attrs.pkl"), "wb") as f:
-                    pickle.dump(unet_attributes, f)
-
-        if not isinstance(nano_unet, str):
-            setattr(nano_unet, "conv_in", conv_in)
-        return nano_unet
+    if not isinstance(nano_unet, str):
+        setattr(nano_unet, "conv_in", conv_in)
+    return nano_unet
 
 
 def optimize_vae(
-        vae,
-        unet_in_channels=4,
-        accelerator="jit", 
-        ipex=True, 
-        precision='float32',
-        device='CPU',
-        height=512,
-        width=512,
-        low_memory=False,
-        cache=False, 
-        fail_if_no_cache=False, 
-        channels_last=False,
-        inplace=True,
-        cache_dir=None,
-        return_model=True):
-        """
-        Trace a torch.nn.Module and convert it into an accelerated module for inference.
-        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
-        :param low_memory: only valid when accelerator="jit" and ipex=True, model will use less memory during inference
-        :cache_dir: the directory to save the converted model
-        """
-        generator = torch.Generator(device="cpu")
-        generator.manual_seed(1)
+    vae,
+    unet_in_channels=4,
+    accelerator="jit",
+    ipex=True,
+    precision='float32',
+    device='CPU',
+    height=512,
+    width=512,
+    low_memory=False,
+    cache=False,
+    fail_if_no_cache=False,
+    channels_last=False,
+    inplace=True,
+    cache_dir=None,
+    return_model=True):
+    """
+    Trace a torch.nn.Module and convert it into an accelerated module for inference.
+    For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+    :param low_memory: only valid when accelerator="jit"
+        and ipex=True, model will use less memory during inference
+    :cache_dir: the directory to save the converted model
+    """
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(1)
 
-        if cache_dir is None:
-            cache_dir = vae._name_or_path
-        decoder_path = os.path.join(cache_dir, "decoder")
-        # TODO: encoder
+    if cache_dir is None:
+        cache_dir = vae._name_or_path
+    decoder_path = os.path.join(cache_dir, "decoder")
+    # TODO: encoder
 
-        latent_shape = (1, unet_in_channels, height // 8, width // 8)
-        image_latents = torch.randn(latent_shape, generator=generator, device="cpu", dtype=torch.float32)
-        input_sample = image_latents
+    latent_shape = (1, unet_in_channels, height // 8, width // 8)
+    image_latents = torch.randn(latent_shape,
+        generator=generator, device="cpu", dtype=torch.float32)
+    input_sample = image_latents
 
-        nano_vae_decoder = None
+    nano_vae_decoder = None
 
+    if cache:
+        nano_vae_decoder, decoder_cache_path = try_load_existing_model({},
+            decoder_path, accelerator=accelerator, ipex=ipex, precision=precision,
+            low_memory=low_memory, device=device, return_model=return_model)
+
+    if nano_vae_decoder is None:
+        if fail_if_no_cache:
+            raise Exception(f"`fail_if_no_cache` \
+                is set to True, but failed to find the model \
+                at {decoder_path}, optimization stopped.")
+
+        nano_vae_decoder = nano_optimize_model(vae.decoder,
+            input_sample, accelerator=accelerator, ipex=ipex, precision=precision,
+            device=device, low_memory=low_memory, channels_last=channels_last)
+
+        # Save model if cache=True
         if cache:
-            nano_vae_decoder, decoder_cache_path = try_load_existing_model({}, decoder_path, accelerator=accelerator, ipex=ipex, precision=precision, 
-                                                                           low_memory=low_memory, device=device, return_model=return_model)
-
-        if nano_vae_decoder is None:
-            if fail_if_no_cache:
-                raise Exception(f"`fail_if_no_cache` is set to True, but failed to find the model at {decoder_path}, optimization stopped.")
-                
-            nano_vae_decoder = nano_optimize_model(vae.decoder, input_sample, accelerator=accelerator, ipex=ipex, precision=precision, 
-                                                   device=device, low_memory=low_memory, channels_last=channels_last)
-
-            # Save model if cache=True
-            if cache:
-                print(f"Caching the converted vae decoder model to {decoder_cache_path}")
-                InferenceOptimizer.save(nano_vae_decoder, decoder_cache_path)
-        if not isinstance(nano_vae_decoder, str) and inplace:
-            setattr(vae, "decoder", nano_vae_decoder)
-            return vae
-        else:
-            return nano_vae_decoder
+            print(f"Caching the converted vae decoder model to {decoder_cache_path}")
+            InferenceOptimizer.save(nano_vae_decoder, decoder_cache_path)
+    if not isinstance(nano_vae_decoder, str) and inplace:
+        setattr(vae, "decoder", nano_vae_decoder)
+        return vae
+    else:
+        return nano_vae_decoder
 
 
 def optimize_controlnet(
-        controlnet,
-        accelerator="openvino", 
-        ipex=False, 
-        precision='float16',
-        device='CPU',
-        samples=None,
-        height=512,
-        width=512,
-        low_memory=False,
-        cache=True,
-        fail_if_no_cache=False, 
-        channels_last=False,
-        return_model=False):
-        """
-        Trace a torch.nn.Module and convert it into an accelerated module for inference.
-        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
-        :param low_memory: only valid when accelerator="jit" and ipex=True, model will use less memory during inference
-        :cache_dir: the directory to save the converted model
-        """
-        latent_model_input = torch.randn(2, 4, 64, 64)
-        t = torch.Tensor([980]).long()
-        encoder_hidden_states = torch.randn(2, 77, 768)  # only work for 1.4/1.5 now, so fix it to 768
-        controlnet_cond = torch.randn(2, 3, 512, 512)
-        input_sample = (latent_model_input, t, encoder_hidden_states, controlnet_cond, None, None, None, None, False)
-        controlnet_input_names = ["sample", "timestep", "encoder_hidden_states", "controlnet_cond"]
-        controlnet_dynamic_axes = {"sample": [0], "encoder_hidden_states": [0], "controlnet_cond": [0]}
-        name_or_path = controlnet._name_or_path
-        if not os.path.exists(name_or_path):
-            raise Exception(f"controlnet model does not exist in {name_or_path}, optimization failed.")
+    controlnet,
+    accelerator="openvino",
+    ipex=False,
+    precision='float16',
+    device='CPU',
+    samples=None,
+    height=512,
+    width=512,
+    low_memory=False,
+    cache=True,
+    fail_if_no_cache=False,
+    channels_last=False,
+    return_model=False):
+    """
+    Trace a torch.nn.Module and convert it into an accelerated module for inference.
+    For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+    :param low_memory: only valid when accelerator="jit"
+        and ipex=True, model will use less memory during inference
+    :cache_dir: the directory to save the converted model
+    """
+    latent_model_input = torch.randn(2, 4, 64, 64)
+    t = torch.Tensor([980]).long()
+    encoder_hidden_states = torch.randn(2,
+        77, 768)  # only work for 1.4/1.5 now, so fix it to 768
+    controlnet_cond = torch.randn(2, 3, 512, 512)
+    input_sample = (latent_model_input,
+        t, encoder_hidden_states, controlnet_cond, None, None, None, None, False)
+    controlnet_input_names = ["sample",
+        "timestep", "encoder_hidden_states", "controlnet_cond"]
+    controlnet_dynamic_axes = {"sample": [0],
+        "encoder_hidden_states": [0], "controlnet_cond": [0]}
+    name_or_path = controlnet._name_or_path
+    if not os.path.exists(name_or_path):
+        raise Exception(f"controlnet model does not exist \
+            in {name_or_path}, optimization failed.")
 
-        nano_controlnet = None
+    nano_controlnet = None
 
+    if cache:
+        nano_controlnet, cache_path = try_load_existing_model({}, name_or_path,
+            accelerator=accelerator, ipex=ipex, precision=precision,
+            low_memory=low_memory, device=device, return_model=return_model)
+
+    if nano_controlnet is None:
+        if fail_if_no_cache:
+            raise Exception(f"`fail_if_no_cache` is set to True, but failed to find the model at {name_or_path}, optimization stopped.")
+
+        nano_controlnet = nano_optimize_model(controlnet, input_sample,
+                                                accelerator=accelerator, ipex=ipex,
+                                                precision=precision, input_names=controlnet_input_names,
+                                                dynamic_axes=controlnet_dynamic_axes, device=device,
+                                                samples=samples, low_memory=low_memory, channels_last=channels_last,
+                                                mo_kwargs={
+                                                "input_shape": "[2,4,64,64],[1],[2,77,768],[2,3,512,512]",
+                                                "input": "sample,timestep,encoder_hidden_states,controlnet_cond"})
+
+        # Save model if cache=True
         if cache:
-            nano_controlnet, cache_path = try_load_existing_model({}, name_or_path, accelerator=accelerator, ipex=ipex, precision=precision, 
-                                                            low_memory=low_memory, device=device, return_model=return_model)
+            print(f"Caching the converted controlnet model to {cache_path}")
+            InferenceOptimizer.save(nano_controlnet, cache_path)
 
-        if nano_controlnet is None:
-            if fail_if_no_cache:
-                raise Exception(f"`fail_if_no_cache` is set to True, but failed to find the model at {name_or_path}, optimization stopped.")
+    if not return_model:
+        del nano_controlnet
+        del controlnet
+        return
 
-            nano_controlnet = nano_optimize_model(controlnet, input_sample, accelerator=accelerator, ipex=ipex, precision=precision,
-                                                  input_names=controlnet_input_names, dynamic_axes=controlnet_dynamic_axes,
-                                                  device=device, samples=samples, low_memory=low_memory, channels_last=channels_last,
-                                                  mo_kwargs={"input_shape":"[2,4,64,64],[1],[2,77,768],[2,3,512,512]",
-                                                             "input":"sample,timestep,encoder_hidden_states,controlnet_cond"})
-
-            # Save model if cache=True
-            if cache:
-                print(f"Caching the converted controlnet model to {cache_path}")
-                InferenceOptimizer.save(nano_controlnet, cache_path)
-
-        if not return_model:
-            del nano_controlnet
-            del controlnet
-            return
-
-        return nano_controlnet
-
-
+    return nano_controlnet
 
 
 def nano_optimize_model(
-    model, 
+    model,
     input_sample,
     input_names=None,
     output_names=None,
     dynamic_axes=False,
-    accelerator="jit", 
-    ipex=True, 
+    accelerator="jit",
+    ipex=True,
     precision='float32',
     device='CPU',
-    samples=None, 
+    samples=None,
     low_memory=False,
     channels_last=False,
-    mo_kwargs=None
-    ):
-
+    mo_kwargs=None):
     extra_args = {}
     if precision == 'float32':
         if accelerator == "jit":
@@ -249,7 +282,8 @@ def nano_optimize_model(
                 extra_args["use_ipex"] = ipex
                 extra_args["channels_last"] = channels_last
             else:
-                raise ValueError("IPEX should be True if accelerator is None and precision is float32.")
+                raise ValueError("IPEX should be True if accelerator \
+                    is None and precision is float32.")
         elif accelerator == "openvino":
             extra_args["input_names"] = input_names
             extra_args["output_names"] = output_names
@@ -259,11 +293,12 @@ def nano_optimize_model(
             if mo_kwargs is not None:
                 extra_args.update(mo_kwargs)
         else:
-            raise ValueError(f"The accelerator can be one of `None`, `jit`, and `openvino` if the precision is float32, but got {accelerator}")
+            raise ValueError(f"The accelerator can be one of `None`, `jit`, \
+                and `openvino` if the precision is float32, but got {accelerator}")
         optimized_model = InferenceOptimizer.trace(model,
-                                            accelerator=accelerator,
-                                            input_sample=input_sample,
-                                            **extra_args)
+            accelerator=accelerator,
+            input_sample=input_sample,
+            **extra_args)
     else:
         precision_map = {
             'bfloat16': 'bf16',
@@ -298,17 +333,18 @@ def nano_optimize_model(
 
         # unet
         optimized_model = InferenceOptimizer.quantize(model,
-                                                accelerator=accelerator,
-                                                precision=precision_short,
-                                                input_sample=input_sample,
-                                                **extra_args)
+            accelerator=accelerator,
+            precision=precision_short,
+            input_sample=input_sample,
+            **extra_args)
     return optimized_model
+
 
 def save_unet_if_not_exist(unet, cache_dir=None):
     '''
     Saves an optimized UNet to local file system if it's not there
         Parameters:
-            unet: the UNet2DConditionModel instance 
+            unet: the UNet2DConditionModel instance
             cache_dir: the model path to save the optimized UNet, if None, will use the original UNet path
     '''
     unet_attrs = unet_attributes(unet)
@@ -316,32 +352,40 @@ def save_unet_if_not_exist(unet, cache_dir=None):
     # If the controlnet unet exists
     if cache_dir is None:
         cache_dir = unet_attrs["config"]._name_or_path
-    exists, cache_path = try_load_existing_model(None, cache_dir, "openvino", ipex=False, precision="float16", additional_suffix="controlnet", return_model=False, low_memory=False, device="CPU")
+    exists, cache_path = try_load_existing_model(
+        None, cache_dir, "openvino", ipex=False,
+        precision="float16",additional_suffix="controlnet",
+        return_model=False, low_memory=False, device="CPU")
     if exists:
-        unet_exists, unet_cache_path = try_load_existing_model(None, cache_dir, "openvino", ipex=False, precision="float16", return_model=False, low_memory=False, device="CPU")
+        unet_exists, unet_cache_path = try_load_existing_model(
+            None, cache_dir, "openvino", ipex=False, precision="float16",
+            return_model=False, low_memory=False, device="CPU")
         if unet_exists:
             print(f"Deleting the deprecated unet...")
             shutil.rmtree(unet_cache_path)
         shutil.move(cache_path, unet_cache_path)
     else:
         opt_unet = optimize_unet(unet, unet_attrs, accelerator="openvino",
-                                ipex=False, precision="float16", cache=True, cache_dir=cache_dir,
-                                return_model=False)
+            ipex=False, precision="float16", cache=True, cache_dir=cache_dir,
+            return_model=False)
         del opt_unet
     del unet
+
 
 def save_vae_if_not_exist(vae, cache_dir=None):
     '''
     Saves an optimized VAE to local file system if it's not there
         Parameters:
-            unet: the AutoencoderKL instance 
-            cache_dir: the model path to save the optimized VAE, if None, will use the original VAE path
+            unet: the AutoencoderKL instance
+            cache_dir: the model path to save the optimized VAE,
+                    if None, will use the original VAE path
     '''
-    opt_vae = optimize_vae(vae, accelerator="openvino", ipex=False, 
+    opt_vae = optimize_vae(vae, accelerator="openvino", ipex=False,
                            precision="float16", cache=True, inplace=False,
                            cache_dir=cache_dir, return_model=False)
     del vae
     del opt_vae
+
 
 def save_controlnet_if_not_exist(local_controlnet_path):
     def save_a_controlnet(repo_id):
@@ -361,7 +405,6 @@ def save_controlnet_if_not_exist(local_controlnet_path):
     save_a_controlnet("lllyasviel/sd-controlnet-scribble")
 
 
-
 def unet_attributes(model):
     assert model is not None, "Please load model before saving attributes..."
     assert isinstance(model, torch.nn.Module)
@@ -373,6 +416,7 @@ def unet_attributes(model):
     unet_attributes["conv_in_in_channels"] = model.conv_in.in_channels
     return unet_attributes
 
+
 def get_dummy_unet_additional_residuals():
     down_block_additional_residuals = []
     down_block_additional_residuals.extend([torch.zeros(2, 320, 64, 64)] * 3)
@@ -383,9 +427,6 @@ def get_dummy_unet_additional_residuals():
     down_block_additional_residuals.extend([torch.zeros(2, 1280, 8, 8)] * 3)
     mid_block_additional_residual = torch.zeros(2, 1280, 8, 8)
     return down_block_additional_residuals, mid_block_additional_residual
-
-
-
 
 
 def get_nano_cache_dir_dict(model_info, vae_repo_id=None, vae_subfolder=None):
@@ -414,6 +455,7 @@ def get_nano_cache_dir_dict(model_info, vae_repo_id=None, vae_subfolder=None):
 
     return cache_dir_dict
 
+
 def get_available_devices():
     from openvino.runtime import Core
     core = Core()
@@ -435,6 +477,7 @@ def get_available_devices():
             avail_devices[2] = 'dGPU'
     return avail_devices
 
+
 def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
     from pathlib import Path
     if name_or_path is not None:
@@ -444,8 +487,8 @@ def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
         name_or_path = os.path.join(name_or_path, "unet")
         if nano_device not in ['CPU', 'iGPU', 'dGPU']:
             raise ValueError(f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
-        loaded_unet = load_optimized_unet(unet_attributes=None, 
-                                          accelerator="openvino", 
+        loaded_unet = load_optimized_unet(unet_attributes=None,
+                                          accelerator="openvino",
                                           precision="float16",
                                           device=nano_device,
                                           cache_dir=name_or_path,
@@ -453,4 +496,3 @@ def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
         return loaded_unet
     else:
         return None
-

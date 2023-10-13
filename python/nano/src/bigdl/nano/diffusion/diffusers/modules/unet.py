@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 import torch
 
@@ -40,9 +41,8 @@ class NanoUNet(torch.nn.Module):
         self.config = model.config
         self.in_channels = model.in_channels
 
-
     def forward(
-            self, 
+            self,
             sample: torch.FloatTensor,
             timestep: Union[torch.Tensor, float, int],
             encoder_hidden_states: torch.Tensor,
@@ -52,8 +52,7 @@ class NanoUNet(torch.nn.Module):
             cross_attention_kwargs: Optional[Dict[str, Any]] = None,
             down_block_additional_residuals: Optional[Tuple[torch.Tensor]] = None,
             mid_block_additional_residual: Optional[torch.Tensor] = None,
-            return_dict: bool = True,
-    ):
+            return_dict: bool = True,):
         extra_args = []
         if cross_attention_kwargs is not None:
             attn_scale = cross_attention_kwargs.pop("scale", None)
@@ -64,11 +63,12 @@ class NanoUNet(torch.nn.Module):
             # TODO: warning
             # for key, value in cross_attention_kwargs.items():
                 # print(f"Ignoring cross_attention_kwargs {key}, value: {value}")
-        
+
         if isinstance(self.model, PytorchOpenVINOModel):
             timestep = timestep[None]
 
-        down_block_additional_residuals, mid_block_additional_residual = get_dummy_unet_additional_residuals()
+        temp = get_dummy_unet_additional_residuals()
+        down_block_additional_residuals, mid_block_additional_residual = temp
         extra_args.extend(down_block_additional_residuals)
         extra_args.append(mid_block_additional_residual)
 
@@ -79,6 +79,5 @@ class NanoUNet(torch.nn.Module):
             noise_pred = noise_pred[0]
         elif isinstance(noise_pred, dict):
             noise_pred = noise_pred["sample"]
-        
-        return UNet2DConditionOutput(sample=noise_pred)
 
+        return UNet2DConditionOutput(sample=noise_pred)

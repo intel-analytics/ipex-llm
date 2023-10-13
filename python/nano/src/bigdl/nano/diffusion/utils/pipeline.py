@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 import torch
+
 
 def get_dummy_unet_additional_residuals():
     down_block_additional_residuals = []
@@ -25,4 +27,3 @@ def get_dummy_unet_additional_residuals():
     down_block_additional_residuals.extend([torch.zeros(2, 1280, 8, 8)] * 3)
     mid_block_additional_residual = torch.zeros(2, 1280, 8, 8)
     return down_block_additional_residuals, mid_block_additional_residual
-

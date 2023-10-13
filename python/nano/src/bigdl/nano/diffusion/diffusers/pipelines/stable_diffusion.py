@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-# this file contains NanoDiffusionPipeline, NanoStableDiffusionPipeline, NanoStableDiffusionImg2ImgPipeline
 import os
 import functools
 import diffusers
@@ -22,7 +22,11 @@ from huggingface_hub import snapshot_download
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from diffusers import AutoencoderKL, UNet2DConditionModel
-from diffusers import DiffusionPipeline,StableDiffusionPipeline,StableDiffusionImg2ImgPipeline 
+from diffusers import (
+    DiffusionPipeline,
+    StableDiffusionPipeline,
+    StableDiffusionImg2ImgPipeline
+)
 
 from bigdl.nano.diffusion.utils.paths import *
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -32,7 +36,8 @@ from bigdl.nano.diffusion.common.optimize import load_optimized_unet, load_optim
 def inference_autocast(forward):
     @functools.wraps(forward)
     def wrapper(self, *args, **kwargs):
-        with InferenceOptimizer.get_context(self.unet): # TODO handle cases if unet/vae has different precision 
+        # TODO handle cases if unet/vae has different precision
+        with InferenceOptimizer.get_context(self.unet):  # TODO
             output = forward(self, *args, **kwargs)  # Call the original function
         return output
     return wrapper
@@ -55,37 +60,63 @@ default_scheduler = 'k_lms'
 
 def _preload_ov(pretrained_model_name_or_path, device, precision):
     from bigdl.nano.diffusion.diffusers.modules import NanoUNet
-    unet = load_optimized_unet(cache_dir=os.path.join(pretrained_model_name_or_path, 'unet'), device=device, precision=precision)
+    unet = load_optimized_unet(
+        cache_dir=os.path.join(pretrained_model_name_or_path, 'unet'),
+        device=device, precision=precision)
     wrapped_unet = NanoUNet(unet)
-    vae_decoder = load_optimized_vae_decoder(cache_dir=os.path.join(pretrained_model_name_or_path, 'vae'), device=device, precision=precision)   
+    vae_decoder = load_optimized_vae_decoder(
+        cache_dir=os.path.join(pretrained_model_name_or_path, 'vae'),
+        device=device, precision=precision)
     return wrapped_unet, vae_decoder
 
 
 def _postload_ov(pipe, unet, value_decoder):
-    # load unet and vae 
+    # load unet and vae
     pipe.unet = unet
     pipe.vae.decoder = value_decoder
-    
+
 
 def _load_ipex(pipe, device, precision):
     if precision == 'float32':
-        vae = InferenceOptimizer.trace(pipe.vae, device=device, use_ipex=True, channels_last=True)
-        text_encoder = InferenceOptimizer.trace(pipe.text_encoder, device=device, use_ipex=True, channels_last=True)
-        unet = InferenceOptimizer.trace(pipe.unet, device=device, use_ipex=True, channels_last=True)
+        vae = InferenceOptimizer.trace(
+            pipe.vae, device=device,
+            use_ipex=True, channels_last=True)
+        text_encoder = InferenceOptimizer.trace(
+            pipe.text_encoder, device=device,
+            use_ipex=True, channels_last=True)
+        unet = InferenceOptimizer.trace(
+            pipe.unet, device=device,
+            use_ipex=True, channels_last=True)
     elif precision == 'bfloat16':
-        vae = InferenceOptimizer.quantize(pipe.vae, device=device, use_ipex=True, precision="bf16")
-        text_encoder = InferenceOptimizer.quantize(pipe.text_encoder, device=device, use_ipex=True, precision="bf16")
-        unet = InferenceOptimizer.quantize(pipe.unet, device=device, use_ipex=True, precision="bf16")
+        vae = InferenceOptimizer.quantize(
+            pipe.vae, device=device, use_ipex=True,
+            precision="bf16")
+        text_encoder = InferenceOptimizer.quantize(
+            pipe.text_encoder, device=device,
+            use_ipex=True, precision="bf16")
+        unet = InferenceOptimizer.quantize(
+            pipe.unet, device=device,
+            use_ipex=True, precision="bf16")
     elif precision == 'float16':
-        vae = InferenceOptimizer.quantize(pipe.vae, device=device, use_ipex=True, channels_last=True, precision="fp16")
-        text_encoder = InferenceOptimizer.quantize(pipe.text_encoder, device=device, use_ipex=True, channels_last=True, precision="fp16")
-        unet = InferenceOptimizer.quantize(pipe.unet, device=device, use_ipex=True, channels_last=True, precision="fp16")
+        vae = InferenceOptimizer.quantize(
+            pipe.vae, device=device,
+            use_ipex=True, channels_last=True,
+            precision="fp16")
+        text_encoder = InferenceOptimizer.quantize(
+            pipe.text_encoder, device=device,
+            use_ipex=True, channels_last=True,
+            precision="fp16")
+        unet = InferenceOptimizer.quantize(
+            pipe.unet, device=device,
+            use_ipex=True, channels_last=True,
+            precision="fp16")
     else:
-        raise ValueError(f'Unsupported precision {precision}, available options are: {["float32", "bfloat32", "float16"]}')
+        raise ValueError(f'Unsupported precision {precision}, \
+                         available options are: {["float32", "bfloat32", "float16"]}')
     pipe.vae = vae
     pipe.text_encoder = text_encoder
     pipe.unet = unet
-    
+
 
 class NanoDiffusionPipeline:
 
@@ -97,10 +128,11 @@ class NanoDiffusionPipeline:
         device='iGPU',
         precision='float16',
         backend='OV',
-        **kwargs,
-    ):
-      
-        scheduler = scheduler_map[scheduler].from_pretrained(pretrained_model_name_or_path, subfolder='scheduler')  
+        **kwargs,):
+
+        scheduler = scheduler_map[scheduler].from_pretrained(
+            pretrained_model_name_or_path,
+            subfolder='scheduler')  
         # load pipeline
         if backend.lower() == 'ov':
             if not os.path.exists(pretrained_model_name_or_path):
@@ -108,43 +140,57 @@ class NanoDiffusionPipeline:
                     pretrained_model_name_or_path = snapshot_download(pretrained_model_name_or_path)
                 except Exception:
                     raise NoPathException(f"Could not find local `model_path` in given local path, "
-                                          "could not find the model on Huggingface Hub by given `model_path` as repo_id either.")
+                                          "could not find the model on Huggingface Hub \
+                                          by given `model_path` as repo_id either.")
             ov_unet, ov_vae_decoder = _preload_ov(pretrained_model_name_or_path, device, precision)
-            
-            text_encoder = CLIPTextModel.from_pretrained(pretrained_model_name_or_path, subfolder='text_encoder')
-            tokenizer = CLIPTokenizer.from_pretrained(pretrained_model_name_or_path, subfolder='tokenizer')
+
+            text_encoder = CLIPTextModel.from_pretrained(
+                pretrained_model_name_or_path,
+                subfolder='text_encoder')
+            tokenizer = CLIPTokenizer.from_pretrained(
+                pretrained_model_name_or_path,
+                subfolder='tokenizer')
             safety_checker = kwargs.get('safety_checker', None)
-            feature_extractor = CLIPFeatureExtractor.from_pretrained(pretrained_model_name_or_path, subfolder='feature_extractor')
+            feature_extractor = CLIPFeatureExtractor.from_pretrained(
+                pretrained_model_name_or_path,
+                subfolder='feature_extractor')
             requires_safety_checker = kwargs.get('requires_safety_checker', False)   
-            # do not load unet/vae to save RAM     
+            # do not load unet/vae to save RAM
             dummy_unet = UNet2DConditionModel()
-            dummy_unet._internal_dict = ov_unet.config #TODO create a new config without preloading ov
-            dummy_vae = AutoencoderKL.from_pretrained(pretrained_model_name_or_path, subfolder='vae')
-            pipe = cls(vae=dummy_vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=dummy_unet, scheduler=scheduler,
-                    safety_checker=safety_checker, feature_extractor=feature_extractor, requires_safety_checker=requires_safety_checker)
-            
+            # TODO create a new config without preloading ov for the next line
+            dummy_unet._internal_dict = ov_unet.config  # TODO
+            dummy_vae = AutoencoderKL.from_pretrained(pretrained_model_name_or_path,
+                subfolder='vae')
+            pipe = cls(vae=dummy_vae, text_encoder=text_encoder,
+                tokenizer=tokenizer, unet=dummy_unet, scheduler=scheduler,
+                safety_checker=safety_checker, feature_extractor=feature_extractor,
+                requires_safety_checker=requires_safety_checker)
+
             _postload_ov(pipe, ov_unet, ov_vae_decoder)
-            
+
         elif backend.lower() == 'ipex':
-            pipe = cls.from_pretrained(pretrained_model_name_or_path, scheduler=scheduler,**kwargs)
-    
+            pipe = cls.from_pretrained(pretrained_model_name_or_path, scheduler=scheduler, **kwargs)
+
             _load_ipex(pipe, device, precision)
         else:
-            raise ValueError(f'Backend{backend} not supported.')    
-    
+            raise ValueError(f'Backend{backend} not supported.')
+
         return pipe
 
 
 class NanoStableDiffusionPipeline(StableDiffusionPipeline):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)    
-    
+        super().__init__(*args, **kwargs)
+
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
         base = NanoDiffusionPipeline.from_pretrained(StableDiffusionPipeline, *args, **kwargs)
-        return cls(vae=base.vae, text_encoder=base.text_encoder, tokenizer=base.tokenizer, unet=base.unet, scheduler=base.scheduler,
-                    safety_checker=base.safety_checker, feature_extractor=base.feature_extractor, requires_safety_checker=base.requires_safety_checker)
-    
+        return cls(vae=base.vae, text_encoder=base.text_encoder,
+            tokenizer=base.tokenizer, unet=base.unet,
+            scheduler=base.scheduler, safety_checker=base.safety_checker,
+            feature_extractor=base.feature_extractor,
+            requires_safety_checker=base.requires_safety_checker)
+
     @inference_autocast
     def __call__(self, *args, **kwargs):
         return super().__call__(*args, **kwargs)
@@ -152,15 +198,16 @@ class NanoStableDiffusionPipeline(StableDiffusionPipeline):
 
 class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)    
-        
+        super().__init__(*args, **kwargs)
+
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
-        base = NanoDiffusionPipeline.from_pretrained(StableDiffusionImg2ImgPipeline, *args, **kwargs)  
-        return cls(vae=base.vae, text_encoder=base.text_encoder, tokenizer=base.tokenizer, unet=base.unet, scheduler=base.scheduler,
-                    safety_checker=base.safety_checker, feature_extractor=base.feature_extractor, requires_safety_checker=base.requires_safety_checker)
-    
+        base = NanoDiffusionPipeline.from_pretrained(StableDiffusionImg2ImgPipeline, *args, **kwargs)
+        return cls(vae=base.vae, text_encoder=base.text_encoder,
+            tokenizer=base.tokenizer, unet=base.unet, scheduler=base.scheduler,
+            safety_checker=base.safety_checker, feature_extractor=base.feature_extractor,
+            requires_safety_checker=base.requires_safety_checker)
+
     @inference_autocast
     def __call__(self, *args, **kwargs):
         return super().__call__(*args, **kwargs)
-

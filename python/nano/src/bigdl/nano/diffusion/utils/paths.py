@@ -12,16 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 # this module includes path utils for the Huggingface repository
 import os
 
+
 class NoPathException(Exception):
     pass
 
+
 def get_local_path_from_repo_id(repo_id, models_root=os.getenv('HF_HOME')):
     # Applicable for diffusers models. Given a repo_id, get the local path of this model if exists
-    
+
     if models_root is None:
         raise Exception("To use repo_id, you must set environmrnt variable `HF_HOME`.")
 
@@ -30,6 +33,7 @@ def get_local_path_from_repo_id(repo_id, models_root=os.getenv('HF_HOME')):
     cache_dir = os.path.join(models_root, "diffusers", f"models--{repo_id}--{model_id}")
     model_path = get_snapshot_dir_from_cache_dir(cache_dir)
     return model_path
+
 
 def get_snapshot_dir_from_cache_dir(cache_dir):
     # given a huggingface format cache dir, get the latest snapshot from it
@@ -46,4 +50,3 @@ def get_snapshot_dir_from_cache_dir(cache_dir):
             current_latest_mtime = os.path.getmtime(dir)
             current_latest_snapshot = snap
     return os.path.join(snapshots_dir, current_latest_snapshot)
-
