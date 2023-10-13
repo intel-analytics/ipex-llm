@@ -67,7 +67,8 @@ def try_load_existing_model(attributes, cache_dir,
                 print(f"The existing cache {cache_path} exists, don't load it")
                 return ("exists", cache_path)  # placeholder
         except Exception as e:
-            print(f"The cache path {cache_path} exists, but failed to load. Error message: {str(e)}")
+            print(f"The cache path {cache_path} exists, \
+                  but failed to load. Error message: {str(e)}")
     return (None, cache_path)
 
 
@@ -80,8 +81,7 @@ def load_optimized_unet(
         device='CPU',
         low_memory=False,
         lora_name=None,
-        additional_suffix=None
-        ):
+        additional_suffix=None):
     t_start = time.perf_counter()
     if cache_dir is None and unet_attributes is None:
         print(f"You should provide either unet_attributes or cache_dir.")
@@ -105,17 +105,22 @@ def load_optimized_unet(
                 unet_attributes["conv_in_in_channels"] = unet_attributes["config"].in_channels
                 unet_attributes["in_channels"] = unet_attributes["config"].in_channels
         else:
-            print(f"Cannot find the unet attributes file or config.json, please provide unet_attributes or config.json.")
+            print(f"Cannot find the unet attributes file or config.json, \
+                  please provide unet_attributes or config.json.")
     conv_in = OrderedDict()
     conv_in.in_channels = unet_attributes["conv_in_in_channels"]
 
     nano_unet, expect_path = try_load_existing_model(unet_attributes, cache_dir,
-                                                     accelerator=accelerator, ipex=ipex, precision=precision,
-                                                     low_memory=low_memory, device=device,
-                                                     additional_suffix=additional_suffix, lora_name=lora_name)
+        accelerator=accelerator,
+        ipex=ipex, precision=precision,
+        low_memory=low_memory, device=device,
+        additional_suffix=additional_suffix,
+        lora_name=lora_name)
     t_end = time.perf_counter()
     if nano_unet is None:
-        raise Exception(f"You have to download the optimized nano unet models. Expected path: {expect_path}")
+        raise Exception(f"You have to download the \
+                        optimized nano unet models. \
+                        Expected path: {expect_path}")
     else:
         print(f"Load unet in {t_end - t_start}s")
         setattr(nano_unet, "conv_in", conv_in)
@@ -125,22 +130,23 @@ def load_optimized_unet(
 
 def load_optimized_vae_decoder(
         cache_dir,
-        accelerator="openvino", 
-        ipex=True, 
+        accelerator="openvino",
+        ipex=True,
         precision='float32',
         device='CPU',
-        low_memory=False,
-        ):
+        low_memory=False,):
     t_start = time.perf_counter()
     decoder_path = os.path.join(cache_dir, "decoder")
     nano_vae_decoder, cache_dir = try_load_existing_model({}, decoder_path, accelerator=accelerator,
-                                                  ipex=ipex, precision=precision,
-                                                  low_memory=low_memory, device=device)
-    
+        ipex=ipex, precision=precision,
+        low_memory=low_memory, device=device)
+
     t_end = time.perf_counter()
 
     if nano_vae_decoder is None:
-        raise Exception(f"You have to download the optimized nano vae decoder models. Expected path: {cache_dir}")
+        raise Exception(f"You have to download the \
+                        optimized nano vae decoder models. \
+                        Expected path: {cache_dir}")
     else:
         print(f"Load vae decoder in {t_end - t_start}s")
     return nano_vae_decoder
@@ -150,12 +156,11 @@ def load_optimized_controlnet(
         controlnet=None,
         model_id=None,
         local_controlnet_dir=None,
-        accelerator="jit", 
-        ipex=True, 
+        accelerator="jit",
+        ipex=True,
         precision='float32',
         device='CPU',
-        low_memory=False,
-        ):
+        low_memory=False,):
     t_start = time.perf_counter()
     # TODO: here just got model id, not the model dir, need a better way to obtain dir
     if controlnet is not None:
@@ -163,12 +168,17 @@ def load_optimized_controlnet(
     else:
         name_or_path = model_id
     if not os.path.exists(name_or_path):
-        name_or_path = snapshot_download(name_or_path, cache_dir=local_controlnet_dir, local_files_only=True)
-    nano_controlnet, cache_path = try_load_existing_model({}, name_or_path, accelerator=accelerator, 
-                                                          ipex=ipex, precision=precision, 
-                                                          low_memory=low_memory, device=device)
+        name_or_path = snapshot_download(
+            name_or_path,
+            cache_dir=local_controlnet_dir,
+            local_files_only=True)
+    nano_controlnet, cache_path = try_load_existing_model(
+        {}, name_or_path, accelerator=accelerator,
+        ipex=ipex, precision=precision,
+        low_memory=low_memory, device=device)
     t_end = time.perf_counter()
     if nano_controlnet is None:
-        raise Exception(f"You have to download the optimized nano unet models. Expected path: {name_or_path}")
+        raise Exception(f"You have to download the\
+                        optimized nano unet models. Expected path: {name_or_path}")
     print(f"Load controlnet from {cache_path} in {t_end - t_start}s")
     return nano_controlnet

@@ -122,17 +122,17 @@ class NanoDiffusionPipeline:
 
     @staticmethod
     def from_pretrained(
-        cls: DiffusionPipeline,
-        pretrained_model_name_or_path,
-        scheduler=default_scheduler,
-        device='iGPU',
-        precision='float16',
-        backend='OV',
-        **kwargs,):
+            cls: DiffusionPipeline,
+            pretrained_model_name_or_path,
+            scheduler=default_scheduler,
+            device='iGPU',
+            precision='float16',
+            backend='OV',
+            **kwargs,):
 
         scheduler = scheduler_map[scheduler].from_pretrained(
             pretrained_model_name_or_path,
-            subfolder='scheduler')  
+            subfolder='scheduler')
         # load pipeline
         if backend.lower() == 'ov':
             if not os.path.exists(pretrained_model_name_or_path):
@@ -154,14 +154,15 @@ class NanoDiffusionPipeline:
             feature_extractor = CLIPFeatureExtractor.from_pretrained(
                 pretrained_model_name_or_path,
                 subfolder='feature_extractor')
-            requires_safety_checker = kwargs.get('requires_safety_checker', False)   
+            requires_safety_checker = kwargs.get('requires_safety_checker', False)
             # do not load unet/vae to save RAM
             dummy_unet = UNet2DConditionModel()
             # TODO create a new config without preloading ov for the next line
             dummy_unet._internal_dict = ov_unet.config  # TODO
             dummy_vae = AutoencoderKL.from_pretrained(pretrained_model_name_or_path,
                 subfolder='vae')
-            pipe = cls(vae=dummy_vae, text_encoder=text_encoder,
+            pipe = cls(
+                vae=dummy_vae, text_encoder=text_encoder,
                 tokenizer=tokenizer, unet=dummy_unet, scheduler=scheduler,
                 safety_checker=safety_checker, feature_extractor=feature_extractor,
                 requires_safety_checker=requires_safety_checker)
@@ -185,7 +186,8 @@ class NanoStableDiffusionPipeline(StableDiffusionPipeline):
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
         base = NanoDiffusionPipeline.from_pretrained(StableDiffusionPipeline, *args, **kwargs)
-        return cls(vae=base.vae, text_encoder=base.text_encoder,
+        return cls(
+            vae=base.vae, text_encoder=base.text_encoder,
             tokenizer=base.tokenizer, unet=base.unet,
             scheduler=base.scheduler, safety_checker=base.safety_checker,
             feature_extractor=base.feature_extractor,
@@ -203,9 +205,13 @@ class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
         base = NanoDiffusionPipeline.from_pretrained(StableDiffusionImg2ImgPipeline, *args, **kwargs)
-        return cls(vae=base.vae, text_encoder=base.text_encoder,
-            tokenizer=base.tokenizer, unet=base.unet, scheduler=base.scheduler,
-            safety_checker=base.safety_checker, feature_extractor=base.feature_extractor,
+        return cls(
+            vae=base.vae,
+            text_encoder=base.text_encoder,
+            tokenizer=base.tokenizer, unet=base.unet,
+            scheduler=base.scheduler,
+            safety_checker=base.safety_checker,
+            feature_extractor=base.feature_extractor,
             requires_safety_checker=base.requires_safety_checker)
 
     @inference_autocast
