@@ -26,16 +26,19 @@ from bigdl.nano.diffusion.utils.pipeline import get_dummy_unet_additional_residu
 
 class NanoUNet(torch.nn.Module):
     """
-    an UNet wrapper to implement additional operations in `forward()` method
+    an UNet wrapper to implement additional operations in `forward()` method.
 
     ...
 
     Attributes
+
     ----------
     model : AcceleratedLightningModule
         the original nano-optimized model
     """
+
     def __init__(self, model: AcceleratedLightningModule):
+        """Initialize the model"""
         super().__init__()
         self.model = model
         self.config = model.config
@@ -53,6 +56,7 @@ class NanoUNet(torch.nn.Module):
             down_block_additional_residuals: Optional[Tuple[torch.Tensor]] = None,
             mid_block_additional_residual: Optional[torch.Tensor] = None,
             return_dict: bool = True,):
+        """Run inference."""
         extra_args = []
         if cross_attention_kwargs is not None:
             attn_scale = cross_attention_kwargs.pop("scale", None)
