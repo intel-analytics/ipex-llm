@@ -216,6 +216,7 @@ class Attention(nn.Module):
         self.dense = Linear(self.hidden_size, self.hidden_size, bias=config.bias)
         self.attention_dropout = nn.Dropout(config.attention_dropout)
         self.num_kv = config.n_head if not self.multi_query else 1
+        self.p_dict = {}
 
     def _split_heads(self, fused_qkv: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
@@ -294,7 +295,13 @@ class Attention(nn.Module):
             _, seq_len_past, _ = layer_past[0].shape
 
             seq_len = seq_len + seq_len_past
-            position_ids = torch.tensor([range(seq_len_past, seq_len)], dtype=torch.long).to(query_layer.device)
+            if (seq_len_past, seq_len) in self.p_dict:
+                #print("get cache, " + str(seq_len_past) + "  " + str(seq_len))
+                position_ids = self.p_dict[(seq_len_past, seq_len)]
+            else:
+                #print("create new" + str(seq_len_past) + "  " + str(seq_len))
+                position_ids = torch.tensor([range(seq_len_past, seq_len)], dtype=torch.long).to(query_layer.device)
+                self.p_dict[(seq_len_past, seq_len)] = position_ids
         else:
             position_ids = torch.tensor([range(0, seq_len)], dtype=torch.long).to(query_layer.device)
 
@@ -305,17 +312,10 @@ class Attention(nn.Module):
             query_layer = query_layer.reshape(batch_size, self.num_heads, q_length, self.head_dim)
             key_layer = key_layer.reshape(batch_size, self.num_kv, q_length, self.head_dim)
             from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
-            dummy_q = torch.empty(query_layer.shape, dtype=query_layer.dtype, device=query_layer.device)
-            dummy_k = torch.empty(key_layer.shape, dtype=key_layer.dtype, device=key_layer.device)
-            # use dummy q k, as qk should be the same sizes in apply_rotary_pos_emb_no_cache_xpu.
-            _, query_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_q,
-                                                               query_layer,
-                                                               position_ids,
-                                                               "gpt_neox")
-            _, key_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_k,
-                                                             key_layer,
-                                                             position_ids,
-                                                             "gpt_neox")
+            query_layer, key_layer = apply_rotary_pos_emb_no_cache_xpu(query_layer,
+                                                                       key_layer,
+                                                                       position_ids,
+                                                                       "gpt_neox")
             query_layer = query_layer.reshape(batch_size * self.num_heads, q_length, self.head_dim)
             key_layer = key_layer.reshape(batch_size * self.num_kv, q_length, self.head_dim)
         else:
