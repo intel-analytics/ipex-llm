@@ -46,3 +46,4 @@ def get_snapshot_dir_from_cache_dir(cache_dir):
             current_latest_mtime = os.path.getmtime(dir)
             current_latest_snapshot = snap
     return os.path.join(snapshots_dir, current_latest_snapshot)
+

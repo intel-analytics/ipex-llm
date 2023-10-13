@@ -82,5 +82,3 @@ class NanoUNet(torch.nn.Module):
         
         return UNet2DConditionOutput(sample=noise_pred)
 
-
-

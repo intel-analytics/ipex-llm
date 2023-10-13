@@ -30,3 +30,4 @@ def main(model_path, prompt):
 
 if __name__ == '__main__':
     main()
+

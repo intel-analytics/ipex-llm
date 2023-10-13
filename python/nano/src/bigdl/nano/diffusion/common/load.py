@@ -157,3 +157,4 @@ def load_optimized_controlnet(
         raise Exception(f"You have to download the optimized nano unet models. Expected path: {name_or_path}")
     print(f"Load controlnet from {cache_path} in {t_end - t_start}s")
     return nano_controlnet
+

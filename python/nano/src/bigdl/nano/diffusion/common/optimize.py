@@ -453,3 +453,4 @@ def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
         return loaded_unet
     else:
         return None
+

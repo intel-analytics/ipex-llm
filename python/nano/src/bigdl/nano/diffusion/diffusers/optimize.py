@@ -64,3 +64,4 @@ def main(optimize_unet, optimize_vae, optimize_controlnet, model_path):
 
 if __name__ == '__main__':
     main()
+
