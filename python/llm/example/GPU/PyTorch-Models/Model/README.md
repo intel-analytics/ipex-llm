@@ -7,6 +7,8 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel G
 | Mistral        | [link](mistral)                                          |
 | LLaMA 2        | [link](llama2)                                           |
 | ChatGLM2       | [link](chatglm2)                                         |
+| Baichuan       | [link](baichuan)                                         |
+| Baichuan2      | [link](baichuan2)                                        |
 
 ## Verified Hardware Platforms
 
