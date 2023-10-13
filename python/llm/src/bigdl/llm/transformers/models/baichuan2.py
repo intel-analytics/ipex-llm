@@ -28,6 +28,7 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from transformers.utils import logging, ContextManagers
 logger = logging.get_logger(__name__)
 
@@ -68,9 +69,15 @@ def baichuan_attention_forward_7b(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                    cos, sin, position_ids, "baichuan")
+    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "baichuan")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "baichuan")
     # [bsz, nh, t, hd]
 
     # if past_key_value is not None:
