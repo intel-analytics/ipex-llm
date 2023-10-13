@@ -23,6 +23,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | Vicuna         | [link](vicuna)                                           |
 | Whisper        | [link](whisper)                                          |
 | Replit         | [link](replit)                                           |
+| Flan-t5        | [link](flan-t5)                                           |
 
 
 ## Verified Hardware Platforms
