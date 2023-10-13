@@ -306,9 +306,14 @@ def optimize(model):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.internlm import internlm_attention_forward
+        from bigdl.llm.transformers.models.internlm import internlm_rms_norm_forward
         convert_forward(model,
                         module.InternLMAttention,
                         internlm_attention_forward
+                        )
+        convert_forward(model,
+                        module.InternLMRMSNorm,
+                        internlm_rms_norm_forward
                         )
     elif model.config.model_type == "qwen":
         modeling_module_name = model.__class__.__module__

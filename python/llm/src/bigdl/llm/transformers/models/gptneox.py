@@ -80,8 +80,14 @@ def gptneox_attention_forward(
     seq_len = key.shape[-2]
     if has_layer_past:
         seq_len += layer_past[0].shape[-2]
-    cos, sin = self.rotary_emb(value, seq_len=seq_len)
-    query, key = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids, "gpt_neox")
+    if query.device.type == "xpu" and not (self.training and query.requires_grad):
+        query, key = apply_rotary_pos_emb_no_cache_xpu(query_rot,
+                                                       key_rot,
+                                                       position_ids,
+                                                       "gpt_neox")
+    else:
+        cos, sin = self.rotary_emb(value, seq_len=seq_len)
+        query, key = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids, "gpt_neox")
     query = torch.cat((query, query_pass), dim=-1)
     key = torch.cat((key, key_pass), dim=-1)
 
