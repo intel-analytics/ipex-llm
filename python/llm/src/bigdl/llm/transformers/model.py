@@ -206,8 +206,8 @@ class _BaseAutoModelClass:
                           "bf16 only supports from_pretrained, instead of load_low_bit")
 
         invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
-                              f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
-                              f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+                          f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
+                          f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
 
         # set default optimize_model=True
         optimize_model = kwargs.pop("optimize_model", True)
