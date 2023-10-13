@@ -74,15 +74,20 @@ def internlm_attention_forward(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(
-        query_states,
-        key_states,
-        cos,
-        sin,
-        position_ids,
-        "internlm"
-    )
+    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "internlm")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(
+            query_states,
+            key_states,
+            cos,
+            sin,
+            position_ids,
+            "internlm")
     # [bsz, nh, t, hd]
 
     if past_key_value is not None:
