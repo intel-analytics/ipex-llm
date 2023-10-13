@@ -327,4 +327,7 @@ def optimize(model):
                         module.AquilaAttention,
                         aquila_attention_forward
                         )
+        convert_forward(model,
+                        module.AquilaRMSNorm,
+                        llama_rms_norm_forward)
     return model
