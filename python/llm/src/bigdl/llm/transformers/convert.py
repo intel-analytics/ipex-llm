@@ -197,6 +197,9 @@ def optimize(model):
         convert_forward(model,
                         module.ChatGLMModel,
                         chatglm2_model_forward)
+        convert_forward(model,
+                        module.RMSNorm,
+                        llama_rms_norm_forward)
     elif "chatglm" in model.config._name_or_path:
         # chatglm-6b
         modeling_module_name = model.__class__.__module__
