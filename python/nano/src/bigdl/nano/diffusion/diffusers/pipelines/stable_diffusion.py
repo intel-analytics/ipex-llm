@@ -187,6 +187,7 @@ class NanoStableDiffusionPipeline(StableDiffusionPipeline):
     """NanoStableDiffusionPipeline."""
 
     def __init__(self, *args, **kwargs):
+        """Init."""
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -212,6 +213,7 @@ class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
     """NanoStableDiffusionImg2ImgPipeline."""
 
     def __init__(self, *args, **kwargs):
+        """Init."""
         super().__init__(*args, **kwargs)
 
     @classmethod

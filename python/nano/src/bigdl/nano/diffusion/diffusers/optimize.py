@@ -32,11 +32,11 @@ def optimize(
         controlnet_path=None,
         model_path=None):
     """
-    Optimizes a diffusers format pipeline given a repo id or local file path.
-    :param optimize_unet: if True, will optimize UNet.k
-    :optimize_vae: if True, will optimize VAE
-    :controlnet_path: if not None, will optimize ControlNet in this local path
-    : model_path: the local path or the repo id of the model
+    Trace a torch.nn.Module and convert it into an accelerated module for inference.
+    For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+    :param low_memory: only valid when accelerator="jit"
+        and ipex=True,model will use less memory during inference
+    :cache_dir: the directory to save the converted model
     """
     if not os.path.exists(model_path):
         try:
