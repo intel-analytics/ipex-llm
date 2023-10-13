@@ -34,7 +34,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 </table>
 
 ### Verified models
-Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, InternLM, QWen, Baichuan, MOSS,* and more; see the complete list below.
+Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Dolly, StarCoder, Whisper, Baichuan, InternLM, QWen, Aquila, MOSS,* and more; see the complete list below.
 
 <details><summary>Table of verified models</summary>
     
