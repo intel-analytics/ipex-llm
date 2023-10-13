@@ -275,6 +275,9 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
+        convert_forward(model,
+                        module.RMSNorm,
+                        llama_rms_norm_forward)
 
     elif model.config.model_type == "baichuan":
         # baichuan1
@@ -296,6 +299,9 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
+        convert_forward(model,
+                        module.RMSNorm,
+                        llama_rms_norm_forward)
 
     elif model.config.model_type == "gpt_neox":
         from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
