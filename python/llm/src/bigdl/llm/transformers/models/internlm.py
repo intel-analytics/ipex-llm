@@ -172,6 +172,7 @@ def internlm_attention_forward(
 
     return attn_output, attn_weights, past_key_value
 
+
 def internlm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu":
         hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
