@@ -31,13 +31,7 @@ def optimize(
         optimize_vae=True,
         controlnet_path=None,
         model_path=None):
-    """
-    Trace a torch.nn.Module and convert it into an accelerated module for inference.
-    For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
-    :param low_memory: only valid when accelerator="jit"
-        and ipex=True,model will use less memory during inference
-    :cache_dir: the directory to save the converted model
-    """
+    """Optimize the UNet and VAE models."""
     if not os.path.exists(model_path):
         try:
             model_path = snapshot_download(model_path)
