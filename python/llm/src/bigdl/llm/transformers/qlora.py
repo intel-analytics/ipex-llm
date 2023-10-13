@@ -189,6 +189,7 @@ class PeftModel:
 
         return model
 
+
 def patch_prepare_ipex(self, *args):
     return tuple(args)
 
