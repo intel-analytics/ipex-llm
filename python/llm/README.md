@@ -38,26 +38,28 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 
 <details><summary>Table of verified models</summary>
     
-| Model     | Example                                                  |
-|-----------|----------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna)    |
-| LLaMA 2   | [link](example/CPU/HF-Transformers-AutoModels/Model/llama2)    |
-| MPT       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       |
-| Falcon    | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    |
-| ChatGLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   | 
-| ChatGLM2  | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | 
-| Qwen      | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      |
-| MOSS      | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      | 
-| Baichuan  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | 
-| Baichuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) |
-| Dolly-v1  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | 
-| Dolly-v2  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | 
-| RedPajama | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/redpajama) | 
-| Phoenix   | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/phoenix)   | 
-| StarCoder | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/starcoder) | 
-| InternLM  | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  |
-| Whisper   | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   |
-| Aquila    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    |
+| Model      | CPU Example                                                    | GPU Example                                                     |
+|------------|----------------------------------------------------------------|-----------------------------------------------------------------|
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](example/GPU/HF-Transformers-AutoModels/Model/vicuna)|
+| LLaMA 2    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](example/GPU/HF-Transformers-AutoModels/Model/llama2) |
+| ChatGLM    | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
+| ChatGLM2   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm2)   |
+| Mistral    | [link](example/CPU/HF-Transformers-AutoModels/Model/mistral)   | [link](example/GPU/HF-Transformers-AutoModels/Model/mistral)    |
+| Falcon     | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    | [link](example/GPU/HF-Transformers-AutoModels/Model/falcon)     |
+| MPT        | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)        |
+| Replit Code| [link](example/CPU/HF-Transformers-AutoModels/Model/replit)    | [link](example/CPU/HF-Transformers-AutoModels/Model/replit)     |
+| Baichuan   | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)   |
+| Baichuan2  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
+| Dolly-v1   | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)   | 
+| Dolly-v2   | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)   | 
+| RedPajama  | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/redpajama) |    | 
+| Phoenix    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/phoenix)   |    | 
+| StarCoder  | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/starcoder) | [link](example/GPU/HF-Transformers-AutoModels/Model/starcoder) | 
+| InternLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
+| Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
+| MOSS       | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
+| Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
 
 </details>
 
