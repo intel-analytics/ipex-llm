@@ -186,7 +186,9 @@ class NanoStableDiffusionPipeline(StableDiffusionPipeline):
 
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
-        base = NanoDiffusionPipeline.from_pretrained(StableDiffusionPipeline, *args, **kwargs)
+        base = NanoDiffusionPipeline.from_pretrained(
+            StableDiffusionPipeline,
+            *args, **kwargs)
         return cls(
             vae=base.vae, text_encoder=base.text_encoder,
             tokenizer=base.tokenizer, unet=base.unet,
@@ -209,12 +211,9 @@ class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
             StableDiffusionImg2ImgPipeline,
             *args, **kwargs)
         return cls(
-            vae=base.vae,
-            text_encoder=base.text_encoder,
-            tokenizer=base.tokenizer, unet=base.unet,
-            scheduler=base.scheduler,
-            safety_checker=base.safety_checker,
-            feature_extractor=base.feature_extractor,
+            vae=base.vae, text_encoder=base.text_encoder,
+            tokenizer=base.tokenizer, unet=base.unet, scheduler=base.scheduler,
+            safety_checker=base.safety_checker, feature_extractor=base.feature_extractor,
             requires_safety_checker=base.requires_safety_checker)
 
     @inference_autocast

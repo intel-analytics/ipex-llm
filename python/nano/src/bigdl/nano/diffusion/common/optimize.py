@@ -272,7 +272,7 @@ def optimize_controlnet(
             channels_last=channels_last,
             mo_kwargs={
                 "input_shape": "[2,4,64,64],[1],[2,77,768],[2,3,512,512]",
-                "input": "sample,timestep,encoder_hidden_states,controlnet_cond"})
+                "input": "sample, timestep, encoder_hidden_states, controlnet_cond"})
 
         # Save model if cache=True
         if cache:
