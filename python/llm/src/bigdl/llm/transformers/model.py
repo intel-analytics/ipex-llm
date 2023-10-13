@@ -30,6 +30,8 @@ def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit") != "bf16",
+                      "bf16 does not support save_low_bit method. It only runtime applys to from_pretrained.")
     self.to('cpu')
     self.save_pretrained(*args, **kwargs)
     import json
@@ -60,7 +62,7 @@ class _BaseAutoModelClass:
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                , sym_int8 or fp16. sym_int4 means symmetric int 4, asym_int4 means
+                                , sym_int8, fp16 or bf16. sym_int4 means symmetric int 4, asym_int4 means
                                 asymmetric int 4, etc. Relevant low bit optimizations will
                                 be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
@@ -102,10 +104,13 @@ class _BaseAutoModelClass:
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
         from .convert import ggml_convert_low_bit
-        invalidInputError(q_k in ggml_tensor_qtype,
-                          f"Unknown load_in_low_bit value: {q_k}, expected:"
-                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8 or fp16.")
-        qtype = ggml_tensor_qtype[q_k]
+        if q_k != "bf16": # bf16 is on top of AVX512 rather than ggml
+            invalidInputError(q_k in ggml_tensor_qtype,
+                              f"Unknown load_in_low_bit value: {q_k}, expected:"
+                              f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, fp16 or bf16.")
+            qtype = ggml_tensor_qtype[q_k]
+        else:
+            qtype = q_k
 
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
@@ -122,8 +127,13 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
         model = model.to("cpu")
-        model = ggml_convert_low_bit(model, qtype, optimize_model,
-                                     modules_to_not_convert=modules_to_not_convert)
+        if qtype == "bf16":
+            # apply ipex bf16 optimization
+            from intel_extension_for_pytorch as ipex
+            model = ipex._optimize_transformers(model.eval(), dtype=qtype, inplace=True)
+        else:
+            model = ggml_convert_low_bit(model, qtype, optimize_model,
+                                         modules_to_not_convert=modules_to_not_convert)
         model.config.update({"bigdl_transformers_low_bit": q_k})
         model.config.update({"tie_word_embeddings": False})
 
@@ -192,9 +202,12 @@ class _BaseAutoModelClass:
                           " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
                           " serialize the model using save_low_bit first.")
 
+        invalidInputError(bigdl_transformers_low_bit != "bf16",
+                          "bf16 only supports from_pretrained, instead of load_low_bit")
+
         invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
-                          f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
-                          f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+                              f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
+                              f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
 
         # set default optimize_model=True
         optimize_model = kwargs.pop("optimize_model", True)
