@@ -164,4 +164,3 @@ class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
     def __call__(self, *args, **kwargs):
         return super().__call__(*args, **kwargs)
 
-    
