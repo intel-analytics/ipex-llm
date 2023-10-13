@@ -31,14 +31,13 @@ def optimize(
         optimize_vae=True,
         controlnet_path=None,
         model_path=None):
-    '''
-    Optimizes a diffusers format pipeline given a repo id or local file path
-        Parameters:
-            optimize_unet: if True, will optimize UNet
-            optimize_vae: if True, will optimize VAE
-            controlnet_path: if not None, will optimize ControlNet in this local path
-            model_path: the local path or the repo id of the model
-    '''
+    """
+    Optimizes a diffusers format pipeline given a repo id or local file path.
+    :param optimize_unet: if True, will optimize UNet.k
+    :optimize_vae: if True, will optimize VAE
+    :controlnet_path: if not None, will optimize ControlNet in this local path
+    : model_path: the local path or the repo id of the model
+    """
     if not os.path.exists(model_path):
         try:
             model_path = snapshot_download(model_path)
@@ -66,6 +65,7 @@ def optimize(
 @click.option('--optimize_controlnet', type=str)
 @click.option('-m', '--model_path', default=None, type=str)
 def main(optimize_unet, optimize_vae, optimize_controlnet, model_path):
+    """The main function to transfer UNet to the nano UNet."""
     optimize(optimize_unet, optimize_vae, optimize_controlnet, model_path)
 
 

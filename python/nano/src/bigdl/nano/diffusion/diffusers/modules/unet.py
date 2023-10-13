@@ -31,14 +31,14 @@ class NanoUNet(torch.nn.Module):
     ...
 
     Attributes
-
     ----------
     model : AcceleratedLightningModule
         the original nano-optimized model
+
     """
 
     def __init__(self, model: AcceleratedLightningModule):
-        """Initialize the model"""
+        """Initialize the model."""
         super().__init__()
         self.model = model
         self.config = model.config

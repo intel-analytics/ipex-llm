@@ -34,6 +34,8 @@ from bigdl.nano.diffusion.common.optimize import load_optimized_unet, load_optim
 
 
 def inference_autocast(forward):
+    """Inference autocast."""
+    
     @functools.wraps(forward)
     def wrapper(self, *args, **kwargs):
         # TODO handle cases if unet/vae has different precision
@@ -119,6 +121,7 @@ def _load_ipex(pipe, device, precision):
 
 
 class NanoDiffusionPipeline:
+    """NanoDiffusionPipeline."""
 
     @staticmethod
     def from_pretrained(
@@ -129,7 +132,7 @@ class NanoDiffusionPipeline:
             precision='float16',
             backend='OV',
             **kwargs,):
-
+        """Get the pretrained model."""
         scheduler = scheduler_map[scheduler].from_pretrained(
             pretrained_model_name_or_path,
             subfolder='scheduler')
@@ -181,11 +184,14 @@ class NanoDiffusionPipeline:
 
 
 class NanoStableDiffusionPipeline(StableDiffusionPipeline):
+    """NanoStableDiffusionPipeline."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
+        """Get the pretrained model."""
         base = NanoDiffusionPipeline.from_pretrained(
             StableDiffusionPipeline,
             *args, **kwargs)
@@ -198,15 +204,19 @@ class NanoStableDiffusionPipeline(StableDiffusionPipeline):
 
     @inference_autocast
     def __call__(self, *args, **kwargs):
+        """Inference."""
         return super().__call__(*args, **kwargs)
 
 
 class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
+    """NanoStableDiffusionImg2ImgPipeline."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, *args, **kwargs):
+        """Get the pretrained model."""
         base = NanoDiffusionPipeline.from_pretrained(
             StableDiffusionImg2ImgPipeline,
             *args, **kwargs)
@@ -218,4 +228,5 @@ class NanoStableDiffusionImg2ImgPipeline(StableDiffusionImg2ImgPipeline):
 
     @inference_autocast
     def __call__(self, *args, **kwargs):
+        """Inference."""
         return super().__call__(*args, **kwargs)
