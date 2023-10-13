@@ -17,6 +17,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install transformers_stream_generator  # additional package required for Baichuan2-7B-Chat to conduct generation
 ```
 
 ### 2. Configures OneAPI environment variables
