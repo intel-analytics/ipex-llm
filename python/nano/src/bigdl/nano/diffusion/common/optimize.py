@@ -356,12 +356,12 @@ def nano_optimize_model(
                 # TODO: openvino int8 here
                 # raise ValueError()
                 invalidInputError(
-                    precision_short!="int8",
+                    precision_short != "int8",
                     errMsg="OpenVINO int8 quantization is not supported.")
 
         elif accelerator == "onnxruntime":
             invalidInputError(
-                accelerator!="onnxruntime",
+                accelerator != "onnxruntime",
                 errMsg=f"Onnxruntime {precision_short} quantization is not supported.")
             # raise ValueError(f"Onnxruntime {precision_short} quantization is not supported.")
         else:
@@ -459,7 +459,9 @@ def unet_attributes(model):
     # assert model is not None, "Please load model before saving attributes..."
     invalidInputError(model is not None, errMsg="Please load model before saving attributes...")
     # assert isinstance(model, torch.nn.Module)
-    invalidInputError(isinstance(model, torch.nn.Module), errMsg="model should be a torch.nn.Module.")
+    invalidInputError(
+        isinstance(model, torch.nn.Module),
+        errMsg="model should be a torch.nn.Module.")
     unet_attributes = {}
     for attr in dir(model):
         # if not attr.startswith('_') and not isinstance(getattr(model, attr), torch.nn.Module):
@@ -539,7 +541,8 @@ def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
             name_or_path = get_local_path_from_repo_id(name_or_path)
         name_or_path = os.path.join(name_or_path, "unet")
         if nano_device not in ['CPU', 'iGPU', 'dGPU']:
-            # raise ValueError(f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
+            # raise ValueError(
+            # f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
             invalidInputError(
                 nano_device in ['CPU', 'iGPU', 'dGPU'],
                 errMsg=f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")

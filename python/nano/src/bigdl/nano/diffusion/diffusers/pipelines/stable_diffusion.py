@@ -146,9 +146,10 @@ class NanoDiffusionPipeline:
                     msg = "Could not find local `model_path` in given local path, \
                                           could not find the model on Huggingface Hub \
                                           by given `model_path` as repo_id either."
-                    # raise NoPathException(f"Could not find local `model_path` in given local path, "
-                    #                       "could not find the model on Huggingface Hub \
-                    #                       by given `model_path` as repo_id either.")
+                    # raise NoPathException(
+                    # f"Could not find local `model_path` in given local path, "
+                    # "could not find the model on Huggingface Hub \
+                    # by given `model_path` as repo_id either.")
                     invalidInputError(False, errMsg=msg)
             ov_unet, ov_vae_decoder = _preload_ov(pretrained_model_name_or_path, device, precision)
 
