@@ -49,6 +49,7 @@ import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
+from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -288,6 +289,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
+    @custom_fwd
     def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
         import linear_q4_0
@@ -299,6 +301,7 @@ class MatMulLowBit(torch.autograd.Function):
         return result
 
     @staticmethod
+    @custom_bwd
     def backward(ctx, grad_output):
         import linear_q4_0
         if ctx.is_empty:
@@ -378,8 +381,7 @@ class LowBitLinear(nn.Linear):
                 result = result.view(new_shape)
                 if self.bias is not None:
                     result += self.bias
-
-        return result.to(x.dtype)
+        return result
 
 
 class FP16Linear(nn.Linear):
