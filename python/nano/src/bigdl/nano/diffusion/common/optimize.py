@@ -25,6 +25,7 @@ from huggingface_hub import snapshot_download
 from ..common.load import *
 from ..utils.paths import *
 from bigdl.nano.pytorch import InferenceOptimizer
+from bigdl.nano.utils.common import invalidInputError
 
 
 # convert unet to optimized nano unet
@@ -350,17 +351,28 @@ def nano_optimize_model(
             extra_args["dynamic_axes"] = dynamic_axes
             if mo_kwargs is not None:
                 extra_args.update(mo_kwargs)
+
             if precision_short == "int8":
                 # TODO: openvino int8 here
-                raise ValueError("OpenVINO int8 quantization is not supported.")
+                # raise ValueError()
+                invalidInputError(
+                    precision_short!="int8",
+                    errMsg="OpenVINO int8 quantization is not supported.")
+
         elif accelerator == "onnxruntime":
-            raise ValueError(f"Onnxruntime {precision_short} quantization is not supported.")
+            invalidInputError(
+                accelerator!="onnxruntime",
+                errMsg=f"Onnxruntime {precision_short} quantization is not supported.")
+            # raise ValueError(f"Onnxruntime {precision_short} quantization is not supported.")
         else:
             # PyTorch bf16
             if precision_short == "bf16":
                 # Ignore jit & ipex
                 if accelerator == "jit":
-                    raise ValueError(f"JIT {precision_short} quantization is not supported.")
+                    # raise ValueError(f"JIT {precision_short} quantization is not supported.")
+                    invalidInputError(
+                        accelerator == "jit",
+                        errMsg=f"JIT {precision_short} quantization is not supported.")
                 extra_args["channels_last"] = channels_last
             elif precision_short == "int8":
                 raise
@@ -444,8 +456,10 @@ def save_controlnet_if_not_exist(local_controlnet_path):
 
 
 def unet_attributes(model):
-    assert model is not None, "Please load model before saving attributes..."
-    assert isinstance(model, torch.nn.Module)
+    # assert model is not None, "Please load model before saving attributes..."
+    invalidInputError(model is not None, errMsg="Please load model before saving attributes...")
+    # assert isinstance(model, torch.nn.Module)
+    invalidInputError(isinstance(model, torch.nn.Module), errMsg="model should be a torch.nn.Module.")
     unet_attributes = {}
     for attr in dir(model):
         # if not attr.startswith('_') and not isinstance(getattr(model, attr), torch.nn.Module):
@@ -471,7 +485,8 @@ def get_nano_cache_dir_dict(model_info, vae_repo_id=None, vae_subfolder=None):
     cache_dir_dict = {"unet": None, "vae": None}
     if model_info["format"] == "ckpt":
         from ldm.invoke.globals import Globals
-        assert "weights" in model_info
+        # assert "weights" in model_info
+        invalidInputError("weights" in model_info, errMsg="`weights` is not in model_info.")
         checkpoint_path = model_info["weights"]
         if not os.path.isabs(checkpoint_path):
             checkpoint_path = os.path.normpath(os.path.join(Globals.root, checkpoint_path))
@@ -524,7 +539,10 @@ def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
             name_or_path = get_local_path_from_repo_id(name_or_path)
         name_or_path = os.path.join(name_or_path, "unet")
         if nano_device not in ['CPU', 'iGPU', 'dGPU']:
-            raise ValueError(f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
+            # raise ValueError(f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
+            invalidInputError(
+                nano_device in ['CPU', 'iGPU', 'dGPU'],
+                errMsg=f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
         loaded_unet = load_optimized_unet(unet_attributes=None,
                                           accelerator="openvino",
                                           precision="float16",

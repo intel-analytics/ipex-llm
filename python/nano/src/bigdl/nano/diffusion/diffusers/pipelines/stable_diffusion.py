@@ -30,6 +30,7 @@ from diffusers import (
 
 from bigdl.nano.diffusion.utils.paths import *
 from bigdl.nano.pytorch import InferenceOptimizer
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.diffusion.common.optimize import load_optimized_unet, load_optimized_vae_decoder
 
 
@@ -142,9 +143,13 @@ class NanoDiffusionPipeline:
                 try:
                     pretrained_model_name_or_path = snapshot_download(pretrained_model_name_or_path)
                 except Exception:
-                    raise NoPathException(f"Could not find local `model_path` in given local path, "
-                                          "could not find the model on Huggingface Hub \
-                                          by given `model_path` as repo_id either.")
+                    msg = "Could not find local `model_path` in given local path, \
+                                          could not find the model on Huggingface Hub \
+                                          by given `model_path` as repo_id either."
+                    # raise NoPathException(f"Could not find local `model_path` in given local path, "
+                    #                       "could not find the model on Huggingface Hub \
+                    #                       by given `model_path` as repo_id either.")
+                    invalidInputError(False, errMsg=msg)
             ov_unet, ov_vae_decoder = _preload_ov(pretrained_model_name_or_path, device, precision)
 
             text_encoder = CLIPTextModel.from_pretrained(
@@ -178,7 +183,8 @@ class NanoDiffusionPipeline:
 
             _load_ipex(pipe, device, precision)
         else:
-            raise ValueError(f'Backend{backend} not supported.')
+            # raise ValueError(f'Backend{backend} not supported.')
+            invalidInputError(False, errMsg=f'Backend{backend} not supported.')
 
         return pipe
 
