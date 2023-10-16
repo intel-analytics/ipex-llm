@@ -176,7 +176,20 @@
                             </descriptors>
                         </configuration>
                     </execution>
-                    <execution>
+		    <execution>
+                        <id>make-all</id>
+                        <inherited>false</inherited>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/assembly-all.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+<!--                     <execution>
                         <id>make-fat-assembly</id>
                         <inherited>false</inherited>
                         <phase>package</phase>
@@ -200,7 +213,7 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
-                    </execution>
+                    </execution> -->
                 </executions>
             </plugin>
             <plugin>
