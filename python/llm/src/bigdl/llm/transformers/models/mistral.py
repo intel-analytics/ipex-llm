@@ -62,12 +62,12 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
 def mistral_attention_forward(
     self,
     hidden_states: torch.Tensor,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
-    output_attentions: bool = False,
-    use_cache: bool = False,
-    padding_mask: Optional[torch.Tensor] = None,
+    attention_mask: Optional[torch.Tensor]=None,
+    position_ids: Optional[torch.LongTensor]=None,
+    past_key_value: Optional[Tuple[torch.Tensor]]=None,
+    output_attentions: bool=False,
+    use_cache: bool=False,
+    padding_mask: Optional[torch.Tensor]=None,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
 
@@ -105,8 +105,9 @@ def mistral_attention_forward(
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(query_states,\
-                                key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    attn_weights = torch.matmul(
+        query_states,
+        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
         invalidInputError(
