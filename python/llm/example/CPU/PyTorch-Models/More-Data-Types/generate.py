@@ -44,13 +44,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
-    bit_option = args.low_bit
+    low_bit = args.low_bit
 
     # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
     
     # With only one line to enable BigDL-LLM optimization on model
-    model = optimize_model(model, low_bit=bit_option)
+    model = optimize_model(model, low_bit=low_bit)
 
     # Load tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
