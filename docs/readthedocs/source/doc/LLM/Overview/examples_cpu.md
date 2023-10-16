@@ -6,21 +6,46 @@ To run these examples, please first refer to [here](./install_cpu.html) for more
 
 The following models have been verified on either servers or laptops with Intel CPUs.
 
-| Model     | Example                                                  |
-|-----------|----------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/native_int4), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/vicuna)    |
-| LLaMA 2   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/llama2)    |
-| MPT       | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/mpt)       |
-| Falcon    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/falcon)    |
-| ChatGLM   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/chatglm)   | 
-| ChatGLM2  | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/chatglm2)  | 
-| Qwen      | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/qwen)      |
-| MOSS      | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/moss)      | 
-| Baichuan  | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/baichuan)  | 
-| Dolly-v1  | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/dolly_v1)  | 
-| Dolly-v2  | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/dolly_v2)  | 
-| RedPajama | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/native_int4), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/redpajama) | 
-| Phoenix   | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/native_int4), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/phoenix)   | 
-| StarCoder | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/native_int4), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/starcoder) | 
-| InternLM  | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/internlm)  |
-| Whisper   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/transformers/transformers_int4/whisper)   |
+## Example of PyTorch API
+
+| Model      | Example of PyTorch API                                |
+|------------|-------------------------------------------------------|
+| LLaMA 2    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/llama2)  |
+| ChatGLM    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/chatglm) |
+| Mistral    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/mistral) |
+| Bark       | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/bark)    |
+| BERT       | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/bert)    |
+| Openai Whisper    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/openai-whisper) |
+
+
+## Example of `transformers`-style API
+| Model      | Example of `transformers`-style API                   |
+|------------|-------------------------------------------------------|
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna) |
+| LLaMA 2    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/llama2) | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2) |
+| ChatGLM    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models/Model/chatglm) | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |
+| ChatGLM2   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  |
+| Mistral    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mistral)   |
+| Falcon     | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/falcon)    |
+| MPT        | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mpt)       |
+| Dolly-v1   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  |
+| Dolly-v2   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  |
+| Replit Code| [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/replit)    |
+| RedPajama  | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/redpajama) |
+| Phoenix    | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phoenix)   |
+| StarCoder  | [link1](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models), [link2](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/starcoder) |
+| Baichuan   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan)  |
+| Baichuan2  | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2) |
+| InternLM   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm)  |
+| Qwen       | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen)      |
+| Aquila     | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila)    |
+| MOSS       | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/moss)      |
+| Whisper    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/whisper)   |
+
+
+```eval_rst
+.. seealso::
+
+   See the complete examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU>`_.
+```
+
