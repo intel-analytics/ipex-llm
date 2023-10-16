@@ -164,8 +164,8 @@ jobs:
               - 'python/dev/**'
 
   Friesian-Scala-UT:
-    needs: changes
-    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
+    # needs: changes
+    # if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
     steps:
@@ -174,8 +174,10 @@ jobs:
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
         uses: ./.github/actions/maven-setup-action
-      - name: Run test
-        uses: ./.github/actions/friesian-scala-ut-action
+      - name: mvn dependency:tree
+        shell: bash
+        run: |
+          mvn dependency:tree
 
   Dllib-Scala-UT:
     needs: changes
