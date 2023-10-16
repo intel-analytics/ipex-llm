@@ -46,7 +46,7 @@ from torch.serialization import StorageType
 import pickle
 import zipfile
 import io
-from typing import Dict, IO, Any, Callable
+from typing import Dict, IO, Any, Callable, List
 from dataclasses import dataclass
 from .common import invalidInputError
 
@@ -69,7 +69,7 @@ class LazyStorage:
 @dataclass
 class LazyTensor:
     _load: Callable[[], torch.Tensor]
-    shape: list[int]
+    shape: List[int]
     data_type: torch.dtype
     description: str
 
@@ -179,6 +179,7 @@ def lazyload(
                       f"but get {pickle_paths}. ")
     pickle_fp = zf.open(pickle_paths[0], 'r')
     state_dict = _load(pickle_fp, None, pickle, pickle_file=pickle_paths[0][:-4], zip_file=zf)
+    fp.close()  # Otherwise on windows this may be marked as reading
     return state_dict
 
 

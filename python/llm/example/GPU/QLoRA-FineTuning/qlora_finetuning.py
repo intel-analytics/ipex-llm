@@ -16,8 +16,6 @@
 
 import torch
 import os
-os.environ["ACCELERATE_USE_IPEX"] = "true"
-os.environ["ACCELERATE_USE_XPU"] = "true"
 
 import transformers
 from transformers import LlamaTokenizer

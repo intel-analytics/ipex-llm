@@ -261,7 +261,8 @@ def setup_package():
     xpu_requires += ["torch==2.0.1a0",
                      "torchvision==0.15.2a0",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'"]
+                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'",
+                     "bigdl-core-xe-esimd==" + VERSION + ";platform_system=='Linux'"]
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
@@ -296,7 +297,7 @@ def setup_package():
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
-            'Linux': ['src/bigdl/llm/cli/llm-cli', 'src/bigdl/llm/cli/llm-chat'],
+            'Linux': ['src/bigdl/llm/cli/llm-cli', 'src/bigdl/llm/cli/llm-chat', 'scripts/bigdl-llm-init'],
             'Windows': ['src/bigdl/llm/cli/llm-cli.ps1', 'src/bigdl/llm/cli/llm-chat.ps1'],
         }[platform_name],
         platforms=['windows']

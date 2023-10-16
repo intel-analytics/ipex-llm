@@ -308,7 +308,7 @@ class MatMulLowBit(torch.autograd.Function):
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
         if req_gradA:
-            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
+            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype).to(grad_output.dtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None

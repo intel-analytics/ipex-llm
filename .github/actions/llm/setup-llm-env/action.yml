@@ -14,6 +14,9 @@ runs:
         # make sure we install the latest version for bigdl-core-xe
         pip uninstall bigdl-core-xe || true
         sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+        # make sure we install the latest version for bigdl-core-xe-esimd
+        pip uninstall bigdl-core-xe-esimd || true
+        sed -i 's/"bigdl-core-xe-esimd==" + VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
 
         pip install requests
         if [[ ${{ runner.os }} == 'Linux' ]]; then
