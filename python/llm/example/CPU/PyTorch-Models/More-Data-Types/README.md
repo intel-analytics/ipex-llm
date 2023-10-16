@@ -3,7 +3,7 @@
 In this example, we show how to apply BigDL-LLM low-bit optimizations (including INT8/INT5/INT4) to Llama2 model, and then run inference on the optimized low-bit model.
 
 ## 0. Requirements
-To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations on a Llama2 model to predict the next N tokens using `generate()` API, with BigDL-LLM low-bit optimizations.
@@ -27,26 +27,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-#### 2.1 Client
-On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
-python ./generate.py
-```
-
-#### 2.2 Server
-For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration-on-linux) for more information), and run the example with all the physical cores of a single socket.
-
-E.g. on Linux,
-```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
-
-# e.g. for a server with 48 cores per socket
-export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py
-```
-
-#### 2.3 Sample Output
+### 3 Sample Output
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 ```log
 Inference time: xxxx s
