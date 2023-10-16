@@ -62,6 +62,10 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### [microsoft/phi-1_5](https://huggingface.co/microsoft/phi-1_5)
 ```log
 Inference time: xxxx s
+-------------------- Prompt --------------------
+Question: What is AI?
+
+ Answer:
 -------------------- Output --------------------
 Question:  What is AI?
 
