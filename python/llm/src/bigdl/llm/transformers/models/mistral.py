@@ -109,7 +109,7 @@ def mistral_attention_forward(
                                 key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        raise invalidInputError(
+        invalidInputError(
             False,
             f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
             f" but is {attn_weights.size()}"
@@ -117,7 +117,7 @@ def mistral_attention_forward(
 
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            raise invalidInputError(
+            invalidInputError(
                 False,
                 f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                 f" but is {attention_mask.size()}"
@@ -131,7 +131,7 @@ def mistral_attention_forward(
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise invalidInputError(
+        invalidInputError(
             f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
             f" but is {attn_output.size()}"
         )
