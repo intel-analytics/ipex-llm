@@ -28,6 +28,7 @@ The following models have been verified on either servers or laptops with Intel 
 
 
 ## Example of `transformers`-style API
+
 | Model      | Example of `transformers`-style API                   |
 |------------|-------------------------------------------------------|
 | LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* |[link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/vicuna)|
