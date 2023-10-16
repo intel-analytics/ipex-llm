@@ -131,7 +131,7 @@ class NanoDiffusionPipeline:
             scheduler=default_scheduler,
             device='iGPU',
             precision='float16',
-            backend='OV',
+            backend='IPEX',
             **kwargs,):
         """Get the pretrained model."""
         scheduler = scheduler_map[scheduler].from_pretrained(
