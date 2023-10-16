@@ -181,29 +181,38 @@ def optimize(model):
         # todo implement 4.28.0 ~ 4.30.2
         pass
 
-    if "chatglm-18b" in model.config._name_or_path or "chatglm2" in model.config._name_or_path:
-        # chatglm-18b or chatglm2-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-        from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
-        convert_forward(model,
-                        module.SelfAttention,
-                        chatglm2_attention_forward_8eb45c
-                        )
-        convert_forward(model,
-                        module.CoreAttention,
-                        core_attn_forward_8eb45c)
-    elif "chatglm" in model.config._name_or_path:
-        # chatglm-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
-        convert_forward(model,
-                        module.SelfAttention,
-                        chatglm_attention_forward
-                        )
-    elif "mpt" in model.config._name_or_path:
+    if model.config.architectures[0] == "ChatGLMModel":
+        if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
+            # chatglm2-6b-32k
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm2_32k import chatglm2_32k_attention_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm2_32k_attention_forward)
+        elif model.config.padded_vocab_size == 65024:
+            # chatglm2-6b
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm2_attention_forward_8eb45c
+                            )
+            convert_forward(model,
+                            module.CoreAttention,
+                            core_attn_forward_8eb45c)
+        elif model.config.vocab_size == 130528:
+            # chatglm-6b
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm_attention_forward
+                            )
+    elif "mpt" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
         module = importlib.import_module(attention_module_name)
@@ -274,6 +283,9 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
+        convert_forward(model,
+                        module.RMSNorm,
+                        llama_rms_norm_forward)
 
     elif model.config.model_type == "baichuan":
         # baichuan1
@@ -295,6 +307,9 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
+        convert_forward(model,
+                        module.RMSNorm,
+                        llama_rms_norm_forward)
 
     elif model.config.model_type == "gpt_neox":
         from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
@@ -309,6 +324,10 @@ def optimize(model):
         convert_forward(model,
                         module.InternLMAttention,
                         internlm_attention_forward
+                        )
+        convert_forward(model,
+                        module.InternLMRMSNorm,
+                        llama_rms_norm_forward
                         )
     elif model.config.model_type == "qwen":
         modeling_module_name = model.__class__.__module__
@@ -326,4 +345,7 @@ def optimize(model):
                         module.AquilaAttention,
                         aquila_attention_forward
                         )
+        convert_forward(model,
+                        module.AquilaRMSNorm,
+                        llama_rms_norm_forward)
     return model

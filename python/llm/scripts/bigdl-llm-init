@@ -1,0 +1,243 @@
+#!/bin/bash
+
+## Usage #############################
+# source bigdl-llm-init
+# Example:
+# source bigdl-llm-init
+######################################
+
+function enable_iomp {
+    ENABLE_IOMP=1
+}
+
+function disable_iomp {
+    ENABLE_IOMP=0
+}
+
+function enable_jemalloc {
+    ENABLE_JEMALLOC=1
+    ENABLE_TCMALLOC=0
+}
+
+function disable_jemalloc {
+    ENABLE_JEMALLOC=0
+}
+
+function enable_tcmalloc {
+    ENABLE_TCMALLOC=1
+    ENABLE_JEMALLOC=0
+}
+
+function disable_tcmalloc {
+    ENABLE_TCMALLOC=0
+}
+
+function enable_gpu {
+    ENABLE_GPU=1
+}
+
+function disable_gpu {
+    ENABLE_GPU=0
+}
+
+function display-var {
+    echo "Internal:"
+    echo "    ENABLE_IOMP     = ${ENABLE_IOMP}"
+    echo "    ENABLE_JEMALLOC = ${ENABLE_JEMALLOC}"
+    echo "    ENABLE_TCMALLOC = ${ENABLE_TCMALLOC}"
+    echo "    ENABLE_GPU = ${ENABLE_GPU}"
+    echo "    LIB_DIR    = ${LIB_DIR}"
+    echo "    BIN_DIR    = ${BIN_DIR}"
+    echo "    LLM_DIR    = ${LLM_DIR}"
+    echo ""
+    echo "Exported:"
+    echo "    LD_PRELOAD        = ${LD_PRELOAD}"
+    echo "    OMP_NUM_THREADS   = ${OMP_NUM_THREADS}"
+    echo "    MALLOC_CONF       = ${MALLOC_CONF}"
+    echo "    USE_XETLA         = ${USE_XETLA}"
+    echo "    ENABLE_SDP_FUSION = ${ENABLE_SDP_FUSION}"
+    echo "    SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS = ${SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS}"
+}
+
+function display-help {
+    echo "Usage: source bigdl-llm-init [-o] [--option]"
+    echo ""
+    echo "bigdl-llm-init is a tool to automatically configure and run the subcommand under"
+    echo "environment variables for accelerating BigDL-LLM."
+    echo ""
+    echo "Optional options:"
+    echo "    -h, --help                Display this help message and exit."
+    echo "    -o, --gomp                Disable intel-openmp and use default openmp (i.e. gomp)"
+    echo "    -j, --jemalloc            Use jemalloc as allocator"
+    echo "    -t, --tcmalloc            Use tcmalloc as allocator"
+    echo "    -c, --disable-allocator   Use the system default allocator"
+    echo "    -g, --gpu                 Enable OneAPI and other settings for GPU support"
+    echo "    -d, --debug               Print all internal and exported variables (for debug)"
+}
+
+function display-error {
+    echo "Invalid Option: -$1" 1>&2
+    echo ""
+    display-help
+}
+
+enable_iomp
+disable_gpu
+disable_jemalloc
+disable_tcmalloc
+LD_PRELOAD=""
+
+OPTIND=1
+
+while getopts "hojtcgd:-:" opt; do
+    case ${opt} in
+        - )
+            case "${OPTARG}" in
+                help)
+                    display-help
+                    return 0
+                    ;;
+                gomp)
+                    disable_iomp
+                    ;;
+                jemalloc)
+                    enable_jemalloc
+                    ;;
+                tcmalloc)
+                    enable_tcmalloc
+                    ;;
+                disable-allocator)
+                    disable_jemalloc
+                    disable_tcmalloc
+                    ;;
+                gpu)
+                    enable_gpu
+                    ;;
+                debug)
+                    display-var
+                    return 0
+                    ;;
+                *)
+                    display-error $OPTARG
+                    return 1
+                    ;;
+            esac
+            ;;
+
+        h )
+            display-help
+            return 0
+            ;;
+        o )
+            disable_iomp
+            ;;
+        j )
+            enable_jemalloc
+            ;;
+        t )
+            enable_tcmalloc
+            ;;
+        c )
+            disable_jemalloc
+            disable_tcmalloc
+            ;;
+        g )
+            enable_gpu
+            ;;
+        d )
+            display-var
+            return 0
+            ;;
+        \? )
+            display-error $OPTARG
+            return 1
+            ;;
+    esac
+done
+
+shift $((OPTIND -1))
+
+# Find bigdl-llm-init dir
+if [ ! -z $BASH_SOURCE ]; then
+    # using bash
+    if [ "$BASH_SOURCE" = "$0" ]; then
+        echo "Error: Incorrect usage: bigdl-llm-init must be sourced."
+        exit 1
+    fi
+    BIN_DIR="$(dirname $BASH_SOURCE)"
+else
+    # using zsh
+    if [ "$zsh_eval_context" = "toplevel" ]; then
+        echo "Error: Incorrect usage: bigdl-llm-init must be sourced."
+        exit 1
+    fi
+    BIN_DIR="$(dirname ${(%):-%N})"
+fi
+
+LIB_DIR=$(dirname ${BIN_DIR})/lib
+LLM_DIR=$(dirname $(python3 -c "import bigdl; print(bigdl.__file__)"))/llm
+
+if [ "${ENABLE_IOMP}" -eq 1 ]; then
+    file="${LIB_DIR}/libiomp5.so"
+    if [ -f ${file} ]; then
+        echo "found intel-openmp in ${file}"
+        LD_PRELOAD=$(echo ${LD_PRELOAD} ${file})
+        export OMP_NUM_THREADS=`cat /proc/cpuinfo | grep "cpu cores" | uniq | awk '{print $4}'`
+    fi
+else
+    unset OMP_NUM_THREADS
+fi
+
+if [ "${ENABLE_JEMALLOC}" -eq 1 ]; then
+    file="${LLM_DIR}/libs/libjemalloc.so"
+    if [ -f ${file} ]; then
+        echo "found jemalloc in ${file}"
+        LD_PRELOAD=$(echo ${LD_PRELOAD} ${file})
+        export MALLOC_CONF="oversize_threshold:1,background_thread:false,metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1"
+    fi
+else
+    unset MALLOC_CONF
+fi
+
+if [ "${ENABLE_TCMALLOC}" -eq 1 ]; then
+    file="${LLM_DIR}/libs/libtcmalloc.so"
+    if [ -f ${file} ]; then
+        echo "found tcmalloc in ${file}"
+        LD_PRELOAD=$(echo ${LD_PRELOAD} ${file})
+    fi
+fi
+
+if [ "${ENABLE_GPU}" -eq 1 ]; then
+    for file in {"~","/opt"}"/intel/oneapi/setvars.sh"; do
+        if [ -f ${file} ]; then
+            echo "found oneapi in ${file}"
+            source ${file}
+            export USE_XETLA=OFF
+            export ENABLE_SDP_FUSION=1
+            export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+            break
+        fi
+    done
+else
+    unset USE_XETLA
+    unset ENABLE_SDP_FUSION
+    unset SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
+fi
+
+export LD_PRELOAD=${LD_PRELOAD}
+
+echo "+++++ Env Variables +++++"
+echo "LD_PRELOAD            = ${LD_PRELOAD}"
+if [ "${ENABLE_IOMP}" -eq 1 ]; then
+    echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
+fi
+if [ "${ENABLE_JEMALLOC}" -eq 1 ]; then
+    echo "MALLOC_CONF           = ${MALLOC_CONF}"
+fi
+if [ "${ENABLE_GPU}" -eq 1 ]; then
+    echo "USE_XETLA             = ${USE_XETLA}"
+    echo "ENABLE_SDP_FUSION     = ${ENABLE_SDP_FUSION}"
+    echo "SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS = ${SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS}"
+fi
+echo "+++++++++++++++++++++++++"
+echo "Complete."
