@@ -5,8 +5,8 @@ In this example, we show how to save/load model with BigDL-LLM low-bit optimizat
 ## 0. Requirements
 To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
 
-## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations on a Llama2 model to predict the next N tokens using `generate()` API, with BigDL-LLM low-bit optimizations.
+## Example: Save/Load Model in Low-Bit Optimization
+In the example [generate.py](./generate.py), we show a basic use case of saving/loading model in low-bit optimizations to predict the next N tokens using `generate()` API. Also, saving and loading operations are platform-independent, so you could run it on different platforms.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
