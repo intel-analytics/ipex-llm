@@ -354,7 +354,6 @@ def nano_optimize_model(
 
             if precision_short == "int8":
                 # TODO: openvino int8 here
-                # raise ValueError()
                 invalidInputError(
                     precision_short != "int8",
                     errMsg="OpenVINO int8 quantization is not supported.")
@@ -363,13 +362,11 @@ def nano_optimize_model(
             invalidInputError(
                 accelerator != "onnxruntime",
                 errMsg=f"Onnxruntime {precision_short} quantization is not supported.")
-            # raise ValueError(f"Onnxruntime {precision_short} quantization is not supported.")
         else:
             # PyTorch bf16
             if precision_short == "bf16":
                 # Ignore jit & ipex
                 if accelerator == "jit":
-                    # raise ValueError(f"JIT {precision_short} quantization is not supported.")
                     invalidInputError(
                         accelerator == "jit",
                         errMsg=f"JIT {precision_short} quantization is not supported.")
