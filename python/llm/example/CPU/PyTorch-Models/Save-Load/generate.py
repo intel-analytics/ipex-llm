@@ -19,7 +19,7 @@ import time
 import argparse
 from bigdl.llm import optimize_model
 from bigdl.llm.optimize import low_memory_init, load_low_bit
-from transformers import AutoModelForCausalLM, LlamaTokenizer, TextGenerationPipeline
+from transformers import AutoModelForCausalLM, LlamaTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
@@ -30,7 +30,7 @@ LLAMA2_PROMPT_FORMAT = """### HUMAN:
 """
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Transformer save_load example')
+    parser = argparse.ArgumentParser(description='Example of saving and loading the optimized model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')

@@ -1,4 +1,4 @@
-# BigDL-LLM Save/Load Low-Bit Model
+# Save/Load Low-Bit Models with BigDL-LLM Optimizations
 
 In this example, we show how to save/load model with BigDL-LLM low-bit optimizations (including INT8/INT5/INT4), and then run inference on the optimized low-bit model.
 
@@ -17,12 +17,12 @@ pip install bigdl-llm[all] # install bigdl-llm with 'all' option
 ```
 
 ### 2. Run
-If you want to save low-bit optimized model, run:
+If you want to save the optimized low-bit model, run:
 ```
 python ./generate.py --save-path path/to/save/model
 ```
 
-If you want to load low-bit optimized model, run:
+If you want to load the optimized low-bit model, run:
 ```
 python ./generate.py --load-path path/to/load/model
 ```
