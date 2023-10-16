@@ -182,7 +182,15 @@ def optimize(model):
         pass
 
     if model.config.architectures[0] == "ChatGLMModel":
-        if hasattr(model.config, "padded_vocab_size") and model.config.padded_vocab_size == 65024:
+        if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
+            # chatglm2-6b-32k
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm2_32k import chatglm2_32k_attention_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm2_32k_attention_forward)
+        elif model.config.padded_vocab_size == 65024:
             # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
