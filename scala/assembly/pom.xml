@@ -178,6 +178,7 @@
                     </execution>
 		    <execution>
                         <id>make-all</id>
+			<finalName>bigdl-assembly-spark_${spark.version}-all</finalName>
                         <inherited>false</inherited>
                         <phase>package</phase>
                         <goals>
