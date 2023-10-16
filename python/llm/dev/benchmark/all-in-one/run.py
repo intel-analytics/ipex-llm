@@ -40,6 +40,7 @@ results = []
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1):
     # TODO: make a parameter
+    result= {}
     if test_api == 'transformer_int4':
         result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'native_int4':
@@ -56,7 +57,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
 
     for in_out_pair in in_out_pairs:
-        if result is not None:
+        if result:
             results.append([repo_id,
                             np.mean(result[in_out_pair], axis=0)[0],
                             np.mean(result[in_out_pair], axis=0)[1],
