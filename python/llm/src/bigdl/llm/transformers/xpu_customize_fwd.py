@@ -112,7 +112,7 @@ def _cast(value, dtype):
     if isinstance(value, torch.Tensor):
         is_eligible = (
             value.is_floating_point()
-            and value.is_cuda
+            and value.is_xpu
             and (value.dtype is not torch.float64)
         )
         return value.to(dtype) if is_eligible else value
@@ -155,12 +155,12 @@ def custom_fwd(fwd=None, *, cast_inputs=None):
 
     @functools.wraps(fwd)
     def decorate_fwd(*args, **kwargs):
-        args[0]._dtype = torch.get_autocast_gpu_dtype()
+        args[0]._dtype = torch.xpu.get_autocast_xpu_dtype()
         if cast_inputs is None:
-            args[0]._fwd_used_autocast = torch.is_autocast_enabled()
+            args[0]._fwd_used_autocast = torch.xpu.is_autocast_xpu_enabled()
             return fwd(*args, **kwargs)
         else:
-            autocast_context = torch.is_autocast_enabled()
+            autocast_context = torch.xpu.is_autocast_xpu_enabled()
             args[0]._fwd_used_autocast = False
             if autocast_context:
                 with torch.xpu.autocast(enabled=False):

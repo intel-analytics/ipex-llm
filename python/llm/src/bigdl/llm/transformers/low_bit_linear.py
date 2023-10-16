@@ -291,6 +291,8 @@ class MatMulLowBit(torch.autograd.Function):
     @staticmethod
     @custom_fwd
     def forward(ctx, A, weight, input_seq_size):
+        if torch.xpu.is_autocast_xpu_enabled():
+            A = A.to(torch.xpu.get_autocast_xpu_dtype())
         ctx.is_empty = False
         import linear_q4_0
         result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
@@ -311,7 +313,9 @@ class MatMulLowBit(torch.autograd.Function):
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
         if req_gradA:
-            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype).to(grad_output.dtype)
+            if torch.xpu.is_autocast_xpu_enabled():
+                grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
+            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
