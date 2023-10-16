@@ -6,7 +6,7 @@ In this example, we show how to apply BigDL-LLM low-bit optimizations (including
 To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
 
 ## Example: Load Model in Low-Bit Optimization
-In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations (including INT8/INT5/INT4) on a Llama2 model to predict the next N tokens using `generate()` API. Saving and loading operations are platform-independent, so you could run it on different platforms.
+In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations (including INT8/INT5/INT4) on a Llama2 model to predict the next N tokens using `generate()` API. By specifying `--low-bit` arguments, you could apply other low-bit optimization (e.g. INT8/INT5) on model. Also, saving and loading operations are platform-independent, so you could run it on different platforms.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
