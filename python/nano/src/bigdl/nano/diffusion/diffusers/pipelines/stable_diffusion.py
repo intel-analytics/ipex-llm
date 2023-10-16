@@ -146,10 +146,7 @@ class NanoDiffusionPipeline:
                     msg = "Could not find local `model_path` in given local path, \
                                           could not find the model on Huggingface Hub \
                                           by given `model_path` as repo_id either."
-                    # raise NoPathException(
-                    # f"Could not find local `model_path` in given local path, "
-                    # "could not find the model on Huggingface Hub \
-                    # by given `model_path` as repo_id either.")
+
                     invalidInputError(False, errMsg=msg)
             ov_unet, ov_vae_decoder = _preload_ov(pretrained_model_name_or_path, device, precision)
 
@@ -184,7 +181,6 @@ class NanoDiffusionPipeline:
 
             _load_ipex(pipe, device, precision)
         else:
-            # raise ValueError(f'Backend{backend} not supported.')
             invalidInputError(False, errMsg=f'Backend{backend} not supported.')
 
         return pipe

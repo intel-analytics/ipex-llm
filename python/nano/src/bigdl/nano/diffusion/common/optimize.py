@@ -456,9 +456,8 @@ def save_controlnet_if_not_exist(local_controlnet_path):
 
 
 def unet_attributes(model):
-    # assert model is not None, "Please load model before saving attributes..."
     invalidInputError(model is not None, errMsg="Please load model before saving attributes...")
-    # assert isinstance(model, torch.nn.Module)
+
     invalidInputError(
         isinstance(model, torch.nn.Module),
         errMsg="model should be a torch.nn.Module.")
@@ -487,7 +486,7 @@ def get_nano_cache_dir_dict(model_info, vae_repo_id=None, vae_subfolder=None):
     cache_dir_dict = {"unet": None, "vae": None}
     if model_info["format"] == "ckpt":
         from ldm.invoke.globals import Globals
-        # assert "weights" in model_info
+
         invalidInputError("weights" in model_info, errMsg="`weights` is not in model_info.")
         checkpoint_path = model_info["weights"]
         if not os.path.isabs(checkpoint_path):
@@ -541,8 +540,7 @@ def load_optimized_ov_unet(name_or_path, nano_device='iGPU', suffix=None):
             name_or_path = get_local_path_from_repo_id(name_or_path)
         name_or_path = os.path.join(name_or_path, "unet")
         if nano_device not in ['CPU', 'iGPU', 'dGPU']:
-            # raise ValueError(
-            # f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
+
             invalidInputError(
                 nano_device in ['CPU', 'iGPU', 'dGPU'],
                 errMsg=f"Only support device `CPU`, `iGPU` and `dGPU`, but got {nano_device}")
