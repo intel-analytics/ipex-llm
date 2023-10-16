@@ -46,7 +46,14 @@ Arguments info:
 Inference time: xxxx s
 -------------------- Prompt --------------------
 <|User|>:What is AI?
-<|Bot|>:
 -------------------- Output --------------------
-Artificial intelligence (AI) is the science and engineering of making intelligent machines.
+Artificial intelligence (AI) is the use of computers to simulate human intelligence.
+```
+
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|User|>:Translate to German: My name is Arthur
+-------------------- Output --------------------
+Ich bin Arthur.
 ```

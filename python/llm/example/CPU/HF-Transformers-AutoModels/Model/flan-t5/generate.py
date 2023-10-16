@@ -23,7 +23,7 @@ from bigdl.llm.transformers import AutoModelForSeq2SeqLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-FLAN_T5_PROMPT_FORMAT = "<|User|>:{prompt}\n<|Bot|>:"
+FLAN_T5_PROMPT_FORMAT = "<|User|>:{prompt}"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for flan-t5 model')
@@ -39,16 +39,19 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
+    # which convert the relevant layers in the model into INT4 format.
+    # "wo" module is not converted due to some issues of T5 model 
+    # (https://github.com/huggingface/transformers/issues/20287),
+    # "lm_head" module is not converted to generate outputs with better quality
     model = AutoModelForSeq2SeqLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 trust_remote_code=True,
-                                                 modules_to_not_convert=["wo", "lm_head"])
+                                                  load_in_4bit=True,
+                                                  trust_remote_code=True,
+                                                  modules_to_not_convert=["wo", "lm_head"])
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
-    
+
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = FLAN_T5_PROMPT_FORMAT.format(prompt=args.prompt)
