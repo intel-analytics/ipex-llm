@@ -54,7 +54,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     batch, num_key_value_heads, slen, head_dim = hidden_states.shape
     if n_rep == 1:
         return hidden_states
-    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads,\
+    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads,
                                                            n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
@@ -76,9 +76,9 @@ def mistral_attention_forward(
     value_states = self.v_proj(hidden_states)
 
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,\
+    key_states = key_states.view(bsz, q_len,
                                  self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,\
+    value_states = value_states.view(bsz, q_len,
                                      self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
@@ -86,13 +86,13 @@ def mistral_attention_forward(
         kv_seq_len += past_key_value[0].shape[-2]
     if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                    key_states,
-                                                                    position_ids,
-                                                                    "mistral")
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "mistral")
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                    cos, sin, position_ids, "mistral")
+                                                        cos, sin, position_ids, "mistral")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
