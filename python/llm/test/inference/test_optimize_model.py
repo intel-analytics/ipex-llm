@@ -30,7 +30,7 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
 
 @pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
     (AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt),
-    (AutoModelForCausalLM, BloomTokenizerFast, bloom_model_path, prompt),
+    (AutoModelForCausalLM, AutoTokenizer, bloom_model_path, prompt),
     (AutoModel, AutoTokenizer, chatglm2_6b_model_path, prompt),
     (AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt),
 ])
