@@ -348,4 +348,16 @@ def optimize(model):
         convert_forward(model,
                         module.AquilaRMSNorm,
                         llama_rms_norm_forward)
+    elif model.config.model_type == "mistral":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model,
+                        module.MistralRMSNorm,
+                        llama_rms_norm_forward)
+    elif model.config.model_type == "mistral":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model,
+                        module.MistralRMSNorm,
+                        llama_rms_norm_forward)
     return model
