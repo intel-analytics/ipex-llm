@@ -31,8 +31,8 @@ LLAMA2_PROMPT_FORMAT = """### HUMAN:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer save_load example')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
-                        help='The huggingface repo id for the large language model to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
+                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default="sym_int4",
                         choices=['sym_int4', 'asym_int4', 'sym_int5', 'asym_int5', 'sym_int8'],
