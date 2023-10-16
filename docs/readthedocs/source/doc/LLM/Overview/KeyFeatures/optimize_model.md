@@ -2,6 +2,8 @@
 
 In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. With BigDL-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4, INT5, INT8, etc).
 
+### Optimize model
+
 First, use any PyTorch APIs you like to load your model. To help you better understand the process, here we use [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) library `LlamaForCausalLM` to load a popular model [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as an example:
 
 ```python
@@ -18,10 +20,46 @@ from bigdl.llm import optimize_model
 model = optimize_model(model)
 ```
 
+```eval_rst
+.. note::
+
+   In the above usage, symmetric INT4 optimizations are applied by default. You may apply other low bit optimizations (INT5, INT8, etc) through specifying ``low_bit`` as follows:
+
+   .. code-block:: python
+
+      # Apply symmetric INT8 optimization
+      model = optimize_model(model, low_bit="sym_int8")
+```
+
 After optimizing the model, BigDL-LLM does not require any change in the inference code. You can use any libraries to run the optimized model with very low latency.
+
+### Save & Load Optimized Model
+
+The loading process of the original model may be time-consuming and memory-intensive. For example, the [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) model is stored with float16 precision, resulting in large memory usage when loaded using `LlamaForCausalLM`. To avoid high resource consumption and expedite loading process, you can use `save_low_bit` to store the model after low-bit optimization. Then, in subsequent uses, you can opt to use the `load_low_bit` API to directly load the optimized model. Besides, saving and loading operations are platform-independent, regardless of their operating systems.
+#### Save
+
+Continuing with the example of [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf), we can save the previously optimized model as follows:
+```python
+saved_dir='./llama-2-bigdl-llm-4-bit'
+model.save_low_bit(saved_dir)
+```
+#### Load
+
+Use `load_low_bit` to load the optimized low-bit model as follows:
+```python
+from bigdl.llm.optimize import low_memory_init, load_low_bit
+with low_memory_init(): # Fast and low cost by loading model on meta device
+   model = LlamaForCausalLM.from_pretrained(saved_dir,
+                                            torch_dtype="auto",
+                                            trust_remote_code=True)
+model = load_low_bit(model, saved_dir) # Load the optimized model
+```
+
 
 ```eval_rst
 .. seealso::
 
-   * For more detailed usage of ``optimize_model``, please refer to the `API documentation <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html>`_.
+   * Please refer to the `API documentation <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html>`_ for more details.
+
+   * We also provide detailed examples on how to run PyTorch models (e.g., Openai Whisper, LLaMA2, ChatGLM2, Falcon, MPT, Baichuan2, etc.) using BigDL-LLM. See the complete CPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models>`_ and GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/PyTorch-Models>`_.
 ```
