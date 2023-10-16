@@ -177,7 +177,7 @@ jobs:
       - name: mvn dependency:tree
         shell: bash
         run: |
-          mvn dependency:tree --file scala/pom.xml
+          mvn dependency:tree --file scala/orca/pom.xml
 
   Dllib-Scala-UT:
     needs: changes
