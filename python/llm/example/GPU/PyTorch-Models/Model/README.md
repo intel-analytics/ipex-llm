@@ -13,6 +13,7 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel G
 | StarCoder      | [link](starcoder)                                        |
 | Dolly v1       | [link](dolly-v1)                                         |
 | Dolly v2       | [link](dolly-v2)                                         |
+| Flan-t5        | [link](flan-t5)                                          |
 
 ## Verified Hardware Platforms
 
