@@ -121,7 +121,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def _preprocess_optimize(model):
+def _optimize_pre(model):
     from transformers.modeling_utils import PreTrainedModel
     # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
@@ -149,7 +149,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
     if optimize_model:
-        model = _preprocess_optimize(model)
+        model = _optimize_pre(model)
 
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
@@ -169,7 +169,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         pass
 
     if optimize_model:
-        model = _postprocess_optimize(model)
+        model = _optimize_post(model)
     return model
 
 
@@ -181,7 +181,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def _postprocess_optimize(model):
+def _optimize_post(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
