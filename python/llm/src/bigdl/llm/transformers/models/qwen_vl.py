@@ -68,7 +68,7 @@ def qwen_attention_forward_vl(
     query = self._split_heads(query, self.num_heads, self.head_dim)
     key = self._split_heads(key, self.num_heads, self.head_dim)
     value = self._split_heads(value, self.num_heads, self.head_dim)
-    
+
     kv_seq_len = hidden_states.size()[1]
 
     if rotary_pos_emb is not None:
