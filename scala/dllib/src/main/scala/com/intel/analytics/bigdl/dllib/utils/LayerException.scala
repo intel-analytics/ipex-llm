@@ -22,6 +22,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils
  */
 class LayerException(var layerMsg: String, val error: Throwable) extends RuntimeException {
   override def toString: String = {
-    "Layer info: " + layerMsg + "\n" + ExceptionUtils.getFullStackTrace(error)
+    "Layer info: " + layerMsg + "\n" + ExceptionUtils.getStackTrace(error)
   }
 }
