@@ -114,6 +114,8 @@ def mistral_attention_forward(
                                                        dtype=cache_k.dtype,
                                                        device=device)
 
+        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = init_kv_cache(bsz,
