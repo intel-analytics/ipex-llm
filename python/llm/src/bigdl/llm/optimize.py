@@ -192,7 +192,7 @@ def load_low_bit(model, model_path):
     return model
 
 
-def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
+def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None):
     """
     A method to optimize any pytorch model.
 
@@ -200,6 +200,8 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
     :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
         "asym_int5" or "sym_int8".
     :param optimize_llm: Whether to further optimize llm model.
+    :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
+        when conducting model optimizations. Default to be None.
 
     :return: The optimized model.
 
@@ -222,7 +224,10 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
                       "Expect model on device `cpu`, "
                       f"but got device type {model.device.type}")
     qtype = ggml_tensor_qtype[low_bit]
-    model = ggml_convert_low_bit(model, qtype=qtype, optimize_model=optimize_llm)
+    model = ggml_convert_low_bit(model,
+                                 qtype=qtype,
+                                 optimize_model=optimize_llm,
+                                 modules_to_not_convert=modules_to_not_convert)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()
