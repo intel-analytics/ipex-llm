@@ -121,7 +121,13 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def _preprocess_normhead(model):
+def _preprocess_optimize(model):
+    from transformers.modeling_utils import PreTrainedModel
+    # All huggingface format models are inherited from `PreTrainedModel`
+    if not isinstance(model, PreTrainedModel):
+        logger.info("Only HuggingFace Transformers models are currently "
+                    "supported for further optimizations")
+        return model
     # process NormHead module in Baichuan2 7B and 13B
     if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # NormHead do normalization on the weights just once at inference time.
@@ -141,7 +147,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None):
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
-    model = _preprocess_normhead(model)
+
+    if optimize_model:
+        model = _preprocess_optimize(model)
+
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only,
@@ -160,7 +169,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         pass
 
     if optimize_model:
-        model = optimize(model)
+        model = _postprocess_optimize(model)
     return model
 
 
@@ -172,7 +181,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize(model):
+def _postprocess_optimize(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
