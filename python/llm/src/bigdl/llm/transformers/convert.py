@@ -288,7 +288,7 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-            # baichuan2-13B's RMSNorm is a little different 
+            # baichuan2-13B's RMSNorm is a little different
             convert_forward(model,
                             module.RMSNorm,
                             baichuan_13b_rms_norm_forward)
@@ -316,7 +316,7 @@ def optimize(model):
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-            # baichuan-13B's RMSNorm is a little different 
+            # baichuan-13B's RMSNorm is a little different
             convert_forward(model,
                             module.RMSNorm,
                             baichuan_13b_rms_norm_forward)
