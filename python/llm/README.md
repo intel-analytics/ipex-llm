@@ -58,6 +58,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
 | MOSS       | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
 | Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
+| Flan-t5  | [link1](example/CPU/HF-Transformers-AutoModels/Model/flan-t5), [link2](example/CPU/PyTorch-Models/Model/flan-t5) | [link1](example/GPU/HF-Transformers-AutoModels/Model/flan-t5), [link2](example/GPU/PyTorch-Models/Model/flan-t5) |
 
 
 ### Working with `bigdl-llm`
