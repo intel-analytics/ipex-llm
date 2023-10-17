@@ -26,6 +26,12 @@ The following models have been verified on either servers or laptops with Intel 
 | Dolly-v1   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/PyTorch-Models/Model/dolly-v1)  |
 | Dolly-v2   | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/PyTorch-Models/Model/dolly-v2)  |
 
+```eval_rst
+.. important::
+
+   In addition to INT4 optimization, BigDL-LLM also provides other low bit optimizations (such as INT8, INT5, NF4, etc.). You may apply other low bit optimizations through PyTorch API as `example <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/PyTorch-Models/More-Data-Types>`_.
+```
+
 
 ## Example of `transformers`-style API
 
@@ -49,6 +55,12 @@ The following models have been verified on either servers or laptops with Intel 
 | Whisper    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
 | Chinese Llama2	    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/chinese-llama2)    |
 | GPT-J    | [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/gpt-j)    |
+
+```eval_rst
+.. important::
+
+   In addition to INT4 optimization, BigDL-LLM also provides other low bit optimizations (such as INT8, INT5, NF4, etc.). You may apply other low bit optimizations through ``transformers``-style API as `example <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_.
+```
 
 
 ```eval_rst
