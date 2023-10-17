@@ -49,6 +49,7 @@ import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
+from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -288,7 +289,10 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
+    @custom_fwd
     def forward(ctx, A, weight, input_seq_size):
+        if torch.xpu.is_autocast_xpu_enabled():
+            A = A.to(torch.xpu.get_autocast_xpu_dtype())
         ctx.is_empty = False
         import linear_q4_0
         result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
@@ -299,6 +303,7 @@ class MatMulLowBit(torch.autograd.Function):
         return result
 
     @staticmethod
+    @custom_bwd
     def backward(ctx, grad_output):
         import linear_q4_0
         if ctx.is_empty:
@@ -308,7 +313,9 @@ class MatMulLowBit(torch.autograd.Function):
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
         if req_gradA:
-            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype).to(grad_output.dtype)
+            if torch.xpu.is_autocast_xpu_enabled():
+                grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
+            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
@@ -378,8 +385,7 @@ class LowBitLinear(nn.Linear):
                 result = result.view(new_shape)
                 if self.bias is not None:
                     result += self.bias
-
-        return result.to(x.dtype)
+        return result
 
 
 class FP16Linear(nn.Linear):
