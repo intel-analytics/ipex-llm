@@ -6,7 +6,7 @@ This portable zip includes everything you need to run an LLM with BigDL-LLM opti
 
 ### 13B model running on an Intel 11-Gen Core PC (real-time screen capture)
 
-<p align="left">
+<p align="center">
    <a href="https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-screen-capture.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/one-click-installer-screen-capture.gif" ></a>
 </p>
 
