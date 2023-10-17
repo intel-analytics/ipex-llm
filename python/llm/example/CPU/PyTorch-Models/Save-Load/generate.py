@@ -50,6 +50,7 @@ if __name__ == '__main__':
     low_bit = args.low_bit
     load_path = args.load_path
     if load_path:
+        # Fast and low cost by loading model on meta device
         with low_memory_init():
             model = AutoModelForCausalLM.from_pretrained(load_path, torch_dtype="auto", trust_remote_code=True)
         model = load_low_bit(model, load_path)
