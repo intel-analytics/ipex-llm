@@ -283,7 +283,7 @@ def optimize(model):
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
-            from bigdl.llm.transformers.models.baichuan2 import baichuan2_13b_rms_norm_forward
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
@@ -291,7 +291,7 @@ def optimize(model):
             # baichuan2-13B's RMSNorm is a little different 
             convert_forward(model,
                             module.RMSNorm,
-                            baichuan2_13b_rms_norm_forward)
+                            baichuan_13b_rms_norm_forward)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:
@@ -303,18 +303,23 @@ def optimize(model):
                             module.Attention,
                             baichuan_attention_forward_7b
                             )
+            convert_forward(model,
+                            module.RMSNorm,
+                            llama_rms_norm_forward)
         elif model.config.hidden_size == 5120:
             # baichuan-13B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_13b
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-        convert_forward(model,
-                        module.RMSNorm,
-                        llama_rms_norm_forward)
+            # baichuan-13B's RMSNorm is a little different 
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_13b_rms_norm_forward)
     elif model.config.model_type == "gpt_neox":
         from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
         convert_forward(model,

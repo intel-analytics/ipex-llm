@@ -45,7 +45,7 @@ except ImportError:
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
-def baichuan2_13b_rms_norm_forward(self, hidden_states):
+def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
                                                          [self.weight.size(0)], self.weight)
