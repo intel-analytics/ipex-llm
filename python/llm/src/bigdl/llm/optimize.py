@@ -200,8 +200,8 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
         "asym_int5" or "sym_int8".
     :param optimize_llm: Whether to further optimize llm model.
-    :param modules_to_not_convert: list of str value, Modules that are skipped when conducting
-        model optimizations. Default to be None.
+    :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
+        when conducting model optimizations. Default to be None.
 
     :return: The optimized model.
 

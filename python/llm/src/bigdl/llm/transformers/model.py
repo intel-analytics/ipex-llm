@@ -65,8 +65,8 @@ class _BaseAutoModelClass:
                                 be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be True.
-        :param modules_to_not_convert: list of str value, Modules that are skipped when conducting
-                                       model optimizations. Default to be None.
+        :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
+                                       conducting model optimizations. Default to be None.
 
         :return: a model instance
         """
