@@ -191,7 +191,7 @@ def optimize(model):
                             module.SelfAttention,
                             chatglm2_32k_attention_forward)
         elif hasattr(model.config, 'padded_vocab_size') and \
-            model.config.padded_vocab_size == 65024:
+                model.config.padded_vocab_size == 65024:
             # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
