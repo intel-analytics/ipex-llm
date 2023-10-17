@@ -38,7 +38,7 @@ After optimizing the model, BigDL-LLM does not require any change in the inferen
 The loading process of the original model may be time-consuming and memory-intensive. For example, the [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) model is stored with float16 precision, resulting in large memory usage when loaded using `LlamaForCausalLM`. To avoid high resource consumption and expedite loading process, you can use `save_low_bit` to store the model after low-bit optimization. Then, in subsequent uses, you can opt to use the `load_low_bit` API to directly load the optimized model. Besides, saving and loading operations are platform-independent, regardless of their operating systems.
 #### Save
 
-Continuing with the example of [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf), we can save the previously optimized model as follows:
+Continuing with the [example of Llama-2-7b-chat-hf](#optimize-model), we can save the previously optimized model as follows:
 ```python
 saved_dir='./llama-2-bigdl-llm-4-bit'
 model.save_low_bit(saved_dir)
