@@ -18,7 +18,7 @@ import pytest
 import os
 
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-from transformers import LlamaTokenizer, BloomTokenizerFast, GPTNeoXTokenizerFast, AutoTokenizer
+from transformers import LlamaTokenizer, AutoTokenizer
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
