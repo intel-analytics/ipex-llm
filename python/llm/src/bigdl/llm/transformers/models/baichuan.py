@@ -44,7 +44,7 @@ def baichuan_rms_norm_forward_7b(self, hidden_states):
         if self.weight.dtype in [torch.float16, torch.bfloat16]:
             hidden_states = hidden_states.to(self.weight.dtype)
         return self.weight * hidden_states
-    return 
+    return hidden_states
 
 
 def baichuan_rms_norm_forward_13b(self, hidden_states):
