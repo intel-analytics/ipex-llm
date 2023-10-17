@@ -66,12 +66,12 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
 def mistral_attention_forward(
     self,
     hidden_states: torch.Tensor,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
-    output_attentions: bool = False,
-    use_cache: bool = False,
-    padding_mask: Optional[torch.Tensor] = None,
+    attention_mask: Optional[torch.Tensor]=None,
+    position_ids: Optional[torch.LongTensor]=None,
+    past_key_value: Optional[Tuple[torch.Tensor]]=None,
+    output_attentions: bool=False,
+    use_cache: bool=False,
+    padding_mask: Optional[torch.Tensor]=None,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
@@ -81,9 +81,10 @@ def mistral_attention_forward(
     value_states = self.v_proj(hidden_states)
 
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
-
+    key_states = key_states.view(bsz, q_len,
+                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    value_states = value_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
@@ -112,7 +113,7 @@ def mistral_attention_forward(
                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
                                                        dtype=cache_k.dtype,
                                                        device=device)
-    
+
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = init_kv_cache(bsz,
@@ -142,7 +143,6 @@ def mistral_attention_forward(
             False,
             f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
             f" but is {attn_weights.size()}"
-
         )
 
     if attention_mask is not None:
