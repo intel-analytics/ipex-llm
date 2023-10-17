@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.dllib.utils.caffe
 
-import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 
 
 class CaffeConversionException (var conversionMsg: String,
@@ -23,7 +23,7 @@ class CaffeConversionException (var conversionMsg: String,
   override def toString: String = {
     val erroMsg = s"Caffe conversion error : $conversionMsg"
     if (error != null) {
-      erroMsg + ExceptionUtils.getFullStackTrace(error)
+      erroMsg + ExceptionUtils.getStackTrace(error)
     }
     erroMsg
   }
