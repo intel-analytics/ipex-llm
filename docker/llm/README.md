@@ -1,21 +1,35 @@
-## Getting started with BigDL LLM on Windows
+## Getting started with BigDL LLM on cpu
 
 ### Install docker
 
 New users can quickly get started with Docker using this [official link](https://www.docker.com/get-started/).
 
-For Windows users, make sure Hyper-V is enabled on your computer. The instructions for installing on Windows can be accessed from [here](https://docs.docker.com/desktop/install/windows-install/).
+For Windows users, make sure Hyper-V is enabled on your computer. 
+
+The instructions for installing can be accessed from following links:
+
+[MacOS](https://docs.docker.com/desktop/install/mac-install/)
+
+[Windows](https://docs.docker.com/desktop/install/windows-install/)
+
+[Linux](https://docs.docker.com/desktop/install/linux-install/)
 
 
 ### Pull bigdl-llm-cpu image
 
 To pull image from hub, you can execute command on console:
-```powershell
+```bash
 docker pull intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
 ```
 to check if the image is successfully downloaded, you can use:
-```powershell
+```bash
+# Windows
 docker images | sls intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+```
+
+```bash
+# MacOS/Linux
+docker images | grep intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
 ```
 
 
@@ -23,7 +37,7 @@ docker images | sls intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
 
 To run the image and do inference, you could create and run a bat script on Windows.
 
-An example could be:
+An example on Windows could be:
 ```bat
 @echo off
 set DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
@@ -39,6 +53,23 @@ docker run -itd ^
     --name=%CONTAINER_NAME% ^
     -v %MODEL_PATH%:/llm/models ^
     %DOCKER_IMAGE%
+```
+
+on MacOS/Linux:
+```bash
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+export CONTAINER_NAME=my_container
+export MODEL_PATH=D:/llm/models[change to your model path]
+
+# Run the Docker container
+docker run -itd \
+    --net=host \
+    --cpuset-cpus="0-7" \
+    --cpuset-mems="0" \
+    --memory="8G" \
+    --name=$CONTAINER_NAME \
+    -v $MODEL_PATH:/llm/models \
+    $DOCKER_IMAGE
 ```
 
 After the container is booted, you could get into the container through `docker exec`.
