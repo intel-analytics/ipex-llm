@@ -177,14 +177,14 @@
                         </configuration>
                     </execution> -->
 		    <execution>
-                        <id>make-all</id>
+                        <id>make-dist-all</id>
                         <inherited>false</inherited>
                         <phase>package</phase>
                         <goals>
                             <goal>assembly</goal>
                         </goals>
                         <configuration>
-			    <finalName>bigdl-assembly-all-spark_${spark.version}</finalName>
+<!-- 			    <finalName>bigdl-assembly-all-spark_${spark.version}</finalName> -->
                             <descriptors>
                                 <descriptor>src/main/assembly/assembly-all.xml</descriptor>
                             </descriptors>
