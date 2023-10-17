@@ -20,18 +20,22 @@ from bigdl.llm import optimize_model
 model = optimize_model(model)
 ```
 
-```eval_rst
-.. note::
-
-   In the above usage, symmetric INT4 optimizations are applied by default. You may apply other low bit optimizations (INT5, INT8, etc) through specifying ``low_bit`` as follows:
-
-   .. code-block:: python
-
-      # Apply symmetric INT8 optimization
-      model = optimize_model(model, low_bit="sym_int8")
-```
-
 After optimizing the model, BigDL-LLM does not require any change in the inference code. You can use any libraries to run the optimized model with very low latency.
+
+### More Precisions
+
+In the [Optimize Model](#optimize-model), symmetric INT4 optimization is applied by default. You may apply other low bit optimizations (INT5, INT8, etc) by specifying the ``low_bit`` parameter.
+
+Currently, ``low_bit`` supports options 'sym_int4', 'asym_int4', 'sym_int5', 'asym_int5' or 'sym_int8', in which 'sym' and 'asym' differentiate between symmetric and asymmetric quantization. Symmetric quantization allocates bits for positive and negative values equally, whereas asymmetric quantization allows different bit allocations for positive and negative values.
+
+You may apply symmetric INT8 optimization as follows:
+
+```python
+from bigdl.llm import optimize_model
+
+# Apply symmetric INT8 optimization
+model = optimize_model(model, low_bit="sym_int8")
+```
 
 ### Save & Load Optimized Model
 
@@ -45,7 +49,7 @@ model.save_low_bit(saved_dir)
 ```
 #### Load
 
-Use `load_low_bit` to load the optimized low-bit model as follows:
+We recommend to use the context manager `low_memory_init` to quickly initiate a model instance with low cost, and then use `load_low_bit` to load the optimized low-bit model as follows:
 ```python
 from bigdl.llm.optimize import low_memory_init, load_low_bit
 with low_memory_init(): # Fast and low cost by loading model on meta device
