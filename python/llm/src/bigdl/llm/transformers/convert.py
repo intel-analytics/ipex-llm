@@ -356,4 +356,7 @@ def optimize(model):
                         module.MistralAttention,
                         mistral_attention_forward
                         )
+        convert_forward(model,
+                        module.MistralRMSNorm,
+                        llama_rms_norm_forward)
     return model
