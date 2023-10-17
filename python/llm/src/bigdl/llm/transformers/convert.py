@@ -190,7 +190,8 @@ def optimize(model):
             convert_forward(model,
                             module.SelfAttention,
                             chatglm2_32k_attention_forward)
-        elif model.config.padded_vocab_size == 65024:
+        elif hasattr(model.config, 'padded_vocab_size') and \
+                model.config.padded_vocab_size == 65024:
             # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
@@ -203,7 +204,7 @@ def optimize(model):
             convert_forward(model,
                             module.CoreAttention,
                             core_attn_forward_8eb45c)
-        elif model.config.vocab_size == 130528:
+        elif hasattr(model.config, 'vocab_size') and model.config.vocab_size == 130528:
             # chatglm-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
