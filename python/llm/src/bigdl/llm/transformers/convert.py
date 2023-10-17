@@ -348,4 +348,12 @@ def optimize(model):
         convert_forward(model,
                         module.AquilaRMSNorm,
                         llama_rms_norm_forward)
+    elif model.config.model_type == "mistral":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.mistral import mistral_attention_forward
+        convert_forward(model,
+                        module.MistralAttention,
+                        mistral_attention_forward
+                        )
     return model

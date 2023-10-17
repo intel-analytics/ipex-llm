@@ -36,11 +36,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import torch
+from typing import Optional, Tuple, Union
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+
+def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
+    """
+    This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
+    num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, head_dim)
+    """
+    batch, num_key_value_heads, slen, head_dim = hidden_states.shape
+    if n_rep == 1:
+        return hidden_states
+    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads, n_rep, slen, head_dim)
+    return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
+
 
 def mistral_attention_forward(
     self,
@@ -68,7 +83,7 @@ def mistral_attention_forward(
         kv_seq_len += past_key_value[0].shape[-2]
 
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids, "mistral")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
