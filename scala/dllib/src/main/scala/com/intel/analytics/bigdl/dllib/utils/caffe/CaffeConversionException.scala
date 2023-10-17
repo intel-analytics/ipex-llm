@@ -23,7 +23,7 @@ class CaffeConversionException (var conversionMsg: String,
   override def toString: String = {
     val erroMsg = s"Caffe conversion error : $conversionMsg"
     if (error != null) {
-      erroMsg + ExceptionUtils.getFullStackTrace(error)
+      erroMsg + ExceptionUtils.getStackTrace(error)
     }
     erroMsg
   }
