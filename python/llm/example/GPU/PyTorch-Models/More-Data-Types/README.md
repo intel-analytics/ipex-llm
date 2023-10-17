@@ -6,7 +6,7 @@ In this example, we show how to apply BigDL-LLM low-bit optimizations (including
 To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
 
 ## Example: Load Model in Low-Bit Optimization
-In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations (including INT8/INT5/INT4) on a Llama2 model to predict the next N tokens using `generate()` API. By specifying `--low-bit` arguments, you could apply other low-bit optimization (e.g. INT8/INT5) on model.
+In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations (including INT8/INT5/INT4) on a Llama2 model to predict the next N tokens using `generate()` API. By specifying `--low-bit` argument, you could apply other low-bit optimization (e.g. INT8/INT5) on model.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -52,4 +52,16 @@ What is AI?
 ### RESPONSE:
 
 Artificial intelligence (AI) refers to the development of computer systems able to perform tasks that typically require human intelligence, such as visual perception, speech
+```
+
+#### [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
+```log
+Inference time: xxxx s
+-------------------- Output --------------------
+### HUMAN:
+What is AI?
+
+### RESPONSE:
+
+AI, or Artificial Intelligence, refers to the ability of machines to perform tasks that would normally require human intelligence, such as learning, problem-
 ```
