@@ -48,3 +48,15 @@ What is AI?
 
 AI is a term used to describe the development of computer systems that can perform tasks that typically require human intelligence, such as understanding natural language, recognizing images
 ```
+
+#### [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
+```log
+Inference time: xxxx s
+-------------------- Output --------------------
+### HUMAN:
+What is AI?
+
+### RESPONSE:
+
+AI, or artificial intelligence, refers to the ability of machines to perform tasks that would typically require human intelligence, such as learning, problem-solving,
+```
