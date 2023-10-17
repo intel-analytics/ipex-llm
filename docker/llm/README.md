@@ -96,10 +96,11 @@ If your model is chatglm-6b and mounted on /llm/models, you can excute:
 python chat.py --model-path /llm/models/chatglm-6b
 ```
 Here is a demostration:
-<p align="left">
+
+<a align="left"  href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif">
             <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif" width='60%' /> 
 
-</p>
+</a>
 
 ### Getting started with tutorials
 
@@ -115,7 +116,8 @@ You could assign a port to serving, or the default port 12345 will be assigned.
 If you use host network mode when booted the container, after successfully running service, you can access http://127.0.0.1:12345/lab to get into tutorial, or you should bind the correct ports between container and host. 
 
 Here is a demostration of how to use tutorial in explorer:
-<p align="left">
+
+<a align="left" href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif">
             <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif" width='60%' /> 
 
-</p>
+</a>
