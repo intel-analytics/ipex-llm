@@ -45,6 +45,34 @@ except ImportError:
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
+def baichuan_rms_norm_forward_7b(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                         [self.weight.size(0)], self.weight)
+    else:
+        variance = hidden_states.to(torch.float32).pow(2).mean(-1, keepdim=True)
+        hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+        # convert into half-precision if necessary
+        if self.weight.dtype in [torch.float16, torch.bfloat16]:
+            hidden_states = hidden_states.to(self.weight.dtype)
+        return self.weight * hidden_states
+    return hidden_states
+
+
+def baichuan_rms_norm_forward_13b(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                         [self.weight.size(0)], self.weight)
+    else:
+        variance = hidden_states.to(torch.float32).pow(2).mean(-1, keepdim=True)
+        hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
+        # convert into half-precision
+        if self.weight.dtype in [torch.float16, torch.bfloat16]:
+            hidden_states = hidden_states.to(self.weight.dtype)
+        return self.weight * hidden_states
+    return hidden_states
+
+
 def baichuan_attention_forward_7b(
     self,
     hidden_states: torch.Tensor,

@@ -270,23 +270,28 @@ def optimize(model):
             # baichuan2-7B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_7b
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_7b,\
+                baichuan_rms_norm_forward_7b
             convert_forward(model,
                             module.Attention,
                             baichuan_attention_forward_7b
                             )
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_rms_norm_forward_7b)
         elif model.config.hidden_size == 5120:
             # baichuan2-13B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b,\
+                baichuan_rms_norm_forward_13b
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-        convert_forward(model,
-                        module.RMSNorm,
-                        llama_rms_norm_forward)
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_rms_norm_forward_13b)
 
     elif model.config.model_type == "baichuan":
         # baichuan1
@@ -294,23 +299,28 @@ def optimize(model):
             # baichuan-7B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_7b
+            from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_7b,\
+                baichuan_rms_norm_forward_7b
             convert_forward(model,
                             module.Attention,
                             baichuan_attention_forward_7b
                             )
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_rms_norm_forward_7b)
         elif model.config.hidden_size == 5120:
             # baichuan-13B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_13b
+            from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_13b,\
+                baichuan_rms_norm_forward_13b
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-        convert_forward(model,
-                        module.RMSNorm,
-                        llama_rms_norm_forward)
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_rms_norm_forward_13b)
 
     elif model.config.model_type == "gpt_neox":
         from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
@@ -352,23 +362,25 @@ def optimize(model):
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.aquila import aquila_attention_forward
+        from bigdl.llm.transformers.models.aquila import aquila_attention_forward,\
+            aquila_rms_norm_forward
         convert_forward(model,
                         module.AquilaAttention,
                         aquila_attention_forward
                         )
         convert_forward(model,
                         module.AquilaRMSNorm,
-                        llama_rms_norm_forward)
+                        aquila_rms_norm_forward)
     elif model.config.model_type == "mistral":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.mistral import mistral_attention_forward
+        from bigdl.llm.transformers.models.mistral import mistral_attention_forward,\
+            mistral_rms_norm_forward
         convert_forward(model,
                         module.MistralAttention,
                         mistral_attention_forward
                         )
         convert_forward(model,
                         module.MistralRMSNorm,
-                        llama_rms_norm_forward)
+                        mistral_rms_norm_forward)
     return model

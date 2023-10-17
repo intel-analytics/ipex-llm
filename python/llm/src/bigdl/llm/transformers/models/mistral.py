@@ -59,6 +59,19 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 
+def mistral_rms_norm_forward(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                         [self.weight.size(0)], self.weight)
+    else:
+        input_dtype = hidden_states.dtype
+        hidden_states = hidden_states.to(torch.float32)
+        variance = hidden_states.pow(2).mean(-1, keepdim=True)
+        hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+        return self.weight * hidden_states.to(input_dtype)
+    return hidden_states
+
+
 def mistral_attention_forward(
     self,
     hidden_states: torch.Tensor,
