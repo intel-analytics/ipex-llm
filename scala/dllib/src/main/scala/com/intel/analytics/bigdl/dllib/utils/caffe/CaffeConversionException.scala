@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.dllib.utils.caffe
 
-import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 
 
 class CaffeConversionException (var conversionMsg: String,
