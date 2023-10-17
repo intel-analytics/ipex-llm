@@ -121,10 +121,27 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
+def _preprocess_normhead(model):
+    # process NormHead module in Baichuan2 7B and 13B
+    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
+        # NormHead do normalization on the weights just once at inference time.
+        # so we do it in advance and convert it to Linear so that it can be replaced.
+        # modeling_module_name = model.__class__.__module__
+        # module = importlib.import_module(modeling_module_name)
+        if hasattr(model, 'lm_head') and model.lm_head is not None:
+            # do we need to check the class instance?
+            vocab_size, hidden_size = model.lm_head.weight.shape
+            norm_weight = nn.functional.normalize(model.lm_head.weight.data)
+            model.lm_head = nn.Linear(hidden_size, vocab_size, bias=False)
+            model.lm_head.weight.data = norm_weight
+    return model
+
+
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None):
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
+    model = _preprocess_normhead(model)
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only,
