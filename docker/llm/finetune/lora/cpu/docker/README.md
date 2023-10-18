@@ -31,8 +31,8 @@ docker run -itd \
  --cpuset-cpus="your_expected_range_of_cpu_numbers" \
  -e STANDALONE_DOCKER=TRUE \
  -e WORKER_COUNT_DOCKER=your_worker_count \
- -v your_downloaded_base_model_path:/ppml/model \
- -v your_downloaded_data_path:/ppml/data/alpaca_data_cleaned_archive.json \
+ -v your_downloaded_base_model_path:/bigdl/model \
+ -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
  intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
  bash
 ```
@@ -50,15 +50,15 @@ docker exec -it bigdl-llm-fintune-lora-cpu bash
 Then, run the script to start finetuning:
 
 ```
-bash /ppml/bigdl-lora-finetuing-entrypoint.sh
+bash /bigdl/bigdl-lora-finetuing-entrypoint.sh
 ```
 
 After minutes, it is expected to get results like:
 
 ```
 Training Alpaca-LoRA model with params:
-base_model: /ppml/model/
-data_path: /ppml/data/alpaca_data_cleaned_archive.json
+base_model: /bigdl/model/
+data_path: /bigdl/data/alpaca_data_cleaned_archive.json
 output_dir: /home/mpiuser/finetuned_model
 batch_size: 128
 micro_batch_size: 8
