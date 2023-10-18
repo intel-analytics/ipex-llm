@@ -366,11 +366,11 @@ class LowBitLinear(nn.Linear):
                 if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
                     x_2d = x_2d.half()
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                    input_seq_size)
+                                                     input_seq_size)
                     result = result.to(x.dtype)
                 else:
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                    input_seq_size)
+                                                     input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
