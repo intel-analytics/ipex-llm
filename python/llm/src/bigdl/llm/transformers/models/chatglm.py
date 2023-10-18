@@ -77,6 +77,8 @@ def attention_fn(
                                                        device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
         key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
 
     elif use_cache:
