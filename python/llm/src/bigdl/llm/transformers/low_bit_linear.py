@@ -355,17 +355,22 @@ class LowBitLinear(nn.Linear):
 
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
-            # current workaround to reduce first token latency of fp32 input
-            # sometimes fp16 cause nan and training instability
-            # disable the conversion when training
-            if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
-                x_2d = x_2d.half()
+
             input_seq_size = x_shape[1]
             if self.training and x_2d.requires_grad:
                 result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
             else:
-                result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                 input_seq_size)
+                # current workaround to reduce first token latency of fp32 input
+                # sometimes fp16 cause nan and training instability
+                # disable the conversion when training
+                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+                    x_2d = x_2d.half()
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                     input_seq_size)
+                    result = result.to(x.dtype)
+                else:
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                     input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
