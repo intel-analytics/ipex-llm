@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
-import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.TaskContext
 import org.apache.spark.sparkExtension.SparkExtension
