@@ -35,7 +35,7 @@ VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip
 
 # Temporarily workaround to conflict on protobuf version of nano and orca
 ORCA_AUTOML_DEP = ['ray[default]==1.9.2', 'aiohttp==3.8.1', 'async-timeout==4.0.1',
-                   'aioredis==1.3.1', 'hiredis==2.0.0', 'setproctitle', 'psutil',
+                   'aioredis==1.3.1', 'hiredis==2.0.0', 'setproctitle', 'psutil==5.9.5',
                    'prometheus-client==0.11.0', 'protobuf==3.19.5', 'ray[tune]==1.9.2',
                    'scikit-learn', 'tensorboard']
 TF_DEP = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') \
