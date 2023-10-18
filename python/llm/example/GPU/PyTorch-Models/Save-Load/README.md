@@ -12,11 +12,24 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-
-pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
-### 2. Run
+### 2. Configures OneAPI environment variables
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+### 3. Run
+For optimal performance on Arc, it is recommended to set several environment variables.
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
 If you want to save the optimized low-bit model, run:
 ```
 python ./generate.py --save-path path/to/save/model
