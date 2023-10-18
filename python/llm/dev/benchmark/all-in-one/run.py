@@ -40,6 +40,7 @@ results = []
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1):
     # TODO: make a parameter
+    result= {}
     if test_api == 'transformer_int4':
         result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'native_int4':
@@ -56,14 +57,15 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
 
     for in_out_pair in in_out_pairs:
-        results.append([repo_id,
-                        np.mean(result[in_out_pair], axis=0)[0],
-                        np.mean(result[in_out_pair], axis=0)[1],
-                        np.mean(result[in_out_pair], axis=0)[2],
-                        in_out_pair,
-                        f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
-                        f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
-                        num_beams])
+        if result:
+            results.append([repo_id,
+                            np.mean(result[in_out_pair], axis=0)[0],
+                            np.mean(result[in_out_pair], axis=0)[1],
+                            np.mean(result[in_out_pair], axis=0)[2],
+                            in_out_pair,
+                            f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
+                            f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
+                            num_beams])
 
 
 def get_model_path(repo_id, local_model_hub):
@@ -192,7 +194,8 @@ def run_pytorch_autocast_bf16(repo_id,
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         # TODO: need verify chatglm family run bf16.
-        invalidInputError(False, "Currently pytorch do not support bfloat16 on cpu for chatglm models.")
+        print("Currently pytorch do not support bfloat16 on cpu for chatglm models. Will skip it")
+        return
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16,
                                                      use_cache=True)
