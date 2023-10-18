@@ -23,7 +23,7 @@ spec:
              name: bigdl-ppml-finetuning-launcher
              securityContext:
               runAsUser: 1000
-             command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
+             command: ['sh' , '-c', 'bash /bigdl/bigdl-lora-finetuing-entrypoint.sh']
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -46,10 +46,10 @@ spec:
              volumeMounts:
              - name: nfs-storage
                subPath: {{ .Values.modelSubPath }}
-               mountPath: /ppml/model
+               mountPath: /bigdl/model
              - name: nfs-storage
                subPath: {{ .Values.dataSubPath }}
-               mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
+               mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
     Worker:
       replicas: {{ .Values.trainerNum }}
       template:
@@ -59,7 +59,7 @@ spec:
             name: bigdl-ppml-finetuning-worker
             securityContext:
               runAsUser: 1000
-            command: ['sh' , '-c', 'bash /ppml/bigdl-lora-finetuing-entrypoint.sh']
+            command: ['sh' , '-c', 'bash /bigdl/bigdl-lora-finetuing-entrypoint.sh']
             env:
             - name: WORKER_ROLE
               value: "trainer"
@@ -78,10 +78,10 @@ spec:
             volumeMounts:
             - name: nfs-storage
               subPath: {{ .Values.modelSubPath }}
-              mountPath: /ppml/model
+              mountPath: /bigdl/model
             - name: nfs-storage
               subPath: {{ .Values.dataSubPath }}
-              mountPath: "/ppml/data/{{ .Values.dataSubPath }}"
+              mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
             resources:
               requests:
                 cpu: {{ .Values.cpuPerPod }}
