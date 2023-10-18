@@ -1,18 +1,23 @@
-## Getting started with BigDL LLM on cpu
+# User guide for BigDL-LLM on docker
+
+### Index
+- [Getting started with BigDL LLM on Windows](#getting-started-with-bigdl-llm-on-windows)
+- [Getting started with BigDL LLM on Linux/MacOS](#getting-started-with-bigdl-llm-on-linuxmacos) 
+- [Getting started with BigDL LLM on XPU](#getting-started-with-bigdl-llm-on-xpu) 
+- [BigDL LLM Serving on CPU](#bigdl-llm-serving-on-cpu) 
+- [BigDL LLM Serving on XPU](#bigdl-llm-serving-on-xpu) 
+- [BigDL LLM Fine Tuning on CPU](#bigdl-llm-fine-tuning-on-cpu) 
+- [BigDL LLM Fine Tuning on XPU](#bigdl-llm-fine-tuning-on-xpu) 
+
+## Getting started with BigDL LLM on Windows    
 
 ### Install docker
 
 New users can quickly get started with Docker using this [official link](https://www.docker.com/get-started/).
 
 For Windows users, make sure Hyper-V is enabled on your computer. 
-
-The instructions for installing can be accessed from following links:
-
-[MacOS](https://docs.docker.com/desktop/install/mac-install/)
-
-[Windows](https://docs.docker.com/desktop/install/windows-install/)
-
-[Linux](https://docs.docker.com/desktop/install/linux-install/)
+The instructions for installing can be accessed from 
+[here](https://docs.docker.com/desktop/install/windows-install/).
 
 
 ### Pull bigdl-llm-cpu image
@@ -22,14 +27,8 @@ To pull image from hub, you can execute command on console:
 docker pull intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
 ```
 to check if the image is successfully downloaded, you can use:
-```bash
-# Windows
+```powershell
 docker images | sls intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
-```
-
-```bash
-# MacOS/Linux
-docker images | grep intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
 ```
 
 
@@ -53,23 +52,6 @@ docker run -itd ^
     --name=%CONTAINER_NAME% ^
     -v %MODEL_PATH%:/llm/models ^
     %DOCKER_IMAGE%
-```
-
-on MacOS/Linux:
-```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
-export CONTAINER_NAME=my_container
-export MODEL_PATH=D:/llm/models[change to your model path]
-
-# Run the Docker container
-docker run -itd \
-    --net=host \
-    --cpuset-cpus="0-7" \
-    --cpuset-mems="0" \
-    --memory="8G" \
-    --name=$CONTAINER_NAME \
-    -v $MODEL_PATH:/llm/models \
-    $DOCKER_IMAGE
 ```
 
 After the container is booted, you could get into the container through `docker exec`.
@@ -121,3 +103,38 @@ Here is a demostration of how to use tutorial in explorer:
             <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif" width='60%' /> 
 
 </a>
+
+## Getting started with BigDL LLM on Linux/MacOS
+
+To run container on Linux/MacOS:
+```bash
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+export CONTAINER_NAME=my_container
+export MODEL_PATH=D:/llm/models[change to your model path]
+
+# Run the Docker container
+docker run -itd \
+    --net=host \
+    --cpuset-cpus="0-7" \
+    --cpuset-mems="0" \
+    --memory="8G" \
+    --name=$CONTAINER_NAME \
+    -v $MODEL_PATH:/llm/models \
+    $DOCKER_IMAGE
+```
+
+Also, you could use chat.py and bigdl-llm-tutorial for development.
+
+[Getting started with chat](#getting-started-with-chat)
+
+[Getting started with tutorials](#getting-started-with-tutorials)
+
+## Getting started with BigDL LLM on XPU
+
+## BigDL LLM Serving on CPU
+
+## BigDL LLM Serving on XPU
+
+## BigDL LLM Fine Tuning on CPU
+
+## BigDL LLM Fine Tuning on XPU
