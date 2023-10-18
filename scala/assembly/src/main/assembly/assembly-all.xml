@@ -161,6 +161,7 @@
       <excludes>
 	<exclude>com.intel.analytics.bigdl:*:jar</exclude>
         <exclude>com.intel.analytics.zoo:*:jar</exclude>
+	<exclude>com.intel.analytics.bigdl.core.dist:all:jar</exclude>
         <exclude>org.apache.hadoop:*:jar</exclude>
         <exclude>org.apache.flink:*:jar</exclude>
         <exclude>org.apache.spark:*:jar</exclude>
