@@ -1,15 +1,18 @@
-# User guide for BigDL-LLM on docker
+# Getting started with BigDL-LLM
 
 ### Index
-- [Getting started with BigDL LLM on Windows](#getting-started-with-bigdl-llm-on-windows)
-- [Getting started with BigDL LLM on Linux/MacOS](#getting-started-with-bigdl-llm-on-linuxmacos) 
-- [Getting started with BigDL LLM on XPU](#getting-started-with-bigdl-llm-on-xpu) 
+- [Docker user guide for BigDL-LLM on CPU](#docker-user-guide-for-bigdl-llm-on-cpu)
+    - [BigDL-LLM on Windows](#bigdl-llm-on-windows)
+    - [BigDL-LLM on Linux/MacOS](#bigdl-llm-on-linuxmacos)
+- [Docker user guide for BigDL LLM on XPU](#docker-user-guide-for-bigdl-llm-on-xpu) 
 - [BigDL LLM Serving on CPU](#bigdl-llm-serving-on-cpu) 
 - [BigDL LLM Serving on XPU](#bigdl-llm-serving-on-xpu) 
 - [BigDL LLM Fine Tuning on CPU](#bigdl-llm-fine-tuning-on-cpu) 
 - [BigDL LLM Fine Tuning on XPU](#bigdl-llm-fine-tuning-on-xpu) 
 
-## Getting started with BigDL LLM on Windows    
+## Docker user guide for BigDL-LLM on CPU
+
+### BigDL-LLM on Windows
 
 ### Install docker
 
@@ -45,7 +48,7 @@ set MODEL_PATH=D:/llm/models[change to your model path]
 
 :: Run the Docker container
 docker run -itd ^
-    --net=host ^
+    -p 12345:12345 ^
     --cpuset-cpus="0-7" ^
     --cpuset-mems="0" ^
     --memory="8G" ^
@@ -104,7 +107,7 @@ Here is a demostration of how to use tutorial in explorer:
 
 </a>
 
-## Getting started with BigDL LLM on Linux/MacOS
+### BigDL-LLM on Linux/MacOS
 
 To run container on Linux/MacOS:
 ```bash
@@ -114,7 +117,7 @@ export MODEL_PATH=D:/llm/models[change to your model path]
 
 # Run the Docker container
 docker run -itd \
-    --net=host \
+    -p 12345:12345 \
     --cpuset-cpus="0-7" \
     --cpuset-mems="0" \
     --memory="8G" \
@@ -129,7 +132,7 @@ Also, you could use chat.py and bigdl-llm-tutorial for development.
 
 [Getting started with tutorials](#getting-started-with-tutorials)
 
-## Getting started with BigDL LLM on XPU
+## Docker user guide for BigDL LLM on XPU
 
 ## BigDL LLM Serving on CPU
 
