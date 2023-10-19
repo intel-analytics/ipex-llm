@@ -60,9 +60,9 @@ class _BaseAutoModelClass:
         :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                , sym_int8 or fp16. sym_int4 means symmetric int 4, asym_int4 means
-                                asymmetric int 4, etc. Relevant low bit optimizations will
-                                be applied to the model.
+                                , sym_int8, nf3, nf4 or fp16. sym_int4 means symmetric int 4,
+                                asym_int4 means asymmetric int 4, nf4 means 4-bit NormalFloat, etc. 
+                                Relevant low bit optimizations will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be True.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
@@ -106,7 +106,8 @@ class _BaseAutoModelClass:
         from .convert import ggml_convert_low_bit
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
-                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8 or fp16.")
+                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4 "
+                          "or fp16.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,
