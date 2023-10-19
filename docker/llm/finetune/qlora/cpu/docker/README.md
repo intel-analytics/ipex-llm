@@ -42,7 +42,7 @@ docker run -itd \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/english_quotes \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-cpu:2.4.0-SNAPSHOT
+   intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -58,7 +58,7 @@ docker run -itd \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-cpu:2.4.0-SNAPSHOT
+   intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
