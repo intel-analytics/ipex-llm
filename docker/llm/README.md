@@ -1,16 +1,16 @@
 # Getting started with BigDL-LLM in Docker
 
 ### Index
-- [Docker user guide for BigDL-LLM on CPU](#docker-user-guide-for-bigdl-llm-on-cpu)
+- [Docker installation guide for BigDL-LLM on CPU](#docker-installation-guide-for-bigdl-llm-on-cpu)
     - [BigDL-LLM on Windows](#bigdl-llm-on-windows)
     - [BigDL-LLM on Linux/MacOS](#bigdl-llm-on-linuxmacos)
-- [Docker user guide for BigDL LLM on XPU](#docker-user-guide-for-bigdl-llm-on-xpu) 
-- [Docker user guide for BigDL LLM Serving on CPU](#docker-user-guide-for-bigdl-llm-serving-on-cpu) 
-- [Docker user guide for BigDL LLM Serving on XPU](#docker-user-guide-for-bigdl-llm-serving-on-xpu) 
-- [Docker user guide for BigDL LLM Fine Tuning on CPU](#docker-user-guide-for-bigdl-llm-fine-tuning-on-cpu) 
-- [Docker user guide for BigDL LLM Fine Tuning on XPU](#docker-user-guide-for-bigdl-llm-fine-tuning-on-xpu) 
+- [Docker installation guide for BigDL LLM on XPU](#docker-installation-guide-for-bigdl-llm-on-xpu) 
+- [Docker installation guide for BigDL LLM Serving on CPU](#docker-installation-guide-for-bigdl-llm-serving-on-cpu) 
+- [Docker installation guide for BigDL LLM Serving on XPU](#docker-installation-guide-for-bigdl-llm-serving-on-xpu) 
+- [Docker installation guide for BigDL LLM Fine Tuning on CPU](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-cpu) 
+- [Docker installation guide for BigDL LLM Fine Tuning on XPU](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-xpu) 
 
-## Docker user guide for BigDL-LLM on CPU
+## Docker installation guide for BigDL-LLM on CPU
 
 ### BigDL-LLM on Windows
 
@@ -132,7 +132,7 @@ Also, you could use chat.py and bigdl-llm-tutorial for development.
 
 [Getting started with tutorials](#getting-started-with-tutorials)
 
-## Docker user guide for BigDL LLM on XPU
+## Docker installation guide for BigDL LLM on XPU
 
 First, pull docker image from docker hub:
 ```
@@ -170,7 +170,7 @@ root@arda-arc12:/# sycl-ls
 
 To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU).
 
-## Docker user guide for BigDL LLM Serving on CPU
+## Docker installation guide for BigDL LLM Serving on CPU
 
 ### Boot container
 
@@ -262,7 +262,7 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
 
-## Docker user guide for BigDL LLM Serving on XPU
+## Docker installation guide for BigDL LLM Serving on XPU
 
 ### Boot container
 
@@ -352,6 +352,6 @@ Finally, launch the RESTful API server
 python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
-## Docker user guide for BigDL LLM Fine Tuning on CPU
+## Docker installation guide for BigDL LLM Fine Tuning on CPU
 
-## Docker user guide for BigDL LLM Fine Tuning on XPU
+## Docker installation guide for BigDL LLM Fine Tuning on XPU
