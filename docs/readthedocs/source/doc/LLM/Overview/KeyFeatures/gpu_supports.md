@@ -14,7 +14,7 @@ import intel_extension_for_pytorch as ipex
 
 ### Load and Optimize Model
 
-You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-style API](./transformers_style_api.html) on Intel GPUs based on your requirements.
+You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-style API](./transformers_style_api.html) on Intel GPUs according to your preference.
 
 **Once you have the model with BigDL-LLM low bit optimization, set it to `to('xpu')`**.
 
@@ -37,7 +37,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
-      Especially, if you have saved the optimized model following setps `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/optimize_model.html#save>`_, the loading process on Intel GPUs maybe as follows:
+      Especially, if you have saved the optimized model following setps `here <./optimize_model.html#save>`_, the loading process on Intel GPUs maybe as follows:
 
       .. code-block:: python
 
@@ -69,7 +69,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
-      Especially, if you have saved the optimized model following setps `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/hugging_face_format.html#save-load>`_, the loading process on Intel GPUs maybe as follows:
+      Especially, if you have saved the optimized model following setps `here <./hugging_face_format.html#save-load>`_, the loading process on Intel GPUs maybe as follows:
 
       .. code-block:: python
 
@@ -94,7 +94,6 @@ with torch.inference_mode():
    prompt = 'Q: What is CPU?\nA:'
    input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu') # With .to('xpu') specifically for inference on Intel GPUs
    output = model.generate(input_ids, max_new_tokens=32)
-   torch.xpu.synchronize()
    output = output.cpu() # Move to CPU
    output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 ```
@@ -108,12 +107,12 @@ with torch.inference_mode():
 
 ## QLoRA Finetuning
 
-We also support finetuning LLMs (large language models) using Q-Lora with BigDL-LLM 4bit optimizations on Intel GPUs.
+We also support finetuning LLMs (large language models) using QLoRA with BigDL-LLM 4bit optimizations on Intel GPUs.
 
 ```eval_rst
 .. note::
 
-   Currently, only Hugging Face Transformers models are supported running Q-Lora finetuning.
+   Currently, only Hugging Face Transformers models are supported running QLoRA finetuning.
 ```
 
 To help you better understand the finetuning process, here we use model [Llama-2-7b-hf](https://huggingface.co/meta-llama/Llama-2-7b-hf) as an example.
