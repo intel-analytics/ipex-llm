@@ -49,14 +49,6 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|User|>:What is AI?
--------------------- Output --------------------
-Artificial intelligence (AI) is the use of computers to simulate human intelligence.
-```
-
-```log
-Inference time: xxxx s
--------------------- Prompt --------------------
 <|User|>:Translate to German: My name is Arthur
 -------------------- Output --------------------
 Ich bin Arthur.
