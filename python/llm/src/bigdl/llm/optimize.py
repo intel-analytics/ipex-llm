@@ -224,7 +224,6 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
                       "Expect model on device `cpu`, "
                       f"but got device type {model.device.type}")
     qtype = ggml_tensor_qtype[low_bit]
-    
     model = ggml_convert_low_bit(model,
                                  qtype=qtype,
                                  optimize_model=optimize_llm,
@@ -234,6 +233,4 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     model._bigdl_config = dict()
     model._bigdl_config["bigdl_transformers_low_bit"] = low_bit
     model.save_low_bit = types.MethodType(_save_low_bit, model)
-    
-    
     return model
