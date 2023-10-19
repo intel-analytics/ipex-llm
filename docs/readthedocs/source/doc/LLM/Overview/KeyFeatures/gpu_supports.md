@@ -84,7 +84,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
 ### Run Optimized Model
 
-You could then inference using the optimized model on Intel GPUs almostly the same as on CPUs. **The only difference is to set `to('xpu')` for input tensors and `.cpu()` for output tensors.**
+You could then do inference using the optimized model on Intel GPUs almostly the same as on CPUs. **The only difference is to set `to('xpu')` for input tensors and `.cpu()` for output tensors.**
 
 Continuing with the [example of Llama-2-7b-chat-hf](#load-and-optimize-model), running as follows:
 ```python
@@ -102,7 +102,7 @@ with torch.inference_mode():
 ```eval_rst
 .. note::
 
-   The initial generation of optimized LLMs on Intel GPUs could be slow. Therefore, it's advisable to perform a **warm-up** run before the actual generation.
+   The initial generation of optimized LLMs on Intel GPUs could be slow. Therefore, it's recommended to perform a **warm-up** run before the actual generation.
 ```
 
 
@@ -124,7 +124,8 @@ To help you better understand the finetuning process, here we use model [Llama-2
 import intel_extension_for_pytorch as ipex
 ```
 
-First, load model using `transformers`-style API and **set it to `to('xpu')`** as follows:
+First, load model using `transformers`-style API and **set it to `to('xpu')`**. We specify `load_in_low_bit="nf4"` here to apply 4-bit NormalFloat optimization. According to the [QLoRA paper](https://arxiv.org/pdf/2305.14314.pdf), using `"nf4"` could yield better model quality than `"int4"`.
+
 ```python
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -157,7 +158,11 @@ config = LoraConfig(r=8,
 model = get_peft_model(model, config)
 ```
 
-Now, you could load a common dataset to fine tune model as the same as using official `transformers` API. 
+```eval_rst
+.. important::
+
+   Instead of ``from peft import prepare_model_for_kbit_training, get_peft_model`` as we did for regular QLoRA using bitandbytes and cuda, we import them from ``bigdl.llm.transformers.qlora`` here to get a BigDL-LLM compatible Peft model. And the rest is just the same as regular LoRA finetuning process using ``peft``.
+```
 
 ```eval_rst
 .. seealso::
