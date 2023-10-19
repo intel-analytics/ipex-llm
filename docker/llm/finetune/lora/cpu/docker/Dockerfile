@@ -12,7 +12,7 @@ FROM mpioperator/intel as builder
 ARG http_proxy
 ARG https_proxy
 ENV PIP_NO_CACHE_DIR=false
-ADD ./requirements.txt /bigdl/requirements.txt
+COPY ./requirements.txt /bigdl/requirements.txt
 
 # add public key
 COPY --from=key-getter /root/intel-oneapi-archive-keyring.gpg /usr/share/keyrings/intel-oneapi-archive-keyring.gpg
@@ -56,8 +56,8 @@ RUN mkdir /bigdl/data && mkdir /bigdl/model && \
     echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
     sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
 
-ADD ./bigdl-lora-finetuing-entrypoint.sh /bigdl/bigdl-lora-finetuing-entrypoint.sh
-ADD ./lora_finetune.py /bigdl/lora_finetune.py
+COPY ./bigdl-lora-finetuing-entrypoint.sh /bigdl/bigdl-lora-finetuing-entrypoint.sh
+COPY ./lora_finetune.py /bigdl/lora_finetune.py
 
 RUN chown -R mpiuser /bigdl
 USER mpiuser
