@@ -43,7 +43,7 @@ import transformers
 import importlib
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
-
+from deepspeed.module_inject.layers import LinearLayer, LinearAllreduce
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False):
@@ -54,17 +54,28 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if current_key_name is None:
             current_key_name = []
 
-        if isinstance(module, nn.Linear) and name not in modules_to_not_convert:
+        if (isinstance(module, nn.Linear) or isinstance(module, LinearLayer) or isinstance(module, LinearAllreduce)) and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
+                    if isinstance(module, nn.Linear):
+                        in_features = module.in_features
+                        out_features = module.out_features
+                    else:
+                        in_features = module.weight.shape[1]
+                        out_features = module.weight.shape[0]
+                    if isinstance(module, LinearAllreduce):
+                        mp_group = module.mp_group
+                    else:
+                        mp_group = None
                     new_linear = None
                     if qtype != ggml_tensor_qtype["fp16"]:
                         new_linear = LowBitLinear(
-                            module.in_features,
-                            module.out_features,
+                            in_features,
+                            out_features,
                             qtype,
                             module.bias is not None,
+                            mp_group=mp_group,
                         )
 
                         device_type = module.weight.data.device.type
@@ -82,10 +93,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if module.in_features in [4096, 11008]:
                             # esimd fp16 path
                             new_linear = FP16Linear(
-                                module.in_features,
-                                module.out_features,
+                                in_features,
+                                out_features,
                                 qtype,
                                 module.bias is not None,
+                                mp_group=mp_group,
                             )
                             device_type = module.weight.data.device.type
 
@@ -104,7 +116,13 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
-                        model._modules[name].requires_grad_(False)
+                        try:
+                            model._modules[name].requires_grad_(False)
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to set `requires_grad=False` on {name} due to the following error: {e}"
+                            )
+                            print(new_linear)
 
                         module.weight = None
 

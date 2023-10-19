@@ -328,7 +328,7 @@ class MatMulLowBit(torch.autograd.Function):
 
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True):
+                 conver_to_half=True, mp_group=None):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -339,6 +339,7 @@ class LowBitLinear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
         self.conver_to_half = conver_to_half
+        self.mp_group = mp_group
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -378,6 +379,9 @@ class LowBitLinear(nn.Linear):
                                                      input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
+            if self.mp_group is not None:
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
             if self.bias is not None:
                 result += self.bias
         else:
@@ -400,7 +404,7 @@ class LowBitLinear(nn.Linear):
 
 class FP16Linear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True):
+                 conver_to_half=True, mp_group=None):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
@@ -408,6 +412,7 @@ class FP16Linear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
         self.conver_to_half = conver_to_half
+        self.mp_group = mp_group
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -442,6 +447,9 @@ class FP16Linear(nn.Linear):
 
         new_shape = x_shape[:-1] + (self.out_len,)
         result = result.view(new_shape)
+        if self.mp_group is not None:
+            from deepspeed import comm as dist
+            dist.inference_all_reduce(result, group=self.mp_group)
         if self.bias is not None:
             result += self.bias
 
