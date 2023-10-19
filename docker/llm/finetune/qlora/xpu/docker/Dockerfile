@@ -35,4 +35,4 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install peft==0.5.0 datasets && \
     wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/gpu/qlora_finetuning/qlora_finetuning.py
 
-ADD ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh
+COPY ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh

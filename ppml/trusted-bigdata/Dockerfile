@@ -55,7 +55,7 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar && \
     rm spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
-ADD ./log4j2.xml /opt/spark-${SPARK_VERSION}/conf/log4j2.xml
+COPY ./log4j2.xml /opt/spark-${SPARK_VERSION}/conf/log4j2.xml
 # spark modification
 RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
@@ -186,18 +186,18 @@ COPY --from=bigdata /opt/flink $FLINK_HOME
 COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
-ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
-ADD ./scripts /ppml/scripts
-ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
-ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
-ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
-ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
-ADD ./examples /ppml/examples
-ADD ./examples/jupyter /ppml/notebook
-ADD ./zeppelin /ppml/zeppelin
-ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
-ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
+COPY ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
+COPY ./scripts /ppml/scripts
+COPY ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
+COPY ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
+COPY ./entrypoint.sh /opt/entrypoint.sh
+COPY ./flink-entrypoint.sh /opt/flink-entrypoint.sh
+COPY ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
+COPY ./examples /ppml/examples
+COPY ./examples/jupyter /ppml/notebook
+COPY ./zeppelin /ppml/zeppelin
+COPY ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
+COPY ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -250,8 +250,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
     unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
     unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src
-ADD azure /ppml/azure
-ADD ./start-notebook.sh /ppml/start-notebook.sh
+COPY azure /ppml/azure
+COPY ./start-notebook.sh /ppml/start-notebook.sh
 RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/generate-keys-az.sh && \
     chmod a+x /ppml/azure/generate-password-az.sh && \

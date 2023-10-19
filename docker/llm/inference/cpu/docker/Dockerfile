@@ -6,7 +6,7 @@ ARG PIP_NO_CACHE_DIR=false
 
 ENV PYTHONUNBUFFERED=1
 
-ADD ./start-notebook.sh /llm/start-notebook.sh
+COPY ./start-notebook.sh /llm/start-notebook.sh
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
