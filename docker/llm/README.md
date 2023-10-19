@@ -210,7 +210,7 @@ A special case is `ChatGLM` models. For these models, you do not need to do any 
 
 ### Start the service
 
-#### Serving with WebGUI
+#### Serving with Web UI
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
@@ -303,7 +303,7 @@ After the container is booted, you could get into the container through `docker 
 
 ### Start the service
 
-#### Serving with WebGUI
+#### Serving with Web UI
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
