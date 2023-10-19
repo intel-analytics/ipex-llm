@@ -1,14 +1,14 @@
-# Getting started with BigDL-LLM
+# Getting started with BigDL-LLM in Docker
 
 ### Index
 - [Docker user guide for BigDL-LLM on CPU](#docker-user-guide-for-bigdl-llm-on-cpu)
     - [BigDL-LLM on Windows](#bigdl-llm-on-windows)
     - [BigDL-LLM on Linux/MacOS](#bigdl-llm-on-linuxmacos)
 - [Docker user guide for BigDL LLM on XPU](#docker-user-guide-for-bigdl-llm-on-xpu) 
-- [BigDL LLM Serving on CPU](#bigdl-llm-serving-on-cpu) 
-- [BigDL LLM Serving on XPU](#bigdl-llm-serving-on-xpu) 
-- [BigDL LLM Fine Tuning on CPU](#bigdl-llm-fine-tuning-on-cpu) 
-- [BigDL LLM Fine Tuning on XPU](#bigdl-llm-fine-tuning-on-xpu) 
+- [Docker user guide for BigDL LLM Serving on CPU](#docker-user-guide-for-bigdl-llm-serving-on-cpu) 
+- [Docker user guide for BigDL LLM Serving on XPU](#docker-user-guide-for-bigdl-llm-serving-on-xpu) 
+- [Docker user guide for BigDL LLM Fine Tuning on CPU](#docker-user-guide-for-bigdl-llm-fine-tuning-on-cpu) 
+- [Docker user guide for BigDL LLM Fine Tuning on XPU](#docker-user-guide-for-bigdl-llm-fine-tuning-on-xpu) 
 
 ## Docker user guide for BigDL-LLM on CPU
 
@@ -18,7 +18,7 @@
 
 New users can quickly get started with Docker using this [official link](https://www.docker.com/get-started/).
 
-For Windows users, make sure Hyper-V is enabled on your computer. 
+For Windows users, make sure WSL2 or Hyper-V is enabled on your computer. 
 The instructions for installing can be accessed from 
 [here](https://docs.docker.com/desktop/install/windows-install/).
 
@@ -170,7 +170,7 @@ root@arda-arc12:/# sycl-ls
 
 To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU).
 
-## BigDL LLM Serving on CPU
+## Docker user guide for BigDL LLM Serving on CPU
 
 ### Boot container
 
@@ -262,7 +262,7 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
 
-## BigDL LLM Serving on XPU
+## Docker user guide for BigDL LLM Serving on XPU
 
 ### Boot container
 
@@ -352,6 +352,6 @@ Finally, launch the RESTful API server
 python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
-## BigDL LLM Fine Tuning on CPU
+## Docker user guide for BigDL LLM Fine Tuning on CPU
 
-## BigDL LLM Fine Tuning on XPU
+## Docker user guide for BigDL LLM Fine Tuning on XPU
