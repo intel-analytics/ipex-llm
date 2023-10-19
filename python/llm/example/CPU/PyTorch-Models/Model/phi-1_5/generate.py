@@ -22,7 +22,7 @@ from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM, Generat
 from bigdl.llm import optimize_model
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/microsoft/phi-1_5/blob/294cb13118a1e08ad8449ca542624a5c6aecc401/modeling_phi-1_5.py#L1281
+# here the prompt tuning refers to https://huggingface.co/microsoft/phi-1_5/blob/main/modeling_mixformer_sequential.py
 PHI_1_5_V1_PROMPT_FORMAT = "Question: {prompt}\n\n Answer:"
 generation_config = GenerationConfig(use_cache = True)
 

@@ -14,7 +14,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install einops 
+pip install einops # additional package required for phi-1_5 to conduct generation
 ```
 
 ### 2. Configures OneAPI environment variables
@@ -32,7 +32,7 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
 
 ```
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+python ./generate.py --prompt 'What is AI?'
 ```
 
 Arguments info:

@@ -24,7 +24,7 @@ from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
 from transformers import AutoTokenizer, GenerationConfig
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to  # TODO: https://huggingface.co/THUDM/chatglm2-6b/blob/main/modeling_chatglm.py#L1007
+# here the prompt tuning refers to  # TODO: https://huggingface.co/microsoft/phi-1_5/blob/main/modeling_mixformer_sequential.py
 PHI1_5_PROMPT_FORMAT = " Question:{prompt}\n\n Answer:"
 generation_config = GenerationConfig(use_cache = True)
 
@@ -44,8 +44,8 @@ if __name__ == '__main__':
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                      load_in_4bit=True,
-                                      trust_remote_code=True)
+                                                 load_in_4bit=True,
+                                                 trust_remote_code=True)
 
     model = model.to('xpu')
 
@@ -70,8 +70,7 @@ if __name__ == '__main__':
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
 
         # Note that phi-1_5 uses GenerationConfig to enable 'use_cache'
-        output = model.generate(input_ids, do_sample=False, 
-                                max_new_tokens=args.n_predict, generation_config = generation_config)
+        output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict, generation_config = generation_config)
         torch.xpu.synchronize()
         end = time.time()
         output = output.cpu()
