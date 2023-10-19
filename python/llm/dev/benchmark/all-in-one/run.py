@@ -59,9 +59,9 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     for in_out_pair in in_out_pairs:
         if result:
             results.append([repo_id,
-                            np.mean(result[in_out_pair], axis=0)[0],
-                            np.mean(result[in_out_pair], axis=0)[1],
-                            np.mean(result[in_out_pair], axis=0)[2],
+                            np.mean(result[in_out_pair], axis=0)[0]*1000.0,
+                            np.mean(result[in_out_pair], axis=0)[1]*1000.0,
+                            np.mean(result[in_out_pair], axis=0)[2]*1000.0,
                             in_out_pair,
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
                             f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
@@ -545,7 +545,7 @@ if __name__ == '__main__':
     for api in conf.test_api:
         for model in conf.repo_id:
             run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'])
-        df = pd.DataFrame(results, columns=['model', '1st token avg latency (s)', '2+ avg latency (s/token)', 'encoder time (s)',
+        df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams'])
         df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
         results = []
