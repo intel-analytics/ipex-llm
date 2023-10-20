@@ -60,8 +60,8 @@ if __name__ == '__main__':
 
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
-        
+                                max_new_tokens=args.n_predict,
+                                generation_config = generation_config)
         # start inference
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
