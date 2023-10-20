@@ -64,6 +64,7 @@ SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
+FP8 = ggml_tensor_qtype["fp8"]
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
@@ -87,9 +88,13 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                              device=device)
 
     if not convert_shape_only and device != 'meta':
-        dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
-        hist = (ctypes.c_int64 * 16)()
-        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        if qtype == FP8:
+            import linear_q4_0
+            linear_q4_0.cvt_fp32_e4m3_rne(tensor, dst_tensor, n, k)
+        else:
+            dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+            hist = (ctypes.c_int64 * 16)()
+            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
 
@@ -378,8 +383,8 @@ class LowBitLinear(nn.Linear):
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4,
-                              "NF3 and NF4 quantization are currently not supported on CPU")
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8,
+                              "NF3, NF4 and FP8 quantization are currently not supported on CPU")
             if IS_SERVER and (not IS_SPR) and \
                     self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                 x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
