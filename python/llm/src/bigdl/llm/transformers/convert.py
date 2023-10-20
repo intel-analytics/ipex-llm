@@ -146,6 +146,9 @@ def _optimize_pre(model):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None):
+    logger.info(f"Converting the current model to " \
+                f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} " \
+                f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
     if optimize_model:
