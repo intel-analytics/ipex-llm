@@ -11,8 +11,8 @@ ARG TINI_VERSION=v0.18.0
 ARG http_proxy
 ARG https_proxy
 
-ADD utils.diff /opt/utils.diff
-ADD llm_cli.diff /opt/llm_cli.diff
+COPY utils.diff /opt/utils.diff
+COPY llm_cli.diff /opt/llm_cli.diff
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 
 
@@ -48,7 +48,7 @@ RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230830 && \
     apt-get install -y libunwind8-dev && \
     mkdir /ppml/data
 
-ADD ./entrypoint.sh /opt/entrypoint.sh
+COPY ./entrypoint.sh /opt/entrypoint.sh
 RUN  chmod +x /opt/entrypoint.sh && \
      chmod +x /sbin/tini
 WORKDIR /ppml

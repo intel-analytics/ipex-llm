@@ -6,8 +6,8 @@ ARG https_proxy
 RUN mkdir -p /ppml/
 
 
-ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./attestation.sh /opt/attestation.sh
+COPY ./entrypoint.sh /opt/entrypoint.sh
+COPY ./attestation.sh /opt/attestation.sh
 
 
 # Install bigdl-ppml

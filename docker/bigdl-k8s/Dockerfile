@@ -61,7 +61,7 @@ RUN apt-get update --fix-missing && \
     wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
     
 
-ADD ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
+COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 RUN ln -fs /bin/bash /bin/sh
 RUN if [ $SPARK_VERSION = "3.4.1" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -85,7 +85,7 @@ ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git
-ADD ./download-bigdl.sh /opt
+COPY ./download-bigdl.sh /opt
 
 RUN chmod a+x /opt/download-bigdl.sh && \
     mkdir -p /opt/bigdl-examples/python
@@ -105,7 +105,6 @@ COPY --from=spark /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt
 
 # stage.4
 FROM ubuntu:20.04
-MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SPARK_HOME
