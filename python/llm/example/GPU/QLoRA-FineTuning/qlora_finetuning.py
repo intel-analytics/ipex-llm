@@ -21,7 +21,6 @@ import transformers
 from transformers import LlamaTokenizer
 
 from peft import LoraConfig
-import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
@@ -30,10 +29,10 @@ import argparse
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="/home/llm/models/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--dataset', type=str, default="Abirate/english_quotes")
+    parser.add_argument('--dataset', type=str, default="./english_quotes")
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -43,13 +42,16 @@ if __name__ == "__main__":
     data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                load_in_low_bit="nf4",
+                                                load_in_low_bit="sym_int4",
+                                                modules_to_not_convert=["lm_head"],
                                                 optimize_model=False,
                                                 torch_dtype=torch.float16,
-                                                modules_to_not_convert=["lm_head"],)
-    model = model.to('xpu')
-    model.gradient_checkpointing_enable()
-    model = prepare_model_for_kbit_training(model)
+                                                )
+    model = model.to("cpu")
+    # model.gradient_checkpointing_enable()
+    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False)
+
+    model.enable_input_require_grads()
     config = LoraConfig(
         r=8, 
         lora_alpha=32, 
@@ -71,8 +73,8 @@ if __name__ == "__main__":
             max_steps=200,
             learning_rate=2e-4,
             save_steps=100,
-            fp16=True,
-            logging_steps=20,
+            bf16=True,
+            logging_steps=1,
             output_dir="outputs",
             optim="adamw_hf", # paged_adamw_8bit is not supported yet
             # gradient_checkpointing=True, # can further reduce memory but slower
