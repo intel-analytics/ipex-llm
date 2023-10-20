@@ -163,7 +163,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>${maven-assembly-plugin.version}</version>
                 <executions>
-<!--                     <execution>
+                    <execution>
                         <id>make-dist-all</id>
                         <inherited>false</inherited>
                         <phase>package</phase>
@@ -175,8 +175,8 @@
                                 <descriptor>src/main/assembly/assembly.xml</descriptor>
                             </descriptors>
                         </configuration>
-                    </execution> -->
-		    <execution>
+                    </execution>
+<!-- 		    <execution>
                         <id>make-dist-all</id>
                         <inherited>false</inherited>
                         <phase>package</phase>
@@ -184,13 +184,12 @@
                             <goal>assembly</goal>
                         </goals>
                         <configuration>
-<!-- 			    <finalName>bigdl-assembly-all-spark_${spark.version}</finalName> -->
                             <descriptors>
                                 <descriptor>src/main/assembly/assembly-all.xml</descriptor>
                             </descriptors>
                         </configuration>
-                    </execution>
-<!--                     <execution>
+                    </execution> -->
+                    <execution>
                         <id>make-fat-assembly</id>
                         <inherited>false</inherited>
                         <phase>package</phase>
@@ -214,7 +213,7 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
-                    </execution> -->
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
