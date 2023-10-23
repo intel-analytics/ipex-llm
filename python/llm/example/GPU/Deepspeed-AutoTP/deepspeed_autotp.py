@@ -13,8 +13,7 @@ import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
-# from bigdl.llm.transformers import AutoModelForCausalLM
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM  # export AutoModelForCausalLM from transformers so that deepspeed use it
 from transformers import LlamaTokenizer, AutoTokenizer
 
 if __name__ == '__main__':
@@ -30,39 +29,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    # model_path = "/home/sdp/yang/bigdl/alpaca-lora-xpu/finetune_merged_llama_70b_step_700"
-    model_path = "meta-llama/Llama-2-7b-hf"
-    model_path = "bigscience/bloom-7b1"
-    # with deepspeed.OnDevice(dtype=torch.float16, device="meta"):
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                #  load_in_4bit=True,
-                                                #  optimize_model=True,
-                                                device_map={"": "cpu"},
-                                                low_cpu_mem_usage=True,
-                                                torch_dtype=torch.float16,
-                                                trust_remote_code=True,
-                                                use_cache=True)
-    # model = BenchmarkWrapper(model)
+    model = AutoModelForCausalLM.from_pretrained(args.repo_id_or_model_path,
+                                                 low_cpu_mem_usage=True,
+                                                 torch_dtype=torch.float16,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
 
     model = deepspeed.init_inference(
         model,
         mp_size=world_size,
         dtype=torch.float16,
         replace_method="auto",
-        # checkpoint="/home/sdp/yang/bigdl/save_deepspeed_llama_70b_sharded/ds_inference_config.json",
-        # replace_with_kernel_inject=True,
     )
 
-    model = optimize_model(model.module.to(f'cpu'))
-    model = model.to(f'xpu:{local_rank}')
-    print(model)
+    # move model to cpu and use bigdl-llm `optimize_model` to convert the
+    # model into optimized low bit format 
+    model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
 
-    model = BenchmarkWrapper(model)
+    # move model back to xpu
+    model = model.to(f'xpu:{local_rank}')
 
     # Load tokenizer
-    # tokenizer_path = "meta-llama/Llama-2-7b-hf"
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     # Generate predicted tokens
