@@ -117,12 +117,13 @@ class RotaryEmbedding(torch.nn.Module):
         return self.cos_cached, self.sin_cached
 
     # def forward(self, q, k):
-    def forward(self, q, k, seq_len):
+    def forward(self, q, k, past_key_values_length, position_ids):
         # batch, seq_len, head_dim = q.shape
         _,q_len,_ = q.shape
+        seq_len = q_len + past_key_values_length
         cos, sin = self.cos_sin(seq_len, q.device, q.dtype)
-        cos = cos[:,-q_len:]
-        sin = sin[:,-q_len:]
+        cos = cos.squeeze(0)[position_ids]
+        sin = sin.squeeze(0)[position_ids]
 
         return (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)
 
@@ -290,11 +291,8 @@ class Attention(nn.Module):
         value_layer = value_layer.transpose(1, 2).reshape(batch_size * self.num_kv, q_length, self.head_dim)
 
         # query_layer, key_layer = self.maybe_rotary(query_layer, key_layer)
-        _, seq_len, _ = query_layer.shape
-        if layer_past is not None:
-            _, seq_len_past, _ = layer_past[0].shape
+        past_kv_length = 0 if layer_past is None else layer_past[0].shape[1]
 
-            seq_len = seq_len + seq_len_past
         use_fuse_rope = query_layer.device.type == "xpu"
         use_fuse_rope = use_fuse_rope and not (self.training and query_layer.requires_grad)
         if use_fuse_rope:
@@ -309,7 +307,7 @@ class Attention(nn.Module):
             query_layer = query_layer.reshape(batch_size * self.num_heads, q_length, self.head_dim)
             key_layer = key_layer.reshape(batch_size * self.num_kv, q_length, self.head_dim)
         else:
-            query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
+            query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, past_kv_length, position_ids)
 
         if layer_past is not None:
             past_key, past_value = layer_past
