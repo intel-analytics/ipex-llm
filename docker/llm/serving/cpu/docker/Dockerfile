@@ -13,7 +13,7 @@ ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbi
 RUN cd /llm && \
     git clone https://github.com/analytics-zoo/FastChat.git && \
     cd FastChat && \
-    git checkout dev-2023-09-22 && \
+    git checkout add-low-bit && \
     pip3 install -e ".[model_worker,webui]" && \
     cd /llm && \
     chmod +x /opt/entrypoint.sh && \
