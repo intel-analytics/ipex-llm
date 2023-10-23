@@ -21,12 +21,12 @@ import diffusers
 from huggingface_hub import snapshot_download
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
-from diffusers import AutoencoderKL, UNet2DConditionModel
 from diffusers import (
     DiffusionPipeline,
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline
 )
+from diffusers import AutoencoderKL, UNet2DConditionModel
 
 from bigdl.nano.diffusion.utils.paths import *
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -115,7 +115,7 @@ def _load_ipex(pipe, device, precision):
             precision="fp16")
     else:
         raise ValueError(f'Unsupported precision {precision}, \
-                         available options are: {["float32", "bfloat32", "float16"]}')
+                         available options are: {["float32", "bfloat16", "float16"]}')
     pipe.vae = vae
     pipe.text_encoder = text_encoder
     pipe.unet = unet
@@ -129,8 +129,8 @@ class NanoDiffusionPipeline:
             cls: DiffusionPipeline,
             pretrained_model_name_or_path,
             scheduler=default_scheduler,
-            device='iGPU',
-            precision='float16',
+            device='CPU',
+            precision='bfloat16',
             backend='IPEX',
             **kwargs,):
         """Get the pretrained model."""
