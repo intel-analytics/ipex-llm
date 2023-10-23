@@ -258,6 +258,7 @@ class BigDLLLMAdapter(BaseModelAdapter):
 class BigDLLMLOWBITAdapter(BaseModelAdapter):
     "Model adapter for bigdl-llm backend low-bit models"
 
+
     def match(self, model_path: str):
         return "bigdl-lowbit" in model_path
 
@@ -270,6 +271,7 @@ class BigDLLMLOWBITAdapter(BaseModelAdapter):
         from bigdl.llm.transformers import AutoModelForCausalLM
         model = AutoModelForCausalLM.load_low_bit(model_path)
         return model, tokenizer
+
 
 def patch_fastchat():
     global is_fastchat_patched
