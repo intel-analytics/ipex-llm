@@ -255,9 +255,9 @@ class BigDLLLMAdapter(BaseModelAdapter):
         )
         return model, tokenizer
 
+
 class BigDLLMLOWBITAdapter(BaseModelAdapter):
     "Model adapter for bigdl-llm backend low-bit models"
-
 
     def match(self, model_path: str):
         return "bigdl-lowbit" in model_path
