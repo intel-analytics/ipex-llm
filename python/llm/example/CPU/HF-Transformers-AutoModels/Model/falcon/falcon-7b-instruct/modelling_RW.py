@@ -18,9 +18,11 @@
 #
 # This file is adapted from
 # https://huggingface.co/tiiuae/falcon-7b-instruct/blob/c7f670a03d987254220f343c6b026ea0c5147185/modelling_RW.py
+# and https://github.com/huggingface/transformers/blob/v4.34.1/src/transformers/models/falcon/modeling_falcon.py
 #
 # Apache 2.0 license
 # https://huggingface.co/tiiuae/falcon-7b-instruct#license
+# https://github.com/huggingface/transformers/blob/v4.34.1/LICENSE
 
 # ===========================================================================
 # 
