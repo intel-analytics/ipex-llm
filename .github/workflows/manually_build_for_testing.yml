@@ -17,6 +17,7 @@ on:
         - bigdl-llm-xpu
         - bigdl-llm-cpu
         - bigdl-llm-serving-xpu
+        - bigdl-llm-serving-cpu
         - bigdl-ppml-gramine-base
         - bigdl-ppml-trusted-bigdl-llm-gramine-base
         - bigdl-ppml-trusted-bigdl-llm-gramine-ref
