@@ -1,5 +1,5 @@
 #/bin/bash
-export WORLD_SIZE=1
+export WORLD_SIZE=2
 export REPO_ID_OR_MODEL_PATH=/home/llm/models/Llama-2-7b-chat-hf
 export OMP_NUM_THREADS=48
 
