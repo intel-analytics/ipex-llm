@@ -1,144 +1,164 @@
 BigDL-LLM LangChain API
 =====================
 
-llm.langchain.embeddings.bigdlllm
+LLM Wrapper of LangChain
 ----------------------------------------
 
-.. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.LlamaEmbeddings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+Hugging Face ``transformers`` Format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    .. automethod:: validate_environment
-    .. automethod:: embed_documents
-    .. automethod:: embed_query 
+BigDL-LLM provides ``TransformersLLM`` and ``TransformersPipelineLLM``, which implement the standard interface of LLM wrapper of LangChain.
 
+.. tabs::
 
-.. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.BloomEmbeddings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+    .. tab:: AutoModel
 
-    .. automethod:: validate_environment
-    .. automethod:: embed_documents
-    .. automethod:: embed_query
+        .. automodule:: bigdl.llm.langchain.llms.transformersllm
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: model_id, model_kwargs, model, tokenizer, streaming, Config
 
+    .. tab:: pipeline
 
-.. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.GptneoxEmbeddings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
-
-    .. automethod:: validate_environment
-    .. automethod:: embed_documents
-    .. automethod:: embed_query
+        .. automodule:: bigdl.llm.langchain.llms.transformerspipelinellm
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: pipeline, model_id, model_kwargs, pipeline_kwargs, Config
 
 
-.. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.ChatGLMEmbeddings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+Native Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    .. automethod:: validate_environment
-    .. automethod:: embed_documents
-    .. automethod:: embed_query
+For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, you could also use the following LLM wrappers with the native (cpp) implementation for maximum performance.
+
+.. tabs::
+
+    .. tab:: Llama
+
+        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.LlamaLLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
+
+            .. automethod:: validate_environment
+            .. automethod:: stream
+            .. automethod:: get_num_tokens
+
+    .. tab:: ChatGLM
+
+        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.ChatGLMLLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
+
+            .. automethod:: validate_environment
+            .. automethod:: stream
+            .. automethod:: get_num_tokens
+
+    .. tab:: Bloom
+
+        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.BloomLLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
+
+            .. automethod:: validate_environment
+            .. automethod:: stream
+            .. automethod:: get_num_tokens
+
+    .. tab:: Gptneox
+
+        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.GptneoxLLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
+
+            .. automethod:: validate_environment
+            .. automethod:: stream
+            .. automethod:: get_num_tokens
+
+    .. tab:: Starcoder
+
+        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.StarcoderLLM
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
+
+            .. automethod:: validate_environment
+            .. automethod:: stream
+            .. automethod:: get_num_tokens
 
 
-.. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.StarcoderEmbeddings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+Embeddings Wrapper of LangChain
+----------------------------------------
 
-    .. automethod:: validate_environment
-    .. automethod:: embed_documents
-    .. automethod:: embed_query
-
-
-llm.langchain.embeddings.transformersembeddings
---------------------------------------------------
+Hugging Face ``transformers`` AutoModel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: bigdl.llm.langchain.embeddings.transformersembeddings
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: model, tokenizer, model_id, model_kwargs, encode_kwargs, Config
 
+Native Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-llm.langchain.llms.bigdlllm
-----------------------------------------
+For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also use the following wrappers.
 
-.. autoclass:: bigdl.llm.langchain.llms.bigdlllm.LlamaLLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+.. tabs::
 
-    .. automethod:: validate_environment
-    .. automethod:: stream
-    .. automethod:: get_num_tokens
+    .. tab:: Llama
 
+        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.LlamaEmbeddings
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
 
-.. autoclass:: bigdl.llm.langchain.llms.bigdlllm.BloomLLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+            .. automethod:: validate_environment
+            .. automethod:: embed_documents
+            .. automethod:: embed_query
 
-    .. automethod:: validate_environment
-    .. automethod:: stream
-    .. automethod:: get_num_tokens 
+    .. tab:: Bloom
 
+        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.BloomEmbeddings
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
 
-.. autoclass:: bigdl.llm.langchain.llms.bigdlllm.GptneoxLLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+            .. automethod:: validate_environment
+            .. automethod:: embed_documents
+            .. automethod:: embed_query
 
-    .. automethod:: validate_environment
-    .. automethod:: stream
-    .. automethod:: get_num_tokens
+    .. tab:: Gptneox
 
+        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.GptneoxEmbeddings
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
 
-.. autoclass:: bigdl.llm.langchain.llms.bigdlllm.ChatGLMLLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
+            .. automethod:: validate_environment
+            .. automethod:: embed_documents
+            .. automethod:: embed_query
 
-    .. automethod:: validate_environment
-    .. automethod:: stream
-    .. automethod:: get_num_tokens
+    .. tab:: Starcoder
 
+        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.StarcoderEmbeddings
+            :members:
+            :undoc-members:
+            :show-inheritance:
+            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
 
-.. autoclass:: bigdl.llm.langchain.llms.bigdlllm.StarcoderLLM
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :exclude-members: ggml_model , ggml_module
-
-    .. automethod:: validate_environment
-    .. automethod:: stream
-    .. automethod:: get_num_tokens
-
-
-llm.langchain.llms.transformersllm
-----------------------------------------
-
-.. automodule:: bigdl.llm.langchain.llms.transformersllm
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-llm.langchain.llms.transformerspipelinellm
----------------------------------------------
-
-.. automodule:: bigdl.llm.langchain.llms.transformerspipelinellm
-    :members:
-    :undoc-members:
-    :show-inheritance:
+            .. automethod:: validate_environment
+            .. automethod:: embed_documents
+            .. automethod:: embed_query

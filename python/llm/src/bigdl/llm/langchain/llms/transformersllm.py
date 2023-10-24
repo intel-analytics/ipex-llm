@@ -101,7 +101,8 @@ class TransformersLLM(LLM):
             model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
             kwargs: Extra arguments that will be passed to the model and tokenizer.
 
-        Returns: An object of TransformersLLM.
+        Returns:
+            An object of TransformersLLM.
         """
         try:
             from bigdl.llm.transformers import (
@@ -159,7 +160,8 @@ class TransformersLLM(LLM):
             model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
             kwargs: Extra arguments that will be passed to the model and tokenizer.
 
-        Returns: An object of TransformersLLM.
+        Returns:
+            An object of TransformersLLM.
         """
         try:
             from bigdl.llm.transformers import (

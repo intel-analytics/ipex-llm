@@ -1,4 +1,7 @@
-FROM intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+ARG BASE_IMAGE_NAME=intelanalytics/bigdl-llm-serving-cpu
+ARG BASE_IMAGE_TAG=2.4.0-SNAPSHOT
+
+FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 ARG http_proxy
 ARG https_proxy
@@ -6,8 +9,8 @@ ARG https_proxy
 RUN mkdir -p /ppml/
 
 
-ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./attestation.sh /opt/attestation.sh
+COPY ./entrypoint.sh /opt/entrypoint.sh
+COPY ./attestation.sh /opt/attestation.sh
 
 
 # Install bigdl-ppml

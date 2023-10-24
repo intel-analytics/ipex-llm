@@ -7,8 +7,8 @@ ARG TINI_VERSION=v0.18.0
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+COPY ./entrypoint.sh /opt/entrypoint.sh
+ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 # Install Serving Dependencies
 RUN mkdir /llm && \
     cd /llm && \

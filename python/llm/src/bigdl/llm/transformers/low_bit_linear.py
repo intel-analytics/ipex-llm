@@ -64,6 +64,7 @@ SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
+FP8 = ggml_tensor_qtype["fp8"]
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
@@ -87,9 +88,13 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                              device=device)
 
     if not convert_shape_only and device != 'meta':
-        dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
-        hist = (ctypes.c_int64 * 16)()
-        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        if qtype == FP8:
+            import linear_q4_0
+            linear_q4_0.cvt_fp32_e4m3_rne(tensor, dst_tensor, n, k)
+        else:
+            dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+            hist = (ctypes.c_int64 * 16)()
+            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
 
@@ -355,17 +360,22 @@ class LowBitLinear(nn.Linear):
 
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
-            # current workaround to reduce first token latency of fp32 input
-            # sometimes fp16 cause nan and training instability
-            # disable the conversion when training
-            if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
-                x_2d = x_2d.half()
+
             input_seq_size = x_shape[1]
             if self.training and x_2d.requires_grad:
                 result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
             else:
-                result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                 input_seq_size)
+                # current workaround to reduce first token latency of fp32 input
+                # sometimes fp16 cause nan and training instability
+                # disable the conversion when training
+                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+                    x_2d = x_2d.half()
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                     input_seq_size)
+                    result = result.to(x.dtype)
+                else:
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                     input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
@@ -373,8 +383,8 @@ class LowBitLinear(nn.Linear):
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4,
-                              "NF3 and NF4 quantization are currently not supported on CPU")
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8,
+                              "NF3, NF4 and FP8 quantization are currently not supported on CPU")
             if IS_SERVER and (not IS_SPR) and \
                     self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                 x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)

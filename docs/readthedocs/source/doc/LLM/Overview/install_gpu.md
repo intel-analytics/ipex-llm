@@ -26,6 +26,7 @@ BigDL-LLM for GPU supports has been verified on:
 
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
+* Intel Data Center GPU Max Series
 
 ```eval_rst
 .. note::

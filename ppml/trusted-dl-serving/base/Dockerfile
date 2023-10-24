@@ -147,7 +147,7 @@ COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers-4.28.1-py3.
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers* /usr/local/lib/python3.9/dist-packages/tokenizers.egg
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
-ADD ./ppml /ppml
+COPY ./ppml /ppml
 
 #Tritonserver
 COPY --from=tritonserver /dl-serving/opt /opt
@@ -156,7 +156,7 @@ COPY --from=min_container /dl-serving /
 #TF-Serving
 COPY --from=tf-serving /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server
 
-Add ./pslinux.patch /ppml/pslinux.patch
+COPY ./pslinux.patch /ppml/pslinux.patch
 
 # Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
