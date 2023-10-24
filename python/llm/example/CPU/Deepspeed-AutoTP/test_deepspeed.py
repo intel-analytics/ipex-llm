@@ -95,8 +95,12 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = args.prompt
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to(f'cpu:{local_rank}')
+        prompts = tuple([args.prompt] * 64)
+        # Batch tokenizing
+        input_ids = torch.tensor(
+                tokenizer.batch_encode_plus(prompts, truncation=True,
+                    max_length=30)['input_ids']
+                ).to(f'cpu:{local_rank}')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
@@ -113,9 +117,7 @@ if __name__ == '__main__':
         end = time.time()
         if local_rank == 0:
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            print(f'Inference time: {end - start} s')
-            print('-'*20, 'Prompt', '-'*20)
-            print(prompt)
             print('-'*20, 'Output', '-'*20)
             print(output_str)
+            print(f'Inference time: {end - start} s')
 
