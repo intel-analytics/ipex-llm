@@ -388,11 +388,20 @@ class LowBitLinear(nn.Linear):
             if IS_SERVER and (not IS_SPR) and \
                     self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                 x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                # Parallel F.linear should be avoided, thus deepspeed allreduce after the operation
                 result = F.linear(x, x0_fp32, self.bias)
+                if self.mp_group is not None:
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
             else:
                 result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                 new_shape = x_shape[:-1] + (self.out_len,)
                 result = result.view(new_shape)
+                # bias is consistent among multi instances,
+                # deepspeed only allreduce result without bias to reduce comunication
+                if self.mp_group is not None:
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
                 if self.bias is not None:
                     result += self.bias
         return result
