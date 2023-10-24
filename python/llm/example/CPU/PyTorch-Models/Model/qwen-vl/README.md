@@ -1,11 +1,11 @@
-# Qwen-VL-Chat
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Qwen-VL-Chat models. For illustration purposes, we utilize the [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat) as a reference Qwen-VL-Chat model.
+# Qwen-VL
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Qwen-VL models. For illustration purposes, we utilize the [Qwen/Qwen-VL](https://huggingface.co/Qwen/Qwen-VL) as a reference Qwen-VL model.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Multimodal chat using `chat()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Qwen-VL-Chat model to start a multimodal chat using `chat()` API, with BigDL-LLM 'optimize_model' API.
+In the example [generate.py](./generate.py), we show a basic use case for a Qwen-VL model to start a multimodal chat using `chat()` API, with BigDL-LLM 'optimize_model' API.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
@@ -15,7 +15,9 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
-pip install accelerate tiktoken einops scipy transformers_stream_generator==0.0.4 peft deepspeed torchvision matplotlib
+
+pip install transformers==4.31.0 accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
+
 ```
 
 ### 2. Run
@@ -45,7 +47,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the Qwen-VL-Chat model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen-VL-Chat'`.
+- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the Qwen-VL model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen-VL'`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
   
 In every session, image and text can be entered into cmd (user can skip the input by type **'Enter'**) ; please type **'exit'** anytime you want to quit the dialouge.
@@ -53,22 +55,34 @@ In every session, image and text can be entered into cmd (user can skip the inpu
 Every image output will be named as the round of session and placed under the current directory.
 
 #### 2.4 Sample Chat
-#### [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat)
+#### [Qwen/Qwen-VL](https://huggingface.co/Qwen/Qwen-VL)
+
 ```log
 -------------------- Session 1 --------------------
- 请输入你想询问的图片: https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg
- 请输入你想询问的文字信息: 这是什么
+ Please input a picture: https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg
+ Please enter the text: 这是什么
 ---------- Response ----------
-图中是一名女子在沙滩上和狗玩耍，旁边的狗是一只拉布拉多犬，它们处于沙滩上。
+图中是一只戴着墨镜的酷炫猫咪，正坐在窗边，看着窗外。 
 
 -------------------- Session 2 --------------------
- 请输入你想询问的图片:
- 请输入你想询问的文字信息: 输出击掌的检测框
+ Please input a picture: 
+ Please enter the text: 这只猫猫多大了？
 ---------- Response ----------
-<ref>击掌</ref><box>(538,513),(588,601)</box>
+由于只猫猫戴着太阳镜，无法判断年龄，但可以猜测它应该是一只成年猫猫，已经成年。 
 
 -------------------- Session 3 --------------------
- 请输入你想询问的图片: exit
+ Please input a picture: 
+ Please enter the text: 在图中检测框出猫猫的墨镜
+---------- Response ----------
+<ref>猫猫的墨镜</ref><box>(398,313),(994,506)</box> 
+
+-------------------- Session 4 --------------------
+ Please input a picture: exit
 ```
 
-[![Demo.gif](https://i.postimg.cc/0N1QshjQ/Demo.gif)](https://postimg.cc/yDnBhQF4)
+And the input and output picture is like:
+
+![](https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg)
+
+![](https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png)
+
