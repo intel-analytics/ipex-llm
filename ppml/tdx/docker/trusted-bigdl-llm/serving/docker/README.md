@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT .
 ```
 ## Start the controller and worker images of bigdl-ppml-trusted-bigdl-llm-serving-tdx in the tdx-vm.
 
