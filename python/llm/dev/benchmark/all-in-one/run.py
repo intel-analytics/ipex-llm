@@ -165,7 +165,7 @@ def run_transformer_int4(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
@@ -227,7 +227,7 @@ def run_pytorch_autocast_bf16(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             print("input tokens: {}".format(input_ids.shape[1]))
@@ -263,7 +263,7 @@ def run_optimize_model(repo_id,
         model = optimize_model(model)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                      use_cache=True, low_cpu_mem_usage=True)
         model = optimize_model(model)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -294,7 +294,7 @@ def run_optimize_model(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
@@ -366,7 +366,7 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len].to('xpu')
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
@@ -444,7 +444,7 @@ def run_optimize_model_gpu(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len].to('xpu')
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
@@ -515,7 +515,7 @@ def run_ipex_fp16_gpu(repo_id,
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt")[:, :in_len].to('xpu')
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
