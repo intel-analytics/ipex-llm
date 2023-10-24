@@ -104,7 +104,7 @@ def load_model(
         device, load_8bit, cpu_offloading
     )
     if device == "cpu":
-        kwargs = {"torch_dtype": torch.float32}
+        kwargs = {"torch_dtype": "auto"}
         if CPU_ISA in ["avx512_bf16", "amx"]:
             try:
                 import intel_extension_for_pytorch as ipex
