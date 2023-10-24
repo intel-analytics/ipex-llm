@@ -127,5 +127,8 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          taskset -c 0-$((THREAD_NUM - 1)) python run.py
+          python run.py
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
+          cd ../../../test/benchmark
+          python csv_to_html.py -f ../../dev/benchmark/all-in-one
+          cp ./*.html /mnt/disk1/nightly_perf/
