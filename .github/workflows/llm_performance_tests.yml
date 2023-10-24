@@ -130,5 +130,5 @@ jobs:
           python run.py
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
           cd ../../../test/benchmark
-          python csv_to_html.py
+          python csv_to_html.py -f ../../dev/benchmark/all-in-one
           cp ./*.html /mnt/disk1/nightly_perf/
