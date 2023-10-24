@@ -59,9 +59,9 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     for in_out_pair in in_out_pairs:
         if result:
             results.append([repo_id,
-                            np.mean(result[in_out_pair], axis=0)[0]*1000.0,
-                            np.mean(result[in_out_pair], axis=0)[1]*1000.0,
-                            np.mean(result[in_out_pair], axis=0)[2]*1000.0,
+                            round(np.mean(result[in_out_pair], axis=0)[0]*1000.0, 2),
+                            round(np.mean(result[in_out_pair], axis=0)[1]*1000.0, 2),
+                            round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2),
                             in_out_pair,
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
                             f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',

@@ -131,4 +131,4 @@ jobs:
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
           cd ../../../test/benchmark
           taskset -c 0-$((THREAD_NUM - 1)) python csv_to_html.py
-          curl -T ./*.html ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          cp ./*.html /mnt/disk1/nightly_perf/
