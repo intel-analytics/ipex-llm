@@ -58,20 +58,30 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
 | MOSS       | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
 | Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
+| Phi-1_5    | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-1_5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-1_5)    |
 
 
 ### Working with `bigdl-llm`
 
 <details><summary>Table of Contents</summary>
 
-- [Install](#install)
-- [Run Model](#run-model)
-  - [Hugging Face `transformers` API](#1-hugging-face-transformers-api)
-  - [Native INT4 Model](#2-native-int4-model)
-  - [LangChain API](#l3-angchain-api)
-  - [CLI Tool](#4-cli-tool)
-- [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
-- [`bigdl-llm` Dependency](#bigdl-llm-dependency)
+- [BigDL-LLM](#bigdl-llm)
+  - [Demos](#demos)
+  - [Verified models](#verified-models)
+  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
+    - [Install](#install)
+      - [CPU](#cpu)
+      - [GPU](#gpu)
+    - [Run Model](#run-model)
+      - [1. Hugging Face `transformers` API](#1-hugging-face-transformers-api)
+        - [CPU INT4](#cpu-int4)
+        - [GPU INT4](#gpu-int4)
+        - [More Low-Bit Support](#more-low-bit-support)
+      - [2. Native INT4 model](#2-native-int4-model)
+      - [3. LangChain API](#3-langchain-api)
+      - [4. CLI Tool](#4-cli-tool)
+  - [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
+  - [`bigdl-llm` Dependency](#bigdl-llm-dependency)
 
 </details>
 
