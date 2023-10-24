@@ -20,7 +20,7 @@ from torch import Tensor
 
 
 class CPUEmbedding(torch.nn.Embedding):
-    def forward(self, x: Tensor, **kwargs):
+    def forward(self, x: Tensor):
         if self.weight.device != 'cpu':
             self.to('cpu')
-        return super().forward(x.to('cpu'), **kwargs).to(x.device)
+        return super().forward(x.to('cpu')).to(x.device)

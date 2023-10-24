@@ -109,7 +109,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name].requires_grad_(False)
 
                         module.weight = None
-        elif isinstance(module, nn.Embedding) and name not in modules_to_not_convert:
+        elif type(module) == nn.Embedding and name not in modules_to_not_convert:
+            # skip user-defined Embedding layer
             if platform.system().lower() == 'windows':
                 model._modules[name] = CPUEmbedding(
                     num_embeddings=module.num_embeddings,
