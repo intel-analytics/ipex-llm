@@ -9,4 +9,4 @@ fi
 torchrun --standalone \
          --nnodes=1 \
          --nproc-per-node 4 \
-         deepspeed_autotp.py
+         deepspeed_autotp.py --repo-id-or-model-path "meta-llama/Llama-2-7b-hf"

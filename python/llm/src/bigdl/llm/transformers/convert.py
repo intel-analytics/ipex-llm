@@ -60,13 +60,13 @@ def is_linear_module(module):
         if is_deepspeed_available():
             from deepspeed.module_inject.layers import LinearLayer, LinearAllreduce
             if isinstance(module, LinearLayer):
-                in_features = module.in_features
-                out_features = module.out_features
+                in_features = module.weight.shape[1]
+                out_features = module.weight.shape[0]
                 mp_group = None
                 result = True
             elif isinstance(module, LinearAllreduce):
-                in_features = module.in_features
-                out_features = module.out_features
+                in_features = module.weight.shape[1]
+                out_features = module.weight.shape[0]
                 mp_group = module.mp_group
                 result = True
             else:

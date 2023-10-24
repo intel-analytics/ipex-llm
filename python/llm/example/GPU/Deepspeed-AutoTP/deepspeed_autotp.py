@@ -2,7 +2,7 @@ import os
 import torch
 import transformers
 import deepspeed
-from gpu_benchmark_util import BenchmarkWrapper
+
 local_rank = int(os.getenv("LOCAL_RANK", "0"))
 world_size = int(os.getenv("WORLD_SIZE", "1"))
 
@@ -48,6 +48,8 @@ if __name__ == '__main__':
 
     # move model back to xpu
     model = model.to(f'xpu:{local_rank}')
+
+    print(model)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
