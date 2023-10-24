@@ -22,5 +22,5 @@ pytest ${LLM_INFERENCE_TEST_DIR} -v -s
 now=$(date "+%s")
 time=$((now-start))
 
-echo "Bigdl-llm tests finished"
+echo "Bigdl-llm gpu tests finished"
 echo "Time used:$time seconds"
