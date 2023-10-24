@@ -318,7 +318,7 @@ class MatMulLowBitCPU(torch.autograd.Function):
     @staticmethod
     def forward(ctx, A, weight):
         ctx.is_empty = False
-        result = ggml_matmul_src1_x_src0_t(weight.data, A, weight._shape, weight._shape[0] * weight._shape[1])
+        result = ggml_matmul_src1_x_src0_t(weight.data, A, weight._shape, weight.qtype)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
         else:
@@ -330,7 +330,7 @@ class MatMulLowBitCPU(torch.autograd.Function):
         if ctx.is_empty:
             bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
             return torch.zeros_like(ctx.A), torch.zeros_like(ctx.B), None, bias_grad, None
-        req_gradA, _, _ = ctx.needs_input_grad
+        req_gradA, _ = ctx.needs_input_grad
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
 
