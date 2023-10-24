@@ -313,14 +313,14 @@ class MatMulLowBit(torch.autograd.Function):
 
         return grad_A, grad_weight, None
 
-class MatMulLowBitCpu(torch.autograd.Function):
+class MatMulLowBitCPU(torch.autograd.Function):
 
     @staticmethod
-    def forward(ctx, A, weight, weight_shape, weight_length):
+    def forward(ctx, A, weight):
         ctx.is_empty = False
-        result = ggml_matmul_src1_x_src0_t(weight.data, A, weight_shape, weight.qtype)
+        result = ggml_matmul_src1_x_src0_t(weight.data, A, weight._shape, weight._shape[0] * weight._shape[1])
         if any(ctx.needs_input_grad[:2]):
-            ctx.tensors = (A, weight, weight_shape, weight_length)
+            ctx.tensors = (A, weight)
         else:
             ctx.tensors = (None, None)
         return result
@@ -331,13 +331,11 @@ class MatMulLowBitCpu(torch.autograd.Function):
             bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
             return torch.zeros_like(ctx.A), torch.zeros_like(ctx.B), None, bias_grad, None
         req_gradA, _, _ = ctx.needs_input_grad
-        A, weight, weight_shape, weight_length = ctx.tensors
-        weight_shape = weight_shape.item()
-        weight_length = weight_length.item()
+        A, weight = ctx.tensors
         grad_A, grad_weight = None, None
 
         if req_gradA:
-            dequant_weight = ggml_int4_convert_fp32(weight.data, weight_shape, weight_length).to(grad_output.dtype)
+            dequant_weight = ggml_int4_convert_fp32(weight.data, weight._shape, weight._shape[0] * weight._shape[1]).to(grad_output.dtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
@@ -404,10 +402,8 @@ class LowBitLinear(nn.Linear):
             else:
                 if x_2d.is_contiguous() is False:
                     x_2d = x_2d.contiguous()
-                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
-                    x_2d = x_2d.half()
                 if self.training and x_2d.requires_grad:
-                    result = MatMulLowBitCpu.apply(x_2d, self.weight, self.weight_shape, self.weight_length)
+                    result = MatMulLowBitCPU.apply(x_2d, self.weight)
                 else:
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                 new_shape = x_shape[:-1] + (self.out_len,)
