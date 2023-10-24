@@ -183,6 +183,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install einops datasets librosa openai-whisper
+          python -m pip install transformers==4.34.0
           bash python/llm/test/run-llm-inference-tests.sh
       - name: Run LLM langchain test
         shell: bash
