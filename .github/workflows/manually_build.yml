@@ -876,18 +876,23 @@ jobs:
         echo "##############################################################"
         echo "############## bigdl-ppml-trusted-bigdl-llm-serving-tdx ###############"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx
+        export image=intelanalytics/trusted-bigdl-llm-serving-tdx
+        export base_image=intelanalytics/bigdl-llm-serving-cpu
+        docker pull ${base_image}:${TAG}
         cd ppml/tdx/docker/trusted-bigdl-llm/serving/docker
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${base_image}:${TAG}
 
   bigdl-ppml-trusted-bigdl-llm-tdx:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-tdx' || github.event.inputs.artifact == 'all' }}

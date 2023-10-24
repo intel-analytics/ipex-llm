@@ -28,5 +28,5 @@ output = llm.batch_decode(output_ids)
 ```eval_rst
 .. seealso::
    
-   See the complete example `here <https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/transformers/native_int4/native_int4_pipeline.py>`_
+   See the complete example `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models>`_
 ```
