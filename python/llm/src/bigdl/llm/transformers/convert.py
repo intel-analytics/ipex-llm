@@ -35,6 +35,7 @@
 # limitations under the License.
 
 
+import platform
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
@@ -48,6 +49,7 @@ from .utils import logger
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
+    from bigdl.llm.transformers.embedding import CPUEmbedding
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -107,6 +109,18 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name].requires_grad_(False)
 
                         module.weight = None
+        elif isinstance(module, nn.Embedding) and name not in modules_to_not_convert:
+            if platform.system().lower() == 'windows':
+                model._modules[name] = CPUEmbedding(
+                    num_embeddings=module.num_embeddings,
+                    embedding_dim=module.embedding_dim,
+                    padding_idx=module.padding_idx,
+                    max_norm=module.max_norm,
+                    norm_type=module.norm_type,
+                    scale_grad_by_freq=module.scale_grad_by_freq,
+                    sparse=module.sparse,
+                    _weight=module.weight.data,
+                )
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
