@@ -21,7 +21,7 @@ output = doc_chain.run(...)
 ```eval_rst
 .. seealso::
 
-   See the examples `here <https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/langchain/transformers_int4>`_.
+   See the examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/LangChain/transformers_int4>`_.
 ```
 
 ## Using Native INT4 Format
@@ -53,5 +53,5 @@ doc_chain.run(...)
 ```eval_rst
 .. seealso::
 
-   See the examples `here <https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/langchain/native_int4>`_.
+   See the examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/LangChain/native_int4>`_.
 ```
