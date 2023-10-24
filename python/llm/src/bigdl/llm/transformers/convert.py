@@ -45,6 +45,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 from transformers.integrations.deepspeed import is_deepspeed_available
 
+
 def is_linear_module(module):
 
     in_features = None
@@ -140,13 +141,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
-                        try:
-                            model._modules[name].requires_grad_(False)
-                        except Exception as e:
-                            logger.warning(
-                                f"Failed to set `requires_grad=False` on {name} due to the following error: {e}"
-                            )
-                            print(new_linear)
+                        model._modules[name].requires_grad_(False)
 
                         module.weight = None
 
