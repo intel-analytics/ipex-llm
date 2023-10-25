@@ -25,9 +25,9 @@ from bigdl.llm import optimize_model
 torch.manual_seed(1234)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for Qw-VL-Chat model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen_VL_Chat",
-                        help='The huggingface repo id for the Qwen_VL_Chat model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for Qw-VL model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen-VL-Chat",
+                        help='The huggingface repo id for the Qwen-VL model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--n-predict', type=int, default=32, help='Max tokens to predict')
     
@@ -37,7 +37,11 @@ if __name__ == '__main__':
         
     # Load model
     # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
-    model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, device_map="cpu", trust_remote_code=True, optimize_model=True,modules_to_not_convert=['c_fc', 'out_proj'] )
+    model = AutoModelForCausalLM.from_pretrained(model_path, 
+                                                 load_in_4bit=True, 
+                                                 device_map="cpu", 
+                                                 trust_remote_code=True, 
+                                                 modules_to_not_convert=['c_fc', 'out_proj'] )
 
     # Specify hyperparameters for generation (No need to do this if you are using transformers>=4.32.0)
     model.generation_config = GenerationConfig.from_pretrained(model_path, trust_remote_code=True)

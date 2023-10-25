@@ -1,5 +1,5 @@
 # Qwen-VL
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Qwen-VL models. For illustration purposes, we utilize the [Qwen/Qwen-VL](https://huggingface.co/Qwen/Qwen-VL) as a reference Qwen-VL model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Qwen-VL models. For illustration purposes, we utilize the [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat) as a reference Qwen-VL model.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -16,7 +16,7 @@ conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 
-pip install transformers==4.31.0 accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
+pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
 
 ```
 
@@ -47,7 +47,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the Qwen-VL model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen-VL'`.
+- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the Qwen-VL model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen-VL-Chat'`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
   
 In every session, image and text can be entered into cmd (user can skip the input by type **'Enter'**) ; please type **'exit'** anytime you want to quit the dialouge.
@@ -55,7 +55,7 @@ In every session, image and text can be entered into cmd (user can skip the inpu
 Every image output will be named as the round of session and placed under the current directory.
 
 #### 2.4 Sample Chat
-#### [Qwen/Qwen-VL](https://huggingface.co/Qwen/Qwen-VL)
+#### [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat)
 
 ```log
 -------------------- Session 1 --------------------
@@ -79,10 +79,13 @@ Every image output will be named as the round of session and placed under the cu
 -------------------- Session 4 --------------------
  Please input a picture: exit
 ```
+The sample input image in Session 1 is:
 
-And the input and output picture is like:
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg"><img width=250px src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg" ></a>
 
-![](https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg)
+The sample output image in Session 3 is:
 
-![](https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png"><img width=250px src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png" ></a>
+
+
 

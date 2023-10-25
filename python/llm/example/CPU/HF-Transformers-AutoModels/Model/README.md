@@ -25,6 +25,8 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 | Replit    | [link](replit)    |
 | Mistral   | [link](mistral)   |
 | Flan-t5   | [link](flan-t5)   |
+| Phi-1_5   | [link](phi-1_5)   |
+| Qwen-VL   | [link](qwen-vl)   |
 
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
