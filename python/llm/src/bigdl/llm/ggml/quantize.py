@@ -33,7 +33,8 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "nf4": 10,
                      "nf3": 11,
                      "fp16": 12,
-                     "fp8": 15}
+                     "fp8": 15,
+                     "fp4": 16}
 
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
