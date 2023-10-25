@@ -25,7 +25,7 @@ from bigdl.llm import optimize_model
 torch.manual_seed(1234)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for Qw-VL model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for Qwen-VL model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen-VL-Chat",
                         help='The huggingface repo id for the Qwen-VL model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')

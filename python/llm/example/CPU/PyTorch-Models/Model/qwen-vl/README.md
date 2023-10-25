@@ -59,7 +59,7 @@ Every image output will be named as the round of session and placed under the cu
 
 ```log
 -------------------- Session 1 --------------------
- Please input a picture: https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg
+ Please input a picture: https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2F0fGVufDB8fDB8fHwy
  Please enter the text: 这是什么
 ---------- Response ----------
 图中是一只戴着墨镜的酷炫猫咪，正坐在窗边，看着窗外。 
@@ -80,7 +80,7 @@ Every image output will be named as the round of session and placed under the cu
  Please input a picture: exit
 ```
 
-The sample input image in Session 1 is:
+The sample input image in Session 1 is (which is fetched from [here](https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2F0fGVufDB8fDB8fHwy)):
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg"><img width=250px src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg" ></a>
 
