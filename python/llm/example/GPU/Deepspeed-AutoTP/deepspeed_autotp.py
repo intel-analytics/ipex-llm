@@ -59,8 +59,9 @@ if __name__ == '__main__':
     )
 
     # move model to cpu and use bigdl-llm `optimize_model` to convert the
-    # model into optimized low bit format 
-    model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
+    # model into optimized low bit format
+    # convert the rest of the model into float16 to reduce allreduce traffic
+    model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4').to(torch.float16)
 
     # move model back to xpu
     model = model.to(f'xpu:{local_rank}')

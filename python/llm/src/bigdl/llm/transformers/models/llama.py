@@ -57,11 +57,28 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
+import importlib
+def get_ipex_version():
+
+    if importlib.util.find_spec("intel_extension_for_pytorch") is not None:
+        import intel_extension_for_pytorch as ipex
+        return ipex.__version__
+    else:
+        return None
+
+
+ipex_version = get_ipex_version()
+
 
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
-                                                         [self.weight.size(0)], self.weight)
+        if ipex_version == "2.0.110+xpu":
+            hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                            [self.weight.size(0)], self.weight)
+        else:
+            hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                            [self.weight.size(0)], self.weight,
+                                                            self.variance_epsilon)
     else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)

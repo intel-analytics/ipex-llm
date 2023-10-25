@@ -43,7 +43,10 @@ import transformers
 import importlib
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
-from transformers.integrations.deepspeed import is_deepspeed_available
+
+
+def is_deepspeed_available():
+    return importlib.util.find_spec("deepspeed") is not None
 
 
 def is_linear_module(module):

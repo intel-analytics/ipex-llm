@@ -1,4 +1,4 @@
-source bigdl-llm-init
+source bigdl-llm-init -t -g
 export MASTER_ADDR=127.0.0.1
 export CCL_ZE_IPC_EXCHANGE=sockets
 if [[ -n $OMP_NUM_THREADS ]]; then
