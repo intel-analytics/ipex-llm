@@ -87,12 +87,12 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
         now = len(generated_text) - 1
         if now > pos:
-            #print(" ".join(generated_text[pos:now]), end=" ", flush=True)
+            print(" ".join(generated_text[pos:now]), end=" ", flush=True)
             pos = now
 
         if pred_token_idx == tokenizer.eos_token_id:
             break
-    #print(" ".join(generated_text[pos:]), flush=True)
+    print(" ".join(generated_text[pos:]), flush=True)
     return past_key_values
 
 
