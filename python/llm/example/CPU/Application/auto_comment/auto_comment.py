@@ -41,7 +41,10 @@ class QWenChat():
     def __init__(self, model_path):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-        self.model = AutoModelForCausalLM.from_pretrained(model_path,  device_map="cpu", trust_remote_code=True).eval()
+        self.model = AutoModelForCausalLM.from_pretrained(model_path,  
+                                                          device_map="cpu", 
+                                                          load_in_4bit=True, 
+                                                          trust_remote_code=True)
 
         # Specify hyperparameters for generation
         self.model.generation_config = GenerationConfig.from_pretrained(model_path, trust_remote_code=True)
