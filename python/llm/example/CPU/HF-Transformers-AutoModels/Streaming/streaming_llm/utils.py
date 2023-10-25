@@ -16,7 +16,8 @@
 # ===========================================================================
 #
 # This file is adapted from
-# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/utils.py# which is licensed under the MIT license:
+# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/utils.py
+# which is licensed under the MIT license:
 #
 # MIT License
 #

@@ -16,8 +16,8 @@
 # ===========================================================================
 #
 # This file is adapted from
-# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/utils.py# which is licensed under the MIT
-# license:
+# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/pos_shift/modify_llama.py
+# which is licensed under the MIT license:
 #
 # MIT License
 #
@@ -43,13 +43,10 @@
 
 import math
 from typing import Optional, Tuple
-
 import torch
 from torch import nn
 import torch.utils.checkpoint
-
 import torch.nn.functional as F
-
 from transformers.models.llama.modeling_llama import (
     LlamaAttention,
     rotate_half,

@@ -16,8 +16,8 @@
 # ===========================================================================
 #
 # This file is adapted from
-# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/utils.py# which is licensed under the MIT
-# license:
+# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/enable_streaming_llm.py
+# which is licensed under the MIT license:
 #
 # MIT License
 #
@@ -42,16 +42,12 @@
 # SOFTWARE.
 
 import warnings
-
-warnings.filterwarnings("ignore")
-
 import torch
 import argparse
-import json
 import os
-from tqdm import tqdm
 from streaming_llm.utils import load, download_url, load_jsonl
 from streaming_llm.enable_streaming_llm import enable_streaming_llm
+warnings.filterwarnings("ignore")
 
 
 @torch.no_grad()
@@ -97,7 +93,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
 
 @torch.no_grad()
-def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=100):
+def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=1000):
     past_key_values = None
     for idx, prompt in enumerate(prompts):
         prompt = "USER: " + prompt + "\n\nASSISTANT: "
@@ -115,8 +111,7 @@ def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=10
 
 
 def main(args):
-    model_name_or_path = args.model_name_or_path
-    model, tokenizer = load(model_name_or_path)
+    model, tokenizer = load(args.repo_id_or_model_path)
     test_filepath = os.path.join(args.data_root, "mt_bench.jsonl")
     print(f"Loading data from {test_filepath} ...")
 
@@ -150,12 +145,12 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model_name_or_path", type=str, default="meta-llama/Llama-2-7b-chat-hf"
+        "--repo-id-or-model-path", type=str, default="meta-llama/Llama-2-7b-chat-hf"
     )
-    parser.add_argument("--data_root", type=str, default="data/")
-    parser.add_argument("--enable_streaming", action="store_true")
-    parser.add_argument("--start_size", type=int, default=4)
-    parser.add_argument("--recent_size", type=int, default=200)
+    parser.add_argument("--data-root", type=str, default="data/")
+    parser.add_argument("--enable-streaming", action="store_true")
+    parser.add_argument("--start-size", type=int, default=4)
+    parser.add_argument("--recent-size", type=int, default=2000)
     args = parser.parse_args()
 
     main(args)
