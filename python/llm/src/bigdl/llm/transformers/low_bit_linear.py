@@ -384,9 +384,10 @@ class LowBitLinear(nn.Linear):
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8 
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8
                               and self.qtype != FP4,
-                              "NF3, NF4, FP4 and FP8 quantization are currently not supported on CPU")
+                              "NF3, NF4, FP4 and FP8 quantization are currently not"
+                              " supported on CPU")
             if IS_SERVER and (not IS_SPR) and \
                     self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                 x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
