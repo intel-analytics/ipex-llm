@@ -17,22 +17,16 @@
 import os
 import pytest
 
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-from transformers import LlamaTokenizer, AutoTokenizer
+from bigdl.llm.transformers import AutoModelForCausalLM
+from transformers import AutoTokenizer
 
 
-llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
-bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
-chatglm2_6b_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
-replit_code_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
+mistral_model_path = os.environ.get('MISTRAL_ORIGIN_PATH')
 
 prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
 @pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
-    (AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt),
-    (AutoModelForCausalLM, AutoTokenizer, bloom_model_path, prompt),
-    (AutoModel, AutoTokenizer, chatglm2_6b_model_path, prompt),
-    (AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt)
+    (AutoModelForCausalLM, AutoTokenizer, mistral_model_path, prompt)
 ])
     
 def test_optimize_model(Model, Tokenizer, model_path, prompt):
