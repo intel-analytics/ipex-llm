@@ -41,7 +41,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from kv_cache import StartRecentKVCache
+from .kv_cache import StartRecentKVCache
 
 
 def enable_streaming_llm(model, start_size, recent_size):

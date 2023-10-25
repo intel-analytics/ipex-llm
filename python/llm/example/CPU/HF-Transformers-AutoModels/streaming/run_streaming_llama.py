@@ -97,7 +97,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
 
 @torch.no_grad()
-def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=1000):
+def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=100):
     past_key_values = None
     for idx, prompt in enumerate(prompts):
         prompt = "USER: " + prompt + "\n\nASSISTANT: "
@@ -129,7 +129,7 @@ def main(args):
 
     list_data = load_jsonl(test_filepath)
     prompts = []
-    for sample in list_data:
+    for sample in list_data[1:5]:
         prompts += sample["turns"]
 
     if args.enable_streaming:
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_root", type=str, default="data/")
     parser.add_argument("--enable_streaming", action="store_true")
     parser.add_argument("--start_size", type=int, default=4)
-    parser.add_argument("--recent_size", type=int, default=2000)
+    parser.add_argument("--recent_size", type=int, default=200)
     args = parser.parse_args()
 
     main(args)
