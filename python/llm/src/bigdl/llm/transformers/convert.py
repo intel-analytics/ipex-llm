@@ -47,7 +47,8 @@ from .utils import logger
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
-                                 current_key_name=None, convert_shape_only=False):
+                                 current_key_name=None, convert_shape_only=False,
+                                 replace_embedding=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
     from bigdl.llm.transformers.embedding import CPUEmbedding
     has_been_replaced = False
@@ -109,7 +110,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name].requires_grad_(False)
 
                         module.weight = None
-        elif type(module) == nn.Embedding and name not in modules_to_not_convert:
+        elif replace_embedding and type(module) == nn.Embedding:
             # skip user-defined Embedding layer
             if platform.system().lower() == 'windows':
                 model._modules[name] = CPUEmbedding(
@@ -131,6 +132,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 modules_to_not_convert,
                 current_key_name,
                 convert_shape_only,
+                replace_embedding,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -160,7 +162,7 @@ def _optimize_pre(model):
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
-                         modules_to_not_convert=None):
+                         modules_to_not_convert=None, replace_embedding=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -171,7 +173,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
-        None, convert_shape_only,
+        None, convert_shape_only, replace_embedding,
     )
     if not has_been_replaced:
         warnings.warn(

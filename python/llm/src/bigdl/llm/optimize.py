@@ -192,7 +192,8 @@ def load_low_bit(model, model_path):
     return model
 
 
-def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None):
+def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None,
+                   replace_embedding=False):
     """
     A method to optimize any pytorch model.
 
@@ -202,6 +203,8 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     :param optimize_llm: Whether to further optimize llm model.
     :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
         when conducting model optimizations. Default to be None.
+    :param replace_embedding: Whether to replace the Embedding layer, may need to set it
+        to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
 
     :return: The optimized model.
 
@@ -227,7 +230,8 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     model = ggml_convert_low_bit(model,
                                  qtype=qtype,
                                  optimize_model=optimize_llm,
-                                 modules_to_not_convert=modules_to_not_convert)
+                                 modules_to_not_convert=modules_to_not_convert,
+                                 replace_embedding=replace_embedding)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()
