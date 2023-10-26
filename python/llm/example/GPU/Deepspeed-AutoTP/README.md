@@ -1,6 +1,6 @@
-# Optimizing Deepspeed AutoTP with BigDL-LLM on Multiple Intel GPUs
+# Run BigDL-LLM on Multiple Intel GPUs using DeepSpeed AutoTP
 
-This example demonstrates how to optimize a Deepspeed AutoTP model using BigDL-LLM low-bit optimizations on multiple [Intel GPUs](../README.md).
+This example demonstrates how to run BigDL-LLM optimized low-bit model on multiple [Intel GPUs](../README.md) by leveraging DeepSpeed AutoTP.
 
 ## 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
