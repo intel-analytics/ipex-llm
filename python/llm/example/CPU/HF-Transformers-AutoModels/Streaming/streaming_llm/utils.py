@@ -48,47 +48,9 @@ import ssl
 import urllib.request
 import os
 import json
-from transformers import LlamaForCausalLM, LlamaTokenizer
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 import intel_extension_for_pytorch as ipex
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--model_name_or_path", type=str, default="models/llama/llama-7b"
-    )
-    parser.add_argument("--revision", type=str, default="main")
-    parser.add_argument("--tokenizer_name_or_path", type=str, default=None)
-    parser.add_argument("--dataset_name", type=str, default="wikitext")
-
-    parser.add_argument("--task", type=str, default="wikitext-2-raw-v1")
-    parser.add_argument(
-        "--split", type=str, default="test", choices=["validation", "test"]
-    )
-
-    parser.add_argument(
-        "--num_samples",
-        type=int,
-        default=1,
-    )
-
-    parser.add_argument(
-        "--output_dir",
-        type=str,
-        default="outputs/debug",
-    )
-
-    parser.add_argument("--enable_start_recent_kv_cache", action="store_true")
-    parser.add_argument("--start_size", type=int, default=1)
-    parser.add_argument("--recent_size", type=int, default=255)
-    parser.add_argument("--enable_pos_shift", action="store_true")
-
-    parser.add_argument("--num_eval_tokens", type=int, default=None)
-
-    args = parser.parse_args()
-    return args
 
 
 def load(model_name_or_path):
@@ -98,14 +60,12 @@ def load(model_name_or_path):
         model_name_or_path,
         trust_remote_code=True,
     )
-    print("loaded tokenizer")
+
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
         load_in_4bit=True,
         trust_remote_code=True
     )
-
-    print("loaded model")
 
     if tokenizer.pad_token_id is None:
         if tokenizer.eos_token_id is not None:

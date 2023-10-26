@@ -1,10 +1,6 @@
-# BigDL-LLM Transformers Low-Bit Efficient Streaming Large Language Models with Attention Sinks
+# Low-Bit Streaming LLM using BigDL-LLM
 
-There are two major challenges to deploy Large Language Models (LLMs) in streaming applications where long interactions are expected. 
-Firstly, there is a substantial memory overhead associated with caching the Key and Value states (KV) of previous tokens during the decoding process, resulting in application crashing from out of memory. 
-Secondly, widely used LLMs can not generate longer text inputs than the training sequence length. [Xiao, 2023](https://arxiv.org/abs/2309.17453) discovered attention sink, 
-that keeping the KV of initial tokens will largely recover the performance of window attention, and introduced (StreamingLLM)[https://github.com/mit-han-lab/streaming-llm/tree/main#efficient-streaming-language-models-with-attention-sinks], an efficient framework that enables LLMs to generalize to infinite sequence length.
-In this example, we show the example of applying [efficient streaming with attention sinks](https://github.com/mit-han-lab/streaming-llm/tree/main#efficient-streaming-language-models-with-attention-sinks) on BigDL-LLM low-bit(including INT8/INT5/INT4) large language models. 
+In this example, we apply [Streaming-LLM](https://github.com/mit-han-lab/streaming-llm/tree/main#efficient-streaming-language-models-with-attention-sinks) using BigDL-LLM, which deploy low-bit(including INT8/INT5/INT4) LLMs for infinite-length inputs. 
 
 ## Prepare Environment
 We suggest using conda to manage environment:
