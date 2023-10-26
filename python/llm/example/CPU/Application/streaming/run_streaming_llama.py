@@ -16,7 +16,7 @@
 # ===========================================================================
 #
 # This file is adapted from
-# https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/enable_streaming_llm.py
+# https://github.com/mit-han-lab/streaming-llm/blob/main/examples/run_streaming_llama.py
 # which is licensed under the MIT license:
 #
 # MIT License
