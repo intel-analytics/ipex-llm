@@ -38,19 +38,19 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
 results = []
 
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4'):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
-        result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+        result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'native_int4':
         run_native_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials)
     elif test_api == 'optimize_model':
-        result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+        result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'transformer_int4_gpu':
-        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'optimize_model_gpu':
-        result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+        result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'pytorch_autocast_bf16':
         result = run_pytorch_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'ipex_fp16_gpu':
@@ -59,13 +59,14 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     for in_out_pair in in_out_pairs:
         if result:
             results.append([repo_id,
-                            np.mean(result[in_out_pair], axis=0)[0],
-                            np.mean(result[in_out_pair], axis=0)[1],
-                            np.mean(result[in_out_pair], axis=0)[2],
+                            round(np.mean(result[in_out_pair], axis=0)[0]*1000.0, 2),
+                            round(np.mean(result[in_out_pair], axis=0)[1]*1000.0, 2),
+                            round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2),
                             in_out_pair,
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
                             f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
-                            num_beams])
+                            num_beams,
+                            low_bit])
 
 
 def get_model_path(repo_id, local_model_hub):
@@ -123,7 +124,8 @@ def run_transformer_int4(repo_id,
                          in_out_pairs,
                          warm_up,
                          num_trials,
-                         num_beams):
+                         num_beams,
+                         low_bit):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
@@ -132,14 +134,14 @@ def run_transformer_int4(repo_id,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True, torch_dtype='auto')
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
@@ -250,7 +252,8 @@ def run_optimize_model(repo_id,
                        in_out_pairs,
                        warm_up,
                        num_trials,
-                       num_beams):
+                       num_beams,
+                       low_bit):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer
     from bigdl.llm import optimize_model
 
@@ -260,16 +263,16 @@ def run_optimize_model(repo_id,
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
-        model = optimize_model(model)
+        model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                      use_cache=True, low_cpu_mem_usage=True)
-        model = optimize_model(model)
+        model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True)
-        model = optimize_model(model)
+        model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
@@ -317,7 +320,8 @@ def run_transformer_int4_gpu(repo_id,
                              in_out_pairs,
                              warm_up,
                              num_trials,
-                             num_beams):
+                             num_beams,
+                             low_bit):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
@@ -326,17 +330,17 @@ def run_transformer_int4_gpu(repo_id,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, load_in_4bit=True, optimize_model=True,
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_4bit=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
@@ -392,7 +396,8 @@ def run_optimize_model_gpu(repo_id,
                            in_out_pairs,
                            warm_up,
                            num_trials,
-                           num_beams):
+                           num_beams,
+                           low_bit):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     from bigdl.llm import optimize_model
     import intel_extension_for_pytorch as ipex
@@ -403,19 +408,19 @@ def run_optimize_model_gpu(repo_id,
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
                                           trust_remote_code=True, use_cache=True)
-        model = optimize_model(model)
+        model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
                                                      use_cache=True, low_cpu_mem_usage=True)
-        model = optimize_model(model)
+        model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
                                                      trust_remote_code=True, use_cache=True)
-        model = optimize_model(model)
+        model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
@@ -544,8 +549,9 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         for model in conf.repo_id:
-            run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'])
-        df = pd.DataFrame(results, columns=['model', '1st token avg latency (s)', '2+ avg latency (s/token)', 'encoder time (s)',
-                                            'input/output tokens', 'actual input/output tokens', 'num_beams'])
+            run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'], conf['low_bit'])
+        df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
+                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit'])
+
         df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
         results = []

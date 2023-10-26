@@ -65,6 +65,7 @@ SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
 FP8 = ggml_tensor_qtype["fp8"]
+FP4 = ggml_tensor_qtype["fp4"]
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
@@ -108,7 +109,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -133,7 +134,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -328,7 +329,7 @@ class MatMulLowBit(torch.autograd.Function):
 
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True):
+                 conver_to_half=True, mp_group=None):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -339,6 +340,7 @@ class LowBitLinear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
         self.conver_to_half = conver_to_half
+        self.mp_group = mp_group
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -378,13 +380,18 @@ class LowBitLinear(nn.Linear):
                                                      input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
+            if self.mp_group is not None:
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
             if self.bias is not None:
                 result += self.bias
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8,
-                              "NF3, NF4 and FP8 quantization are currently not supported on CPU")
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8
+                              and self.qtype != FP4,
+                              "NF3, NF4, FP4 and FP8 quantization are currently not"
+                              " supported on CPU")
             if IS_SERVER and (not IS_SPR) and \
                     self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                 x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
@@ -400,7 +407,7 @@ class LowBitLinear(nn.Linear):
 
 class FP16Linear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True):
+                 conver_to_half=True, mp_group=None):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
@@ -408,6 +415,7 @@ class FP16Linear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
         self.conver_to_half = conver_to_half
+        self.mp_group = mp_group
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -442,6 +450,9 @@ class FP16Linear(nn.Linear):
 
         new_shape = x_shape[:-1] + (self.out_len,)
         result = result.view(new_shape)
+        if self.mp_group is not None:
+            from deepspeed import comm as dist
+            dist.inference_all_reduce(result, group=self.mp_group)
         if self.bias is not None:
             result += self.bias
 
