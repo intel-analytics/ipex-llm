@@ -21,7 +21,6 @@ import transformers
 from transformers import LlamaTokenizer
 
 from peft import LoraConfig
-import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
@@ -48,8 +47,9 @@ if __name__ == "__main__":
                                                 torch_dtype=torch.float16,
                                                 modules_to_not_convert=["lm_head"],)
     model = model.to('cpu')
-    model.gradient_checkpointing_enable()
-    model = prepare_model_for_kbit_training(model)
+    # model.gradient_checkpointing_enable()
+    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False)
+    model.enable_input_require_grads()
     config = LoraConfig(
         r=8,
         lora_alpha=32,
@@ -71,7 +71,6 @@ if __name__ == "__main__":
             max_steps=200,
             learning_rate=2e-4,
             save_steps=100,
-            fp16=False,
             bf16=True,
             logging_steps=20,
             output_dir="outputs",

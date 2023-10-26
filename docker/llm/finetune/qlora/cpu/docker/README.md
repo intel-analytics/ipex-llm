@@ -35,13 +35,11 @@ export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
-   --memory="32G" \
    --name=bigdl-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/english_quotes \
-   --shm-size="16g" \
    intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
 ```
 
@@ -53,11 +51,9 @@ export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
-   --memory="32G" \
    --name=bigdl-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   --shm-size="16g" \
    intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
 ```
 
