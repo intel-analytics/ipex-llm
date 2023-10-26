@@ -64,6 +64,7 @@ def load(model_name_or_path):
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
         load_in_4bit=True,
+        optimize_model=False,
         trust_remote_code=True
     )
 
