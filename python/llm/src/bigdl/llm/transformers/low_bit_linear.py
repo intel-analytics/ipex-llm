@@ -89,13 +89,9 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                              device=device)
 
     if not convert_shape_only and device != 'meta':
-        if qtype == FP8:
-            import linear_q4_0
-            linear_q4_0.cvt_fp32_e4m3_rne(tensor, dst_tensor, n, k)
-        else:
-            dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
-            hist = (ctypes.c_int64 * 16)()
-            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+        hist = (ctypes.c_int64 * 16)()
+        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
 
@@ -109,7 +105,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -134,7 +130,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
