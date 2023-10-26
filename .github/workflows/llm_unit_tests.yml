@@ -198,7 +198,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-    runs-on: [self-hosted, llm, perf]
+    runs-on: [self-hosted, llm, arc]
     env:
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
@@ -265,5 +265,5 @@ jobs:
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
-          python -m pip install expecttest
+          python -m pip install expecttest einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
