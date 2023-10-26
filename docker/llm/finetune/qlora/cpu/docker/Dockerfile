@@ -22,9 +22,10 @@ RUN apt-get update && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    # install torch and oneccl to reduce bigdl-llm size
-    pip3 install --upgrade pip && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+
+# install torch and oneccl to reduce bigdl-llm size
+RUN pip3 install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
     pip install --upgrade torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
