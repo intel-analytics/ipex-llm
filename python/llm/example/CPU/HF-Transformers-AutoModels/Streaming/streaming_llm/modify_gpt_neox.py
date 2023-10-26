@@ -15,7 +15,7 @@
 #
 # ===========================================================================
 #
-# This file is adapted from
+# This file is copied from
 # https://github.com/mit-han-lab/streaming-llm/blob/main/streaming_llm/pos_shift/modify_gpt_neox.py
 # which is licensed under the MIT license:
 #
