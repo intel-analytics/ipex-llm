@@ -1,10 +1,10 @@
 # Low-Bit Streaming LLM using BigDL-LLM
 
 In this example, we apply [Streaming-LLM](https://github.com/mit-han-lab/streaming-llm/tree/main#efficient-streaming-language-models-with-attention-sinks) using BigDL-LLM, which can deploy low-bit(including INT8/INT5/INT4) LLMs for infinite-length inputs.
-Only one code change is needd to load the model using bigdl-llm as follows:
+Only one code change is needed to load the model using bigdl-llm as follows:
 ```python
 from bigdl.llm.transformers import AutoModelForCausalLM
-model = AutoModelForCausalLM.from_pretrained(model_name_or_path,load_in_4bit=True,trust_remote_code=True, optimize_model=False)
+model = AutoModelForCausalLM.from_pretrained(model_name_or_path, load_in_4bit=True, trust_remote_code=True, optimize_model=False)
 ```
 
 ## Prepare Environment
