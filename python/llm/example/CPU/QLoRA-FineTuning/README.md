@@ -1,11 +1,11 @@
-# Finetuning LLAMA Using Q-Lora (experimental support)
+# Finetuning LLAMA Using QLoRA (experimental support)
 
-This example demonstrates how to finetune a llama2-7b model use Big-LLM 4bit optimizations using [Intel CPUs](../README.md).
+This example demonstrates how to finetune a llama2-7b model using Big-LLM 4bit optimizations on [Intel CPUs](../README.md).
 
 
-## Example: Finetune llama2-7b using qlora
+## Example: Finetune llama2-7b using QLoRA
 
-This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k?usp=sharing). The `export_merged_model.py` is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/export_hf_checkpoint.py).
+This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k). The `export_merged_model.py` is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/export_hf_checkpoint.py).
 
 ### 1. Install
 
