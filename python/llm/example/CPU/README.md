@@ -6,7 +6,7 @@ This folder contains examples of running BigDL-LLM on Intel CPU:
 - [PyTorch-Models](PyTorch-Models): running any PyTorch model on BigDL-LLM (with "one-line code change")
 - [Native-Models](Native-Models): converting & running LLM in `llama`/`chatglm`/`bloom`/`gptneox`/`starcoder` model family using native (cpp) implementation
 - [LangChain](LangChain): running LangChain applications on BigDL-LLM
-- [HF-Transformers-Agent](HF-Transformers-Agent): running Hugging Face Transformers Agent on BigDl-LLM (using the standard LocalAgent API)
+- [Application](Application): running Transformers applications on BigDl-LLM
 
 ## System Support
 **Hardware**:
