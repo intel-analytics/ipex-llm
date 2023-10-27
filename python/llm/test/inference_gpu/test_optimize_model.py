@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
-
-import os
 import pytest
+import os
 
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
@@ -26,28 +25,34 @@ print(f'Running on {device}')
 if device == 'xpu':
     import intel_extension_for_pytorch as ipex
 
-@pytest.mark.parametrize('prompt, answer', [
-    ('What is the capital of France?\n\n', 'Paris')
-    ])
+prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
+
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
-    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
-    (AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
     ])
-def test_completion(Model, Tokenizer, model_path, prompt, answer):
+def test_optimize_model(Model, Tokenizer, model_path):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
+    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
+
+    model = Model.from_pretrained(model_path,
+                                load_in_4bit=True,
+                                optimize_model=False,
+                                trust_remote_code=True)
+    model = model.to(device)
+    logits_base_model = (model(input_ids)).logits
+
     model = Model.from_pretrained(model_path,
                                 load_in_4bit=True,
                                 optimize_model=True,
                                 trust_remote_code=True)
     model = model.to(device)
+    logits_optimized_model = (model(input_ids)).logits
+    
+    diff = abs(logits_base_model - logits_optimized_model).flatten()
 
-    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
-    output = model.generate(input_ids, max_new_tokens=32)
-    output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+    assert any(diff) is False
 
-    assert answer in output_str
-        
+
 if __name__ == '__main__':
     pytest.main([__file__])
