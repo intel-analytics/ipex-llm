@@ -50,6 +50,11 @@ numactl -C 0-47 -m 0 python ./run_agent.py
 ```
 
 #### 2.3 Sample Output
+#### [demo.jpg](https://cocodataset.org/#explore?id=264959)
+<p align="center">
+<img src="demo.jpg" alt="demo.jpg" width="400"/>
+</p>
+
 #### [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5)
 ```log
 Image path: demo.jpg
