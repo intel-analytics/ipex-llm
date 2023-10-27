@@ -1,20 +1,12 @@
 # BigDL-LLM Transformers INT4 Optimization for HuggingFace Transformers Agent
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on HuggingFace Transformers Agent. For illustration purposes, we utilize the [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) as the reference model.
+In this example, we apply low-bit optimizations to [HuggingFace Transformers Agents](https://huggingface.co/docs/transformers/transformers_agents) using BigDL-LLM, which allows LLMs to use tools such as image generation, image captioning, text summarization, etc.
+
+For illustration purposes, we utilize the [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) as the reference model. We use [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) to create an agent, and then ask the agent to generate the caption for an image from coco dataset, i.e. [demo.jpg](https://cocodataset.org/#explore?id=264959)
 
 ## 0. Requirements
-To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
+To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model#recommended-requirements) for more information.
 
-For OS, BigDL-LLM supports Ubuntu 20.04 or later, CentOS 7 or later, and Windows 10/11.
 
-## Best Known Configuration on Linux
-For better performance, it is recommended to set environment variables on Linux with the help of BigDL-Nano:
-```bash
-pip install bigdl-nano
-source bigdl-nano-init
-```
-
-## Example: Run an agent using `run()` API
-In the example [run_agent.py](./run_agent.py), we show a basic use case of using `run()` API to run an agent, which uses Vicuna model with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -61,6 +53,8 @@ numactl -C 0-47 -m 0 python ./run_agent.py
 #### [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5)
 ```log
 Image path: demo.jpg
+== Prompt ==
+Generate a caption for the 'image'
 ==Explanation from the agent==
 I will use the following tool: `image_captioner` to generate a caption for the image.
 
@@ -71,11 +65,4 @@ caption = image_captioner(image)
 
 ==Result==
 a little girl holding a stuffed teddy bear
-```
-
-### 3. Reference
-`demo.jpg` is from COCO2017 dataset (000000264959.jpg). You can download it through [COCO Explorer](https://cocodataset.org/#explore?id=264959) or directly use `wget` in the following way:
-
-```
-wget http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 ```

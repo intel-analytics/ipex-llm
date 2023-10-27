@@ -44,5 +44,8 @@ if __name__ == "__main__":
     agent = LocalAgent(model, tokenizer)
 
     # Generate results
+    prompt = "Generate a caption for the 'image'"
     print(f"Image path: {args.image_path}")
-    print(agent.run("Generate a caption for the 'image'", image=image))
+    print('==', 'Prompt', '==')
+    print(prompt)
+    print(agent.run(prompt, image=image))
