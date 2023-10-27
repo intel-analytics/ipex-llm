@@ -48,6 +48,7 @@ import ssl
 import urllib.request
 import os
 import json
+# code change to import from bigdl-llm API instead of using transformers API
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 import intel_extension_for_pytorch as ipex
@@ -61,6 +62,8 @@ def load(model_name_or_path):
         trust_remote_code=True,
     )
 
+# set load_in_4bit=True to get performance boost, set optimize_model=False for now
+# TODO align logics of optimize_model and streaming
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
         load_in_4bit=True,
