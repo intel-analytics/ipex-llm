@@ -26,6 +26,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-performance-test:
+    if: false # skip cpu performance test for now; may add it back with separated runner
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -99,6 +100,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
