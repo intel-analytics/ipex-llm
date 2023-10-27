@@ -322,6 +322,7 @@ class MatMulLowBit(torch.autograd.Function):
 
         return grad_A, grad_weight, None
 
+
 class MatMulLowBitCPU(torch.autograd.Function):
 
     @staticmethod
@@ -329,7 +330,8 @@ class MatMulLowBitCPU(torch.autograd.Function):
         if torch.is_autocast_enabled():
             A = A.to(torch.get_autocast_dtype())
         ctx.is_empty = False
-        x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape, weight._shape[0] * weight._shape[1])
+        x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
+                                         weight._shape[0] * weight._shape[1])
         result = torch.matmul(A, x0_fp32.T)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
@@ -346,7 +348,8 @@ class MatMulLowBitCPU(torch.autograd.Function):
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
         if req_gradA:
-            x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape, weight._shape[0] * weight._shape[1])
+            x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
+                                             weight._shape[0] * weight._shape[1])
             grad_A = torch.matmul(grad_output, x0_fp32.to(grad_output.dtype))
         return grad_A, grad_weight, None
 
