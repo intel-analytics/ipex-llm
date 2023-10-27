@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("--repo-id-or-model-path", type=str, default="lmsys/vicuna-7b-v1.5",
                         help="The huggingface repo id for the Vicuna model to be downloaded"
                              ", or the path to the huggingface checkpoint folder")
-    parser.add_argument("--image-path", type=str, default="demo.jpg",
+    parser.add_argument("--image-path", type=str, required=True,
                         help="Image to generate caption")
 
     args = parser.parse_args()
