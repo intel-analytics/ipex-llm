@@ -24,7 +24,7 @@ python ./run_agent.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --image-path
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Vicuna model (e.g. `lmsys/vicuna-7b-v1.5`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'lmsys/vicuna-7b-v1.5'`.
-- `--image-path IMAGE_PATH`: argument defining the image to be infered. It is default to be `demo.jpg`.
+- `--image-path IMAGE_PATH`: argument defining the image to be infered.
 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
@@ -50,6 +50,11 @@ numactl -C 0-47 -m 0 python ./run_agent.py
 ```
 
 #### 2.3 Sample Output
+#### [demo.jpg](https://cocodataset.org/#explore?id=264959)
+<p align="center">
+<img src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" alt="demo.jpg" width="400"/>
+</p>
+
 #### [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5)
 ```log
 Image path: demo.jpg
