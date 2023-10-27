@@ -10,18 +10,10 @@ logger = init_logger(__name__)
 _GB = 1 << 30
 
 
+# TODO(gc): later handle this function, seems that need more things.
 def get_config(model: str,
                trust_remote_code: bool,
                revision: Optional[str] = None) -> PretrainedConfig:
-    # NOTE: Because the Mistral model in HF hub does not have
-    # `configuration_mistral.py`, we cannot use `AutoConfig` to load the
-    # config. Instead, we use `MistralConfig` directly.
-    # NOTE: This is a hack. This does not work for local models.
-    # FIXME: Remove this once the Mistral model is available in the stable
-    # version of HF transformers.
-    if "mistral" in model.lower():
-        return MistralConfig.from_pretrained(model, revision=revision)
-
     try:
         config = AutoConfig.from_pretrained(
             model, trust_remote_code=trust_remote_code, revision=revision)
@@ -40,6 +32,7 @@ def get_config(model: str,
         config_class = _CONFIG_REGISTRY[config.model_type]
         config = config_class.from_pretrained(model, revision=revision)
     return config
+
 
 class ModelConfig:
     """Configuration for the model.
@@ -204,37 +197,6 @@ class ModelConfig:
     def get_num_layers(self, parallel_config: "ParallelConfig") -> int:
         total_num_hidden_layers = self.hf_config.num_hidden_layers
         return total_num_hidden_layers // parallel_config.pipeline_parallel_size
-
-class ParallelConfig:
-    """Configuration for the distributed execution.
-
-    Args:
-        pipeline_parallel_size: Number of pipeline parallel groups.
-        tensor_parallel_size: Number of tensor parallel groups.
-        worker_use_ray: Whether to use Ray for model workers. Will be set to
-            True if either pipeline_parallel_size or tensor_parallel_size is
-            greater than 1.
-    """
-
-    def __init__(
-        self,
-        pipeline_parallel_size: int,
-        tensor_parallel_size: int,
-        worker_use_ray: bool,
-    ) -> None:
-        self.pipeline_parallel_size = pipeline_parallel_size
-        self.tensor_parallel_size = tensor_parallel_size
-        self.worker_use_ray = worker_use_ray
-
-        self.world_size = pipeline_parallel_size * tensor_parallel_size
-        if self.world_size > 1:
-            self.worker_use_ray = True
-        self._verify_args()
-
-    def _verify_args(self) -> None:
-        if self.pipeline_parallel_size > 1:
-            raise NotImplementedError(
-                "Pipeline parallelism is not supported yet.")
 
 
 class SchedulerConfig:
