@@ -3,8 +3,8 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from xformers.ops import AttentionBias
 
-from bigdl.llm.vllm.structure import SamplingParams, SequenceData
-
+from bigdl.llm.vllm.structure.sequence import SequenceData
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 
 class InputMetadata:
     """Metadata for input sequences. Used for PagedAttention.

@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 from transformers import AutoConfig, PretrainedConfig
 
-from bigdl.llm.vllm.utils import init_logger, get_cpu_memory
+from bigdl.llm.vllm.utils.logger import init_logger, get_cpu_memory
 
 logger = init_logger(__name__)
 

@@ -4,7 +4,7 @@ from torch import nn
 from transformers import AutoTokenizer, PreTrainedTokenizerBase, LlamaConfig
 from typing import Optional, Tuple, List, Type, Dict
 
-from bigdl.llm.vllm.structure import SequenceOutputs, SequenceGroupMetadata
+from bigdl.llm.vllm.structure.sequence import SequenceOutputs, SequenceGroupMetadata
 import math
 
 from transformers.generation.logits_process import (
