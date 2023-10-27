@@ -33,7 +33,7 @@ Arguments info:
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./run_agent.py
+python ./run_agent.py --image-path IMAGE_PATH
 ```
 
 #### 2.2 Server
@@ -46,7 +46,7 @@ source bigdl-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./run_agent.py
+numactl -C 0-47 -m 0 python ./run_agent.py --image-path IMAGE_PATH
 ```
 
 #### 2.3 Sample Output
