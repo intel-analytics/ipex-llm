@@ -276,7 +276,7 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the LLaVA model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-path-or-url', type=str,
-                        required=True, help='Image path or url')
+                        required=True, help='Image path or url for the input image that the chat will focus on')
     parser.add_argument('--n-predict', type=int, default=512,
                         help='Max tokens to predict')
 

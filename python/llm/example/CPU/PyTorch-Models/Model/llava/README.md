@@ -5,8 +5,8 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
-## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a LLaVA model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+## Example: Multi-turn chat centered around an image using `generate()` API
+In the example [generate.py](./generate.py), we show a basic use case for a LLaVA model to start a multi-trun chat centered around an image using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
@@ -29,6 +29,7 @@ After setting up the Python environment, you could run the example by following 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the LLaVA model based on the capabilities of your machine.
+
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
@@ -56,7 +57,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the LLaVA model (e.g. `liuhaotian/llava-v1.5-13b`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'liuhaotian/llava-v1.5-13b'`.
-- `--image-path-or-url IMAGE_PATH_OR_URL`: argument defining the input image. It is required.
+- `--image-path-or-url IMAGE_PATH_OR_URL`: argument defining the input image that the chat will focus on. It is required.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `512`.
 
 
