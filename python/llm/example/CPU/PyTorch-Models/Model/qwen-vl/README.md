@@ -59,32 +59,28 @@ Every image output will be named as the round of session and placed under the cu
 
 ```log
 -------------------- Session 1 --------------------
- Please input a picture: https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2F0fGVufDB8fDB8fHwy
- Please enter the text: 这是什么
+ Please input a picture: http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+ Please enter the text: 这是什么？
 ---------- Response ----------
-图中是一只戴着墨镜的酷炫猫咪，正坐在窗边，看着窗外。 
+这幅图中，一个穿着粉色条纹连衣裙的小女孩正抱着一只穿粉色裙子的白色玩具熊。他们身后有一堵石墙和一盆红色的开花植物。 
 
 -------------------- Session 2 --------------------
  Please input a picture: 
- Please enter the text: 这只猫猫多大了？
+ Please enter the text: 这个小女孩多大了？
 ---------- Response ----------
-由于只猫猫戴着太阳镜，无法判断年龄，但可以猜测它应该是一只成年猫猫，已经成年。 
+根据描述，这个小女孩手持玩具熊，穿着粉色条纹连衣裙，因此可以推测她应该是年龄较小的儿童，具体年龄无法确定。 
 
 -------------------- Session 3 --------------------
  Please input a picture: 
- Please enter the text: 在图中检测框出猫猫的墨镜
+ Please enter the text: 在图中检测框出玩具熊
 ---------- Response ----------
-<ref>猫猫的墨镜</ref><box>(398,313),(994,506)</box> 
+<ref>玩具熊</ref><box>(334,268),(603,859)</box> 
 
 -------------------- Session 4 --------------------
  Please input a picture: exit
 ```
 
-The sample input image in Session 1 is (which is fetched from [here](https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2F0fGVufDB8fDB8fHwy)):
+The sample input image in Session 1 is (which is fetched from [here](https://cocodataset.org/#explore?id=264959)):
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg"><img width=250px src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-input.jpg" ></a>
-
-The sample output image in Session 3 is:
-
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png"><img width=250px  src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png" ></a>
+<a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=250px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
 
