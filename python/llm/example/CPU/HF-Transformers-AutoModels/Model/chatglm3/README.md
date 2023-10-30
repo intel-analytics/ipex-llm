@@ -13,7 +13,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
 ```
 
 ### 2. Run
@@ -84,7 +84,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
 ```
 
 ### 2. Run
