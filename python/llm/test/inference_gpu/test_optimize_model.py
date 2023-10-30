@@ -41,7 +41,7 @@ def test_optimize_model(Model, Tokenizer, model_path):
                                 trust_remote_code=True)
     model = model.to(device)
     logits_base_model = (model(input_ids)).logits
-    model.to('cpu')
+    model.to('cpu')  # deallocate gpu memory
 
     model = Model.from_pretrained(model_path,
                                 load_in_4bit=True,

@@ -41,7 +41,7 @@ def test_completion(Model, Tokenizer, model_path, prompt, answer):
                                 load_in_4bit=True,
                                 optimize_model=True,
                                 trust_remote_code=True)
-    model = model.to(device)
+    model = model.to(device)  # deallocate gpu memory
 
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
     output = model.generate(input_ids, max_new_tokens=32)
