@@ -43,11 +43,20 @@ class BigDLLlamaForCausalLM(nn.Module):
     ):
         super().__init__()
         self.config = config
+        # TODO(gc): later change this to a switch?
         if True:
-            from bigdl.llm.transformers import AutoModelForCausalLM
-        else:
-            from transformers import AutoModelForCausalLM
-        self.model = AutoModelForCausalLM.from_pretrained(config._name_or_path)
+            from bigdl.llm import optimize_model
+
+        from transformers import AutoModelForCausalLM
+        # low_bit = 'sym_int4'
+        model = AutoModelForCausalLM.from_pretrained(
+            config._name_or_path,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True,
+            use_cache=True,
+        )
+        self.model = optimize_model(model)
+        #self.model = AutoModelForCausalLM.from_pretrained(config._name_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(config._name_or_path)
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")

@@ -192,7 +192,6 @@ class FixedWindowScheduler:
         seq_group_metadata_list: List[SequenceGroupMetadata] = []
         for seq_group in scheduler_outputs.scheduled_seq_groups:
             seq_data: Dict[int, List[SequenceData]] = {}
-            block_tables: Dict[int, List[int]] = {}
             for seq in seq_group.get_seqs(status=SequenceStatus.RUNNING):
                 seq_id = seq.seq_id
                 seq_data[seq_id] = seq.data
@@ -202,7 +201,6 @@ class FixedWindowScheduler:
                 is_prompt=scheduler_outputs.prompt_run,
                 seq_data=seq_data,
                 sampling_params=seq_group.sampling_params,
-                block_tables=block_tables,
             )
             seq_group_metadata_list.append(seq_group_metadata)
         return seq_group_metadata_list, scheduler_outputs

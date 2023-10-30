@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 from transformers import AutoConfig, PretrainedConfig
 
-from bigdl.llm.vllm.utils.logger import init_logger, get_cpu_memory
+from bigdl.llm.vllm.utils.logger import init_logger
 
 logger = init_logger(__name__)
 
@@ -59,9 +59,6 @@ def get_config(model: str,
             raise RuntimeError(err_msg) from e
         else:
             raise e
-    if config.model_type in _CONFIG_REGISTRY:
-        config_class = _CONFIG_REGISTRY[config.model_type]
-        config = config_class.from_pretrained(model, revision=revision)
     return config
 
 

@@ -481,7 +481,7 @@ class AsyncLLMEngine:
         """Creates an async LLM engine from the engine arguments."""
         # Create the engine configs.
         engine_configs = engine_args.create_engine_configs()
-        parallel_config = engine_configs[2]
+        # parallel_config = engine_configs[2]
         # Initialize the cluster.
         # TODO(gc): consider ray condition later
         port = get_open_port()
@@ -489,6 +489,7 @@ class AsyncLLMEngine:
         # Create the async LLM engine.
         engine = cls(engine_args.worker_use_ray,
                      engine_args.engine_use_ray,
+                     # TODO: we use one less here
                      *engine_configs,
                      distributed_init_method,
                      None,

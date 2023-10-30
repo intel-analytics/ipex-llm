@@ -59,6 +59,7 @@ class LLMEngine:
         parallel_config: ParallelConfig,
         scheduler_config: SchedulerConfig,
         distributed_init_method: str,
+        placement_group,
         log_stats: bool,
     ) -> None:
         logger.info(
@@ -73,7 +74,7 @@ class LLMEngine:
             f"max_seq_len={model_config.max_model_len}, "
             f"download_dir={model_config.download_dir!r}, "
             f"load_format={model_config.load_format}, "
-            f"tensor_parallel_size={parallel_config.tensor_parallel_size}, "
+            #f"tensor_parallel_size={parallel_config.tensor_parallel_size}, "
             f"quantization={model_config.quantization}, "
             f"seed={model_config.seed})")
         # TODO(woosuk): Print more configs in debug mode.
