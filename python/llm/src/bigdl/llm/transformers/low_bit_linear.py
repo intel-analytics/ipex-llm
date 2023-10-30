@@ -158,7 +158,8 @@ def ggml_int4_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int):
     ggml.ggml_dequantize_q4_0(src_ptr, dst_ptr, k)
     return dst_tensor
 
-def ggml_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int, qtype:int):
+
+def ggml_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int, qtype: int):
     invalidInputError(tensor.dtype == torch.uint8,
                       "Input tensor must be uint8")
     src_ptr = ctypes.c_void_p(tensor.data.data_ptr())
@@ -199,21 +200,24 @@ class FP4Params(torch.nn.Parameter):
             if self.qtype == MOFQ4:
                 if device == 'meta':
                     w_quantized = ggml_convert_qtype(w, SYM_INT4,
-                                                device=device,
-                                                convert_shape_only=self.convert_shape_only)
-                    # TODO: should load from config, the current implementation doesn't support 
+                                                     device=device,
+                                                     convert_shape_only=self.convert_shape_only)
+                    # TODO: should load from config, the current implementation doesn't support
                     # save/load
                     self.qtype = SYM_INT4
                 else:
                     from torch.nn.functional import mse_loss
                     w_quantized_q4_0 = ggml_convert_qtype(w, SYM_INT4,
-                                                            device=device,
-                                                            convert_shape_only=self.convert_shape_only)
-                    w_q4_0_dequant = ggml_convert_fp32(w_quantized_q4_0, w.shape, reduce(mul, w.shape, 1), SYM_INT4)
+                                                          device=device,
+                                                          convert_shape_only=self.convert_shape_only)
+                    w_q4_0_dequant = ggml_convert_fp32(w_quantized_q4_0, w.shape, 
+                                                       reduce(mul, w.shape, 1), SYM_INT4)
                     w_quantized_fp4 = ggml_convert_qtype(w, FP4,
-                                                            device=device,
-                                                            convert_shape_only=self.convert_shape_only)
-                    w_fp4_dequant = ggml_convert_fp32(w_quantized_fp4, w.shape, reduce(mul, w.shape, 1), FP4)
+                                                         device=device,
+                                                         convert_shape_only=
+                                                         self.convert_shape_only)
+                    w_fp4_dequant = ggml_convert_fp32(w_quantized_fp4, w.shape, 
+                                                      reduce(mul, w.shape, 1), FP4)
                     q4_0_mse = mse_loss(w_q4_0_dequant, w)
                     fp4_mse = mse_loss(w_fp4_dequant, w)
                     if q4_0_mse <= fp4_mse:
@@ -224,8 +228,8 @@ class FP4Params(torch.nn.Parameter):
                         self.data = w_quantized_fp4
             else:
                 w_quantized = ggml_convert_qtype(w, self.qtype,
-                                                device=device,
-                                                convert_shape_only=self.convert_shape_only)
+                                                 device=device,
+                                                 convert_shape_only=self.convert_shape_only)
                 self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
