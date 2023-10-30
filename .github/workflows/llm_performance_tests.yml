@@ -158,9 +158,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
-          python -m pip install --pre --upgrade bigdl-llm[all]
-          python -m pip install bigdl-nano[pytorch]
-          source bigdl-nano-init
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -183,7 +180,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          python run.py
+          bash python/llm/dev/benchmark/all-in-one/run-spr.sh
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
           cd ../../../test/benchmark
           python csv_to_html.py -f ../../dev/benchmark/all-in-one
