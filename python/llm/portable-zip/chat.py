@@ -54,8 +54,6 @@ from colorama import Fore
 from bigdl.llm import optimize_model
 from kv_cache import StartRecentKVCache
 
-SYSTEM_PROMPT = "A chat between a curious human <human> and an artificial intelligence assistant <bot>.\
-The assistant gives helpful, detailed, and polite answers to the human's questions."
 HUMAN_ID = "<human>"
 BOT_ID = "<bot>"
 
