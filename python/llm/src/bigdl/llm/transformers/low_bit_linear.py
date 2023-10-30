@@ -207,25 +207,24 @@ class FP4Params(torch.nn.Parameter):
                     self.qtype = SYM_INT4
                 else:
                     from torch.nn.functional import mse_loss
-                    w_quantized_q4_0 = ggml_convert_qtype(w, SYM_INT4,
-                                                          device=device,
-                                                          convert_shape_only=self.convert_shape_only)
-                    w_q4_0_dequant = ggml_convert_fp32(w_quantized_q4_0, w.shape, 
+                    w_quant_q4_0 = ggml_convert_qtype(w, SYM_INT4,
+                                                      device=device,
+                                                      convert_shape_only=self.convert_shape_only)
+                    w_q4_0_dequant = ggml_convert_fp32(w_quant_q4_0, w.shape, 
                                                        reduce(mul, w.shape, 1), SYM_INT4)
-                    w_quantized_fp4 = ggml_convert_qtype(w, FP4,
-                                                         device=device,
-                                                         convert_shape_only=
-                                                         self.convert_shape_only)
-                    w_fp4_dequant = ggml_convert_fp32(w_quantized_fp4, w.shape, 
+                    w_quant_fp4 = ggml_convert_qtype(w, FP4,
+                                                     device=device,
+                                                     convert_shape_only=self.convert_shape_only)
+                    w_fp4_dequant = ggml_convert_fp32(w_quant_fp4, w.shape,
                                                       reduce(mul, w.shape, 1), FP4)
                     q4_0_mse = mse_loss(w_q4_0_dequant, w)
                     fp4_mse = mse_loss(w_fp4_dequant, w)
                     if q4_0_mse <= fp4_mse:
                         self.qtype = SYM_INT4
-                        self.data = w_quantized_q4_0
+                        self.data = w_quant_q4_0
                     else:
                         self.qtype = FP4
-                        self.data = w_quantized_fp4
+                        self.data = w_quant_fp4
             else:
                 w_quantized = ggml_convert_qtype(w, self.qtype,
                                                  device=device,
