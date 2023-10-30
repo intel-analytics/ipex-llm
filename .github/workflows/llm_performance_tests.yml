@@ -171,7 +171,6 @@ jobs:
       - name: Test installed cpu version
         shell: bash
         run: |
-          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on cpu
