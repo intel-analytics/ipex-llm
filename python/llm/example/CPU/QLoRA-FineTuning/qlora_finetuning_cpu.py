@@ -27,7 +27,6 @@ from datasets import load_dataset
 import argparse
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
@@ -40,21 +39,25 @@ if __name__ == "__main__":
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     data = load_dataset(dataset_path)
-    data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
+    def merge(row):
+        row['prediction'] = row['quote'] + ' ->: ' + str(row['tags'])
+        return row
+    data['train'] = data['train'].map(merge)
+    data = data.map(lambda samples: tokenizer(samples["prediction"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                load_in_low_bit="sym_int4",
-                                                optimize_model=False,
-                                                torch_dtype=torch.float16,
-                                                modules_to_not_convert=["lm_head"],)
+                                                 load_in_low_bit="sym_int4",
+                                                 optimize_model=False,
+                                                 torch_dtype=torch.float16,
+                                                 modules_to_not_convert=["lm_head"], )
     model = model.to('cpu')
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False)
     model.enable_input_require_grads()
     config = LoraConfig(
-        r=8, 
-        lora_alpha=32, 
-        target_modules=["q_proj", "k_proj", "v_proj"], 
-        lora_dropout=0.05, 
-        bias="none", 
+        r=8,
+        lora_alpha=32,
+        target_modules=["q_proj", "k_proj", "v_proj"],
+        lora_dropout=0.05,
+        bias="none",
         task_type="CAUSAL_LM"
     )
     model = get_peft_model(model, config)
@@ -73,7 +76,7 @@ if __name__ == "__main__":
             bf16=True,
             logging_steps=20,
             output_dir="outputs",
-            optim="adamw_hf", # paged_adamw_8bit is not supported yet
+            optim="adamw_hf",  # paged_adamw_8bit is not supported yet
             # gradient_checkpointing=True, # can further reduce memory but slower
         ),
         data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
