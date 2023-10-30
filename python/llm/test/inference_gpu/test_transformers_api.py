@@ -45,6 +45,7 @@ def test_completion(Model, Tokenizer, model_path, prompt, answer):
 
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
     output = model.generate(input_ids, max_new_tokens=32)
+    model.to('cpu')
     output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 
     assert answer in output_str
