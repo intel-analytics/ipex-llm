@@ -131,6 +131,7 @@ jobs:
           export https_proxy=${HTTPS_PROXY}
           python run.py
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
+          cp ./*.csv /mnt/disk1/nightly_perf/
           cd ../../../test/benchmark
-          python csv_to_html.py -f ../../dev/benchmark/all-in-one
+          python csv_to_html.py -f /mnt/disk1/nightly_perf/
           cp ./*.html /mnt/disk1/nightly_perf/
