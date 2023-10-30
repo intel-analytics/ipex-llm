@@ -5,7 +5,7 @@ This example demonstrates how to finetune a llama2-7b model using Big-LLM 4bit o
 
 ## Example: Finetune llama2-7b using QLoRA
 
-This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k). The `export_merged_model.py` is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/export_hf_checkpoint.py).
+This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k). 
 
 ### 1. Install
 
@@ -26,23 +26,23 @@ python ./qlora_finetuning_cpu.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH -
 
 #### Sample Output
 ```log
-{'loss': 2.2771, 'learning_rate': 0.0002, 'epoch': 0.03}
-{'loss': 1.891, 'learning_rate': 0.00017777777777777779, 'epoch': 0.06}
-{'loss': 1.5504, 'learning_rate': 0.00015555555555555556, 'epoch': 0.1}
-{'loss': 1.497, 'learning_rate': 0.00013333333333333334, 'epoch': 0.13}
-{'loss': 1.3256, 'learning_rate': 0.00011111111111111112, 'epoch': 0.16}
-{'loss': 1.2642, 'learning_rate': 8.888888888888889e-05, 'epoch': 0.19}
-{'loss': 1.397, 'learning_rate': 6.666666666666667e-05, 'epoch': 0.22}
-{'loss': 1.2516, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.26}
-{'loss': 1.3439, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.29}
-{'loss': 1.3288, 'learning_rate': 0.0, 'epoch': 0.32}
-{'train_runtime': 410.4375, 'train_samples_per_second': 1.949, 'train_steps_per_second': 0.487, 'train_loss': 1.5126623916625976, 'epoch': 0.32}
-100%|██████████████████████████████████████████████████████████████████████████████████████| 200/200 [06:50<00:00,  2.05s/it]
-TrainOutput(global_step=200, training_loss=1.5126623916625976, metrics={'train_runtime': 410.4375, 'train_samples_per_second': 1.949, 'train_steps_per_second': 0.487, 'train_loss': 1.5126623916625976, 'epoch': 0.32}
+{'loss': 2.5668, 'learning_rate': 0.0002, 'epoch': 0.03}
+{'loss': 1.6988, 'learning_rate': 0.00017777777777777779, 'epoch': 0.06}
+{'loss': 1.3073, 'learning_rate': 0.00015555555555555556, 'epoch': 0.1}
+{'loss': 1.3495, 'learning_rate': 0.00013333333333333334, 'epoch': 0.13}
+{'loss': 1.1746, 'learning_rate': 0.00011111111111111112, 'epoch': 0.16}
+{'loss': 1.0794, 'learning_rate': 8.888888888888889e-05, 'epoch': 0.19}
+{'loss': 1.2214, 'learning_rate': 6.666666666666667e-05, 'epoch': 0.22}
+{'loss': 1.1698, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.26}
+{'loss': 1.2044, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.29}
+{'loss': 1.1516, 'learning_rate': 0.0, 'epoch': 0.32}
+{'train_runtime': 474.3254, 'train_samples_per_second': 1.687, 'train_steps_per_second': 0.422, 'train_loss': 1.3923714351654053, 'epoch': 0.32}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [07:54<00:00,  2.37s/it]
+TrainOutput(global_step=200, training_loss=1.3923714351654053, metrics={'train_runtime': 474.3254, 'train_samples_per_second': 1.687, 'train_steps_per_second': 0.422, 'train_loss': 1.3923714351654053, 'epoch': 0.32})
 ```
 
 ### 3. Merge the adapter into the original model
-
+Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/QLoRA-FineTuning/export_merged_model.py) to merge.
 ```
 python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
 ```
