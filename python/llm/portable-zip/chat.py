@@ -54,6 +54,8 @@ from colorama import Fore
 from bigdl.llm import optimize_model
 from kv_cache import StartRecentKVCache
 
+SYSTEM_PROMPT = "A chat between a curious human <human> and an artificial intelligence assistant <bot>.\
+The assistant gives helpful, detailed, and polite answers to the human's questions."
 HUMAN_ID = "<human>"
 BOT_ID = "<bot>"
 
@@ -84,7 +86,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
         now = len(generated_text) - 1
         if now > pos:
-            if HUMAN_ID in generated_text:
+            if '\n<' in generated_text:
                 break
             else:
                 print("".join(generated_text[pos:now]), end="", flush=True)
@@ -92,7 +94,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
         if pred_token_idx == tokenizer.eos_token_id:
             break
-    print(" ".join(generated_text[pos:]), flush=True)
+    print(" ".join(generated_text[pos:]).strip('\n<'), flush=True)
     return past_key_values
 
 @torch.no_grad()
@@ -112,6 +114,38 @@ def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512):
         past_key_values = greedy_generate(
             model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len
         )
+
+@torch.no_grad()
+def chatglm2_stream_chat(model, tokenizer):
+    chat_history = []
+    past_key_values = None
+    current_length = 0
+    stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(HUMAN_ID, tokenizer)])
+    max_past_length = 2048
+
+    while True:
+        user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
+        if user_input == "stop": # let's stop the conversation when user input "stop"
+            break
+        print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
+        prompt = f"问：{user_input}\n答："
+        for response, chat_history, past_key_values in model.stream_chat(tokenizer, prompt,
+                                                                         history=chat_history,
+                                                                         stopping_criteria=stopping_criteria,
+                                                                         past_key_values=past_key_values,
+                                                                         return_past_key_values=True):
+            print(response[current_length:], end="", flush=True)
+            current_length = len(response)
+            if past_key_values[0][0].shape[0] > max_past_length:
+                # To avoid out of memory, only keep recent key_values
+                new_values_list = []
+                for i in range(len(past_key_values)):
+                    new_value = []
+                    for val in past_key_values[i]:
+                        new_v = val[-max_past_length:]
+                        new_value.append(new_v)
+                    new_values_list.append(tuple(new_value))
+                past_key_values = tuple(new_values_list)
 
 def auto_select_model(model_name):
     try:
@@ -134,19 +168,21 @@ def auto_select_model(model_name):
     return model
   
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument("--model-path", type=str, help="path to an llm")
-  args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-path", type=str, help="path to an llm")
+    args = parser.parse_args()
 
-  model_path = args.model_path
-  
-  model = auto_select_model(model_path)
-  model = optimize_model(model)
+    model_path = args.model_path
 
-  tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    model = auto_select_model(model_path)
+    model = optimize_model(model)
 
-  kv_cache = StartRecentKVCache()
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-  stream_chat(model=model,
-              tokenizer=tokenizer,
-              kv_cache=kv_cache)
+    if model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
+        chatglm2_stream_chat(model=model, tokenizer=tokenizer)
+    else:
+        kv_cache = StartRecentKVCache()
+        stream_chat(model=model,
+                    tokenizer=tokenizer,
+                    kv_cache=kv_cache)
