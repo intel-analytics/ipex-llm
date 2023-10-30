@@ -267,3 +267,10 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           python -m pip install expecttest einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
+
+      - name: Run LLM fine-tune test
+        shell: bash
+        run: |
+          python -m pip install transformers==4.34.0 peft==0.5.0
+          source /opt/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-finetune-tests-gpu.sh
