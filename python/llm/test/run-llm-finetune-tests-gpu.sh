@@ -9,7 +9,7 @@ start=$(date "+%s")
 
 python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/QLoRA-FineTuning/qlora_finetuning.py \
 --repo-id-or-model-path ${LLAMA2_7B_ORIGIN_PATH} \
---dataset /mnt/disk1/datasets/abirate_english_quotes
+--dataset ${ABIRATE_ENGLISH_QUOTES_PATH}
 
 python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/QLoRA-FineTuning/export_merged_model.py \
 --repo-id-or-model-path ${LLAMA2_7B_ORIGIN_PATH} \
