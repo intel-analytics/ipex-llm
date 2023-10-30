@@ -210,7 +210,7 @@ class FP4Params(torch.nn.Parameter):
                     w_quant_q4_0 = ggml_convert_qtype(w, SYM_INT4,
                                                       device=device,
                                                       convert_shape_only=self.convert_shape_only)
-                    w_q4_0_dequant = ggml_convert_fp32(w_quant_q4_0, w.shape, 
+                    w_q4_0_dequant = ggml_convert_fp32(w_quant_q4_0, w.shape,
                                                        reduce(mul, w.shape, 1), SYM_INT4)
                     w_quant_fp4 = ggml_convert_qtype(w, FP4,
                                                      device=device,
