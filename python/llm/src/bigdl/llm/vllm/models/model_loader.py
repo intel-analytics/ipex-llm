@@ -7,7 +7,7 @@ import torch.nn as nn
 from transformers import PretrainedConfig
 
 from bigdl.llm.vllm.config import ModelConfig
-from bigdl.llm.vllm.models import BigDLLlamaForCausalLM  # pylint: disable=wildcard-import
+from bigdl.llm.vllm.models.bigdl_llama import BigDLLlamaForCausalLM  # pylint: disable=wildcard-import
 
 _MODEL_REGISTRY = {
     # "AquilaModel": AquilaForCausalLM,
