@@ -10,6 +10,7 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 | Falcon    | [link](falcon)    |
 | ChatGLM   | [link](chatglm)   | 
 | ChatGLM2  | [link](chatglm2)  | 
+| ChatGLM3  | [link](chatglm3)  | 
 | MOSS      | [link](moss)      | 
 | Baichuan  | [link](baichuan)  | 
 | Baichuan2 | [link](baichuan2) | 

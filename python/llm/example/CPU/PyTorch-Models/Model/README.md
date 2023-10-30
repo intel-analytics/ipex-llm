@@ -6,6 +6,7 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel s
 |----------------|----------------------------------------------------------|
 | LLaMA 2        | [link](llama2)                                           |
 | ChatGLM        | [link](chatglm)                                          | 
+| ChatGLM3       | [link](chatglm3)                                         | 
 | Openai Whisper | [link](openai-whisper)                                   | 
 | BERT           | [link](bert)                                             | 
 | Bark           | [link](bark)                                             |

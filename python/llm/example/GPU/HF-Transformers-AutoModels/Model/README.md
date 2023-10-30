@@ -9,6 +9,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | Baichuan       | [link](baichuan)                                         |
 | Baichuan2      | [link](baichuan2)                                        |
 | ChatGLM2       | [link](chatglm2)                                         |
+| ChatGLM3       | [link](chatglm3)                                         |
 | Chinese Llama2 | [link](chinese-llama2)                                   |
 | Dolly v1       | [link](dolly-v1)                                         |
 | Dolly v2       | [link](dolly-v2)                                         |
