@@ -1,0 +1,17 @@
+repo_id:
+  - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+  - 'meta-llama/Llama-2-13b-chat-hf'
+  - 'tiiuae/falcon-7b-instruct-with-patch'
+  - 'mosaicml/mpt-7b-chat'
+local_model_hub: '/mnt/disk1/models'
+warm_up: 1
+num_trials: 3
+num_beams: 1 # default to greedy search
+low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+in_out_pairs:
+  - '32-32'
+  - '1024-128'
+  - '2048-256'
+test_api:
+  - "transformer_int4"
