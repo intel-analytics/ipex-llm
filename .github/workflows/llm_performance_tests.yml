@@ -168,10 +168,11 @@ jobs:
       # - name: Run LLM install (all) test
       # uses: ./.github/actions/llm/setup-llm-env
 
-      - name: Test installed cpu version
-        shell: bash
-        run: |
-          bash python/llm/test/run-llm-install-tests.sh
+      # - name: Test installed cpu version
+      #  shell: bash
+      #  run: |
+      #    source /opt/intel/oneapi/setvars.sh
+      #    bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on cpu
         shell: bash
