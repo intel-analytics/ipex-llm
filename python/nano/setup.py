@@ -144,6 +144,12 @@ def setup_package():
                         "packaging",
                         "sigfig",
                         "setuptools<66"]
+    
+    # diffusion requires
+    diffusion_requires = pytorch_requires + [
+        "diffusers==0.14.0",
+        "transformers==4.34.0",
+    ]
 
     package_data = [
         "libs/libjemalloc.so",
@@ -178,7 +184,8 @@ def setup_package():
                         "pytorch_113_xpu": pytorch_113_xpu_requires,
                         "pytorch_20_xpu": pytorch_20_xpu_requires,
                         "pytorch_nightly": pytorch_nightly_requires,
-                        "inference": inference_requires},
+                        "inference": inference_requires,
+                        "diffusion_113": diffusion_requires},
         package_data={"bigdl.nano": package_data},
         scripts=scripts,
         package_dir={"": "src"},
