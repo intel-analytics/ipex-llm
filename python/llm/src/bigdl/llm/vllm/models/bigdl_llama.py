@@ -45,9 +45,9 @@ class BigDLLlamaForCausalLM(nn.Module):
         self.config = config
         # TODO(gc): later change this to a switch?
         if True:
+            from bigdl.llm.transformers import AutoModelForCausalLM
             from bigdl.llm import optimize_model
 
-        from transformers import AutoModelForCausalLM
         # low_bit = 'sym_int4'
         model = AutoModelForCausalLM.from_pretrained(
             config._name_or_path,
@@ -61,6 +61,8 @@ class BigDLLlamaForCausalLM(nn.Module):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
         self.dtype = self.model.dtype
+        self.kv_cache_size = [0]
+
 
     def decode(self, generated_ids: List[int]) -> str:
         return self.tokenizer.decode(generated_ids,
@@ -74,10 +76,6 @@ class BigDLLlamaForCausalLM(nn.Module):
     ) -> Tuple[torch.Tensor, List[Tuple[torch.Tensor, torch.Tensor]]]:
         kv_cache_0 = self.model.config.num_hidden_layers
         kv_cache_1 = 2
-        bigdl_kv_cache = [[
-            torch.tensor([], device=self.device, dtype=self.dtype)
-            for _ in range(kv_cache_1)
-        ] for _ in range(kv_cache_0)]
         seq_len = len(seq_group_meta_data_lists)
 
         bigdl_input_ids = []
@@ -108,19 +106,29 @@ class BigDLLlamaForCausalLM(nn.Module):
 
         if all_decoding:
             # pdb.set_trace()
+            self.kv_cache_size[0] = seq_len
+
             for seq_group_meta_data in seq_group_meta_data_lists:
                 seq_ids = list(seq_group_meta_data.seq_data.keys())
                 seq_id = seq_ids[0]
                 if kv_cache.get(seq_id) is None:
                     continue
-                for i in range(kv_cache_0):
-                    for j in range(kv_cache_1):
-                        target_size = (bigdl_kv_cache[i][j].size(0) +
-                                       kv_cache[seq_id][i][j].size(0),
-                                       ) + kv_cache[seq_id][i][j].size()[1:]
-                        bigdl_kv_cache[i][j].resize_(target_size)
-                        bigdl_kv_cache[i][j][-kv_cache[seq_id][i][j].
-                                             size(0):] = kv_cache[seq_id][i][j]
+                all_seq_id.append(seq_id)
+
+            view_size = self.kv_cache_size[:]
+            view_size[0] = 1
+            bigdl_kv_cache = []
+            for i in range(kv_cache_0):
+                cur_list = []
+                for j in range(kv_cache_1):
+                    cur_view = None
+                    for seq_id in all_seq_id:
+                        if cur_view is None:
+                            cur_view = kv_cache[seq_id][i][j].view(view_size)
+                        else:
+                            cur_view = torch.cat((cur_view, kv_cache[seq_id][i][j].view(view_size)), dim = 0)
+                    cur_list.append(cur_view)
+                bigdl_kv_cache.append(cur_list)
         else:
             bigdl_input_ids = [
                 _pad_to_max(input_ids, max_context_len)
@@ -134,7 +142,7 @@ class BigDLLlamaForCausalLM(nn.Module):
                 # "position_ids": bigdl_position_ids,
                 "past_key_values": bigdl_kv_cache,
                 "use_cache": True,
-                "return_dict": True,
+                # "return_dict": True,
             }
         else:
             kwargs = {
@@ -142,7 +150,7 @@ class BigDLLlamaForCausalLM(nn.Module):
                 # "position_ids": bigdl_position_ids,
                 "past_key_values": None,
                 "use_cache": True,
-                "return_dict": True,
+                # "return_dict": True,
             }
         # pdb.set_trace()
         outputs = self.model.forward(**kwargs)
@@ -174,7 +182,7 @@ class BigDLLlamaForCausalLM(nn.Module):
             for i in range(kv_cache_0):
                 for j in range(kv_cache_1):
                     kv_cache[seq_id][i][j] = outputs.past_key_values[i][j][
-                        index].unsqueeze(0)
+                        index]
             index = index + 1
 
         return bigdl_output
