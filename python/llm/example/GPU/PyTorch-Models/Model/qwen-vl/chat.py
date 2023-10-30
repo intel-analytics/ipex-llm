@@ -18,10 +18,10 @@ import argparse
 import os
 
 import torch
-from transformers import AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm import optimize_model
 import intel_extension_for_pytorch as ipex
 
 torch.manual_seed(1234)
@@ -38,11 +38,13 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path  
         
     # Load model
+    model = AutoModelForCausalLM.from_pretrained(model_path, device_map="cpu",  trust_remote_code=True)
+
+    # With only one line to enable BigDL-LLM optimization on model
     # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
-    model = AutoModelForCausalLM.from_pretrained(model_path, 
-                                                 load_in_4bit=True, 
-                                                 trust_remote_code=True, 
-                                                 modules_to_not_convert=['c_fc', 'out_proj'])
+    model = optimize_model(model, 
+                           low_bit='sym_int4', 
+                           modules_to_not_convert=['c_fc', 'out_proj'])
     model = model.to('xpu')
     # Due to issue https://github.com/intel/intel-extension-for-pytorch/issues/454,
     # currently put interpolation execution into cpu
