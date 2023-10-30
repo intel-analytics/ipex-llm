@@ -107,7 +107,6 @@ class BigDLLlamaForCausalLM(nn.Module):
         if all_decoding:
             # pdb.set_trace()
             self.kv_cache_size[0] = seq_len
-            bigdl_kv_cache = [[]]
             all_seq_id = []
             for seq_group_meta_data in seq_group_meta_data_lists:
                 seq_ids = list(seq_group_meta_data.seq_data.keys())
@@ -156,6 +155,7 @@ class BigDLLlamaForCausalLM(nn.Module):
         # pdb.set_trace()
         outputs = self.model.forward(**kwargs)
         # self.tmp_kv_cache = outputs.past_key_values
+        self.kv_cache_size = list(outputs.past_key_values[0][0].shape)
         index = 0
         bigdl_output = []
         for seq_id in cur_seq_ids:
