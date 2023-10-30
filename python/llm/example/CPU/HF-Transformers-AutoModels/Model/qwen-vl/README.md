@@ -83,4 +83,6 @@ The sample input image in Session 1 is (which is fetched from [here](https://coc
 
 <a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=250px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
 
+The sample output image in Session 3 is:
 
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png"><img width=250px  src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png" ></a>
