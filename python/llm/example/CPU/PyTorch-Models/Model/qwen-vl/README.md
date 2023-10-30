@@ -80,10 +80,10 @@ Every image output will be named as the round of session and placed under the cu
  Please input a picture: exit
 ```
 
-The sample input image in Session 1 is (which is fetched from [here](https://cocodataset.org/#explore?id=264959)):
+The sample input image in Session 1 is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
 
-<a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=250px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
+<a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
 
 The sample output image in Session 3 is:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png"><img width=250px  src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png" ></a>
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png"><img width=400px  src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output.png" ></a>
