@@ -7,7 +7,7 @@ To run this example with BigDL-LLM on Intel GPUs, we have some recommended requi
 
 ## Example: Alpaca QLoRA Finetuning
 
-This example is ported from is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/finetune.py).
+This example is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/finetune.py). Just a few code changes are needed to finetune a llama2-7b model using QLoRA with BigDL-LLM 4bit optimizations on Intel GPUs.
 
 ### 1. Install
 
@@ -30,15 +30,14 @@ source /opt/intel/oneapi/setvars.sh
 
 Before running the example, please make sure you have prepared the [templates folder](https://github.com/tloen/alpaca-lora/tree/main/templates) in the current directory.
 
-```
-python ./alpaca_qlora_finetuning.py
-```
+Example usage:
 
-In the example, several arguments can be passed to satisfy your requirements:
-
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 (e.g.`meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-hf'`.
-- `--dataset DATASET`: argument defining the dataset to use. It is default to be `'yahma/alpaca-cleaned'`.
-- `--output-dir OUTPUT_DIR`: argument defining the path to save the adapter. It is default to be `"./bigdl-qlora-alpaca"`.
+```
+python ./alpaca_qlora_finetuning.py \
+    --base_model "meta-llama/Llama-2-7b-hf" \
+    --data_path "yahma/alpaca-cleaned" \
+    --output_dir "./bigdl-qlora-alpaca"
+```
 
 #### Sample Output
 ```log
