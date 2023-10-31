@@ -1,11 +1,9 @@
 repo_id:
   - 'meta-llama/Llama-2-7b-chat-hf'
   - 'meta-llama/Llama-2-13b-chat-hf'
-  - 'THUDM/chatglm-6b'
   - 'THUDM/chatglm2-6b'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
-  - 'bigscience/bloomz-7b1'
   - 'redpajama/gptneox-7b-redpajama-bf16'
   - 'databricks/dolly-v1-6b'
   - 'databricks/dolly-v2-7b'
