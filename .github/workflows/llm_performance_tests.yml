@@ -158,23 +158,22 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
-          pip install --pre --upgrade bigdl-llm[all]
-          pip install bigdl-nano[pytorch]
-          source bigdl-nano-init
+          python -m pip install --upgrade einops
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
-      # - name: Run LLM install (all) test
-      # uses: ./.github/actions/llm/setup-llm-env
+      - name: Run LLM install (all) test
+      uses: ./.github/actions/llm/setup-llm-env
 
-      # - name: Test installed cpu version
-      #  shell: bash
-      #  run: |
-      #    source /opt/intel/oneapi/setvars.sh
-      #    bash python/llm/test/run-llm-install-tests.sh
+      - name: Test installed cpu version
+      shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on cpu
         shell: bash
