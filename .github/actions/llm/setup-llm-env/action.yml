@@ -11,7 +11,6 @@ runs:
     - name: Create conda env for llm tests and conduct install tests
       shell: bash
       run: |
-        set -x
         # make sure we install the latest version for bigdl-core-xe
         pip uninstall bigdl-core-xe || true
         sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
