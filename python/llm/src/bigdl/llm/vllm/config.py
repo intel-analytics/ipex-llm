@@ -1,67 +1,44 @@
-from typing import Optional
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/vllm-project/vllm/blob/main/vllm/config.py
+# which is licensed under Apache License 2.0
+#
+# Copyright 2023 The vLLM team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+from typing import Optional
 import torch
 from transformers import AutoConfig, PretrainedConfig
-
+from vllm.config import ParallelConfig
 from vllm.logger import init_logger
+from vllm.transformers_utils.config import get_config
 
 logger = init_logger(__name__)
-
-_GB = 1 << 30
-
-
-# TODO(gc): later we can decide to remove this
-class ParallelConfig:
-    """Configuration for the distributed execution.
-
-    Args:
-        pipeline_parallel_size: Number of pipeline parallel groups.
-        tensor_parallel_size: Number of tensor parallel groups.
-        worker_use_ray: Whether to use Ray for model workers. Will be set to
-            True if either pipeline_parallel_size or tensor_parallel_size is
-            greater than 1.
-    """
-
-    def __init__(
-        self,
-        pipeline_parallel_size: int,
-        tensor_parallel_size: int,
-        worker_use_ray: bool,
-    ) -> None:
-        self.pipeline_parallel_size = pipeline_parallel_size
-        self.tensor_parallel_size = tensor_parallel_size
-        self.worker_use_ray = worker_use_ray
-
-        self.world_size = pipeline_parallel_size * tensor_parallel_size
-        if self.world_size > 1:
-            self.worker_use_ray = True
-        self._verify_args()
-
-    def _verify_args(self) -> None:
-        if self.pipeline_parallel_size > 1:
-            raise NotImplementedError(
-                "Pipeline parallelism is not supported yet.")
-
-
-# TODO(gc): later handle this function, seems that need more things.
-def get_config(model: str,
-               trust_remote_code: bool,
-               revision: Optional[str] = None) -> PretrainedConfig:
-    try:
-        config = AutoConfig.from_pretrained(
-            model, trust_remote_code=trust_remote_code, revision=revision)
-    except ValueError as e:
-        if (not trust_remote_code and
-                "requires you to execute the configuration file" in str(e)):
-            err_msg = (
-                "Failed to load the model config. If the model is a custom "
-                "model not yet available in the HuggingFace transformers "
-                "library, consider setting `trust_remote_code=True` in LLM "
-                "or using the `--trust-remote-code` flag in the CLI.")
-            raise RuntimeError(err_msg) from e
-        else:
-            raise e
-    return config
 
 
 class ModelConfig:
@@ -227,50 +204,6 @@ class ModelConfig:
     def get_num_layers(self, parallel_config: "ParallelConfig") -> int:
         total_num_hidden_layers = self.hf_config.num_hidden_layers
         return total_num_hidden_layers // parallel_config.pipeline_parallel_size
-
-
-class SchedulerConfig:
-    """Scheduler configuration.
-
-    Args:
-        max_num_batched_tokens: Maximum number of tokens to be processed in
-            a single iteration.
-        max_num_seqs: Maximum number of sequences to be processed in a single
-            iteration.
-        max_model_len: Maximum length of a sequence (including prompt
-            and generated text).
-    """
-
-    def __init__(
-        self,
-        max_num_batched_tokens: Optional[int],
-        max_num_seqs: int,
-        max_model_len: int,
-    ) -> None:
-        if max_num_batched_tokens is not None:
-            self.max_num_batched_tokens = max_num_batched_tokens
-        else:
-            # If max_model_len is too short, use 2048 as the default value for
-            # higher throughput.
-            self.max_num_batched_tokens = max(max_model_len, 2048)
-        self.max_num_seqs = max_num_seqs
-        self.max_model_len = max_model_len
-        self._verify_args()
-
-    def _verify_args(self) -> None:
-        if self.max_num_batched_tokens < self.max_model_len:
-            raise ValueError(
-                f"max_num_batched_tokens ({self.max_num_batched_tokens}) is "
-                f"smaller than max_model_len ({self.max_model_len}). "
-                "This effectively limits the maximum sequence length to "
-                "max_num_batched_tokens and makes vLLM reject longer "
-                "sequences. Please increase max_num_batched_tokens or "
-                "decrease max_model_len.")
-        if self.max_num_batched_tokens < self.max_num_seqs:
-            raise ValueError(
-                f"max_num_batched_tokens ({self.max_num_batched_tokens}) must "
-                "be greater than or equal to max_num_seqs "
-                f"({self.max_num_seqs}).")
 
 
 _STR_DTYPE_TO_TORCH_DTYPE = {

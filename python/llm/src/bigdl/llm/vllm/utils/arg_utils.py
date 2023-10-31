@@ -2,9 +2,8 @@ import argparse
 import dataclasses
 from dataclasses import dataclass
 from typing import Optional, Tuple
-
-from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig, ParallelConfig
-
+from bigdl.llm.vllm.config import ModelConfig
+from vllm.config import SchedulerConfig, ParallelConfig
 
 @dataclass
 class EngineArgs:

@@ -3,8 +3,8 @@ import time
 from functools import partial
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
 
-from bigdl.llm.vllm.config import (ModelConfig, ParallelConfig,
-                                   SchedulerConfig)
+from bigdl.llm.vllm.config import ModelConfig
+from vllm.config import ParallelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.utils.arg_utils import EngineArgs
 #from bigdl.vllm.engine.ray_utils import RayWorker, initialize_cluster, ray

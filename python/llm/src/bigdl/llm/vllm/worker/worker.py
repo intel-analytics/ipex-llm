@@ -5,8 +5,8 @@ from typing import Dict, List, Tuple, Optional
 import torch
 import torch.distributed
 
-from bigdl.llm.vllm.config import (ModelConfig, ParallelConfig,
-                                   SchedulerConfig)
+from bigdl.llm.vllm.config import ModelConfig
+from vllm.config import ParallelConfig, SchedulerConfig
 from bigdl.llm.vllm.models.model_loader import get_model
 from bigdl.llm.vllm.structure.input_metadata import InputMetadata
 from bigdl.llm.vllm.utils.model_utils import set_random_seed

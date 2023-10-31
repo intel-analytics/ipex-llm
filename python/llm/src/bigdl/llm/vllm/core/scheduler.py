@@ -2,7 +2,7 @@ import enum
 import time
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
-from bigdl.llm.vllm.config import SchedulerConfig
+from vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceData,
