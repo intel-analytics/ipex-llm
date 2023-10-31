@@ -5,7 +5,7 @@ ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 
-ADD chat.py /llm/chat.py
+COPY chat.py /llm/chat.py
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
