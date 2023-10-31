@@ -93,18 +93,18 @@ jobs:
           mv build/libstarcoder-api.so release/libstarcoder-api.so
           mv build/quantize-starcoder release/quantize-starcoder
           mv build/libstarcoder.so release/libstarcoder_avxvnni.so
-      - name: Build Chatglm
-        shell: bash
-        run: |
-          source activate python39 || conda activate python39
-          cd src/chatglm
-          scl enable gcc-toolset-11 "cmake -B build"
-          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
-      - name: Move Chatglm binaries
-        shell: bash
-        run: |
-          mv src/chatglm/build/main release/main-chatglm_vnni
-          mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+      # - name: Build Chatglm
+      #   shell: bash
+      #   run: |
+      #     source activate python39 || conda activate python39
+      #     cd src/chatglm
+      #     scl enable gcc-toolset-11 "cmake -B build"
+      #     scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+      # - name: Move Chatglm binaries
+      #   shell: bash
+      #   run: |
+      #     mv src/chatglm/build/main release/main-chatglm_vnni
+      #     mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
       - name: Build Chatglm Py310
         shell: bash
         run: |
