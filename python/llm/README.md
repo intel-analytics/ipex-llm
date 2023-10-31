@@ -55,6 +55,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Baichuan2  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
 | InternLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
 | Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
 | Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
 | MOSS       | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
 | Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |

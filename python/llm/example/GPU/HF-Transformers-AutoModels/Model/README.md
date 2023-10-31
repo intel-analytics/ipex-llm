@@ -19,6 +19,7 @@ You can use BigDL-LLM to run almost every Huggingface Transformer models with IN
 | Mistral        | [link](mistral)                                          |
 | MPT            | [link](mpt)                                              |
 | Qwen           | [link](qwen)                                             |
+| Qwen-VL        | [link](qwen-vl)                                          |
 | StarCoder      | [link](starcoder)                                        |
 | Vicuna         | [link](vicuna)                                           |
 | Whisper        | [link](whisper)                                          |
