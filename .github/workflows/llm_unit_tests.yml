@@ -36,6 +36,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
+    if: false
     uses: ./.github/workflows/llm-binary-build.yml
   llm-unit-test:
     if: false
