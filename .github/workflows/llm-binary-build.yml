@@ -430,7 +430,7 @@ jobs:
       - name: Move Chatglm binaries Py310
         shell: powershell
         run: |
-          mv src/chatglm/build/chatglm_C.cp310-win_amd64.pyd release/chatglm_C.cp310-win_amd64.pyd
+          mv src/chatglm/build/Release/_C.cp310-win_amd64.pyd release/chatglm_C.cp310-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
