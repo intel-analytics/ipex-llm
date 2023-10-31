@@ -6,6 +6,7 @@ from typing import Optional, Tuple, List, Type, Dict
 
 from bigdl.llm.vllm.structure.sequence import SequenceOutputs, SequenceGroupMetadata
 import math
+import time
 
 from transformers.generation.logits_process import (
     LogitsProcessorList,
@@ -171,6 +172,7 @@ class BigDLLlamaForCausalLM(nn.Module):
                 # "return_dict": True,
             }
         # pdb.set_trace()
+        st_timestamp = time.perf_counter()
         outputs = self.model.forward(**kwargs)
         # self.tmp_kv_cache = outputs.past_key_values
         self.kv_cache_size = list(outputs.past_key_values[0][0].shape)
@@ -191,8 +193,10 @@ class BigDLLlamaForCausalLM(nn.Module):
             tokens = [int(token) for token in indices.tolist()]
 
             logprobs = math.log(probs[tokens[0]])
+            ed_timestamp = time.perf_counter()
             seq_output = SequenceOutputs(parent_seq_id=seq_id,
                                          output_token=tokens[0],
+                                         latency = ed_timestamp - st_timestamp,
                                          logprobs={tokens[0]: logprobs})
             bigdl_output.append([seq_output])
             if kv_cache.get(seq_id) is None:

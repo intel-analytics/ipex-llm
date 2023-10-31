@@ -113,7 +113,7 @@ class Sequence:
         self.data = SequenceData(prompt_token_ids)
         self.output_logprobs: List[Dict[int, float]] = []
         self.output_text = ""
-
+        self.output_token_latency: List[float] = []
         self.status = SequenceStatus.WAITING
 
         # Used for incremental detokenization
@@ -126,10 +126,13 @@ class Sequence:
         self,
         token_id: int,
         logprobs: Dict[int, float],
+        latency: Optional[float] = None,
     ) -> None:
         assert token_id in logprobs
         self.output_logprobs.append(logprobs)
         self.data.append_token_id(token_id, logprobs[token_id])
+        if not (latency is None):
+            self.output_token_latency.append(latency)
 
     def get_len(self) -> int:
         return self.data.get_len()
@@ -148,6 +151,9 @@ class Sequence:
 
     def get_output_token_ids(self) -> List[int]:
         return self.data.output_token_ids
+
+    def get_output_token_latency(self) -> List[float]:
+        return self.output_token_latency
 
     def get_cumulative_logprob(self) -> float:
         return self.data.cumulative_logprob
@@ -315,11 +321,13 @@ class SequenceOutputs:
         self,
         parent_seq_id: int,
         output_token: int,
+        latency: float,
         logprobs: Dict[int, float],
     ) -> None:
         self.parent_seq_id = parent_seq_id
         self.output_token = output_token
         self.logprobs = logprobs
+        self.latency = latency
 
     def __repr__(self) -> str:
         return (f"SequenceOutputs(parent_seq_id={self.parent_seq_id}, "
