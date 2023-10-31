@@ -3,6 +3,7 @@ FROM ubuntu:22.04
 ARG http_proxy
 ARG https_proxy
 ARG PIP_NO_CACHE_DIR=false
+ARG DEBIAN_FRONTEND=noninteractive
 
 ENV PYTHONUNBUFFERED=1
 
