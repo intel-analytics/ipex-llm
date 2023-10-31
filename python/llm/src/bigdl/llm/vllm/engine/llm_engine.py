@@ -15,9 +15,8 @@ from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence,
                                                SequenceGroup,
                                                SequenceGroupMetadata,
                                                SequenceOutputs, SequenceStatus)
-from bigdl.llm.vllm.utils.tokenizer_utils import (detokenize_incrementally,
-                                                  get_tokenizer)
-from vllm.utils.utils import Counter
+from vllm.transformers_utils.tokenizer import (detokenize_incrementally,  get_tokenizer)
+from vllm.utils import Counter
 from vllm.engine.ray_utils import get_open_port
 
 logger = init_logger(__name__)
