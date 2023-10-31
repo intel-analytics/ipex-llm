@@ -609,8 +609,6 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
                                                 num_beams=num_beams)
                 end = time.perf_counter()
                 if local_rank == 0:
-                #    print("local_rank: ")
-                #    print(local_rank)
                     print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
                 if local_rank == 0:
