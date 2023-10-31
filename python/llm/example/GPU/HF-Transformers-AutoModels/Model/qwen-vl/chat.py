@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
     model.transformer.visual.ln_pre.register_forward_hook(to_cpu)
     model.transformer.visual.transformer.register_forward_pre_hook(to_xpu)
+
     # Specify hyperparameters for generation (No need to do this if you are using transformers>=4.32.0)
     model.generation_config = GenerationConfig.from_pretrained(model_path, trust_remote_code=True)
     

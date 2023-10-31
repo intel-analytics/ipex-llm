@@ -75,4 +75,4 @@ The sample input image in Session 1 is (which is fetched from [COCO dataset](htt
 
 The sample output image in Session 3 is:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output-gpu.png"><img width=250px src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output-gpu.png" ></a>
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output-gpu.png"><img width=400px src="https://llm-assets.readthedocs.io/en/latest/_images/qwen-vl-example-output-gpu.png" ></a>
