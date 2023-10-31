@@ -10,8 +10,7 @@ ARG PIP_NO_CACHE_DIR=false
 COPY ./entrypoint.sh /opt/entrypoint.sh
 ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 # Install Serving Dependencies
-RUN mkdir /llm && \
-    cd /llm && \
+RUN cd /llm && \
     git clone https://github.com/analytics-zoo/FastChat.git && \
     cd FastChat && \
     git checkout dev-2023-09-22 && \

@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-import pytest
 import os
+import pytest
 
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
@@ -32,8 +32,9 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
     (AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt),
     (AutoModelForCausalLM, AutoTokenizer, bloom_model_path, prompt),
     (AutoModel, AutoTokenizer, chatglm2_6b_model_path, prompt),
-    (AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt),
+    (AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt)
 ])
+    
 def test_optimize_model(Model, Tokenizer, model_path, prompt):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(prompt, return_tensors="pt")

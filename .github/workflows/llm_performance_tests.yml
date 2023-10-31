@@ -26,6 +26,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-performance-test:
+    if: false # skip cpu performance test for now; may add it back with separated runner
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -99,6 +100,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
@@ -127,5 +129,8 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          taskset -c 0-$((THREAD_NUM - 1)) python run.py
+          python run.py
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
+          cd ../../../test/benchmark
+          python csv_to_html.py -f ../../dev/benchmark/all-in-one
+          cp ./*.html /mnt/disk1/nightly_perf/

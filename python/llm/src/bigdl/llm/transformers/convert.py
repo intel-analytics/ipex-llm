@@ -45,6 +45,42 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 
 
+def is_deepspeed_available():
+    return importlib.util.find_spec("deepspeed") is not None
+
+
+def is_linear_module(module):
+
+    in_features = None
+    out_features = None
+    mp_group = None
+
+    if isinstance(module, nn.Linear):
+        in_features = module.in_features
+        out_features = module.out_features
+        mp_group = None
+        result = True
+    else:
+        if is_deepspeed_available():
+            from deepspeed.module_inject.layers import LinearLayer, LinearAllreduce
+            if isinstance(module, LinearLayer):
+                in_features = module.weight.shape[1]
+                out_features = module.weight.shape[0]
+                mp_group = None
+                result = True
+            elif isinstance(module, LinearAllreduce):
+                in_features = module.weight.shape[1]
+                out_features = module.weight.shape[0]
+                mp_group = module.mp_group
+                result = True
+            else:
+                result = False
+        else:
+            result = False
+
+    return result, (in_features, out_features, mp_group)
+
+
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
@@ -54,17 +90,20 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if current_key_name is None:
             current_key_name = []
 
-        if isinstance(module, nn.Linear) and name not in modules_to_not_convert:
+        is_linear, linear_args = is_linear_module(module)
+        if is_linear and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
+                in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
                     new_linear = None
                     if qtype != ggml_tensor_qtype["fp16"]:
                         new_linear = LowBitLinear(
-                            module.in_features,
-                            module.out_features,
+                            in_features,
+                            out_features,
                             qtype,
                             module.bias is not None,
+                            mp_group=mp_group,
                         )
 
                         device_type = module.weight.data.device.type
@@ -82,10 +121,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if module.in_features in [4096, 11008]:
                             # esimd fp16 path
                             new_linear = FP16Linear(
-                                module.in_features,
-                                module.out_features,
+                                in_features,
+                                out_features,
                                 qtype,
                                 module.bias is not None,
+                                mp_group=mp_group,
                             )
                             device_type = module.weight.data.device.type
 
@@ -226,6 +266,7 @@ def _optimize_post(model):
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
             from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             convert_forward(model,
                             module.SelfAttention,
                             chatglm2_attention_forward_8eb45c
@@ -233,6 +274,9 @@ def _optimize_post(model):
             convert_forward(model,
                             module.CoreAttention,
                             core_attn_forward_8eb45c)
+            convert_forward(model,
+                            module.RMSNorm,
+                            chatglm_rms_norm_forward)
         elif hasattr(model.config, 'vocab_size') and model.config.vocab_size == 130528:
             # chatglm-6b
             modeling_module_name = model.__class__.__module__
