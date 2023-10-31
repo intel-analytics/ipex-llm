@@ -19,9 +19,8 @@ python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/QLoRA-FineTuning/export_merg
 --adapter_path ${PWD}/outputs/checkpoint-2 \
 --output_path ${PWD}/outputs/checkpoint-2-merged
 
-
 now=$(date "+%s")
 time=$((now-start))
 
-echo "qlora fine-tuning tests finished"
+echo "qlora fine-tuning test finished"
 echo "Time used:$time seconds"
