@@ -108,7 +108,7 @@ jobs:
       - name: Build Chatglm Py310
         shell: bash
         run: |
-          conda deactivate
+          source deactivate || conda deactivate
           make clean
           source activate python310 || conda activate python310
           scl enable gcc-toolset-11 "cmake -B build"
