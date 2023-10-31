@@ -26,7 +26,6 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-performance-test:
-    if: false # skip cpu performance test for now; may add it back with separated runner
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -78,7 +77,6 @@ jobs:
       #   env:
       #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
   llm-performance-test-on-arc:
-    if: false # skip cpu performance test for now; may add it back with separated runner
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -141,7 +139,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
     runs-on: [self-hosted, llm, spr-perf]
     env:
       OMP_NUM_THREADS: 16
@@ -178,3 +176,6 @@ jobs:
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
           python run.py
+          cd ../../../test/benchmark
+          python csv_to_html.py -f ../../dev/benchmark/all-in-one
+          cp ./*.html /mnt/disk1/nightly_perf_cpu/
