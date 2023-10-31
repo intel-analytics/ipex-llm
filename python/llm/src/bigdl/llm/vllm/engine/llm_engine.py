@@ -8,7 +8,7 @@ from bigdl.llm.vllm.config import (ModelConfig, ParallelConfig,
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.utils.arg_utils import EngineArgs
 #from bigdl.vllm.engine.ray_utils import RayWorker, initialize_cluster, ray
-from bigdl.llm.vllm.logger import init_logger
+from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence,

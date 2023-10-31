@@ -4,7 +4,7 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from bigdl.llm.vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
-from bigdl.llm.vllm.logger import init_logger
+from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceData,
                                                SequenceGroup,
                                                SequenceGroupMetadata,
