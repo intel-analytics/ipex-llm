@@ -4,6 +4,7 @@ ARG http_proxy
 ARG https_proxy
 
 ENV TZ=Asia/Shanghai
+ENV PYTHONUNBUFFERED=1
 
 COPY chat.py /llm/chat.py
 
