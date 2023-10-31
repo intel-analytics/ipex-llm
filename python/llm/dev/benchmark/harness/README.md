@@ -9,6 +9,7 @@ git clone https://github.com/EleutherAI/lm-evaluation-harness.git
 cd  lm-evaluation-harness
 git checkout e81d3cc
 pip install -e .
+git apply ../bigdl-llm.patch
 cd ..
 ```
 
