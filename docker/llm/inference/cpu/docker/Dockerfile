@@ -8,8 +8,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
 ADD ./start-notebook.sh /llm/start-notebook.sh
-ADD ../../../../../python/llm/dev/benchmark/ /llm/benchmark
-ADD ../../../../../python/llm/dev/benchmark/benchmark_util.py /llm/benchmark/all-in-one/benchmark_util.py
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -35,6 +33,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /llm/start-notebook.sh && \
 # Download chat.py script
     pip install --upgrade colorama && \
-    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py
+    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py && \
+# Download all-in-one benchmark
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    cp -r ./BigDL/python/llm/dev/benchmark/ . && \
+    rm -rf ./BigDL && \
+    cp ./benchmark/benchmark_util.py ./benchmark/all-in-one
 
 ENTRYPOINT ["/bin/bash"]
