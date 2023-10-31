@@ -145,7 +145,7 @@ jobs:
         instruction: ["AVX512"]
     runs-on: [self-hosted, llm, spr-perf]
     env:
-      THREAD_NUM: 24
+      THREAD_NUM: 48
     steps:
       - name: Set environment variables
         shell: bash
