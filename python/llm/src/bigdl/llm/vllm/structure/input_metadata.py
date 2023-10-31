@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from xformers.ops import AttentionBias
 
-from bigdl.llm.vllm.structure.sequence import SequenceData
+from vllm.sequence import SequenceData
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 
 

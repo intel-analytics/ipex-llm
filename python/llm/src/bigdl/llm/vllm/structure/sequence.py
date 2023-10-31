@@ -1,95 +1,42 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/vllm-project/vllm/blob/main/vllm/sequence.py
+# which is licensed under Apache License 2.0
+#
+# Copyright 2023 The vLLM team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Sequence and its related classes."""
 import copy
 import enum
 from typing import Dict, List, Optional, Union
-
 from .sampling_params import SamplingParams
-
-
-class SequenceStatus(enum.Enum):
-    """Status of a sequence."""
-    WAITING = enum.auto()
-    RUNNING = enum.auto()
-    SWAPPED = enum.auto()
-    FINISHED_STOPPED = enum.auto()
-    FINISHED_LENGTH_CAPPED = enum.auto()
-    FINISHED_ABORTED = enum.auto()
-    FINISHED_IGNORED = enum.auto()
-
-    @staticmethod
-    def is_finished(status: "SequenceStatus") -> bool:
-        return status in [
-            SequenceStatus.FINISHED_STOPPED,
-            SequenceStatus.FINISHED_LENGTH_CAPPED,
-            SequenceStatus.FINISHED_ABORTED,
-            SequenceStatus.FINISHED_IGNORED,
-        ]
-
-    @staticmethod
-    def get_finished_reason(status: "SequenceStatus") -> Union[str, None]:
-        if status == SequenceStatus.FINISHED_STOPPED:
-            finish_reason = "stop"
-        elif status == SequenceStatus.FINISHED_LENGTH_CAPPED:
-            finish_reason = "length"
-        elif status == SequenceStatus.FINISHED_ABORTED:
-            finish_reason = "abort"
-        elif status == SequenceStatus.FINISHED_IGNORED:
-            # The ignored sequences are the sequences whose prompt lengths
-            # are longer than the model's length cap. Therefore, the stop
-            # reason should also be "length" as in OpenAI API.
-            finish_reason = "length"
-        else:
-            finish_reason = None
-        return finish_reason
-
-
-class SequenceData:
-    """Data associated with a sequence.
-
-
-    Args:
-        prompt_token_ids: The token IDs of the prompt.
-
-    Attributes:
-        prompt_token_ids: The token IDs of the prompt.
-        output_token_ids: The token IDs of the output.
-        cumulative_logprob: The cumulative log probability of the output.
-    """
-
-    def __init__(
-        self,
-        prompt_token_ids: List[int],
-    ) -> None:
-        self.prompt_token_ids = prompt_token_ids
-        self.output_token_ids: List[int] = []
-        self.cumulative_logprob = 0.0
-
-    def append_token_id(self, token_id: int, logprob: float) -> None:
-        self.output_token_ids.append(token_id)
-        self.cumulative_logprob += logprob
-
-    def get_len(self) -> int:
-        return len(self.output_token_ids) + len(self.prompt_token_ids)
-
-    def get_prompt_len(self) -> int:
-        return len(self.prompt_token_ids)
-
-    def get_output_len(self) -> int:
-        return len(self.output_token_ids)
-
-    def get_token_ids(self) -> List[int]:
-        return self.prompt_token_ids + self.output_token_ids
-
-    def get_last_token_id(self) -> int:
-        if not self.output_token_ids:
-            return self.prompt_token_ids[-1]
-        return self.output_token_ids[-1]
-
-    def __repr__(self) -> str:
-        return (f"SequenceData("
-                f"prompt_token_ids={self.prompt_token_ids}, "
-                f"output_token_ids={self.output_token_ids}, "
-                f"cumulative_logprob={self.cumulative_logprob})")
+from vllm.sequence import SequenceStatus, SequenceData
 
 
 class Sequence:
@@ -187,8 +134,7 @@ class Sequence:
 
     def __repr__(self) -> str:
         return (f"Sequence(seq_id={self.seq_id}, "
-                f"status={self.status.name}, "
-                f"num_blocks={len(self.logical_token_blocks)})")
+                f"status={self.status.name})")
 
 
 class SequenceGroup:

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
-
-from bigdl.llm.vllm.structure.sequence import SequenceGroup, SequenceStatus
+from vllm.sequence import SequenceStatus
+from bigdl.llm.vllm.structure.sequence import SequenceGroup
 
 
 class CompletionOutput:

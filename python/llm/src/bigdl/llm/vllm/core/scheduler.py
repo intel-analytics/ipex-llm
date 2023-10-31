@@ -5,10 +5,10 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 from vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
 from vllm.logger import init_logger
-from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceData,
+from vllm.sequence import SequenceData, SequenceStatus
+from bigdl.llm.vllm.structure.sequence import (Sequence,
                                                SequenceGroup,
-                                               SequenceGroupMetadata,
-                                               SequenceStatus)
+                                               SequenceGroupMetadata)
 
 logger = init_logger(__name__)
 

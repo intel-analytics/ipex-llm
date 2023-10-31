@@ -11,10 +11,11 @@ from bigdl.llm.vllm.utils.arg_utils import EngineArgs
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from vllm.sequence import SequenceStatus
 from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence,
                                                SequenceGroup,
                                                SequenceGroupMetadata,
-                                               SequenceOutputs, SequenceStatus)
+                                               SequenceOutputs)
 from vllm.transformers_utils.tokenizer import (detokenize_incrementally,  get_tokenizer)
 from vllm.utils import Counter
 from vllm.engine.ray_utils import get_open_port
