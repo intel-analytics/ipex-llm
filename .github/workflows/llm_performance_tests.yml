@@ -176,7 +176,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          python run.py
+          bash run-spr.sh
           cd ../../../test/benchmark
           python csv_to_html.py -f ../../dev/benchmark/all-in-one
           cp ./*.html /mnt/disk1/nightly_perf_cpu/
