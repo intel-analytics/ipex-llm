@@ -111,6 +111,7 @@ jobs:
           source deactivate || conda deactivate
           make clean
           source activate python310 || conda activate python310
+          cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
           scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move Chatglm binaries Py310
