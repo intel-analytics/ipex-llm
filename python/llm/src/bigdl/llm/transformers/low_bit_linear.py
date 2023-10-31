@@ -89,13 +89,9 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                              device=device)
 
     if not convert_shape_only and device != 'meta':
-        if qtype == FP8:
-            import linear_q4_0
-            linear_q4_0.cvt_fp32_e4m3_rne(tensor, dst_tensor, n, k)
-        else:
-            dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
-            hist = (ctypes.c_int64 * 16)()
-            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
+        hist = (ctypes.c_int64 * 16)()
+        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
 
@@ -109,7 +105,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -134,7 +130,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -327,6 +323,37 @@ class MatMulLowBit(torch.autograd.Function):
         return grad_A, grad_weight, None
 
 
+class MatMulLowBitCPU(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, A, weight):
+        if torch.is_autocast_enabled():
+            A = A.to(torch.get_autocast_dtype())
+        ctx.is_empty = False
+        x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
+                                         weight._shape[0] * weight._shape[1])
+        result = torch.matmul(A, x0_fp32.T)
+        if any(ctx.needs_input_grad[:2]):
+            ctx.tensors = (A, weight)
+        else:
+            ctx.tensors = (None, None)
+        return result
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        if ctx.is_empty:
+            bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
+            return torch.zeros_like(ctx.A), torch.zeros_like(ctx.B), None, bias_grad, None
+        req_gradA, _, = ctx.needs_input_grad
+        A, weight = ctx.tensors
+        grad_A, grad_weight = None, None
+        if req_gradA:
+            x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
+                                             weight._shape[0] * weight._shape[1])
+            grad_A = torch.matmul(grad_output, x0_fp32.to(grad_output.dtype))
+        return grad_A, grad_weight, None
+
+
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None):
@@ -392,16 +419,21 @@ class LowBitLinear(nn.Linear):
                               and self.qtype != FP4,
                               "NF3, NF4, FP4 and FP8 quantization are currently not"
                               " supported on CPU")
-            if IS_SERVER and (not IS_SPR) and \
-                    self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
-                x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                result = F.linear(x, x0_fp32, self.bias)
-            else:
-                result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
-                new_shape = x_shape[:-1] + (self.out_len,)
-                result = result.view(new_shape)
+            if self.training and x.requires_grad:
+                result = MatMulLowBitCPU.apply(x, self.weight)
                 if self.bias is not None:
-                    result += self.bias
+                    result = result + self.bias
+            else:
+                if IS_SERVER and (not IS_SPR) and \
+                        self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
+                    x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                    result = F.linear(x, x0_fp32, self.bias)
+                else:
+                    result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+                    new_shape = x_shape[:-1] + (self.out_len,)
+                    result = result.view(new_shape)
+                    if self.bias is not None:
+                        result += self.bias
         return result
 
 

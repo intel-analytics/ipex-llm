@@ -13,6 +13,7 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel s
 | Flan-t5        | [link](flan-t5)                                          |
 | Phi-1_5        | [link](phi-1_5)                                          |
 | Qwen-VL        | [link](qwen-vl)                                          |
+| LLaVA          | [link](llava)                                            |
 
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
