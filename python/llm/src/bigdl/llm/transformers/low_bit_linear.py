@@ -66,7 +66,7 @@ NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
 FP8 = ggml_tensor_qtype["fp8"]
 FP4 = ggml_tensor_qtype["fp4"]
-MOFQ4 = ggml_tensor_qtype["mofq4"]
+MOFQ4 = ggml_tensor_qtype["mixed_4bit"]
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
