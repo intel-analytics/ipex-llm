@@ -37,8 +37,6 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-cpp-build-py310:
-    uses: ./.github/workflows/llm-binary-build-py310.yml
   llm-unit-test:
     needs: llm-cpp-build
     strategy:
@@ -270,7 +268,7 @@ jobs:
           python -m pip install expecttest einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
   llm-unit-test-py310:
-    needs: llm-cpp-build-py310
+    needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
@@ -285,7 +283,6 @@ jobs:
     env:
       THREAD_NUM: 24
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      AGENT_TOOLSDIRECTORY: "/opt/hostedtoolcache"
     steps:
       - name: Set model directories
         shell: bash

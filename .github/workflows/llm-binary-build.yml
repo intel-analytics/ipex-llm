@@ -60,6 +60,8 @@ jobs:
           yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
+          conda remove -n python310 --all -y
+          conda create -n python310 python=3.10 -y
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -98,11 +100,17 @@ jobs:
           cd src/chatglm
           scl enable gcc-toolset-11 "cmake -B build"
           scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+          conda deactivate
+          source activate python310 || conda activate python310
+          cd src/chatglm
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move Chatglm binaries
         shell: bash
         run: |
           mv src/chatglm/build/main release/main-chatglm_vnni
           mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+          mv src/chatglm/build/_C.cpython-310-x86_64-linux-gnu.so release/chatglm_C.cpython-310-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -114,6 +122,7 @@ jobs:
         run: |
           make clean
           conda remove -n python39 --all -y
+          conda remove -n python310 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
