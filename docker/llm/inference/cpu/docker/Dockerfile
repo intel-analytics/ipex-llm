@@ -36,7 +36,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py && \
 # Download all-in-one benchmark
     git clone https://github.com/intel-analytics/BigDL.git && \
-    cp -r ./BigDL/python/llm/dev/benchmark/ . && \
+    cp -r ./BigDL/python/llm/dev/benchmark/ ./benchmark && \
     rm -rf ./BigDL && \
     cp ./benchmark/benchmark_util.py ./benchmark/all-in-one
 
