@@ -78,6 +78,7 @@ jobs:
       #   env:
       #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
   llm-performance-test-on-arc:
+    if: false
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -134,3 +135,50 @@ jobs:
           cd ../../../test/benchmark
           python csv_to_html.py -f ../../dev/benchmark/all-in-one
           cp ./*.html /mnt/disk1/nightly_perf/
+
+  llm-performance-test-spr-py309:
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        instruction: ["AVX512"]
+    runs-on: [self-hosted, llm, spr-perf]
+    env:
+      THREAD_NUM: 24
+    steps:
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Download LLMs
+        shell: bash
+        run: |
+          if [ ! -d $LLAMA2_7B_ORIGIN_PATH ]; then
+            echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf -P $ORIGIN_DIR
+          fi
+
+      - name: Run LLM Performance test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        run: bash python/llm/dev/benchmark/run-benchmark-tests.sh
