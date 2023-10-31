@@ -278,7 +278,7 @@ jobs:
           python -m pip install expecttest einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
-      - name: Run LLM fine-tune test
+      - name: Run LLM example tests
         shell: bash
         run: |
           python -m pip install transformers==4.34.0 peft==0.5.0 accelerate==0.23.0
