@@ -39,7 +39,6 @@ def main():
     else:
         data1 = pd.read_csv(csv_files[0], index_col=0)
         data2 = pd.read_csv(csv_files[1], index_col=0)
-        dataframe1=pd.DataFrame(data1)
 
         origin_column_1='1st token avg latency (ms)'
         origin_column_2='2+ avg latency (ms/token)'
@@ -50,11 +49,12 @@ def main():
         added_column_3='last2'
         added_column_4='diff2(%)'
 
-        dataframe1.insert(loc=3,column=added_column_1,value=data2[origin_column_1])
-        dataframe1.insert(loc=4,column=added_column_2,value=round((data2[origin_column_1]-data1[origin_column_1])*100/data2[origin_column_1],2))
-        dataframe1.insert(loc=5,column=added_column_3,value=data2[origin_column_2])
-        dataframe1.insert(loc=6,column=added_column_4,value=round((data2[origin_column_2]-data1[origin_column_2])*100/data2[origin_column_2],2))
-        dataframe1.to_html(csv_files[0].split("/")[-1].split(".")[0]+".html")
+        data1.insert(loc=3,column=added_column_1,value=data2[origin_column_1])
+        data1.insert(loc=4,column=added_column_2,value=round((data2[origin_column_1]-data1[origin_column_1])*100/data2[origin_column_1],2))
+        data1.insert(loc=5,column=added_column_3,value=data2[origin_column_2])
+        data1.insert(loc=6,column=added_column_4,value=round((data2[origin_column_2]-data1[origin_column_2])*100/data2[origin_column_2],2))
+        daily_html=csv_files[0].split(".")[0]+".html"
+        data1.to_html(daily_html)
 
 if __name__ == "__main__":
     sys.exit(main())
