@@ -35,7 +35,7 @@
 import copy
 import enum
 from typing import Dict, List, Optional, Union
-from .sampling_params import SamplingParams
+from vllm.sampling_params import SamplingParams
 from vllm.sequence import SequenceStatus, SequenceData
 
 
