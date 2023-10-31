@@ -35,7 +35,6 @@ import transformers
 from transformers import LlamaTokenizer  # noqa: F402
 from bigdl.llm.transformers.qlora import PeftModel
 from bigdl.llm.transformers import AutoModelForCausalLM
-import intel_extension_for_pytorch as ipex
 import argparse
 
 if __name__ == "__main__":
@@ -56,7 +55,7 @@ if __name__ == "__main__":
         base_model,
         # load_in_low_bit="nf4", # should load the orignal model
         torch_dtype=torch.float16,
-        device_map={"": "xpu"},
+        device_map={"": "cpu"},
     )
 
     first_weight = base_model.model.layers[0].self_attn.q_proj.weight
@@ -65,7 +64,7 @@ if __name__ == "__main__":
     lora_model = PeftModel.from_pretrained(
         base_model,
         adapter_path,
-        device_map={"": "xpu"},
+        device_map={"": "cpu"},
         torch_dtype=torch.float16,
     )
 
