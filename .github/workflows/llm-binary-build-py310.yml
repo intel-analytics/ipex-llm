@@ -11,11 +11,11 @@ on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/llm-binary-build.yml"
+      - ".github/workflows/llm-binary-build-py310.yml"
   pull_request:
     branches: [main]
     paths:
-      - ".github/workflows/llm-binary-build.yml"
+      - ".github/workflows/llm-binary-build-py310.yml"
   workflow_dispatch:
     inputs:
       llmcpp-ref:
