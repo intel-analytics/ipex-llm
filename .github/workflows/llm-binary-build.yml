@@ -423,7 +423,6 @@ jobs:
       - name: Build Chatglm Py310
         shell: powershell
         run: |
-          source activate python310 || conda activate python310
           cd src/chatglm
           rm -r build
           cmake -DAVXVNNI=ON -B build
