@@ -17,3 +17,4 @@ test_api:
   # - "ipex_fp16_gpu" # on Intel GPU
   # - "transformer_int4_gpu"  # on Intel GPU
   # - "optimize_model_gpu"  # on Intel GPU
+  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server

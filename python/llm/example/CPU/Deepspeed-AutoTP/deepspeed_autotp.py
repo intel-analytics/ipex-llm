@@ -1,46 +1,3 @@
-#
-# Copyright 2016 The BigDL Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
-# Some parts of this file is adapted from
-# https://github.com/TimDettmers/bitsandbytes/blob/0.39.1/bitsandbytes/nn/modules.py
-# which is licensed under the MIT license:
-#
-# MIT License
-#
-# Copyright (c) Facebook, Inc. and its affiliates.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-
 import os
 import torch
 from transformers import AutoModelForCausalLM, LlamaTokenizer, AutoTokenizer
@@ -50,6 +7,7 @@ import torch
 import intel_extension_for_pytorch as ipex
 import time
 import argparse
+from benchmark_util import BenchmarkWrapper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
@@ -60,12 +18,12 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--local_rank', type=str, default=0, help='this is automatically set when using deepspeed launcher')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
-    local_rank = int(os.getenv("LOCAL_RANK", "0"))
     world_size = int(os.getenv("WORLD_SIZE", "1"))
-    os.environ['RANK'] = os.getenv("LOCAL_RANK", "0") # for deepspeed
+    local_rank = int(os.getenv("RANK", "1")) # RANK is automatically set by distributed backend
 
     # Native Huggingface transformers loading
     model = AutoModelForCausalLM.from_pretrained(
@@ -80,27 +38,27 @@ if __name__ == '__main__':
     # Parallelize model on deepspeed
     model = deepspeed.init_inference(
         model,
-        mp_size=world_size,
+        mp_size = world_size,
         dtype=torch.float16,
-        replace_method="auto",
+        replace_method="auto"
     )
 
     # Apply BigDL-LLM INT4 optimizations on transformers
     model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
+
     model = model.to(f'cpu:{local_rank}')
+
     print(model)
+    model = BenchmarkWrapper(model, do_print=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompts = tuple([args.prompt] * 64)
         # Batch tokenizing
-        input_ids = torch.tensor(
-                tokenizer.batch_encode_plus(prompts, truncation=True,
-                    max_length=30)['input_ids']
-                ).to(f'cpu:{local_rank}')
+        prompt = args.prompt
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to(f'cpu:{local_rank}')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
@@ -120,4 +78,5 @@ if __name__ == '__main__':
             print('-'*20, 'Output', '-'*20)
             print(output_str)
             print(f'Inference time: {end - start} s')
+
 
