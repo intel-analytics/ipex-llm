@@ -139,7 +139,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9"]
     runs-on: [self-hosted, llm, spr-perf]
     env:
       OMP_NUM_THREADS: 16
