@@ -6,14 +6,17 @@ from platform import uname
 import psutil
 import torch
 
+
 class Device(enum.Enum):
     GPU = enum.auto()
     CPU = enum.auto()
+
 
 def get_open_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("", 0))
         return s.getsockname()[1]
+
 
 class Counter:
 
@@ -27,6 +30,7 @@ class Counter:
 
     def reset(self) -> None:
         self.counter = 0
+
 
 def get_gpu_memory(gpu: int = 0) -> int:
     """Returns the total memory of the GPU in bytes."""

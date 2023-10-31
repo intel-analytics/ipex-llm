@@ -6,7 +6,7 @@ import torch
 import torch.distributed
 
 from bigdl.llm.vllm.config import (ModelConfig, ParallelConfig,
-                         SchedulerConfig)
+                                   SchedulerConfig)
 from bigdl.llm.vllm.models.model_loader import get_model
 from bigdl.llm.vllm.structure.input_metadata import InputMetadata
 from bigdl.llm.vllm.utils.model_utils import set_random_seed
@@ -16,6 +16,7 @@ from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.vllm.structure.sequence import SamplerOutput, SequenceData, SequenceGroupMetadata
 # from vllm.worker.cache_engine import CacheEngine
 # from vllm.utils import get_gpu_memory, get_max_shared_memory_bytes
+
 
 class Worker:
     """A worker class that executes (a partition of) the model on a GPU.
@@ -397,6 +398,7 @@ def _pad_to_alignment(x: List[int], multiple_of: int) -> List[int]:
 
 def _pad_to_max(x: List[int], max_len: int) -> List[int]:
     return x + [0] * (max_len - len(x))
+
 
 # TODO(gc): we may use this to calculate how many bits we can support
 # def _check_if_can_support_max_seq_len(max_seq_len: int,

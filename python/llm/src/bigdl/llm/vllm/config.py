@@ -9,6 +9,7 @@ logger = init_logger(__name__)
 
 _GB = 1 << 30
 
+
 # TODO(gc): later we can decide to remove this
 class ParallelConfig:
     """Configuration for the distributed execution.
@@ -40,6 +41,7 @@ class ParallelConfig:
         if self.pipeline_parallel_size > 1:
             raise NotImplementedError(
                 "Pipeline parallelism is not supported yet.")
+
 
 # TODO(gc): later handle this function, seems that need more things.
 def get_config(model: str,

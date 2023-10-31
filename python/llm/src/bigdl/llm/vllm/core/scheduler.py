@@ -5,8 +5,10 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 from bigdl.llm.vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
 from bigdl.llm.vllm.logger import init_logger
-from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceData, SequenceGroup,
-                           SequenceGroupMetadata, SequenceStatus)
+from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceData,
+                                               SequenceGroup,
+                                               SequenceGroupMetadata,
+                                               SequenceStatus)
 
 logger = init_logger(__name__)
 
@@ -29,8 +31,7 @@ class SchedulerOutputs:
 
     def is_empty(self) -> bool:
         # NOTE: We do not consider the ignored sequence groups.
-        return (not self.scheduled_seq_groups
-                and not self.finished_seqs)
+        return (not self.scheduled_seq_groups and not self.finished_seqs)
 
 
 class FixedWindowScheduler:
@@ -205,7 +206,6 @@ class FixedWindowScheduler:
             seq_group_metadata_list.append(seq_group_metadata)
         return seq_group_metadata_list, scheduler_outputs
 
-
     def free_seq(self, seq: Sequence) -> None:
         self.cleaned.append(seq.seq_id)
 
@@ -214,4 +214,3 @@ class FixedWindowScheduler:
             seq_group for seq_group in self.running
             if not seq_group.is_finished()
         ]
-

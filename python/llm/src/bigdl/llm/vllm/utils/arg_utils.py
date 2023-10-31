@@ -183,8 +183,7 @@ class EngineArgs:
         return engine_args
 
     def create_engine_configs(
-        self,
-    ) -> Tuple[ModelConfig, ParallelConfig, SchedulerConfig]:
+        self, ) -> Tuple[ModelConfig, ParallelConfig, SchedulerConfig]:
         model_config = ModelConfig(self.model, self.tokenizer,
                                    self.tokenizer_mode, self.trust_remote_code,
                                    self.download_dir, self.load_format,
@@ -195,8 +194,7 @@ class EngineArgs:
                                            self.max_num_seqs,
                                            model_config.max_model_len)
         parallel_config = ParallelConfig(self.pipeline_parallel_size,
-                                         self.tensor_parallel_size,
-                                         False)
+                                         self.tensor_parallel_size, False)
         return model_config, parallel_config, scheduler_config
 
 

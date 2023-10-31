@@ -7,8 +7,10 @@ from pydantic import BaseModel, Field
 
 import uuid
 
+
 def random_uuid() -> str:
     return str(uuid.uuid4().hex)
+
 
 class ErrorResponse(BaseModel):
     object: str = "error"

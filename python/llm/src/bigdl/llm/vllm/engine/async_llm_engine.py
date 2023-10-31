@@ -297,8 +297,7 @@ class AsyncLLMEngine:
                     request_tracker=self._request_tracker))
         self.background_loop = asyncio.shield(self._background_loop_unshielded)
 
-    def _init_engine(self, *args,
-                     **kwargs) -> _AsyncLLMEngine:
+    def _init_engine(self, *args, **kwargs) -> _AsyncLLMEngine:
         # Co(gc): we disable ray here
         #if not self.engine_use_ray:
         engine_class = self._engine_class
@@ -487,14 +486,15 @@ class AsyncLLMEngine:
         port = get_open_port()
         distributed_init_method = f"tcp://localhost:{port}"
         # Create the async LLM engine.
-        engine = cls(engine_args.worker_use_ray,
-                     engine_args.engine_use_ray,
-                     # TODO: we use one less here
-                     *engine_configs,
-                     distributed_init_method,
-                     None,
-                     log_requests=not engine_args.disable_log_requests,
-                     log_stats=not engine_args.disable_log_stats,
-                     max_log_len=engine_args.max_log_len,
-                     start_engine_loop=start_engine_loop)
+        engine = cls(
+            engine_args.worker_use_ray,
+            engine_args.engine_use_ray,
+            # TODO: we use one less here
+            *engine_configs,
+            distributed_init_method,
+            None,
+            log_requests=not engine_args.disable_log_requests,
+            log_stats=not engine_args.disable_log_stats,
+            max_log_len=engine_args.max_log_len,
+            start_engine_loop=start_engine_loop)
         return engine

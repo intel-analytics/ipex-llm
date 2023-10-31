@@ -59,8 +59,7 @@ def get_model(model_config: ModelConfig) -> nn.Module:
     # Get the quantization config.
     quant_config = None
     if model_config.quantization is not None:
-        raise ValueError(
-            f"Quantization is not supported for {model_class}.")
+        raise ValueError(f"Quantization is not supported for {model_class}.")
 
     with _set_default_torch_dtype(model_config.dtype):
         # Create a model instance.
@@ -71,7 +70,7 @@ def get_model(model_config: ModelConfig) -> nn.Module:
             model = model_class(model_config.hf_config)
         # Load the weights from the cached or downloaded files.
         model.load_weights(model_config.model, model_config.download_dir,
-                            model_config.load_format, model_config.revision)
+                           model_config.load_format, model_config.revision)
         if model_config.device != 'cpu':
             model = model.cuda()
     return model.eval()

@@ -18,7 +18,7 @@ from packaging import version
 
 from bigdl.llm.vllm.utils.arg_utils import AsyncEngineArgs
 from bigdl.llm.vllm.engine.async_llm_engine import AsyncLLMEngine
-from bigdl.llm.vllm.entrypoint.protocol import (
+from bigdl.llm.vllm.examples.protocol import (
     CompletionRequest, CompletionResponse, CompletionResponseChoice,
     CompletionResponseStreamChoice, CompletionStreamResponse,
     ChatCompletionRequest, ChatCompletionResponse,
@@ -46,8 +46,10 @@ served_model = None
 app = fastapi.FastAPI()
 engine = None
 
+
 def random_uuid() -> str:
     return str(uuid.uuid4().hex)
+
 
 def create_error_response(status_code: HTTPStatus,
                           message: str) -> JSONResponse:

@@ -4,20 +4,20 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
 
 from bigdl.llm.vllm.config import (ModelConfig, ParallelConfig,
-                         SchedulerConfig)
+                                   SchedulerConfig)
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.utils.arg_utils import EngineArgs
 #from bigdl.vllm.engine.ray_utils import RayWorker, initialize_cluster, ray
 from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
-from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence, SequenceGroup,
-                           SequenceGroupMetadata, SequenceOutputs,
-                           SequenceStatus)
+from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence,
+                                               SequenceGroup,
+                                               SequenceGroupMetadata,
+                                               SequenceOutputs, SequenceStatus)
 from bigdl.llm.vllm.utils.tokenizer_utils import (detokenize_incrementally,
-                                               get_tokenizer)
+                                                  get_tokenizer)
 from bigdl.llm.vllm.utils.utils import Counter, get_open_port
-
 
 logger = init_logger(__name__)
 
@@ -128,12 +128,10 @@ class LLMEngine:
             get_all_outputs=True,
         )
 
-
     def _verify_args(self) -> None:
         self.model_config.verify_with_parallel_config(self.parallel_config)
         # Co(gc): this simply checks if the swap is too large or not
         # self.cache_config.verify_with_parallel_config(self.parallel_config)
-
 
     @classmethod
     def from_engine_args(cls, engine_args: EngineArgs) -> "LLMEngine":

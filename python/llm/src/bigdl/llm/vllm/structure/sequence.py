@@ -275,6 +275,7 @@ class SequenceGroup:
                 f"sampling_params={self.sampling_params}, "
                 f"num_seqs={len(self.seqs_dict)})")
 
+
 class SequenceGroupMetadata:
     """Metadata for a sequence group. Used to create `InputMetadata`.
 
@@ -297,6 +298,7 @@ class SequenceGroupMetadata:
         self.is_prompt = is_prompt
         self.seq_data = seq_data
         self.sampling_params = sampling_params
+
 
 class SequenceOutputs:
     """The model output associated with a sequence.
@@ -330,6 +332,7 @@ class SequenceOutputs:
         return (self.parent_seq_id == other.parent_seq_id
                 and self.output_token == other.output_token
                 and self.logprobs == other.logprobs)
+
 
 # For each sequence group, we generate a list of SequenceOutputs object,
 # each of which contains one possible candidate for the next token.

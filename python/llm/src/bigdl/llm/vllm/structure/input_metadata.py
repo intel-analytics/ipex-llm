@@ -6,6 +6,7 @@ from xformers.ops import AttentionBias
 from bigdl.llm.vllm.structure.sequence import SequenceData
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 
+
 class InputMetadata:
     """Metadata for input sequences. Used for PagedAttention.
 

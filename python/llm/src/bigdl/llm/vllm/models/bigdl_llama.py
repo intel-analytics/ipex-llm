@@ -34,16 +34,18 @@ def prepare_logits_processor(temperature: float, repetition_penalty: float,
 def _pad_to_max(x: List[int], max_len: int) -> List[int]:
     return x + [0] * (max_len - len(x))
 
+
 def _pad_kv_cache_view(t: torch.Tensor, len: int) -> torch.Tensor:
     cur_size = list(t.size())
     if cur_size[2] < len:
         tmp_size = cur_size[:]
         tmp_size[2] = len - cur_size[2]
         zeros = torch.zeros(tmp_size)
-        padded_view = torch.cat((t, zeros), dim = 2)
+        padded_view = torch.cat((t, zeros), dim=2)
         return padded_view
     else:
         return t
+
 
 class BigDLLlamaForCausalLM(nn.Module):
 
@@ -72,7 +74,6 @@ class BigDLLlamaForCausalLM(nn.Module):
             "cuda" if torch.cuda.is_available() else "cpu")
         self.dtype = self.model.dtype
         self.kv_cache_size = [0]
-
 
     def decode(self, generated_ids: List[int]) -> str:
         return self.tokenizer.decode(generated_ids,
@@ -132,11 +133,18 @@ class BigDLLlamaForCausalLM(nn.Module):
                         else:
                             if cur_view.size(2) != view_size[2]:
                                 max_len = max(cur_view.size(2), view_size[2])
-                                cur_view = _pad_kv_cache_view(cur_view, max_len)
-                                tmp_view = _pad_kv_cache_view(kv_cache[seq_id][i][j].view(view_size), max_len)
-                                cur_view = torch.cat((cur_view, tmp_view), dim = 0)
+                                cur_view = _pad_kv_cache_view(
+                                    cur_view, max_len)
+                                tmp_view = _pad_kv_cache_view(
+                                    kv_cache[seq_id][i][j].view(view_size),
+                                    max_len)
+                                cur_view = torch.cat((cur_view, tmp_view),
+                                                     dim=0)
                             else:
-                                cur_view = torch.cat((cur_view, kv_cache[seq_id][i][j].view(view_size)), dim = 0)
+                                cur_view = torch.cat(
+                                    (cur_view,
+                                     kv_cache[seq_id][i][j].view(view_size)),
+                                    dim=0)
                     cur_list.append(cur_view)
                 bigdl_kv_cache.append(cur_list)
         else:
