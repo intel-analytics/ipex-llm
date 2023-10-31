@@ -19,9 +19,6 @@
 import argparse
 import os
 import subprocess
-from lm_eval import models
-from bigdl_llm import BigDLGPULM
-models.MODEL_REGISTRY["bigdl-llm"] = BigDLGPULM
 
 task_cmd = "--num_fewshot {} --tasks {}"
 
