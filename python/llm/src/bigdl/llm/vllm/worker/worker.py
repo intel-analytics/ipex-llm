@@ -1,3 +1,36 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/vllm-project/vllm/blob/main/vllm/worker/worker.py
+# which is licensed under Apache License 2.0
+#
+# Copyright 2023 The vLLM team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """A GPU worker class."""
 import os
 from typing import Dict, List, Tuple, Optional
@@ -14,8 +47,6 @@ from bigdl.llm.vllm.utils.model_utils import set_random_seed
 #     initialize_model_parallel)
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.vllm.structure.sequence import SamplerOutput, SequenceData, SequenceGroupMetadata
-# from vllm.worker.cache_engine import CacheEngine
-# from vllm.utils import get_gpu_memory, get_max_shared_memory_bytes
 
 
 class Worker:
@@ -86,89 +117,6 @@ class Worker:
         set_random_seed(self.model_config.seed)
         self.model = get_model(self.model_config)
 
-    # @torch.inference_mode()
-    # def profile_num_available_blocks(
-    #     self,
-    #     block_size: int,
-    #     gpu_memory_utilization: float,
-    #     cpu_swap_space: int,
-    # ) -> Tuple[int, int]:
-    #     # Profile the memory usage of the model and get the maximum number of
-    #     # cache blocks that can be allocated with the remaining free memory.
-    #     torch.cuda.empty_cache()
-    #     torch.cuda.reset_peak_memory_stats()
-
-    #     # Profile memory usage with max_num_sequences sequences and the total
-    #     # number of tokens equal to max_num_batched_tokens.
-
-    #     # Enable top-k sampling to reflect the accurate memory usage.
-    #     vocab_size = self.model.config.vocab_size
-    #     sampling_params = SamplingParams(top_p=0.99, top_k=vocab_size - 1)
-    #     max_num_batched_tokens = self.scheduler_config.max_num_batched_tokens
-    #     max_num_seqs = self.scheduler_config.max_num_seqs
-    #     seqs = []
-    #     for group_id in range(max_num_seqs):
-    #         seq_len = (max_num_batched_tokens // max_num_seqs +
-    #                    (group_id < max_num_batched_tokens % max_num_seqs))
-    #         seq_data = SequenceData([0] * seq_len)
-    #         seq = SequenceGroupMetadata(
-    #             request_id=str(group_id),
-    #             is_prompt=True,
-    #             seq_data={group_id: seq_data},
-    #             sampling_params=sampling_params,
-    #             block_tables=None,
-    #         )
-    #         seqs.append(seq)
-
-    #     input_tokens, input_positions, input_metadata = self._prepare_inputs(
-    #         seqs)
-
-    #     # Execute the model.
-    #     num_layers = self.model_config.get_num_layers(self.parallel_config)
-    #     self.model(
-    #         input_ids=input_tokens,
-    #         positions=input_positions,
-    #         kv_caches=[(None, None)] * num_layers,
-    #         input_metadata=input_metadata,
-    #         cache_events=None,
-    #     )
-
-    #     # Calculate the number of blocks that can be allocated with the
-    #     # profiled peak memory.
-    #     torch.cuda.synchronize()
-    #     peak_memory = torch.cuda.max_memory_allocated()
-    #     total_gpu_memory = get_gpu_memory()
-    #     # cache_block_size = CacheEngine.get_cache_block_size(
-    #     #     block_size, self.model_config, self.parallel_config)
-    #     num_gpu_blocks = int(
-    #         (total_gpu_memory * gpu_memory_utilization - peak_memory) //
-    #         cache_block_size)
-    #     num_cpu_blocks = int(cpu_swap_space // cache_block_size)
-    #     num_gpu_blocks = max(num_gpu_blocks, 0)
-    #     num_cpu_blocks = max(num_cpu_blocks, 0)
-    #     torch.cuda.empty_cache()
-
-    #     # Reset the seed to ensure that the random state is not affected by
-    #     # the model initialization and profiling.
-    #     set_random_seed(self.model_config.seed)
-    #     return num_gpu_blocks, num_cpu_blocks
-
-    # def init_cache_engine(self, cache_config: CacheConfig) -> None:
-    #     self.cache_config = cache_config
-    #     self.block_size = cache_config.block_size
-    #     self.sliding_window = cache_config.sliding_window
-
-    #     if self.sliding_window is None:
-    #         max_seq_len = self.scheduler_config.max_model_len
-    #     else:
-    #         max_seq_len = min(self.scheduler_config.max_model_len,
-    #                           self.sliding_window)
-    #     _check_if_can_support_max_seq_len(max_seq_len, self.block_size)
-
-    #     # self.cache_engine = CacheEngine(self.cache_config, self.model_config,
-    #     #                                 self.parallel_config)
-    #     self.cache_events = self.cache_engine.events
-    #     self.gpu_cache = self.cache_engine.gpu_cache
 
     def _prepare_inputs(
         self,
@@ -358,38 +306,6 @@ class Worker:
                 cache_events=cache_events,
             )
         return output
-
-
-# def _init_distributed_environment(
-#     parallel_config: ParallelConfig,
-#     rank: int,
-#     distributed_init_method: Optional[str] = None,
-# ) -> None:
-#     """Initialize the distributed environment."""
-#     if torch.distributed.is_initialized():
-#         torch_world_size = torch.distributed.get_world_size()
-#         if torch_world_size != parallel_config.world_size:
-#             raise RuntimeError(
-#                 "torch.distributed is already initialized but the torch world "
-#                 "size does not match parallel_config.world_size "
-#                 f"({torch_world_size} vs. {parallel_config.world_size}).")
-#     elif not distributed_init_method:
-#         raise ValueError(
-#             "distributed_init_method must be set if torch.distributed "
-#             "is not already initialized")
-#     else:
-#         torch.distributed.init_process_group(
-#             backend="nccl",
-#             world_size=parallel_config.world_size,
-#             rank=rank,
-#             init_method=distributed_init_method,
-#         )
-
-#     # A small all_reduce for warmup.
-#     torch.distributed.all_reduce(torch.zeros(1).cuda())
-#     # gc-TODO: consider this later
-#     initialize_model_parallel(parallel_config.tensor_parallel_size,
-#                               parallel_config.pipeline_parallel_size)
 
 
 def _pad_to_alignment(x: List[int], multiple_of: int) -> List[int]:
