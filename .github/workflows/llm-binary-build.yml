@@ -416,6 +416,22 @@ jobs:
         run: |
           mv src/chatglm/build/Release/main.exe release/main-chatglm_vnni.exe
           mv src/chatglm/build/Release/_C.cp39-win_amd64.pyd release/chatglm_C.cp39-win_amd64.pyd
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Build Chatglm Py310
+        shell: powershell
+        run: |
+          source activate python310 || conda activate python310
+          cd src/chatglm
+          rm -r build
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release -j
+      - name: Move Chatglm binaries Py310
+        shell: powershell
+        run: |
+          mv src/chatglm/build/chatglm_C.cp310-win_amd64.pyd release/chatglm_C.cp310-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
