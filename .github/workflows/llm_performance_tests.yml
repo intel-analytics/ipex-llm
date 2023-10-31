@@ -26,7 +26,6 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-performance-test:
-    if: false # skip cpu performance test for now; may add it back with separated runner
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -78,6 +77,7 @@ jobs:
       #   env:
       #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
   llm-performance-test-on-arc:
+    if: false # skip cpu performance test for now; may add it back with separated runner
     needs: llm-cpp-build
     strategy:
       fail-fast: false
