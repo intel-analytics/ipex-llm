@@ -9,7 +9,7 @@ from bigdl.llm.vllm.engine.llm_engine import LLMEngine
 #from bigdl.llm.vllm.engine.ray_utils import initialize_cluster, ray
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from vllm.sampling_params import SamplingParams
 from vllm.engine.ray_utils import get_open_port
 
 logger = init_logger(__name__)

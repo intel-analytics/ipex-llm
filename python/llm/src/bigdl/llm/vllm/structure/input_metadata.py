@@ -4,7 +4,7 @@ import torch
 from xformers.ops import AttentionBias
 
 from vllm.sequence import SequenceData
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from vllm.sampling_params import SamplingParams
 
 
 class InputMetadata:

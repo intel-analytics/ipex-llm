@@ -43,7 +43,7 @@ from vllm.config import ParallelConfig, SchedulerConfig
 from bigdl.llm.vllm.models.model_loader import get_model
 from bigdl.llm.vllm.structure.input_metadata import InputMetadata
 from vllm.model_executor import set_random_seed
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from vllm.sampling_params import SamplingParams
 from vllm.sequence import SequenceData
 from bigdl.llm.vllm.structure.sequence import SamplerOutput, SequenceGroupMetadata
 

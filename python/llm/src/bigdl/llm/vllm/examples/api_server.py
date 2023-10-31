@@ -28,7 +28,7 @@ from bigdl.llm.vllm.examples.protocol import (
     LogProbs, ModelCard, ModelList, ModelPermission, UsageInfo)
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from vllm.sampling_params import SamplingParams
 from vllm.transformers_utils.tokenizer import get_tokenizer
 import uuid
 
