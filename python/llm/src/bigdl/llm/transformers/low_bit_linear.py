@@ -256,7 +256,9 @@ class FP4Params(torch.nn.Parameter):
             return self.quantize(device.type)
         elif device is not None and device.type == "meta" and self.data.device.type == "meta":
             return self.quantize(device.type)
-        elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
+        elif (device is not None and \
+              (device.type == "xpu" or device.type == "hpu") and \
+                self.data.device.type == "cpu"):
             # enter xpu logic, compile linear_int4 extension at first time
             self.quantize(device)  # tensor is cpu now
             self.data = ggml_q_format_convet_cpu2xpu(self.data,
@@ -270,7 +272,9 @@ class FP4Params(torch.nn.Parameter):
                                   _shape=self._shape,
                                   qtype=self.qtype)
             return new_param
-        elif (device is not None and device.type == "cpu" and self.data.device.type == "xpu"):
+        elif (device is not None and \
+              device.type == "cpu" and \
+                (self.data.device.type == "xpu" or self.data.device.type == "hpu")):
             new_param = FP4Params(super().to(device=device,
                                              dtype=dtype,
                                              non_blocking=non_blocking),
@@ -365,6 +369,35 @@ class MatMulLowBit(torch.autograd.Function):
 
         return grad_A, grad_weight, None
 
+class MatMulLowBitHPU(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, A, weight):
+        ctx.is_empty = False
+        from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_nf4
+        dequant_weight = torch_dequant_nf4(weight.data, weight._shape)
+        result = torch.matmul(A, dequant_weight.T)
+        if any(ctx.needs_input_grad[:2]):
+            ctx.tensors = (A, weight)
+        else:
+            ctx.tensors = (None, None)
+        return result
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        if ctx.is_empty:
+            bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
+            return torch.zeros_like(ctx.A), torch.zeros_like(ctx.B), None, bias_grad, None
+        req_gradA, _, _ = ctx.needs_input_grad
+        A, weight = ctx.tensors
+        grad_A, grad_weight = None, None
+        if req_gradA:
+            from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_nf4
+            dequant_weight = torch_dequant_nf4(weight.data, weight._shape)
+            grad_A = torch.matmul(grad_output, dequant_weight)
+
+        return grad_A, grad_weight, None
+
 
 class MatMulLowBitCPU(torch.autograd.Function):
 
@@ -453,6 +486,12 @@ class LowBitLinear(nn.Linear):
             if self.mp_group is not None:
                 from deepspeed import comm as dist
                 dist.inference_all_reduce(result, group=self.mp_group)
+            if self.bias is not None:
+                result += self.bias
+        elif x0.device.type == "hpu":
+            result = MatMulLowBitHPU.apply(x_2d, self.weight)
+            new_shape = x_shape[:-1] + (self.out_len,)
+            result = result.view(new_shape)
             if self.bias is not None:
                 result += self.bias
         else:
