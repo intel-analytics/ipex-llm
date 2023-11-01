@@ -35,6 +35,7 @@
 # limitations under the License.
 
 
+import platform
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
@@ -82,8 +83,10 @@ def is_linear_module(module):
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
-                                 current_key_name=None, convert_shape_only=False):
+                                 current_key_name=None, convert_shape_only=False,
+                                 replace_embedding=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
+    from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -147,6 +150,19 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name].requires_grad_(False)
 
                         module.weight = None
+        elif replace_embedding and type(module) == nn.Embedding:
+            # skip user-defined Embedding layer
+            if platform.system().lower() == 'windows':
+                model._modules[name] = LLMEmbedding(
+                    num_embeddings=module.num_embeddings,
+                    embedding_dim=module.embedding_dim,
+                    padding_idx=module.padding_idx,
+                    max_norm=module.max_norm,
+                    norm_type=module.norm_type,
+                    scale_grad_by_freq=module.scale_grad_by_freq,
+                    sparse=module.sparse,
+                    _weight=module.weight.data,
+                )
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
@@ -156,6 +172,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 modules_to_not_convert,
                 current_key_name,
                 convert_shape_only,
+                replace_embedding,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -185,7 +202,7 @@ def _optimize_pre(model):
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
-                         modules_to_not_convert=None):
+                         modules_to_not_convert=None, replace_embedding=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -196,7 +213,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
-        None, convert_shape_only,
+        None, convert_shape_only, replace_embedding,
     )
     if not has_been_replaced:
         warnings.warn(
