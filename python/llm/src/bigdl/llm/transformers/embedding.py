@@ -19,8 +19,7 @@ import torch
 from torch import Tensor
 
 
-class CPUEmbedding(torch.nn.Embedding):
+class LLMEmbedding(torch.nn.Embedding):
     def forward(self, x: Tensor):
-        if self.weight.device != 'cpu':
-            self.to('cpu')
-        return super().forward(x.to('cpu')).to(x.device)
+        x_shape = x.shape
+        return self.weight[x.reshape(-1)].reshape(*x_shape, -1)

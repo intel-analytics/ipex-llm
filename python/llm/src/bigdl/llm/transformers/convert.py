@@ -50,7 +50,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  replace_embedding=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
-    from bigdl.llm.transformers.embedding import CPUEmbedding
+    from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -113,7 +113,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         elif replace_embedding and type(module) == nn.Embedding:
             # skip user-defined Embedding layer
             if platform.system().lower() == 'windows':
-                model._modules[name] = CPUEmbedding(
+                model._modules[name] = LLMEmbedding(
                     num_embeddings=module.num_embeddings,
                     embedding_dim=module.embedding_dim,
                     padding_idx=module.padding_idx,
