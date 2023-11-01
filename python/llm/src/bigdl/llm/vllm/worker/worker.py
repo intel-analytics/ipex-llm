@@ -45,6 +45,7 @@ from vllm.model_executor import set_random_seed
 from vllm.sampling_params import SamplingParams
 from vllm.sequence import SequenceData
 from bigdl.llm.vllm.structure.sequence import SamplerOutput, SequenceGroupMetadata
+from bigdl.llm.utils.common import invalidInputError
 
 
 class Worker:
@@ -86,7 +87,8 @@ class Worker:
         """
         for seq_id in finished_seqs:
             if seq_id not in self.kv_cache.keys():
-                raise ValueError(
+                invalidInputError(
+                    False,
                     f"Duplicate key {seq_id} received during clean worker's KVCache"
                 )
             del self.kv_cache[seq_id]
@@ -101,7 +103,7 @@ class Worker:
             local_rank = int(os.getenv("LOCAL_RANK", "0"))
             self.device = torch.device(f"cuda:{local_rank}")
             if self.rank < 0:
-                raise ValueError("Invalid or unspecified rank.")
+                invalidInputError(False, "Invalid or unspecified rank.")
             torch.cuda.set_device(self.device)
 
             _check_if_gpu_supports_dtype(self.model_config.dtype)
@@ -313,34 +315,14 @@ def _pad_to_max(x: List[int], max_len: int) -> List[int]:
     return x + [0] * (max_len - len(x))
 
 
-# TODO(gc): we may use this to calculate how many bits we can support
-# def _check_if_can_support_max_seq_len(max_seq_len: int,
-#                                       block_size: int) -> None:
-#     # Follows the logic in
-#     # attention_kernels.cu::single_query_cached_kv_attention_launcher
-#     max_shared_mem = get_max_shared_memory_bytes()
-#     float32_bytes = torch.finfo(torch.float).bits // 8
-#     padded_max_seq_len = (
-#         (max_seq_len + block_size - 1) / block_size) * block_size
-#     # padded_max_seq_len + extra buffer
-#     required_shared_mem = (padded_max_seq_len + 512) * float32_bytes
-#     if padded_max_seq_len * float32_bytes > max_shared_mem:
-#         raise RuntimeError(
-#             f"vLLM cannot currently support max_model_len={max_seq_len} "
-#             f"with block_size={block_size} on GPU with compute "
-#             f"capability {torch.cuda.get_device_capability()} "
-#             f"(required shared memory {required_shared_mem} > "
-#             f"available shared memory {max_shared_mem}). "
-#             "This will be fixed in a future release.")
-
-
 def _check_if_gpu_supports_dtype(torch_dtype: torch.dtype):
     # Check if the GPU supports the dtype.
     if torch_dtype == torch.bfloat16:
         compute_capability = torch.cuda.get_device_capability()
         if compute_capability[0] < 8:
             gpu_name = torch.cuda.get_device_name()
-            raise ValueError(
+            invalidInputError(
+                False,
                 "Bfloat16 is only supported on GPUs with compute capability "
                 f"of at least 8.0. Your {gpu_name} GPU has compute capability "
                 f"{compute_capability[0]}.{compute_capability[1]}.")

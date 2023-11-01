@@ -150,7 +150,7 @@ async def get_gen_prompt(request) -> str:
             elif msg_role == "assistant":
                 conv.append_message(conv.roles[1], message["content"])
             else:
-                raise ValueError(f"Unknown role: {msg_role}")
+                invalidInputError(False, f"Unknown role: {msg_role}")
 
         # Add a blank message for the assistant.
         conv.append_message(conv.roles[1], None)
@@ -161,12 +161,12 @@ async def get_gen_prompt(request) -> str:
 
 async def check_length(
     request: Union[ChatCompletionRequest, CompletionRequest],
-    prompt: Optional[str] = None,
-    prompt_ids: Optional[List[int]] = None
+    prompt: Optional[str]=None,
+    prompt_ids: Optional[List[int]]=None
 ) -> Tuple[List[int], Optional[JSONResponse]]:
-    assert (not (prompt is None and prompt_ids is None)
+    invalidInputError((not (prompt is None and prompt_ids is None)
             and not (prompt is not None and prompt_ids is not None)
-            ), "Either prompt or prompt_ids should be provided."
+            ), "Either prompt or prompt_ids should be provided.")
     if prompt_ids is not None:
         input_ids = prompt_ids
     else:
@@ -359,7 +359,7 @@ async def create_chat_completion(request: ChatCompletionRequest,
             return create_error_response(HTTPStatus.BAD_REQUEST,
                                          "Client disconnected")
         final_res = res
-    assert final_res is not None
+    invalidInputError(final_res is not None, "final result should not be None")
     choices = []
     for output in final_res.outputs:
         if output.output_token_latency is None:
@@ -595,7 +595,7 @@ async def create_completion(request: CompletionRequest, raw_request: Request):
             return create_error_response(HTTPStatus.BAD_REQUEST,
                                          "Client disconnected")
         final_res = res
-    assert final_res is not None
+    invalidInputError(final_res is not None, "final result should not be None")
     choices = []
     for output in final_res.outputs:
         if request.logprobs is not None:

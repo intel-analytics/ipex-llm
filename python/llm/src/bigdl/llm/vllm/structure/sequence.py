@@ -36,6 +36,7 @@ import enum
 from typing import Dict, List, Optional, Union
 from vllm.sampling_params import SamplingParams
 from vllm.sequence import SequenceStatus, SequenceData
+from bigdl.llm.utils.common import invalidInputError
 
 
 class Sequence:
@@ -74,7 +75,7 @@ class Sequence:
         logprobs: Dict[int, float],
         latency: Optional[float] = None,
     ) -> None:
-        assert token_id in logprobs
+        invalidInputError(token_id in logprobs, "token id should be in logprobs")
         self.output_logprobs.append(logprobs)
         self.data.append_token_id(token_id, logprobs[token_id])
         if not (latency is None):
@@ -205,17 +206,17 @@ class SequenceGroup:
 
     def find(self, seq_id: int) -> Sequence:
         if seq_id not in self.seqs_dict:
-            raise ValueError(f"Sequence {seq_id} not found.")
+            invalidInputError(False, f"Sequence {seq_id} not found.")
         return self.seqs_dict[seq_id]
 
     def add(self, seq: Sequence) -> None:
         if seq.seq_id in self.seqs_dict:
-            raise ValueError(f"Sequence {seq.seq_id} already exists.")
+            invalidInputError(False, f"Sequence {seq.seq_id} already exists.")
         self.seqs_dict[seq.seq_id] = seq
 
     def remove(self, seq_id: int) -> None:
         if seq_id not in self.seqs_dict:
-            raise ValueError(f"Sequence {seq_id} not found.")
+            invalidInputError(False, f"Sequence {seq_id} not found.")
         del self.seqs_dict[seq_id]
 
     def is_finished(self) -> bool:
@@ -281,7 +282,7 @@ class SequenceOutputs:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SequenceOutputs):
-            raise NotImplementedError()
+            invalidInputError(False, "Not implemented")
         return (self.parent_seq_id == other.parent_seq_id
                 and self.output_token == other.output_token
                 and self.logprobs == other.logprobs)

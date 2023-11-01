@@ -40,6 +40,7 @@ from vllm.logger import init_logger
 from vllm.sequence import SequenceData, SequenceStatus
 from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceGroup,
                                                SequenceGroupMetadata)
+from bigdl.llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)
 
@@ -71,13 +72,6 @@ class FixedWindowScheduler:
         self,
         scheduler_config: SchedulerConfig,
     ) -> None:
-        """
-        Co(gc): A fixed window scheduler, requests sent limit totally be controlled by SchedulerConfig
-        We disable the block_manager in this class which results in that we cannot know if a request will
-        cause OOM in the backend worker.
-        To enable this, we will need the support of a PageTable, which then need to implement relevant
-        CUDA functions in ./scrc/cache_kernels.cu using oneAPI? So here's a TODO for you
-        """
         self.scheduler_config = scheduler_config
         self.prompt_limit = min(self.scheduler_config.max_model_len,
                                 self.scheduler_config.max_num_batched_tokens)
@@ -145,7 +139,7 @@ class FixedWindowScheduler:
             while self.waiting:
                 seq_group = self.waiting[0]
 
-                assert seq_group.num_seqs() == 1, (
+                invalidInputError(seq_group.num_seqs() == 1,
                     "Waiting sequence group should have only one prompt "
                     "sequence.")
                 num_prompt_tokens = seq_group.get_seqs()[0].get_len()
@@ -159,7 +153,8 @@ class FixedWindowScheduler:
                     self.waiting.pop(0)
                     continue
 
-                # TODO(gc): If you can manage to make block_manager work, then this will be fine.
+                # TODO(gc): If you can manage to make block_manager work,
+                #  then this will be fine.
                 # If the sequence group cannot be allocated, stop.
                 # if not self.block_manager.can_allocate(seq_group):
                 #     break
@@ -179,8 +174,8 @@ class FixedWindowScheduler:
                 seq_group = self.waiting.pop(0)
                 for seq in seq_group.get_seqs():
                     seq.status = SequenceStatus.RUNNING
-                #TODO(gc): sames here
-                #self._allocate(seq_group)
+                # TODO(gc): sames here
+                # self._allocate(seq_group)
                 self.running.append(seq_group)
                 num_batched_tokens += num_prompt_tokens
                 num_curr_seqs += num_new_seqs

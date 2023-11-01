@@ -34,6 +34,7 @@
 from typing import List
 
 from bigdl.llm.vllm.structure.sequence import SequenceGroup
+from bigdl.llm.utils.common import invalidInputError
 
 # We need to adapt this file cause we use our own SequenceGroup
 
@@ -45,7 +46,7 @@ class Policy:
         now: float,
         seq_group: SequenceGroup,
     ) -> float:
-        raise NotImplementedError
+        invalidInputError(False, "base class not implemented")
 
     def sort_by_priority(
         self,
