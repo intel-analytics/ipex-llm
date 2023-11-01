@@ -16,11 +16,11 @@ cd ..
 ## Run
 run `python llb.py`. `llb.py` combines some arguments in `main.py` to make evalutions easier. The mapping of arguments is defined as a dict in [`llb.py`](llb.py).
 
-### CPU Usage
+### Evaluation on CPU
 ```python
 python llb.py --model bigdl-llm --pretrained /path/to/model --precision nf3 int4 nf4 --device cpu --tasks hellaswag arc mmlu truthfulqa --output_dir results/output
 ```
-### Intel GPU Usage
+### Evaluation on Intel GPU
 ```python
 python llb.py --model bigdl-llm --pretrained /path/to/model --precision nf3 int4 nf4 --device xpu --tasks hellaswag arc mmlu truthfulqa --output_dir results/output
 ```
