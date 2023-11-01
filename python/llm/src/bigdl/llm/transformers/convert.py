@@ -190,7 +190,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
-
+    # Preserve previous model type
+    raw_model_type = model.dtype
     if optimize_model:
         model = _optimize_pre(model)
 
@@ -213,6 +214,9 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     if optimize_model:
         model = _optimize_post(model)
+    # Cover model back to previous model type
+    if device == "cpu":
+        model.to(raw_model_type)
     return model
 
 

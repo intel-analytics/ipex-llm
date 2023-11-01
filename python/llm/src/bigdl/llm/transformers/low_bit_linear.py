@@ -478,7 +478,10 @@ class LowBitLinear(nn.Linear):
                     if self.bias is not None:
                         result += self.bias
         if x.dtype != result.dtype:
-            result = result.to(x.dtype)
+            if torch.is_autocast_enabled:
+                result = result.to(torch.get_autocast_dtype)
+            else:
+                result = result.to(x.dtype)
         return result
 
 
