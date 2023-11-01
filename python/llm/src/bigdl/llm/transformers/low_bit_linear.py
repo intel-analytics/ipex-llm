@@ -49,6 +49,7 @@ import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
+from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -63,6 +64,9 @@ SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
+FP8 = ggml_tensor_qtype["fp8"]
+FP4 = ggml_tensor_qtype["fp4"]
+MOFQ4 = ggml_tensor_qtype["mixed_4bit"]
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
@@ -102,7 +106,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -127,7 +131,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3]:
+    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -152,6 +156,19 @@ def ggml_int4_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int):
     dst_ptr = ctypes.c_void_p(dst_tensor.data.data_ptr())
 
     ggml.ggml_dequantize_q4_0(src_ptr, dst_ptr, k)
+    return dst_tensor
+
+
+def ggml_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int, qtype: int):
+    invalidInputError(tensor.dtype == torch.uint8,
+                      "Input tensor must be uint8")
+    src_ptr = ctypes.c_void_p(tensor.data.data_ptr())
+
+    dst_size = k
+    dst_tensor = torch.empty(weight_shape, dtype=torch.float)
+    dst_ptr = ctypes.c_void_p(dst_tensor.data.data_ptr())
+
+    ggml.ggml_dequantize(src_ptr, dst_ptr, k, qtype)
     return dst_tensor
 
 
@@ -180,10 +197,39 @@ class FP4Params(torch.nn.Parameter):
     def quantize(self, device=None):
         if not self.quantized:
             w = self.data.contiguous().float()
-            w_quantized = ggml_convert_qtype(w, self.qtype,
-                                             device=device,
-                                             convert_shape_only=self.convert_shape_only)
-            self.data = w_quantized
+            if self.qtype == MOFQ4:
+                if device == 'meta':
+                    w_quantized = ggml_convert_qtype(w, SYM_INT4,
+                                                     device=device,
+                                                     convert_shape_only=self.convert_shape_only)
+                    # TODO: should load from config, the current implementation doesn't support
+                    # save/load
+                    self.qtype = SYM_INT4
+                else:
+                    from torch.nn.functional import mse_loss
+                    w_quant_q4_0 = ggml_convert_qtype(w, SYM_INT4,
+                                                      device=device,
+                                                      convert_shape_only=self.convert_shape_only)
+                    w_q4_0_dequant = ggml_convert_fp32(w_quant_q4_0, w.shape,
+                                                       reduce(mul, w.shape, 1), SYM_INT4)
+                    w_quant_fp4 = ggml_convert_qtype(w, FP4,
+                                                     device=device,
+                                                     convert_shape_only=self.convert_shape_only)
+                    w_fp4_dequant = ggml_convert_fp32(w_quant_fp4, w.shape,
+                                                      reduce(mul, w.shape, 1), FP4)
+                    q4_0_mse = mse_loss(w_q4_0_dequant, w)
+                    fp4_mse = mse_loss(w_fp4_dequant, w)
+                    if q4_0_mse <= fp4_mse:
+                        self.qtype = SYM_INT4
+                        self.data = w_quant_q4_0
+                    else:
+                        self.qtype = FP4
+                        self.data = w_quant_fp4
+            else:
+                w_quantized = ggml_convert_qtype(w, self.qtype,
+                                                 device=device,
+                                                 convert_shape_only=self.convert_shape_only)
+                self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
         return self
@@ -288,7 +334,10 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
 class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
+    @custom_fwd
     def forward(ctx, A, weight, input_seq_size):
+        if torch.xpu.is_autocast_xpu_enabled():
+            A = A.to(torch.xpu.get_autocast_xpu_dtype())
         ctx.is_empty = False
         import linear_q4_0
         result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
@@ -299,6 +348,7 @@ class MatMulLowBit(torch.autograd.Function):
         return result
 
     @staticmethod
+    @custom_bwd
     def backward(ctx, grad_output):
         import linear_q4_0
         if ctx.is_empty:
@@ -308,15 +358,48 @@ class MatMulLowBit(torch.autograd.Function):
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
         if req_gradA:
+            if torch.xpu.is_autocast_xpu_enabled():
+                grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
             dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
 
 
+class MatMulLowBitCPU(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, A, weight):
+        if torch.is_autocast_enabled():
+            A = A.to(torch.get_autocast_dtype())
+        ctx.is_empty = False
+        x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
+                                         weight._shape[0] * weight._shape[1])
+        result = torch.matmul(A, x0_fp32.T)
+        if any(ctx.needs_input_grad[:2]):
+            ctx.tensors = (A, weight)
+        else:
+            ctx.tensors = (None, None)
+        return result
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        if ctx.is_empty:
+            bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
+            return torch.zeros_like(ctx.A), torch.zeros_like(ctx.B), None, bias_grad, None
+        req_gradA, _, = ctx.needs_input_grad
+        A, weight = ctx.tensors
+        grad_A, grad_weight = None, None
+        if req_gradA:
+            x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
+                                             weight._shape[0] * weight._shape[1])
+            grad_A = torch.matmul(grad_output, x0_fp32.to(grad_output.dtype))
+        return grad_A, grad_weight, None
+
+
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True):
+                 conver_to_half=True, mp_group=None):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -327,6 +410,7 @@ class LowBitLinear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
         self.conver_to_half = conver_to_half
+        self.mp_group = mp_group
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -348,43 +432,57 @@ class LowBitLinear(nn.Linear):
 
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
-            # current workaround to reduce first token latency of fp32 input
-            # sometimes fp16 cause nan and training instability
-            # disable the conversion when training
-            if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
-                x_2d = x_2d.half()
+
             input_seq_size = x_shape[1]
             if self.training and x_2d.requires_grad:
                 result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
             else:
-                result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                 input_seq_size)
+                # current workaround to reduce first token latency of fp32 input
+                # sometimes fp16 cause nan and training instability
+                # disable the conversion when training
+                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+                    x_2d = x_2d.half()
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                     input_seq_size)
+                    result = result.to(x.dtype)
+                else:
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                     input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
+            if self.mp_group is not None:
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
             if self.bias is not None:
                 result += self.bias
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4,
-                              "NF3 and NF4 quantization are currently not supported on CPU")
-            if IS_SERVER and (not IS_SPR) and \
-                    self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
-                x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                result = F.linear(x, x0_fp32, self.bias)
-            else:
-                result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
-                new_shape = x_shape[:-1] + (self.out_len,)
-                result = result.view(new_shape)
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8
+                              and self.qtype != FP4,
+                              "NF3, NF4, FP4 and FP8 quantization are currently not"
+                              " supported on CPU")
+            if self.training and x.requires_grad:
+                result = MatMulLowBitCPU.apply(x, self.weight)
                 if self.bias is not None:
-                    result += self.bias
-
-        return result.to(x.dtype)
+                    result = result + self.bias
+            else:
+                if IS_SERVER and (not IS_SPR) and \
+                        self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
+                    x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                    result = F.linear(x, x0_fp32, self.bias)
+                else:
+                    result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+                    new_shape = x_shape[:-1] + (self.out_len,)
+                    result = result.view(new_shape)
+                    if self.bias is not None:
+                        result += self.bias
+        return result
 
 
 class FP16Linear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True):
+                 conver_to_half=True, mp_group=None):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
@@ -392,6 +490,7 @@ class FP16Linear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = qtype
         self.conver_to_half = conver_to_half
+        self.mp_group = mp_group
 
     def forward(self, x: torch.Tensor):
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -426,6 +525,9 @@ class FP16Linear(nn.Linear):
 
         new_shape = x_shape[:-1] + (self.out_len,)
         result = result.view(new_shape)
+        if self.mp_group is not None:
+            from deepspeed import comm as dist
+            dist.inference_all_reduce(result, group=self.mp_group)
         if self.bias is not None:
             result += self.bias
 

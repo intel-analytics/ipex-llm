@@ -34,45 +34,58 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 </table>
 
 ### Verified models
-Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, InternLM, QWen, Baichuan, MOSS,* and more; see the complete list below.
-
-<details><summary>Table of verified models</summary>
-    
-| Model     | Example                                                  |
-|-----------|----------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna)    |
-| LLaMA 2   | [link](example/CPU/HF-Transformers-AutoModels/Model/llama2)    |
-| MPT       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       |
-| Falcon    | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    |
-| ChatGLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   | 
-| ChatGLM2  | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | 
-| Qwen      | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      |
-| MOSS      | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      | 
-| Baichuan  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | 
-| Baichuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) |
-| Dolly-v1  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | 
-| Dolly-v2  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | 
-| RedPajama | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/redpajama) | 
-| Phoenix   | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/phoenix)   | 
-| StarCoder | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/starcoder) | 
-| InternLM  | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  |
-| Whisper   | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   |
-| Aquila    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    |
-
-</details>
+Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Dolly, StarCoder, Whisper, Baichuan, InternLM, QWen, Aquila, MOSS,* and more; see the complete list below.
+  
+| Model      | CPU Example                                                    | GPU Example                                                     |
+|------------|----------------------------------------------------------------|-----------------------------------------------------------------|
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](example/GPU/HF-Transformers-AutoModels/Model/vicuna)|
+| LLaMA 2    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](example/GPU/HF-Transformers-AutoModels/Model/llama2) |
+| ChatGLM    | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
+| ChatGLM2   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm2)   |
+| ChatGLM3   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm3)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm3)   |
+| Mistral    | [link](example/CPU/HF-Transformers-AutoModels/Model/mistral)   | [link](example/GPU/HF-Transformers-AutoModels/Model/mistral)    |
+| Falcon     | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    | [link](example/GPU/HF-Transformers-AutoModels/Model/falcon)     |
+| MPT        | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)        |
+| Dolly-v1   | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)   | 
+| Dolly-v2   | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | [link](example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)   | 
+| Replit Code| [link](example/CPU/HF-Transformers-AutoModels/Model/replit)    | [link](example/CPU/HF-Transformers-AutoModels/Model/replit)     |
+| RedPajama  | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/redpajama) |    | 
+| Phoenix    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/phoenix)   |    | 
+| StarCoder  | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/starcoder) | [link](example/GPU/HF-Transformers-AutoModels/Model/starcoder) | 
+| Baichuan   | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)   |
+| Baichuan2  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
+| InternLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
+| Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
+| Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
+| MOSS       | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
+| Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
+| Phi-1_5    | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-1_5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-1_5)    |
+| Flan-t5    | [link](example/CPU/HF-Transformers-AutoModels/Model/flan-t5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/flan-t5)    |
+| Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   |   |
+| LLaVA      | [link](example/CPU/PyTorch-Models/Model/llava)                 |    |
 
 ### Working with `bigdl-llm`
 
 <details><summary>Table of Contents</summary>
 
-- [Install](#install)
-- [Run Model](#run-model)
-  - [Hugging Face `transformers` API](#1-hugging-face-transformers-api)
-  - [Native INT4 Model](#2-native-int4-model)
-  - [LangChain API](#l3-angchain-api)
-  - [CLI Tool](#4-cli-tool)
-- [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
-- [`bigdl-llm` Dependency](#bigdl-llm-dependency)
+- [BigDL-LLM](#bigdl-llm)
+  - [Demos](#demos)
+  - [Verified models](#verified-models)
+  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
+    - [Install](#install)
+      - [CPU](#cpu)
+      - [GPU](#gpu)
+    - [Run Model](#run-model)
+      - [1. Hugging Face `transformers` API](#1-hugging-face-transformers-api)
+        - [CPU INT4](#cpu-int4)
+        - [GPU INT4](#gpu-int4)
+        - [More Low-Bit Support](#more-low-bit-support)
+      - [2. Native INT4 model](#2-native-int4-model)
+      - [3. LangChain API](#3-langchain-api)
+      - [4. CLI Tool](#4-cli-tool)
+  - [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
+  - [`bigdl-llm` Dependency](#bigdl-llm-dependency)
 
 </details>
 
@@ -128,6 +141,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* model on Int
 ```python
 #load Hugging Face Transformers model with INT4 optimizations
 from bigdl.llm.transformers import AutoModelForCausalLM
+import intel_extension_for_pytorch
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
 #run the optimized model on Intel GPU

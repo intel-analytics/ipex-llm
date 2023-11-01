@@ -7,13 +7,13 @@ ARG TINI_VERSION=v0.18.0
 RUN mkdir -p /ppml/
 
 
-ADD ./fschat.diff /opt/fschat.diff
-ADD ./requirements.txt /opt/requirements.txt
-ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./attestation_cli.py /opt/attestation_cli.py
-ADD ./attestation.sh /opt/attestation.sh
-ADD ./llama_cpp.patch /opt/llama_cpp.patch
-ADD ./llama.patch /opt/llama.patch
+COPY ./fschat.diff /opt/fschat.diff
+COPY ./requirements.txt /opt/requirements.txt
+COPY ./entrypoint.sh /opt/entrypoint.sh
+COPY ./attestation_cli.py /opt/attestation_cli.py
+COPY ./attestation.sh /opt/attestation.sh
+COPY ./llama_cpp.patch /opt/llama_cpp.patch
+COPY ./llama.patch /opt/llama.patch
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 
 

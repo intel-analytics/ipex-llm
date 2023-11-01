@@ -17,7 +17,16 @@ powershell -Command "(gc .\python\llm\portable-zip\python-embed\python39._pth) -
 @REM cd ..
 
 :: install pip packages
-%python-embed% -m pip install bigdl-llm[all] transformers_stream_generator tiktoken einops colorama
+%python-embed% -m pip install --pre --upgrade bigdl-llm[all]
+%python-embed% -m pip install transformers_stream_generator tiktoken einops colorama
+
+if "%1"=="--ui" (
+    %python-embed% -m pip install --pre --upgrade bigdl-llm[serving]
+)
 
 :: compress the python and scripts
-powershell -Command "Compress-Archive -Path '.\python\llm\portable-zip\python-embed', '.\python\llm\portable-zip\chat.bat', '.\python\llm\portable-zip\chat.py', '.\python\llm\portable-zip\README.md' -DestinationPath .\python\llm\portable-zip\bigdl-llm.zip"
+if "%1"=="--ui" (
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat-ui.bat', '.\README.md' -DestinationPath .\bigdl-llm-ui.zip"
+) else (
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\bigdl-llm.zip"
+)

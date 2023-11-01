@@ -9,13 +9,19 @@ set -e
 echo "# Start testing inference"
 start=$(date "+%s")
 
-python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k "not test_transformers"
+python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k "not test_transformers" -v \
+      --ignore=${LLM_INFERENCE_TEST_DIR}/test_optimize_mistral.py
 
 if [ -z "$THREAD_NUM" ]; then
   THREAD_NUM=2
 fi
 export OMP_NUM_THREADS=$THREAD_NUM
-python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k test_transformers
+python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k test_transformers -v \
+      --ignore=${LLM_INFERENCE_TEST_DIR}/test_optimize_mistral.py
+
+python -m pip install transformers==4.34.0
+python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_optimize_mistral.py -v
+python -m pip install transformers==4.31.0
 
 now=$(date "+%s")
 time=$((now-start))

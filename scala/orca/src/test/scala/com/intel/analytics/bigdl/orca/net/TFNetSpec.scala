@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.orca.net
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{LayerException, T}
 import com.intel.analytics.bigdl.orca.tfpark.TFUtils
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.SparkConf
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}

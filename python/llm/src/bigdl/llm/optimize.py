@@ -133,6 +133,33 @@ def low_memory_init():
 
 
 def load_low_bit(model, model_path):
+    """
+    Load the optimized pytorch model.
+
+    :param model: The PyTorch model instance
+    :param model_path: The path of saved optimized model
+
+    :return: The optimized model.
+
+    >>> # Example 1:
+    >>> # Take ChatGLM2-6B model as an example
+    >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
+    >>> from bigdl.llm.optimize import low_memory_init, load_low_bit
+    >>> with low_memory_init(): # Fast and low cost by loading model on meta device
+    >>>     model = AutoModel.from_pretrained(saved_dir,
+    >>>                                       torch_dtype="auto",
+    >>>                                       trust_remote_code=True)
+    >>> model = load_low_bit(model, saved_dir) # Load the optimized model
+
+    >>> # Example 2:
+    >>> # If the model doesn't fit 'low_memory_init' method,
+    >>> # alternatively, you can obtain the model instance through traditional loading method.
+    >>> # Take OpenAI Whisper model as an example
+    >>> # Make sure you have saved the optimized model by calling 'save_low_bit'
+    >>> from bigdl.llm.optimize import load_low_bit
+    >>> model = whisper.load_model('tiny') # A model instance through traditional loading method
+    >>> model = load_low_bit(model, saved_dir) # Load the optimized model
+    """
     low_bit = low_bit_sanity_check(model_path)
     invalidInputError(isinstance(model, torch.nn.Module),
                       "model should be a instance of "
@@ -165,16 +192,30 @@ def load_low_bit(model, model_path):
     return model
 
 
-def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
+def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None,
+                   replace_embedding=False):
     """
-    A method to optimize any pytorch models.
+    A method to optimize any pytorch model.
 
     :param model: The original PyTorch model (nn.module)
     :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
         "asym_int5" or "sym_int8".
     :param optimize_llm: Whether to further optimize llm model.
+    :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
+        when conducting model optimizations. Default to be None.
+    :param replace_embedding: Whether to replace the Embedding layer, may need to set it
+        to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
 
-    return: The optimized model.
+    :return: The optimized model.
+
+    >>> # Take OpenAI Whisper model as an example
+    >>> from bigdl.llm import optimize_model
+    >>> model = whisper.load_model('tiny') # Load whisper model under pytorch framework
+    >>> model = optimize_model(model) # With only one line code change
+    >>> # Use the optimized model without other API change
+    >>> result = model.transcribe(audio, verbose=True, language="English")
+    >>> # (Optional) you can also save the optimized model by calling 'save_low_bit'
+    >>> model.save_low_bit(saved_dir)
     """
     invalidInputError(low_bit in ggml_tensor_qtype,
                       f"Unknown load_in_low_bit value: {low_bit}, expected:"
@@ -186,7 +227,11 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True):
                       "Expect model on device `cpu`, "
                       f"but got device type {model.device.type}")
     qtype = ggml_tensor_qtype[low_bit]
-    model = ggml_convert_low_bit(model, qtype=qtype, optimize_model=optimize_llm)
+    model = ggml_convert_low_bit(model,
+                                 qtype=qtype,
+                                 optimize_model=optimize_llm,
+                                 modules_to_not_convert=modules_to_not_convert,
+                                 replace_embedding=replace_embedding)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()

@@ -32,6 +32,7 @@
 # limitations under the License.
 
 import torch
+import importlib
 import torch.nn as nn
 from typing import Optional, Tuple
 import math
@@ -58,10 +59,29 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
+_ipex_version = None
+
+
+def get_ipex_version():
+
+    global _ipex_version
+    if _ipex_version is not None:
+        return _ipex_version
+
+    import intel_extension_for_pytorch as ipex
+    _ipex_version = ipex.__version__
+    return _ipex_version
+
+
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
-                                                         [self.weight.size(0)], self.weight)
+        if get_ipex_version() == "2.0.110+xpu":
+            hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                             [self.weight.size(0)], self.weight)
+        else:
+            hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                             [self.weight.size(0)], self.weight,
+                                                             self.variance_epsilon)
     else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
@@ -79,6 +99,8 @@ def llama_attention_forward_4_31(
     past_key_value: Optional[Tuple[torch.Tensor]] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
+    padding_mask: Optional[torch.LongTensor] = None,
+    **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device

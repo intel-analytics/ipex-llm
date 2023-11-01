@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.utils.TorchObject._
 import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error, Table}
-import org.apache.commons.lang.SerializationUtils
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.immutable.ListMap
 import scala.io.Source

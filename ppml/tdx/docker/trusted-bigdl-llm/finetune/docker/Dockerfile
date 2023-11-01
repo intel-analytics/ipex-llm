@@ -66,10 +66,10 @@ RUN mkdir /ppml/data && mkdir /ppml/model && \
     echo "mpiuser ALL = NOPASSWD:SETENV: /opt/intel/oneapi/mpi/2021.9.0/bin/mpirun\nmpiuser ALL = NOPASSWD:SETENV: /usr/bin/python" > /etc/sudoers.d/mpivisudo && \
     chmod 440 /etc/sudoers.d/mpivisudo
 
-ADD ./bigdl_aa.py /ppml/bigdl_aa.py
-ADD ./quote_generator.py /ppml/quote_generator.py
-ADD ./worker_quote_generate.py /ppml/worker_quote_generate.py
-ADD ./get_worker_quote.sh /ppml/get_worker_quote.sh
+COPY ./bigdl_aa.py /ppml/bigdl_aa.py
+COPY ./quote_generator.py /ppml/quote_generator.py
+COPY ./worker_quote_generate.py /ppml/worker_quote_generate.py
+COPY ./get_worker_quote.sh /ppml/get_worker_quote.sh
 COPY --from=native /ppml/bigdl-lora-finetuing-entrypoint.sh /ppml/bigdl-lora-finetuing-entrypoint.sh
 COPY --from=native /ppml/lora_finetune.py /ppml/lora_finetune.py
 

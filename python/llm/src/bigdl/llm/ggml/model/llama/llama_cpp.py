@@ -999,6 +999,24 @@ _lib.ggml_dequantize_q4_0.argtypes = [
 _lib.ggml_quantize_q4_0.restype = None
 
 
+def ggml_dequantize(
+    src: ctypes.c_void_p,
+    dst: ctypes.c_void_p,
+    k: ctypes.c_size_t,
+    qtype: ctypes.c_int
+):
+    _lib.ggml_dequantize(src, dst, k, qtype)
+
+
+_lib.ggml_dequantize.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_size_t,
+    ctypes.c_int
+]
+_lib.ggml_dequantize.restype = None
+
+
 def ggml_q_format_convet_cpu2xpu(
     src: ctypes.c_void_p,
     dst: ctypes.c_void_p,

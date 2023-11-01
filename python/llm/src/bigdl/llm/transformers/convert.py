@@ -35,6 +35,7 @@
 # limitations under the License.
 
 
+import platform
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
@@ -45,26 +46,67 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 
 
+def is_deepspeed_available():
+    return importlib.util.find_spec("deepspeed") is not None
+
+
+def is_linear_module(module):
+
+    in_features = None
+    out_features = None
+    mp_group = None
+
+    if isinstance(module, nn.Linear):
+        in_features = module.in_features
+        out_features = module.out_features
+        mp_group = None
+        result = True
+    else:
+        if is_deepspeed_available():
+            from deepspeed.module_inject.layers import LinearLayer, LinearAllreduce
+            if isinstance(module, LinearLayer):
+                in_features = module.weight.shape[1]
+                out_features = module.weight.shape[0]
+                mp_group = None
+                result = True
+            elif isinstance(module, LinearAllreduce):
+                in_features = module.weight.shape[1]
+                out_features = module.weight.shape[0]
+                mp_group = module.mp_group
+                result = True
+            else:
+                result = False
+        else:
+            result = False
+
+    return result, (in_features, out_features, mp_group)
+
+
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
-                                 current_key_name=None, convert_shape_only=False):
+                                 current_key_name=None, convert_shape_only=False,
+                                 replace_embedding=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
+    from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
 
     for name, module in model.named_children():
         if current_key_name is None:
             current_key_name = []
 
-        if isinstance(module, nn.Linear) and name not in modules_to_not_convert:
+        is_linear, linear_args = is_linear_module(module)
+        if is_linear and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
+                in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
                     new_linear = None
                     if qtype != ggml_tensor_qtype["fp16"]:
                         new_linear = LowBitLinear(
-                            module.in_features,
-                            module.out_features,
+                            in_features,
+                            out_features,
                             qtype,
                             module.bias is not None,
+                            mp_group=mp_group,
                         )
 
                         device_type = module.weight.data.device.type
@@ -82,10 +124,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if module.in_features in [4096, 11008]:
                             # esimd fp16 path
                             new_linear = FP16Linear(
-                                module.in_features,
-                                module.out_features,
+                                in_features,
+                                out_features,
                                 qtype,
                                 module.bias is not None,
+                                mp_group=mp_group,
                             )
                             device_type = module.weight.data.device.type
 
@@ -107,6 +150,19 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name].requires_grad_(False)
 
                         module.weight = None
+        elif replace_embedding and type(module) == nn.Embedding:
+            # skip user-defined Embedding layer
+            if platform.system().lower() == 'windows':
+                model._modules[name] = LLMEmbedding(
+                    num_embeddings=module.num_embeddings,
+                    embedding_dim=module.embedding_dim,
+                    padding_idx=module.padding_idx,
+                    max_norm=module.max_norm,
+                    norm_type=module.norm_type,
+                    scale_grad_by_freq=module.scale_grad_by_freq,
+                    sparse=module.sparse,
+                    _weight=module.weight.data,
+                )
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
@@ -116,18 +172,48 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 modules_to_not_convert,
                 current_key_name,
                 convert_shape_only,
+                replace_embedding,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
 
 
+def _optimize_pre(model):
+    from transformers.modeling_utils import PreTrainedModel
+    # All huggingface format models are inherited from `PreTrainedModel`
+    if not isinstance(model, PreTrainedModel):
+        logger.info("Only HuggingFace Transformers models are currently "
+                    "supported for further optimizations")
+        return model
+    # process NormHead module in Baichuan2 7B and 13B
+    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
+        # NormHead do normalization on the weights just once at inference time.
+        # so we do it in advance and convert it to Linear so that it can be replaced.
+        # modeling_module_name = model.__class__.__module__
+        # module = importlib.import_module(modeling_module_name)
+        if hasattr(model, 'lm_head') and model.lm_head is not None:
+            # do we need to check the class instance?
+            vocab_size, hidden_size = model.lm_head.weight.shape
+            norm_weight = nn.functional.normalize(model.lm_head.weight.data)
+            model.lm_head = nn.Linear(hidden_size, vocab_size, bias=False)
+            model.lm_head.weight.data = norm_weight
+    return model
+
+
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
-                         modules_to_not_convert=None):
+                         modules_to_not_convert=None, replace_embedding=False):
+    logger.info(f"Converting the current model to "
+                f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
+                f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
+
+    if optimize_model:
+        model = _optimize_pre(model)
+
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
-        None, convert_shape_only,
+        None, convert_shape_only, replace_embedding,
     )
     if not has_been_replaced:
         warnings.warn(
@@ -143,7 +229,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         pass
 
     if optimize_model:
-        model = optimize(model)
+        model = _optimize_post(model)
     return model
 
 
@@ -155,7 +241,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize(model):
+def _optimize_post(model):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
@@ -181,29 +267,43 @@ def optimize(model):
         # todo implement 4.28.0 ~ 4.30.2
         pass
 
-    if "chatglm-18b" in model.config._name_or_path or "chatglm2" in model.config._name_or_path:
-        # chatglm-18b or chatglm2-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-        from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
-        convert_forward(model,
-                        module.SelfAttention,
-                        chatglm2_attention_forward_8eb45c
-                        )
-        convert_forward(model,
-                        module.CoreAttention,
-                        core_attn_forward_8eb45c)
-    elif "chatglm" in model.config._name_or_path:
-        # chatglm-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
-        convert_forward(model,
-                        module.SelfAttention,
-                        chatglm_attention_forward
-                        )
-    elif "mpt" in model.config._name_or_path:
+    if model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
+        if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
+            # chatglm2-6b-32k
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm2_32k import chatglm2_32k_attention_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm2_32k_attention_forward)
+        elif hasattr(model.config, 'padded_vocab_size') and \
+                model.config.padded_vocab_size == 65024:
+            # chatglm2-6b
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm2_attention_forward_8eb45c
+                            )
+            convert_forward(model,
+                            module.CoreAttention,
+                            core_attn_forward_8eb45c)
+            convert_forward(model,
+                            module.RMSNorm,
+                            chatglm_rms_norm_forward)
+        elif hasattr(model.config, 'vocab_size') and model.config.vocab_size == 130528:
+            # chatglm-6b
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.chatglm import chatglm_attention_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm_attention_forward
+                            )
+    elif "mpt" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
         module = importlib.import_module(attention_module_name)
@@ -265,16 +365,23 @@ def optimize(model):
                             module.Attention,
                             baichuan_attention_forward_7b
                             )
+            convert_forward(model,
+                            module.RMSNorm,
+                            llama_rms_norm_forward)
         elif model.config.hidden_size == 5120:
             # baichuan2-13B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-
+            # baichuan2-13B's RMSNorm is a little different
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_13b_rms_norm_forward)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:
@@ -286,16 +393,23 @@ def optimize(model):
                             module.Attention,
                             baichuan_attention_forward_7b
                             )
+            convert_forward(model,
+                            module.RMSNorm,
+                            llama_rms_norm_forward)
         elif model.config.hidden_size == 5120:
             # baichuan-13B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.baichuan import baichuan_attention_forward_13b
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
                             )
-
+            # baichuan-13B's RMSNorm is a little different
+            convert_forward(model,
+                            module.RMSNorm,
+                            baichuan_13b_rms_norm_forward)
     elif model.config.model_type == "gpt_neox":
         from bigdl.llm.transformers.models.gptneox import gptneox_attention_forward
         convert_forward(model,
@@ -310,14 +424,29 @@ def optimize(model):
                         module.InternLMAttention,
                         internlm_attention_forward
                         )
-    elif model.config.model_type == "qwen":
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.qwen import qwen_attention_forward
         convert_forward(model,
-                        module.QWenAttention,
-                        qwen_attention_forward
+                        module.InternLMRMSNorm,
+                        llama_rms_norm_forward
                         )
+    elif model.config.model_type == "qwen":
+        if hasattr(model.config, "visual"):
+            # for Qwen-VL-Chat
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.qwen_vl import qwen_attention_forward_vl
+            convert_forward(model,
+                            module.QWenAttention,
+                            qwen_attention_forward_vl
+                            )
+        else:
+            # for Qwen-7B and Qwen-14B
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from bigdl.llm.transformers.models.qwen import qwen_attention_forward
+            convert_forward(model,
+                            module.QWenAttention,
+                            qwen_attention_forward
+                            )
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -326,4 +455,18 @@ def optimize(model):
                         module.AquilaAttention,
                         aquila_attention_forward
                         )
+        convert_forward(model,
+                        module.AquilaRMSNorm,
+                        llama_rms_norm_forward)
+    elif model.config.model_type == "mistral":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.mistral import mistral_attention_forward
+        convert_forward(model,
+                        module.MistralAttention,
+                        mistral_attention_forward
+                        )
+        convert_forward(model,
+                        module.MistralRMSNorm,
+                        llama_rms_norm_forward)
     return model

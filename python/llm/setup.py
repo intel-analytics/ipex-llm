@@ -85,7 +85,8 @@ windows_binarys = [
     "quantize-starcoder_vnni.exe",
 
     "main-chatglm_vnni.exe",
-    "chatglm_C.cp39-win_amd64.pyd"
+    "chatglm_C.cp39-win_amd64.pyd",
+    "chatglm_C.cp310-win_amd64.pyd"
 ]
 linux_binarys = [
     "libllama_avx.so",
@@ -124,7 +125,19 @@ linux_binarys = [
     "main-chatglm_vnni",
     "main-chatglm_amx",
     "chatglm_C.cpython-39-x86_64-linux-gnu.so",
+    "chatglm_C.cpython-310-x86_64-linux-gnu.so"
 ]
+
+ext_lib_urls = [
+    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
+    "https://github.com/analytics-zoo/tcmalloc/releases/download/v2.10/libtcmalloc.so"
+]
+
+ext_libs = [
+    "libjemalloc.so",
+    "libtcmalloc.so"
+]
+
 
 
 def get_llm_packages():
@@ -187,7 +200,7 @@ def obtain_lib_urls():
     windows_binary_urls = get_urls_for_binary(date_urls, windows_binarys)
     lib_urls["Windows"] = list(windows_binary_urls.values())
     linux_binary_urls = get_urls_for_binary(date_urls, linux_binarys)
-    lib_urls["Linux"] = list(linux_binary_urls.values())
+    lib_urls["Linux"] = list(linux_binary_urls.values()) + ext_lib_urls
     return lib_urls
 
 
@@ -208,7 +221,7 @@ def setup_package():
     package_data["Windows"] = list(map(lambda x: os.path.join('libs', x),
                                        windows_binarys))
     package_data["Linux"] = list(map(lambda x: os.path.join('libs', x),
-                                     linux_binarys))
+                                     linux_binarys + ext_libs))
     platform_name = None
     if "--win" in sys.argv:
         platform_name = "Windows"
@@ -252,7 +265,8 @@ def setup_package():
             raise FileNotFoundError(
                 f'Could not find package dependency file: {file_path}')
 
-    all_requires = ['py-cpuinfo', 'protobuf']
+    all_requires = ['py-cpuinfo', 'protobuf',
+                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     all_requires += CONVERT_DEP
 
     # install with -f https://developer.intel.com/ipex-whl-stable-xpu
@@ -261,7 +275,8 @@ def setup_package():
     xpu_requires += ["torch==2.0.1a0",
                      "torchvision==0.15.2a0",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'"]
+                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'",
+                     "bigdl-core-xe-esimd==" + VERSION + ";platform_system=='Linux'"]
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
@@ -296,7 +311,7 @@ def setup_package():
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
-            'Linux': ['src/bigdl/llm/cli/llm-cli', 'src/bigdl/llm/cli/llm-chat'],
+            'Linux': ['src/bigdl/llm/cli/llm-cli', 'src/bigdl/llm/cli/llm-chat', 'scripts/bigdl-llm-init'],
             'Windows': ['src/bigdl/llm/cli/llm-cli.ps1', 'src/bigdl/llm/cli/llm-chat.ps1'],
         }[platform_name],
         platforms=['windows']
