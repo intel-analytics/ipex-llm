@@ -87,7 +87,7 @@ windows_binarys = [
     "main-chatglm_vnni.exe",
     "chatglm_C.cp39-win_amd64.pyd",
     "chatglm_C.cp310-win_amd64.pyd",
-
+    "chatglm_C.cp311-win_amd64.pyd"
 ]
 linux_binarys = [
     "libllama_avx.so",
@@ -127,7 +127,7 @@ linux_binarys = [
     "main-chatglm_amx",
     "chatglm_C.cpython-39-x86_64-linux-gnu.so",
     "chatglm_C.cpython-310-x86_64-linux-gnu.so",
-
+    "chatglm_C.cpython-311-x86_64-linux-gnu.so"
 ]
 
 ext_lib_urls = [
