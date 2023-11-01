@@ -1,3 +1,35 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/vllm-project/vllm/blob/main/vllm/entrypoints/openai/api_server.py
+# which is licensed under Apache License 2.0
+#
+# Copyright 2023 The vLLM team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 # Adapted from
 # https://github.com/lm-sys/FastChat/blob/168ccc29d3f7edc50823016105c024fe2282732a/fastchat/serve/openai_api_server.py
 
@@ -20,12 +52,13 @@ import numpy as np
 from bigdl.llm.vllm.utils.arg_utils import AsyncEngineArgs
 from bigdl.llm.vllm.engine.async_llm_engine import AsyncLLMEngine
 from bigdl.llm.vllm.examples.protocol import (
-    CompletionRequest, CompletionResponse, CompletionResponseChoice,
+    CompletionResponse, CompletionResponseChoice,
     CompletionResponseStreamChoice, CompletionStreamResponse,
-    ChatCompletionRequest, ChatCompletionResponse,
-    ChatCompletionResponseChoice, ChatCompletionResponseStreamChoice,
-    ChatCompletionStreamResponse, ChatMessage, DeltaMessage, ErrorResponse,
-    LogProbs, ModelCard, ModelList, ModelPermission, UsageInfo)
+    ChatCompletionResponse,
+    ChatCompletionResponseChoice,
+    ChatMessage, DeltaMessage, ErrorResponse,
+    LogProbs, ModelCard, ModelPermission, UsageInfo)
+from vllm.entrypoints.openai.protocol import (CompletionRequest, ChatCompletionRequest, ChatCompletionResponseStreamChoice, ChatCompletionStreamResponse, ModelList)
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from vllm.sampling_params import SamplingParams

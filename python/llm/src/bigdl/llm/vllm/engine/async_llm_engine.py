@@ -1,3 +1,36 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/vllm-project/vllm/blob/main/vllm/engine/async_llm_engine.py
+# which is licensed under Apache License 2.0
+#
+# Copyright 2023 The vLLM team. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import asyncio
 import time
 from functools import partial
@@ -11,12 +44,9 @@ from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from vllm.sampling_params import SamplingParams
 from vllm.engine.ray_utils import get_open_port
+from vllm.engine.async_llm_engine import RequestTracker, AsyncEngineDeadError, AsyncStream
 
 logger = init_logger(__name__)
-
-
-class AsyncEngineDeadError(RuntimeError):
-    pass
 
 
 def _raise_exception_on_finish(task: asyncio.Task,
@@ -37,137 +67,137 @@ def _raise_exception_on_finish(task: asyncio.Task,
         raise exc
 
 
-class AsyncStream:
-    """A stream of RequestOutputs for a request that can be
-    iterated over asynchronously."""
+# class AsyncStream:
+#     """A stream of RequestOutputs for a request that can be
+#     iterated over asynchronously."""
 
-    def __init__(self, request_id: str) -> None:
-        self.request_id = request_id
-        self._queue = asyncio.Queue()
-        self._finished = False
+#     def __init__(self, request_id: str) -> None:
+#         self.request_id = request_id
+#         self._queue = asyncio.Queue()
+#         self._finished = False
 
-    def put(self, item: RequestOutput) -> None:
-        if self._finished:
-            return
-        self._queue.put_nowait(item)
+#     def put(self, item: RequestOutput) -> None:
+#         if self._finished:
+#             return
+#         self._queue.put_nowait(item)
 
-    def finish(self) -> None:
-        self._queue.put_nowait(StopIteration)
-        self._finished = True
+#     def finish(self) -> None:
+#         self._queue.put_nowait(StopIteration)
+#         self._finished = True
 
-    @property
-    def finished(self) -> bool:
-        return self._finished
+#     @property
+#     def finished(self) -> bool:
+#         return self._finished
 
-    def __aiter__(self):
-        return self
+#     def __aiter__(self):
+#         return self
 
-    async def __anext__(self) -> RequestOutput:
-        result = await self._queue.get()
-        if result is StopIteration:
-            raise StopAsyncIteration
-        elif isinstance(result, Exception):
-            raise result
-        return result
+#     async def __anext__(self) -> RequestOutput:
+#         result = await self._queue.get()
+#         if result is StopIteration:
+#             raise StopAsyncIteration
+#         elif isinstance(result, Exception):
+#             raise result
+#         return result
 
 
-class RequestTracker:
-    """Synchronous abstraction for tracking requests."""
+# class RequestTracker:
+#     """Synchronous abstraction for tracking requests."""
 
-    def __init__(self) -> None:
-        self._request_streams: Dict[str, AsyncStream] = {}
-        self._finished_requests: asyncio.Queue[str] = asyncio.Queue()
-        self._new_requests: asyncio.Queue[Tuple[AsyncStream,
-                                                dict]] = asyncio.Queue()
-        self.new_requests_event = None
+#     def __init__(self) -> None:
+#         self._request_streams: Dict[str, AsyncStream] = {}
+#         self._finished_requests: asyncio.Queue[str] = asyncio.Queue()
+#         self._new_requests: asyncio.Queue[Tuple[AsyncStream,
+#                                                 dict]] = asyncio.Queue()
+#         self.new_requests_event = None
 
-    def __contains__(self, item):
-        return item in self._request_streams
+#     def __contains__(self, item):
+#         return item in self._request_streams
 
-    def init_event(self):
-        self.new_requests_event = asyncio.Event()
+#     def init_event(self):
+#         self.new_requests_event = asyncio.Event()
 
-    def propagate_exception(self,
-                            exc: Exception,
-                            request_id: Optional[str] = None) -> None:
-        """Propagate an exception to request streams
-        (all if request_id is None)."""
-        if request_id is not None:
-            self._request_streams[request_id].put(exc)
-        else:
-            for stream in self._request_streams.values():
-                stream.put(exc)
+#     def propagate_exception(self,
+#                             exc: Exception,
+#                             request_id: Optional[str] = None) -> None:
+#         """Propagate an exception to request streams
+#         (all if request_id is None)."""
+#         if request_id is not None:
+#             self._request_streams[request_id].put(exc)
+#         else:
+#             for stream in self._request_streams.values():
+#                 stream.put(exc)
 
-    def process_request_output(self,
-                               request_output: RequestOutput,
-                               *,
-                               verbose: bool = False) -> None:
-        """Process a request output from the engine."""
-        request_id = request_output.request_id
+#     def process_request_output(self,
+#                                request_output: RequestOutput,
+#                                *,
+#                                verbose: bool = False) -> None:
+#         """Process a request output from the engine."""
+#         request_id = request_output.request_id
 
-        self._request_streams[request_id].put(request_output)
-        if request_output.finished:
-            if verbose:
-                logger.info(f"Finished request {request_id}.")
-            self.abort_request(request_id)
+#         self._request_streams[request_id].put(request_output)
+#         if request_output.finished:
+#             if verbose:
+#                 logger.info(f"Finished request {request_id}.")
+#             self.abort_request(request_id)
 
-    def add_request(self, request_id: str,
-                    **engine_add_request_kwargs) -> AsyncStream:
-        """Add a request to be sent to the engine on the next background
-        loop iteration."""
-        if request_id in self._request_streams:
-            raise KeyError(f"Request {request_id} already exists.")
+#     def add_request(self, request_id: str,
+#                     **engine_add_request_kwargs) -> AsyncStream:
+#         """Add a request to be sent to the engine on the next background
+#         loop iteration."""
+#         if request_id in self._request_streams:
+#             raise KeyError(f"Request {request_id} already exists.")
 
-        stream = AsyncStream(request_id)
-        self._new_requests.put_nowait((stream, {
-            "request_id": request_id,
-            **engine_add_request_kwargs
-        }))
+#         stream = AsyncStream(request_id)
+#         self._new_requests.put_nowait((stream, {
+#             "request_id": request_id,
+#             **engine_add_request_kwargs
+#         }))
 
-        self.new_requests_event.set()
+#         self.new_requests_event.set()
 
-        return stream
+#         return stream
 
-    def abort_request(self, request_id: str, *, verbose: bool = False) -> None:
-        """Abort a request during next background loop iteration."""
-        if verbose:
-            logger.info(f"Aborted request {request_id}.")
+#     def abort_request(self, request_id: str, *, verbose: bool = False) -> None:
+#         """Abort a request during next background loop iteration."""
+#         if verbose:
+#             logger.info(f"Aborted request {request_id}.")
 
-        self._finished_requests.put_nowait(request_id)
+#         self._finished_requests.put_nowait(request_id)
 
-        if request_id not in self._request_streams or self._request_streams[
-                request_id].finished:
-            # The request has already finished or been aborted.
-            return
+#         if request_id not in self._request_streams or self._request_streams[
+#                 request_id].finished:
+#             # The request has already finished or been aborted.
+#             return
 
-        self._request_streams[request_id].finish()
+#         self._request_streams[request_id].finish()
 
-    def get_new_and_finished_requests(self) -> Tuple[List[dict], Set[str]]:
-        """Get the new requests and finished requests to be
-        sent to the engine."""
-        new_requests: List[dict] = []
-        finished_requests: Set[str] = set()
+#     def get_new_and_finished_requests(self) -> Tuple[List[dict], Set[str]]:
+#         """Get the new requests and finished requests to be
+#         sent to the engine."""
+#         new_requests: List[dict] = []
+#         finished_requests: Set[str] = set()
 
-        while not self._finished_requests.empty():
-            request_id = self._finished_requests.get_nowait()
-            finished_requests.add(request_id)
-            self._request_streams.pop(request_id, None)
+#         while not self._finished_requests.empty():
+#             request_id = self._finished_requests.get_nowait()
+#             finished_requests.add(request_id)
+#             self._request_streams.pop(request_id, None)
 
-        while not self._new_requests.empty():
-            stream, new_request = self._new_requests.get_nowait()
-            if stream.request_id in finished_requests:
-                # The request has already been aborted.
-                stream.finish()
-                continue
-            self._request_streams[stream.request_id] = stream
-            new_requests.append(new_request)
+#         while not self._new_requests.empty():
+#             stream, new_request = self._new_requests.get_nowait()
+#             if stream.request_id in finished_requests:
+#                 # The request has already been aborted.
+#                 stream.finish()
+#                 continue
+#             self._request_streams[stream.request_id] = stream
+#             new_requests.append(new_request)
 
-        self.new_requests_event.clear()
+#         self.new_requests_event.clear()
 
-        return new_requests, finished_requests
+#         return new_requests, finished_requests
 
-    async def wait_for_new_requests(self):
-        await self.new_requests_event.wait()
+#     async def wait_for_new_requests(self):
+#         await self.new_requests_event.wait()
 
 
 class _AsyncLLMEngine(LLMEngine):
