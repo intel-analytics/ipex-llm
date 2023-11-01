@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: run bat
-        run: '& ./python/llm/portable-zip/setup.bat'
+        run: '& cd ./python/llm/portable-zip; ./setup.bat'
         shell: powershell
 
   build-zip-gui:
@@ -29,5 +29,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: run bat
-        run: '& ./python/llm/portable-zip/setup.bat --ui'
+        run: '& cd ./python/llm/portable-zip; ./setup.bat --ui'
         shell: powershell
