@@ -143,7 +143,7 @@ jobs:
           make clean
           conda remove -n python39 --all -y
           conda remove -n python310 --all -y
-          conda remove -n python311 --all -y
+      # conda remove -n python311 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
