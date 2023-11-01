@@ -111,7 +111,7 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          "fp4, fp8 or fp16.")
+                          "fp4, fp8, fp16 or mixed_4bit.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,
