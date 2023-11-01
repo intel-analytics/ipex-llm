@@ -134,14 +134,15 @@ class FixedWindowScheduler:
 
         if self.waiting:
             # We restrict how many requests that can be run using these three arguments
-            # Co(gc): If there are waiting requests, we will just try to add it into the running state if not exceeds the stage
+            # Co(gc): If there are waiting requests, we will just try to add it into the 
+            # running state if not exceeds the stage
             # Co(gc): prefilled requests are prioritized over decoding stage requests
             while self.waiting:
                 seq_group = self.waiting[0]
 
                 invalidInputError(seq_group.num_seqs() == 1,
-                    "Waiting sequence group should have only one prompt "
-                    "sequence.")
+                                  "Waiting sequence group should have only one prompt "
+                                  "sequence.")
                 num_prompt_tokens = seq_group.get_seqs()[0].get_len()
                 if num_prompt_tokens > self.prompt_limit:
                     logger.warning(
