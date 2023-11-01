@@ -597,7 +597,7 @@ class LLMEngine:
              prefix_offset=seq.prefix_offset,
              read_offset=seq.read_offset,
              skip_special_tokens=sampling_params.skip_special_tokens,
-         )
+        )
         if seq.tokens is None:
             seq.tokens = new_tokens
         else:
