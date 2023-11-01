@@ -146,8 +146,8 @@ class LLMEngine:
         # before CUDA_VISIBLE_DEVICES is set in the Worker
         from bigdl.llm.vllm.worker.worker import Worker  # pylint: disable=import-outside-toplevel
 
-        invalidInputError(self.parallel_config.world_size == 1, 
-            "Ray is required if parallel_config.world_size > 1.")
+        invalidInputError(self.parallel_config.world_size == 1,
+                          "Ray is required if parallel_config.world_size > 1.")
 
         self.workers: List[Worker] = []
         worker = Worker(
@@ -193,7 +193,7 @@ class LLMEngine:
         sampling_params: SamplingParams,
         prompt_token_ids: Optional[List[int]] = None,
         arrival_time: Optional[float] = None,
-        ) -> None:
+    ) -> None:
         """Add a request to the engine's request pool.
 
         The request is added to the request pool and will be processed by the
@@ -420,8 +420,8 @@ class LLMEngine:
         # Sort the running sequences by their scores.
         running_child_seqs.sort(
             key=lambda x: x[0].get_beam_search_score(
-            length_penalty=length_penalty,
-            eos_token_id=self.tokenizer.eos_token_id),
+                length_penalty=length_penalty,
+                eos_token_id=self.tokenizer.eos_token_id),
             reverse=True)
 
         # Check if we can stop the beam search.
@@ -597,7 +597,7 @@ class LLMEngine:
              prefix_offset=seq.prefix_offset,
              read_offset=seq.read_offset,
              skip_special_tokens=sampling_params.skip_special_tokens,
-             )
+         )
         if seq.tokens is None:
             seq.tokens = new_tokens
         else:
