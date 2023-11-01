@@ -477,6 +477,8 @@ class LowBitLinear(nn.Linear):
                     result = result.view(new_shape)
                     if self.bias is not None:
                         result += self.bias
+        if x.dtype != result.dtype:
+            result = result.to(x.dtype)
         return result
 
 
