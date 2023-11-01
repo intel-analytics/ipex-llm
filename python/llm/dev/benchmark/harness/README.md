@@ -1,5 +1,5 @@
 # Harness Evalution
-Harness evalution allows users to eaisly get accuracy on various datasets. Here we enabled harness evalution with BigDL-LLM under 
+Harness evalution allows users to eaisly get accuracy on various datasets. Here we have enabled harness evalution with BigDL-LLM under 
 [Open LLM Leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard) settings.
 Before running, make sure to have [bigdl-llm](../../../README.md) and [bigdl-nano](../../../../nano/README.md) installed.
 
