@@ -14,7 +14,7 @@ index 8ca27fac..6b581487 100644
      "anthropic": anthropic_llms.AnthropicLM,
      "textsynth": textsynth.TextSynthLM,
      "dummy": dummy.DummyLM,
-+    "bigdl-llm": bigdl_llm.BigDLGPULM
++    "bigdl-llm": bigdl_llm.BigDLLM
  }
  
  
@@ -64,7 +64,7 @@ index 00000000..74010da3
 +        _torch_dtype = dtype
 +    return _torch_dtype
 +
-+class BigDLGPULM(BaseLM):
++class BigDLLM(BaseLM):
 +    def __init__(
 +        self,
 +        device="xpu",
