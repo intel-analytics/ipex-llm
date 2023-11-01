@@ -134,7 +134,7 @@ class FixedWindowScheduler:
 
         if self.waiting:
             # We restrict how many requests that can be run using these three arguments
-            # Co(gc): If there are waiting requests, we will just try to add it into the 
+            # Co(gc): If there are waiting requests, we will just try to add it into the
             # running state if not exceeds the stage
             # Co(gc): prefilled requests are prioritized over decoding stage requests
             while self.waiting:
