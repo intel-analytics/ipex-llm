@@ -60,6 +60,8 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
 _ipex_version = None
+
+
 def get_ipex_version():
 
     global _ipex_version
