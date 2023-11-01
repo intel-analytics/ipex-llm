@@ -38,7 +38,6 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-unit-test:
-    if: false
     needs: llm-cpp-build
     strategy:
       fail-fast: false
