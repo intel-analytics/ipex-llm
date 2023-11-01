@@ -1,32 +1,6 @@
 # BigDL-LLM Transformers INT4 Optimization for Large Language Model on Intel GPUs
 You can use BigDL-LLM to run almost every Huggingface Transformer models with INT4 optimizations on your laptops with Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
-## Verified models
-
-| Model          | Example                                                  |
-|----------------|----------------------------------------------------------|
-| Aquila         | [link](aquila)                                           |
-| Baichuan       | [link](baichuan)                                         |
-| Baichuan2      | [link](baichuan2)                                        |
-| ChatGLM2       | [link](chatglm2)                                         |
-| Chinese Llama2 | [link](chinese-llama2)                                   |
-| Dolly v1       | [link](dolly-v1)                                         |
-| Dolly v2       | [link](dolly-v2)                                         |
-| Falcon         | [link](falcon)                                           |
-| GPT-J          | [link](gpt-j)                                            |
-| InternLM       | [link](internlm)                                         |
-| LLaMA 2        | [link](llama2)                                           |
-| Mistral        | [link](mistral)                                          |
-| MPT            | [link](mpt)                                              |
-| Qwen           | [link](qwen)                                             |
-| Qwen-VL        | [link](qwen-vl)                                          |
-| StarCoder      | [link](starcoder)                                        |
-| Vicuna         | [link](vicuna)                                           |
-| Whisper        | [link](whisper)                                          |
-| Replit         | [link](replit)                                           |
-| Flan-t5        | [link](flan-t5)                                          |
-
-
 ## Verified Hardware Platforms
 
 - Intel Arc™ A-Series Graphics

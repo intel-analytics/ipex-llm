@@ -11,11 +11,25 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
-### 2. Run
+### 2. Configures OneAPI environment variables
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+### 3. Run
+
+For optimal performance on Arc, it is recommended to set several environment variables.
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
@@ -25,30 +39,7 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
->
-> Please select the appropriate size of the Dolly v2 model based on the capabilities of your machine.
-
-#### 2.1 Client
-On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
-python ./generate.py 
-```
-
-#### 2.2 Server
-For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration-on-linux) for more information), and run the example with all the physical cores of a single socket.
-
-E.g. on Linux,
-```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
-
-# e.g. for a server with 48 cores per socket
-export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py
-```
-
-#### 2.3 Sample Output
+#### Sample Output
 #### [databricks/dolly-v2-12b](https://huggingface.co/databricks/dolly-v2-12b)
 ```log
 Inference time: xxxx s

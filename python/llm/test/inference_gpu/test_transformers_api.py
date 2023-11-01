@@ -27,12 +27,13 @@ if device == 'xpu':
     import intel_extension_for_pytorch as ipex
 
 @pytest.mark.parametrize('prompt, answer', [
-    ('What is the capital of France?\n\n','Paris')
+    ('What is the capital of France?\n\n', 'Paris')
     ])
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
     (AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     ])
 def test_completion(Model, Tokenizer, model_path, prompt, answer):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -40,10 +41,11 @@ def test_completion(Model, Tokenizer, model_path, prompt, answer):
                                 load_in_4bit=True,
                                 optimize_model=True,
                                 trust_remote_code=True)
-    model = model.to(device)
+    model = model.to(device)  # deallocate gpu memory
 
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
     output = model.generate(input_ids, max_new_tokens=32)
+    model.to('cpu')
     output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 
     assert answer in output_str
