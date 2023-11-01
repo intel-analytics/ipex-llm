@@ -477,6 +477,8 @@ class LowBitLinear(nn.Linear):
                     result = result.view(new_shape)
                     if self.bias is not None:
                         result += self.bias
+        # Convert back to autocast or x.dtype
+        # to avoid casting attention to FP32
         if x.dtype != result.dtype:
             if torch.is_autocast_enabled:
                 result = result.to(torch.get_autocast_dtype)

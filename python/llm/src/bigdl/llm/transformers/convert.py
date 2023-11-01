@@ -214,7 +214,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     if optimize_model:
         model = _optimize_post(model)
-    # Cover model back to previous model type
+    # Convert model back to previous model type
     if device == "cpu":
         model.to(raw_model_type)
     return model
