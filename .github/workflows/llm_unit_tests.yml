@@ -36,10 +36,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    if: false
     uses: ./.github/workflows/llm-binary-build.yml
   llm-unit-test:
-    if: false
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -51,6 +49,12 @@ jobs:
           - os: ubuntu-20.04-lts
             instruction: avx512
             python-version: "3.9"
+          - os: windows
+            instruction: avx2
+            python-version: "3.10"
+          - os: ubuntu-20.04-lts
+            instruction: avx512
+            python-version: "3.10"
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       THREAD_NUM: 24

@@ -85,7 +85,8 @@ windows_binarys = [
     "quantize-starcoder_vnni.exe",
 
     "main-chatglm_vnni.exe",
-    "chatglm_C.cp39-win_amd64.pyd"
+    "chatglm_C.cp39-win_amd64.pyd",
+    "chatglm_C.cp310-win_amd64.pyd"
 ]
 linux_binarys = [
     "libllama_avx.so",

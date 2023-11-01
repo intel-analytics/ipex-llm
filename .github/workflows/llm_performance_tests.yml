@@ -24,6 +24,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
+    if: false
     uses: ./.github/workflows/llm-binary-build.yml
   llm-performance-test:
     if: false # skip cpu performance test for now; may add it back with separated runner
@@ -137,6 +138,7 @@ jobs:
           cp ./*.html /mnt/disk1/nightly_perf/
 
   llm-performance-test-on-spr:
+    if: false
     needs: llm-cpp-build
     strategy:
       fail-fast: false
