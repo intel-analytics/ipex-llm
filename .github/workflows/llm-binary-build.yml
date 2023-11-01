@@ -62,7 +62,7 @@ jobs:
           conda create -n python39 python=3.9 -y
           conda remove -n python310 --all -y
           conda create -n python310 python=3.10 -y
-          conda remove -n python311 --all -y
+          
           conda create -n python311 python=3.11 -y
       - uses: actions/checkout@v3
         with:
