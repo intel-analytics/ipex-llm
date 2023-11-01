@@ -296,7 +296,7 @@ def _get_and_verify_max_len(
 
     rope_scaling = getattr(hf_config, "rope_scaling", None)
     if rope_scaling is not None:
-        assert "factor" in rope_scaling
+        invalidInputError("factor" in rope_scaling, "invalid hf_config value for rope_scaling")
         scaling_factor = rope_scaling["factor"]
         derived_max_model_len *= scaling_factor
 
