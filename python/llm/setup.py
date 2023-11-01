@@ -125,6 +125,7 @@ linux_binarys = [
     "main-chatglm_vnni",
     "main-chatglm_amx",
     "chatglm_C.cpython-39-x86_64-linux-gnu.so",
+    "chatglm_C.cpython-310-x86_64-linux-gnu.so"
 ]
 
 
