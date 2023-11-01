@@ -14,11 +14,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-zip:
+  build-zip-cli:
     runs-on: [self-hosted, llm, windows]
 
     steps:
       - uses: actions/checkout@v3
       - name: run bat
         run: '& ./python/llm/portable-zip/setup.bat'
+        shell: powershell
+
+  build-zip-gui:
+    runs-on: [self-hosted, llm, windows]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: run bat
+        run: '& ./python/llm/portable-zip/setup.bat --ui'
         shell: powershell
