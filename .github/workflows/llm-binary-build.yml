@@ -58,6 +58,7 @@ jobs:
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
           yum install -y gcc-toolset-11 cmake git
+          conda update -n base conda
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
           conda remove -n python310 --all -y
