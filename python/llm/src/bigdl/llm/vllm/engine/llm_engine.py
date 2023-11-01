@@ -40,7 +40,6 @@ from bigdl.llm.vllm.config import ModelConfig
 from vllm.config import ParallelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.utils.arg_utils import EngineArgs
-#from bigdl.vllm.engine.ray_utils import RayWorker, initialize_cluster, ray
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from vllm.sampling_params import SamplingParams
@@ -53,6 +52,7 @@ from vllm.transformers_utils.tokenizer import (detokenize_incrementally,
                                                get_tokenizer)
 from vllm.utils import Counter
 from vllm.engine.ray_utils import get_open_port
+from bigdl.llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)
 
@@ -109,7 +109,7 @@ class LLMEngine:
             f"max_seq_len={model_config.max_model_len}, "
             f"download_dir={model_config.download_dir!r}, "
             f"load_format={model_config.load_format}, "
-            #f"tensor_parallel_size={parallel_config.tensor_parallel_size}, "
+            # f"tensor_parallel_size={parallel_config.tensor_parallel_size}, "
             f"quantization={model_config.quantization}, "
             f"seed={model_config.seed})")
         # TODO(woosuk): Print more configs in debug mode.
@@ -146,7 +146,7 @@ class LLMEngine:
         # before CUDA_VISIBLE_DEVICES is set in the Worker
         from bigdl.llm.vllm.worker.worker import Worker  # pylint: disable=import-outside-toplevel
 
-        assert self.parallel_config.world_size == 1, (
+        invalidInputError(self.parallel_config.world_size == 1, 
             "Ray is required if parallel_config.world_size > 1.")
 
         self.workers: List[Worker] = []
@@ -193,7 +193,7 @@ class LLMEngine:
         sampling_params: SamplingParams,
         prompt_token_ids: Optional[List[int]] = None,
         arrival_time: Optional[float] = None,
-    ) -> None:
+        ) -> None:
         """Add a request to the engine's request pool.
 
         The request is added to the request pool and will be processed by the
@@ -213,7 +213,7 @@ class LLMEngine:
         if arrival_time is None:
             arrival_time = time.monotonic()
         if prompt_token_ids is None:
-            assert prompt is not None
+            invalidInputError(prompt is not None, "Prompt should not be None")
             prompt_token_ids = self.tokenizer.encode(prompt)
 
         # Create the sequences.
@@ -264,7 +264,7 @@ class LLMEngine:
         best_running_seq: Sequence,
         current_worst_seq: Sequence,
     ) -> bool:
-        assert sampling_params.use_beam_search
+        invalidInputError(sampling_params.use_beam_search, "Should be beam_search")
         length_penalty = sampling_params.length_penalty
         if early_stopping is True:
             return True
@@ -277,7 +277,7 @@ class LLMEngine:
                 length_penalty=length_penalty,
                 eos_token_id=self.tokenizer.eos_token_id))
         else:
-            assert early_stopping == "never"
+            invalidInputError(early_stopping == "never", "early_stopping should be never")
             if length_penalty > 0.0:
                 # If length_penalty > 0.0, beam search will prefer longer
                 # sequences. The highest attainable score calculation is
@@ -363,7 +363,7 @@ class LLMEngine:
                     if not seq.is_finished():
                         pass
                         # Co(gc): fork_seq is doing some block manager operations
-                        #self.scheduler.fork_seq(parent, seq)
+                        # self.scheduler.fork_seq(parent, seq)
 
             # Free the finished and selected parent sequences' memory in block
             # manager. Keep them in the sequence group as candidate output.
@@ -393,7 +393,7 @@ class LLMEngine:
         all_finished_seqs.sort(key=lambda x: x[0].get_beam_search_score(
             length_penalty=length_penalty,
             eos_token_id=self.tokenizer.eos_token_id),
-                               reverse=True)
+            reverse=True)
         for seq, parent, is_new in all_finished_seqs[:beam_width]:
             if is_new:
                 # A newly generated child sequence finishes and has a high
@@ -418,10 +418,11 @@ class LLMEngine:
         running_child_seqs = [(seq, parent) for seq, parent in child_seqs
                               if not seq.is_finished()]
         # Sort the running sequences by their scores.
-        running_child_seqs.sort(key=lambda x: x[0].get_beam_search_score(
+        running_child_seqs.sort(
+            key=lambda x: x[0].get_beam_search_score(
             length_penalty=length_penalty,
             eos_token_id=self.tokenizer.eos_token_id),
-                                reverse=True)
+            reverse=True)
 
         # Check if we can stop the beam search.
         if len(running_child_seqs) == 0:
@@ -459,7 +460,7 @@ class LLMEngine:
                 seq_group.add(seq)
                 if not seq.is_finished():
                     pass
-                    #self.scheduler.fork_seq(parent, seq)
+                    # self.scheduler.fork_seq(parent, seq)
 
         # Free the finished and selected parent sequences' memory in block
         # manager. Keep them in the sequence group as candidate output.
@@ -596,7 +597,7 @@ class LLMEngine:
              prefix_offset=seq.prefix_offset,
              read_offset=seq.read_offset,
              skip_special_tokens=sampling_params.skip_special_tokens,
-         )
+             )
         if seq.tokens is None:
             seq.tokens = new_tokens
         else:
@@ -663,5 +664,5 @@ class LLMEngine:
         # Make sure all workers have the same results.
         output = all_outputs[0]
         for other_output in all_outputs[1:]:
-            assert output == other_output
+            invalidInputError(output == other_output, "All workers should have same output")
         return output

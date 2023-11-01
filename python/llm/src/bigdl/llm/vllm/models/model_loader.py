@@ -39,7 +39,8 @@ import torch.nn as nn
 from transformers import PretrainedConfig
 
 from bigdl.llm.vllm.config import ModelConfig
-from bigdl.llm.vllm.models.bigdl_llama import BigDLLlamaForCausalLM  # pylint: disable=wildcard-import
+from bigdl.llm.vllm.models.bigdl_llama import BigDLLlamaForCausalLM
+from bigdl.llm.utils.common import invalidInputError
 
 _MODEL_REGISTRY = {
     # "AquilaModel": AquilaForCausalLM,
@@ -80,7 +81,8 @@ def _get_model_architecture(config: PretrainedConfig) -> Type[nn.Module]:
     for arch in architectures:
         if arch in _MODEL_REGISTRY:
             return _MODEL_REGISTRY[arch]
-    raise ValueError(
+    invalidInputError(
+        False,
         f"Model architectures {architectures} are not supported for now. "
         f"Supported architectures: {list(_MODEL_REGISTRY.keys())}")
 
@@ -91,7 +93,7 @@ def get_model(model_config: ModelConfig) -> nn.Module:
     # Get the quantization config.
     quant_config = None
     if model_config.quantization is not None:
-        raise ValueError(f"Quantization is not supported for {model_class}.")
+        invalidInputError(f"Quantization is not supported for {model_class}.")
 
     with _set_default_torch_dtype(model_config.dtype):
         # Create a model instance.

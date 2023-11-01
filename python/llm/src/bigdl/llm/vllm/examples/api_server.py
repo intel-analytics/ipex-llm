@@ -66,6 +66,7 @@ from bigdl.llm.vllm.structure.outputs import RequestOutput
 from vllm.sampling_params import SamplingParams
 from vllm.transformers_utils.tokenizer import get_tokenizer
 import uuid
+from bigdl.llm.utils.common import invalidInputError
 
 try:
     import fastchat
@@ -111,12 +112,14 @@ async def check_model(request) -> Optional[JSONResponse]:
 
 async def get_gen_prompt(request) -> str:
     if not _fastchat_available:
-        raise ModuleNotFoundError(
+        invalidInputError(
+            False,
             "fastchat is not installed. Please install fastchat to use "
             "the chat completion and conversation APIs: `$ pip install fschat`"
         )
     if version.parse(fastchat.__version__) < version.parse("0.2.23"):
-        raise ImportError(
+        invalidInputError(
+            False,
             f"fastchat version is low. Current version: {fastchat.__version__} "
             "Please upgrade fastchat to use: `$ pip install -U fschat`")
 

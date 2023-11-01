@@ -102,7 +102,7 @@ class BigDLLlamaForCausalLM(nn.Module):
             use_cache=True,
         )
         self.model = optimize_model(model)
-        #self.model = AutoModelForCausalLM.from_pretrained(config._name_or_path)
+        # self.model = AutoModelForCausalLM.from_pretrained(config._name_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(config._name_or_path)
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")

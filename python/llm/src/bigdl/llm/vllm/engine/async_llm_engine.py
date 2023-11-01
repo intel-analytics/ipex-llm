@@ -59,7 +59,8 @@ def _raise_exception_on_finish(task: asyncio.Task,
         except asyncio.CancelledError:
             return
         except Exception as exc:
-            invalidInputError(False, msg + " See stack trace above for the actual cause.") 
+            invalidInputError(
+                False, msg + " See stack trace above for the actual cause.")
         invalidInputError(False, msg)
     except Exception as exc:
         request_tracker.propagate_exception(exc)
@@ -100,7 +101,7 @@ class _AsyncLLMEngine(LLMEngine):
         self,
         method: str,
         *args,
-        get_all_outputs: bool = False,
+        get_all_outputs: bool=False,
         **kwargs,
     ) -> Any:
         """Runs the given method on all workers."""
@@ -123,7 +124,8 @@ class _AsyncLLMEngine(LLMEngine):
         # Make sure all workers have the same results.
         output = all_outputs[0]
         for other_output in all_outputs[1:]:
-            assert output == other_output
+            invalidInputError(output == other_output,
+                              "all workers do not have the same result")
         return output
 
 
@@ -183,7 +185,7 @@ class AsyncLLMEngine:
     def start_background_loop(self) -> None:
         """Start the background loop."""
         if self.is_running:
-            raise RuntimeError("Background loop is already running.")
+            invalidInputError(False, "Background loop is already running.")
         self._request_tracker.init_event()
 
         self._background_loop_unshielded = asyncio.get_event_loop(
@@ -195,7 +197,7 @@ class AsyncLLMEngine:
 
     def _init_engine(self, *args, **kwargs) -> _AsyncLLMEngine:
         # Co(gc): we disable ray here
-        #if not self.engine_use_ray:
+        # if not self.engine_use_ray:
         engine_class = self._engine_class
         # elif self.worker_use_ray:
         #     engine_class = ray.remote(num_cpus=0)(self._engine_class).remote
@@ -253,8 +255,8 @@ class AsyncLLMEngine:
         request_id: str,
         prompt: Optional[str],
         sampling_params: SamplingParams,
-        prompt_token_ids: Optional[List[int]] = None,
-        arrival_time: Optional[float] = None,
+        prompt_token_ids: Optional[List[int]]=None,
+        arrival_time: Optional[float]=None,
     ) -> AsyncStream:
         if self.log_requests:
             shortened_prompt = prompt
@@ -274,7 +276,8 @@ class AsyncLLMEngine:
             if self.start_engine_loop:
                 self.start_background_loop()
             else:
-                raise AsyncEngineDeadError(
+                invalidInputError(
+                    False,
                     "Background loop is not running. If it was running, "
                     "inspect the output to find the stacktrace of the "
                     "error that caused the background loop to stop "
@@ -294,7 +297,7 @@ class AsyncLLMEngine:
             prompt: Optional[str],
             sampling_params: SamplingParams,
             request_id: str,
-            prompt_token_ids: Optional[List[int]] = None) -> RequestOutput:
+            prompt_token_ids: Optional[List[int]]=None) -> RequestOutput:
         """Generate outputs for a request.
 
         Generate outputs for a request. This method is a coroutine. It adds the
@@ -330,7 +333,7 @@ class AsyncLLMEngine:
             # If there is an exception or coroutine is cancelled, abort the
             # request.
             self._abort(request_id)
-            raise e
+            invalidInputError(False, "exception occurred")
 
     async def abort(self, request_id: str) -> None:
         """Abort a request.
@@ -342,7 +345,8 @@ class AsyncLLMEngine:
             request_id: The unique id of the request.
         """
         if not self.is_running:
-            raise AsyncEngineDeadError(
+            invalidInputError(
+                False,
                 "Background loop is not running. If it was running, "
                 "inspect the output to find the stacktrace of the "
                 "error that caused the background loop to stop "
