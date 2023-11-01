@@ -56,6 +56,12 @@ jobs:
           - os: ubuntu-20.04-lts
             instruction: avx512
             python-version: "3.10"
+          - os: windows
+            instruction: avx2
+            python-version: "3.11"
+          - os: ubuntu-20.04-lts
+            instruction: avx512
+            python-version: "3.11"
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       THREAD_NUM: 24
