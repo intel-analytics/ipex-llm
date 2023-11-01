@@ -62,8 +62,8 @@ jobs:
           conda create -n python39 python=3.9 -y
           conda remove -n python310 --all -y
           conda create -n python310 python=3.10 -y
-      #　conda remove -n python311 --all -y
-      #　conda create -n python311 python=3.11 -y
+          conda remove -n python311 --all -y
+          conda create -n python311 python=3.11 -y
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -119,18 +119,18 @@ jobs:
         shell: bash
         run: |
           mv src/chatglm/build/_C.cpython-310-x86_64-linux-gnu.so release/chatglm_C.cpython-310-x86_64-linux-gnu.so
-      # - name: Build Chatglm Py311
-      #   shell: bash
-      #   run: |
-      #     source activate python311 || conda activate python311
-      #     cd src/chatglm
-      #     rm -r build
-      #     scl enable gcc-toolset-11 "cmake -B build"
-      #     scl enable gcc-toolset-11 "cmake --build build --config Release -j"
-      # - name: Move Chatglm binaries Py311
-      #   shell: bash
-      #   run: |
-      #     mv src/chatglm/build/_C.cpython-311-x86_64-linux-gnu.so release/chatglm_C.cpython-311-x86_64-linux-gnu.so
+      - name: Build Chatglm Py311
+        shell: bash
+        run: |
+          source activate python311 || conda activate python311
+          cd src/chatglm
+          rm -r build
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+      - name: Move Chatglm binaries Py311
+        shell: bash
+        run: |
+          mv src/chatglm/build/_C.cpython-311-x86_64-linux-gnu.so release/chatglm_C.cpython-311-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -143,7 +143,7 @@ jobs:
           make clean
           conda remove -n python39 --all -y
           conda remove -n python310 --all -y
-      # conda remove -n python311 --all -y
+          conda remove -n python311 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
@@ -446,21 +446,21 @@ jobs:
         shell: powershell
         run: |
           mv src/chatglm/build/Release/_C.cp310-win_amd64.pyd release/chatglm_C.cp310-win_amd64.pyd
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: "3.11"
-      # - name: Build Chatglm Py311
-      #   shell: powershell
-      #   run: |
-      #     cd src/chatglm
-      #     rm -r build
-      #     cmake -DAVXVNNI=ON -B build
-      #     cmake --build build --config Release -j
-      # - name: Move Chatglm binaries Py311
-      #   shell: powershell
-      #   run: |
-      #     mv src/chatglm/build/Release/_C.cp311-win_amd64.pyd release/chatglm_C.cp311-win_amd64.pyd
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Build Chatglm Py311
+        shell: powershell
+        run: |
+          cd src/chatglm
+          rm -r build
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release -j
+      - name: Move Chatglm binaries Py311
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/_C.cp311-win_amd64.pyd release/chatglm_C.cp311-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
