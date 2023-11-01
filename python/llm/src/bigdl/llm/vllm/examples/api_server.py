@@ -54,11 +54,13 @@ from bigdl.llm.vllm.engine.async_llm_engine import AsyncLLMEngine
 from bigdl.llm.vllm.examples.protocol import (
     CompletionResponse, CompletionResponseChoice,
     CompletionResponseStreamChoice, CompletionStreamResponse,
-    ChatCompletionResponse,
-    ChatCompletionResponseChoice,
-    ChatMessage, DeltaMessage, ErrorResponse,
-    LogProbs, ModelCard, ModelPermission, UsageInfo)
-from vllm.entrypoints.openai.protocol import (CompletionRequest, ChatCompletionRequest, ChatCompletionResponseStreamChoice, ChatCompletionStreamResponse, ModelList)
+    ChatCompletionResponse, ChatCompletionResponseChoice, ChatMessage,
+    DeltaMessage, ErrorResponse, LogProbs, ModelCard, ModelPermission,
+    UsageInfo)
+from vllm.entrypoints.openai.protocol import (
+    CompletionRequest, ChatCompletionRequest,
+    ChatCompletionResponseStreamChoice, ChatCompletionStreamResponse,
+    ModelList)
 from vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from vllm.sampling_params import SamplingParams
@@ -289,8 +291,7 @@ async def create_chat_completion(request: ChatCompletionRequest,
                 delta=DeltaMessage(content=text),
                 finish_reason=finish_reason,
                 first_token_time=output_token_latency[0],
-                rest_token_time=np.mean(output_token_latency[1:])
-            )
+                rest_token_time=np.mean(output_token_latency[1:]))
         response = ChatCompletionStreamResponse(
             id=request_id,
             created=created_time,

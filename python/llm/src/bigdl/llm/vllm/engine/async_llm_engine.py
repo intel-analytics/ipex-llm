@@ -100,7 +100,6 @@ def _raise_exception_on_finish(task: asyncio.Task,
 #             raise result
 #         return result
 
-
 # class RequestTracker:
 #     """Synchronous abstraction for tracking requests."""
 

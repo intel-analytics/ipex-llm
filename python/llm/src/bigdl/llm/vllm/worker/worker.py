@@ -30,7 +30,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """A GPU worker class."""
 import os
 from typing import Dict, List, Tuple, Optional
@@ -115,7 +114,6 @@ class Worker:
         # Initialize the model.
         set_random_seed(self.model_config.seed)
         self.model = get_model(self.model_config)
-
 
     def _prepare_inputs(
         self,

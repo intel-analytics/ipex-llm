@@ -229,7 +229,7 @@ class BigDLLlamaForCausalLM(nn.Module):
             ed_timestamp = time.perf_counter()
             seq_output = SequenceOutputs(parent_seq_id=seq_id,
                                          output_token=tokens[0],
-                                         latency = ed_timestamp - st_timestamp,
+                                         latency=ed_timestamp - st_timestamp,
                                          logprobs={tokens[0]: logprobs})
             bigdl_output.append([seq_output])
             if kv_cache.get(seq_id) is None:

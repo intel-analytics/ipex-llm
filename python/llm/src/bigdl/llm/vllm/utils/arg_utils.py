@@ -38,6 +38,7 @@ from typing import Optional, Tuple
 from bigdl.llm.vllm.config import ModelConfig
 from vllm.config import SchedulerConfig, ParallelConfig
 
+
 @dataclass
 class EngineArgs:
     """Arguments for vLLM engine."""

@@ -38,8 +38,7 @@ from vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
 from vllm.logger import init_logger
 from vllm.sequence import SequenceData, SequenceStatus
-from bigdl.llm.vllm.structure.sequence import (Sequence,
-                                               SequenceGroup,
+from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceGroup,
                                                SequenceGroupMetadata)
 
 logger = init_logger(__name__)

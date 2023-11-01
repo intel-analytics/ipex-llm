@@ -39,7 +39,9 @@ from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 from vllm.utils import random_uuid
-from vllm.entrypoints.openai.protocol import (ErrorResponse, ModelPermission, ModelCard, UsageInfo, LogProbs, ChatMessage, DeltaMessage)
+from vllm.entrypoints.openai.protocol import (ErrorResponse, ModelPermission,
+                                              ModelCard, UsageInfo, LogProbs,
+                                              ChatMessage, DeltaMessage)
 
 
 class CompletionResponseChoice(BaseModel):
@@ -92,4 +94,3 @@ class ChatCompletionResponse(BaseModel):
     model: str
     choices: List[ChatCompletionResponseChoice]
     usage: UsageInfo
-

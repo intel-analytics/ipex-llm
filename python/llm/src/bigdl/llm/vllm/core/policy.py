@@ -37,6 +37,7 @@ from bigdl.llm.vllm.structure.sequence import SequenceGroup
 
 # We need to adapt this file cause we use our own SequenceGroup
 
+
 class Policy:
 
     def get_priority(

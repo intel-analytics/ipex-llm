@@ -132,7 +132,8 @@ class RequestOutput:
             output = CompletionOutput(seqs.index(seq), seq.output_text,
                                       seq.get_output_token_ids(),
                                       seq.get_cumulative_logprob(), logprobs,
-                                      finshed_reason, seq.get_output_token_latency())
+                                      finshed_reason,
+                                      seq.get_output_token_latency())
             outputs.append(output)
 
         # Every sequence in the sequence group should have the same prompt.
