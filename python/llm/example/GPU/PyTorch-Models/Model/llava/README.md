@@ -1,5 +1,5 @@
 # LLaVA
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on LLaVA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [liuhaotian/llava-v1.5-13b](https://huggingface.co/liuhaotian/llava-v1.5-13b) as a reference LLaVA model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on LLaVA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [liuhaotian/llava-v1.5-7b](https://huggingface.co/liuhaotian/llava-v1.5-7b) as a reference LLaVA model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -44,7 +44,7 @@ python ./generate.py --image-path-or-url 'https://llava-vl.github.io/static/imag
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the LLaVA model (e.g. `liuhaotian/llava-v1.5-13b` to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'liuhaotian/llava-v1.5-13b'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the LLaVA model (e.g. `liuhaotian/llava-v1.5-7b` to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'liuhaotian/llava-v1.5-7b'`.
 - `--image-path-or-url IMAGE_PATH_OR_URL`: argument defining the input image that the chat will focus on. It is required.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `512`.
 
@@ -52,13 +52,14 @@ If you encounter some network error (which means your machine is unable to acces
 
 
 #### Sample Output
-#### [liuhaotian/llava-v1.5-13b](https://huggingface.co/liuhaotian/llava-v1.5-13b)
+#### [liuhaotian/llava-v1.5-7b](https://huggingface.co/liuhaotian/llava-v1.5-7b)
 
 ```log
 USER: Do you know who drew this painting?
-ASSISTANT: Yes, the famous painting of a woman with two ponytails was created by the Italian artist Leonardo da Vinci. It is also commonly known as the Mona Lisa painting.
+ASSISTANT: Yes, the painting is a portrait of a woman by Leonardo da Vinci. It's a famous artwork known as the "Mona Lisa."
 USER: Can you describe this painting?
-ASSISTANT: The painting is a small portrait of a woman with long hair, two ponytails, and a gentle smile. She is positioned to the left side of the painting and is wearing what could be a dress and a sash or a girdle. The composition of the artwork is such that the background and the figure's hair blend together, which results in a somewhat submerged effect. This well-famous picture has been admired for its detailed and captivating expression of the woman.
+ASSISTANT: The painting features a well-detailed portrait of a woman, painted in oil on a canvas. The woman appears to be a young woman staring straight ahead in a direct gaze towards the viewer. The woman's facial features are rendered sharply in the brush strokes, giving her a lifelike, yet enigmatic expression.
+The background of the image mainly showcases the woman's face, with some hills visible in the lower part of the painting. The artist employs a wide range of shades, evoking a sense of depth and realism in the subject matter. The technique used in this portrait sets it apart from other artworks during the Renaissance period, making it a notable piece in art history.
 ```
 
 The sample input image is:
