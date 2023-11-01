@@ -37,6 +37,7 @@ from transformers import AutoConfig, PretrainedConfig
 from vllm.config import ParallelConfig
 from vllm.logger import init_logger
 from vllm.transformers_utils.config import get_config
+from bigdl.llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)
 
@@ -122,7 +123,8 @@ class ModelConfig:
         if load_format not in [
                 "auto", "pt", "safetensors", "npcache", "dummy"
         ]:
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"Unknown load format: {self.load_format}. Must be one of "
                 "'auto', 'pt', 'safetensors', 'npcache', or 'dummy'.")
         self.load_format = load_format
@@ -130,7 +132,8 @@ class ModelConfig:
     def _verify_tokenizer_mode(self) -> None:
         tokenizer_mode = self.tokenizer_mode.lower()
         if tokenizer_mode not in ["auto", "slow"]:
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"Unknown tokenizer mode: {self.tokenizer_mode}. Must be "
                 "either 'auto' or 'slow'.")
         self.tokenizer_mode = tokenizer_mode
@@ -141,7 +144,8 @@ class ModelConfig:
             return
         quantization = self.quantization.lower()
         if quantization not in supported_quantization:
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"Unknown quantization: {self.quantization}. Must be one of "
                 f"{supported_quantization}.")
         self.quantization = quantization
@@ -153,7 +157,8 @@ class ModelConfig:
         total_num_attention_heads = self.hf_config.num_attention_heads
         tensor_parallel_size = parallel_config.tensor_parallel_size
         if total_num_attention_heads % tensor_parallel_size != 0:
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"Total number of attention heads ({total_num_attention_heads})"
                 " must be divisible by tensor parallel size "
                 f"({tensor_parallel_size}).")
@@ -161,7 +166,8 @@ class ModelConfig:
         total_num_hidden_layers = self.hf_config.num_hidden_layers
         pipeline_parallel_size = parallel_config.pipeline_parallel_size
         if total_num_hidden_layers % pipeline_parallel_size != 0:
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"Total number of hidden layers ({total_num_hidden_layers}) "
                 "must be divisible by pipeline parallel size "
                 f"({pipeline_parallel_size}).")
@@ -235,7 +241,7 @@ def _get_and_verify_dtype(
             torch_dtype = config_dtype
     else:
         if dtype not in _STR_DTYPE_TO_TORCH_DTYPE:
-            raise ValueError(f"Unknown dtype: {dtype}")
+            invalidInputError(False, f"Unknown dtype: {dtype}")
         torch_dtype = _STR_DTYPE_TO_TORCH_DTYPE[dtype]
 
     # Verify the dtype.
@@ -297,7 +303,8 @@ def _get_and_verify_max_len(
     if max_model_len is None:
         max_model_len = derived_max_model_len
     elif max_model_len > derived_max_model_len:
-        raise ValueError(
+        invalidInputError(
+            False,
             f"User-specified max_model_len ({max_model_len}) is greater than "
             f"the derived max_model_len ({max_len_key}={derived_max_model_len}"
             " in model's config.json). This may lead to incorrect model "
