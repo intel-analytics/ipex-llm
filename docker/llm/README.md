@@ -279,6 +279,7 @@ An example could be:
 export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
+export SERVICE_MODEL_PATH=/llm/models/chatglm2-6b[a specified model path for running service]
 
 docker run -itd \
     --net=host \
@@ -287,8 +288,10 @@ docker run -itd \
     --name=$CONTAINER_NAME \
     --shm-size="16g" \
     -v $MODEL_PATH:/llm/models \
-    $DOCKER_IMAGE
+    -e SERVICE_MODEL_PATH=$SERVICE_MODEL_PATH \
+    $DOCKER_IMAGE --service-model-path $SERVICE_MODEL_PATH
 ```
+You can assign specified model path to service-model-path to run the service while booting the container. Also you can manually run the service after entering container. Run `/opt/entrypoint.sh --help` in container to see more information. There are steps below describe how to run service in details as well.
 
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
