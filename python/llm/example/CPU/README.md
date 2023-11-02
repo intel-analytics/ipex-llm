@@ -7,6 +7,7 @@ This folder contains examples of running BigDL-LLM on Intel CPU:
 - [Native-Models](Native-Models): converting & running LLM in `llama`/`chatglm`/`bloom`/`gptneox`/`starcoder` model family using native (cpp) implementation
 - [LangChain](LangChain): running LangChain applications on BigDL-LLM
 - [Applications](Applications): running Transformers applications on BigDl-LLM
+- [QLoRA-FineTuning](QLoRA-FineTuning): running QLoRA finetuning using BigDL-LLM on intel CPUs
 
 ## System Support
 **Hardware**:
