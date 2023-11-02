@@ -58,7 +58,7 @@ from llava.mm_utils import (
 
 from bigdl.llm import optimize_model
 
-# Lod the pretrained model.
+# Load the pretrained model.
 # Adapted from llava.model.builder.load_pretrained_model.
 def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, load_4bit=False,
                           device_map="auto", device="cpu"):
