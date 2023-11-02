@@ -180,5 +180,4 @@ jobs:
           python run.py
           cp ./*.csv /mnt/disk1/nightly_perf_cpu/
           cd ../../../test/benchmark
-          python csv_to_html.py -f ../../dev/benchmark/all-in-one
-          cp ./*.html /mnt/disk1/nightly_perf_cpu/
+          python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
