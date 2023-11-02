@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could use BigDL-LLM `optimi
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Multi-turn chat centered around an image using `chat()` API
-In the example [chat.py](./chat.py), we show a basic use case for an InternLM_XComposer model to start a multi-turn chat centered around an image using `generate()` API, with BigDL-LLM 'optimize_model' API.
+In the example [chat.py](./chat.py), we show a basic use case for an InternLM_XComposer model to start a multi-turn chat centered around an image using `chat()` API, with BigDL-LLM 'optimize_model' API.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
@@ -50,7 +50,7 @@ After setting up the Python environment, you could run the example by following 
 #### 3.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./generate.py --image-path aiyinsitan.jpg
+python ./chat.py --image-path aiyinsitan.jpg
 ```
 More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.
 
@@ -64,7 +64,7 @@ source bigdl-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py --image-path aiyinsitan.jpg
+numactl -C 0-47 -m 0 python ./chat.py --image-path aiyinsitan.jpg
 ```
 More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.
 
