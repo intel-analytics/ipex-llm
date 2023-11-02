@@ -56,7 +56,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'ipex_fp16_gpu':
         result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'deepspeed_transformer_int4_cpu':
-        result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+        result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
 
     for in_out_pair in in_out_pairs:
         if result:
@@ -547,11 +547,13 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
                          in_out_pairs,
                          warm_up,
                          num_trials,
-                         num_beams):
+                         num_beams,
+                         low_bit):
     from transformers import AutoModelForCausalLM, LlamaTokenizer, AutoTokenizer
     import deepspeed
     from bigdl.llm import optimize_model
     import argparse
+    # parser is for deepspeed subprocesses' inline parameter
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--local_rank', type=str, default=0, help='this is automatically set when using deepspeed launcher')
     args = parser.parse_args()
@@ -579,7 +581,8 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
                                      replace_method="auto")
 
     # Apply BigDL-LLM INT4 optimization to enable BenchmarkWrapper
-    model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
+    # Note: only tested sym_int4
+    model = optimize_model(model.module.to(f'cpu'), low_bit=low_bit)
     model = model.to(f'cpu:{local_rank}')
 
     end = time.perf_counter()

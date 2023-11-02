@@ -434,7 +434,8 @@ class LowBitLinear(nn.Linear):
                         # Parallel F.linear should be avoided,
                         # thus deepspeed allreduce after the operation
                         dist.inference_all_reduce(result, group=self.mp_group)
-                        resutl += self.bias
+                        if self.bias is not None:
+                            result += self.bias
                 else:
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                     new_shape = x_shape[:-1] + (self.out_len,)
