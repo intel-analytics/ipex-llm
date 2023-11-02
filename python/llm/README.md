@@ -64,7 +64,9 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Flan-t5    | [link](example/CPU/HF-Transformers-AutoModels/Model/flan-t5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/flan-t5)    |
 | Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   |   |
 | LLaVA      | [link](example/CPU/PyTorch-Models/Model/llava)                 | [link](example/GPU/PyTorch-Models/Model/llava)                  |
-| Skywork      | [link](example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
+| CodeLlama  | [link](example/CPU/HF-Transformers-AutoModels/Model/codellama) | [link](example/GPU/HF-Transformers-AutoModels/Model/codellama)  |
+| Skywork    | [link](example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
+
 
 ### Working with `bigdl-llm`
 
