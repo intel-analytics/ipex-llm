@@ -16,7 +16,7 @@ conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 
-pip accelerate transformers==4.30.2 timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops # additional package required for InternLM_XComposer to conduct generation
+pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops # additional package required for InternLM_XComposer to conduct generation
 
 ```
 
@@ -80,12 +80,12 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### [internlm/internlm-xcomposer-vl-7b](https://huggingface.co/internlm/internlm-xcomposer-vl-7b)
 
 ```log
-User: 图片里面的是谁？
-Bot: 爱因斯坦
-User: 他是最伟大的物理学家吗?
-Bot: yes
+User: 这是什么？
+Bot: bus
+User: 它可以用来干什么
+Bot: transport people
 ```
 
-The sample input image is (which is fetched from [InternLM-XComposer repo](https://github.com/InternLM/InternLM-XComposer/blob/main/examples/images/aiyinsitan.jpg)):
+The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=178242)):
 
-<a href="https://github.com/InternLM/InternLM-XComposer/blob/main/examples/images/aiyinsitan.jpg"><img width=400px src="https://github.com/InternLM/InternLM-XComposer/blob/main/examples/images/aiyinsitan.jpg" ></a>
+<a href="http://farm6.staticflickr.com/5331/8954873157_539393fece_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5331/8954873157_539393fece_z.jpg" ></a>

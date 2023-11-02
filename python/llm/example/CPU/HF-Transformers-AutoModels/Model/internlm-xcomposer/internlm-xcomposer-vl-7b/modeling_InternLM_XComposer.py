@@ -21,6 +21,8 @@
 #
 # Apache 2.0 license
 
+# We change the dtype from float16 to float32 to enable inference on CPU.
+
 import copy
 import os
 import sys
