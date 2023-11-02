@@ -22,6 +22,10 @@ jobs:
       - name: run bat
         run: '& cd ./python/llm/portable-zip; ./setup.bat'
         shell: powershell
+      - uses: actions/upload-artifact@v3
+        with:
+          name: portable-zip
+          path: ./python/llm/portable-zip/bigdl-llm.zip
 
   build-zip-gui:
     runs-on: [self-hosted, llm, windows]
@@ -31,3 +35,7 @@ jobs:
       - name: run bat
         run: '& cd ./python/llm/portable-zip; ./setup.bat --ui'
         shell: powershell
+      - uses: actions/upload-artifact@v3
+        with:
+          name: portable-zip
+          path: ./python/llm/portable-zip/bigdl-llm-ui.zip
