@@ -95,3 +95,5 @@ else
   echo "OpenAI API address: $api_address"
 
 fi
+
+exec /usr/bin/bash -s -- "bash"
