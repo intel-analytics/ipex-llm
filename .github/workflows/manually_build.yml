@@ -58,7 +58,7 @@ on:
 
 env:
   # TAG: ${{ github.event.inputs.tag }}
-  TAG:2.4.0-SNAPSHOT
+  TAG: 2.4.0-SNAPSHOT
 
 permissions:
   contents: read
