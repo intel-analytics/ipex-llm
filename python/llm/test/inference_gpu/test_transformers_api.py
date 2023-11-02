@@ -62,14 +62,11 @@ def test_transformers_auto_model_for_speech_seq2seq_int4():
     input_features = input_features.to(device)
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True, optimize_model=True)
     model = model.to(device)
-    st = time.time()
     predicted_ids = model.generate(input_features)
     # decode token ids to text
     transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)
-    end = time.time()  
     model.to('cpu')      
     print('Output:', transcription)
-    print(f'Inference time: {end-st} s')
     assert 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
         
 if __name__ == '__main__':
