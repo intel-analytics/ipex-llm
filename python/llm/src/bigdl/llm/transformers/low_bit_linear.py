@@ -480,8 +480,8 @@ class LowBitLinear(nn.Linear):
         # Convert back to autocast or x.dtype
         # to avoid casting attention to FP32
         if x.dtype != result.dtype:
-            if torch.is_autocast_enabled:
-                result = result.to(torch.get_autocast_dtype)
+            if torch.is_autocast_enabled():
+                result = result.to(torch.get_autocast_dtype())
             else:
                 result = result.to(x.dtype)
         return result
