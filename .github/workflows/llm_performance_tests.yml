@@ -181,4 +181,3 @@ jobs:
           cp ./*.csv /mnt/disk1/nightly_perf_cpu/
           cd ../../../test/benchmark
           python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
-          cat ./*.html
