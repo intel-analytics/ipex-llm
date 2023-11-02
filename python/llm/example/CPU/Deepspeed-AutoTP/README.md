@@ -26,8 +26,7 @@ model = deepspeed.init_inference(
     model, # an AutoModel of Transformers
     mp_size = world_size, # instance (process) count
     dtype=torch.float16,
-    replace_method="auto"
-    )
+    replace_method="auto")
 ```
 
 Then, returned model is converted into a deepspeed InferenceEnginee type.
@@ -37,10 +36,11 @@ Then, returned model is converted into a deepspeed InferenceEnginee type.
 Distributed model managed by deepspeed can be further optimized with BigDL low-bit Python API, e.g. sym_int4:
 
 ```python
- # Apply BigDL-LLM INT4 optimizations on transformers
-    model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
+# Apply BigDL-LLM INT4 optimizations on transformers
+from bigdl.llm import optimize_model
 
-    model = model.to(f'cpu:{local_rank}') # move partial model to local rank
+model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
+model = model.to(f'cpu:{local_rank}') # move partial model to local rank
 ```
 
 Then, a bigdl-llm transformers is returned, which in the following, can serve in parallel with native APIs.
