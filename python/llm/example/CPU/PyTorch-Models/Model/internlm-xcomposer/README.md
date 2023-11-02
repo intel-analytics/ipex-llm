@@ -50,7 +50,7 @@ After setting up the Python environment, you could run the example by following 
 #### 3.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./chat.py --image-path aiyinsitan.jpg
+python ./chat.py --image-path demo.jpg
 ```
 More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.
 
@@ -64,7 +64,7 @@ source bigdl-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./chat.py --image-path aiyinsitan.jpg
+numactl -C 0-47 -m 0 python ./chat.py --image-path demo.jpg
 ```
 More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.
 
@@ -87,5 +87,7 @@ Bot: transport people
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=178242)):
+
+[demo.jpg](https://cocodataset.org/#explore?id=178242)
 
 <a href="http://farm6.staticflickr.com/5331/8954873157_539393fece_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5331/8954873157_539393fece_z.jpg" ></a>
