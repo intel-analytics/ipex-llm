@@ -24,7 +24,7 @@ pip accelerate transformers==4.30.2 timm==0.4.12 sentencepiece==0.1.99 gradio==3
 If you select the InternLM_XComposer model ([internlm/internlm-xcomposer-vl-7b](https://huggingface.co/internlm/internlm-xcomposer-vl-7b)), please note that their code (`modeling_InternLM_XComposer.py`) does not support inference on CPU. To address this issue, we have provided the updated file ([internlm-xcomposer-vl-7b/modeling_InternLM_XComposer.py](./internlm-xcomposer-vl-7b/modeling_InternLM_XComposer.py), which can be used to conduct inference on CPU.
 
 #### 2.1 Download Model
-You could use the following code to download [internlm/internlm-xcomposer-vl-7b](https://huggingface.co/internlm/internlm-xcomposer-vl-7b) with a specific snapshot id. Please note that the modeling_InternLM_XComposer.py files that we provide are based on these specific commits.
+You could use the following code to download [internlm/internlm-xcomposer-vl-7b](https://huggingface.co/internlm/internlm-xcomposer-vl-7b) with a specific snapshot id. Please note that the `modeling_InternLM_XComposer.py` file that we provide are based on these specific commits.
 
 ```
 from huggingface_hub import snapshot_download
