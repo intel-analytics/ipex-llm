@@ -6,6 +6,8 @@ ARG https_proxy
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
+COPY ./entrypoint.sh /opt/entrypoint.sh
+
 # Install Serving Dependencies
 RUN cd /llm && \
     git clone https://github.com/analytics-zoo/FastChat.git && \
@@ -16,3 +18,4 @@ RUN cd /llm && \
 
 
 WORKDIR /llm/
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
