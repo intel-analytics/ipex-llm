@@ -43,7 +43,7 @@ python ./generate.py --load-path path/to/load/model
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
-- `--low-bit`: argument defining the low-bit optimization data type, options are sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8. (sym_int4 means symmetric int 4, asym_int4 means asymmetric int 4, etc.). Relevant low bit optimizations will be applied to the model.
+- `--low-bit`: argument defining the low-bit optimization data type, options are sym_int4, asym_int4, sym_int5, asym_int5, sym_int8 or fp8. (sym_int4 means symmetric int 4, asym_int4 means asymmetric int 4, etc.). Relevant low bit optimizations will be applied to the model.
 - `--save-path`: argument defining the path to save the low-bit model. Then you can load the low-bit directly.
 - `--load-path`: argument defining the path to load low-bit model.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.

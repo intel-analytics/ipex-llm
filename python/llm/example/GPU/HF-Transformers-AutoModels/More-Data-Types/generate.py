@@ -36,7 +36,7 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default="sym_int8",
-                        choices=['sym_int4', 'asym_int4', 'sym_int5', 'asym_int5', 'sym_int8'],
+                        choices=['sym_int4', 'asym_int4', 'sym_int5', 'asym_int5', 'sym_int8', 'fp8'],
                         help='The quantization type the model will convert to.')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     low_bit = args.low_bit
 
     # Load model
-    # `load_in_low_bit` param support `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5` and `sym_int8`
+    # `load_in_low_bit` param support `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5`, `sym_int8` and `fp8`
     # By specifying `load_in_low_bit` param, relevant low bit optimizations will be applied to the model
     model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True)
     

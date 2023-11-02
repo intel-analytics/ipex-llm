@@ -35,7 +35,7 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default="sym_int4",
-                        choices=['sym_int4', 'asym_int4', 'sym_int5', 'asym_int5', 'sym_int8'],
+                        choices=['sym_int4', 'asym_int4', 'sym_int5', 'asym_int5', 'sym_int8', 'fp8'],
                         help='The quantization type the model will convert to.')
     parser.add_argument('--save-path', type=str, default=None,
                         help='The path to save the low-bit model.')
