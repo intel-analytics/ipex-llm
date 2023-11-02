@@ -39,8 +39,8 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
-RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list && \
-    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+#RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list && \
+#    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
@@ -58,14 +58,16 @@ RUN apt-get update && \
 ADD ./run_llm_on_occlum_glibc.sh /opt/run_llm_on_occlum_glibc.sh
 
 # For get_quote C compile
-#RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
-#ADD ./dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
-#ADD ./dcap-ppml.yaml /root/demos/remote_attestation/dcap/
-#ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
+ADD ./attestation/dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
+ADD ./attestation/dcap-ppml.yaml /root/demos/remote_attestation/dcap/
+ADD ./attestation/get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+#ADD ./attestation/attestation_cli.py /opt/attestation_cli.py
+ADD ./attestation/attestation.sh /opt/attestation.sh
 
-# For attestation
+# For attestation, add ppml libs
 #ADD ./verify-attestation-service.sh /opt
-#ADD ./print_enclave_signer.sh /opt
+ADD ./attestation/print_enclave_signer.sh /opt
 #ADD ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
@@ -76,10 +78,11 @@ RUN chmod a+x /opt/entrypoint.sh && \
 #    chmod a+x /opt/ehsm_entry.sh && \
     chmod a+x /opt/run_llm_on_occlum_glibc.sh && \
 #    chmod a+x /opt/verify-attestation-service.sh && \
-#    chmod a+x /opt/print_enclave_signer.sh && \
+    chmod a+x /opt/print_enclave_signer.sh && \
 #    chmod a+x /opt/register.sh && \
-#    chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
-#    chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
+    chmod a+x /root/demos/remote_attestation/dcap/get_quote_on_ppml.sh && \
+    chmod a+x /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c && \
+    chmod a+x /opt/attestation.sh && \
     sed -i '/aesm/d' /root/.bashrc && \
     rm -rf /var/run/aesmd
 
@@ -98,6 +101,12 @@ ADD ./utils.diff /opt/utils.diff
 ADD ./cpuinfo.diff /opt/cpuinfo.diff
 RUN patch /opt/python-occlum/lib/python3.9/site-packages/pydub/utils.py /opt/utils.diff && \
     patch /opt/python-occlum/lib/python3.9/site-packages/cpuinfo/cpuinfo.py /opt/cpuinfo.diff
+
+RUN cd /root && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    mv /root/BigDL/python/ppml/src/bigdl/ppml/ /opt/python-occlum/lib/python3.9/site-packages/bigdl/ && \
+    cp  /opt/python-occlum/lib/python3.9/site-packages/bigdl/ppml/attestation/attestation_cli.py /opt/ && \
+    rm -rf /root/BigDL
 #ADD ./py-examples /opt/py-examples
 
 # Prepare Bigdl python libs

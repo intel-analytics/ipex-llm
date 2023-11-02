@@ -37,6 +37,22 @@ def bigdl_attestation_service(base_url, app_id, api_key, quote, policy_id):
         result = -1
     return result
 
+def bigdl_attestation_service_register(base_url, app_id, api_key, policy_type, mr_enclave, mr_signer):
+    headers = {"Content-Type":"application/json"}
+    payload = OrderedDict()
+    payload["appID"] = app_id
+    payload["apiKey"] = api_key
+    payload["policyType"] = policy_type
+    payload["mrEnclave"] = mr_enclave
+    payload["mrSigner"] = mr_signer
+    try:
+        resp = requests.post(url="https://" + base_url + "/registerPolicy", data=json.dumps(payload), headers=headers, verify=use_secure_cert)
+        resp_dict = json.loads(resp.text)
+        result = resp_dict["policyID"]
+    except (json.JSONDecodeError, KeyError):
+        result = -1
+    return result
+
 def amber(base_url, api_key, quote, policy_id, proxies):
     headers = {"Content-Type":"application/json",
                "Accept":"application/json",

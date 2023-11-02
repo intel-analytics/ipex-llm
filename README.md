@@ -9,12 +9,13 @@
 
 **[`bigdl-llm`](python/llm)** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4** with very low latency[^1] (for any **PyTorch** model).
 
-> *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
+> *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [ggml](https://github.com/ggerganov/ggml), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
 ### Latest update
-- `bigdl-llm` now supports Intel Arc or Flex GPU; see the the latest GPU examples [here](python/llm/example/gpu).
+- **[New]** `bigdl-llm` now supports QLoRA fintuning on Intel GPU; see the the example [here](python/llm/example/GPU/QLoRA-FineTuning).
+- `bigdl-llm` now supports Intel GPU (including Arc, Flex and MAX); see the the latest GPU examples [here](python/llm/example/GPU).
 - `bigdl-llm` tutorial is released [here](https://github.com/intel-analytics/bigdl-llm-tutorial).
-- Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, MPT, Falcon, Dolly-v1/Dolly-v2, StarCoder, Whisper, QWen, Baichuan, MOSS,* and more; see the complete list [here](python/llm/README.md#verified-models).
+- Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Dolly, StarCoder, Whisper, Baichuan, InternLM, QWen, Aquila, MOSS,* and more; see the complete list [here](#verified-models).
      
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
@@ -51,6 +52,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 - [CPU INT4](#cpu-int4)
 - [GPU INT4](#gpu-int4)
 - [More Low-Bit Support](#more-low-bit-support)
+- [Verified Models](#verified-models)
 
 #### CPU INT4
 ##### Install
@@ -75,7 +77,7 @@ input_ids = tokenizer.encode(input_str, ...)
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids)
 ```
-*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+*See the complete examples [here](python/llm/example/CPU/HF-Transformers-AutoModels/Model).*
 
 #### GPU INT4
 ##### Install
@@ -104,7 +106,7 @@ input_ids = tokenizer.encode(input_str, ...).to('xpu')
 output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids.cpu())
 ```
-*See the complete examples [here](python/llm/example/transformers/transformers_int4/).*
+*See the complete examples [here](python/llm/example/GPU).*
 
 #### More Low-Bit Support
 ##### Save and load
@@ -114,7 +116,7 @@ After the model is optimized using `bigdl-llm`, you may save and load the model 
 model.save_low_bit(model_path)
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
-*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+*See the complete example [here](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load).*
 
 ##### Additonal data types
  
@@ -122,7 +124,39 @@ In addition to INT4, You may apply other low bit optimizations (such as *INT8*, 
 ```python
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int8")
 ```
-*See the complete example [here](python/llm/example/transformers/transformers_low_bit/).*
+*See the complete example [here](python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types).*
+
+#### Verified Models
+Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Baichuan/Baichuan2, InternLM, QWen* and more; see the example list below.
+  
+| Model      | CPU Example                                                    | GPU Example                                                     |
+|------------|----------------------------------------------------------------|-----------------------------------------------------------------|
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/vicuna)|
+| LLaMA 2    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama2) |
+| ChatGLM    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
+| ChatGLM2   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/chatglm2)   |
+| ChatGLM3   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm3)  | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/chatglm3)   |
+| Mistral    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mistral)   | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mistral)    |
+| Falcon     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/falcon)    | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/falcon)     |
+| MPT        | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mpt)       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mpt)        |
+| Dolly-v1   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)   | 
+| Dolly-v2   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)   | 
+| Replit Code| [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/replit)    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/replit)     |
+| RedPajama  | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/redpajama) |    | 
+| Phoenix    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/phoenix)   |    | 
+| StarCoder  | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/starcoder) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/starcoder) | 
+| Baichuan   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan)   |
+| Baichuan2  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
+| InternLM   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
+| Qwen       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Qwen-VL    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
+| Aquila     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
+| MOSS       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
+| Whisper    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
+| Phi-1_5    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-1_5)   | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-1_5)    |
+| Flan-t5    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/flan-t5)   | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/flan-t5)    |
+| Qwen-VL    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   |    |
+| LLaVA      | [link](python/llm/example/CPU/PyTorch-Models/Model/llava)                            |    |
 
 
 ***For more details, please refer to the `bigdl-llm` [Document](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html), [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***

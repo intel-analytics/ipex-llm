@@ -22,6 +22,7 @@ import shutil
 
 from bigdl.llm import llm_convert
 from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.optimize import optimize_model, load_low_bit, low_memory_init
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
@@ -95,6 +96,23 @@ class TestConvertModel(TestCase):
             model.save_low_bit(tempdir)
             newModel = AutoModelForCausalLM.load_low_bit(tempdir)
             assert newModel is not None
+
+    def test_optimize_transformers_llama(self):
+        from transformers import AutoModelForCausalLM as AutoCLM
+        with tempfile.TemporaryDirectory(dir=output_dir) as tempdir:
+            model = AutoCLM.from_pretrained(llama_model_path,
+                                            torch_dtype="auto",
+                                            low_cpu_mem_usage=True,
+                                            trust_remote_code=True)
+            model = optimize_model(model)
+            model.save_low_bit(tempdir)
+            with low_memory_init():
+                new_model = AutoCLM.from_pretrained(tempdir,
+                                                torch_dtype="auto",
+                                                trust_remote_code=True)
+            new_model = load_low_bit(new_model,
+                                model_path=tempdir)
+            assert new_model is not None
 
 if __name__ == '__main__':
     pytest.main([__file__])

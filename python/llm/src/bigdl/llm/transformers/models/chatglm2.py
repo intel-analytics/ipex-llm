@@ -20,7 +20,7 @@
 import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
-from bigdl.llm.transformers.models.utils import create_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -72,6 +72,19 @@ def apply_rotary_pos_emb(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Ten
     )
     x_out2 = x_out2.flatten(3)
     return torch.cat((x_out2, x_pass), dim=-1)
+
+
+def chatglm_rms_norm_forward(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                         [self.weight.size(0)], self.weight)
+    else:
+        input_dtype = hidden_states.dtype
+        hidden_states = hidden_states.to(torch.float32)
+        variance = hidden_states.pow(2).mean(-1, keepdim=True)
+        hidden_states = hidden_states * torch.rsqrt(variance + self.eps)
+        return self.weight * hidden_states.to(input_dtype)
+    return hidden_states
 
 
 def chatglm2_attention_forward_8eb45c(
@@ -151,10 +164,8 @@ def chatglm2_attention_forward_8eb45c(
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            if device.type == 'xpu':
-                torch.xpu.empty_cache()
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_cache_k, new_cache_v = create_kv_cache(batch_size,
+            new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads_per_partition,
                                                        self.hidden_size_per_attention_head,
                                                        past_length,
@@ -172,10 +183,10 @@ def chatglm2_attention_forward_8eb45c(
 
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        key_cache, value_cache = create_kv_cache(batch_size, self.num_attention_heads_per_partition,
-                                                 self.hidden_size_per_attention_head, cur_length,
-                                                 max_cache_length,
-                                                 dtype=query_layer.dtype, device=device)
+        key_cache, value_cache = init_kv_cache(batch_size, self.num_attention_heads_per_partition,
+                                               self.hidden_size_per_attention_head, cur_length,
+                                               max_cache_length,
+                                               dtype=query_layer.dtype, device=device)
         key_cache[:] = key_layer
         value_cache[:] = value_layer
         key_layer = key_cache

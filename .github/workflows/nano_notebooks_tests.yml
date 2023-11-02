@@ -106,6 +106,7 @@ jobs:
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
+            pip install six
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_jit_ipex.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tutorial-pytorch --all

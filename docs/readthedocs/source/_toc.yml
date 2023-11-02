@@ -38,15 +38,19 @@ subtrees:
             title: "Key Features"
             subtrees:
               - entries:
+                - file: doc/LLM/Overview/KeyFeatures/optimize_model
                 - file: doc/LLM/Overview/KeyFeatures/transformers_style_api
                   subtrees:
                     - entries:
                       - file: doc/LLM/Overview/KeyFeatures/hugging_face_format
                       - file: doc/LLM/Overview/KeyFeatures/native_format
-                - file: doc/LLM/Overview/KeyFeatures/optimize_model
                 - file: doc/LLM/Overview/KeyFeatures/langchain_api
                 # - file: doc/LLM/Overview/KeyFeatures/cli
                 - file: doc/LLM/Overview/KeyFeatures/gpu_supports
+                  subtrees:
+                    - entries:
+                      - file: doc/LLM/Overview/KeyFeatures/inference_on_gpu
+                      - file: doc/LLM/Overview/KeyFeatures/finetune
           - file: doc/LLM/Overview/examples
             title: "Examples"
             subtrees:
