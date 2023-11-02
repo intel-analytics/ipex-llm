@@ -66,7 +66,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | LLaVA      | [link](example/CPU/PyTorch-Models/Model/llava)                 | [link](example/GPU/PyTorch-Models/Model/llava)                  |
 | CodeLlama  | [link](example/CPU/HF-Transformers-AutoModels/Model/codellama) | [link](example/GPU/HF-Transformers-AutoModels/Model/codellama)  |
 | Skywork    | [link](example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
-
+| InternLM-XComposer    | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm-xcomposer)   |   |
 
 ### Working with `bigdl-llm`
 
