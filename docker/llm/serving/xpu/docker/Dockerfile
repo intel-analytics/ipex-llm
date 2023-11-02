@@ -14,7 +14,8 @@ RUN cd /llm && \
     cd FastChat && \
     git checkout dev-2023-09-22 && \
     pip3 install -e ".[model_worker,webui]" && \
-    cd /llm
+    cd /llm && \
+    chmod +x /opt/entrypoint.sh
 
 
 WORKDIR /llm/
