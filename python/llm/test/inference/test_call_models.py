@@ -16,6 +16,8 @@
 
 
 from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
+from bigdl.llm.transformers import LlamaForCausalLM, BloomForCausalLM, \
+    GptneoxForCausalLM, StarcoderForCausalLM
 import pytest
 from unittest import TestCase
 import os
@@ -43,6 +45,11 @@ class Test_Models_Basics(TestCase):
         llm = Llama(self.llama_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=True)
 
+    def test_llama_for_causallm(self):
+        llm = LlamaForCausalLM.from_pretrained(self.llama_model_path, native=True,
+                                               n_threads=self.n_threads)
+        output = llm("What is the capital of France?", max_tokens=32, stream=False)
+
     def test_bloom_completion_success(self):
         llm = Bloom(self.bloom_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=False)
@@ -55,6 +62,11 @@ class Test_Models_Basics(TestCase):
         llm = Bloom(self.bloom_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=True)
 
+    def test_bloom_for_causallm(self):
+        llm = BloomForCausalLM.from_pretrained(self.bloom_model_path, native=True,
+                                               n_threads=self.n_threads)
+        output = llm("What is the capital of France?", max_tokens=32, stream=False)
+
     def test_gptneox_completion_success(self):
         llm = Gptneox(self.gptneox_model_path, n_threads=self.n_threads)
         output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=False)
@@ -63,6 +75,11 @@ class Test_Models_Basics(TestCase):
     def test_gptneox_completion_with_stream_success(self):
         llm = Gptneox(self.gptneox_model_path, n_threads=self.n_threads)
         output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=True)
+
+    def test_getneox_for_causallm(self):
+        llm = GptneoxForCausalLM.from_pretrained(self.gptneox_model_path, native=True,
+                                                 n_threads=self.n_threads)
+        output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=False)
     
     def test_starcoder_completion_success(self):
         llm = Starcoder(self.starcoder_model_path, n_threads=self.n_threads)
@@ -72,6 +89,11 @@ class Test_Models_Basics(TestCase):
     def test_starcoder_completion_with_stream_success(self):
         llm = Starcoder(self.starcoder_model_path, n_threads=self.n_threads)
         output = llm("def print_hello_world(", max_tokens=32, stream=True)
+
+    def test_starcoder_for_causallm(self):
+        llm = StarcoderForCausalLM.from_pretrained(self.starcoder_model_path, native=True,
+                                                   n_threads=self.n_threads)
+        output = llm("def print_hello_world(", max_tokens=32, stream=False)
 
 
 if __name__ == '__main__':

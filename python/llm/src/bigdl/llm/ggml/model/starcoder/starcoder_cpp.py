@@ -156,10 +156,9 @@ _lib.tokenize_api.restype = POINTER(c_int)
 
 
 def starcoder_detokenize(ctx: c_void_p,
-                         token_id: c_int) -> str:
+                         token_id: c_int) -> bytes:
     c_chars = _lib.detokenize_api(ctx, token_id)
-    s = c_chars.decode('utf-8')
-    return s
+    return c_chars
 
 
 _lib.detokenize_api.argtypes = [c_void_p, c_int]

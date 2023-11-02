@@ -23,17 +23,17 @@ ENV MALLOC_ARENA_MAX                    4
 
 RUN mkdir -p /ppml/
 
-ADD ./bash.manifest.template /ppml/bash.manifest.template
-ADD ./Makefile /ppml/Makefile
-ADD ./init.sh /ppml/init.sh
-ADD ./clean.sh /ppml/clean.sh
+COPY ./bash.manifest.template /ppml/bash.manifest.template
+COPY ./Makefile /ppml/Makefile
+COPY ./init.sh /ppml/init.sh
+COPY ./clean.sh /ppml/clean.sh
 
 # These files ared used for attestation service and register MREnclave
-ADD ./register-mrenclave.py /ppml/register-mrenclave.py
-ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
+COPY ./register-mrenclave.py /ppml/register-mrenclave.py
+COPY ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 
-ADD ./_dill.py.patch /_dill.py.patch
-ADD ./python-pslinux.patch /python-pslinux.patch
+COPY ./_dill.py.patch /_dill.py.patch
+COPY ./python-pslinux.patch /python-pslinux.patch
 
 # Python3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -124,9 +124,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /ppml
 
 
-ADD ./download_jars.sh /ppml
-ADD ./attestation.sh /ppml
-ADD ./encrypted-fsd.sh /ppml
+COPY ./download_jars.sh /ppml
+COPY ./attestation.sh /ppml
+COPY ./encrypted-fsd.sh /ppml
 
 RUN cd /ppml && \
     bash ./download_jars.sh

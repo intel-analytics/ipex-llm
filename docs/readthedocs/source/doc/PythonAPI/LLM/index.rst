@@ -2,7 +2,8 @@ BigDL-LLM API
 ==================
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
+    optimize.rst
     transformers.rst
     langchain.rst

@@ -17,6 +17,7 @@
 import os
 import sys
 import subprocess
+import getpass
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import *
 
@@ -60,8 +61,9 @@ class MPIRunner:
         invalidInputError(processes_per_node > 0, "processes_per_node must be greater than 0")
         self.processes_per_node = processes_per_node
         self.env = env if env else {}
+        self.user = getpass.getuser()
 
-    def run(self, file, **kwargs):
+    def run(self, file, mpi_options=None, **kwargs):
         file_path = os.path.abspath(file)
         invalidInputError(os.path.exists(file_path), "file_path doesn't exist")
         file_dir = "/".join(file_path.split("/")[:-1])
@@ -85,7 +87,9 @@ class MPIRunner:
             mpi_config.extend(["-genv", "OMP_NUM_THREADS={}".format(mpi_env["OMP_NUM_THREADS"])])
         if len(self.remote_hosts) > 0:
             mpi_config.extend(["-hosts", ",".join(self.hosts)])
-        cmd.extend(mpi_config)
+        if mpi_options:
+            mpi_config += mpi_options
+        cmd.extend(mpi_config.split())
         # cmd.append("ls")
         cmd.append(sys.executable)
         cmd.append("-u")  # This can print as the program runs
@@ -105,7 +109,7 @@ class MPIRunner:
     def scp_file(self, file, remote_dir):
         for host in self.remote_hosts:
             p = subprocess.Popen(["scp", file,
-                                  "root@{}:{}/".format(host, remote_dir)])
+                                  "{}@{}:{}/".format(self.user, host, remote_dir)])
             os.waitpid(p.pid, 0)
 
     def launch_plasma(self, object_store_memory="2g"):

@@ -72,7 +72,7 @@ class Starcoder(GenerationMixin):
         use_mmap: bool = False,
         use_mlock: bool = False,
         embedding: bool = False,
-        n_threads: Optional[int] = 2,
+        n_threads: Optional[int] = -1,
         n_batch: int = 512,
         last_n_tokens_size: int = 64,
         lora_base: Optional[str] = None,
@@ -93,7 +93,7 @@ class Starcoder(GenerationMixin):
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             embedding: Embedding mode only.
-            n_threads: Number of threads to use. Default to be 2.
+            n_threads: Number of threads to use. Default to be -1, means auto.
             n_batch: Maximum number of prompt tokens to batch together when calling starcoder_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             lora_base: Optional path to base model, useful if using a quantized base model and
@@ -227,8 +227,14 @@ class Starcoder(GenerationMixin):
                             match_str=match_str,
                             prompt=bytes(prompt, encoding='utf-8'),
                             buf=buf)
-        s = str(buf, encoding='utf-8').rstrip("\x00")
-
+        buf = buf.rstrip(b"\x00")
+        s = ''
+        for i in range(len(buf), 0, -1):
+            try:
+                s = buf[:i].decode("utf-8")
+                break
+            except UnicodeDecodeError as _e:
+                continue
         text = s.split(prompt)[1]
         split_text = text
         if stop != []:
@@ -289,10 +295,16 @@ class Starcoder(GenerationMixin):
                 }
             }
         else:
+            partial_tokens = []
             for i in range(max_tokens):
                 token = self.forward(prompt_tokens)
                 prompt_tokens.append(token)
-                text = self.detokenize([token]).decode("utf-8", errors="ignore")
+                partial_tokens.append(token)
+                try:
+                    text = self.detokenize(partial_tokens).decode("utf-8")
+                    partial_tokens.clear()
+                except UnicodeDecodeError as _e:
+                    continue
                 if text.endswith("<|endoftext|>"):
                     print('\n')
                     return
@@ -346,10 +358,10 @@ class Starcoder(GenerationMixin):
         """
         invalidInputError(self.ctx is not None,
                           "The attribute `ctx` of `Starcoder` object is None.")
-        output = ""
+        output = bytes()
         for token in tokens:
             output += starcoder_detokenize(self.ctx, token)
-        return output.encode('utf-8')
+        return output
 
     def forward(self, input_ids: List[int]) -> int:
         return starcoder_forward(ctx=self.ctx,

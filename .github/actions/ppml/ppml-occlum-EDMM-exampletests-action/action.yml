@@ -1,0 +1,192 @@
+name: 'Run PPML Occlum EDMM ExampleTests'
+description: 'Run PPML Occlum EDMM ExampleTests'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: '2.4.0-SNAPSHOT-EDMM6'
+runs:
+  using: "composite"
+  steps:
+    - name: Run tests
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        whoami
+
+        # icx-6's kernel support EDMM
+        export LOCAL_IP=172.168.0.210
+        export CPUSET="6-10"
+        export CONTAINER_NAME="spark-occlum-edmm-jenkins"
+
+        export DATA_PATH=/home/icx/glorysdj/data
+        export KEYS_PATH=/home/icx/glorysdj/keys
+        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
+        export SGX_MEM_SIZE=30GB
+        export SGX_KERNEL_HEAP=2GB
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+
+        docker pull $IMAGE
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT-EDMM
+
+        docker stop $CONTAINER_NAME
+        docker rm -f $CONTAINER_NAME
+
+        docker run -itd \
+            --net=host \
+            --cpuset-cpus=$CPUSET \
+            --oom-kill-disable \
+            --device=/dev/sgx/enclave \
+            --device=/dev/sgx/provision \
+            -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+            -v $DATA_PATH:/opt/occlum_spark/data \
+            -v $KEYS_PATH:/opt/keys \
+            --name=$CONTAINER_NAME \
+            -e LOCAL_IP=$LOCAL_IP \
+            -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+            -e SGX_KERNEL_HEAP=$SGX_KERNEL_HEAP \
+            $IMAGE \
+            bash  -c "tail -f /dev/null"
+
+        status_1_spark_pi=1
+        status_2_bigdl_lenet_mnist=1
+        status_3_bigdl_resnet_cifar10=1
+        status_4_spark_tpch=1
+        status_5_spark_ut=0
+        status_6_spark_xgboost=1
+        status_7_spark_gbt=1
+        status_8_pyspark_sklearn=1
+        status_9_pyspark_sql=1
+        status_10_pyspark_tpch=1
+        status_11_spark_lgbm=1
+
+        if [ $status_1_spark_pi -ne 0 ]; then
+        echo "################## start spark pi"
+        echo "example.1 spark pi"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh pi | tee test-spark-pi-sgx.log && \
+             cat test-spark-pi-sgx.log | egrep 'Pi is roughly 3'"
+        status_1_spark_pi=$(echo $?)
+        fi
+
+        if [ $status_2_bigdl_lenet_mnist -ne 0 ]; then
+        echo "################## start bigdl lenet mnist"
+        echo "example.2 bigdl lenet mnist"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#        run_spark_lenet_mnist#        run_spark_lenet_mnist -b 4 -e 1#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#                -f /host/data#                -f /host/data/lenet#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh lenet -b 8 -e 1 | tee bigdl-lenet-mnist.log && \
+             cat bigdl-lenet-mnist.log | egrep 'records/second. Loss is' && \
+             sed -i 's#                -f /host/data/lenet#                -f /host/data#g' run_spark_on_occlum_glibc.sh"
+        status_2_bigdl_lenet_mnist=$(echo $?)
+        fi
+
+        if [ $status_3_bigdl_resnet_cifar10 -ne 0 ]; then
+        echo "################## start bigdl resnet cifar10"
+        echo "example.3 bigdl resnet cifar10"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#        run_spark_resnet_cifar#        run_spark_resnet_cifar --nEpochs 1#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#                -f /host/data#                -f /host/data/cifar#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh resnet | tee bigdl-resnet-cifar10.log && \
+             cat bigdl-resnet-cifar10.log | egrep 'Current momentum is '&& \
+             sed -i 's#                -f /host/data/cifar#                -f /host/data#g' run_spark_on_occlum_glibc.sh"
+        status_3_bigdl_resnet_cifar10=$(echo $?)
+        fi
+
+        if [ $status_4_spark_tpch -ne 0 ]; then
+        echo "################## start spark tpch"
+        echo "example.4 spark tpch"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#spark.driver.memory=12g#spark.driver.memory=2g#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#spark.executor.instances=8#spark.executor.instances=2#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#executor-memory 8G#executor-memory 2G#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#-Xmx78g -Xms78g#-Xmx10g -Xms10g#g' run_spark_on_occlum_glibc.sh && \
+             sed -i 's#/host/data /host/data/output#/host/data/tpch /host/data/output#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh tpch | tee spark-tpch.log && \
+             cat spark-tpch.log | egrep '22 finished-'"
+        status_4_spark_tpch=$(echo $?)
+        fi
+
+        if [ $status_5_spark_ut -ne 0 ]; then
+        echo "################## start spark unit test"
+        echo "example.5 spark unit test"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#192.168.0.111#$LOCAL_IP#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh ut | tee spark-unit-test.log && \
+             cat spark-unit-test.log | egrep 'FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite:'"
+        status_5_spark_ut=$(echo $?)
+        fi
+
+        if [ $status_6_spark_xgboost -ne 0 ]; then
+        echo "################## start spark xgboost"
+        echo "example.6 spark xgboost"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+          sed -i 's#-i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1#-i /host/data/xgboost -s /host/data/xgboost/model -t 2 -r 10 -d 2 -w 1#g' run_spark_on_occlum_glibc.sh && \
+          bash run_spark_on_occlum_glibc.sh xgboost | tee spark-xgboost.log && \
+          cat spark-xgboost.log | egrep 'end time is'"
+        status_6_spark_xgboost=$(echo $?)
+        fi
+
+        if [ $status_7_spark_gbt -ne 0 ]; then
+        echo "################## start spark gbt"
+        echo "example.7 spark gbt"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+          sed -i 's#-i /host/data -s /host/data/model -I 100 -d 5#-i /host/data/gbt -s /host/data/gbt/model -I 10 -d 5#g' run_spark_on_occlum_glibc.sh && \
+          bash run_spark_on_occlum_glibc.sh gbt | tee spark-gbt.log && \
+          cat spark-gbt.log | egrep 'end time is'"
+        status_7_spark_gbt=$(echo $?)
+        fi
+        
+        if [ $status_8_pyspark_sklearn -ne 0 ]; then
+        echo "################## start pyspark sklearn Linear Regression"
+        echo "example.8 pyspark sklearn"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh pysklearn | tee test-pyspark-sklearn-sgx.log && \
+             cat test-pyspark-sklearn-sgx.log | egrep 'mean_squared_error'"
+        status_8_pyspark_sklearn=$(echo $?)
+        fi
+        
+        if [ $status_9_pyspark_sql -ne 0 ]; then
+        echo "################## start pyspark SQL example"
+        echo "example.9 pyspark sql"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh pysql | tee test-pyspark-sql-sgx.log && \
+             cat test-pyspark-sql-sgx.log | egrep 'Example API finished'"
+        status_9_pyspark_sql=$(echo $?)
+        fi
+        
+        if [ $status_10_pyspark_tpch -ne 0 ]; then
+        echo "################## start pyspark tpch"
+        echo "example.10 pyspark tpch"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#/host/data/ /host/data/output/ true#/host/data/tpch/ /host/data/output/ false#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh pytpch | tee pyspark-tpch.log && \
+             cat pyspark-tpch.log | egrep 'total time is'"
+        status_10_pyspark_tpch=$(echo $?)
+        fi
+        
+        if [ $status_11_spark_lgbm -ne 0 ]; then
+        echo "################## start spark lgbm"
+        echo "example.11 spark lgbm"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             bash run_spark_on_occlum_glibc.sh lgbm | tee spark-lgbm.log && \
+             cat spark-lgbm.log | egrep 'acc:'"
+        status_11_spark_lgbm=$(echo $?)
+        fi
+
+        echo "status_1_spark_pi $status_1_spark_pi"
+        echo "status_2_bigdl_lenet_mnist $status_2_bigdl_lenet_mnist"
+        echo "status_3_bigdl_resnet_cifar10 $status_3_bigdl_resnet_cifar10"
+        echo "status_4_spark_tpch $status_4_spark_tpch"
+        #echo "status_5_spark_ut $status_5_spark_ut"
+        echo "status_6_spark_xgboost $status_6_spark_xgboost"
+        echo "status_7_spark_gbt $status_7_spark_gbt"
+        echo "status_8_pyspark_sklearn $status_8_pyspark_sklearn"
+        echo "status_9_pyspark_sql $status_9_pyspark_sql"
+        echo "status_10_pyspark_tpch $status_10_pyspark_tpch"
+        echo "status_11_spark_lgbm $status_11_spark_lgbm"

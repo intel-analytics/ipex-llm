@@ -54,14 +54,14 @@ def _convert_llama(model_path, outfile_dir, outtype):
         vocab = model_plus.vocab
     else:
         vocab_dir = model_plus.paths[0].parent
-        vocab = load_vocab(vocab_dir)
+        vocab = load_vocab(vocab_dir, vocabtype='spm')
+    params = Params.load(model_plus)
     model = model_plus.model
-    model = do_necessary_conversions(model)
+    model = do_necessary_conversions(model, params)
     output_type = pick_output_type(model, outtype)
     model = convert_to_output_type(model, output_type)
-    params = Params.guessed(model, output_type)
-    outfile_path = default_outfile(outfile_dir, params)
-    OutputFile.write_all(outfile_path, params, model, vocab)
+    outfile_path = default_outfile([outfile_dir], output_type)
+    OutputFile.write_all(outfile_path, params, output_type, model, vocab)
 
 
 def _convert_gptneox(model_path, outfile_dir, outtype):

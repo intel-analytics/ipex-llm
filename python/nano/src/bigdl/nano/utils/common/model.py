@@ -72,9 +72,13 @@ class AcceleratedModel(ABC):
 
     @staticmethod
     def _load_status(path):
-        meta_path = Path(path) / "nano_model_meta.yml"
-        with open(meta_path, 'r') as f:
-            metadata = yaml.safe_load(f)
+        if isinstance(path, dict):
+            metadata = yaml.safe_load(path["nano_model_meta.yml"])
+            path["nano_model_meta.yml"].seek(0)
+        else:
+            meta_path = Path(path) / "nano_model_meta.yml"
+            with open(meta_path, 'r') as f:
+                metadata = yaml.safe_load(f)
         return metadata
 
     @staticmethod

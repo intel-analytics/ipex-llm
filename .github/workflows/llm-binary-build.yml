@@ -17,8 +17,19 @@ on:
     paths:
       - ".github/workflows/llm-binary-build.yml"
   workflow_dispatch:
-
+    inputs:
+      llmcpp-ref:
+        description: 'Ref of llm.cpp code'
+        default: ''
+        required: false
+        type: string
   workflow_call:
+    inputs:
+      llmcpp-ref:
+        description: 'Ref of llm.cpp code'
+        default: ''
+        required: false
+        type: string
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -34,62 +45,34 @@ jobs:
           name: linux-avxvnni
 
   linux-build-avxvnni:
-    runs-on: [self-hosted, AVX2, ubuntu-18.04-lts]
+    runs-on: [self-hosted, AVX2, almalinux8]
     needs: check-linux-avxvnni-artifact
     if: needs.check-linux-avxvnni-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
       - name: Install Build Environment
         shell: bash
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:git-core/ppa
-          add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          apt update
-          apt install -y git
-          apt install -y build-essential
-          apt install -y gcc-11 g++-11
-          # install binutils
-          if [[ "$(ld -v | awk '{print  $NF}')" != "2.36.1" ]]; then
-            wget http://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.gz
-            tar xzf binutils-2.36.1.tar.gz
-            cd binutils-2.36.1
-            ./configure
-            make 
-            make install
-            cd ..
-          fi
-          cd ..
-          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
-            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
-            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
-              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-            fi
-          else
-            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-          fi
-          tar zxf cmake-3.27.1-linux-x86_64.tar.gz
+          yum install -y gcc-toolset-11 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
+          conda remove -n python310 --all -y
+          conda create -n python310 python=3.10 -y
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Build binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move release binary
         shell: bash
         run: |
@@ -113,18 +96,27 @@ jobs:
       - name: Build Chatglm
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
+          source activate python39 || conda activate python39
           cd src/chatglm
-          $cmake_path -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move Chatglm binaries
         shell: bash
         run: |
           mv src/chatglm/build/main release/main-chatglm_vnni
           mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+      - name: Build Chatglm Py310
+        shell: bash
+        run: |
+          source activate python310 || conda activate python310
+          cd src/chatglm
+          rm -r build
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+      - name: Move Chatglm binaries Py310
+        shell: bash
+        run: |
+          mv src/chatglm/build/_C.cpython-310-x86_64-linux-gnu.so release/chatglm_C.cpython-310-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -135,6 +127,8 @@ jobs:
         shell: bash
         run: |
           make clean
+          conda remove -n python39 --all -y
+          conda remove -n python310 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
@@ -148,54 +142,32 @@ jobs:
           name: linux-avx512
 
   linux-build-avx512:
-    runs-on: [self-hosted, AVX512, ubuntu-18.04-lts]
+    runs-on: [self-hosted, AVX512, almalinux8]
     needs: check-linux-avx512-artifact
     if: needs.check-linux-avx512-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-      - name: Update Git
-        shell: bash
-        run: |
-          export http_proxy=${HTTP_PROXY}
-          export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:git-core/ppa
-          apt update
-          apt install -y git
-      - uses: actions/checkout@v3
-        with:
-          repository: "intel-analytics/llm.cpp"
-          token: ${{ env.github_access_token }}
-          submodules: "recursive"
       - name: Install Build Environment
         shell: bash
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          apt update
-          apt install -y build-essential
-          apt install -y gcc-11 g++-11
-          cd ..
-          if [ -f "cmake-3.27.1-linux-x86_64.tar.gz" ]; then
-            actual_sha256=$(sha256sum "cmake-3.27.1-linux-x86_64.tar.gz" | awk '{print $1}')
-            if [ "$actual_sha256" != "9fef63e1cf87cab1153f9433045df2e43c336e462518b0f5e52d2cc91d762cff" ]; then
-              wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-            fi
-          else
-            wget https://github.com/Kitware/CMake/releases/download/v3.27.1/cmake-3.27.1-linux-x86_64.tar.gz
-          fi
-          tar zxf cmake-3.27.1-linux-x86_64.tar.gz
+          yum install -y gcc-toolset-11 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Build avx512 binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -DONLYAVX=OFF -DONLYAVX2=OFF -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move avx512 release binary
         shell: bash
         run: |
@@ -211,12 +183,8 @@ jobs:
       - name: Build avx2 binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -DONLYAVX=OFF -DONLYAVX2=ON -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=ON -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move avx2 release binary
         shell: bash
         run: |
@@ -228,12 +196,8 @@ jobs:
       - name: Build avx binary
         shell: bash
         run: |
-          cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-          $cmake_path -DONLYAVX=ON -DONLYAVX2=OFF -B build
-          $cmake_path --build build --config Release
-        env:
-          CC: gcc-11
-          CXX: g++-11
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=ON -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
       - name: Move avx release binary
         shell: bash
         run: |
@@ -242,16 +206,6 @@ jobs:
           mv build/libllama.so avx_release/libllama_avx.so
           mv build/libgptneox.so avx_release/libgptneox_avx.so
           mv build/libstarcoder.so avx_release/libstarcoder_avx.so
-      # - name: Build Chatglm
-      #   shell: bash
-      #   run: |
-      #     cmake_path="$(pwd)/../cmake-3.27.1-linux-x86_64/bin/cmake"
-      #     cd src/chatglm
-      #     $cmake_path -B build
-      #     $cmake_path --build build --config Release
-      #   env:
-      #     CC: gcc-11
-      #     CXX: g++-11
       - name: Archive avx512 build files
         uses: actions/upload-artifact@v3
         with:
@@ -274,7 +228,78 @@ jobs:
         shell: bash
         run: |
           make clean
+          conda remove -n python39 --all -y
 
+  check-linux-amx-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: linux-amx
+
+  linux-build-amx:
+    runs-on: [self-hosted, amx, almalinux8]
+    needs: check-linux-amx-artifact
+    if: needs.check-linux-amx-artifact.outputs.if-exists == 'false'
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - name: Install Build Environment
+        shell: bash
+        run: |
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          yum install -y gcc-toolset-11 cmake git
+          conda remove -n python39 --all -y
+          conda create -n python39 python=3.9 -y
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
+      - name: Build amx binary
+        shell: bash
+        run: |
+          scl enable gcc-toolset-11 "cmake -DONLYAVX=OFF -DONLYAVX2=OFF -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+          # build chatglm
+          source activate python39 || conda activate python39
+          cd src/chatglm
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+      - name: Move amx release binary
+        shell: bash
+        run: |
+          mkdir amx_release
+          mv build/quantize-bloom amx_release/quantize-bloom_amx
+          mv build/libbloom.so amx_release/libbloom_amx.so
+          mv build/quantize-llama amx_release/quantize-llama_amx
+          mv build/libllama.so amx_release/libllama_amx.so
+          mv build/quantize-gptneox amx_release/quantize-gptneox_amx
+          mv build/libgptneox.so amx_release/libgptneox_amx.so
+          mv build/quantize-starcoder amx_release/quantize-starcoder_amx
+          mv build/libstarcoder.so amx_release/libstarcoder_amx.so
+          # chatglm binary files
+          mv src/chatglm/build/main amx_release/main-chatglm_amx
+          # mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so amx_release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+      - name: Archive amx build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-amx
+          path: |
+            amx_release
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          make clean
+          conda remove -n python39 --all -y
+          
   check-windows-avx2-artifact:
     runs-on: ubuntu-latest
     outputs:
@@ -298,6 +323,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Add msbuild to PATH
@@ -310,7 +336,7 @@ jobs:
         shell: powershell
         run: |
           cmake .
-          cmake --build . --config Release
+          cmake --build . --config Release -j
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -345,6 +371,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Add msbuild to PATH
@@ -357,7 +384,7 @@ jobs:
         shell: powershell
         run: |
           cmake -DAVXVNNI=ON .
-          cmake --build . --config Release
+          cmake --build . --config Release -j
       - name: Move release binary
         shell: powershell
         run: |
@@ -383,12 +410,27 @@ jobs:
         run: |
           cd src/chatglm
           cmake -DAVXVNNI=ON -B build
-          cmake --build build --config Release
+          cmake --build build --config Release -j
       - name: Move Chatglm binaries
         shell: powershell
         run: |
           mv src/chatglm/build/Release/main.exe release/main-chatglm_vnni.exe
           mv src/chatglm/build/Release/_C.cp39-win_amd64.pyd release/chatglm_C.cp39-win_amd64.pyd
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Build Chatglm Py310
+        shell: powershell
+        run: |
+          cd src/chatglm
+          rm -r build
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release -j
+      - name: Move Chatglm binaries Py310
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/_C.cp310-win_amd64.pyd release/chatglm_C.cp310-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -419,6 +461,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Add msbuild to PATH
@@ -431,7 +474,7 @@ jobs:
         shell: powershell
         run: |
           cmake -DONLYAVX=ON .
-          cmake --build . --config Release
+          cmake --build . --config Release -j
       - name: Move release binary
         shell: powershell
         run: |

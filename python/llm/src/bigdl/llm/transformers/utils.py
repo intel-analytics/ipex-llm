@@ -45,13 +45,17 @@ from ..utils.common import invalidInputError
 from typing import Union
 import torch
 from torch import nn
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 WEIGHTS_NAME = "pytorch_model.bin"
 WEIGHTS_INDEX_NAME = "pytorch_model.bin.index.json"
 
 
-def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant):
+def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant=None):
     pretrained_model_name_or_path = str(pretrained_model_name_or_path)
     if os.path.isfile(
         os.path.join(pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_NAME, variant))
