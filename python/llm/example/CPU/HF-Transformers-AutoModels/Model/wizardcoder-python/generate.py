@@ -21,7 +21,7 @@ import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 
-WIZARDCODER_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
+WIZARDCODERPYTHON_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
 ### Instruction:
 {prompt}
@@ -29,9 +29,9 @@ WIZARDCODER_PROMPT_FORMAT = """Below is an instruction that describes a task. Wr
 ### Response:"""
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for WizardCoder model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for WizardCoder-Python model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="WizardLM/WizardCoder-Python-7B-V1.0",
-                        help='The huggingface repo id for the WizardCoder (e.g. `WizardLM/WizardCoder-Python-7B-V1.0`) to be downloaded'
+                        help='The huggingface repo id for the WizardCoder-Python (e.g. `WizardLM/WizardCoder-Python-7B-V1.0`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="def print_hello_world():",
                         help='Prompt to infer')
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = WIZARDCODER_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = WIZARDCODERPYTHON_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
