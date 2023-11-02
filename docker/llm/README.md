@@ -291,6 +291,7 @@ docker run -itd \
     -e SERVICE_MODEL_PATH=$SERVICE_MODEL_PATH \
     $DOCKER_IMAGE --service-model-path $SERVICE_MODEL_PATH
 ```
+You can assign specified model path to service-model-path to run the service while booting the container. Also you can manually run the service after entering container. Run `/opt/entrypoint.sh --help` in container to see more information. There are steps below describe how to run service in details as well.
 
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
