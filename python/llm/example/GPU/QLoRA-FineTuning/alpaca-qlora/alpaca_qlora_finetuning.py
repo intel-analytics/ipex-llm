@@ -73,12 +73,7 @@ def train(
     lora_target_modules: List[str] = [
         "q_proj",
         "v_proj",
-        "k_proj",
-        "o_proj",
-        "up_proj",
-        "down_proj",
-        "gate_proj"
-    ],  # according to the QLoRA paper (https://arxiv.org/pdf/2305.14314.pdf), it's suggested to fine tune all linear layers
+    ],
     # llm hyperparams
     train_on_inputs: bool = True,  # if False, masks out inputs in loss
     add_eos_token: bool = False,
@@ -262,7 +257,7 @@ def train(
         else:
             print(f"Checkpoint {checkpoint_name} not found")
 
-    # model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
+    model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
     if val_set_size > 0:
         train_val = data["train"].train_test_split(
@@ -292,20 +287,20 @@ def train(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
             # warmup_ratio=0.03,
-            # warmup_steps=100,
+            warmup_steps=100,
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             lr_scheduler_type="cosine",
             bf16=True,  # ensure training more stable
-            logging_steps=1,
+            logging_steps=10,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
             save_strategy="steps",
-            eval_steps=100 if val_set_size > 0 else None,
-            save_steps=100,
+            eval_steps=200 if val_set_size > 0 else None,
+            save_steps=200,
             output_dir=output_dir,
-            save_total_limit=100,
+            save_total_limit=3,
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
