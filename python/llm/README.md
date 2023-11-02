@@ -67,6 +67,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | CodeLlama  | [link](example/CPU/HF-Transformers-AutoModels/Model/codellama) | [link](example/GPU/HF-Transformers-AutoModels/Model/codellama)  |
 | Skywork    | [link](example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
 | InternLM-XComposer    | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm-xcomposer)   |   |
+| WizardCoder-Python | [link](example/CPU/HF-Transformers-AutoModels/Model/wizardcoder-python) | |
 
 ### Working with `bigdl-llm`
 
