@@ -33,7 +33,7 @@ docker run -itd \
  -e WORKER_COUNT_DOCKER=your_worker_count \
  -v your_downloaded_base_model_path:/bigdl/model \
  -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
- intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
+ intelanalytics/bigdl-llm-finetune-lora-cpu:2.4.0-SNAPSHOT \
  bash
 ```
 
