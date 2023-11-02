@@ -6,7 +6,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Multi-turn chat centered around an image using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a LLaVA model to start a multi-trun chat centered around an image using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a LLaVA model to start a multi-turn chat centered around an image using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
@@ -69,9 +69,9 @@ USER: 你知道这幅画是谁画的吗？
 ASSISTANT: 这幅画是由著名的文艺复兴画家达芬奇（Leonardo da Vinci）画的。该画是他的代表作之一，是出自意大利佛罗伦萨的博物馆。画中的女子被认为是一位不为人知的模特，而且画作可能还有一个人物底版，这可能使得这幅画的价值更高。
 ```
 
-The sample inpuit image is:
+The sample input image is:
 
-<a href="https://llava-vl.github.io/static/images/monalisa.jpg"><img width=250px src="https://llava-vl.github.io/static/images/monalisa.jpg" ></a>
+<a href="https://llava-vl.github.io/static/images/monalisa.jpg"><img width=400px src="https://llava-vl.github.io/static/images/monalisa.jpg" ></a>
 
 ### 3. Trouble shooting
 
