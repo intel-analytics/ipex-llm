@@ -98,11 +98,8 @@ def test_optimize_llama_model(Model, Tokenizer, model_path):
             layer_module.register_forward_hook(
                 lambda module, output, layer_name=layer_name: forward_hook(module, 
                                                                            output, layer_name))
-
     logits_base_model = (model(input_ids)).logits
-
-    for layer_name, output_tensor in layer_outputs.items():
-        layer_tensor.append(output_tensor)
+    layer_tensor = layer_outputs.pop()
 
     del model
 
@@ -115,18 +112,15 @@ def test_optimize_llama_model(Model, Tokenizer, model_path):
     for layer_name, layer_module in opt_model.named_modules():
         if layer_name == "model.layers.31.self_attention":
             layer_module.register_forward_pre_hook(
-                lambda module, input: pre_hook(module, input))
+                lambda module, input: load_pre_hook(module, input))
             layer_module.register_forward_hook(
                 lambda module, output, layer_name=layer_name: forward_hook(module, 
                                                                            output, layer_name))
     logits_optimized_model = (opt_model(input_ids)).logits
-
-    for layer_name, output_tensor in layer_outputs.items():
-        opt_layer_tensor.append(output_tensor)
+    opt_layer_tensor = layer_outputs.pop()
 
     attn_output_diff = []
-    for i, (t1, t2) in enumerate(zip(layer_tensor[0], opt_layer_tensor[0])):
-        #if not torch.equal(t1, t2):
+    for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
         if t1 is not None and t2 is not None:
             if not isinstance(t1, tuple) and not isinstance(t2, tuple):
                 attn_output_diff.append(t1 - t2)
@@ -134,13 +128,8 @@ def test_optimize_llama_model(Model, Tokenizer, model_path):
                 for i, (t3, t4) in enumerate(zip(t1, t2)):
                     attn_output_diff.append(t3 - t4)
 
-    max_tensor = []
-    for i in range(len(attn_output_diff)):
-        max_value = torch.max(attn_output_diff[i])
-        max_tensor.append(max_value.item())
-
-    for i in range(len(max_tensor)):
-        assert max_tensor[i] <= lower_bound
+    max_diff_tensor = [torch.max(item).item() for item in attn_output_diff]
+    assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
 
 
 if __name__ == '__main__':
