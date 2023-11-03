@@ -54,7 +54,7 @@ def split_tensor_along_last_dim(
     return tensor_list
 
 
-@torch.jit.script
+# @torch.jit.script
 def apply_rotary_pos_emb_chatglm(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Tensor:
     # x: [sq, b, np, hn]
     sq, b, np, hn = x.size(0), x.size(1), x.size(2), x.size(3)
@@ -116,7 +116,7 @@ def chatglm2_model_forward(
 
     # use_fuse_rope = input_ids.device.type == "xpu"
     # use_fuse_rope = use_fuse_rope and not self.training
-    use_fuse_rope = True
+    use_fuse_rope = False
 
     if use_fuse_rope:
         rotary_pos_emb = position_ids
@@ -218,6 +218,20 @@ def chatglm2_attention_forward_8eb45c(
                 key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
             key_layer = key_layer.permute(2, 0, 1, 3)
         else:
+            rot_dim = rotary_pos_emb.shape[-2] * 2
+            #query_states = query_layer.permute(1, 2, 0, 3).contiguous()
+            query_states = query_layer.transpose(0, 1)#.contiguous()
+            query_states, query_states_pass = query_states[..., :rot_dim], query_states[..., rot_dim:]
+            key_states = key_layer.permute(1, 2, 0, 3).contiguous()
+            key_states = key_layer.transpose(0, 1)#.contiguous()
+            key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
+            cos, sin = rotary_pos_emb.split([1, 1], -1)
+            cos = cos.squeeze().unsqueeze(0)#.unsqueeze(1)
+            sin = sin.squeeze().unsqueeze(0)#.unsqueeze(1)
+            position_ids = torch.range(0, cur_length-1, dtype=torch.long).reshape((1, cur_length))
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, position_ids, "gptj")
+
             query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
