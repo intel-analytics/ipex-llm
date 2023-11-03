@@ -127,7 +127,15 @@ def chatglm2_model_forward(
             rotary_pos_emb = rotary_pos_emb[position_ids]
         else:
             rotary_pos_emb = rotary_pos_emb[None, :seq_length]
-        rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
+        # rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
+        cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
+        cos = cos.squeeze(-1)
+        sin = sin.squeeze(-1)
+        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
+        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
+        rotary_pos_emb = (cos, sin, rotary_pos_emb)
+        self.cossin = rotary_pos_emb
+        self.position_ids = position_ids
 
     # Run encoder.
     hidden_states, presents, all_hidden_states, all_self_attentions = self.encoder(
@@ -195,7 +203,24 @@ def chatglm2_attention_forward_8eb45c(
 
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
-        if len(rotary_pos_emb.shape) == 2:  # use_fuse_rope, actually it is position_ids
+        if len(rotary_pos_emb) == 3:
+            cos, sin, cossin = rotary_pos_emb
+            rot_dim = cos.shape[-1]
+            #query_states = query_layer.permute(1, 2, 0, 3).contiguous()
+            query_states = query_layer.transpose(0, 1)#.contiguous()
+            query_states, query_states_pass = query_states[..., :rot_dim], query_states[..., rot_dim:]
+            # key_states = key_layer.permute(1, 2, 0, 3).contiguous()
+            key_states = key_layer.transpose(0, 1)#.contiguous()
+            key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, None, "chatglm2")
+            cossin = cossin.transpose(0, 1).contiguous()
+            query_layer = apply_rotary_pos_emb_chatglm(query_layer, cossin)
+            key_layer = apply_rotary_pos_emb_chatglm(key_layer, cossin)
+
+            assert(torch.equal(query_states, query_layer.transpose(0, 1)[..., :64]))
+            assert(torch.equal(key_states, key_layer.transpose(0, 1)[..., :64]))
+        elif len(rotary_pos_emb.shape) == 2:  # use_fuse_rope, actually it is position_ids
             rot_dim = rotary_pos_emb.shape[-2] * 2
             query_layer = query_layer.permute(1, 2, 0, 3)
             query_layer, query_layer_pass = query_layer[..., :rot_dim], query_layer[..., rot_dim:]
@@ -217,26 +242,6 @@ def chatglm2_attention_forward_8eb45c(
             if key_layer_pass.shape[-1] > 0:
                 key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
             key_layer = key_layer.permute(2, 0, 1, 3)
-        else:
-            rot_dim = rotary_pos_emb.shape[-2] * 2
-            #query_states = query_layer.permute(1, 2, 0, 3).contiguous()
-            query_states = query_layer.transpose(0, 1)#.contiguous()
-            query_states, query_states_pass = query_states[..., :rot_dim], query_states[..., rot_dim:]
-            # key_states = key_layer.permute(1, 2, 0, 3).contiguous()
-            key_states = key_layer.transpose(0, 1)#.contiguous()
-            key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
-            cos, sin = rotary_pos_emb.split([1, 1], -1)
-            cos = cos.squeeze().unsqueeze(0)#.unsqueeze(1)
-            sin = sin.squeeze().unsqueeze(0)#.unsqueeze(1)
-            position_ids = torch.range(0, cur_length-1, dtype=torch.long).reshape((1, cur_length))
-            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, position_ids, "gptj")
-
-            query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
-            key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
-
-            assert(torch.equal(query_states, query_layer.transpose(0, 1)[..., :64]))
-            assert(torch.equal(key_states, key_layer.transpose(0, 1)[..., :64]))
 
     if self.multi_query_attention:
         key_length = key_layer.size(0)
