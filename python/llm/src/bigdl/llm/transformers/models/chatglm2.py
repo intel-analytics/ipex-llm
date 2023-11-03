@@ -114,12 +114,22 @@ def chatglm2_model_forward(
         if (attention_mask is not None and not attention_mask.all()) or (past_key_values and seq_length != 1):
             full_attention_mask = self.get_masks(input_ids, past_key_values, padding_mask=attention_mask)
 
-    # use_fuse_rope = input_ids.device.type == "xpu"
-    # use_fuse_rope = use_fuse_rope and not self.training
-    use_fuse_rope = False
+    use_fuse_rope = input_ids.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not self.training
 
+    # Rotary positional embeddings
     if use_fuse_rope:
-        rotary_pos_emb = position_ids
+        rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
+        if position_ids is not None:
+            rotary_pos_emb = rotary_pos_emb[position_ids]
+        else:
+            rotary_pos_emb = rotary_pos_emb[None, :seq_length]
+        cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
+        cos = cos.squeeze(-1)
+        sin = sin.squeeze(-1)
+        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
+        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
+        rotary_pos_emb = (cos, sin)
     else:
         # Rotary positional embeddings
         rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
@@ -127,15 +137,7 @@ def chatglm2_model_forward(
             rotary_pos_emb = rotary_pos_emb[position_ids]
         else:
             rotary_pos_emb = rotary_pos_emb[None, :seq_length]
-        # rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
-        cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
-        cos = cos.squeeze(-1)
-        sin = sin.squeeze(-1)
-        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
-        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
-        rotary_pos_emb = (cos, sin, rotary_pos_emb)
-        self.cossin = rotary_pos_emb
-        self.position_ids = position_ids
+        rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
 
     # Run encoder.
     hidden_states, presents, all_hidden_states, all_self_attentions = self.encoder(
@@ -203,45 +205,20 @@ def chatglm2_attention_forward_8eb45c(
 
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
-        if len(rotary_pos_emb) == 3:
-            cos, sin, cossin = rotary_pos_emb
+        if len(rotary_pos_emb) == 2:  # use_fuse_rope
+            cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
-            #query_states = query_layer.permute(1, 2, 0, 3).contiguous()
-            query_states = query_layer.transpose(0, 1)#.contiguous()
+            query_states = query_layer.transpose(0, 1)
             query_states, query_states_pass = query_states[..., :rot_dim], query_states[..., rot_dim:]
-            # key_states = key_layer.permute(1, 2, 0, 3).contiguous()
-            key_states = key_layer.transpose(0, 1)#.contiguous()
+            key_states = key_layer.transpose(0, 1)
             key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
-            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, None, "chatglm2")
-            cossin = cossin.transpose(0, 1).contiguous()
-            query_layer = apply_rotary_pos_emb_chatglm(query_layer, cossin)
-            key_layer = apply_rotary_pos_emb_chatglm(key_layer, cossin)
-
-            assert(torch.equal(query_states, query_layer.transpose(0, 1)[..., :64]))
-            assert(torch.equal(key_states, key_layer.transpose(0, 1)[..., :64]))
-        elif len(rotary_pos_emb.shape) == 2:  # use_fuse_rope, actually it is position_ids
-            rot_dim = rotary_pos_emb.shape[-2] * 2
-            query_layer = query_layer.permute(1, 2, 0, 3)
-            query_layer, query_layer_pass = query_layer[..., :rot_dim], query_layer[..., rot_dim:]
-            key_layer = key_layer.permute(1, 2, 0, 3)
-            key_layer, key_layer_pass = key_layer[..., :rot_dim], key_layer[..., rot_dim:]
-            dummy_q = torch.empty(query_layer.shape, dtype=query_layer.dtype, device=query_layer.device)
-            dummy_k = torch.empty(key_layer.shape, dtype=key_layer.dtype, device=key_layer.device)
-            _, query_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_q,
-                                                               query_layer,
-                                                               rotary_pos_emb,
-                                                               "llama")
-            _, key_layer = apply_rotary_pos_emb_no_cache_xpu(dummy_k,
-                                                             key_layer,
-                                                             rotary_pos_emb,
-                                                             "llama")
-            if query_layer_pass.shape[-1] > 0:
-                query_layer = torch.cat((query_layer, query_layer_pass), dim=-1)
-            query_layer = query_layer.permute(2, 0, 1, 3)
-            if key_layer_pass.shape[-1] > 0:
-                key_layer = torch.cat((key_layer, key_layer_pass), dim=-1)
-            key_layer = key_layer.permute(2, 0, 1, 3)
+            torch.ops.torch_ipex.apply_rotary_embedding(query_states, sin, cos, query_states)
+            torch.ops.torch_ipex.apply_rotary_embedding(key_states, sin, cos, key_states)
+            query_layer = torch.cat((query_states, query_states_pass), dim=-1).transpose(0, 1)
+            key_layer = torch.cat((key_states, key_states_pass), dim=-1).transpose(0, 1)
+        else:
+            query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
+            key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
     if self.multi_query_attention:
         key_length = key_layer.size(0)
