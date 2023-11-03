@@ -37,12 +37,6 @@ layer_inputs = []
 layer_tensor = []
 opt_layer_tensor = []
 
-@pytest.mark.parametrize('Model, Tokenizer, model_path',[
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH')),
-    ])
-
 
 def forward_hook(module, output, layer_name):
     layer_outputs[layer_name] = output
@@ -55,6 +49,12 @@ def pre_hook(module, input):
 def load_pre_hook(module, input):
     return layer_inputs[0]
 
+
+@pytest.mark.parametrize('Model, Tokenizer, model_path',[
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
+    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH')),
+])
 
 def test_optimize_model(Model, Tokenizer, model_path):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
