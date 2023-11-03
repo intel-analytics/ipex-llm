@@ -123,12 +123,13 @@ def chatglm2_model_forward(
     use_fuse_rope = use_fuse_rope and not self.training
 
     # Rotary positional embeddings
+    rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
+    if position_ids is not None:
+        rotary_pos_emb = rotary_pos_emb[position_ids]
+    else:
+        rotary_pos_emb = rotary_pos_emb[None, :seq_length]
     if use_fuse_rope:
-        rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
-        if position_ids is not None:
-            rotary_pos_emb = rotary_pos_emb[position_ids]
-        else:
-            rotary_pos_emb = rotary_pos_emb[None, :seq_length]
+        # repeat cos sin here.
         cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
         cos = cos.squeeze(-1)
         sin = sin.squeeze(-1)
@@ -136,12 +137,6 @@ def chatglm2_model_forward(
         sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         rotary_pos_emb = (cos, sin)
     else:
-        # Rotary positional embeddings
-        rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
-        if position_ids is not None:
-            rotary_pos_emb = rotary_pos_emb[position_ids]
-        else:
-            rotary_pos_emb = rotary_pos_emb[None, :seq_length]
         rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
 
     # Run encoder.
@@ -214,14 +209,16 @@ def chatglm2_attention_forward_8eb45c(
         if len(rotary_pos_emb) == 2:  # use_fuse_rope
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
-            query_states = query_layer.transpose(0, 1)
-            query_states = query_states[..., :rot_dim], query_states[..., rot_dim:]
-            key_states = key_layer.transpose(0, 1)
-            key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
-            torch.ops.torch_ipex.apply_rotary_embedding(query_states, sin, cos, query_states)
-            torch.ops.torch_ipex.apply_rotary_embedding(key_states, sin, cos, key_states)
-            query_layer = torch.cat((query_states, query_states_pass), dim=-1).transpose(0, 1)
-            key_layer = torch.cat((key_states, key_states_pass), dim=-1).transpose(0, 1)
+            query_layer = query_layer.transpose(0, 1)
+            query_layer_pass = query_layer[..., rot_dim:]
+            query_layer = query_layer[..., :rot_dim]
+            key_layer = key_layer.transpose(0, 1)
+            key_layer_pass = key_layer[..., rot_dim:]
+            key_layer = key_layer[..., :rot_dim]
+            torch.ops.torch_ipex.apply_rotary_embedding(query_layer, sin, cos, query_layer)
+            torch.ops.torch_ipex.apply_rotary_embedding(key_layer, sin, cos, key_layer)
+            query_layer = torch.cat((query_layer, query_layer_pass), dim=-1).transpose(0, 1)
+            key_layer = torch.cat((key_layer, key_layer_pass), dim=-1).transpose(0, 1)
         else:
             query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
