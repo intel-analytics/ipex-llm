@@ -27,6 +27,8 @@ class Test_Models_Basics(TestCase):
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
         self.starcoder_model_path = os.environ.get('STARCODER_INT4_CKPT_PATH')
+        self.chatglm_model_path = os.environ.get('CHATGLM_INT4_CKPT_PATH')
+
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
@@ -93,6 +95,15 @@ class Test_Models_Basics(TestCase):
             n_threads=self.n_threads)
         question = "What is AI?"
         result = llm(question)
+
+    def test_langchain_llm_chatglm(self):
+        llm = ChatGLMLLM(
+            model_path=self.chatglm_model_path,
+            max_tokens=32,
+            n_threads=self.n_threads)
+        question = "What is AI?"
+        result = llm(question)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

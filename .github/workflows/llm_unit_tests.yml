@@ -101,7 +101,7 @@ jobs:
           echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_redpajama_7b_q4_0.bin" >> "$GITHUB_ENV"
           echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
           echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
-          echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/chatglm2-6b-q4_0.bin" >> "$GITHUB_ENV"
+          echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_chatglm2_q4_0.bin" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -140,10 +140,11 @@ jobs:
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin -P $INT4_CKPT_DIR
           fi
-          # if [ ! -e $CHATGLM_INT4_CKPT_PATH ]; then
-          #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
-          #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $INT4_CKPT_DIR
-          # fi
+          if [ ! -e $CHATGLM_INT4_CKPT_PATH ]; then
+            echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            echo "wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_chatglm2_q4_0.bin -P $INT4_CKPT_DIR"
+            wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/bigdl_llm_chatglm2_q4_0.bin -P $INT4_CKPT_DIR
+          fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
             echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"            
