@@ -266,7 +266,8 @@ def _optimize_post(model):
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
             from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
-            from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward, chatglm2_model_forward
+            from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+            from bigdl.llm.transformers.models.chatglm2 import chatglm2_model_forward
             convert_forward(model,
                             module.SelfAttention,
                             chatglm2_attention_forward_8eb45c

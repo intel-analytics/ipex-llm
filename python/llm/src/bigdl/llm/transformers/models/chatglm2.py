@@ -87,6 +87,7 @@ def chatglm_rms_norm_forward(self, hidden_states):
         return self.weight * hidden_states.to(input_dtype)
     return hidden_states
 
+
 def chatglm2_model_forward(
         self,
         input_ids,
@@ -100,7 +101,8 @@ def chatglm2_model_forward(
         return_dict: Optional[bool] = None,
 ):
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None
+            else self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
@@ -111,8 +113,11 @@ def chatglm2_model_forward(
         inputs_embeds = self.embedding(input_ids)
 
     if full_attention_mask is None:
-        if (attention_mask is not None and not attention_mask.all()) or (past_key_values and seq_length != 1):
-            full_attention_mask = self.get_masks(input_ids, past_key_values, padding_mask=attention_mask)
+        if (attention_mask is not None and not attention_mask.all()) or
+                 (past_key_values and seq_length != 1):
+            full_attention_mask = self.get_masks(input_ids,
+                                                 past_key_values,
+                                                 padding_mask=attention_mask)
 
     use_fuse_rope = input_ids.device.type == "xpu"
     use_fuse_rope = use_fuse_rope and not self.training
@@ -146,7 +151,8 @@ def chatglm2_model_forward(
     )
 
     if not return_dict:
-        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions] if v is not None)
+        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions]
+                         if v is not None)
 
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
@@ -209,7 +215,8 @@ def chatglm2_attention_forward_8eb45c(
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
             query_states = query_layer.transpose(0, 1)
-            query_states, query_states_pass = query_states[..., :rot_dim], query_states[..., rot_dim:]
+            query_states = query_states[..., :rot_dim]
+            query_states_pass = query_states[..., rot_dim:]
             key_states = key_layer.transpose(0, 1)
             key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
             torch.ops.torch_ipex.apply_rotary_embedding(query_states, sin, cos, query_states)
