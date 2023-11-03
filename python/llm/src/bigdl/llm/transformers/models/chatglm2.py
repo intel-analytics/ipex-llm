@@ -91,14 +91,14 @@ def chatglm_rms_norm_forward(self, hidden_states):
 def chatglm2_model_forward(
         self,
         input_ids,
-        position_ids: Optional[torch.Tensor] = None,
-        attention_mask: Optional[torch.BoolTensor] = None,
-        full_attention_mask: Optional[torch.BoolTensor] = None,
-        past_key_values: Optional[Tuple[Tuple[torch.Tensor,torch.Tensor],...]] = None,
-        inputs_embeds: Optional[torch.Tensor] = None,
-        use_cache: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
+        position_ids: Optional[torch.Tensor]=None,
+        attention_mask: Optional[torch.BoolTensor]=None,
+        full_attention_mask: Optional[torch.BoolTensor]=None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]]=None,
+        inputs_embeds: Optional[torch.Tensor]=None,
+        use_cache: Optional[bool]=None,
+        output_hidden_states: Optional[bool]=None,
+        return_dict: Optional[bool]=None,
 ):
     output_hidden_states = (
         output_hidden_states if output_hidden_states is not None
@@ -114,7 +114,7 @@ def chatglm2_model_forward(
 
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or
-                (past_key_values and seq_length != 1):
+            (past_key_values and seq_length != 1):
             full_attention_mask = self.get_masks(input_ids,
                                                  past_key_values,
                                                  padding_mask=attention_mask)
