@@ -1,6 +1,6 @@
 # CodeShell-7B
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on CodeShell-7B models. For illustration purposes, we utilize the [WisdomShell/CodeShell-7B](https://huggingface.co/WisdomShell/CodeShell-7B) as a reference CodeShell-7B model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on CodeShell models. For illustration purposes, we utilize the [WisdomShell/CodeShell-7B](https://huggingface.co/WisdomShell/CodeShell-7B) as a reference CodeShell model.
 
 > **Note**: If you want to download the Hugging Face *Transformers* model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git).
 >
@@ -10,7 +10,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a CodeShell-7B model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a CodeShell model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
@@ -27,7 +27,7 @@ After setting up the Python environment, you could run the example by following 
 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
-> Please select the appropriate size of the CodeShell-7B model based on the capabilities of your machine.
+> Please select the appropriate size of the CodeShell model based on the capabilities of your machine.
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
@@ -53,7 +53,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the CodeShell-7B model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'WisdomShell/CodeShell-7B'`.
+- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the CodeShell model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'WisdomShell/CodeShell-7B'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for code). It is default to be `def print_hello_world():`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `50`.
 

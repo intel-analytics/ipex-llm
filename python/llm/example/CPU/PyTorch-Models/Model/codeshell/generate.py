@@ -25,9 +25,9 @@ from bigdl.llm import optimize_model
 # here the prompt tuning refers to https://huggingface.co/WisdomShell/CodeShell-7B
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for CodeShell-7B model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for CodeShell model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="WisdomShell/CodeShell-7B",
-                        help='The huggingface repo id for the CodeShell-7B model to be downloaded'
+                        help='The huggingface repo id for the CodeShell model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="def print_hello_world():",
                         help='Prompt to infer')
