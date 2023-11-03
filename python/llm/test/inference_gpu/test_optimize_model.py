@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 
-import pytest
 import os
+import pytest
 
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+import torch
 from transformers import LlamaTokenizer, AutoTokenizer
+from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+
 
 device = os.environ['DEVICE']
 print(f'Running on {device}')
@@ -27,10 +29,33 @@ if device == 'xpu':
 
 prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
+lower_bound = 3e-3
+
+layer_outputs = {}
+layer_inputs = []
+
+layer_tensor = []
+opt_layer_tensor = []
+
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
+    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH')),
     ])
+
+
+def forward_hook(module, output, layer_name):
+    layer_outputs[layer_name] = output
+
+
+def pre_hook(module, input):
+    layer_inputs.append(input)
+
+
+def load_pre_hook(module, input):
+    return layer_inputs[0]
+
+
 def test_optimize_model(Model, Tokenizer, model_path):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
@@ -54,6 +79,68 @@ def test_optimize_model(Model, Tokenizer, model_path):
     diff = abs(logits_base_model - logits_optimized_model).flatten()
 
     assert any(diff) is False
+
+
+def test_optimize_llama_model(Model, Tokenizer, model_path):
+    tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
+    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
+
+    model = Model.from_pretrained(model_path,
+                                load_in_4bit=True,
+                                optimize_model=False,
+                                trust_remote_code=True)
+    model = model.to(device)
+
+    for layer_name, layer_module in model.named_modules():
+        if layer_name == "model.layers.31.self_attention":
+            layer_module.register_forward_pre_hook(
+                lambda module, input: pre_hook(module, input))
+            layer_module.register_forward_hook(
+                lambda module, output, layer_name=layer_name: forward_hook(module, 
+                                                                           output, layer_name))
+
+    logits_base_model = (model(input_ids)).logits
+
+    for layer_name, output_tensor in layer_outputs.items():
+        layer_tensor.append(output_tensor)
+
+    del model
+
+    opt_model = Model.from_pretrained(model_path,
+                            load_in_4bit=True,
+                            optimize_model=True,
+                            trust_remote_code=True)
+    opt_model = opt_model.to(device)
+
+    for layer_name, layer_module in opt_model.named_modules():
+        if layer_name == "model.layers.31.self_attention":
+            layer_module.register_forward_pre_hook(
+                lambda module, input: pre_hook(module, input))
+            layer_module.register_forward_hook(
+                lambda module, output, layer_name=layer_name: forward_hook(module, 
+                                                                           output, layer_name))
+    logits_optimized_model = (opt_model(input_ids)).logits
+
+    for layer_name, output_tensor in layer_outputs.items():
+        opt_layer_tensor.append(output_tensor)
+
+    attn_output_diff = []
+    for i, (t1, t2) in enumerate(zip(layer_tensor[0], opt_layer_tensor[0])):
+        #if not torch.equal(t1, t2):
+        if t1 is not None and t2 is not None:
+            if not isinstance(t1, tuple) and not isinstance(t2, tuple):
+                attn_output_diff.append(t1 - t2)
+            else:
+                for i, (t3, t4) in enumerate(zip(t1, t2)):
+                    attn_output_diff.append(t3 - t4)
+
+    max_tensor = []
+    for i in range(len(attn_output_diff)):
+        max_value = torch.max(attn_output_diff[i])
+        max_tensor.append(max_value.item())
+
+    for i in range(len(max_tensor)):
+        assert max_tensor[i] <= lower_bound
 
 
 if __name__ == '__main__':
