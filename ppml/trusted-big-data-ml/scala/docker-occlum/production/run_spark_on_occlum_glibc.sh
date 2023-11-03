@@ -144,7 +144,12 @@ build_spark() {
     copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
 
     # Build
-    occlum build
+    if [[ $ENABLE_EDMM == "true" ]]; then
+        echo "enable EDMM"
+        ENABLE_EDMM=Y occlum build
+    else
+        echo "disable EDMM"
+        occlum build
 
 }
 
