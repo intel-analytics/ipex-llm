@@ -199,6 +199,7 @@ Over 40 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Deepseek | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/deepseek) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/deepseek) |
 | VisualGLM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/visualglm) | |
 
+
 ***For more details, please refer to the `bigdl-llm` [Document](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html), [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 
 ---
