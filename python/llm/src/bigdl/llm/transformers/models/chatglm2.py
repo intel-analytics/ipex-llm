@@ -235,6 +235,9 @@ def chatglm2_attention_forward_8eb45c(
             query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
+            assert(torch.equal(query_states, query_layer.transpose(0, 1)[..., :64]))
+            assert(torch.equal(key_states, key_layer.transpose(0, 1)[..., :64]))
+
     if self.multi_query_attention:
         key_length = key_layer.size(0)
         query_group_size = self.num_attention_heads_per_partition // \
