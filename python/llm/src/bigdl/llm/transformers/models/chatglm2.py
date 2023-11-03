@@ -21,7 +21,7 @@ import torch
 from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache, apply_rotary_pos_emb, apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -224,13 +224,8 @@ def chatglm2_attention_forward_8eb45c(
         key_length = key_layer.size(0)
         query_group_size = self.num_attention_heads_per_partition // \
             self.num_multi_query_groups_per_partition
-        # if rotary_pos_emb is not None and use_fuse_rope:
-        #     key_layer = key_layer.unsqueeze(-3)
-        # else:
-        #     key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
         key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
         key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
-        # print("----key", key_layer.shape)
         key_layer = key_layer.contiguous().view((batch_size,
                                                  self.num_attention_heads_per_partition,
                                                  key_length,
@@ -286,8 +281,6 @@ def chatglm2_attention_forward_8eb45c(
     # ==================================
     # core attention computation
     # ==================================
-    # print("----query", query_layer.shape)
-    # print("----key", key_layer.shape)
     context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
