@@ -23,5 +23,4 @@ class LLMEmbedding(torch.nn.Embedding):
     def forward(self, x: Tensor):
         if self.weight.device != 'cpu':
             self.to('cpu')
-            torch.xpu.empty_cache()
         return super().forward(x.to('cpu')).to(x.device)
