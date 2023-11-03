@@ -113,8 +113,8 @@ def chatglm2_model_forward(
         inputs_embeds = self.embedding(input_ids)
 
     if full_attention_mask is None:
-        if (attention_mask is not None and not attention_mask.all()) or
-            (past_key_values and seq_length != 1):
+        if (attention_mask is not None and not attention_mask.all()) or (
+                past_key_values and seq_length != 1):
             full_attention_mask = self.get_masks(input_ids,
                                                  past_key_values,
                                                  padding_mask=attention_mask)
@@ -152,7 +152,7 @@ def chatglm2_model_forward(
 
     if not return_dict:
         return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions]
-                         if v is not None)
+                     if v is not None)
 
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
