@@ -222,7 +222,7 @@ def chatglm2_attention_forward_8eb45c(
             #query_states = query_layer.permute(1, 2, 0, 3).contiguous()
             query_states = query_layer.transpose(0, 1)#.contiguous()
             query_states, query_states_pass = query_states[..., :rot_dim], query_states[..., rot_dim:]
-            key_states = key_layer.permute(1, 2, 0, 3).contiguous()
+            # key_states = key_layer.permute(1, 2, 0, 3).contiguous()
             key_states = key_layer.transpose(0, 1)#.contiguous()
             key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
             cos, sin = rotary_pos_emb.split([1, 1], -1)
