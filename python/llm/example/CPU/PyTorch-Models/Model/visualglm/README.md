@@ -59,7 +59,7 @@ source bigdl-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py
+numactl -C 0-47 -m 0 python ./chat.py
 ```
 
 #### 2.3 Sample Output
@@ -67,6 +67,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 The sample input image can be fetched from [COCO Dataset](https://cocodataset.org/#home)
 
 [demo.jpg](https://cocodataset.org/#explore?id=70087)
+
 <img src="http://farm8.staticflickr.com/7420/8726937863_e3bfa34795_z.jpg" width=50%>
 
 ```
