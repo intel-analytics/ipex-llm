@@ -215,8 +215,7 @@ def chatglm2_attention_forward_8eb45c(
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
             query_states = query_layer.transpose(0, 1)
-            query_states = query_states[..., :rot_dim]
-            query_states_pass = query_states[..., rot_dim:]
+            query_states = query_states[..., :rot_dim], query_states[..., rot_dim:]
             key_states = key_layer.transpose(0, 1)
             key_states, key_states_pass = key_states[..., :rot_dim], key_states[..., rot_dim:]
             torch.ops.torch_ipex.apply_rotary_embedding(query_states, sin, cos, query_states)
