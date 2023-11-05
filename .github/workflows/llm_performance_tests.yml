@@ -140,7 +140,9 @@ jobs:
           ls /mnt/disk1/nightly_perf/
           cd ../../../test/benchmark
           pwd
+          ls
           python csv_to_html.py -f ../../dev/benchmark/all-in-one
+          ls
           cp ./*.html /mnt/disk1/nightly_perf/
           
   # llm-performance-test-on-spr:
