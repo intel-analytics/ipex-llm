@@ -23,8 +23,8 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-cpp-build:
-    uses: ./.github/workflows/llm-binary-build.yml
+  # llm-cpp-build:
+  #   uses: ./.github/workflows/llm-binary-build.yml
   # llm-performance-test:
   #   if: false # skip cpu performance test for now; may add it back with separated runner
   #   needs: llm-cpp-build
@@ -78,7 +78,7 @@ jobs:
       #   env:
       #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
   llm-performance-test-on-arc:
-    needs: llm-cpp-build
+    # needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
