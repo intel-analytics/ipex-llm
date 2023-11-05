@@ -51,8 +51,8 @@ runs:
         if [ $IS_PR = "false" ]; then
           pip install --pre --upgrade bigdl-nano[pytorch,inference]
           if [ ! $OS = "windows" ]; then
-            export http_proxy=$HTTP_PROXY
-            export https_proxy=$HTTPS_PROXY
+            export http_proxy=http://child-prc.intel.com:913
+            export https_proxy=http://child-prc.intel.com:913
             pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
             # pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/oneccl_bind_pt-1.13.0%2Bcpu-cp38-cp38-linux_x86_64.whl
           fi
@@ -60,8 +60,8 @@ runs:
           pip install wheel
           if [ ! $OS = "windows" ]; then
             bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
-            export http_proxy=$HTTP_PROXY
-            export https_proxy=$HTTPS_PROXY
+            export http_proxy=http://child-prc.intel.com:913
+            export https_proxy=http://child-prc.intel.com:913
             pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
             # pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/oneccl_bind_pt-1.13.0%2Bcpu-cp38-cp38-linux_x86_64.whl
           else
