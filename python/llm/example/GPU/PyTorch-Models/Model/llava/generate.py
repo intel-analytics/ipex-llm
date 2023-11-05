@@ -34,6 +34,7 @@
 
 import argparse
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 
 from transformers import AutoModelForCausalLM
@@ -63,7 +64,6 @@ from bigdl.llm import optimize_model
 def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, load_4bit=False,
                           device_map="auto", device="cpu"):
     kwargs = {"device_map": device_map}
-    kwargs['torch_dtype'] = torch.float32
 
     if 'llava' in model_name.lower():
         # Load LLaVA model
@@ -151,7 +151,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
                 tokenizer = AutoTokenizer.from_pretrained(
                     model_path, use_fast=False)
                 model = LlavaLlamaForCausalLM.from_pretrained(
-                    model_path, low_cpu_mem_usage=True, **kwargs)
+                    model_path, low_cpu_mem_usage=True)
     else:
         # Load language model
         if model_base is not None:
@@ -272,7 +272,7 @@ def get_stopping_criteria(conv, tokenizer, input_ids):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Predict Tokens using `generate()` API for LLaVA model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="liuhaotian/llava-v1.5-13b",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="liuhaotian/llava-v1.5-7b",
                         help='The huggingface repo id for the LLaVA model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-path-or-url', type=str,
@@ -293,7 +293,7 @@ if __name__ == '__main__':
                                                                  model_name=model_name)
 
     # With only one line to enable BigDL-LLM optimization on model
-    model = optimize_model(model)
+    model = optimize_model(model).to('xpu')
 
     # Generate image tensor
     image_tensor = generate_image_tensor(args.image_path_or_url)
@@ -314,7 +314,7 @@ if __name__ == '__main__':
         prompt = get_prompt(model.config.mm_use_im_start_end, first_round, conv, user_input)
         first_round = False
         input_ids = tokenizer_image_token(
-            prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0)
+            prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to('xpu')
         stopping_criteria = get_stopping_criteria(conv, tokenizer, input_ids)
 
         # Generate predicted tokens
@@ -331,7 +331,7 @@ if __name__ == '__main__':
             #print(f'Inference time: {end-st} s')
 
         outputs = tokenizer.decode(
-            output_ids[0, input_ids.shape[1]:], skip_special_tokens=True).strip()
+            output_ids[0, input_ids.shape[1]:].cpu(), skip_special_tokens=True).strip()
         conv.messages[-1][-1] = outputs
         print(f"{roles[1]}: ", end="")
         print(outputs)
