@@ -26,7 +26,7 @@ if "%1"=="--ui" (
 
 :: compress the python and scripts
 if "%1"=="--ui" (
-    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat-ui.bat', '.\README.md' -DestinationPath .\bigdl-llm-ui.zip"
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat-ui.bat', '.\README-ui.md' -DestinationPath .\bigdl-llm-ui.zip"
 ) else (
-    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\bigdl-llm.zip"
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat.bat', '.\chat.py', '.\kv_cache.py' , '.\README.md' -DestinationPath .\bigdl-llm.zip"
 )
