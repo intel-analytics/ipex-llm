@@ -53,6 +53,8 @@ def main():
         data1.insert(loc=6,column=added_column_4,value=round((data2[origin_column_2]-data1[origin_column_2])*100/data2[origin_column_2],2))
 
     daily_html=csv_files[0].split(".")[0]+".html"
+    print("daily_html")
+    print(daily_html)
     data1.to_html(daily_html)
 
 if __name__ == "__main__":
