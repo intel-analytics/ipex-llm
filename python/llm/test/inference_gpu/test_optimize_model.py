@@ -53,7 +53,7 @@ def load_pre_hook(module, input):
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA_ORIGIN_PATH')),
 ])
 
 def test_optimize_model(Model, Tokenizer, model_path):
@@ -92,7 +92,7 @@ def test_optimize_llama_model(Model, Tokenizer, model_path):
     model = model.to(device)
 
     for layer_name, layer_module in model.named_modules():
-        if layer_name == "model.layers.31.self_attention":
+        if layer_name == "model.layers.31.self_attn":
             layer_module.register_forward_pre_hook(
                 lambda module, input: pre_hook(module, input))
             layer_module.register_forward_hook(
@@ -110,7 +110,7 @@ def test_optimize_llama_model(Model, Tokenizer, model_path):
     opt_model = opt_model.to(device)
 
     for layer_name, layer_module in opt_model.named_modules():
-        if layer_name == "model.layers.31.self_attention":
+        if layer_name == "model.layers.31.self_attn":
             layer_module.register_forward_pre_hook(
                 lambda module, input: load_pre_hook(module, input))
             layer_module.register_forward_hook(
