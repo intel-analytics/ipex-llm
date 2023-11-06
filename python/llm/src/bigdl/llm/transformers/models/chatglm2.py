@@ -129,7 +129,8 @@ def chatglm2_model_forward(
     else:
         rotary_pos_emb = rotary_pos_emb[None, :seq_length]
     if use_fuse_rope:
-        # repeat cos sin here.
+        # repeat cos sin here, call only once for each token.
+        # if put this to attension forward, it will generate too many times.
         cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
         cos = cos.squeeze(-1)
         sin = sin.squeeze(-1)
@@ -206,19 +207,19 @@ def chatglm2_attention_forward_8eb45c(
 
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
-        if len(rotary_pos_emb) == 2:  # use_fuse_rope
+        if len(rotary_pos_emb) == 2:  # use_fuse_rope, see chatglm2_model_forward
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
             query_layer = query_layer.transpose(0, 1)
-            query_layer_pass = query_layer[..., rot_dim:]
-            query_layer = query_layer[..., :rot_dim]
             key_layer = key_layer.transpose(0, 1)
-            key_layer_pass = key_layer[..., rot_dim:]
-            key_layer = key_layer[..., :rot_dim]
-            torch.ops.torch_ipex.apply_rotary_embedding(query_layer, sin, cos, query_layer)
-            torch.ops.torch_ipex.apply_rotary_embedding(key_layer, sin, cos, key_layer)
-            query_layer = torch.cat((query_layer, query_layer_pass), dim=-1).transpose(0, 1)
-            key_layer = torch.cat((key_layer, key_layer_pass), dim=-1).transpose(0, 1)
+            query_layer_cur = query_layer[..., :rot_dim]
+            key_layer_cur = key_layer[..., :rot_dim]
+            # ipex's apply_rotary_embedding can change the origin storage, so query_layer will get
+            # the result directly.
+            torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
+            torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
+            query_layer = query_layer.transpose(0, 1)
+            key_layer = key_layer.transpose(0, 1)
         else:
             query_layer = apply_rotary_pos_emb_chatglm(query_layer, rotary_pos_emb)
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
