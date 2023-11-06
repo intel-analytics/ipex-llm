@@ -24,7 +24,7 @@ RUN mkdir /bigdl/data && mkdir /bigdl/model && \
     apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
     pip3 install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
-    pip install --upgrade torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --upgrade torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
 # install ipex and oneccl
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \

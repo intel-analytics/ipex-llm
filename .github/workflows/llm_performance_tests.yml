@@ -137,4 +137,51 @@ jobs:
           curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
           cp ./*.csv /mnt/disk1/nightly_perf/
           cd ../../../test/benchmark
-          python csv_to_html.py -f /mnt/disk1/nightly_perf/
+          python csv_to_html.py -f ../../dev/benchmark/all-in-one
+          cp ./*.html /mnt/disk1/nightly_perf/
+          
+  llm-performance-test-on-spr:
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    runs-on: [self-hosted, llm, spr-perf]
+    env:
+      OMP_NUM_THREADS: 16
+      THREAD_NUM: 16
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade omegaconf
+          python -m pip install --upgrade pandas
+          python -m pip install --upgrade einops
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+
+      - name: Test on cpu
+        shell: bash
+        run: |
+          mv python/llm/test/benchmark/cpu-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          python run.py
+          cp ./*.csv /mnt/disk1/nightly_perf_cpu/
+          cd ../../../test/benchmark
+          python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/

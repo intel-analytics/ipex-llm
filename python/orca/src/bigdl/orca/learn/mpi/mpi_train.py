@@ -19,7 +19,7 @@ import argparse
 import cloudpickle
 from bigdl.dllib.utils.utils import get_node_ip
 
-print("Worker on {} with global rank {}".format(get_node_ip(), os.environ.get("PMI_RANK", 0)))
+print(f"Worker on {get_node_ip()} with global rank {os.environ.get('PMI_RANK', 0)}")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--pkl_path', type=str, default="",
