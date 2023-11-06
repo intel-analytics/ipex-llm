@@ -30,7 +30,7 @@ source /opt/intel/oneapi/setvars.sh
 
 Before running the example, please make sure you have prepared the [templates folder](https://github.com/tloen/alpaca-lora/tree/main/templates) in the current directory.
 
-Example usage:
+Example usage on single Arc:
 
 ```
 python ./alpaca_qlora_finetuning.py \
