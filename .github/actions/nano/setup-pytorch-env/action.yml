@@ -50,9 +50,9 @@ runs:
         fi
         if [ $IS_PR = "false" ]; then
           pip install --pre --upgrade bigdl-nano[pytorch,inference]
-          if [ ! $OS = "windows" ]; then
-            # pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
-          fi
+          # if [ ! $OS = "windows" ]; then
+          #   # pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
+          # fi
         else
           pip install wheel
           if [ ! $OS = "windows" ]; then
