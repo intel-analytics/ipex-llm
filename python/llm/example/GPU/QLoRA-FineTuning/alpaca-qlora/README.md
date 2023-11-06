@@ -2,7 +2,7 @@
 
 This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM QLoRA on [Intel GPUs](../../README.md).
 
-## 0. Requirements
+### 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
 
 ### 1. Install
