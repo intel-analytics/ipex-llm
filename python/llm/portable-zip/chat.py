@@ -43,6 +43,8 @@ import torch
 import argparse
 import sys
 
+sys.path.append(".")
+
 # todo: support more model class
 from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from transformers import TextIteratorStreamer
