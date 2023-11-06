@@ -5,10 +5,6 @@ This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main)
 ## 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
 
-## Example: Alpaca QLoRA Finetuning
-
-This example is ported from [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/blob/main/finetune.py). Just a few code changes are needed to finetune a LLaMA-2 model using QLoRA with BigDL-LLM 4bit optimizations on Intel GPUs.
-
 ### 1. Install
 
 ```bash
@@ -26,11 +22,9 @@ pip install fire datasets peft==0.5.0
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Finetune model
+### 3. Finetuning LLaMA-2-7B on a single Arc:
 
-Before running the example, please make sure you have prepared the [templates folder](https://github.com/tloen/alpaca-lora/tree/main/templates) in the current directory.
-
-Example usage on single Arc:
+Example usage:
 
 ```
 python ./alpaca_qlora_finetuning.py \
@@ -38,6 +32,8 @@ python ./alpaca_qlora_finetuning.py \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-qlora-alpaca"
 ```
+
+**Note**: You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file.
 
 #### Sample Output
 ```log
