@@ -37,6 +37,7 @@ import fire
 import torch
 import transformers
 from datasets import load_dataset
+import accelerate
 
 from transformers import LlamaTokenizer
 from peft import (
