@@ -23,7 +23,7 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   Nano-PyTorch-UT-Test-Ubuntu:
-    runs-on: [self-hosted, Nano]
+    runs-on: ["ubuntu-20.04"]
 
     strategy:
       fail-fast: false
