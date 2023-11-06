@@ -4,7 +4,7 @@ repo_id:
   - 'THUDM/chatglm2-6b'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
-  - 'bigscience/bloomz-7b1'
+  # - 'bigscience/bloomz-7b1' # temporarily removed
   - 'redpajama/gptneox-7b-redpajama-bf16'
   - 'bigcode/starcoder-15.5b'
   - 'databricks/dolly-v1-6b'
