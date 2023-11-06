@@ -49,7 +49,7 @@ jobs:
           if [ ! -d $HF_DATASETS ]; then
             mkdir -p $HF_DATASETS
           fi
-          
+
       - name: Set environment variables
         shell: bash
         run: |
@@ -98,7 +98,6 @@ jobs:
 
       - name: Run harness
         shell: bash
-        #if: runner.os == 'Linux' && github.event_name == 'schedule'
         run: |
           export HF_HOME=$HARNESS_HF_HOME
           cd python/llm/dev/benchmark/harness/
