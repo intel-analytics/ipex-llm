@@ -150,6 +150,7 @@ build_spark() {
     else
         echo "disable EDMM"
         occlum build
+    fi
 
 }
 

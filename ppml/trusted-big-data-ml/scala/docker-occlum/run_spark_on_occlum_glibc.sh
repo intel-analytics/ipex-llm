@@ -169,6 +169,7 @@ build_spark() {
     else
         echo "disable EDMM"
         occlum build
+    fi
 
     #before start occlum app after occlum build
     if [[ $ATTESTATION == "true" ]]; then
