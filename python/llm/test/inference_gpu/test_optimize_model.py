@@ -31,7 +31,7 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
 
 lower_bound = 3e-3
 
-layer_outputs = {}
+layer_outputs = []
 layer_inputs = []
 
 layer_tensor = []
@@ -39,7 +39,7 @@ opt_layer_tensor = []
 
 
 def forward_hook(module, output, layer_name):
-    layer_outputs[layer_name] = output
+    layer_outputs.append(output)
 
 
 def pre_hook(module, input):
