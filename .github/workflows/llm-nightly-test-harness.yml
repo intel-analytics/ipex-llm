@@ -15,7 +15,6 @@ on:
       - ".github/workflows/llm-nightly-test-harness.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/convert-test/action.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -28,14 +27,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: windows
-            instruction: avx2
-            python-version: "3.9"
-          - os: ubuntu-20.04-lts
-            instruction: avx512
-            python-version: "3.9"
-    runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
+        python-version: ["3.9","3.10","3.11"]
+    runs-on: [self-hosted, llm, arc]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
@@ -46,6 +39,7 @@ jobs:
           echo "HARNESS_HF_HOME=$(pwd)/../llm/harness_datasets" >> "$GITHUB_ENV"
           echo "HF_DATASETS=$(pwd)/../llm/harness_datasets/datasets" >> "$GITHUB_ENV"
           echo "HF_DATASETS_CACHE=$(pwd)/../llm/harness_datasets/datasets" >> "$GITHUB_ENV"
+      
       - name: Create model directories
         shell: bash
         run: |
@@ -55,6 +49,7 @@ jobs:
           if [ ! -d $HF_DATASETS ]; then
             mkdir -p $HF_DATASETS
           fi
+          
       - name: Set environment variables
         shell: bash
         run: |
@@ -79,8 +74,16 @@ jobs:
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Install BigDL-LLM
+      - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu"
+
+      - name: Test installed xpu version
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-install-tests.sh
 
       - name: Install harness
         shell: bash
