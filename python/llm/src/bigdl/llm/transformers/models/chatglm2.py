@@ -129,8 +129,9 @@ def chatglm2_model_forward(
     else:
         rotary_pos_emb = rotary_pos_emb[None, :seq_length]
     if use_fuse_rope:
-        # repeat cos sin here, call only once for each token.
-        # if put this to attension forward, it will generate too many times.
+        # Repeat cos sin here, call only once for each token. 
+        # Chatglm2's rotary embedding is similar to gptj's, is rotate_every_two.
+        # If put this to attension forward, it will generate too many times.
         cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
         cos = cos.squeeze(-1)
         sin = sin.squeeze(-1)
