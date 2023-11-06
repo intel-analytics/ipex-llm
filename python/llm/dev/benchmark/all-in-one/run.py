@@ -558,6 +558,8 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
     parser.add_argument('--local_rank', type=str, default=0, help='this is automatically set when using deepspeed launcher')
     args = parser.parse_args()
     local_rank = int(os.getenv("RANK", "1"))
+    if local_rank == -1:
+        local_rank = args.local_rank
     world_size = int(os.getenv("WORLD_SIZE", "1"))
     model_path = get_model_path(repo_id, local_model_hub)
 

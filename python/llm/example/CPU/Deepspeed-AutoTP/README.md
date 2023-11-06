@@ -53,4 +53,17 @@ You can try deepspeed with BigDL LLM by:
 bash run.sh
 ```
 
-There are configurations in the script which can also be ported to run your custom deepspeed application.
+If you want to run your own application, there are **necessary configurations in the script** which can also be ported to run your custom deepspeed application:
+
+```bash
+# run.sh
+source bigdl-nano-init
+unset OMP_NUM_THREADS # deepspeed will set it for each instance automatically
+source /opt/intel/oneccl/env/setvars.sh
+......
+export FI_PROVIDER=tcp
+export CCL_ATL_TRANSPORT=ofi
+export CCL_PROCESS_LAUNCHER=none
+```
+
+Set the above configurations before running `deepspeed` please to ensure right parallel communication and high performance.

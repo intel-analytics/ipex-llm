@@ -61,12 +61,14 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
-    parser.add_argument('--local_rank', type=str, default=0, help='this is automatically set when using deepspeed launcher')
+    parser.add_argument('--local_rank', type=int, default=0, help='this is automatically set when using deepspeed launcher')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     world_size = int(os.getenv("WORLD_SIZE", "1"))
-    local_rank = int(os.getenv("RANK", "1")) # RANK is automatically set by distributed backend
+    local_rank = int(os.getenv("RANK", "-1")) # RANK is automatically set by CCL distributed backend
+    if local_rank == -1: # args.local_rank is automatically set by deepspeed subprocess command
+        local_rank = args.local_rank
 
     # Native Huggingface transformers loading
     model = AutoModelForCausalLM.from_pretrained(
