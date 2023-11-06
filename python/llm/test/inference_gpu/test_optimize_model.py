@@ -52,8 +52,7 @@ def load_pre_hook(module, input):
 
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH'))
 ])
 
 def test_optimize_model(Model, Tokenizer, model_path):
@@ -80,6 +79,10 @@ def test_optimize_model(Model, Tokenizer, model_path):
 
     assert any(diff) is False
 
+
+@pytest.mark.parametrize('Model, Tokenizer, model_path',[
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA_ORIGIN_PATH'))
+])
 
 def test_optimize_llama_model(Model, Tokenizer, model_path):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
