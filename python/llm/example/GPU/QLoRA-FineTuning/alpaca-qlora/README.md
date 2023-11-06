@@ -1,13 +1,13 @@
 # Alpaca QLoRA Finetuning (experimental support)
 
-This example demonstrates how to finetune a llama2-7b model use BigDL-LLM 4bit optimizations using [Intel GPUs](../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM QLoRA on [Intel GPUs](../../README.md).
 
 ## 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
 
 ## Example: Alpaca QLoRA Finetuning
 
-This example is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/finetune.py). Just a few code changes are needed to finetune a llama2-7b model using QLoRA with BigDL-LLM 4bit optimizations on Intel GPUs.
+This example is ported from [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/blob/main/finetune.py). Just a few code changes are needed to finetune a LLaMA-2 model using QLoRA with BigDL-LLM 4bit optimizations on Intel GPUs.
 
 ### 1. Install
 
