@@ -55,6 +55,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_pytorch_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'ipex_fp16_gpu':
         result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+    elif test_api == 'deepspeed_transformer_int4_cpu':
+        result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
 
     for in_out_pair in in_out_pairs:
         if result:
@@ -540,6 +542,92 @@ def run_ipex_fp16_gpu(repo_id,
     torch.xpu.empty_cache()
     return result
 
+def run_deepspeed_transformer_int4_cpu(repo_id,
+                         local_model_hub,
+                         in_out_pairs,
+                         warm_up,
+                         num_trials,
+                         num_beams,
+                         low_bit):
+    from transformers import AutoModelForCausalLM, LlamaTokenizer, AutoTokenizer
+    import deepspeed
+    from bigdl.llm import optimize_model
+    import argparse
+    # parser is for deepspeed subprocesses' inline parameter
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
+    parser.add_argument('--local_rank', type=str, default=0, help='this is automatically set when using deepspeed launcher')
+    args = parser.parse_args()
+    local_rank = int(os.getenv("RANK", "1"))
+    if local_rank == -1:
+        local_rank = args.local_rank
+    world_size = int(os.getenv("WORLD_SIZE", "1"))
+    model_path = get_model_path(repo_id, local_model_hub)
+
+    st = time.perf_counter()
+    # Note: only tested cpu Llama2-7b
+    # Native Huggingface transformers loading to enable deepspeed init
+    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif repo_id in LLAMA_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
+                                                     use_cache=True)
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+    # Parallelize model on deepspeed
+    model = deepspeed.init_inference(model, mp_size=world_size,
+                                     dtype=torch.float16,
+                                     replace_method="auto")
+
+    # Apply BigDL-LLM INT4 optimization to enable BenchmarkWrapper
+    # Note: only tested sym_int4
+    model = optimize_model(model.module.to(f'cpu'), low_bit=low_bit)
+    model = model.to(f'cpu:{local_rank}')
+
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            # As different tokenizer has different encodings,
+            # in_len.txt maybe shorter than we need,
+            # use much longer context to make sure input length
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
+            actual_in_len = input_ids.shape[1]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                                num_beams=num_beams)
+                end = time.perf_counter()
+                if local_rank == 0:
+                    print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                if local_rank == 0:
+                    print(output[0])
+                actual_out_len = output_ids.shape[1] - actual_in_len
+                if i >= warm_up :
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                           actual_in_len, actual_out_len])
+    return result
 
 if __name__ == '__main__':
     from omegaconf import OmegaConf
