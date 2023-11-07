@@ -84,12 +84,15 @@ jobs:
             wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           fi
           
+      - name: Set datasets env
+        shell: bash
+        run: |
+          echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
+          echo "HF_DATASETS=$HF_HOME/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS_CACHE=$HF_HOME/datasets" >> "$GITHUB_ENV"
+
       - name: Run harness
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
-          HF_HOME=$HARNESS_HF_HOME
-          HF_DATASETS=$HF_HOME/datasets
-          HF_DATASETS_CACHE=$HF_HOME/datasets
-          cd python/llm/dev/benchmark/harness/
-          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1
+          python python/llm/dev/benchmark/harness/llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1
