@@ -80,6 +80,7 @@ jobs:
         shell: bash
         run: |
           echo "LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/" >> "$GITHUB_ENV"
+          LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/
           if [ ! -d $HARNESS_HF_HOME ]; then
             wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $(pwd)/../llm/
             mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
