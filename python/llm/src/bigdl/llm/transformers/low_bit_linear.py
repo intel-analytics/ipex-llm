@@ -441,7 +441,7 @@ class LowBitLinear(nn.Linear):
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
                 if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
-                    (x_2d.shape[0] > 8 or self.qtype not in [SYM_INT4, SYM_INT8, FP8]):
+                        (x_2d.shape[0] > 8 or self.qtype not in [SYM_INT4, SYM_INT8, FP8]):
                     x_2d = x_2d.half()
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                      input_seq_size)
