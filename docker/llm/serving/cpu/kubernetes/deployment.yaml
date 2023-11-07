@@ -9,7 +9,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+    image: intelanalytics/bigdl-llm-serving-cpu:2.4.0
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -74,7 +74,7 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+        image: intelanalytics/bigdl-llm-serving-cpu:2.4.0
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed
