@@ -81,11 +81,11 @@ jobs:
         run: |
           echo "LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/" >> "$GITHUB_ENV"
           if [ ! -d $HARNESS_HF_HOME ]; then
-            wget -r -nH ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -p $(pwd)/../llm/
+            wget -r -nH ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $(pwd)/../llm/
             mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
           fi
           if [ ! -d $LLAMA_7B_PATH ]; then
-            wget -r -nH ${LLM_FTP_URL}/llm/Llama-2-7b-hf -p ${ORIGIN_DIR}
+            wget -r -nH ${LLM_FTP_URL}/llm/Llama-2-7b-hf -P ${ORIGIN_DIR}
           fi
           
       - name: Run harness
