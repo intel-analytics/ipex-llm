@@ -1,0 +1,105 @@
+name: LLM Nightly Tests harness
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm-nightly-test-harness.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+  llm-nightly-harness-test:
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    runs-on: [self-hosted, llm, accuracy]
+    env:
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    steps:
+      - name: Set model and dataset directories
+        shell: bash
+        run: |
+          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
+          echo "HARNESS_HF_HOME=$(pwd)/../llm/harness_home" >> "$GITHUB_ENV"
+          echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+      
+      - name: Create model directories
+        shell: bash
+        run: |
+          if [ ! -d $ORIGIN_DIR ]; then
+            mkdir -p $ORIGIN_DIR
+          fi
+          if [ ! -d $HF_DATASETS ]; then
+            mkdir -p $HF_DATASETS
+          fi
+
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "STABLELM_PATH=${ORIGIN_DIR}/models--stabilityai--stablelm-3b-4e1t" >> "$GITHUB_ENV"
+          if [ ! -d $STABLELM_PATH ]; then
+            wget -r -nH ${LLM_FTP_URL}/llm/models--stabilityai--stablelm-3b-4e1t -p ${ORIGIN_DIR}
+          if [ ! -d $HARNESS_HF_HOME ]; then
+            wget -r -nH ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -p $(pwd)/../llm/
+            mv $(pwd)/../llm/LeaderBoard_Datasets $HARNESS_HF_HOME
+      
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu"
+
+      - name: Test installed xpu version
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-install-tests.sh
+
+      - name: Install harness
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/harness/
+          git clone https://github.com/EleutherAI/lm-evaluation-harness.git
+          cd  lm-evaluation-harness
+          git checkout e81d3cc
+          pip install -e .
+          git apply ../bigdl-llm.patch
+          cd ..
+
+      - name: Run harness
+        shell: bash
+        run: |
+          export HF_HOME=$HARNESS_HF_HOME
+          cd python/llm/dev/benchmark/harness/
+          python llb.py --model bigdl-llm --pretrained $STABLELM_PATH --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/stablelm-3b-4e1t --batch 8
