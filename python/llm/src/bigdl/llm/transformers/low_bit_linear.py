@@ -464,14 +464,10 @@ class LowBitLinear(nn.Linear):
                               " supported on CPU")
             if self.training and x.requires_grad:
                 result = MatMulLowBitCPU.apply(x, self.weight)
-            else:
-                IS_DEEPSPEED_ENABLED, CONVERT_INT4_2_FP32 = (self.mp_group is not None,
-                                                             IS_SERVER and (not IS_SPR)
-                                                             and self.qtype == SYM_INT4
-                                                             and x_2d.shape[0] >=
-                                                             TORCH_LINEAR_THRESHOLD)           
+            else:       
                 # Step 1. convert if necessary, and compute a linear result
-                if CONVERT_INT4_2_FP32:
+                if IS_SERVER and (not IS_SPR) and self.qtype == SYM_INT4
+                   and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
                     result = F.linear(x, x0_fp32)
                 else:
@@ -480,7 +476,8 @@ class LowBitLinear(nn.Linear):
                     new_shape = x_shape[:-1] + (self.out_len,)
                     result = result.view(new_shape)
                 # Step 2. allreduce to combine partial results and add bias if necessary
-                if IS_DEEPSPEED_ENABLED:
+                if self.mp_group is not None:
+                    # deepspeed distibuted mode
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
                 if self.bias is not None:
