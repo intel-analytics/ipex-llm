@@ -442,7 +442,7 @@ class LowBitLinear(nn.Linear):
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
                 if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
-                        not use_xmx(x_2d.shape, self.weight.qtype):
+                        not use_xmx(x_2d, self.weight.qtype):
                     x_2d = x_2d.half()
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                      input_seq_size)
