@@ -38,6 +38,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizerBase, LlamaConfig
 from typing import Optional, Tuple, List, Type, Dict
 
 from bigdl.llm.vllm.structure.sequence import SequenceOutputs, SequenceGroupMetadata
+from .bigdl_sampler import BigDLSampler
 import math
 import time
 
@@ -65,20 +66,21 @@ def prepare_logits_processor(temperature: float, repetition_penalty: float,
     return processor_list
 
 
-def _pad_to_max(x: List[int], max_len: int) -> List[int]:
-    return x + [0] * (max_len - len(x))
+def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
+    return x + [padding_id] * (max_len - len(x))
 
-
-def _pad_kv_cache_view(t: torch.Tensor, len: int) -> torch.Tensor:
+def _pad_kv_cache_view(t: torch.Tensor, len: int, device: torch.device, pos: int = 2) -> torch.Tensor:
     cur_size = list(t.size())
-    if cur_size[2] < len:
+    if cur_size[pos] < len:
         tmp_size = cur_size[:]
-        tmp_size[2] = len - cur_size[2]
-        zeros = torch.zeros(tmp_size)
-        padded_view = torch.cat((t, zeros), dim=2)
+        tmp_size[pos] = len - cur_size[pos]
+        zeros = torch.zeros(tmp_size, device = device)
+        padded_view = torch.cat((zeros, t), dim = pos)
         return padded_view
-    else:
-        return t
+    if cur_size[pos] > len:
+        padded_view = t.narrow(pos, cur_size[pos] - len, len)
+        return padded_view
+    return t
 
 
 class BigDLLlamaForCausalLM(nn.Module):
@@ -102,29 +104,32 @@ class BigDLLlamaForCausalLM(nn.Module):
             use_cache=True,
         )
         self.model = optimize_model(model)
+        self.sampler = BigDLSampler(config.vocab_size)
         # self.model = AutoModelForCausalLM.from_pretrained(config._name_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(config._name_or_path)
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
         self.dtype = self.model.dtype
         self.kv_cache_size = [0]
-
-    def decode(self, generated_ids: List[int]) -> str:
-        return self.tokenizer.decode(generated_ids,
-                                     skip_special_tokens=True,
-                                     clean_up_tokenization_spaces=False)
+        self.last_seq_ids = []
+        self.tmp_kv_cache = None
+        self.pad_token_id = config.pad_token_id
+        self.max_seq_limit = 128
 
     def forward(
         self,
         seq_group_meta_data_lists: List[SequenceGroupMetadata],
-        kv_cache: Optional = None
+        kv_cache: Optional = None,
+        input_metadata: Optional = None,
     ) -> Tuple[torch.Tensor, List[Tuple[torch.Tensor, torch.Tensor]]]:
         kv_cache_0 = self.model.config.num_hidden_layers
         kv_cache_1 = 2
         seq_len = len(seq_group_meta_data_lists)
 
         bigdl_input_ids = []
-        # bigdl_position_ids = []
+        bigdl_position_ids = []
+        bigdl_attention_mask = []
+
         cur_seq_ids = []
         bigdl_sampling_params = {}
         max_context_len = 0
@@ -144,6 +149,7 @@ class BigDLLlamaForCausalLM(nn.Module):
                 max_context_len = max(max_context_len, context_len)
             else:
                 bigdl_input_ids.append([cur_seq_input_ids[-1]])
+                
 
             bigdl_sampling_params[seq_id] = seq_group_meta_data.sampling_params
 
@@ -151,47 +157,61 @@ class BigDLLlamaForCausalLM(nn.Module):
 
         if all_decoding:
             # pdb.set_trace()
-
-            bigdl_kv_cache = []
-            for i in range(kv_cache_0):
-                cur_list = []
-                for j in range(kv_cache_1):
-                    cur_view = None
-                    for seq_group_meta_data in seq_group_meta_data_lists:
-                        seq_ids = list(seq_group_meta_data.seq_data.keys())
-                        seq_id = seq_ids[0]
-                        seq_data = seq_group_meta_data.seq_data[seq_id]
-                        view_size = [1] + list(kv_cache[seq_id][i][j].shape)
-                        if cur_view is None:
-                            cur_view = kv_cache[seq_id][i][j].view(view_size)
-                        else:
-                            if cur_view.size(2) != view_size[2]:
-                                max_len = max(cur_view.size(2), view_size[2])
-                                cur_view = _pad_kv_cache_view(
-                                    cur_view, max_len)
-                                tmp_view = _pad_kv_cache_view(
-                                    kv_cache[seq_id][i][j].view(view_size),
-                                    max_len)
-                                cur_view = torch.cat((cur_view, tmp_view),
-                                                     dim=0)
+            if (self.tmp_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
+                if self.tmp_kv_cache[0][0].size(2) < self.max_seq_limit:
+                    bigdl_kv_cache = self.tmp_kv_cache
+                else:
+                    bigdl_kv_cache = [[tmp.narrow(2, self.tmp_kv_cache[0][0].size(2) - max_seq_limit, max_seq_limit) for tmp in tmp_list] for tmp_list in self.tmp_kv_cache]
+            else:
+                bigdl_kv_cache = []
+                for i in range(kv_cache_0):
+                    cur_list = []
+                    for j in range(kv_cache_1):
+                        cur_view = None
+                        for seq_group_meta_data in seq_group_meta_data_lists:
+                            seq_ids = list(seq_group_meta_data.seq_data.keys())
+                            seq_id = seq_ids[0]
+                            seq_data = seq_group_meta_data.seq_data[seq_id]
+                            view_size = [1] + list(kv_cache[seq_id][i][j].shape)
+                            if cur_view is None:
+                                cur_view = kv_cache[seq_id][i][j].view(view_size)
                             else:
-                                cur_view = torch.cat(
-                                    (cur_view,
-                                     kv_cache[seq_id][i][j].view(view_size)),
-                                    dim=0)
-                    cur_list.append(cur_view)
-                bigdl_kv_cache.append(cur_list)
+                                if cur_view.size(2) != view_size[2]:
+                                    max_len = max(cur_view.size(2), view_size[2])
+                                    cur_view = _pad_kv_cache_view(cur_view, max_len, self.device)
+                                    tmp_view = _pad_kv_cache_view(kv_cache[seq_id][i][j].view(view_size), max_len, self.device)
+                                    cur_view = torch.cat((cur_view, tmp_view), dim = 0)
+                                else:
+                                    cur_view = torch.cat((cur_view, kv_cache[seq_id][i][j].view(view_size)), dim = 0)
+                        if cur_view.size(2) > self.max_seq_limit:
+                            cur_view = _pad_kv_cache_view(cur_view, self.max_seq_limit, self.device)
+                        cur_list.append(cur_view)
+                    bigdl_kv_cache.append(cur_list)
         else:
             bigdl_input_ids = [
-                _pad_to_max(input_ids, max_context_len)
+                _pad_to_max(input_ids, max_context_len, self.pad_token_id)
                 for input_ids in bigdl_input_ids
             ]
 
+        if all_decoding:
+            cur_seq_len = bigdl_kv_cache[0][0].size(2)
+            for seq_group_meta_data in seq_group_meta_data_lists:
+                seq_ids = list(seq_group_meta_data.seq_data.keys())
+                seq_id = seq_ids[0]
+                seq_data = seq_group_meta_data.seq_data[seq_id]
+                cur_pos = seq_data.get_len()
+                bigdl_position_ids.append([cur_pos - 1])
+                cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
+                bigdl_attention_mask.append(cur_attention_mask)
+        
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
         if all_decoding:
+            bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
+            bigdl_attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
             kwargs = {
                 "input_ids": bigdl_input_ids,
-                # "position_ids": bigdl_position_ids,
+                "position_ids": bigdl_position_ids,
+                "attention_mask": bigdl_attention_mask,
                 "past_key_values": bigdl_kv_cache,
                 "use_cache": True,
                 # "return_dict": True,
@@ -207,31 +227,14 @@ class BigDLLlamaForCausalLM(nn.Module):
         # pdb.set_trace()
         st_timestamp = time.perf_counter()
         outputs = self.model.forward(**kwargs)
-        # self.tmp_kv_cache = outputs.past_key_values
+        
+        self.tmp_kv_cache = outputs.past_key_values
         self.kv_cache_size = list(outputs.past_key_values[0][0].shape)
+        logits = outputs.logits[:, -1, :]
+        bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
+
         index = 0
-        bigdl_output = []
         for seq_id in cur_seq_ids:
-            # pdb.set_trace()
-            cur_sampling_params = bigdl_sampling_params[seq_id]
-            logits_processor = prepare_logits_processor(
-                cur_sampling_params.temperature, 1, cur_sampling_params.top_p,
-                cur_sampling_params.top_k)
-
-            last_token_logits = logits_processor(
-                None, outputs.logits[index:index + 1, -1, :])[0]
-            probs = torch.softmax(last_token_logits, dim=-1)
-            indices = torch.multinomial(
-                probs, num_samples=cur_sampling_params.best_of)
-            tokens = [int(token) for token in indices.tolist()]
-
-            logprobs = math.log(probs[tokens[0]])
-            ed_timestamp = time.perf_counter()
-            seq_output = SequenceOutputs(parent_seq_id=seq_id,
-                                         output_token=tokens[0],
-                                         latency=ed_timestamp - st_timestamp,
-                                         logprobs={tokens[0]: logprobs})
-            bigdl_output.append([seq_output])
             if kv_cache.get(seq_id) is None:
                 kv_cache[seq_id] = [[[] for _ in range(kv_cache_1)]
                                     for _ in range(kv_cache_0)]

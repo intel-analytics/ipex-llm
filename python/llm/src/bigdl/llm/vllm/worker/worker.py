@@ -190,8 +190,8 @@ class Worker:
                 # block_table = seq_group_metadata.block_tables[seq_id]
 
                 max_context_len = max(max_context_len, context_len)
-                max_num_blocks_per_seq = max(max_num_blocks_per_seq,
-                                             len(block_table))
+                # max_num_blocks_per_seq = max(max_num_blocks_per_seq,
+                #                              len(block_table))
                 context_lens.append(context_len)
 
                 # block_number = block_table[position // self.block_size]
@@ -213,16 +213,19 @@ class Worker:
         # Convert to tensors.
         tokens_tensor = torch.tensor(input_tokens,
                                      dtype=torch.long,
-                                     device="cuda")
+                                     #device="cuda"
+                                     )
         positions_tensor = torch.tensor(input_positions,
                                         dtype=torch.long,
-                                        device="cuda")
+                                        #device="cuda"
+                                        )
         # slot_mapping_tensor = torch.tensor(slot_mapping,
         #                                    dtype=torch.int,
         #                                    device="cuda")
         context_lens_tensor = torch.tensor(context_lens,
                                            dtype=torch.int,
-                                           device="cuda")
+                                           #device="cuda"
+                                           )
         # padded_block_tables = [
         #     _pad_to_max(block_table, max_num_blocks_per_seq)
         #     for block_table in generation_block_tables
@@ -287,9 +290,11 @@ class Worker:
         # pdb.set_trace()
         # TODO(gc): use environment/global virable to check
         if True:
+            input_tokens, input_positions, input_metadata = self._prepare_inputs(
+                seq_group_metadata_list)
             output = self.model(
                 seq_group_meta_data_lists=seq_group_metadata_list,
-                kv_cache=self.kv_cache)
+                kv_cache=self.kv_cache, input_metadata = input_metadata)
             return output
         else:
             # Prepare input tensors.
