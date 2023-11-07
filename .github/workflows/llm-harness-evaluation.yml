@@ -88,8 +88,8 @@ jobs:
         shell: bash
         run: |
           echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
-          echo "HF_DATASETS=$HF_HOME/datasets" >> "$GITHUB_ENV"
-          echo "HF_DATASETS_CACHE=$HF_HOME/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
 
       - name: Run harness
         shell: bash
