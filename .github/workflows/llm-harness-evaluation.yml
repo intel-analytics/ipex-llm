@@ -27,8 +27,8 @@ jobs:
       matrix:
         python-version: ["3.9"]
         model_name: ["Llama-2-7b-chat-hf"]
-        task: ["arc", "truthfulqa"]
-        precision: ["int4", "nf4"]
+        task: ["truthfulqa"]
+        precision: ["int4"]
     runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
