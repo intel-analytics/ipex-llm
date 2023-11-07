@@ -6,6 +6,10 @@ This example demonstrates how to serving a llama2-7b model using BigDL-LLM 4 bit
 The original [vLLM](https://github.com/analytics-zoo/vllm) is designed to run with `CUDA` environment. To adapt vLLM into `Intel` platforms, install the dependencies like this:
 
 ```bash
+# First create an conda environment
+conda create -n vllm-env python==3.9
+conda activate vllm-env
+# Install dependencies
 pip install --pre --upgrade bigdl-llm[all]
 pip3 install --no-deps "vllm==0.2.1.post1"
 pip3 install psutil

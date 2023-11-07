@@ -36,6 +36,7 @@ from typing import Dict, List, Tuple, Optional
 
 import torch
 import torch.distributed
+import warnings
 
 from bigdl.llm.vllm.config import ModelConfig
 from vllm.config import ParallelConfig, SchedulerConfig
@@ -87,10 +88,8 @@ class Worker:
         """
         for seq_id in finished_seqs:
             if seq_id not in self.kv_cache.keys():
-                invalidInputError(
-                    False,
-                    f"Duplicate key {seq_id} received during clean worker's KVCache"
-                )
+                warnings.warn(f"Duplicate key {seq_id} received during clean worker's KVCache")
+                continue
             del self.kv_cache[seq_id]
 
     def init_model(self):
