@@ -17,7 +17,7 @@
 
 ARG SPARK_VERSION=2.4.6
 ARG HADOOP=2.7
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0
 
 # stage.1 spark
 FROM ubuntu:20.04 as spark
@@ -52,7 +52,7 @@ RUN apt-get update --fix-missing && \
 FROM ubuntu:20.04
 
 ARG SPARK_VERSION=2.4.6
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0
 
 ENV SPARK_HOME                      /opt/work/spark-${SPARK_VERSION}
 ENV LD_LIBRARY_PATH /opt/work/lib
