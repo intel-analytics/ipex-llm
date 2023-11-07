@@ -77,8 +77,8 @@ jobs:
           echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           if [ ! -d $HARNESS_HF_HOME ]; then
-            wget -r -nH -l inf --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/..
-            mv $HARNESS_HF_HOME/../LeaderBoard_Datasets ${HARNESS_HF_HOME}
+            mkdir -p $HARNESS_HF_HOME
+            wget -r -nH -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
           fi
           if [ ! -d $MODEL_PATH ]; then
             wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
