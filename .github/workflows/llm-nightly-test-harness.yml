@@ -92,6 +92,7 @@ jobs:
       - name: Run harness
         shell: bash
         run: |
+          source /opt/intel/oneapi/setvars.sh
           HF_HOME=$HARNESS_HF_HOME
           HF_DATASETS=$HF_HOME/datasets
           HF_DATASETS_CACHE=$HF_HOME/datasets
