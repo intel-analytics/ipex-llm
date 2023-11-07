@@ -469,19 +469,17 @@ class LowBitLinear(nn.Linear):
                                                              IS_SERVER and (not IS_SPR)
                                                              and self.qtype == SYM_INT4
                                                              and x_2d.shape[0] >=
-                                                             TORCH_LINEAR_THRESHOLD)
-                # Step 1. pre-proccessing convert model weight if necessary
+                                                             TORCH_LINEAR_THRESHOLD)           
+                # Step 1. convert if necessary, and compute a linear result
                 if CONVERT_INT4_2_FP32:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                # Step 2. compute the result by linear
-                if CONVERT_INT4_2_FP32:
                     result = F.linear(x, x0_fp32)
                 else:
-                    # Weight has not been converted
+                    # Weight does not need a convert
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                     new_shape = x_shape[:-1] + (self.out_len,)
                     result = result.view(new_shape)
-                # Step 3. post-processing: allreduce and add bias if necessary
+                # Step 2. allreduce to combine partial results and add bias if necessary
                 if IS_DEEPSPEED_ENABLED:
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
