@@ -21,5 +21,5 @@ sudo docker run -it \
         -e CHALLENGE=cHBtbAo= \
         -e REPORT_DATA=ppml \
 	-e SGX_LOG_LEVEL=off \
-	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-build \
 	bash /opt/run_spark_on_occlum_glibc.sh $1

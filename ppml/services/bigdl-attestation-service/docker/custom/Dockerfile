@@ -1,5 +1,5 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-attestation-service-base
-ARG BASE_IMAGE_TAG=2.4.0-SNAPSHOT
+ARG BASE_IMAGE_TAG=2.4.0
 
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
