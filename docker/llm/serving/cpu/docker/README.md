@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/bigdl-llm-serving-cpu:2.4.0 .
 ```
 
 
@@ -17,7 +17,7 @@ You could use the following bash script to start the container.  Please be noted
 
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.4.0
 
 sudo docker run -itd \
         --net=host \

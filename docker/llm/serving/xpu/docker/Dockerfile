@@ -1,4 +1,4 @@
-FROM intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT
+FROM intelanalytics/bigdl-llm-xpu:2.4.0
 
 ARG http_proxy
 ARG https_proxy
