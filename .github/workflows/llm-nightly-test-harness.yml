@@ -28,6 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
+        model_name: ["Llama-2-7b-hf"]
     runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -79,14 +80,14 @@ jobs:
       - name: Download models and datasets
         shell: bash
         run: |
-          echo "LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/" >> "$GITHUB_ENV"
-          LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/
+          echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
+          MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           if [ ! -d $HARNESS_HF_HOME ]; then
             wget -r -nH -l inf --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $(pwd)/../llm/
             mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
           fi
-          if [ ! -d $LLAMA_7B_PATH ]; then
-            wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/Llama-2-7b-hf -P ${ORIGIN_DIR}
+          if [ ! -d $MODEL_PATH ]; then
+            wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           fi
           
       - name: Run harness
@@ -97,4 +98,4 @@ jobs:
           HF_DATASETS=$HF_HOME/datasets
           HF_DATASETS_CACHE=$HF_HOME/datasets
           cd python/llm/dev/benchmark/harness/
-          python llb.py --model bigdl-llm --pretrained ${LLAMA_7B_PATH} --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/Llama-2-7b-hf --batch 8
+          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/${{ matrix.model_name }} --batch 8
