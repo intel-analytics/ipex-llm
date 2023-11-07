@@ -27,6 +27,7 @@ jobs:
       matrix:
         python-version: ["3.9"]
         model_name: ["Llama-2-7b-hf"]
+        task: ["arc", "truthfulqa"]
     runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -96,4 +97,4 @@ jobs:
           HF_DATASETS=$HF_HOME/datasets
           HF_DATASETS_CACHE=$HF_HOME/datasets
           cd python/llm/dev/benchmark/harness/
-          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/${{ matrix.model_name }} --batch 1
+          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision int4 --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1
