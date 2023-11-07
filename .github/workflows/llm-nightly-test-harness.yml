@@ -37,8 +37,8 @@ jobs:
         run: |
           echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
           echo "HARNESS_HF_HOME=$(pwd)/../llm/harness_home" >> "$GITHUB_ENV"
-          echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
-          echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS=${HARNESS_HF_HOME}/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS_CACHE=${HARNESS_HF_HOME}/datasets" >> "$GITHUB_ENV"
       
       - name: Create model directories
         shell: bash
@@ -53,12 +53,12 @@ jobs:
       - name: Set environment variables
         shell: bash
         run: |
-          echo "STABLELM_PATH=${ORIGIN_DIR}/models--stabilityai--stablelm-3b-4e1t" >> "$GITHUB_ENV"
+          echo "LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/" >> "$GITHUB_ENV"
           if [ ! -d $STABLELM_PATH ]; then
             wget -r -nH ${LLM_FTP_URL}/llm/models--stabilityai--stablelm-3b-4e1t -p ${ORIGIN_DIR}
           if [ ! -d $HARNESS_HF_HOME ]; then
             wget -r -nH ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -p $(pwd)/../llm/
-            mv $(pwd)/../llm/LeaderBoard_Datasets $HARNESS_HF_HOME
+            mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
       
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -102,4 +102,4 @@ jobs:
         run: |
           export HF_HOME=$HARNESS_HF_HOME
           cd python/llm/dev/benchmark/harness/
-          python llb.py --model bigdl-llm --pretrained $STABLELM_PATH --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/stablelm-3b-4e1t --batch 8
+          python llb.py --model bigdl-llm --pretrained ${LLAMA_7B_PATH} --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/Llama-2-7b-hf --batch 8
