@@ -464,10 +464,10 @@ class LowBitLinear(nn.Linear):
                               " supported on CPU")
             if self.training and x.requires_grad:
                 result = MatMulLowBitCPU.apply(x, self.weight)
-            else:       
+            else:
                 # Step 1. convert if necessary, and compute a linear result
-                if IS_SERVER and (not IS_SPR) and self.qtype == SYM_INT4
-                   and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
+                if IS_SERVER and (not IS_SPR) and \
+                        self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
                     result = F.linear(x, x0_fp32)
                 else:
