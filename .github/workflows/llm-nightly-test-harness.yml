@@ -37,29 +37,7 @@ jobs:
         run: |
           echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
           echo "HARNESS_HF_HOME=$(pwd)/../llm/harness_home" >> "$GITHUB_ENV"
-          echo "HF_DATASETS=${HARNESS_HF_HOME}/datasets" >> "$GITHUB_ENV"
-          echo "HF_DATASETS_CACHE=${HARNESS_HF_HOME}/datasets" >> "$GITHUB_ENV"
-      
-      - name: Create model directories
-        shell: bash
-        run: |
-          if [ ! -d $ORIGIN_DIR ]; then
-            mkdir -p $ORIGIN_DIR
-          fi
-          if [ ! -d $HF_DATASETS ]; then
-            mkdir -p $HF_DATASETS
-          fi
 
-      - name: Set environment variables
-        shell: bash
-        run: |
-          echo "LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/" >> "$GITHUB_ENV"
-          if [ ! -d $STABLELM_PATH ]; then
-            wget -r -nH ${LLM_FTP_URL}/llm/models--stabilityai--stablelm-3b-4e1t -p ${ORIGIN_DIR}
-          if [ ! -d $HARNESS_HF_HOME ]; then
-            wget -r -nH ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -p $(pwd)/../llm/
-            mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
-      
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -96,10 +74,23 @@ jobs:
           pip install -e .
           git apply ../bigdl-llm.patch
           cd ..
+      
+      
+      - name: Download models and datasets
+        shell: bash
+        run: |
+          echo "LLAMA_7B_PATH=${ORIGIN_DIR}/Llama-2-7b-hf/" >> "$GITHUB_ENV"
+          if [ ! -d $HARNESS_HF_HOME ]; then
+            wget -r -nH ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -p $(pwd)/../llm/
+            mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
+          if [ ! -d $LLAMA_7B_PATH ]; then
+            wget -r -nH ${LLM_FTP_URL}/llm/Llama-2-7b-hf -p ${ORIGIN_DIR}
 
       - name: Run harness
         shell: bash
         run: |
-          export HF_HOME=$HARNESS_HF_HOME
+          HF_HOME=$HARNESS_HF_HOME
+          HF_DATASETS=$HF_HOME/datasets
+          HF_DATASETS_CACHE=$HF_HOME/datasets
           cd python/llm/dev/benchmark/harness/
           python llb.py --model bigdl-llm --pretrained ${LLAMA_7B_PATH} --precision int4 --device xpu --tasks truthfulqa arc --output_dir results/Llama-2-7b-hf --batch 8
