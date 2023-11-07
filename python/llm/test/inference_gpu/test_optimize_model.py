@@ -68,7 +68,7 @@ class Test_Optimize_Gpu_Model:
         self.layer_outputs = []
 
     def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn):
-        def forward_hook(module, output):
+        def forward_hook(module, output, layer_name):
             self.layer_outputs.append(output)
 
         def pre_hook(module, input):
