@@ -91,8 +91,10 @@ class Test_Optimize_Gpu_Model:
                 layer_module.register_forward_pre_hook(
                     lambda module, input: pre_hook(module, input))
                 layer_module.register_forward_hook(
-                    lambda module, output: forward_hook(module, output))
+                    lambda module, output, layer_name=layer_name: forward_hook(module, 
+                                                                               output, layer_name))
         logits_base_model = (model(input_ids)).logits
+        # the list `layer_output` has only one element.
         layer_tensor = self.layer_outputs.pop()
 
         del model
@@ -108,8 +110,10 @@ class Test_Optimize_Gpu_Model:
                 layer_module.register_forward_pre_hook(
                     lambda module, input: load_pre_hook(module, input))
                 layer_module.register_forward_hook(
-                    lambda module, output: forward_hook(module, output))
+                    lambda module, output, layer_name=layer_name: forward_hook(module, 
+                                                                               output, layer_name))
         logits_optimized_model = (opt_model(input_ids)).logits
+        # the list `layer_output` has only one element.
         opt_layer_tensor = self.layer_outputs.pop()
 
         del opt_model
@@ -132,6 +136,7 @@ class Test_Optimize_Gpu_Model:
         Model = AutoModelForCausalLM
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
+        # currently only need to compare the output of one self-attention layer.
         self_attn = "transformer.h.31.self_attention"
 
         self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn)
@@ -142,6 +147,7 @@ class Test_Optimize_Gpu_Model:
         Model = AutoModelForCausalLM
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('LLAMA_ORIGIN_PATH')
+        # currently only need to compare the output of one self-attention layer.
         self_attn = "model.layers.31.self_attn"
 
         self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn)
