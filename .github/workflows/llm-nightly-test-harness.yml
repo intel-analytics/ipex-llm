@@ -36,8 +36,8 @@ jobs:
       - name: Set model and dataset directories
         shell: bash
         run: |
-          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
-          echo "HARNESS_HF_HOME=$(pwd)/../llm/harness_home" >> "$GITHUB_ENV"
+          echo "ORIGIN_DIR=/mnt/disk1/models" >> "$GITHUB_ENV"
+          echo "HARNESS_HF_HOME=/mnt/disk1/harness_home" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -83,8 +83,8 @@ jobs:
           echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           if [ ! -d $HARNESS_HF_HOME ]; then
-            wget -r -nH -l inf --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $(pwd)/../llm/
-            mv $(pwd)/../llm/LeaderBoard_Datasets ${HARNESS_HF_HOME}
+            wget -r -nH -l inf --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/..
+            mv $HARNESS_HF_HOME/../LeaderBoard_Datasets ${HARNESS_HF_HOME}
           fi
           if [ ! -d $MODEL_PATH ]; then
             wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
