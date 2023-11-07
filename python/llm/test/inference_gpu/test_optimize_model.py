@@ -95,7 +95,7 @@ class Test_Optimize_Gpu_Model:
                                                                                output, layer_name))
         logits_base_model = (model(input_ids)).logits
         # the list `layer_output` has only one element.
-        layer_tensor = self.layer_outputs.pop()
+        layer_tensor = self.layer_outputs[0]
 
         del model
 
@@ -114,16 +114,18 @@ class Test_Optimize_Gpu_Model:
                                                                                output, layer_name))
         logits_optimized_model = (opt_model(input_ids)).logits
         # the list `layer_output` has only one element.
-        opt_layer_tensor = self.layer_outputs.pop()
+        opt_layer_tensor = self.layer_outputs[0]
 
         del opt_model
 
         attn_output_diff = []
         for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
             if t1 is not None and t2 is not None:
-                if not isinstance(t1, tuple) and not isinstance(t2, tuple):
+                if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
+                    # 'attn_output' is of type torch.Tensor.
                     attn_output_diff.append(t1 - t2)
                 else:
+                    # 'past_key_value'is of type tuple as default.
                     for i, (t3, t4) in enumerate(zip(t1, t2)):
                         attn_output_diff.append(t3 - t4)
 
@@ -136,7 +138,7 @@ class Test_Optimize_Gpu_Model:
         Model = AutoModelForCausalLM
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
-        # currently only need to compare the output of one self-attention layer.
+        # currently only compare the output of the last self-attention layer.
         self_attn = "transformer.h.31.self_attention"
 
         self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn)
@@ -147,7 +149,7 @@ class Test_Optimize_Gpu_Model:
         Model = AutoModelForCausalLM
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('LLAMA_ORIGIN_PATH')
-        # currently only need to compare the output of one self-attention layer.
+        # currently only compare the output of the last self-attention layer.
         self_attn = "model.layers.31.self_attn"
 
         self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn)
