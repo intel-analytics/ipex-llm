@@ -91,22 +91,41 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
             return result
         elif self.r[self.active_adapter] > 0:
             result = result.clone()
-            if not torch.is_autocast_enabled():
-                expected_dtype = result.dtype
-                x = x.to(self.lora_A[self.active_adapter].weight.dtype)
-                output = (
-                    self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
-                    ).to(expected_dtype)
-                    * self.scaling[self.active_adapter]
-                )
-            else:
-                output = (
-                    self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+            if x.device.type == "xpu":
+                if not torch.xpu.is_autocast_xpu_enabled():
+                    expected_dtype = result.dtype
+                    x = x.to(self.lora_A[self.active_adapter].weight.dtype)
+                    output = (
+                        self.lora_B[self.active_adapter](
+                            self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+                        ).to(expected_dtype)
+                        * self.scaling[self.active_adapter]
                     )
-                    * self.scaling[self.active_adapter]
-                )
+                else:
+                    output = (
+                        self.lora_B[self.active_adapter](
+                            self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+                        )
+                        * self.scaling[self.active_adapter]
+                    )
+            else:
+                # will CPU enter this part or we can just remove it?
+                if not torch.is_autocast_enabled():
+                    expected_dtype = result.dtype
+                    x = x.to(self.lora_A[self.active_adapter].weight.dtype)
+                    output = (
+                        self.lora_B[self.active_adapter](
+                            self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+                        ).to(expected_dtype)
+                        * self.scaling[self.active_adapter]
+                    )
+                else:
+                    output = (
+                        self.lora_B[self.active_adapter](
+                            self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+                        )
+                        * self.scaling[self.active_adapter]
+                    )
             result += output
         return result
 
