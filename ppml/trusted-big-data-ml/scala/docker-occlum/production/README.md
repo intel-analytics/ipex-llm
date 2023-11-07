@@ -49,7 +49,7 @@ docker commit $container_name $container_name-build
 ### Pull production-build image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-build
 ```
 
 ## Using BigDL PPML Occlum EHSM Attestation
