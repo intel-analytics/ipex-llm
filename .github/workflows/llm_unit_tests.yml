@@ -44,19 +44,19 @@ jobs:
       matrix:
         include:
           - os: windows
-            instruction: avx2
+            instruction: AVX-VNNI
             python-version: "3.9"
           - os: ubuntu-20.04-lts
             instruction: avx512
             python-version: "3.9"
           - os: windows
-            instruction: avx2
+            instruction: AVX-VNNI
             python-version: "3.10"
           - os: ubuntu-20.04-lts
             instruction: avx512
             python-version: "3.10"
           - os: windows
-            instruction: avx2
+            instruction: AVX-VNNI
             python-version: "3.11"
           - os: ubuntu-20.04-lts
             instruction: avx512
