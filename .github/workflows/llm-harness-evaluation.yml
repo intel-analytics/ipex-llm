@@ -26,9 +26,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["chatglm2-6b"]
-        task: ["truthfulqa", "arc"]
-        precision: ["int4", "fp4", "fp8"]
+        model_name: ["falcon-7b-instruct-with-patch"]
+        task: ["truthfulqa", "arc", "hellaswag"]
+        precision: ["fp8"]
     runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
