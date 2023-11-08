@@ -45,6 +45,7 @@ import warnings
 import torch
 import argparse
 import os
+from transformers.utils import is_torch_xpu_available
 from streaming_llm.utils import load, download_url, load_jsonl
 from streaming_llm.enable_streaming_llm import enable_streaming_llm
 warnings.filterwarnings("ignore")
@@ -107,11 +108,17 @@ def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=10
 
         past_key_values = greedy_generate(
             model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len
+        
         )
+        torch.xpu.synchronize()
 
 
 def main(args):
     model, tokenizer = load(args.repo_id_or_model_path)
+    device = 'xpu' if is_torch_xpu_available() else 'cpu'
+
+    model = model.to(device)
+  
     test_filepath = os.path.join(args.data_root, "mt_bench.jsonl")
     print(f"Loading data from {test_filepath} ...")
 
