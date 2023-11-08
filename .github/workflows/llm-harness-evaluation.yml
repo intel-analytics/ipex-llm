@@ -27,7 +27,7 @@ jobs:
       matrix:
         python-version: ["3.9"]
         model_name: ["Llama-2-7b-chat-hf"]
-        task: ["hellaswag", "mmlu"]
+        task: ["hellaswag", "mmlu" ]
         precision: ["int4"]
     runs-on: [self-hosted, llm, accuracy]
     env:
