@@ -138,6 +138,7 @@ jobs:
           cp ./*.csv /mnt/disk1/nightly_perf_gpu/
           cd ../../../test/benchmark
           python csv_to_html.py -f /mnt/disk1/nightly_perf_gpu/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
 
           
   llm-performance-test-on-spr:
