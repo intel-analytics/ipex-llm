@@ -19,7 +19,7 @@ pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightl
 # Refer to https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting, please make sure you are using a stable version of Transformers, 4.34.0 or newer.
 pip install transformers==4.34.0
 ```
-> **Important**: According to [Mistral Troubleshooting](https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting), please make sure you have installed `transformers==4.34.0` following above commands.
+**Important: According to [Mistral Troubleshooting](https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting), please make sure you have installed `transformers==4.34.0` following above commands.**
 
 ### 2. Run
 After setting up the Python environment, you could run the example by following steps.
