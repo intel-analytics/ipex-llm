@@ -36,22 +36,20 @@
 import time
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
 
-from bigdl.llm.vllm.config import ModelConfig
-from vllm.config import ParallelConfig, SchedulerConfig
+from bigdl.llm.vllm.config import ModelConfig, ParallelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.utils.arg_utils import EngineArgs
-from vllm.logger import init_logger
+from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
-from vllm.sampling_params import SamplingParams
-from vllm.sequence import SequenceStatus
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence,
                                                SequenceGroup,
                                                SequenceGroupMetadata,
+                                               SequenceStatus,
                                                SequenceOutputs)
-from vllm.transformers_utils.tokenizer import (detokenize_incrementally,
-                                               get_tokenizer)
-from vllm.utils import Counter
-from vllm.engine.ray_utils import get_open_port
+from bigdl.llm.vllm.utils.llm_utils import (Counter, get_tokenizer, 
+                                            detokenize_incrementally, 
+                                            get_open_port)
 from bigdl.llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)

@@ -34,10 +34,10 @@
 import time
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
-from vllm.config import SchedulerConfig
+from bigdl.llm.vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
-from vllm.logger import init_logger
-from vllm.sequence import SequenceData, SequenceStatus
+from bigdl.llm.vllm.logger import init_logger
+from bigdl.llm.vllm.structure.sequence import SequenceData, SequenceStatus
 from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceGroup,
                                                SequenceGroupMetadata)
 from bigdl.llm.utils.common import invalidInputError

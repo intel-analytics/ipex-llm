@@ -38,8 +38,8 @@ import time
 from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
-from vllm.utils import random_uuid
-from vllm.entrypoints.openai.protocol import (ErrorResponse, ModelPermission,
+from bigdl.llm.vllm.utils.llm_utils import random_uuid
+from bigdl.llm.vllm.examples.openai_protocol import (ErrorResponse, ModelPermission,
                                               ModelCard, UsageInfo, LogProbs,
                                               ChatMessage, DeltaMessage)
 

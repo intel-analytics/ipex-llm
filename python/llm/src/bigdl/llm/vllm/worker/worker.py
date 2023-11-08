@@ -37,15 +37,14 @@ from typing import Dict, List, Tuple, Optional
 import torch
 import torch.distributed
 import warnings
+import numpy as np
+import random
 
-from bigdl.llm.vllm.config import ModelConfig
-from vllm.config import ParallelConfig, SchedulerConfig
+from bigdl.llm.vllm.config import ModelConfig, ParallelConfig, SchedulerConfig
 from bigdl.llm.vllm.models.model_loader import get_model
 from bigdl.llm.vllm.structure.input_metadata import InputMetadata
-from vllm.model_executor import set_random_seed
-from vllm.sampling_params import SamplingParams
-from vllm.sequence import SequenceData
-from bigdl.llm.vllm.structure.sequence import SamplerOutput, SequenceGroupMetadata
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.structure.sequence import SequenceData, SamplerOutput, SequenceGroupMetadata
 from bigdl.llm.utils.common import invalidInputError
 
 
@@ -93,7 +92,7 @@ class Worker:
             del self.kv_cache[seq_id]
 
     def init_model(self):
-        if self.model_config.device != 'cpu':
+        if self.model_config.device == 'gpu':
             # This env var set by Ray causes exceptions with graph building.
             os.environ.pop("NCCL_ASYNC_ERROR_HANDLING", None)
             # Env vars will be set by Ray.
@@ -330,3 +329,10 @@ def _check_if_gpu_supports_dtype(torch_dtype: torch.dtype):
                 "Bfloat16 is only supported on GPUs with compute capability "
                 f"of at least 8.0. Your {gpu_name} GPU has compute capability "
                 f"{compute_capability[0]}.{compute_capability[1]}.")
+
+def set_random_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)

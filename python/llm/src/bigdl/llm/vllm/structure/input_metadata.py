@@ -34,8 +34,8 @@
 from typing import Dict, List, Optional, Tuple
 import torch
 from xformers.ops import AttentionBias
-from vllm.sequence import SequenceData
-from vllm.sampling_params import SamplingParams
+from bigdl.llm.vllm.structure.sequence import SequenceData
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 
 
 class InputMetadata:

@@ -35,8 +35,7 @@ import argparse
 import dataclasses
 from dataclasses import dataclass
 from typing import Optional, Tuple
-from bigdl.llm.vllm.config import ModelConfig
-from vllm.config import SchedulerConfig, ParallelConfig
+from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig, ParallelConfig
 
 
 @dataclass
@@ -201,7 +200,7 @@ class EngineArgs:
                             help='Method used to quantize the weights')
         parser.add_argument('--device',
                             type=str,
-                            choices=['gpu', 'cpu', None],
+                            choices=['gpu', 'cpu', 'xpu', None],
                             default=None,
                             help='Device to execute LLM model')
 

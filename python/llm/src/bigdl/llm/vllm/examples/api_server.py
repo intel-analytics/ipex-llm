@@ -57,14 +57,14 @@ from bigdl.llm.vllm.examples.protocol import (
     ChatCompletionResponse, ChatCompletionResponseChoice, ChatMessage,
     DeltaMessage, ErrorResponse, LogProbs, ModelCard, ModelPermission,
     UsageInfo)
-from vllm.entrypoints.openai.protocol import (
+from bigdl.llm.vllm.examples.openai_protocol import (
     CompletionRequest, ChatCompletionRequest,
     ChatCompletionResponseStreamChoice, ChatCompletionStreamResponse,
     ModelList)
-from vllm.logger import init_logger
+from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
-from vllm.sampling_params import SamplingParams
-from vllm.transformers_utils.tokenizer import get_tokenizer
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.utils.llm_utils import get_tokenizer
 import uuid
 from bigdl.llm.utils.common import invalidInputError
 

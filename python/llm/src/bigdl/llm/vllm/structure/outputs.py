@@ -32,8 +32,7 @@
 # limitations under the License.
 
 from typing import Dict, List, Optional
-from vllm.sequence import SequenceStatus
-from bigdl.llm.vllm.structure.sequence import SequenceGroup
+from bigdl.llm.vllm.structure.sequence import SequenceGroup, SequenceStatus
 
 
 class CompletionOutput:

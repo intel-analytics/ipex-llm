@@ -33,10 +33,105 @@
 """Sequence and its related classes."""
 import copy
 import enum
+import time
 from typing import Dict, List, Optional, Union
-from vllm.sampling_params import SamplingParams
-from vllm.sequence import SequenceStatus, SequenceData
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.utils.common import invalidInputError
+
+
+class SequenceStatus(enum.Enum):
+    """Status of a sequence."""
+    WAITING = enum.auto()
+    RUNNING = enum.auto()
+    SWAPPED = enum.auto()
+    FINISHED_STOPPED = enum.auto()
+    FINISHED_LENGTH_CAPPED = enum.auto()
+    FINISHED_ABORTED = enum.auto()
+    FINISHED_IGNORED = enum.auto()
+
+    @staticmethod
+    def is_finished(status: "SequenceStatus") -> bool:
+        return status in [
+            SequenceStatus.FINISHED_STOPPED,
+            SequenceStatus.FINISHED_LENGTH_CAPPED,
+            SequenceStatus.FINISHED_ABORTED,
+            SequenceStatus.FINISHED_IGNORED,
+        ]
+
+    @staticmethod
+    def get_finished_reason(status: "SequenceStatus") -> Union[str, None]:
+        if status == SequenceStatus.FINISHED_STOPPED:
+            finish_reason = "stop"
+        elif status == SequenceStatus.FINISHED_LENGTH_CAPPED:
+            finish_reason = "length"
+        elif status == SequenceStatus.FINISHED_ABORTED:
+            finish_reason = "abort"
+        elif status == SequenceStatus.FINISHED_IGNORED:
+            # The ignored sequences are the sequences whose prompt lengths
+            # are longer than the model's length cap. Therefore, the stop
+            # reason should also be "length" as in OpenAI API.
+            finish_reason = "length"
+        else:
+            finish_reason = None
+        return finish_reason
+
+
+class SequenceData:
+    """Data associated with a sequence.
+
+
+    Args:
+        prompt_token_ids: The token IDs of the prompt.
+
+    Attributes:
+        prompt_token_ids: The token IDs of the prompt.
+        output_token_ids: The token IDs of the output.
+        cumulative_logprob: The cumulative log probability of the output.
+    """
+
+    def __init__(
+        self,
+        prompt_token_ids: List[int],
+    ) -> None:
+        self.prompt_token_ids = prompt_token_ids
+        self.output_token_ids: List[int] = []
+        self.cumulative_logprob = 0.0
+        self.created_timestamp = time.perf_counter()
+        self.updated_timestamp = self.created_timestamp
+        self.last_token_latency = 0.0
+
+    def append_token_id(self, token_id: int, logprob: float) -> None:
+        self.output_token_ids.append(token_id)
+        self.cumulative_logprob += logprob
+        cur_timestamp = time.perf_counter()
+        self.last_token_latency = cur_timestamp - self.updated_timestamp
+        self.updated_timestamp = cur_timestamp
+
+    def get_len(self) -> int:
+        return len(self.output_token_ids) + len(self.prompt_token_ids)
+
+    def get_prompt_len(self) -> int:
+        return len(self.prompt_token_ids)
+
+    def get_output_len(self) -> int:
+        return len(self.output_token_ids)
+
+    def get_token_ids(self) -> List[int]:
+        return self.prompt_token_ids + self.output_token_ids
+
+    def get_last_token_id(self) -> int:
+        if not self.output_token_ids:
+            return self.prompt_token_ids[-1]
+        return self.output_token_ids[-1]
+
+    def get_last_token_latency(self) -> float:
+        return self.last_token_latency
+
+    def __repr__(self) -> str:
+        return (f"SequenceData("
+                f"prompt_token_ids={self.prompt_token_ids}, "
+                f"output_token_ids={self.output_token_ids}, "
+                f"cumulative_logprob={self.cumulative_logprob})")
 
 
 class Sequence:

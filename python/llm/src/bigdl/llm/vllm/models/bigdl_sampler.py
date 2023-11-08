@@ -38,7 +38,7 @@ import torch.nn as nn
 
 from bigdl.llm.vllm.structure.input_metadata import InputMetadata
 
-from vllm.sampling_params import SamplingParams, SamplingType
+from bigdl.llm.vllm.structure.sampling_params import SamplingParams, SamplingType
 from bigdl.llm.vllm.structure.sequence import (SamplerOutput, SequenceGroupMetadata,
                                                SequenceData, SequenceOutputs)
 
@@ -87,10 +87,10 @@ class BigDLSampler(nn.Module):
     parameters (e.g., sampling method, temperature, top-p, top-k, etc.).
     """
 
-    def __init__(self, vocab_size: int) -> None:
+    def __init__(self, vocab_size: int, device: Optional[str] = None) -> None:
         super().__init__()
         self.vocab_size = vocab_size
-        if False:
+        if device == 'xpu':
             import intel_extension_for_pytorch as ipex
 
     def forward(

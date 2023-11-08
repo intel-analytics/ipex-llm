@@ -90,6 +90,7 @@ class BigDLLlamaForCausalLM(nn.Module):
     def __init__(
         self,
         config: LlamaConfig,
+        device: Optional[str] = None,
     ):
         super().__init__()
         self.config = config
@@ -99,18 +100,37 @@ class BigDLLlamaForCausalLM(nn.Module):
             from bigdl.llm import optimize_model
 
         # low_bit = 'sym_int4'
-        model = AutoModelForCausalLM.from_pretrained(
-            config._name_or_path,
-            low_cpu_mem_usage=True,
-            trust_remote_code=True,
-            use_cache=True,
-        )
-        self.model = optimize_model(model)
-        self.sampler = BigDLSampler(config.vocab_size)
-        # self.model = AutoModelForCausalLM.from_pretrained(config._name_or_path)
-        self.tokenizer = AutoTokenizer.from_pretrained(config._name_or_path)
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        if device == 'cpu':
+            model = AutoModelForCausalLM.from_pretrained(
+                config._name_or_path,
+                low_cpu_mem_usage=True,
+                trust_remote_code=True,
+                use_cache=True,
+            )
+            self.model = optimize_model(model)
+            self.sampler = BigDLSampler(config.vocab_size, device)
+        elif device == 'xpu':
+            try:
+                import intel_extension_for_pytorch as ipex
+            except ImportError:
+                print("Intel Extension for PyTorch is not installed, but is required for xpu inference.")
+
+            low_bit = 'sym_int4'
+            model = AutoModelForCausalLM.from_pretrained(
+                config._name_or_path,
+                load_in_low_bit=low_bit, 
+                trust_remote_code=True,
+                use_cache=True,
+            )
+            self.model = model.to('xpu')
+            self.sampler = BigDLSampler(config.vocab_size, device).to('xpu')
+
+        if device is None:
+            self.device = torch.device(
+                "cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.model.to(device)
+            self.device = torch.device(device)
         self.dtype = self.model.dtype
         self.kv_cache_size = [0]
         self.last_seq_ids = []
