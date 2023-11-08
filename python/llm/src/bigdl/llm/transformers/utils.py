@@ -133,3 +133,22 @@ def fix_key(key):
     if "gamma" in key:
         return key.replace("gamma", "weight")
     return key
+
+
+def check_autocast(x):
+    if x.device.type == "xpu":
+        return torch.xpu.is_autocast_xpu_enabled()
+    elif x.device.type == "cpu":
+        return torch.is_autocast_enabled()
+    else:
+        invalidInputError(False,
+                          f"Device {x.device} is not supported.")
+
+def get_autocast_dtype(x):
+    if x.device.type == "xpu":
+        return torch.xpu.get_autocast_xpu_dtype()
+    elif x.device.type == "cpu":
+        return torch.get_autocast_cpu_dtype()
+    else:
+        invalidInputError(False,
+                          f"Device {x.device} is not supported.")
