@@ -69,6 +69,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | InternLM-XComposer    | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm-xcomposer)   |   |
 | WizardCoder-Python | [link](example/CPU/HF-Transformers-AutoModels/Model/wizardcoder-python) | |
 | CodeShell | [link](example/CPU/HF-Transformers-AutoModels/Model/CodeShell) | |
+| Fuyu      | [link](example/CPU/HF-Transformers-AutoModels/Model/fuyu) |  [link](example/GPU/HF-Transformers-AutoModels/Model/fuyu) |
 
 ### Working with `bigdl-llm`
 
