@@ -494,9 +494,6 @@ def _sample(
             sample_results = _beam_search_sample(seq_groups, is_prompts,
                                                  input_metadata.seq_data,
                                                  category_logprobs)
-        else:
-            # raise ValueError(f"Unsupported sampling type: {sampling_type}")
-            pass
 
         # Batched query for logprobs of selected token
         batched_logprobs_query_seq_indices: List[int] = []
