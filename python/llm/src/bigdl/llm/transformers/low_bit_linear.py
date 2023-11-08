@@ -69,6 +69,10 @@ FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_4bit"]
 
 
+def get_qk_size(qtype: int):
+    return ggml.ggml_qk_size(qtype)
+
+
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                        device=None, convert_shape_only=False):
     QK = ggml.ggml_qk_size(qtype)
