@@ -135,21 +135,17 @@ def fix_key(key):
     return key
 
 
-def check_autocast(x):
-    if x.device.type == "xpu":
-        return torch.xpu.is_autocast_xpu_enabled()
-    elif x.device.type == "cpu":
-        return torch.is_autocast_enabled()
-    else:
-        invalidInputError(False,
-                          f"Device {x.device} is not supported.")
-
-
 def get_autocast_dtype(x):
     if x.device.type == "xpu":
-        return torch.xpu.get_autocast_xpu_dtype()
+        if torch.xpu.is_autocast_xpu_enabled():
+            return torch.xpu.get_autocast_xpu_dtype()
+        else:
+            return None
     elif x.device.type == "cpu":
-        return torch.get_autocast_cpu_dtype()
+        if torch.is_autocast_enabled():
+            return torch.get_autocast_cpu_dtype()
+        else:
+            return None
     else:
         invalidInputError(False,
                           f"Device {x.device} is not supported.")

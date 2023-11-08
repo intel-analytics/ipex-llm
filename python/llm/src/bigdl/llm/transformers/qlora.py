@@ -52,7 +52,7 @@ import torch
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.utils import check_autocast, get_autocast_dtype
+from bigdl.llm.transformers.utils import get_autocast_dtype
 import functools
 
 
@@ -86,15 +86,16 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         self.active_adapter = adapter_name
 
     def forward(self, x: torch.Tensor):
-        if check_autocast(x):
-            x = x.to(get_autocast_dtype(x))
+        autocast_dtype = get_autocast_dtype(x)
+        if autocast_dtype is not None:
+            x = x.to(autocast_dtype)
         result = super().forward(x)
 
         if self.disable_adapters or self.active_adapter not in self.lora_A.keys():
             return result
         elif self.r[self.active_adapter] > 0:
             result = result.clone()
-            if not check_autocast(x):
+            if autocast_dtype is None:
                 expected_dtype = result.dtype
                 x = x.to(self.lora_A[self.active_adapter].weight.dtype)
                 output = (
