@@ -108,7 +108,6 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
-          python -m pip install transformers==4.34.0
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -138,7 +137,7 @@ jobs:
           cp ./*.csv /mnt/disk1/nightly_perf_gpu/
           cd ../../../test/benchmark
           python csv_to_html.py -f /mnt/disk1/nightly_perf_gpu/
-          curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
 
           
   llm-performance-test-on-spr:
