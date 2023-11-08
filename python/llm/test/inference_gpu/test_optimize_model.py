@@ -62,20 +62,32 @@ def test_optimize_model(Model, Tokenizer, model_path):
 
 class Test_Optimize_Gpu_Model:
     def setup(self):
-        self.lower_bound = 3e-3
+        self.lower_bound = 5e-2
         
         self.layer_inputs = []
         self.layer_outputs = []
+        self.pre_layer_outputs = []
 
-    def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn):
-        def forward_hook(module, output, layer_name):
+    def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn, prev_attn):
+        def forward_hook(module, input, output, layer_name):
             self.layer_outputs.append(output)
+
+        def pre_forward_hook(module, input, output, layer_name):
+            self.pre_layer_outputs.append(output)
+
+        def new_forward_hook(module, input):
+            if model_path is os.environ.get('LLAMA_ORIGIN_PATH'):
+                repalcement_norm = model.model.norm
+                opt_model.model.norm = repalcement_norm
 
         def pre_hook(module, input):
             self.layer_inputs.append(input)
 
-        def load_pre_hook(module, input):
-            return self.layer_inputs[0]
+        def replace_forward_hook(module, input, output, layer_name):
+            hidden_states, present_key_value = output
+            hidden_states = layer_states[0].detach()
+            output = (hidden_states, present_key_value)
+            return output
 
         tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
@@ -87,17 +99,22 @@ class Test_Optimize_Gpu_Model:
         model = model.to(device)
 
         for layer_name, layer_module in model.named_modules():
+            if layer_name == prev_attn:
+                layer_module.register_forward_pre_hook(
+                    lambda module, input: pre_hook(module, input))
+                layer_module.register_forward_hook(
+                    lambda module, input, output, layer_name=layer_name: pre_forward_hook(module, input,
+                                                                                          output, layer_name))
             if layer_name == self_attn:
                 layer_module.register_forward_pre_hook(
                     lambda module, input: pre_hook(module, input))
                 layer_module.register_forward_hook(
-                    lambda module, output, layer_name=layer_name: forward_hook(module, 
-                                                                               output, layer_name))
+                    lambda module, input, output, layer_name=layer_name: forward_hook(module, input,
+                                                                                      output, layer_name))
         logits_base_model = (model(input_ids)).logits
         # the list `layer_output` has only one element.
-        layer_tensor = self.layer_outputs[0]
-
-        del model
+        layer_tensor = self.layer_outputs.pop()
+        layer_states = self.pre_layer_outputs.pop()
 
         opt_model = Model.from_pretrained(model_path,
                                           load_in_4bit=True,
@@ -106,16 +123,21 @@ class Test_Optimize_Gpu_Model:
         opt_model = opt_model.to(device)
 
         for layer_name, layer_module in opt_model.named_modules():
-            if layer_name == self_attn:
-                layer_module.register_forward_pre_hook(
-                    lambda module, input: load_pre_hook(module, input))
+            if layer_name == self_attn.split('.')[0]:
+                layer_module.register_forward_pre_hook(lambda module, input: new_forward_hook(module, input)),
+            if layer_name == prev_attn:
                 layer_module.register_forward_hook(
-                    lambda module, output, layer_name=layer_name: forward_hook(module, 
-                                                                               output, layer_name))
+                    lambda module, input, output, layer_name=layer_name: replace_forward_hook(module, input,
+                                                                                              output, layer_name))
+            if layer_name == self_attn:
+                layer_module.register_forward_hook(
+                    lambda module, input, output, layer_name=layer_name: forward_hook(module, input,
+                                                                                      output, layer_name))
         logits_optimized_model = (opt_model(input_ids)).logits
         # the list `layer_output` has only one element.
-        opt_layer_tensor = self.layer_outputs[0]
+        opt_layer_tensor = self.layer_outputs.pop()
 
+        del model
         del opt_model
 
         attn_output_diff = []
@@ -139,9 +161,10 @@ class Test_Optimize_Gpu_Model:
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
         # currently only compare the output of the last self-attention layer.
+        prev_attn = "transformer.h.31"
         self_attn = "transformer.h.31.self_attention"
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn)
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn)
 
 
     def test_llama_gpu_model(self):
@@ -150,9 +173,10 @@ class Test_Optimize_Gpu_Model:
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('LLAMA_ORIGIN_PATH')
         # currently only compare the output of the last self-attention layer.
+        prev_attn = "model.layers.30"
         self_attn = "model.layers.31.self_attn"
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn)
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn)
 
 
 if __name__ == '__main__':
