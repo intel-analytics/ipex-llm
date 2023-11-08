@@ -11,7 +11,7 @@ permissions:
 jobs:
   bigdl-release-scala:
     runs-on: [self-hosted, Bree]
-    if: ${{ github.actor == 'Le-Zheng' }}
+    # if: ${{ github.actor == 'Le-Zheng' }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
