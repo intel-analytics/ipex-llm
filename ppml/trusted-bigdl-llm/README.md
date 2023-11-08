@@ -6,7 +6,7 @@ For running fastchat using bigdl-llm transformers int4 in Gramine
 
 2.Pull image from dockerhub.
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.5.0-SNAPSHOT
 ```
 
 ## Deploy fastchat with openAI restful API in K8S cluster

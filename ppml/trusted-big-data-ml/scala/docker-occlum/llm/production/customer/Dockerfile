@@ -7,7 +7,7 @@ RUN rm -rf /opt/occlum_spark/image
 FROM ubuntu:20.04
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

@@ -1,7 +1,7 @@
 
 
 export image=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum-production
-export TAG=2.4.0-SNAPSHOT-build
+export TAG=2.5.0-SNAPSHOT-build
 export image_customer=${image}-customer
 pwd
 docker build \
