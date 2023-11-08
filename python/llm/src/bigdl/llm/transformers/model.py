@@ -89,6 +89,17 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         if load_in_4bit or load_in_low_bit:
+
+            if config_dict.get("quantization_config", None) is not None:
+                q_config = config_dict["quantization_config"]
+                if q_config["quant_method"] == "gptq":
+                    invalidInputError(q_config["bits"] == 4, "Only 4-bit gptq is supported in bigdl-llm.")
+                    invalidInputError(q_config["desc_act"] is False,
+                                      "Only desc_act=False is supported in bigdl-llm.")
+                    if load_in_low_bit is not None:
+                        invalidInputError(load_in_low_bit == "asym_int4",
+                                          "You can only load gptq model as aysm_int4 low bit type.")
+                    load_in_low_bit = "asym_int4"
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
             # set default torch_dtype='auto'
