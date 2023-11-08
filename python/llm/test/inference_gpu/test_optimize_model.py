@@ -160,7 +160,7 @@ class Test_Optimize_Gpu_Model:
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
         # currently only compare the output of the last self-attention layer.
-        prev_attn = "transformer.h.31"
+        prev_attn = "transformer.h.30"
         self_attn = "transformer.h.31.self_attention"
         lower_bound = 0
 
