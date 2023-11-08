@@ -487,26 +487,39 @@ def run_ipex_int8(repo_id,
     if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = quantize_dynamic(model, dtype=torch.qint8)
+        qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+            weight_dtype=torch.qint8, # or torch.quint4x2
+            lowp_mode=ipex.quantization.WoqLowpMode.NONE, # or FP16, BF16, INT8
+        )
+        checkpoint = None # optionally load int4 or int8 checkpoint
+        model = ipex.optimize_transformers(model, quantization_config=qconfig, low_precision_checkpoint=checkpoint)
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                     use_cache=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = quantize_dynamic(model, dtype=torch.qint8)
+        print(model)
+        qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+            weight_dtype=torch.qint8, # or torch.quint4x2
+            lowp_mode=ipex.quantization.WoqLowpMode.NONE, # or FP16, BF16, INT8
+        )
+        checkpoint = None # optionally load int4 or int8 checkpoint
+        model = ipex.optimize_transformers(model, quantization_config=qconfig, low_precision_checkpoint=checkpoint)
+        print(model)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = quantize_dynamic(model, dtype=torch.qint8)
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
+        qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+            weight_dtype=torch.qint8, # or torch.quint4x2
+            lowp_mode=ipex.quantization.WoqLowpMode.NONE, # or FP16, BF16, INT8
+        )
+        checkpoint = None # optionally load int4 or int8 checkpoint
+        model = ipex.optimize_transformers(model, quantization_config=qconfig, low_precision_checkpoint=checkpoint)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
     model = BenchmarkWrapper(model)
 
     result = {}
-    with torch.inference_mode():
+    with torch.inference_mode(), torch.autocast("cpu"):
         for in_out in in_out_pairs:
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
