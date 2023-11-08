@@ -4,13 +4,19 @@ repo_id:
   - 'THUDM/chatglm2-6b'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
+  # - 'bigscience/bloomz-7b1' # temporarily removed
   - 'redpajama/gptneox-7b-redpajama-bf16'
+  - 'bigcode/starcoder-15.5b'
   - 'databricks/dolly-v1-6b'
   - 'databricks/dolly-v2-7b'
   - 'databricks/dolly-v2-12b'
   - 'internlm/internlm-chat-7b-8k'
+  - 'baichuan-inc/Baichuan-13B-Chat'
+  - 'fnlp/moss-moon-003-sft'
   - 'Qwen/Qwen-7B-Chat-10-12'
   - 'BAAI/AquilaChat-7B'
+  - 'baichuan-inc/Baichuan2-7B-Chat'
+  # - 'mistralai/Mistral-7B-v0.1' # temporarily removed
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3

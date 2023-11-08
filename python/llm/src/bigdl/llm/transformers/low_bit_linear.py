@@ -336,8 +336,6 @@ class MatMulLowBit(torch.autograd.Function):
     @staticmethod
     @custom_fwd
     def forward(ctx, A, weight, input_seq_size):
-        if torch.xpu.is_autocast_xpu_enabled():
-            A = A.to(torch.xpu.get_autocast_xpu_dtype())
         ctx.is_empty = False
         import linear_q4_0
         result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
@@ -426,6 +424,7 @@ class LowBitLinear(nn.Linear):
             try:
                 import intel_extension_for_pytorch
                 import linear_q4_0
+                from bigdl.llm.utils.xmx_checker import use_xmx
             except ModuleNotFoundError:
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe` first.")
@@ -440,7 +439,8 @@ class LowBitLinear(nn.Linear):
                 # current workaround to reduce first token latency of fp32 input
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
-                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
+                        not use_xmx(x_2d, self.weight.qtype):
                     x_2d = x_2d.half()
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                      input_seq_size)
@@ -464,19 +464,24 @@ class LowBitLinear(nn.Linear):
                               " supported on CPU")
             if self.training and x.requires_grad:
                 result = MatMulLowBitCPU.apply(x, self.weight)
-                if self.bias is not None:
-                    result = result + self.bias
             else:
+                # Step 1. convert if necessary, and compute a linear result
                 if IS_SERVER and (not IS_SPR) and \
                         self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                    result = F.linear(x, x0_fp32, self.bias)
+                    result = F.linear(x, x0_fp32)
                 else:
+                    # Weight does not need a convert
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                     new_shape = x_shape[:-1] + (self.out_len,)
                     result = result.view(new_shape)
-                    if self.bias is not None:
-                        result += self.bias
+                # Step 2. allreduce to combine partial results and add bias if necessary
+                if self.mp_group is not None:
+                    # deepspeed distibuted mode
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                if self.bias is not None:
+                    result += self.bias
         return result
 
 
