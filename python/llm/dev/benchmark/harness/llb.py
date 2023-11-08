@@ -73,7 +73,7 @@ def main():
             print(f"Running job {index}/{total}:\n{cmd_exec}")
             index += 1
             with open(f"{args.output_dir}/log_{output_path}.txt", "w") as f:
-                return_code = subprocess.call(cmd_exec, shell=True, stderr=f, stdout=f)
+                return_code = subprocess.call(cmd_exec, shell=True)
             if return_code == 0:
                 print("Successful")
             else:
