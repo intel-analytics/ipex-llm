@@ -62,13 +62,12 @@ def test_optimize_model(Model, Tokenizer, model_path):
 
 class Test_Optimize_Gpu_Model:
     def setup(self):
-        self.lower_bound = 5e-2
-        
+
         self.layer_inputs = []
         self.layer_outputs = []
         self.pre_layer_outputs = []
 
-    def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn, prev_attn):
+    def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn, prev_attn, lower_bound):
         def forward_hook(module, input, output, layer_name):
             self.layer_outputs.append(output)
 
@@ -76,7 +75,7 @@ class Test_Optimize_Gpu_Model:
             self.pre_layer_outputs.append(output)
 
         def new_forward_hook(module, input):
-            if model_path is os.environ.get('LLAMA_ORIGIN_PATH'):
+            if model_path == os.environ.get('LLAMA_ORIGIN_PATH'):
                 repalcement_norm = model.model.norm
                 opt_model.model.norm = repalcement_norm
 
@@ -152,7 +151,7 @@ class Test_Optimize_Gpu_Model:
                         attn_output_diff.append(t3 - t4)
 
         max_diff_tensor = [torch.max(item).item() for item in attn_output_diff]
-        assert all(max_diff <= self.lower_bound for max_diff in max_diff_tensor)
+        assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
 
 
     def test_falcon_gpu_model(self):
@@ -163,8 +162,9 @@ class Test_Optimize_Gpu_Model:
         # currently only compare the output of the last self-attention layer.
         prev_attn = "transformer.h.31"
         self_attn = "transformer.h.31.self_attention"
+        lower_bound = 0
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn)
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn, lower_bound)
 
 
     def test_llama_gpu_model(self):
@@ -175,8 +175,9 @@ class Test_Optimize_Gpu_Model:
         # currently only compare the output of the last self-attention layer.
         prev_attn = "model.layers.30"
         self_attn = "model.layers.31.self_attn"
+        lower_bound = 5e-2
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn)
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn, lower_bound)
 
 
 if __name__ == '__main__':
