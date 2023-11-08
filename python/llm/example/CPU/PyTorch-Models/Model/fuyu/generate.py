@@ -46,5 +46,7 @@ if __name__ == '__main__':
         print(prompt)
         print('-'*20, 'Output', '-'*20)
         for output in outputs:
+            # '\x04' is the "beginning of answer" token
+            # See https://huggingface.co/adept/fuyu-8b#how-to-use
             answer = output.split('\x04 ', 1)[1] if '\x04' in output else ''
             print(answer)
