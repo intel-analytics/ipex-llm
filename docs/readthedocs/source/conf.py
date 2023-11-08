@@ -65,7 +65,7 @@ html_context = {
 html_logo = "../image/bigdl_logo.png"
 
 # hard code it for now, may change it to read from installed bigdl
-release = "latest"
+release = "v2.4.0"
 
 # The suffix of source filenames.
 from recommonmark.parser import CommonMarkParser
