@@ -39,11 +39,13 @@ import torch.nn as nn
 from bigdl.llm.vllm.structure.input_metadata import InputMetadata
 
 from vllm.sampling_params import SamplingParams, SamplingType
-from bigdl.llm.vllm.structure.sequence import SamplerOutput, SequenceGroupMetadata, SequenceData, SequenceOutputs
+from bigdl.llm.vllm.structure.sequence import (SamplerOutput, SequenceGroupMetadata,
+                                               SequenceData, SequenceOutputs)
 
 import time
 
 _SAMPLING_EPS = 1e-5
+
 
 def tensor_model_parallel_all_gather(input_, dim=-1):
     """All-gather the input tensor across model parallel group."""
@@ -493,7 +495,8 @@ def _sample(
                                                  input_metadata.seq_data,
                                                  category_logprobs)
         else:
-            raise ValueError(f"Unsupported sampling type: {sampling_type}")
+            # raise ValueError(f"Unsupported sampling type: {sampling_type}")
+            pass
 
         # Batched query for logprobs of selected token
         batched_logprobs_query_seq_indices: List[int] = []

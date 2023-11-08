@@ -70,7 +70,7 @@ def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
     return x + [padding_id] * (max_len - len(x))
 
 
-def _pad_kv_cache_view(t: torch.Tensor, len: int, 
+def _pad_kv_cache_view(t: torch.Tensor, len: int,
                        device: torch.device, pos: int = 2) -> torch.Tensor:
     cur_size = list(t.size())
     if cur_size[pos] < len:
@@ -184,11 +184,12 @@ class BigDLLlamaForCausalLM(nn.Module):
                                     max_len = max(cur_view.size(2), view_size[2])
                                     cur_view = _pad_kv_cache_view(cur_view, max_len, self.device)
                                     tmp_view = _pad_kv_cache_view(
-                                        kv_cache[seq_id][i][j].view(view_size), 
+                                        kv_cache[seq_id][i][j].view(view_size),
                                         max_len, self.device)
-                                    cur_view = torch.cat((cur_view, tmp_view), dim = 0)
+                                    cur_view = torch.cat((cur_view, tmp_view), dim=0)
                                 else:
-                                    cur_view = torch.cat((cur_view, kv_cache[seq_id][i][j].view(view_size)), dim = 0)
+                                    cur_view = torch.cat(
+                                        (cur_view, kv_cache[seq_id][i][j].view(view_size)), dim=0)
                         if cur_view.size(2) > max_seq_limit:
                             cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
                         cur_list.append(cur_view)
@@ -209,7 +210,7 @@ class BigDLLlamaForCausalLM(nn.Module):
                 bigdl_position_ids.append([cur_pos - 1])
                 cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
                 bigdl_attention_mask.append(cur_attention_mask)
-        
+
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
         if all_decoding:
             bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
@@ -233,7 +234,7 @@ class BigDLLlamaForCausalLM(nn.Module):
         # pdb.set_trace()
         st_timestamp = time.perf_counter()
         outputs = self.model.forward(**kwargs)
-        
+
         self.tmp_kv_cache = outputs.past_key_values
         self.kv_cache_size = list(outputs.past_key_values[0][0].shape)
         logits = outputs.logits[:, -1, :]
