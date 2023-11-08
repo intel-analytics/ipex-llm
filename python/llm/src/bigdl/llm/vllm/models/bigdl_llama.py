@@ -113,12 +113,13 @@ class BigDLLlamaForCausalLM(nn.Module):
             try:
                 import intel_extension_for_pytorch as ipex
             except ImportError:
-                print("Intel Extension for PyTorch is not installed, but is required for xpu inference.")
+                print("Intel Extension for PyTorch is not installed, \
+                       but is required for xpu inference.")
 
             low_bit = 'sym_int4'
             model = AutoModelForCausalLM.from_pretrained(
                 config._name_or_path,
-                load_in_low_bit=low_bit, 
+                load_in_low_bit=low_bit,
                 trust_remote_code=True,
                 use_cache=True,
             )

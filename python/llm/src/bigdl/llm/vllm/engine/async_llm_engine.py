@@ -75,9 +75,9 @@ class AsyncStream:
     async def __anext__(self) -> RequestOutput:
         result = await self._queue.get()
         if result is StopIteration:
-            raise StopAsyncIteration
+            raise StopAsyncIteration    # noqa
         elif isinstance(result, Exception):
-            raise result
+            raise result                # noqa
         return result
 
 
@@ -137,14 +137,14 @@ class RequestTracker:
         if request_output.finished:
             if verbose:
                 logger.info(f"Finished request {request_id}.")
-            self.abort_request(request_id, verbose = verbose)
+            self.abort_request(request_id, verbose=verbose)
 
     def add_request(self, request_id: str,
                     **engine_add_request_kwargs) -> AsyncStream:
         """Add a request to be sent to the engine on the next background
         loop iteration."""
         if request_id in self._request_streams:
-            raise KeyError(f"Request {request_id} already exists.")
+            invalidInputError(f"Request {request_id} already exists.")
 
         stream = AsyncStream(request_id)
         self._new_requests.put_nowait((stream, {

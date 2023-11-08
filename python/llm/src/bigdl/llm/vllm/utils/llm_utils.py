@@ -39,8 +39,10 @@ from transformers import (AutoTokenizer, PreTrainedTokenizer,
                           PreTrainedTokenizerFast)
 
 from bigdl.llm.vllm.logger import init_logger
+from bigdl.llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)
+
 
 class Counter:
 
@@ -75,7 +77,7 @@ def get_tokenizer(
     """Gets a tokenizer for the given model name via Huggingface."""
     if tokenizer_mode == "slow":
         if kwargs.get("use_fast", False):
-            raise ValueError(
+            invalidInputError(
                 "Cannot use the fast tokenizer in slow tokenizer mode.")
         kwargs["use_fast"] = False
 
@@ -99,7 +101,7 @@ def get_tokenizer(
             "Failed to load the tokenizer. If you are using a LLaMA V1 model "
             f"consider using '{_FAST_LLAMA_TOKENIZER}' instead of the "
             "original tokenizer.")
-        raise RuntimeError(err_msg) from e
+        invalidInputError(err_msg)
     except ValueError as e:
         # If the error pertains to the tokenizer class not existing or not
         # currently being imported, suggest using the --trust-remote-code flag.
@@ -111,9 +113,9 @@ def get_tokenizer(
                 "tokenizer not yet available in the HuggingFace transformers "
                 "library, consider setting `trust_remote_code=True` in LLM "
                 "or using the `--trust-remote-code` flag in the CLI.")
-            raise RuntimeError(err_msg) from e
+            invalidInputError(err_msg)
         else:
-            raise e
+            invalidInputError(e)
 
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
         logger.warning(
@@ -180,5 +182,3 @@ def detokenize_incrementally(
         return new_tokens, new_text, read_offset, len(output_tokens)
     else:
         return new_tokens, "", prefix_offset, read_offset
-
-

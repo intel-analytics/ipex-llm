@@ -35,6 +35,7 @@
 from enum import IntEnum
 from functools import cached_property
 from typing import List, Optional, Union
+from bigdl.llm.utils.common import invalidInputError
 
 _SAMPLING_EPS = 1e-5
 
@@ -107,8 +108,8 @@ class SamplingParams:
         top_k: int = -1,
         use_beam_search: bool = False,
         length_penalty: float = 1.0,
-        early_stopping: Union[bool, str] = False,
-        stop: Optional[Union[str, List[str]]] = None,
+        early_stopping: Union[bool, str]=False,
+        stop: Optional[Union[str, List[str]]]=None,
         stop_token_ids: Optional[List[int]] = None,
         ignore_eos: bool = False,
         max_tokens: int = 16,
@@ -151,64 +152,64 @@ class SamplingParams:
 
     def _verify_args(self) -> None:
         if self.n < 1:
-            raise ValueError(f"n must be at least 1, got {self.n}.")
+            invalidInputError(f"n must be at least 1, got {self.n}.")
         if self.best_of < self.n:
-            raise ValueError(f"best_of must be greater than or equal to n, "
-                             f"got n={self.n} and best_of={self.best_of}.")
+            invalidInputError(f"best_of must be greater than or equal to n, "
+                              f"got n={self.n} and best_of={self.best_of}.")
         if not -2.0 <= self.presence_penalty <= 2.0:
-            raise ValueError("presence_penalty must be in [-2, 2], got "
-                             f"{self.presence_penalty}.")
+            invalidInputError("presence_penalty must be in [-2, 2], got "
+                              f"{self.presence_penalty}.")
         if not -2.0 <= self.frequency_penalty <= 2.0:
-            raise ValueError("frequency_penalty must be in [-2, 2], got "
-                             f"{self.frequency_penalty}.")
+            invalidInputError("frequency_penalty must be in [-2, 2], got "
+                              f"{self.frequency_penalty}.")
         if self.temperature < 0.0:
-            raise ValueError(
+            invalidInputError(
                 f"temperature must be non-negative, got {self.temperature}.")
         if not 0.0 < self.top_p <= 1.0:
-            raise ValueError(f"top_p must be in (0, 1], got {self.top_p}.")
+            invalidInputError(f"top_p must be in (0, 1], got {self.top_p}.")
         if self.top_k < -1 or self.top_k == 0:
-            raise ValueError(f"top_k must be -1 (disable), or at least 1, "
-                             f"got {self.top_k}.")
+            invalidInputError(f"top_k must be -1 (disable), or at least 1, "
+                              f"got {self.top_k}.")
         if self.max_tokens < 1:
-            raise ValueError(
+            invalidInputError(
                 f"max_tokens must be at least 1, got {self.max_tokens}.")
         if self.logprobs is not None and self.logprobs < 0:
-            raise ValueError(
+            invalidInputError(
                 f"logprobs must be non-negative, got {self.logprobs}.")
 
     def _verify_beam_search(self) -> None:
         if self.best_of == 1:
-            raise ValueError("best_of must be greater than 1 when using beam "
-                             f"search. Got {self.best_of}.")
+            invalidInputError("best_of must be greater than 1 when using beam "
+                              f"search. Got {self.best_of}.")
         if self.temperature > _SAMPLING_EPS:
-            raise ValueError("temperature must be 0 when using beam search.")
+            invalidInputError("temperature must be 0 when using beam search.")
         if self.top_p < 1.0 - _SAMPLING_EPS:
-            raise ValueError("top_p must be 1 when using beam search.")
+            invalidInputError("top_p must be 1 when using beam search.")
         if self.top_k != -1:
-            raise ValueError("top_k must be -1 when using beam search.")
+            invalidInputError("top_k must be -1 when using beam search.")
         if self.early_stopping not in [True, False, "never"]:
-            raise ValueError(
+            invalidInputError(
                 f"early_stopping must be True, False, or 'never', "
                 f"got {self.early_stopping}.")
 
     def _verify_non_beam_search(self) -> None:
         if self.early_stopping is not False:
-            raise ValueError("early_stopping is not effective and must be "
-                             "False when not using beam search.")
+            invalidInputError("early_stopping is not effective and must be "
+                              "False when not using beam search.")
         if (self.length_penalty < 1.0 - _SAMPLING_EPS
                 or self.length_penalty > 1.0 + _SAMPLING_EPS):
-            raise ValueError(
+            invalidInputError(
                 "length_penalty is not effective and must be the "
                 "default value of 1.0 when not using beam search.")
 
     def _verify_greedy_sampling(self) -> None:
         if self.best_of > 1:
-            raise ValueError("best_of must be 1 when using greedy sampling."
-                             f"Got {self.best_of}.")
+            invalidInputError("best_of must be 1 when using greedy sampling."
+                              f"Got {self.best_of}.")
         if self.top_p < 1.0 - _SAMPLING_EPS:
-            raise ValueError("top_p must be 1 when using greedy sampling.")
+            invalidInputError("top_p must be 1 when using greedy sampling.")
         if self.top_k != -1:
-            raise ValueError("top_k must be -1 when using greedy sampling.")
+            invalidInputError("top_k must be -1 when using greedy sampling.")
 
     @cached_property
     def sampling_type(self) -> SamplingType:

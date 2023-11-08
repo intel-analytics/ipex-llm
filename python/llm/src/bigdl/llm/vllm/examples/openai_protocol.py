@@ -190,6 +190,7 @@ class ChatCompletionResponseChoice(BaseModel):
     first_token_time: Optional[float] = None
     rest_token_time: Optional[float] = None
 
+
 class ChatCompletionResponse(BaseModel):
     id: str = Field(default_factory=lambda: f"chatcmpl-{random_uuid()}")
     object: str = "chat.completion"
@@ -210,6 +211,7 @@ class ChatCompletionResponseStreamChoice(BaseModel):
     finish_reason: Optional[Literal["stop", "length"]] = None
     first_token_time: Optional[float] = None
     rest_token_time: Optional[float] = None
+
 
 class ChatCompletionStreamResponse(BaseModel):
     id: str = Field(default_factory=lambda: f"chatcmpl-{random_uuid()}")

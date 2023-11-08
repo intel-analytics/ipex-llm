@@ -330,6 +330,7 @@ def _check_if_gpu_supports_dtype(torch_dtype: torch.dtype):
                 f"of at least 8.0. Your {gpu_name} GPU has compute capability "
                 f"{compute_capability[0]}.{compute_capability[1]}.")
 
+
 def set_random_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)

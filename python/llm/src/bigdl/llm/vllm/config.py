@@ -335,9 +335,9 @@ def get_config(model: str,
                 "model not yet available in the HuggingFace transformers "
                 "library, consider setting `trust_remote_code=True` in LLM "
                 "or using the `--trust-remote-code` flag in the CLI.")
-            raise RuntimeError(err_msg) from e
+            invalidInputError(err_msg)
         else:
-            raise e
+            invalidInputError(e)
     return config
 
 
@@ -369,8 +369,9 @@ class ParallelConfig:
 
     def _verify_args(self) -> None:
         if self.pipeline_parallel_size > 1:
-            raise NotImplementedError(
+            invalidInputError(
                 "Pipeline parallelism is not supported yet.")
+
 
 class SchedulerConfig:
     """Scheduler configuration.
@@ -402,7 +403,7 @@ class SchedulerConfig:
 
     def _verify_args(self) -> None:
         if self.max_num_batched_tokens < self.max_model_len:
-            raise ValueError(
+            invalidInputError(
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) is "
                 f"smaller than max_model_len ({self.max_model_len}). "
                 "This effectively limits the maximum sequence length to "
@@ -410,7 +411,7 @@ class SchedulerConfig:
                 "sequences. Please increase max_num_batched_tokens or "
                 "decrease max_model_len.")
         if self.max_num_batched_tokens < self.max_num_seqs:
-            raise ValueError(
+            invalidInputError(
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) must "
                 "be greater than or equal to max_num_seqs "
                 f"({self.max_num_seqs}).")

@@ -47,8 +47,8 @@ from bigdl.llm.vllm.structure.sequence import (SamplerOutput, Sequence,
                                                SequenceGroupMetadata,
                                                SequenceStatus,
                                                SequenceOutputs)
-from bigdl.llm.vllm.utils.llm_utils import (Counter, get_tokenizer, 
-                                            detokenize_incrementally, 
+from bigdl.llm.vllm.utils.llm_utils import (Counter, get_tokenizer,
+                                            detokenize_incrementally,
                                             get_open_port)
 from bigdl.llm.utils.common import invalidInputError
 
