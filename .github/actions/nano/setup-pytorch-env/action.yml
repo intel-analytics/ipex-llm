@@ -51,13 +51,17 @@ runs:
         if [ $IS_PR = "false" ]; then
           pip install --pre --upgrade bigdl-nano[pytorch,inference]
           if [ ! $OS = "windows" ]; then
-            pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
+            # pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
+            PY_VERSION=`python -V 2>&1 |awk '{print $2}'|awk -F '.' '{print $1 $2}'`
+            pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/oneccl_bind_pt-1.13.0%2Bcpu-cp$PY_VERSION-cp$PY_VERSION-linux_x86_64.whl
           fi
         else
           pip install wheel
           if [ ! $OS = "windows" ]; then
             bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
-            pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
+            # pip install oneccl_bind_pt==1.13 -f https://developer.intel.com/ipex-whl-stable-cpu
+            PY_VERSION=`python -V 2>&1 |awk '{print $2}'|awk -F '.' '{print $1 $2}'`
+            pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/oneccl_bind_pt-1.13.0%2Bcpu-cp$PY_VERSION-cp$PY_VERSION-linux_x86_64.whl
           else
             bash python/nano/dev/build_and_install.sh windows default false pytorch,inference
           fi

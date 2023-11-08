@@ -17,7 +17,7 @@ runs:
         mv linux-avx/* python/llm/llm-binary/
         mv linux-amx/* python/llm/llm-binary/
         mv windows-avx2/* python/llm/llm-binary/
-        mv windows-avx2-vnni/* python/llm/llm-binary/
+        mv windows-avx-vnni/* python/llm/llm-binary/
         mv windows-avx/* python/llm/llm-binary/
         rm -rf linux-avx2 || true
         rm -rf linux-avx512 || true
@@ -25,5 +25,5 @@ runs:
         rm -rf linux-avx || true
         rm -rf linux-amx || true
         rm -rf windows-avx2 || true
-        rm -rf windows-avx2-vnni || true
+        rm -rf windows-avx-vnni || true
         rm -rf windows-avx || true
