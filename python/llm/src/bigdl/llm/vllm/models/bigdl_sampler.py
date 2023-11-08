@@ -19,8 +19,6 @@ def tensor_model_parallel_all_gather(input_, dim=-1):
     # Bypass the function if we are using only 1 GPU.
     if world_size == 1:
         return input_
-    assert -input_.dim() <= dim < input_.dim(), (
-        f"Invalid dim ({dim}) for input tensor with shape {input_.size()}")
     if dim < 0:
         # Convert negative dim to positive.
         dim += input_.dim()
@@ -69,17 +67,12 @@ class BigDLSampler(nn.Module):
     ) -> SamplerOutput:
         # Apply presence and frequency penalties.
         output_tokens = _get_output_tokens(input_metadata)
-        assert len(output_tokens) == logits.shape[0]
         presence_penalties, frequency_penalties = _get_penalties(
             input_metadata)
-        assert len(presence_penalties) == logits.shape[0]
-        assert len(frequency_penalties) == logits.shape[0]
         logits = _apply_penalties(logits, output_tokens, presence_penalties,
                                   frequency_penalties)
-                                  
         # Apply temperature scaling.
         temperatures = _get_temperatures(input_metadata)
-        assert len(temperatures) == logits.shape[0]
         if any(t != 1.0 for t in temperatures):
             t = torch.tensor(temperatures,
                              dtype=logits.dtype,
@@ -89,7 +82,6 @@ class BigDLSampler(nn.Module):
 
         # Apply top-p and top-k truncation.
         top_ps, top_ks = _get_top_p_top_k(input_metadata, self.vocab_size)
-        assert len(top_ps) == len(top_ks) == logits.shape[0]
         do_top_p = any(p < 1.0 - _SAMPLING_EPS for p in top_ps)
         do_top_k = any(k != self.vocab_size for k in top_ks)
         if do_top_p or do_top_k:
@@ -129,7 +121,6 @@ def _prune_hidden_states(
         seq_ids, sampling_params = seq_group
         sampling_type = sampling_params.sampling_type
         if i < input_metadata.num_prompts:
-            assert len(seq_ids) == 1, "Prompt input should have only one seq."
             prompt_len = input_metadata.prompt_lens[i]
             last_token_indices[sampling_type].append(start_idx + prompt_len -
                                                      1)
@@ -341,13 +332,10 @@ def _greedy_sample(
     for seq_group in selected_seq_groups:
         seq_ids, _ = seq_group
         num_parent_seqs = len(seq_ids)
-        assert num_parent_seqs == 1, (
-            "Greedy sampling should have only one seq.")
         parent_ids = list(range(num_parent_seqs))
         next_token_ids = [samples[sample_idx].item()]
         results.append((next_token_ids, parent_ids))
         sample_idx += num_parent_seqs
-    assert sample_idx == logprobs.size(0)
     return results
 
 
@@ -372,8 +360,6 @@ def _random_sample(
         num_parent_seqs = len(seq_ids)
         if is_prompt:
             # Prompt phase.
-            assert num_parent_seqs == 1, (
-                "Prompt input should have only one seq.")
             parent_ids = [0] * sampling_params.best_of
             next_token_ids = random_samples[
                 sample_idx, :sampling_params.best_of].tolist()
@@ -384,7 +370,6 @@ def _random_sample(
                                             num_parent_seqs, 0].tolist()
         results.append((next_token_ids, parent_ids))
         sample_idx += num_parent_seqs
-    assert sample_idx == probs.size(0)
     return results
 
 
@@ -412,8 +397,6 @@ def _beam_search_sample(
         seq_group_logprobs = logprobs[sample_idx:sample_idx + num_parent_seqs]
         if is_prompt:
             # Prompt phase.
-            assert num_parent_seqs == 1, (
-                "Prompt input should have only one seq.")
             parent_ids = [0] * (2 * beam_width)
             _, next_token_ids = torch.topk(seq_group_logprobs[0],
                                            2 * beam_width)
@@ -437,7 +420,6 @@ def _beam_search_sample(
             next_token_ids = [i % vocab_size for i in topk_ids]
         results.append((next_token_ids, parent_ids))
         sample_idx += num_parent_seqs
-    assert sample_idx == logprobs.size(0)
     return results
 
 
@@ -494,7 +476,6 @@ def _sample(
                 [sample_idx + parent_id for parent_id in parent_ids])
             batched_logprobs_query_token_indices.extend(next_token_ids)
             sample_idx += num_parent_seqs
-        assert sample_idx == num_tokens
         batched_logprobs_query_result = category_logprobs[[
             batched_logprobs_query_seq_indices,
             batched_logprobs_query_token_indices
@@ -521,7 +502,6 @@ def _sample(
             seq_outputs_dict[seq_group_id] = seq_output
             sample_idx += num_parent_seqs
             result_idx += num_results
-        assert sample_idx == num_tokens
         category_start_idx += num_tokens
 
     return [seq_outputs_dict[i] for i in range(len(input_metadata.seq_groups))]

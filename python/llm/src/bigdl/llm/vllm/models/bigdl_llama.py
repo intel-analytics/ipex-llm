@@ -69,13 +69,15 @@ def prepare_logits_processor(temperature: float, repetition_penalty: float,
 def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
     return x + [padding_id] * (max_len - len(x))
 
-def _pad_kv_cache_view(t: torch.Tensor, len: int, device: torch.device, pos: int = 2) -> torch.Tensor:
+
+def _pad_kv_cache_view(t: torch.Tensor, len: int, 
+                       device: torch.device, pos: int = 2) -> torch.Tensor:
     cur_size = list(t.size())
     if cur_size[pos] < len:
         tmp_size = cur_size[:]
         tmp_size[pos] = len - cur_size[pos]
-        zeros = torch.zeros(tmp_size, device = device)
-        padded_view = torch.cat((zeros, t), dim = pos)
+        zeros = torch.zeros(tmp_size, device=device)
+        padded_view = torch.cat((zeros, t), dim=pos)
         return padded_view
     if cur_size[pos] > len:
         padded_view = t.narrow(pos, cur_size[pos] - len, len)
@@ -149,7 +151,6 @@ class BigDLLlamaForCausalLM(nn.Module):
                 max_context_len = max(max_context_len, context_len)
             else:
                 bigdl_input_ids.append([cur_seq_input_ids[-1]])
-                
 
             bigdl_sampling_params[seq_id] = seq_group_meta_data.sampling_params
 
@@ -157,11 +158,14 @@ class BigDLLlamaForCausalLM(nn.Module):
 
         if all_decoding:
             # pdb.set_trace()
+            max_seq_limit = self.max_seq_limit
             if (self.tmp_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
-                if self.tmp_kv_cache[0][0].size(2) < self.max_seq_limit:
+                if self.tmp_kv_cache[0][0].size(2) < max_seq_limit:
                     bigdl_kv_cache = self.tmp_kv_cache
                 else:
-                    bigdl_kv_cache = [[tmp.narrow(2, self.tmp_kv_cache[0][0].size(2) - max_seq_limit, max_seq_limit) for tmp in tmp_list] for tmp_list in self.tmp_kv_cache]
+                    bigdl_kv_cache = [[tmp.narrow(2, self.tmp_kv_cache[0][0].size(2)
+                                       - max_seq_limit, max_seq_limit)
+                                       for tmp in tmp_list] for tmp_list in self.tmp_kv_cache]
             else:
                 bigdl_kv_cache = []
                 for i in range(kv_cache_0):
@@ -179,12 +183,14 @@ class BigDLLlamaForCausalLM(nn.Module):
                                 if cur_view.size(2) != view_size[2]:
                                     max_len = max(cur_view.size(2), view_size[2])
                                     cur_view = _pad_kv_cache_view(cur_view, max_len, self.device)
-                                    tmp_view = _pad_kv_cache_view(kv_cache[seq_id][i][j].view(view_size), max_len, self.device)
+                                    tmp_view = _pad_kv_cache_view(
+                                        kv_cache[seq_id][i][j].view(view_size), 
+                                        max_len, self.device)
                                     cur_view = torch.cat((cur_view, tmp_view), dim = 0)
                                 else:
                                     cur_view = torch.cat((cur_view, kv_cache[seq_id][i][j].view(view_size)), dim = 0)
-                        if cur_view.size(2) > self.max_seq_limit:
-                            cur_view = _pad_kv_cache_view(cur_view, self.max_seq_limit, self.device)
+                        if cur_view.size(2) > max_seq_limit:
+                            cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
                         cur_list.append(cur_view)
                     bigdl_kv_cache.append(cur_list)
         else:

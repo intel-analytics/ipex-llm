@@ -212,18 +212,18 @@ class Worker:
         # Convert to tensors.
         tokens_tensor = torch.tensor(input_tokens,
                                      dtype=torch.long,
-                                     #device="cuda"
+                                     # device="cuda"
                                      )
         positions_tensor = torch.tensor(input_positions,
                                         dtype=torch.long,
-                                        #device="cuda"
+                                        # device="cuda"
                                         )
         # slot_mapping_tensor = torch.tensor(slot_mapping,
         #                                    dtype=torch.int,
         #                                    device="cuda")
         context_lens_tensor = torch.tensor(context_lens,
                                            dtype=torch.int,
-                                           #device="cuda"
+                                           # device="cuda"
                                            )
         # padded_block_tables = [
         #     _pad_to_max(block_table, max_num_blocks_per_seq)
@@ -293,7 +293,7 @@ class Worker:
                 seq_group_metadata_list)
             output = self.model(
                 seq_group_meta_data_lists=seq_group_metadata_list,
-                kv_cache=self.kv_cache, input_metadata = input_metadata)
+                kv_cache=self.kv_cache, input_metadata=input_metadata)
             return output
         else:
             # Prepare input tensors.
