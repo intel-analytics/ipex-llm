@@ -26,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["falcon-7b-instruct-with-patch"]
+        model_name: ["Llama-2-7b-chat-hf"]
         task: ["truthfulqa", "arc", "hellaswag"]
         precision: ["fp8"]
     runs-on: [self-hosted, llm, accuracy]
