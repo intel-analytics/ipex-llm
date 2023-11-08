@@ -448,6 +448,8 @@ class LowBitLinear(nn.Linear):
                                                      input_seq_size)
                     result = result.to(x.dtype)
                 else:
+                    if torch.xpu.is_autocast_xpu_enabled():
+                        x_2d = x_2d.to(torch.xpu.get_autocast_xpu_dtype())
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                      input_seq_size)
             new_shape = x_shape[:-1] + (self.out_len,)
