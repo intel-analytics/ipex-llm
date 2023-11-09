@@ -197,8 +197,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
-    runs-on: [self-hosted, llm, perf-core]
+        include:
+          - os: windows
+            platform: dp
+            python-version: "3.9"
+          - os: windows
+            platform: lp
+            python-version: "3.9"
+    runs-on: [self-hosted, "${{matrix.os}}", llm, perf-core, "${{matrix.platform}}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
@@ -214,8 +220,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
-          python -m pip install --upgrade omegaconf
-          python -m pip install --upgrade pandas
+          python -m pip install --upgrade omegaconf pandas
           python -m pip install --upgrade tiktoken einops transformers_stream_generator
     
       - name: Download llm binary
@@ -223,12 +228,6 @@ jobs:
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
-
-      - name: Test installed xpu version
-        shell: bash
-        run: |
-          source /opt/intel/oneapi/setvars.sh
-          bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on core
         shell: bash
@@ -240,6 +239,6 @@ jobs:
           # hide time info
           sed -i 's/print("model generate cost: " + str(end - st))/#print("model generate cost: " + str(end - st))/g' run.py
           python run.py
-          cp ./*.csv /mnt/disk1/nightly_perf_core_desktop/
+          cp ./*.csv /mnt/disk1/nightly_perf_core_${{matrix.platform}}/
           cd ../../../test/benchmark
-          python csv_to_html.py -f /mnt/disk1/nightly_perf_core_desktop/
+          python csv_to_html.py -f /mnt/disk1/nightly_perf_core_${{matrix.platform}}/
