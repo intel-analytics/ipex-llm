@@ -94,7 +94,7 @@ class Test_Optimize_Gpu_Model:
         logits_base_model = (model(input_ids)).logits
         # the list `layer_output` has only one element.
         layer_tensor = self.layer_outputs.pop()
-        del model
+        model.to('cpu')
 
         opt_model = Model.from_pretrained(model_path,
                                           load_in_4bit=True,
@@ -119,7 +119,7 @@ class Test_Optimize_Gpu_Model:
         logits_optimized_model = (opt_model(input_ids)).logits
         # the list `layer_output` has only one element.
         opt_layer_tensor = self.layer_outputs[0]
-        del opt_model
+        opt_model.to('cpu')
 
         attn_output_diff = []
         for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
