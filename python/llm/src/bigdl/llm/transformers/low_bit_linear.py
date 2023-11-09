@@ -463,7 +463,7 @@ class LowBitLinear(nn.Linear):
             if self.training and x.requires_grad:
                 result = MatMulLowBitCPU.apply(x, self.weight)
             else:
-                # Step 1. convert if necessary, and compute a linear result
+                # convert if necessary, and compute a linear result
                 if IS_SERVER and (not IS_SPR) and \
                         self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
@@ -473,13 +473,13 @@ class LowBitLinear(nn.Linear):
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                     new_shape = x_shape[:-1] + (self.out_len,)
                     result = result.view(new_shape)
-                # Step 2. allreduce to combine partial results and add bias if necessary
-                if self.mp_group is not None:
-                    # deepspeed distibuted mode
-                    from deepspeed import comm as dist
-                    dist.inference_all_reduce(result, group=self.mp_group)
-                if self.bias is not None:
-                    result += self.bias
+            # allreduce to combine partial results and add bias if necessary
+            if self.mp_group is not None:
+                # deepspeed distibuted mode
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
+            if self.bias is not None:
+                result += self.bias
         return result
 
 
