@@ -21,15 +21,16 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-nightly-harness-test:
+    timeout-minutes: 600
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["Llama-2-7b-chat-hf"]
-        task: ["truthfulqa"]
-        precision: ["int4"]
-    runs-on: [self-hosted, llm, accuracy]
+        model_name: ["Mistral-7B-Instruct-v0.1"]
+        task: ["truthfulqa", "arc", "hellaswag", "mmlu"]
+        precision: ["fp4", "int4", "fp8"]
+    runs-on: [self-hosted, llm, accuracy2]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
