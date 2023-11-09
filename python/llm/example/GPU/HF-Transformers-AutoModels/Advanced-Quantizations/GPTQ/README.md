@@ -1,5 +1,5 @@
-# Llama2
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Llama2-gptq models. For illustration purposes, we utilize the ["TheBloke/Llama-2-7B-GPTQ"](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GPTQ) as a reference.
+# GPTQ
+This example shows how to directly run 4-bit GPTQ models using BigDL-LLM on Intel GPU. For illustration purposes, we utilize the ["TheBloke/Llama-2-7B-GPTQ"](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GPTQ) as a reference.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
