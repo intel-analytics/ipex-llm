@@ -59,7 +59,7 @@ source bigdl-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./chat.py
+numactl -C 0-47 -m 0 python ./chat.py --image-path demo.jpg
 ```
 
 #### 2.3 Sample Output
