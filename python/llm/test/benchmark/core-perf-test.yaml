@@ -1,0 +1,20 @@
+repo_id:
+  - 'THUDM/chatglm2-6b'
+local_model_hub: 'D:\llm-models'
+warm_up: 1
+num_trials: 3
+num_beams: 1 # default to greedy search
+low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+in_out_pairs:
+  - '32-32'
+  - '1024-128'
+test_api:
+  - "transformer_int4"
+  # - "native_int4"
+  # - "optimize_model"
+  # - "pytorch_autocast_bf16"
+  # - "ipex_fp16_gpu" # on Intel GPU
+  # - "transformer_int4_gpu"  # on Intel GPU
+  # - "optimize_model_gpu"  # on Intel GPU
+  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
+
