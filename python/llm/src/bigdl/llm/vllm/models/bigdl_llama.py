@@ -130,14 +130,13 @@ class BigDLLlamaForCausalLM(nn.Module):
             self.device = torch.device(
                 "cuda" if torch.cuda.is_available() else "cpu")
         else:
-            self.model.to(device)
             self.device = torch.device(device)
         self.dtype = self.model.dtype
         self.kv_cache_size = [0]
         self.last_seq_ids = []
         self.tmp_kv_cache = None
         self.pad_token_id = config.pad_token_id
-        self.max_seq_limit = 128
+        self.max_seq_limit = 64
 
     def forward(
         self,
@@ -175,13 +174,11 @@ class BigDLLlamaForCausalLM(nn.Module):
 
             bigdl_sampling_params[seq_id] = seq_group_meta_data.sampling_params
 
-            context_len = seq_data.get_len()
-
         if all_decoding:
             # pdb.set_trace()
             max_seq_limit = self.max_seq_limit
             if (self.tmp_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
-                if self.tmp_kv_cache[0][0].size(2) < max_seq_limit:
+                if self.tmp_kv_cache[0][0].size(2) < max_seq_limit * 1.5:
                     bigdl_kv_cache = self.tmp_kv_cache
                 else:
                     bigdl_kv_cache = [[tmp.narrow(2, self.tmp_kv_cache[0][0].size(2)
