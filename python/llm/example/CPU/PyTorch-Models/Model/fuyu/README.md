@@ -60,7 +60,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### [adept/fuyu-8b](https://huggingface.co/adept/fuyu-8b)
 
 ```log
-Inference time: 5.853286981582642 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 Generate a coco-style caption.
 -------------------- Output --------------------
