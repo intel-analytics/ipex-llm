@@ -27,10 +27,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["Mistral-7B-Instruct-v0.1"]
+        model_name: ["Mistral-7B-v0.1"]
         task: ["truthfulqa", "arc", "hellaswag", "mmlu"]
         precision: ["fp4", "int4", "fp8"]
-    runs-on: [self-hosted, llm, accuracy2]
+    runs-on: [self-hosted, llm, accuracy3]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
