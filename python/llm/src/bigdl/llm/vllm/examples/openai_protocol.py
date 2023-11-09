@@ -40,7 +40,7 @@ from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from vllm.utils import random_uuid
+from bigdl.llm.vllm.utils.llm_utils import random_uuid
 
 
 class ErrorResponse(BaseModel):
