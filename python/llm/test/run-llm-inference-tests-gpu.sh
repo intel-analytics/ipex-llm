@@ -5,8 +5,9 @@ export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/inference_gpu
 
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export DEVICE='xpu'
+
+unset SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
 
 set -e
 
