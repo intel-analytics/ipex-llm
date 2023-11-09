@@ -368,8 +368,6 @@ class MatMulLowBitCPU(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, A, weight):
-        if torch.is_autocast_enabled():
-            A = A.to(torch.get_autocast_dtype())
         ctx.is_empty = False
         x0_fp32 = ggml_int4_convert_fp32(weight.data, weight._shape,
                                          weight._shape[0] * weight._shape[1])
