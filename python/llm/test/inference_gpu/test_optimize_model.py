@@ -32,8 +32,7 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH'))
-])
-
+    ])
 def test_optimize_model(Model, Tokenizer, model_path):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
