@@ -256,8 +256,8 @@ class BigDLLlamaForCausalLM(nn.Module):
         st_timestamp = time.perf_counter()
         outputs = self.model.forward(**kwargs)
 
+        self.last_seq_ids = cur_seq_ids[:]
         self.tmp_kv_cache = outputs.past_key_values
-        self.kv_cache_size = list(outputs.past_key_values[0][0].shape)
         logits = outputs.logits[:, -1, :]
         bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
 
