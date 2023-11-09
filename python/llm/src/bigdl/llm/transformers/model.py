@@ -112,13 +112,12 @@ class _BaseAutoModelClass:
                     if int(q_config["group_size"]) % get_ggml_qk_size(load_in_low_bit) != 0:
                         invalidInputError(False,
                                           (f"group_size must be divisible by "
-                                          f"{get_ggml_qk_size(load_in_low_bit)}.")
-                                          )
+                                           f"{get_ggml_qk_size(load_in_low_bit)}."))
                     if user_quantization_config is not None:
                         invalidInputError(user_quantization_config.bits == 4,
-                                            "Only 4-bit gptq is supported in bigdl-llm.")
+                                          "Only 4-bit gptq is supported in bigdl-llm.")
                         invalidInputError(user_quantization_config.use_exllama is False,
-                                            "Only use_exllama=False is supported in bigdl-llm.")
+                                          "Only use_exllama=False is supported in bigdl-llm.")
                     else:
                         from transformers import GPTQConfig
                         user_quantization_config = GPTQConfig(bits=4, use_exllama=False)
