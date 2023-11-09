@@ -201,9 +201,9 @@ jobs:
           - os: windows
             platform: dp
             python-version: "3.9"
-          - os: windows
-            platform: lp
-            python-version: "3.9"
+          # - os: windows
+          #   platform: lp
+          #   python-version: "3.9"
     runs-on: [self-hosted, "${{matrix.os}}", llm, perf-core, "${{matrix.platform}}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
