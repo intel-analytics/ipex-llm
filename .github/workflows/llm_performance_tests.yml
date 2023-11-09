@@ -108,7 +108,6 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
-          python -m pip install transformers==4.34.0
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -132,12 +131,12 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-          export http_proxy=${HTTP_PROXY}
-          export https_proxy=${HTTPS_PROXY}
           python run.py
           cp ./*.csv /mnt/disk1/nightly_perf_gpu/
           cd ../../../test/benchmark
           python csv_to_html.py -f /mnt/disk1/nightly_perf_gpu/
+          cd ../../dev/benchmark/all-in-one/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
 
           
   llm-performance-test-on-spr:
