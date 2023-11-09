@@ -28,8 +28,8 @@ jobs:
         python-version: ["3.9"]
         model_name: ["Baichuan-7B"]
         task: ["truthfulqa, arc"]
-        precision: ["int4"]
-    runs-on: [self-hosted, llm, accuracy]
+        precision: ["int4", "fp4", "fp8"]
+    runs-on: [self-hosted, llm, accuracy3]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
