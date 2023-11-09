@@ -99,6 +99,8 @@ def is_linear_module(module):
 
 from bigdl.llm.transformers.low_bit_linear import get_ggml_qk_size
 Q4_1 = get_ggml_qk_size("asym_int4")
+
+
 def convert_gptq(module):
 
     scales = module.scales
@@ -114,25 +116,25 @@ def convert_gptq(module):
     weight = torch.bitwise_right_shift(
         torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.bits, -1),
         module.wf.unsqueeze(-1)).to(torch.int8)
-    weight = torch.bitwise_and(weight,(2 ** module.bits) - 1)
+    weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
     weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
 
     # convert weight to ggml format
     weight = weight.reshape(weight.shape[0]//module.group_size, module.group_size, weight.shape[1])
     weight = weight.permute(2, 0, 1).reshape(weight.shape[2], -1, 2, Q4_1//2)
-    weight = weight.transpose(2, 3) # [out, in//64, 32, 2]
+    weight = weight.transpose(2, 3)
     weight = torch.bitwise_left_shift(weight,
                                       torch.tensor([0, 4], dtype=torch.int8).reshape(1, 1, 1, 2))
     weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
 
-    ## convert zeros to ggml format
+    # convert zeros to ggml format
     zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
-            .unsqueeze(2)\
-            .expand(-1, -1, module.group_size//Q4_1, -1)\
-            .reshape(zeros.shape[1], -1, 1)\
-            .contiguous().to(torch.float16)
+        .unsqueeze(2)\
+        .expand(-1, -1, module.group_size//Q4_1, -1)\
+        .reshape(zeros.shape[1], -1, 1)\
+        .contiguous().to(torch.float16)
 
-    ## convert scales to ggml format
+    # convert scales to ggml format
     scales = scales.reshape(-1, 1, scales.shape[1]).permute(2, 0, 1)\
         .unsqueeze(2)\
         .expand(-1, -1, module.group_size//Q4_1, -1)\
@@ -142,7 +144,9 @@ def convert_gptq(module):
     m = -(zeros * scales)
     d = scales
 
-    ggml_weight = torch.cat([d.view(torch.uint8), m.view(torch.uint8), weight.view(torch.uint8)], dim=-1)
+    ggml_weight = torch.cat([d.view(torch.uint8),
+                             m.view(torch.uint8),
+                             weight.view(torch.uint8)], dim=-1)
     ggml_weight = ggml_weight.reshape([-1])
 
     return ggml_weight

@@ -93,7 +93,8 @@ class _BaseAutoModelClass:
             if config_dict.get("quantization_config", None) is not None:
                 q_config = config_dict["quantization_config"]
                 if q_config["quant_method"] == "gptq":
-                    invalidInputError(q_config["bits"] == 4, "Only 4-bit gptq is supported in bigdl-llm.")
+                    invalidInputError(q_config["bits"] == 4,
+                                      "Only 4-bit gptq is supported in bigdl-llm.")
                     invalidInputError(q_config["desc_act"] is False,
                                       "Only desc_act=False is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
