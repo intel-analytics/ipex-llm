@@ -1,0 +1,101 @@
+name: LLM Harness Evalution
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run.
+on:
+  # schedule:
+  #   - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm-harness-evaluation.yml"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+  llm-nightly-harness-test:
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        model_name: ["Llama-2-7b-chat-hf"]
+        task: ["truthfulqa"]
+        precision: ["int4"]
+    runs-on: [self-hosted, llm, accuracy]
+    env:
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    steps:
+      - name: Set model and dataset directories
+        shell: bash
+        run: |
+          echo "ORIGIN_DIR=/mnt/disk1/models" >> "$GITHUB_ENV"
+          echo "HARNESS_HF_HOME=/mnt/disk1/harness_home" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu"
+
+      - name: Install harness
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/harness/
+          git clone https://github.com/EleutherAI/lm-evaluation-harness.git
+          cd  lm-evaluation-harness
+          git checkout e81d3cc
+          pip install -e .
+          git apply ../bigdl-llm.patch
+          cd ..
+      
+      
+      - name: Download models and datasets
+        shell: bash
+        run: |
+          echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
+          MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
+          if [ ! -d $HARNESS_HF_HOME ]; then
+            mkdir -p $HARNESS_HF_HOME
+            wget -r -nH -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
+          fi
+          if [ ! -d $MODEL_PATH ]; then
+            wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
+          fi
+          
+      - name: Set datasets env
+        shell: bash
+        run: |
+          echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
+          echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+
+      - name: Run harness
+        shell: bash
+        run: |
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          source /opt/intel/oneapi/setvars.sh
+          cd python/llm/dev/benchmark/harness
+          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1

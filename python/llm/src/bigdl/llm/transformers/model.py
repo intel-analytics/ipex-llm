@@ -68,6 +68,8 @@ class _BaseAutoModelClass:
                                Default to be True.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
                                        conducting model optimizations. Default to be None.
+        :param replace_embedding: Whether to replace the Embedding layer, may need to set it
+            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
 
         :return: a model instance
         """
@@ -93,7 +95,10 @@ class _BaseAutoModelClass:
             kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
             # Avoid tensor parallel F.Linear Operations
             if "pretraining_tp" in config_dict:
-                kwargs["pretraining_tp"] = 1
+                if "config" in kwargs:
+                    setattr(kwargs["config"], "pretraining_tp", 1)
+                else:
+                    kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
         else:
@@ -108,13 +113,14 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          "fp4, fp8 or fp16.")
+                          "fp4, fp8, fp16 or mixed_4bit.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
         # and lead to args missing.
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
+        replace_embedding = kwargs.pop("replace_embedding", False)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         try:
@@ -127,7 +133,8 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_lcmu_enabled": False})
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
-                                     modules_to_not_convert=modules_to_not_convert)
+                                     modules_to_not_convert=modules_to_not_convert,
+                                     replace_embedding=replace_embedding)
         model.config.update({"bigdl_transformers_low_bit": q_k})
         model.config.update({"tie_word_embeddings": False})
 
@@ -164,6 +171,7 @@ class _BaseAutoModelClass:
         import os
 
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
+        replace_embedding = kwargs.pop("replace_embedding", False)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -274,7 +282,8 @@ class _BaseAutoModelClass:
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
-                                     modules_to_not_convert=modules_to_not_convert)
+                                     modules_to_not_convert=modules_to_not_convert,
+                                     replace_embedding=replace_embedding)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

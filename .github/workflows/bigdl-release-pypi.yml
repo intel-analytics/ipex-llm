@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/llm-binary-build.yml
   bigdl-release-python-pypi:
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
-    if: ${{ github.actor == 'Le-Zheng' }}
+    # if: ${{ github.actor == 'Le-Zheng' }}
     needs: llm-cpp-build
     steps:
     - uses: actions/checkout@v3

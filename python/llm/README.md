@@ -42,6 +42,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | LLaMA 2    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](example/GPU/HF-Transformers-AutoModels/Model/llama2) |
 | ChatGLM    | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
 | ChatGLM2   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm2)   |
+| ChatGLM3   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm3)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm3)   |
 | Mistral    | [link](example/CPU/HF-Transformers-AutoModels/Model/mistral)   | [link](example/GPU/HF-Transformers-AutoModels/Model/mistral)    |
 | Falcon     | [link](example/CPU/HF-Transformers-AutoModels/Model/falcon)    | [link](example/GPU/HF-Transformers-AutoModels/Model/falcon)     |
 | MPT        | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)       | [link](example/CPU/HF-Transformers-AutoModels/Model/mpt)        |
@@ -55,12 +56,21 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Baichuan2  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
 | InternLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
 | Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
 | Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
+| Aquila2    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila2)   | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila2)    |
 | MOSS       | [link](example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
 | Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
 | Phi-1_5    | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-1_5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-1_5)    |
 | Flan-t5    | [link](example/CPU/HF-Transformers-AutoModels/Model/flan-t5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/flan-t5)    |
 | Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   |   |
+| LLaVA      | [link](example/CPU/PyTorch-Models/Model/llava)                 | [link](example/GPU/PyTorch-Models/Model/llava)                  |
+| CodeLlama  | [link](example/CPU/HF-Transformers-AutoModels/Model/codellama) | [link](example/GPU/HF-Transformers-AutoModels/Model/codellama)  |
+| Skywork    | [link](example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
+| InternLM-XComposer    | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm-xcomposer)   |   |
+| WizardCoder-Python | [link](example/CPU/HF-Transformers-AutoModels/Model/wizardcoder-python) | |
+| CodeShell | [link](example/CPU/HF-Transformers-AutoModels/Model/CodeShell) | |
+| Fuyu      | [link](example/CPU/HF-Transformers-AutoModels/Model/fuyu) | |
 
 ### Working with `bigdl-llm`
 

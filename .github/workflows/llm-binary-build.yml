@@ -60,6 +60,10 @@ jobs:
           yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
+          conda remove -n python310 --all -y
+          conda create -n python310 python=3.10 -y
+          conda remove -n python311 --all -y
+          conda create -n python311 python=3.11 -y
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -103,6 +107,30 @@ jobs:
         run: |
           mv src/chatglm/build/main release/main-chatglm_vnni
           mv src/chatglm/build/_C.cpython-39-x86_64-linux-gnu.so release/chatglm_C.cpython-39-x86_64-linux-gnu.so
+      - name: Build Chatglm Py310
+        shell: bash
+        run: |
+          source activate python310 || conda activate python310
+          cd src/chatglm
+          rm -r build
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+      - name: Move Chatglm binaries Py310
+        shell: bash
+        run: |
+          mv src/chatglm/build/_C.cpython-310-x86_64-linux-gnu.so release/chatglm_C.cpython-310-x86_64-linux-gnu.so
+      - name: Build Chatglm Py311
+        shell: bash
+        run: |
+          source activate python311 || conda activate python311
+          cd src/chatglm
+          rm -r build
+          scl enable gcc-toolset-11 "cmake -B build"
+          scl enable gcc-toolset-11 "cmake --build build --config Release -j"
+      - name: Move Chatglm binaries Py311
+        shell: bash
+        run: |
+          mv src/chatglm/build/_C.cpython-311-x86_64-linux-gnu.so release/chatglm_C.cpython-311-x86_64-linux-gnu.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
@@ -114,6 +142,8 @@ jobs:
         run: |
           make clean
           conda remove -n python39 --all -y
+          conda remove -n python310 --all -y
+          conda remove -n python311 --all -y
 
   check-linux-avx512-artifact:
     runs-on: ubuntu-latest
@@ -297,7 +327,7 @@ jobs:
           name: windows-avx2
 
   windows-build-avx2:
-    runs-on: [self-hosted, Windows]
+    runs-on: [self-hosted, Windows, AVX-VNNI]
     needs: check-windows-avx2-artifact
     if: needs.check-windows-avx2-artifact.outputs.if-exists == 'false'
     steps:
@@ -329,7 +359,7 @@ jobs:
           path: |
             build/Release
 
-  check-windows-avx2-vnni-artifact:
+  check-windows-avx-vnni-artifact:
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -338,12 +368,12 @@ jobs:
         id: check_artifact
         uses: xSAVIKx/artifact-exists-action@v0
         with:
-          name: windows-avx2-vnni
+          name: windows-avx-vnni
 
-  windows-build-avx2-vnni:
-    runs-on: [self-hosted, Windows]
-    needs: check-windows-avx2-vnni-artifact
-    if: needs.check-windows-avx2-vnni-artifact.outputs.if-exists == 'false'
+  windows-build-avx-vnni:
+    runs-on: [self-hosted, Windows, AVX-VNNI]
+    needs: check-windows-avx-vnni-artifact
+    if: needs.check-windows-avx-vnni-artifact.outputs.if-exists == 'false'
     steps:
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -401,10 +431,40 @@ jobs:
         run: |
           mv src/chatglm/build/Release/main.exe release/main-chatglm_vnni.exe
           mv src/chatglm/build/Release/_C.cp39-win_amd64.pyd release/chatglm_C.cp39-win_amd64.pyd
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Build Chatglm Py310
+        shell: powershell
+        run: |
+          cd src/chatglm
+          rm -r build
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release -j
+      - name: Move Chatglm binaries Py310
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/_C.cp310-win_amd64.pyd release/chatglm_C.cp310-win_amd64.pyd
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Build Chatglm Py311
+        shell: powershell
+        run: |
+          cd src/chatglm
+          rm -r build
+          cmake -DAVXVNNI=ON -B build
+          cmake --build build --config Release -j
+      - name: Move Chatglm binaries Py311
+        shell: powershell
+        run: |
+          mv src/chatglm/build/Release/_C.cp311-win_amd64.pyd release/chatglm_C.cp311-win_amd64.pyd
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
-          name: windows-avx2-vnni
+          name: windows-avx-vnni
           path: |
             release
 
@@ -420,7 +480,7 @@ jobs:
           name: windows-avx
 
   windows-build-avx:
-    runs-on: [self-hosted, Windows]
+    runs-on: [self-hosted, Windows, AVX-VNNI]
     needs: check-windows-avx-artifact
     if: needs.check-windows-avx-artifact.outputs.if-exists == 'false'
     steps:
