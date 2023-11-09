@@ -6,4 +6,4 @@ pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/o
 # install deepspeed
 pip install deepspeed==0.11.1
 # exclude intel deepspeed extension, which is only for XPU
-pip uninstall intel-extension-for-deepspeed --ignore-missing
+pip uninstall intel-extension-for-deepspeed
