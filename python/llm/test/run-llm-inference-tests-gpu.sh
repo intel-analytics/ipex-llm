@@ -2,7 +2,7 @@
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
-export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/inference_gpu/test_optimize_model.py
+export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/inference_gpu
 
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
