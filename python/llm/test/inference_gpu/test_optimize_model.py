@@ -66,7 +66,7 @@ class Test_Optimize_Gpu_Model:
         self.layer_outputs = []
         self.pre_layer_outputs = []
 
-    def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn, prev_attn, lower_bound):
+    def run_optimize_gpu_model(self, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound):
         def forward_hook(module, input, output, layer_name):
             self.layer_outputs.append(output)
 
@@ -80,10 +80,10 @@ class Test_Optimize_Gpu_Model:
                                       load_in_4bit=True,
                                       optimize_model=False,
                                       trust_remote_code=True)
-        self.model = model.to(device)
+        model = model.to(device)
 
-        for layer_name, layer_module in self.model.named_modules():
-            if layer_name == prev_attn:
+        for layer_name, layer_module in model.named_modules():
+            if layer_name == layer_norm:
                 layer_module.register_forward_hook(
                     lambda module, input, output, layer_name=layer_name: pre_forward_hook(module, input,
                                                                                           output, layer_name))
@@ -91,31 +91,24 @@ class Test_Optimize_Gpu_Model:
                 layer_module.register_forward_hook(
                     lambda module, input, output, layer_name=layer_name: forward_hook(module, input,
                                                                                       output, layer_name))
-        logits_base_model = (self.model(input_ids)).logits
+        logits_base_model = (model(input_ids)).logits
         # the list `layer_output` has only one element.
-        layer_tensor = self.layer_outputs[0]
+        layer_tensor = self.layer_outputs.pop()
+        del model
 
         opt_model = Model.from_pretrained(model_path,
                                           load_in_4bit=True,
                                           optimize_model=True,
                                           trust_remote_code=True)
-        self.opt_model = opt_model.to(device)
+        opt_model = opt_model.to(device)
 
-        def new_forward_hook(module, input):
-            if model_path == os.environ.get('LLAMA2_7B_ORIGIN_PATH'):
-                replacement_norm = self.model.model.norm
-                self.opt_model.model.norm = replacement_norm
 
         def replace_forward_hook(module, input, output, layer_name):
-            hidden_states, present_key_value = output
-            hidden_states = self.pre_layer_outputs[0][0].detach()
-            output = (hidden_states, present_key_value)
+            output = self.pre_layer_outputs[0]
             return output
 
-        for layer_name, layer_module in self.opt_model.named_modules():
-            if layer_name == self_attn.split('.')[0]:
-                layer_module.register_forward_pre_hook(lambda module, input: new_forward_hook(module, input)),
-            if layer_name == prev_attn:
+        for layer_name, layer_module in opt_model.named_modules():
+            if layer_name == layer_norm:
                 layer_module.register_forward_hook(
                     lambda module, input, output, layer_name=layer_name: replace_forward_hook(module, input,
                                                                                               output, layer_name))
@@ -123,12 +116,10 @@ class Test_Optimize_Gpu_Model:
                 layer_module.register_forward_hook(
                     lambda module, input, output, layer_name=layer_name: forward_hook(module, input,
                                                                                       output, layer_name))
-        logits_optimized_model = (self.opt_model(input_ids)).logits
+        logits_optimized_model = (opt_model(input_ids)).logits
         # the list `layer_output` has only one element.
         opt_layer_tensor = self.layer_outputs[0]
-
-        del self.model
-        del self.opt_model
+        del opt_model
 
         attn_output_diff = []
         for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
@@ -151,11 +142,11 @@ class Test_Optimize_Gpu_Model:
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
         # currently only compare the output of the last self-attention layer.
-        prev_attn = "transformer.h.30"
+        layer_norm = "transformer.h.31.input_layernorm"
         self_attn = "transformer.h.31.self_attention"
         lower_bound = 0
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn, lower_bound)
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
 
     def test_llama_gpu_model(self):
@@ -164,11 +155,11 @@ class Test_Optimize_Gpu_Model:
         Tokenizer = AutoTokenizer
         model_path = os.environ.get('LLAMA2_7B_ORIGIN_PATH')
         # currently only compare the output of the last self-attention layer.
-        prev_attn = "model.layers.30"
+        layer_norm = "model.layers.31.input_layernorm"
         self_attn = "model.layers.31.self_attn"
         lower_bound = 5e-2
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, prev_attn, lower_bound)
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
 
 if __name__ == '__main__':
