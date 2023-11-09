@@ -35,8 +35,7 @@ import uuid
 import socket
 from typing import List, Optional, Tuple, Union
 
-from transformers import (AutoTokenizer, PreTrainedTokenizer,
-                          PreTrainedTokenizerFast)
+from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 
 from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.utils.common import invalidInputError
@@ -45,7 +44,6 @@ logger = init_logger(__name__)
 
 
 class Counter:
-
     def __init__(self, start: int = 0) -> None:
         self.counter = start
 
@@ -66,6 +64,35 @@ def random_uuid() -> str:
 _FAST_LLAMA_TOKENIZER = "hf-internal-testing/llama-tokenizer"
 
 
+def _convert_tokens_to_string_with_added_encoders(
+    tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+    output_tokens: List[str],
+    skip_special_tokens: bool,
+) -> str:
+    # Adapted from
+    # https://github.com/huggingface/transformers/blob/v4.28.0/src/transformers/tokenization_utils.py#L921
+    # NOTE(woosuk): The following code is slow because it runs a for loop over
+    # the output_tokens. In Python, running a for loop over a list can be slow
+    # even when the loop body is very simple.
+    sub_texts = []
+    current_sub_text = []
+    for token in output_tokens:
+        if skip_special_tokens and token in tokenizer.all_special_tokens:
+            continue
+        if token in tokenizer.added_tokens_encoder:
+            if current_sub_text:
+                sub_text = tokenizer.convert_tokens_to_string(current_sub_text)
+                sub_texts.append(sub_text)
+                current_sub_text = []
+            sub_texts.append(token)
+        else:
+            current_sub_text.append(token)
+    if current_sub_text:
+        sub_text = tokenizer.convert_tokens_to_string(current_sub_text)
+        sub_texts.append(sub_text)
+    return " ".join(sub_texts)
+
+
 def get_tokenizer(
     tokenizer_name: str,
     *args,
@@ -77,42 +104,49 @@ def get_tokenizer(
     """Gets a tokenizer for the given model name via Huggingface."""
     if tokenizer_mode == "slow":
         if kwargs.get("use_fast", False):
-            invalidInputError(
-                "Cannot use the fast tokenizer in slow tokenizer mode.")
+            invalidInputError("Cannot use the fast tokenizer in slow tokenizer mode.")
         kwargs["use_fast"] = False
 
-    if ("llama" in tokenizer_name.lower() and kwargs.get("use_fast", True)
-            and tokenizer_name != _FAST_LLAMA_TOKENIZER):
+    if (
+        "llama" in tokenizer_name.lower()
+        and kwargs.get("use_fast", True)
+        and tokenizer_name != _FAST_LLAMA_TOKENIZER
+    ):
         logger.info(
             "For some LLaMA V1 models, initializing the fast tokenizer may "
             "take a long time. To reduce the initialization time, consider "
             f"using '{_FAST_LLAMA_TOKENIZER}' instead of the original "
-            "tokenizer.")
+            "tokenizer."
+        )
     try:
         tokenizer = AutoTokenizer.from_pretrained(
             tokenizer_name,
             *args,
             trust_remote_code=trust_remote_code,
             tokenizer_revision=tokenizer_revision,
-            **kwargs)
+            **kwargs,
+        )
     except TypeError as e:
         # The LLaMA tokenizer causes a protobuf error in some environments.
         err_msg = (
             "Failed to load the tokenizer. If you are using a LLaMA V1 model "
             f"consider using '{_FAST_LLAMA_TOKENIZER}' instead of the "
-            "original tokenizer.")
+            "original tokenizer."
+        )
         invalidInputError(err_msg)
     except ValueError as e:
         # If the error pertains to the tokenizer class not existing or not
         # currently being imported, suggest using the --trust-remote-code flag.
-        if (not trust_remote_code and
-            ("does not exist or is not currently imported." in str(e)
-             or "requires you to execute the tokenizer file" in str(e))):
+        if not trust_remote_code and (
+            "does not exist or is not currently imported." in str(e)
+            or "requires you to execute the tokenizer file" in str(e)
+        ):
             err_msg = (
                 "Failed to load the tokenizer. If the tokenizer is a custom "
                 "tokenizer not yet available in the HuggingFace transformers "
                 "library, consider setting `trust_remote_code=True` in LLM "
-                "or using the `--trust-remote-code` flag in the CLI.")
+                "or using the `--trust-remote-code` flag in the CLI."
+            )
             invalidInputError(err_msg)
         else:
             invalidInputError(e)
@@ -120,7 +154,8 @@ def get_tokenizer(
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
         logger.warning(
             "Using a slow tokenizer. This might cause a significant "
-            "slowdown. Consider using a fast tokenizer instead.")
+            "slowdown. Consider using a fast tokenizer instead."
+        )
     return tokenizer
 
 
@@ -142,7 +177,8 @@ def detokenize_incrementally(
     # This is the first iteration for this sequence
     if prev_tokens is None:
         new_tokens = tokenizer.convert_ids_to_tokens(
-            all_input_ids, skip_special_tokens=skip_special_tokens)
+            all_input_ids, skip_special_tokens=skip_special_tokens
+        )
         output_tokens = new_tokens
         # 5 is an arbitrary value that should work for all
         # tokenizers (bigger = more conservative).
@@ -152,7 +188,8 @@ def detokenize_incrementally(
     else:
         # Put new_token_id in a list so skip_special_tokens is respected
         new_tokens = tokenizer.convert_ids_to_tokens(
-            [new_token_id], skip_special_tokens=skip_special_tokens)
+            [new_token_id], skip_special_tokens=skip_special_tokens
+        )
         output_tokens = prev_tokens + new_tokens
 
     # The prefix text is necessary only to defeat cleanup algorithms in
@@ -160,25 +197,27 @@ def detokenize_incrementally(
     # surrounding ids.
     if not getattr(tokenizer, "added_tokens_encoder", {}):
         prefix_text = tokenizer.convert_tokens_to_string(
-            output_tokens[prefix_offset:read_offset])
-        new_text = tokenizer.convert_tokens_to_string(
-            output_tokens[prefix_offset:])
+            output_tokens[prefix_offset:read_offset]
+        )
+        new_text = tokenizer.convert_tokens_to_string(output_tokens[prefix_offset:])
     else:
         prefix_text = _convert_tokens_to_string_with_added_encoders(
             tokenizer,
             output_tokens[prefix_offset:read_offset],
-            skip_special_tokens=skip_special_tokens)
+            skip_special_tokens=skip_special_tokens,
+        )
         new_text = _convert_tokens_to_string_with_added_encoders(
             tokenizer,
             output_tokens[prefix_offset:],
-            skip_special_tokens=skip_special_tokens)
+            skip_special_tokens=skip_special_tokens,
+        )
 
     if len(new_text) > len(prefix_text) and not new_text.endswith("�"):
         # utf-8 char at the end means it's a potential unfinished byte sequence
         # from byte fallback tokenization.
         # If it's in the middle, it's probably a real invalid id generated
         # by the model
-        new_text = new_text[len(prefix_text):]
+        new_text = new_text[len(prefix_text) :]
         return new_tokens, new_text, read_offset, len(output_tokens)
     else:
         return new_tokens, "", prefix_offset, read_offset
