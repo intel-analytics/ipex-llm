@@ -39,5 +39,4 @@ model = model.to('xpu:1')
 input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:1')
 ```
 
-### 2. Affinity Mask
-The affinity mask allows an application or tool to restrict which devices, and sub-devices, are visible to 3rd-party libraries or applications in another process, respectively. 
+### 2. ONEAPI device selector
