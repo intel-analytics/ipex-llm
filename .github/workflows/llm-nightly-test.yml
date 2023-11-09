@@ -30,7 +30,7 @@ jobs:
       matrix:
         include:
           - os: windows
-            instruction: AVX-VNNI
+            instruction: AVX-VNNI-UT
             python-version: "3.9"
           - os: ubuntu-20.04-lts
             instruction: avx512
