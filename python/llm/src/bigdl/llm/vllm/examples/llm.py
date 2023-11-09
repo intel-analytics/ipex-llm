@@ -143,9 +143,9 @@ class LLM:
 
     def generate(
         self,
-        prompts: Optional[Union[str, List[str]]] = None,
-        sampling_params: Optional[SamplingParams] = None,
-        prompt_token_ids: Optional[List[List[int]]] = None,
+        prompts: Optional[Union[str, List[str]]]=None,
+        sampling_params: Optional[SamplingParams]=None,
+        prompt_token_ids: Optional[List[List[int]]]=None,
         use_tqdm: bool = True,
     ) -> List[RequestOutput]:
         """Generates the completions for the input prompts.
@@ -167,13 +167,13 @@ class LLM:
             completions in the same order as the input prompts.
         """
         if prompts is None and prompt_token_ids is None:
-            raise ValueError("Either prompts or prompt_token_ids must be " "provided.")
+            raise ValueError("Either prompts or prompt_token_ids must be " "provided.")  # noqa
         if isinstance(prompts, str):
             # Convert a single prompt to a list.
             prompts = [prompts]
         if prompts is not None and prompt_token_ids is not None:
             if len(prompts) != len(prompt_token_ids):
-                raise ValueError(
+                raise ValueError(   # noqa
                     "The lengths of prompts and prompt_token_ids " "must be the same."
                 )
         if sampling_params is None:

@@ -217,7 +217,7 @@ def detokenize_incrementally(
         # from byte fallback tokenization.
         # If it's in the middle, it's probably a real invalid id generated
         # by the model
-        new_text = new_text[len(prefix_text) :]
+        new_text = new_text[len(prefix_text):]
         return new_tokens, new_text, read_offset, len(output_tokens)
     else:
         return new_tokens, "", prefix_offset, read_offset
