@@ -58,16 +58,16 @@ jobs:
             "id": "us-http", 
             "active": "true", 
             "protocol": "http", 
-            "host": "child-prc.intel.com", 
-            "port": "913", 
-            "nonProxyHosts": "10.239.45.10||localhost"
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT_2 }}", 
+            "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           },{
             "id": "us-https", 
             "active": "true", 
             "protocol": "https", 
-            "host": "child-prc.intel.com", 
-            "port": "913", 
-            "nonProxyHosts": "10.239.45.10|localhost"
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT_3 }}", 
+            "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           }]
         servers: |
           [{
@@ -82,8 +82,8 @@ jobs:
               }
           },{
             "id": "ossrh",
-            "username": "yihengwa",
-            "password": "BigDL2017",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
             "configuration": {
               "timeout": "3600000"
             }
