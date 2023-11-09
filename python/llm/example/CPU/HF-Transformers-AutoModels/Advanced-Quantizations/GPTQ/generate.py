@@ -42,18 +42,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    quantization_config = GPTQConfig(
-        bits=4,
-        use_exllama=False,
-        )
-
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  torch_dtype=torch.float,
-                                                 trust_remote_code=True,
-                                                 quantization_config=quantization_config,)
+                                                 trust_remote_code=True,)
 
     # Load tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)

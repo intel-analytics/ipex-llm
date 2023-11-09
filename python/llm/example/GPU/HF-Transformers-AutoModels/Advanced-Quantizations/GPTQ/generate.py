@@ -42,18 +42,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    quantization_config = GPTQConfig(
-        bits=4,
-        use_exllama=False,
-        )
-
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  torch_dtype=torch.float,
-                                                 trust_remote_code=True,
-                                                 quantization_config=quantization_config,).to("xpu")
+                                                 trust_remote_code=True,).to("xpu")
 
     # Load tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -70,7 +64,6 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         end = time.time()
-        print(output)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
