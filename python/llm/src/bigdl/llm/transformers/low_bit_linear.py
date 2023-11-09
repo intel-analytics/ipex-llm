@@ -67,6 +67,7 @@ NF3 = ggml_tensor_qtype["nf3"]
 FP8 = ggml_tensor_qtype["fp8"]
 FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_4bit"]
+MOFQ8 = ggml_tensor_qtype["mixed_8bit"]
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
@@ -225,6 +226,34 @@ class FP4Params(torch.nn.Parameter):
                     else:
                         self.qtype = FP4
                         self.data = w_quant_fp4
+            elif self.qtype == MOFQ8:
+                if device == 'meta':
+                    w_quantized = ggml_convert_qtype(w, SYM_INT8,
+                                                     device=device,
+                                                     convert_shape_only=self.convert_shape_only)
+                    # TODO: should load from config, the current implementation doesn't support
+                    # save/load
+                    self.qtype = SYM_INT8
+                else:
+                    from torch.nn.functional import mse_loss
+                    w_quant_q8_0 = ggml_convert_qtype(w, SYM_INT8,
+                                                      device=device,
+                                                      convert_shape_only=self.convert_shape_only)
+                    w_q8_0_dequant = ggml_convert_fp32(w_quant_q8_0, w.shape,
+                                                       reduce(mul, w.shape, 1), SYM_INT8)
+                    w_quant_fp8 = ggml_convert_qtype(w, FP8,
+                                                     device=device,
+                                                     convert_shape_only=self.convert_shape_only)
+                    w_fp8_dequant = ggml_convert_fp32(w_quant_fp8, w.shape,
+                                                      reduce(mul, w.shape, 1), FP8)
+                    q8_0_mse = mse_loss(w_q8_0_dequant, w)
+                    fp8_mse = mse_loss(w_fp8_dequant, w)
+                    if q8_0_mse <= fp8_mse:
+                        self.qtype = SYM_INT8
+                        self.data = w_quant_q8_0
+                    else:
+                        self.qtype = FP8
+                        self.data = w_quant_fp8
             else:
                 w_quantized = ggml_convert_qtype(w, self.qtype,
                                                  device=device,
