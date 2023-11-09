@@ -311,8 +311,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
             "an issue on github if you think this is a bug."
         )
     elif device == "cpu":
-        from transformers.utils.quantization_config import QuantizationMethod
-        if not (getattr(model, "quantization_method", None) == QuantizationMethod.GPTQ):
+        if not (getattr(model, "quantization_method", None) == "gptq"):
             model.to(torch.float32)
     elif device == "meta":
         # Do nothing here for weights are empty.
