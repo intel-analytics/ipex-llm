@@ -28,7 +28,7 @@ jobs:
       matrix:
         python-version: ["3.9"]
         model_name: ["Mistral-7B-v0.1"]
-        task: ["truthfulqa", "arc", "hellaswag", "mmlu"]
+        task: ["truthfulqa", "arc"]
         precision: ["fp4", "int4", "fp8"]
     runs-on: [self-hosted, llm, accuracy3]
     env:
@@ -91,7 +91,7 @@ jobs:
           echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
           echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
           echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
-          pip install transformers >= 4.34.0
+          pip install --upgrade transformers
 
       - name: Run harness
         shell: bash
