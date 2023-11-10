@@ -195,25 +195,15 @@ class FP4Params(torch.nn.Parameter):
         self.convert_shape_only = convert_shape_only
         return self
 
-    def ggml_w_q_mse(self, w, SYM_INT_TYPE, device):
+    def ggml_mse(self, w, ggml_qtype, device):
         from torch.nn.functional import mse_loss
-        w_quant_q = ggml_convert_qtype(w, SYM_INT_TYPE,
-                                       device=device,
-                                       convert_shape_only=self.convert_shape_only)
-        w_q_dequant = ggml_convert_fp32(w_quant_q, w.shape,
-                                        reduce(mul, w.shape, 1), SYM_INT_TYPE)
-        q_mse = mse_loss(w_q_dequant, w)
-        return q_mse, w_quant_q
-
-    def ggml_w_fq_mse(self, w, FP_TYPE, device):
-        from torch.nn.functional import mse_loss
-        w_quant_fp = ggml_convert_qtype(w, FP_TYPE,
-                                        device=device,
-                                        convert_shape_only=self.convert_shape_only)
-        w_fp_dequant = ggml_convert_fp32(w_quant_fp, w.shape,
-                                         reduce(mul, w.shape, 1), FP_TYPE)
-        fq_mse = mse_loss(w_fp_dequant, w)
-        return fq_mse, w_quant_fp
+        w_quant = ggml_convert_qtype(w, ggml_qtype,
+                                     device=device,
+                                     convert_shape_only=self.convert_shape_only)
+        w_dequant = ggml_convert_fp32(w_quant, w.shape,
+                                      reduce(mul, w.shape, 1), ggml_qtype)
+        mse = mse_loss(w_dequant, w)
+        return mse, w_quant
 
     def quantize(self, device=None):
         if not self.quantized:
@@ -227,8 +217,8 @@ class FP4Params(torch.nn.Parameter):
                     # save/load
                     self.qtype = SYM_INT4
                 else:
-                    q4_0_mse, w_quant_q4_0 = self.ggml_w_q_mse(w, SYM_INT4, device=device)
-                    fp4_mse, w_quant_fp4 = self.ggml_w_fq_mse(w, FP4, device=device)
+                    q4_0_mse, w_quant_q4_0 = self.ggml_mse(w, SYM_INT4, device=device)
+                    fp4_mse, w_quant_fp4 = self.ggml_mse(w, FP4, device=device)
                     if q4_0_mse <= fp4_mse:
                         self.qtype = SYM_INT4
                         self.data = w_quant_q4_0
@@ -244,8 +234,8 @@ class FP4Params(torch.nn.Parameter):
                     # save/load
                     self.qtype = SYM_INT8
                 else:
-                    q8_0_mse, w_quant_q8_0 = self.ggml_w_q_mse(w, SYM_INT8, device=device)
-                    fp8_mse, w_quant_fp8 = self.ggml_w_fq_mse(w, FP8, device=device)
+                    q8_0_mse, w_quant_q8_0 = self.ggml_mse(w, SYM_INT8, device=device)
+                    fp8_mse, w_quant_fp8 = self.ggml_mse(w, FP8, device=device)
                     if q8_0_mse <= fp8_mse:
                         self.qtype = SYM_INT8
                         self.data = w_quant_q8_0
