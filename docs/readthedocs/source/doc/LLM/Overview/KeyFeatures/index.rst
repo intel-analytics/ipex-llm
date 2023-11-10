@@ -26,3 +26,6 @@ You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
 
 .. |inference_on_gpu| replace:: Inference on GPU
 .. _inference_on_gpu: ./inference_on_gpu.html
+
+.. |multi_gpus_selection| replace:: Multi GPUs selection
+.. _multi_gpus_selection: ./multi_gpus_selection.html
