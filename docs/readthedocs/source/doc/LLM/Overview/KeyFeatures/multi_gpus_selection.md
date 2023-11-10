@@ -9,7 +9,7 @@ The `sycl-ls` tool enumerates a list of devices available in the system. You can
 source /opt/intel/oneapi/setvars.sh
 sycl-ls
 ```
-Its result like below:
+If you have two Arc770 GPUs, you can get something like below:
 ```
 [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
 [opencl:cpu:1] Intel(R) OpenCL, Intel(R) Core(TM) i9-14900K 3.0 [2023.16.7.0.21_160000]
