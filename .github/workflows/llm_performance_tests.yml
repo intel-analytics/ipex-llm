@@ -228,7 +228,7 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
 
-      - name: Test on core
+      - name: Test on core ${{ matrix.platform }}
         shell: bash
         run: |
           mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
