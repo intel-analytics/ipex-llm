@@ -13,11 +13,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/llm_performance_tests.yml"
-      - ".github/workflows/llm-binary-build.yml"
-      - ".github/actions/llm/setup-llm-env/action.yml"
-      - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/download-llm-binary/action.yml"
       - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
@@ -133,6 +130,8 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
@@ -141,7 +140,6 @@ jobs:
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
-
           
   llm-performance-test-on-spr:
     needs: llm-cpp-build
@@ -184,6 +182,8 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
           cp ./*.csv /mnt/disk1/nightly_perf_cpu/
           cd ../../../test/benchmark
