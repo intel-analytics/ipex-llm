@@ -142,7 +142,7 @@ def get_autocast_dtype(x):
         else:
             return None
     elif x.device.type == "cpu":
-        if torch.is_autocast_enabled():
+        if torch.is_autocast_cpu_enabled():
             return torch.get_autocast_cpu_dtype()
         else:
             return None
