@@ -78,7 +78,7 @@ Model: [distil-whisper/distil-large-v2](https://huggingface.co/distil-whisper/di
 
 Command line:
 ```bash
-python ./recognize.py
+python ./recognize.py --repo-id-or-data-path 'distil-whisper/librispeech_long' --chunk-length 15
 ```
 Output:
 ```log
