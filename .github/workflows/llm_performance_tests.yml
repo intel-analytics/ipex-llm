@@ -192,7 +192,6 @@ jobs:
           python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
 
   llm-performance-test-on-core:
-    if: false # temp skip
     needs: llm-cpp-build
     strategy:
       fail-fast: false
