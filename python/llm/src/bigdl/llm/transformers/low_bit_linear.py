@@ -195,6 +195,26 @@ class FP4Params(torch.nn.Parameter):
         self.convert_shape_only = convert_shape_only
         return self
 
+    def ggml_w_q_mse(self, w, SYM_INT_TYPE, device):
+        from torch.nn.functional import mse_loss
+        w_quant_q = ggml_convert_qtype(w, SYM_INT_TYPE,
+                                       device=device,
+                                       convert_shape_only=self.convert_shape_only)
+        w_q_dequant = ggml_convert_fp32(w_quant_q, w.shape,
+                                        reduce(mul, w.shape, 1), SYM_INT_TYPE)
+        q_mse = mse_loss(w_q_dequant, w)
+        return q_mse, w_quant_q
+
+    def ggml_w_fq_mse(self, w, FP_TYPE, device):
+        from torch.nn.functional import mse_loss
+        w_quant_fp = ggml_convert_qtype(w, FP_TYPE,
+                                        device=device,
+                                        convert_shape_only=self.convert_shape_only)
+        w_fp_dequant = ggml_convert_fp32(w_quant_fp, w.shape,
+                                         reduce(mul, w.shape, 1), FP_TYPE)
+        fq_mse = mse_loss(w_fp_dequant, w)
+        return fq_mse, w_quant_fp
+
     def quantize(self, device=None):
         if not self.quantized:
             w = self.data.contiguous().float()
@@ -207,19 +227,8 @@ class FP4Params(torch.nn.Parameter):
                     # save/load
                     self.qtype = SYM_INT4
                 else:
-                    from torch.nn.functional import mse_loss
-                    w_quant_q4_0 = ggml_convert_qtype(w, SYM_INT4,
-                                                      device=device,
-                                                      convert_shape_only=self.convert_shape_only)
-                    w_q4_0_dequant = ggml_convert_fp32(w_quant_q4_0, w.shape,
-                                                       reduce(mul, w.shape, 1), SYM_INT4)
-                    w_quant_fp4 = ggml_convert_qtype(w, FP4,
-                                                     device=device,
-                                                     convert_shape_only=self.convert_shape_only)
-                    w_fp4_dequant = ggml_convert_fp32(w_quant_fp4, w.shape,
-                                                      reduce(mul, w.shape, 1), FP4)
-                    q4_0_mse = mse_loss(w_q4_0_dequant, w)
-                    fp4_mse = mse_loss(w_fp4_dequant, w)
+                    q4_0_mse, w_quant_q4_0 = self.ggml_w_q_mse(w, SYM_INT4, device=device)
+                    fp4_mse, w_quant_fp4 = self.ggml_w_fq_mse(w, FP4, device=device)
                     if q4_0_mse <= fp4_mse:
                         self.qtype = SYM_INT4
                         self.data = w_quant_q4_0
@@ -235,19 +244,8 @@ class FP4Params(torch.nn.Parameter):
                     # save/load
                     self.qtype = SYM_INT8
                 else:
-                    from torch.nn.functional import mse_loss
-                    w_quant_q8_0 = ggml_convert_qtype(w, SYM_INT8,
-                                                      device=device,
-                                                      convert_shape_only=self.convert_shape_only)
-                    w_q8_0_dequant = ggml_convert_fp32(w_quant_q8_0, w.shape,
-                                                       reduce(mul, w.shape, 1), SYM_INT8)
-                    w_quant_fp8 = ggml_convert_qtype(w, FP8,
-                                                     device=device,
-                                                     convert_shape_only=self.convert_shape_only)
-                    w_fp8_dequant = ggml_convert_fp32(w_quant_fp8, w.shape,
-                                                      reduce(mul, w.shape, 1), FP8)
-                    q8_0_mse = mse_loss(w_q8_0_dequant, w)
-                    fp8_mse = mse_loss(w_fp8_dequant, w)
+                    q8_0_mse, w_quant_q8_0 = self.ggml_w_q_mse(w, SYM_INT8, device=device)
+                    fp8_mse, w_quant_fp8 = self.ggml_w_fq_mse(w, FP8, device=device)
                     if q8_0_mse <= fp8_mse:
                         self.qtype = SYM_INT8
                         self.data = w_quant_q8_0
