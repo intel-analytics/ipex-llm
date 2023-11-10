@@ -203,7 +203,7 @@ jobs:
           # - os: windows
           #   platform: lp
           #   python-version: "3.9"
-    runs-on: [self-hosted, "${{matrix.os}}", llm, perf-core, "${{matrix.platform}}"]
+    runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-core, "${{ matrix.platform }}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
@@ -238,6 +238,7 @@ jobs:
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
-          cp ./*.csv D:/action-runners/nightly_perf_core_${{matrix.platform}}/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/core_${{ matrix.platform }}
+          cp ./*.csv D:/action-runners/nightly_perf_core_${{ matrix.platform }}/
           cd ../../../test/benchmark
-          python csv_to_html.py -f D:/action-runners/nightly_perf_core_${{matrix.platform}}/
+          python csv_to_html.py -f D:/action-runners/nightly_perf_core_${{ matrix.platform }}/
