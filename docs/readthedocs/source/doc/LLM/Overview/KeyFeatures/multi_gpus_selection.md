@@ -20,18 +20,17 @@ Its result like below:
 [ext_oneapi_level_zero:gpu:1] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 [ext_oneapi_level_zero:gpu:2] Intel(R) Level-Zero, Intel(R) UHD Graphics 770 1.3 [1.3.26241]
 ```
-This output shows there is two Arc A770 GPUs on this machine.
+This output shows there are two Arc A770 GPUs on this machine.
 
 ## Devices selection
-To select the desired devices, there are two ways:
-
-### 1. Select device in python
-
 To enable xpu, you should convert your model and input to xpu by below code:
 ```
 model = model.to('xpu')
 input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 ```
+To select the desired devices, there are two ways: one is changing the code, another is adding an environment variable. See:  
+
+### 1. Select device in python
 To specify a xpu, you can change the `to('xpu')` to `to('xpu:[device_id]')`, this device_id is counted from zero.  
 If you you want to use the second device, you can change the code like this: 
 ```
@@ -39,4 +38,9 @@ model = model.to('xpu:1')
 input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:1')
 ```
 
-### 2. ONEAPI device selector
+### 2. OneAPI device selector
+Device selection environment variable, `ONEAPI_DEVICE_SELECTOR`, can be used to limit the choice of Intel GPU devices. As upon `sycl-ls` shows, the last three lines are three Level Zero GPU devices. So we can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select devices.
+For example, you want to use the second A770 GPU, you can run the python like this:
+```
+ONEAPI_DEVICE_SELECTOR=level_zero:1 python generate.py ...
+```
