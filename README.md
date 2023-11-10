@@ -162,7 +162,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Skywork      | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
 | InternLM-XComposer  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm-xcomposer)   |    |
 | WizardCoder-Python | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/wizardcoder-python) | |
-| CodeShell | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/CodeShell) | |
+| CodeShell | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codeshell) | |
 | Fuyu      | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/fuyu) | |
 
 
