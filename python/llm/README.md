@@ -55,7 +55,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Baichuan   | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan)   |
 | Baichuan2  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
 | InternLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
-| Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       | 
 | Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
 | Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
 | Aquila2    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila2)   | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila2)    |
