@@ -20,6 +20,7 @@ pip install datasets
 
 ### 2. Finetune model
 
+If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C52-L53C84), but this will reduce the training performance.
 ```
 source bigdl-llm-init -t
 python ./qlora_finetuning_cpu.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --dataset DATASET
