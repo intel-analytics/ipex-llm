@@ -42,5 +42,5 @@ input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:1')
 Device selection environment variable, `ONEAPI_DEVICE_SELECTOR`, can be used to limit the choice of Intel GPU devices. As upon `sycl-ls` shows, the last three lines are three Level Zero GPU devices. So we can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select devices.
 For example, you want to use the second A770 GPU, you can run the python like this:
 ```
-ONEAPI_DEVICE_SELECTOR=level_zero:1 python generate.py ...
+ONEAPI_DEVICE_SELECTOR=level_zero:1 python generate.py
 ```
