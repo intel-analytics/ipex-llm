@@ -16,6 +16,11 @@ pip install -U transformers==4.34.0
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
+## Configures OneAPI environment variables
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
 ## Run Example
 ```bash
 python ./run_streaming_llama.py  --repo-id-or-model-path REPO_ID_OR_MODEL_PATH  --enable-streaming
