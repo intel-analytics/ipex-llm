@@ -21,6 +21,7 @@ pip install datasets
 ### 2. Finetune model
 
 ```
+source bigdl-llm-init -t
 python ./qlora_finetuning_cpu.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --dataset DATASET
 ```
 
