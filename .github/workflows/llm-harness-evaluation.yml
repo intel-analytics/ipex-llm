@@ -20,16 +20,16 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-nightly-harness-test:
+  llm-harness-evalution:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["Llama-2-7b-chat-hf"]
+        model_name: ["stablelm-3b-4e1t"]
         task: ["truthfulqa"]
         precision: ["int4"]
-    runs-on: [self-hosted, llm, accuracy]
+    runs-on: [self-hosted, llm, accuracy, temp-arc01]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
@@ -90,6 +90,7 @@ jobs:
           echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
           echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
           echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          pip install --upgrade transformers
 
       - name: Run harness
         shell: bash
@@ -98,4 +99,4 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           source /opt/intel/oneapi/setvars.sh
           cd python/llm/dev/benchmark/harness
-          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1
+          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
