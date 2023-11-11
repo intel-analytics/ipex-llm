@@ -26,15 +26,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # include:
-        #   python-version: ["3.9"]
-        #   model_name: "stablelm-3b-4e1t"
-        #   task: "arc"
-        #   precision: ["sym_int4"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         python-version: ["3.9"]
-        model_name: ["stablelm-3b-4e1t"]
-        task: ["truthfulqa"]
-        precision: ["mixed_4bit"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        model_name: ["Llama2-7B-guanaco-dolphin-500"]
+        task: ["truthfulqa", "arc", "mmlu", "hellaswag"]
+        precision: ["mixed_4bit", "sym_int4", "fp4"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        include:
+          - python-version: ["3.9"]
+            model_name: "Llama-2-7b-chat-hf"
+            task: "mmlu"
+            precision: ["fp8"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         
     runs-on: [self-hosted, llm, accuracy, temp-arc01]
     env:
