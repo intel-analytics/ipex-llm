@@ -63,7 +63,7 @@ jobs:
           extra-dependency: "xpu"
 
       - name: Install harness
-        working-directory: ${ANALYTICS_ZOO_ROOT}/python/llm/dev/benchmark/harness/
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
         shell: bash
         run: |
           git clone https://github.com/EleutherAI/lm-evaluation-harness.git
@@ -91,7 +91,7 @@ jobs:
 
       - name: Run harness
         shell: bash
-        working-directory: ${ANALYTICS_ZOO_ROOT}/python/llm/dev/benchmark/harness
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
         env:
           USE_XETLA: OFF
           SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
