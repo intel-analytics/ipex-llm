@@ -21,6 +21,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   llm-harness-evalution:
+    timeout-minutes: 1000
     needs: llm-cpp-build
     strategy:
       fail-fast: false
