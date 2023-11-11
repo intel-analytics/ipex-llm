@@ -49,17 +49,18 @@
 # limitations under the License.
 
 import torch
-from bigdl.llm.transformers.low_bit_linear import LowBitLinear
+from bigdl.llm.transformers.low_bit_linear import HPULowBitLinear
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 import functools
 
 
-class LoraLowBitLinear(LowBitLinear, LoraLayer):
+class LoraLowBitLinear(torch.nn.Linear, LoraLayer):
     # Lora implemented in a dense layer
     def __init__(
         self,
         adapter_name,
+        linear_module,
         in_features,
         out_features,
         r: int = 0,
@@ -67,16 +68,21 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         lora_dropout: float = 0.0,
         **kwargs,
     ):
-        LowBitLinear.__init__(
-            self,
-            in_features,
-            out_features,
-            qtype=kwargs.get("qtype"),
-            bias=kwargs.get("bias", True),
-            conver_to_half=False,
-        )
+        # HPULowBitLinear.__init__(
+        #     self,
+        #     in_features,
+        #     out_features,
+        #     bias=kwargs.get("bias", True),
+        # )
+        torch.nn.Linear.__init__(self, in_features, out_features)
         LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
 
+        self.linear_module = linear_module
+
+        delattr(self, "weight")
+        self.weight = linear_module.weight
+        delattr(self, "bias")
+        self.bias = linear_module.bias
         # Freezing the pre-trained weight matrix
         self.weight.requires_grad = False
 
@@ -85,7 +91,7 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         self.active_adapter = adapter_name
 
     def forward(self, x: torch.Tensor):
-        result = super().forward(x)
+        result = self.linear_module(x)
 
         if self.disable_adapters or self.active_adapter not in self.lora_A.keys():
             return result
@@ -113,15 +119,16 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
 
 def _create_new_module(create_new_module_func, lora_config, adapter_name, target, **kwargs):
 
-    if isinstance(target, LowBitLinear):
+    if isinstance(target, HPULowBitLinear):
         low_bit_kwargs = kwargs.copy()
         bias = low_bit_kwargs.pop("bias", False)
-        low_bit_kwargs.update(
-            {
-                "qtype": target.qtype,
-            }
-        )
+        # low_bit_kwargs.update(
+        #     {
+        #         "qtype": target.qtype,
+        #     }
+        # )
         new_module = LoraLowBitLinear(adapter_name,
+                                        target,
                                       target.in_features,
                                       target.out_features,
                                       bias=bias,

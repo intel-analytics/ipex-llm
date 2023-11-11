@@ -100,54 +100,85 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
                     new_linear = None
-                    if qtype != ggml_tensor_qtype["fp16"]:
-                        new_linear = LowBitLinear(
+                    device_type = module.weight.data.device.type
+                    from bigdl.llm.transformers.low_bit_linear import ggml_convert_qtype, ggml_tensor_qtype, ggml_q_format_convet_cpu2xpu, ggml_convert_fp32
+                    if True:
+                        from bigdl.llm.transformers.low_bit_linear import HPULowBitLinear
+                        new_linear = HPULowBitLinear(
                             in_features,
                             out_features,
-                            qtype,
                             module.bias is not None,
-                            mp_group=mp_group,
                         )
+                        qweigt_ggml = ggml_convert_qtype(module.weight.data.to("cpu").to(torch.float32),
+                                                         ggml_tensor_qtype["nf4"],
+                                                         device="cpu")
+                        qweight_ggml_xpu = ggml_q_format_convet_cpu2xpu(qweigt_ggml, (out_features * in_features), ggml_tensor_qtype["nf4"])
+                        new_linear.weight = qweight_ggml_xpu[:(in_features * out_features)//2].clone().detach().to(device_type)
+                        new_linear.scales = qweight_ggml_xpu[(in_features * out_features)//2:].clone().detach().view(torch.float16).to(device_type)
 
-                        device_type = module.weight.data.device.type
-                        # Copy the weights
-                        paramsLowBit = FP4Params(data=module.weight.data,
-                                                 requires_grad=False,
-                                                 quantized=False,
-                                                 _shape=None,
-                                                 convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device_type)
-                        new_linear._parameters['weight'] = paramsLowBit
+                        del qweigt_ggml
+                        del qweight_ggml_xpu
+                        module.weight = None
+
+                        # from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_nf4_2
+                        # dequant_weight = torch_dequant_nf4_2(new_linear.weight, new_linear.scales.to(module.weight.data.dtype), (out_features, in_features), dtype=module.weight.data.dtype)
+                        # if not torch.allclose(dequant_weight.to(module.weight.data.dtype), module.weight.data, rtol=1e-2, atol=1e-2):
+                        #     print("dequant_weight not equal")
+                        #     print(dequant_weight)
+                        #     print(module.weight.data)
+                        #     print(ggml_convert_fp32(qweigt_ggml, (out_features, in_features), out_features*in_features, ggml_tensor_qtype["nf4"],))
+                        #     raise ValueError("dequant_weight not equal")
+                        if module.bias is not None:
+                            new_linear.bias = module.bias.data.to(torch.float32)
                     else:
-                        #  only support two size now
-                        #  may generalize to other sizes
-                        if module.in_features in [4096, 11008]:
-                            # esimd fp16 path
-                            new_linear = FP16Linear(
+                        raise ValueError("should not be here")
+                        if qtype != ggml_tensor_qtype["fp16"]:
+                            new_linear = LowBitLinear(
                                 in_features,
                                 out_features,
                                 qtype,
                                 module.bias is not None,
                                 mp_group=mp_group,
                             )
-                            device_type = module.weight.data.device.type
+                            # assert device_type == "cpu", "Only support cpu now."
+                            # Copy the weights
+                            paramsLowBit = FP4Params(data=module.weight.data,
+                                                    requires_grad=False,
+                                                    quantized=False,
+                                                    _shape=None,
+                                                    convert_shape_only=convert_shape_only,
+                                                    qtype=qtype).to(device_type)
+                            new_linear._parameters['weight'] = paramsLowBit
+                        else:
+                            #  only support two size now
+                            #  may generalize to other sizes
+                            if module.in_features in [4096, 11008]:
+                                # esimd fp16 path
+                                new_linear = FP16Linear(
+                                    in_features,
+                                    out_features,
+                                    qtype,
+                                    module.bias is not None,
+                                    mp_group=mp_group,
+                                )
+                                device_type = module.weight.data.device.type
 
-                            # convert here
-                            m, n = module.weight.data.shape
-                            trans_weight = module.weight.data.reshape(m//16, 16, n)
-                            trans_weight = trans_weight.transpose(1, 2).contiguous()
-                            new_linear._parameters['weight'] = nn.Parameter(trans_weight)
+                                # convert here
+                                m, n = module.weight.data.shape
+                                trans_weight = module.weight.data.reshape(m//16, 16, n)
+                                trans_weight = trans_weight.transpose(1, 2).contiguous()
+                                new_linear._parameters['weight'] = nn.Parameter(trans_weight)
 
                     #  fp16 may generalize to other sizes later
                     if new_linear is not None:
-                        if module.bias is not None:
-                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                        # if module.bias is not None:
+                        #     new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                        #         .to(device_type)
 
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
-                        model._modules[name].requires_grad_(False)
+                        # model._modules[name].requires_grad_(False)
 
                         module.weight = None
         elif replace_embedding and type(module) == nn.Embedding:
