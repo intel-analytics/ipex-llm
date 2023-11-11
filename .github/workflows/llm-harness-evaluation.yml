@@ -95,10 +95,10 @@ jobs:
         env:
           USE_XETLA: OFF
           SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
-          HF_HOME: $HARNESS_HF_HOME
-          HF_DATASETS: $HARNESS_HF_HOME/datasets
-          HF_DATASETS_CACHE: $HARNESS_HF_HOME/datasets
         run: |
+          export HF_HOME=${HARNESS_HF_HOME}
+          export HF_DATASETS=$HARNESS_HF_HOME/datasets
+          export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
           python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
         
