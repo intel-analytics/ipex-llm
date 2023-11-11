@@ -27,14 +27,14 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["Llama2-7B-guanaco-dolphin-500"]
-        task: ["truthfulqa", "arc", "mmlu", "hellaswag"]
-        precision: ["mixed_4bit", "sym_int4", "fp4"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        model_name: ["Mistral-7B-v0.1"]
+        task: ["truthfulqa"]
+        precision: ["fp4", "int4", "fp8", mixed_4bit]
         include:
-          - python-version: ["3.9"]
-            model_name: "Llama-2-7b-chat-hf"
-            task: "mmlu"
-            precision: ["fp8"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+          - python-version: "3.9"
+            model_name: "Mistral-7B-v0.1"
+            task: "arc"
+            precision: "mixed_4bit" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         
     runs-on: [self-hosted, llm, accuracy]
     env:
