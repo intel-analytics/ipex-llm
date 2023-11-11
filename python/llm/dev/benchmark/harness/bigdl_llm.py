@@ -66,7 +66,7 @@ class BigDLLM(BaseLM):
         self._device = device
         self.model = model.to(device)
 
-        self.tokenizer = LlamaTokenizer.from_pretrained(pretrained, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(pretrained, trust_remote_code=True)
 
         # setup for automatic batch size detection
         if batch_size == 'auto':
