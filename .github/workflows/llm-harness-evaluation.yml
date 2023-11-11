@@ -35,6 +35,10 @@ jobs:
             model_name: "Mistral-7B-v0.1"
             task: "arc"
             precision: "mixed_4bit" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+          - python-version: "3.9"
+            model_name: "Llama-2-7b-chat-hf"
+            task: "mmlu"
+            precision: "fp8" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         
     runs-on: [self-hosted, llm, accuracy]
     env:
