@@ -18,9 +18,9 @@ task_to_n_few_shots = dict(
 
 
 def parse_precision(precision, model="bigdl-llm"):
-    result = match(r"([a-zA-Z]*)(_*)(\d+)", precision)
-    type = result.group(1)
-    bit = int(result.group(3))
+    result = match(r"([a-zA-Z_]*)(\d+)", precision)
+    datatype = result.group(1)
+    bit = int(result.group(2))
     if bit >= 16:
         float_map = dict(
             bf16="bfloat16",
