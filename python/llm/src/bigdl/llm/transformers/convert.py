@@ -109,27 +109,28 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             out_features,
                             module.bias is not None,
                         )
-                        qweigt_ggml = ggml_convert_qtype(module.weight.data.to("cpu").to(torch.float32),
-                                                         ggml_tensor_qtype["nf4"],
-                                                         device="cpu")
-                        qweight_ggml_xpu = ggml_q_format_convet_cpu2xpu(qweigt_ggml, (out_features * in_features), ggml_tensor_qtype["nf4"])
-                        new_linear.weight = qweight_ggml_xpu[:(in_features * out_features)//2].clone().detach().to(device_type)
-                        new_linear.scales = qweight_ggml_xpu[(in_features * out_features)//2:].clone().detach().view(torch.float16).to(device_type)
+                        if device_type != "meta":
+                            qweigt_ggml = ggml_convert_qtype(module.weight.data.to("cpu").to(torch.float32),
+                                                            qtype=qtype,
+                                                            device="cpu")
+                            qweight_ggml_xpu = ggml_q_format_convet_cpu2xpu(qweigt_ggml, (out_features * in_features), qtype=qtype)
+                            new_linear.weight = qweight_ggml_xpu[:(in_features * out_features)//2].clone().detach().to(device_type)
+                            new_linear.scales = qweight_ggml_xpu[(in_features * out_features)//2:].clone().detach().view(torch.float16).to(device_type)
 
-                        del qweigt_ggml
-                        del qweight_ggml_xpu
-                        module.weight = None
+                            del qweigt_ggml
+                            del qweight_ggml_xpu
+                            module.weight = None
 
-                        # from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_nf4_2
-                        # dequant_weight = torch_dequant_nf4_2(new_linear.weight, new_linear.scales.to(module.weight.data.dtype), (out_features, in_features), dtype=module.weight.data.dtype)
-                        # if not torch.allclose(dequant_weight.to(module.weight.data.dtype), module.weight.data, rtol=1e-2, atol=1e-2):
-                        #     print("dequant_weight not equal")
-                        #     print(dequant_weight)
-                        #     print(module.weight.data)
-                        #     print(ggml_convert_fp32(qweigt_ggml, (out_features, in_features), out_features*in_features, ggml_tensor_qtype["nf4"],))
-                        #     raise ValueError("dequant_weight not equal")
-                        if module.bias is not None:
-                            new_linear.bias = module.bias.data.to(torch.float32)
+                            # from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_nf4_2
+                            # dequant_weight = torch_dequant_nf4_2(new_linear.weight, new_linear.scales.to(module.weight.data.dtype), (out_features, in_features), dtype=module.weight.data.dtype)
+                            # if not torch.allclose(dequant_weight.to(module.weight.data.dtype), module.weight.data, rtol=1e-2, atol=1e-2):
+                            #     print("dequant_weight not equal")
+                            #     print(dequant_weight)
+                            #     print(module.weight.data)
+                            #     print(ggml_convert_fp32(qweigt_ggml, (out_features, in_features), out_features*in_features, ggml_tensor_qtype["nf4"],))
+                            #     raise ValueError("dequant_weight not equal")
+                            if module.bias is not None:
+                                new_linear.bias = module.bias.data.to(torch.float32)
                     else:
                         raise ValueError("should not be here")
                         if qtype != ggml_tensor_qtype["fp16"]:

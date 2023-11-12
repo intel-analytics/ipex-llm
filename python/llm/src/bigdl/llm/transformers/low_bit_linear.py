@@ -445,21 +445,21 @@ class HPULowBitLinear(nn.Module):
         self.out_features = output_features
         self.register_buffer(
             'weight',
-            torch.zeros((output_features, input_features // 2), dtype=torch.uint8)
+            torch.zeros((output_features * input_features // 2), dtype=torch.uint8)
         )
         self.register_buffer(
             'scales',
-            torch.zeros((output_features, input_features // 64), dtype=torch.float16)
+            torch.zeros((output_features * input_features // 64), dtype=torch.bfloat16)
         )
         if bias:
-            self.register_buffer('bias', torch.zeros((output_features), dtype=torch.float32))
+            self.register_buffer('bias', torch.zeros((output_features), dtype=torch.bfloat16))
         else:
             self.bias = None
         self.weight_shape = (output_features, input_features)
 
     def forward(self, x: torch.Tensor):            
-        from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_nf4_2
-        dequant_weight = torch_dequant_nf4_2(self.weight, self.scales.to(x.dtype), self.weight_shape, x.dtype)
+        from bigdl.llm.transformers.torch_nf4_dequant import torch_dequant_int4
+        dequant_weight = torch_dequant_int4(self.weight, self.scales, self.weight_shape, x.dtype)
         # assert dequant_weight.sum() != 0, "dequant_weight is zero"
         result = torch.matmul(x, dequant_weight.T)
         if self.bias is not None:
