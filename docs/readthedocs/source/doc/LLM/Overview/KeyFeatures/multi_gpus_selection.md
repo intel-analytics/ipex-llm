@@ -44,3 +44,8 @@ For example, you want to use the second A770 GPU, you can run the python like th
 ```
 ONEAPI_DEVICE_SELECTOR=level_zero:1 python generate.py
 ```
+`ONEAPI_DEVICE_SELECTOR=level_zero:1` in upon command only affect in current python program. Also, you can export the environment, then run your python:
+```
+export ONEAPI_DEVICE_SELECTOR=level_zero:1
+python generate.py
+```
