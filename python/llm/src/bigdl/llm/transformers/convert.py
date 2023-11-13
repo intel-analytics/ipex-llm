@@ -46,6 +46,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 from typing import Union
 import numpy as np
+from bigdl.llm.utils.common import invalidInputError
 
 
 def is_auto_gptq_available():
@@ -171,15 +172,17 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 with init_empty_weights():
                     new_linear = None
                     if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+                        has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
                             qtype=qtype,
-                            bias=module.bias is not None,
+                            bias=has_bias,
                             mp_group=mp_group,
                         )
-
                         device_type = module.qweight.data.device.type
+                        invalidInputError(device_type != "meta",
+                                          "converting from meta device is not supported")
                         # Copy the weights
                         paramsLowBit = FP4Params(data=convert_gptq(module),
                                                  requires_grad=False,
@@ -188,6 +191,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=qtype).to(device_type)
                         new_linear._parameters['weight'] = paramsLowBit
+                        if has_bias:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
                     elif qtype != ggml_tensor_qtype["fp16"]:
                         new_linear = LowBitLinear(
                             in_features,
@@ -206,6 +212,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=qtype).to(device_type)
                         new_linear._parameters['weight'] = paramsLowBit
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
                     else:
                         #  only support two size now
                         #  may generalize to other sizes
@@ -225,13 +234,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             trans_weight = module.weight.data.reshape(m//16, 16, n)
                             trans_weight = trans_weight.transpose(1, 2).contiguous()
                             new_linear._parameters['weight'] = nn.Parameter(trans_weight)
+                            if module.bias is not None:
+                                new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                    .to(device_type)
 
                     #  fp16 may generalize to other sizes later
                     if new_linear is not None:
-                        if module.bias is not None:
-                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
-
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
