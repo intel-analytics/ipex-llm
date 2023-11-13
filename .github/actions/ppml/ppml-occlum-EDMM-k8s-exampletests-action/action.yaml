@@ -8,7 +8,7 @@ inputs:
   image-tag:
     description: 'image tag'
     required: true
-    default: '2.4.0-SNAPSHOT-EDMM'
+    default: '2.5.0-SNAPSHOT-EDMM'
 runs:
   using: "composite"
   steps:
@@ -20,7 +20,7 @@ runs:
         whoami
         export IMAGE=${{ env.DEFAULT_IMAGE }}
         docker pull $IMAGE
-        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT-EDMM
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT-EDMM
         export NO_PROXY=10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205,172.168.0.210
         export kubernetes_master_url=172.168.0.210
         export SPARK_HOME=/opt/spark-3.1.2-bin-hadoop3.2

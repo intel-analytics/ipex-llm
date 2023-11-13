@@ -322,7 +322,7 @@ run_spark_pi_client() {
          org.apache.spark.deploy.SparkSubmit \
          --master k8s://https://${kubernetes_master_url}:6443 \
          --deploy-mode client \
-         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT-build \
          --conf spark.driver.host=$LOCAL_IP \
          --conf spark.driver.port=54321 \
          --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
@@ -359,7 +359,7 @@ run_spark_pi_cluster() {
          --name spark-pi-cluster \
          --class org.apache.spark.examples.SparkPi \
          --deploy-mode cluster \
-         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT-build \
          --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
          --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
          --conf spark.kubernetes.driver.podTemplateFile=/opt/k8s/driver.yaml \

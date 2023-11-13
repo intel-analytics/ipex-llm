@@ -1,4 +1,4 @@
-imageName: intelanalytics/bigdl-llm-finetune-lora-cpu:2.4.0-SNAPSHOT
+imageName: intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
 trainerNum: 8
 microBatchSize: 8
 nfsServerIp: your_nfs_server_ip
