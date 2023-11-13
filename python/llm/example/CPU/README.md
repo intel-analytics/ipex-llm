@@ -8,6 +8,7 @@ This folder contains examples of running BigDL-LLM on Intel CPU:
 - [LangChain](LangChain): running LangChain applications on BigDL-LLM
 - [Applications](Applications): running Transformers applications on BigDl-LLM
 - [QLoRA-FineTuning](QLoRA-FineTuning): running QLoRA finetuning using BigDL-LLM on intel CPUs
+- [vLLM-Serving](vLLM-Serving): running vLLM serving framework on Xeon Platforms (with BigDL-LLM low-bit optimized models)
 
 ## System Support
 **Hardware**:
