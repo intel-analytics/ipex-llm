@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 import torch
 import time
 import argparse
