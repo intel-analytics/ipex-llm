@@ -83,7 +83,7 @@ index 00000000..74010da3
 +
 +        assert isinstance(pretrained, str)
 +        assert isinstance(batch_size, (int,str))
-+        if device == 'xpu':
++        if 'xpu' in device:
 +            import intel_extension_for_pytorch as ipex
 +        model = AutoModelForCausalLM.from_pretrained(pretrained,
 +                                          load_in_low_bit=load_in_low_bit,
