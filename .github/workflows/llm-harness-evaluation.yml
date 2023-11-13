@@ -32,7 +32,7 @@ jobs:
         precision: ["mixed_fp8"] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         include:
           - python-version: 3.9"
-            model_name: Llama2-7B-guanaco-dolphin-500
+            model_name: Llama2-7b-guanaco-dolphin-500
             task: truthfulqa
             precision: sym_int4 #options: sym_int4, fp4, nf4, mixed_4bit, fp8
           - python-version: 3.9"
