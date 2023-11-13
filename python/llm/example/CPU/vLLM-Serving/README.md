@@ -36,8 +36,22 @@ Install the dependencies according to the instructions mentioned in the `Require
 source bigdl-llm-init
 ```
 
-### 3. Provide service
+### 3. Offline inference/Service
 
+#### Offline inference
+
+To run offline inference using vLLM for a quick impression, use the following example:
+
+```bash
+#!/bin/bash
+
+# Please first modify the MODEL_PATH in offline_inference.py
+
+numactl -C 48-95 -m 1 python offline_inference.py
+
+```
+
+#### Service
 ```bash
 #!/bin/bash
 numactl -C 48-95 -m 1 python -m bigdl.llm.vllm.examples.api_server \
