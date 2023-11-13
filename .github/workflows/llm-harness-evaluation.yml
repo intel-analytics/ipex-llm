@@ -26,10 +26,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["Llama-2-7b-chat-hf"]
+        model_name: [stablelm-3b-4e1t]
         task: ["truthfulqa"]
         precision: ["int4"]
-    runs-on: [self-hosted, llm, accuracy]
+    runs-on: [self-hosted, llm, accuracy, temp-arc01]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
