@@ -11,12 +11,12 @@ repo_id:
   - 'databricks/dolly-v2-12b'
   - 'internlm/internlm-chat-7b-8k'
   - 'baichuan-inc/Baichuan-13B-Chat'
-  - 'fnlp/moss-moon-003-sft'
   - 'Qwen/Qwen-7B-Chat-10-12'
   - 'BAAI/AquilaChat-7B'
   - 'baichuan-inc/Baichuan2-7B-Chat'
-  # - 'mistralai/Mistral-7B-v0.1'
   - 'bigscience/bloomz-7b1'
+  # - 'mistralai/Mistral-7B-v0.1'
+  # - 'fnlp/moss-moon-003-sft'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
