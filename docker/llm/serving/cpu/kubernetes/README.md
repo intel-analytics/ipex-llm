@@ -3,7 +3,7 @@
 
 ## Image
 
-To deploy BigDL-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT`
+To deploy BigDL-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT`
 
 ## Before deployment
 
@@ -48,7 +48,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+    image: intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -119,7 +119,7 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+        image: intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed

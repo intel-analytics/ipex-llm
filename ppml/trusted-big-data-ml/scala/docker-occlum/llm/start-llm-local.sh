@@ -19,5 +19,5 @@ sudo docker run -itd \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -e SGX_LOG_LEVEL=off \
-        intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.4.0-SNAPSHOT \
+        intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum:2.5.0-SNAPSHOT \
         bash

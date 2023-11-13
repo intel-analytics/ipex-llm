@@ -1,7 +1,7 @@
 export CUSTOM_IMAGE_NAME=intelanalytics/bigdl-kms-reference
-export CUSTOM_IMAGE_TAG=2.4.0-SNAPSHOT
+export CUSTOM_IMAGE_TAG=2.5.0-SNAPSHOT
 export BASE_IMAGE_NAME=intelanalytics/bigdl-kms-base
-export BASE_IMAGE_TAG=2.4.0-SNAPSHOT
+export BASE_IMAGE_TAG=2.5.0-SNAPSHOT
 export SGX_MEM_SIZE=memory_size_of_sgx_in_custom_image
 export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
 export ENABLE_DCAP_ATTESTATION=true

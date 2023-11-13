@@ -1,4 +1,4 @@
-imageName: intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.4.0-SNAPSHOT
+imageName: intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.5.0-SNAPSHOT
 nfsServerIp: your_nfs_server_ip
 nfsPath: a_nfs_shared_folder_path_on_the_server
 TEEMode: sgx # sgx, tdx or native
