@@ -94,7 +94,7 @@ jobs:
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
         env:
           USE_XETLA: OFF
-          SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+          # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
