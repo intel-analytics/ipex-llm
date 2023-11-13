@@ -35,6 +35,8 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
              'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']
 
+CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
+
 results = []
 
 
@@ -135,7 +137,7 @@ def run_transformer_int4(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
@@ -196,7 +198,7 @@ def run_pytorch_autocast_bf16(repo_id,
 
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         # TODO: need verify chatglm family run bf16.
         print("Currently pytorch do not support bfloat16 on cpu for chatglm models. Will skip it")
         return
@@ -263,7 +265,7 @@ def run_optimize_model(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -331,7 +333,7 @@ def run_transformer_int4_gpu(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -410,7 +412,7 @@ def run_optimize_model_gpu(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
                                           trust_remote_code=True, use_cache=True)
         model = optimize_model(model, low_bit=low_bit)
@@ -486,7 +488,7 @@ def run_ipex_fp16_gpu(repo_id,
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half().to('xpu')
@@ -569,7 +571,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
     st = time.perf_counter()
     # Note: only tested cpu Llama2-7b
     # Native Huggingface transformers loading to enable deepspeed init
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
