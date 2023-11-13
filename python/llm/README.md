@@ -72,6 +72,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | CodeShell | [link](example/CPU/HF-Transformers-AutoModels/Model/codeshell) | |
 | Fuyu      | [link](example/CPU/HF-Transformers-AutoModels/Model/fuyu) | |
 | Distil-Whisper | [link](example/CPU/HF-Transformers-AutoModels/Model/distil-whisper) | [link](example/GPU/HF-Transformers-AutoModels/Model/distil-whisper) |
+| Yi | [link](example/CPU/HF-Transformers-AutoModels/Model/yi) | [link](example/GPU/HF-Transformers-AutoModels/Model/yi) |
 
 ### Working with `bigdl-llm`
 
