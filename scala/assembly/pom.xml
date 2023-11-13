@@ -172,7 +172,7 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                                <descriptor>${assembly.xml.path}</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -239,7 +239,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <id>without-spark</id>
