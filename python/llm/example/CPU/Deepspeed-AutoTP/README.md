@@ -8,6 +8,8 @@ Install necessary packages (here Python 3.9 is our test environment):
 bash install.sh
 ```
 
+The first step in the script is to install oneCCL (wrapper for Intel MPI) to enable distributed communication between deepspeed instances, which can be skipped if Inte MPI/oneCCL/oneAPI has already been prepared on your machine. Please refer to [oneCCL](https://github.com/oneapi-src/oneCCL) if any related issue when install or import.
+
 #### 2. Initialize Deepspeed Distributed Context
 
 Like shown in example code `deepspeed_autotp.py`, you can construct parallel model with Python API:
@@ -57,7 +59,7 @@ If you want to run your own application, there are **necessary configurations in
 
 ```bash
 # run.sh
-source bigdl-nano-init
+source bigdl-llm-init
 unset OMP_NUM_THREADS # deepspeed will set it for each instance automatically
 source /opt/intel/oneccl/env/setvars.sh
 ......
