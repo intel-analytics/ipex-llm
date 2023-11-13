@@ -68,8 +68,11 @@ docker exec -it bigdl-llm-fintune-qlora-cpu bash
 ```
 
 Then, start QLoRA fine-tuning:
+If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/BigDL/blob/1747ffe60019567482b6976a24b05079274e7fc8/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C6-L53C6).
 
+And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
 ```bash
+source bigdl-llm-init -t
 bash start-qlora-finetuning-on-cpu.sh
 ```
 
@@ -86,7 +89,41 @@ After minutes, it is expected to get results like:
 {'loss': 1.2481, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.26}
 {'loss': 1.3442, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.29}
 {'loss': 1.3256, 'learning_rate': 0.0, 'epoch': 0.32}
-{'train_runtime': 204.4633, 'train_samples_per_second': 3.913, 'train_steps_per_second': 0.978, 'train_loss': 1.5072882556915284, 'epoch': 0.32}
-100%|██████████████████████████████████████████████████████████████████████████████████████| 200/200 [03:24<00:00,  1.02s/it]
-TrainOutput(global_step=200, training_loss=1.5072882556915284, metrics={'train_runtime': 204.4633, 'train_samples_per_second': 3.913, 'train_steps_per_second': 0.978, 'train_loss': 1.5072882556915284, 'epoch': 0.32})
+{'train_runtime': xxx, 'train_samples_per_second': xxx, 'train_steps_per_second': xxx, 'train_loss': 1.5072882556915284, 'epoch': 0.32}
+100%|██████████████████████████████████████████████████████████████████████████████████████| 200/200 [xx:xx<xx:xx,  xxxs/it]
+TrainOutput(global_step=200, training_loss=1.5072882556915284, metrics={'train_runtime': xxx, 'train_samples_per_second': xxx, 'train_steps_per_second': xxx, 'train_loss': 1.5072882556915284, 'epoch': 0.32})
+```
+
+### 4. Merge the adapter into the original model
+Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/QLoRA-FineTuning/export_merged_model.py) to merge.
+```
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+```
+
+Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
+
+### 5. Use BigDL-LLM to verify the fine-tuning effect
+Train more steps and try input sentence like `['quote'] -> [?]` to verify. For example, using `“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: ` to inference.
+BigDL-LLM llama2 example [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2). Update the `LLAMA2_PROMPT_FORMAT = "{prompt}"`.
+```bash
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt "“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:"  --n-predict 20
+```
+
+#### Sample Output
+Base_model output
+```log
+Inference time: xxx s
+-------------------- Prompt --------------------
+“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:
+-------------------- Output --------------------
+“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: 💻 Fine-tuning a language model on a powerful device like an Intel CPU
+```
+Merged_model output
+```log
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+Inference time: xxx s
+-------------------- Prompt --------------------
+“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:
+-------------------- Output --------------------
+“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: ['bigdl'] ['deep-learning'] ['distributed-computing'] ['intel'] ['optimization'] ['training'] ['training-speed']
 ```
