@@ -68,7 +68,7 @@ docker exec -it bigdl-llm-fintune-qlora-cpu bash
 ```
 
 Then, start QLoRA fine-tuning:
-If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/BigDL/blob/1747ffe60019567482b6976a24b05079274e7fc8/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C6-L53C6).
+If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
 And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
 ```bash

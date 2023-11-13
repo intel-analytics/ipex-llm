@@ -40,7 +40,10 @@ if __name__ == "__main__":
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     data = load_dataset(dataset_path)
-    data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
+    def merge(row):
+        row['prediction'] = row['quote'] + ' ->: ' + str(row['tags'])
+        return row
+    data = data.map(lambda samples: tokenizer(samples["prediction"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                 load_in_low_bit="sym_int4",
                                                 optimize_model=False,
