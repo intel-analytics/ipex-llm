@@ -119,6 +119,7 @@ def main():
                     for k, v in average.items():
                         average[k] = sum(average[k]) / len(average[k]) if not k.endswith("_stderr") else 0
                     results['results'][f"avg_{task}"] = average
+                    results['versions'][f"avg_{task}"] = 1
 
                 dumped = json.dumps(results, indent=2)
                 print(dumped)
@@ -129,12 +130,6 @@ def main():
                         os.makedirs(dirname, exist_ok=True)
                     with open(args.output_path, "w") as f:
                         f.write(dumped)
-                batch_sizes = ",".join(map(str, results["config"]["batch_sizes"]))
-                print(
-                    f"{args.model} ({args.model_args}), limit: {args.limit}, provide_description: {args.provide_description}, "
-                    f"num_fewshot: {args.num_fewshot}, batch_size: {args.batch_size}{f' ({batch_sizes})' if batch_sizes else ''}"
-                )
-                print(evaluator.make_table(results))
                 success.append(results)
             except Exception as e:
                 fail.append(f"Job config of task={task}, precision={prec} failed. Error Message: {str(e)}")
@@ -143,7 +138,10 @@ def main():
     ## print all task summary
     print("Here are results of all successful tasks:")
     for results in success:
-        print(results['config'])
+        config = results['config']
+        batch_sizes = ",".join(map(str, results["config"]["batch_sizes"]))
+        print(f"{config['model']} ({config['model_args']}), limit: {config['limit']}, provide_description: {config['provide_description']}, "
+              f"num_fewshot: {config['num_fewshot']}, batch_size: {config['batch_size']}{f' ({batch_sizes})' if batch_sizes else ''}")
         print(evaluator.make_table(results))
 
     if len(fail) > 0:
