@@ -21,7 +21,8 @@
 #
 # @article{lin2023awq,
 #   title={AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration},
-#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang, Xingyu and Han, Song},
+#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang, Xingyu 
+#   and Han, Song},
 #   journal={arXiv},
 #   year={2023}
 # }
@@ -39,6 +40,7 @@ from transformers.models.bloom.modeling_bloom import BloomBlock
 from transformers import AwqConfig, AutoConfig
 from bigdl.llm.transformers.awq.linear import WQLinear_GEMM, WQLinear_GEMV
 from huggingface_hub import snapshot_download
+from bigdl.llm.utils.common import invalidInputError
 
 
 layer_type_dict = {
@@ -71,7 +73,7 @@ def set_op_by_name(layer, name, new_module):
         setattr(layer, name, new_module)
 
 
-def _load_config(model_path, model_filename, safetensors=False, 
+def _load_config(model_path, model_filename, safetensors=False,
                  trust_remote_code=True, max_new_tokens=4096):
     # [STEP 1] Download model if path is not a directory
     if not os.path.isdir(model_path):
@@ -80,20 +82,21 @@ def _load_config(model_path, model_filename, safetensors=False,
             ignore_patterns.extend(["*.pt*", "*.bin*"])
         else:
             ignore_patterns.append("*.safetensors*")
-        
+
         model_path = snapshot_download(model_path, ignore_patterns=ignore_patterns)
-    
+
     if model_filename != '':
         model_weights_path = model_path + f'/{model_filename}'
     else:
         model_weights_path = model_path
-    
+
     # Load model config and set max generation length
     max_new_tokens = 2048 if max_new_tokens is None else max_new_tokens
     config = AutoConfig.from_pretrained(model_path, trust_remote_code=trust_remote_code)
     config.max_new_tokens = max_new_tokens
-    
+
     return model_weights_path, config
+
 
 def get_named_linears(module):
     return {name: m for name, m in module.named_modules() if isinstance(m, nn.Linear)}
@@ -115,13 +118,13 @@ def get_blocks(model):
     elif "neox" in str(model.__class__).lower():
         layers = model.gpt_neox.layers
     else:
-        raise NotImplementedError(type(model))
+        invalidInputError(False, f"Model type {type(model)} isn't supported.")
     return layers
 
 
 def get_layer_type(config):
     if config.model_type not in layer_type_dict.keys():
-        raise TypeError(f"{config.model_type} isn't supported yet.")
+        invalidInputError(False, f"{config.model_type} isn't supported yet.")
     return layer_type_dict[config.model_type]
 
 
@@ -135,7 +138,7 @@ def scale_activations(module):
             return
         c = module.mlp.dense_h_to_4h.out_features
         act = ScaledActivation(
-            module.mlp.gelu_impl, 
+            module.mlp.gelu_impl,
             torch.ones(c, dtype=dtype, device=device)
         )
         set_op_by_name(module, "mlp.gelu_impl", act)
@@ -144,7 +147,7 @@ def scale_activations(module):
             return
         c = module.ffn.up_proj.out_features
         act = ScaledActivation(
-            module.ffn.act, 
+            module.ffn.act,
             torch.ones(c, dtype=dtype, device=device)
         )
         set_op_by_name(module, "ffn.act", act)
@@ -153,7 +156,7 @@ def scale_activations(module):
             return
         c = module.mlp.dense_h_to_4h.out_features
         act = ScaledActivation(
-            module.mlp.act, 
+            module.mlp.act,
             torch.ones(c, dtype=dtype, device=device)
         )
         set_op_by_name(module, "mlp.act", act)
@@ -162,7 +165,7 @@ def scale_activations(module):
             return
         c = module.mlp.c_proj.out_features
         act = ScaledActivation(
-            module.mlp.act, 
+            module.mlp.act,
             torch.ones(c, dtype=dtype, device=device)
         )
         set_op_by_name(module, "mlp.act", act)
@@ -171,7 +174,7 @@ def scale_activations(module):
             return
         c = module.mlp.dense_h_to_4h.out_features
         act = ScaledActivation(
-            module.mlp.act, 
+            module.mlp.act,
             torch.ones(c, dtype=dtype, device=device)
         )
         set_op_by_name(module, "mlp.act", act)
@@ -195,14 +198,12 @@ def _replace_with_awq_layers(model, awq_config: AwqConfig):
                 q_linear_module = WQLinear_GEMM
             elif awq_config.version == 'gemv':
                 q_linear_module = WQLinear_GEMV
-            
+
             q_linear = q_linear_module.from_linear(module,
                                                    awq_config.bits,
                                                    awq_config.group_size,
-                                                   True
-            )
+                                                   True)
             q_linear.to(next(layer.parameters()).device)
             set_op_by_name(layer, name, q_linear)
-        
-        gc.collect()
 
+        gc.collect()

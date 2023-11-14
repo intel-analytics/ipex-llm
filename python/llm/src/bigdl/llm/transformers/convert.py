@@ -69,6 +69,7 @@ if is_auto_awq_available():
     from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
     # from awq.modules.linear import WQLinear_GEMM
 
+
 def is_linear_module(module):
 
     in_features = None
@@ -80,7 +81,7 @@ def is_linear_module(module):
         out_features = module.outfeatures
         mp_group = None
         result = True
-    elif isinstance(module, nn.Linear) or \
+    elif isinstance(module, nn.Linear) or\
         (is_auto_awq_available() and isinstance(module, WQLinear_GEMM)):
         in_features = module.in_features
         out_features = module.out_features
@@ -136,56 +137,6 @@ def convert_gptq(module, awq=False):
             module.wf.unsqueeze(-1)).to(torch.int8)
         weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
         weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
-
-    # convert weight to ggml format
-    weight = weight.reshape(weight.shape[0]//module.group_size, module.group_size, weight.shape[1])
-    weight = weight.permute(2, 0, 1).reshape(weight.shape[2], -1, 2, Q4_1//2)
-    weight = weight.transpose(2, 3)
-    weight = torch.bitwise_left_shift(weight,
-                                      torch.tensor([0, 4], dtype=torch.int8).reshape(1, 1, 1, 2))
-    weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
-
-    # convert zeros to ggml format
-    zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
-        .unsqueeze(2)\
-        .expand(-1, -1, module.group_size//Q4_1, -1)\
-        .reshape(zeros.shape[1], -1, 1)\
-        .contiguous().to(torch.float16)
-
-    # convert scales to ggml format
-    scales = scales.reshape(-1, 1, scales.shape[1]).permute(2, 0, 1)\
-        .unsqueeze(2)\
-        .expand(-1, -1, module.group_size//Q4_1, -1)\
-        .reshape(scales.shape[-1], -1, 1)\
-        .contiguous().to(torch.float16)
-
-    m = -(zeros * scales)
-    d = scales
-
-    ggml_weight = torch.cat([d.view(torch.uint8),
-                             m.view(torch.uint8),
-                             weight.view(torch.uint8)], dim=-1)
-    ggml_weight = ggml_weight.reshape([-1])
-
-    return ggml_weight
-
-
-def convert_awq(module):
-
-    scales = module.scales
-
-    zeros = torch.bitwise_right_shift(
-        torch.unsqueeze(module.qzeros, 2).expand(-1, -1, 32 // module.bits),
-        module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
-    zeros = torch.bitwise_and(zeros, (2 ** module.bits) - 1)
-    zeros = zeros.reshape(scales.shape)
-
-    weight = torch.bitwise_right_shift(
-        torch.unsqueeze(module.qweight, 2).expand(-1, -1, 32 // module.bits),
-        module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
-    weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
-    
-    weight = weight.reshape(weight.shape[0], weight.shape[1] * weight.shape[2])
 
     # convert weight to ggml format
     weight = weight.reshape(weight.shape[0]//module.group_size, module.group_size, weight.shape[1])

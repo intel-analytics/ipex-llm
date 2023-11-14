@@ -20,7 +20,8 @@
 #
 # @article{lin2023awq,
 #   title={AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration},
-#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang, Xingyu and Han, Song},
+#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang, 
+#          Xingyu and Han, Song},
 #   journal={arXiv},
 #   year={2023}
 # }
@@ -28,11 +29,12 @@
 
 import torch.nn as nn
 
+
 class ScaledActivation(nn.Module):
     def __init__(self, module, scales):
         super().__init__()
         self.act = module
         self.scales = nn.Parameter(scales.data)
-    
+
     def forward(self, x):
         return self.act(x) / self.scales.view(1, 1, -1).to(x.device)

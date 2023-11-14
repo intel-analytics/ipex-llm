@@ -125,16 +125,14 @@ class _BaseAutoModelClass:
                     kwargs["quantization_config"] = user_quantization_config
                 elif q_config["quant_method"] == "awq":
                     from bigdl.llm.transformers.awq.awq_config import AwqConfig
-                    if user_quantization_config is not None:
-                        q_config.update(user_quantization_config)
                     awq_config = AwqConfig.from_dict(q_config)
                     invalidInputError(awq_config.bits == 4,
                                       "Only 4-bit awq is supported in bigdl-llm.")
-                    invalidInputError(awq_config.version == "gemm", 
+                    invalidInputError(awq_config.version == "gemm",
                                       "Only gemm version is supported in bigdl-llm.")
-                    invalidInputError(awq_config.backend == "autoawq", 
+                    invalidInputError(awq_config.backend == "autoawq",
                                       "Only autoawq backend is supported in bigdl-llm.")
-                    invalidInputError(awq_config.zero_point == True, 
+                    invalidInputError(awq_config.zero_point,
                                       "Only awq zero_point = True is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
                         invalidInputError(load_in_low_bit == "asym_int4",
@@ -146,7 +144,7 @@ class _BaseAutoModelClass:
                         invalidInputError(False,
                                           (f"group_size must be divisible by "
                                            f"{get_ggml_qk_size(load_in_low_bit)}."))
-                    
+
                     kwargs["quantization_config"] = awq_config
 
             # load int x-bit
@@ -189,13 +187,16 @@ class _BaseAutoModelClass:
         if quant_config and quant_config.quant_method == "awq":
             # The latest transformers only support cuda version
             from transformers import AwqConfig
-            from accelerate import init_empty_weights, infer_auto_device_map, load_checkpoint_in_model
-            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers, get_layer_type, _load_config
+            from accelerate import init_empty_weights, infer_auto_device_map,\
+                load_checkpoint_in_model
+            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\
+                get_layer_type, _load_config
             awq_config = quant_config
-            model_weights_path, config = _load_config(args[0], '', max_new_tokens=None, safetensors=True)
+            model_weights_path, config = _load_config(args[0], '', max_new_tokens=None,
+                                                      safetensors=True)
             with init_empty_weights():
                 model = cls.HF_Model.from_config(config=config, trust_remote_code=True)
-            
+
             _replace_with_awq_layers(model, awq_config=awq_config)
 
             model.tie_weights()
@@ -203,7 +204,7 @@ class _BaseAutoModelClass:
             # Get device map
             device_map = infer_auto_device_map(
                 model,
-                no_split_module_classes=[get_layer_type(config)], 
+                no_split_module_classes=[get_layer_type(config)],
                 max_memory=None,
                 dtype=config.torch_dtype
             )
@@ -233,7 +234,6 @@ class _BaseAutoModelClass:
                 _kwargs["low_cpu_mem_usage"] = False
                 model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
                 model.config.update({"bigdl_lcmu_enabled": False})
-
 
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
