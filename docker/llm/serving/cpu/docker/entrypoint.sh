@@ -171,8 +171,6 @@ else
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
-    # Apply optimizations from bigdl-nano
-    source bigdl-nano-init -t
     # First check if user have set OMP_NUM_THREADS by themselves
     if [[ -n "${omp_num_threads}" ]]; then
       echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
