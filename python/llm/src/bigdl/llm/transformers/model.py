@@ -186,7 +186,6 @@ class _BaseAutoModelClass:
 
         if quant_config and quant_config.quant_method == "awq":
             # The latest transformers only support cuda version
-            from transformers import AwqConfig
             from accelerate import init_empty_weights, infer_auto_device_map,\
                 load_checkpoint_in_model
             from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\
