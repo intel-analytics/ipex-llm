@@ -15,6 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
     parser.add_argument("--model_args", default="")
+    parser.add_argument("--pretrained", required=True, type=str)
     parser.add_argument("--tasks", required=True, nargs='+', type=str)
     parser.add_argument("--precision", required=True, nargs='+', type=str)
     parser.add_argument("--provide_description", action="store_true")
@@ -70,8 +71,10 @@ def main():
 
     summary = []
     for prec in args.precision:
-        prec_arg = parse_precision(args.model, prec)
-        model_args = f"{args.model_args},{prec_arg}"
+        prec_arg = parse_precision(prec, args.model)
+        model_args = f"pretrained={args.pretrained},{prec_arg}"
+        if len(args.model_args) > 0:
+            model_args += args.model_args
         for task in args.tasks:
             task_names=task_map.get(task, task).split(',')
             num_fewshot = task_to_n_few_shots.get(task, args.num_fewshot)
