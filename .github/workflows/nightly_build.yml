@@ -500,8 +500,3 @@ jobs:
         gist-id: ${{env.GIST_ID}}
         file-name: nightly-build.json
         type: workflow
-
-
-
-
-
