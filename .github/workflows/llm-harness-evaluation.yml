@@ -20,7 +20,7 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-nightly-harness-test:
+  llm-harness-evalution:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -90,6 +90,7 @@ jobs:
           echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
           echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
           echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          pip install --upgrade transformers
 
       - name: Run harness
         shell: bash
@@ -97,4 +98,4 @@ jobs:
           export USE_XETLA=OFF
           source /opt/intel/oneapi/setvars.sh
           cd python/llm/dev/benchmark/harness
-          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1
+          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
