@@ -22,6 +22,7 @@ from .utils import extract_local_archive_file, \
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 import torch
+import warnings
 import copy
 from .utils import logger
 
@@ -30,6 +31,10 @@ def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    if hasattr(self.config, "quantization_config"):
+        delattr(self.config, "quantization_config")
+        delattr(self.config, "_pre_quantization_dtype")
+
     self.to('cpu')
     self.save_pretrained(*args, **kwargs)
     import json
@@ -57,7 +62,9 @@ class _BaseAutoModelClass:
 
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
-        :param load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
+        :param load_in_4bit: boolean value, True means loading linear's weight to symmetric int 4 if
+                                the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
+                                if the model is GPTQ model.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
                                 , sym_int8, nf3, nf4, fp4, fp8 or fp16. sym_int4 means symmetric
@@ -70,7 +77,6 @@ class _BaseAutoModelClass:
                                        conducting model optimizations. Default to be None.
         :param replace_embedding: Whether to replace the Embedding layer, may need to set it
             to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
-
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -87,8 +93,37 @@ class _BaseAutoModelClass:
         load_in_4bit = kwargs.pop("load_in_4bit", False)
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
         optimize_model = kwargs.pop("optimize_model", True)
+        user_quantization_config = kwargs.pop("quantization_config", None)
 
         if load_in_4bit or load_in_low_bit:
+
+            if config_dict.get("quantization_config", None) is not None:
+                from bigdl.llm.transformers.low_bit_linear import get_ggml_qk_size
+                q_config = config_dict["quantization_config"]
+                if q_config["quant_method"] == "gptq":
+                    invalidInputError(q_config["bits"] == 4,
+                                      "Only 4-bit gptq is supported in bigdl-llm.")
+                    invalidInputError(q_config["desc_act"] is False,
+                                      "Only desc_act=False is supported in bigdl-llm.")
+                    if load_in_low_bit is not None:
+                        invalidInputError(load_in_low_bit == "asym_int4",
+                                          "You can only load gptq model as aysm_int4 low bit type.")
+
+                    load_in_low_bit = "asym_int4"
+                    if int(q_config["group_size"]) % get_ggml_qk_size(load_in_low_bit) != 0:
+                        invalidInputError(False,
+                                          (f"group_size must be divisible by "
+                                           f"{get_ggml_qk_size(load_in_low_bit)}."))
+                    if user_quantization_config is not None:
+                        invalidInputError(user_quantization_config.bits == 4,
+                                          "Only 4-bit gptq is supported in bigdl-llm.")
+                        invalidInputError(user_quantization_config.use_exllama is False,
+                                          "Only use_exllama=False is supported in bigdl-llm.")
+                    else:
+                        from transformers import GPTQConfig
+                        user_quantization_config = GPTQConfig(bits=4, use_exllama=False)
+                    kwargs["quantization_config"] = user_quantization_config
+
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
             # set default torch_dtype='auto'
