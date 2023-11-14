@@ -1,4 +1,31 @@
-import math
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ===========================================================================
+#
+# This file is adapted from
+# https://github.com/casper-hansen/AutoAWQ/tree/main
+#
+# @article{lin2023awq,
+#   title={AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration},
+#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang, Xingyu and Han, Song},
+#   journal={arXiv},
+#   year={2023}
+# }
+#
+
 import torch
 import torch.nn as nn
 from bigdl.llm.utils.common import invalidOperationError
@@ -33,7 +60,6 @@ class WQLinear_GEMM(nn.Module):
         self.bits = bits
         self.group_size = group_size if group_size != -1 else in_features
 
-        self.wf2 = torch.tensor(list(range(0, 32, self.bits)), dtype=torch.int32).unsqueeze(0)
         self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7], dtype=torch.int32) * self.bits).unsqueeze(0)
 
         # quick sanity check (make sure aligment)
@@ -66,9 +92,6 @@ class WQLinear_GEMM(nn.Module):
         
         intweight = []
         for idx in range(awq_linear.in_features):
-            # a = linear.weight.data[:, idx]
-            # b = scale_zeros[idx // group_size]
-            # c = awq_linear.scales[idx // group_size]
             intweight.append(torch.round((linear.weight.data[:, idx] + scale_zeros[idx // group_size]) / awq_linear.scales[idx // group_size]).to(torch.int)[:, None])
         intweight = torch.cat(intweight, dim=1)
         intweight = intweight.t().contiguous()
