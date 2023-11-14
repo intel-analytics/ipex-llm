@@ -81,7 +81,7 @@ def is_linear_module(module):
         mp_group = None
         result = True
     elif isinstance(module, nn.Linear) or\
-        (is_auto_awq_available() and isinstance(module, WQLinear_GEMM)):
+(is_auto_awq_available() and isinstance(module, WQLinear_GEMM)):
         in_features = module.in_features
         out_features = module.out_features
         mp_group = None
