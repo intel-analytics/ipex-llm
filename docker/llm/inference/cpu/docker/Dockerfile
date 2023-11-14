@@ -25,7 +25,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --upgrade requests argparse urllib3 && \
     pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip install --pre --upgrade bigdl-llm[all] && \
-    pip install --pre --upgrade bigdl-nano && \
+    pip install --pre --upgrade intel_extension_for_pytorch && \
 # Download bigdl-llm-tutorial
     cd /llm && \
     pip install --upgrade jupyterlab && \
