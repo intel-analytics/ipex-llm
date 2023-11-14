@@ -71,7 +71,7 @@ if __name__ == "__main__":
             gradient_accumulation_steps= 1,
             warmup_steps=20,
             max_steps=200,
-            learning_rate=2e-4,
+            learning_rate=2e-5,
             save_steps=100,
             # fp16=True,
             bf16=True,  # bf16 is more stable in training
