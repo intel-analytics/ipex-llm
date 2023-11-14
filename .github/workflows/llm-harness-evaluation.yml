@@ -39,13 +39,9 @@ jobs:
     runs-on: [self-hosted, llm, accuracy, temp-arc01]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      ORIGIN_DIR: /mnt/disk1/models
+      HARNESS_HF_HOME: /mnt/disk1/harness_home
     steps:
-      - name: Set model and dataset directories
-        shell: bash
-        run: |
-          echo "ORIGIN_DIR=/mnt/disk1/models" >> "$GITHUB_ENV"
-          echo "HARNESS_HF_HOME=/mnt/disk1/harness_home" >> "$GITHUB_ENV"
-
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -67,16 +63,13 @@ jobs:
           extra-dependency: "xpu"
 
       - name: Install harness
+        working-directory: ${ANALYTICS_ZOO_ROOT}/python/llm/dev/benchmark/harness/
         shell: bash
         run: |
-          cd python/llm/dev/benchmark/harness/
           git clone https://github.com/EleutherAI/lm-evaluation-harness.git
           cd  lm-evaluation-harness
           git checkout e81d3cc
           pip install -e .
-          git apply ../bigdl-llm.patch
-          cd ..
-      
       
       - name: Download models and datasets
         shell: bash
@@ -91,18 +84,21 @@ jobs:
             wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           fi
           
-      - name: Set datasets env
+      - name: Upgrade packages
         shell: bash
         run: |
-          echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
-          echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
-          echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
           pip install --upgrade transformers
 
       - name: Run harness
         shell: bash
+        working-directory: ${ANALYTICS_ZOO_ROOT}/python/llm/dev/benchmark/harness
+        env:
+          USE_XETLA: OFF
+          SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+          HF_HOME: $HARNESS_HF_HOME
+          HF_DATASETS: $HARNESS_HF_HOME/datasets
+          HF_DATASETS_CACHE: $HARNESS_HF_HOME/datasets
         run: |
-          export USE_XETLA=OFF
           source /opt/intel/oneapi/setvars.sh
-          cd python/llm/dev/benchmark/harness
           python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
+        
