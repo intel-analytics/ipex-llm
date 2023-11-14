@@ -113,7 +113,6 @@ def main():
                         os.makedirs(dirname, exist_ok=True)
                     with open(args.output_path, "w") as f:
                         f.write(dumped)
-
                 batch_sizes = ",".join(map(str, results["config"]["batch_sizes"]))
                 print(
                     f"{args.model} ({args.model_args}), limit: {args.limit}, provide_description: {args.provide_description}, "
@@ -125,7 +124,9 @@ def main():
                 print(f"Job config of task={task}, precision={prec} failed. Error Message: {str(e)}")
     
     ## print all task summary
+    print("Here are results of all tasks:")
     for results in summary:
+        print(results['config'])
         print(evaluator.make_table(results))
 
 if __name__ == "__main__":
