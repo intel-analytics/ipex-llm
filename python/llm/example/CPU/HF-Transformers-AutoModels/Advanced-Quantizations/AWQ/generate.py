@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True,)
+                                                 trust_remote_code=True)
 
     # Load tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)

@@ -46,6 +46,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 from typing import Union
 import numpy as np
+from bigdl.llm.utils.common import invalidInputError
 
 
 def is_auto_gptq_available():
@@ -219,70 +220,6 @@ def convert_awq(module):
     return ggml_weight
 
 
-# def convert_awq(module):
-
-#     scales = module.scales
-
-#     wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7], dtype=torch.int32) * module.w_bit).unsqueeze(0)
-
-#     torch.set_printoptions(edgeitems=4)
-
-#     zeros = torch.bitwise_right_shift(
-#         torch.unsqueeze(module.qzeros, 2).expand(-1, -1, 32 // module.w_bit),
-#         wf.unsqueeze(0)).to(torch.int16 if module.w_bit == 8 else torch.int8)
-#     zeros = torch.bitwise_and(zeros, (2 ** module.w_bit) - 1)
-
-#     # zeros = zeros + 1
-#     zeros = zeros.reshape(scales.shape)
-
-#     # weight = torch.bitwise_right_shift(
-#     #     torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.w_bit, -1),
-#     #     wf.unsqueeze(-1)).to(torch.int8)
-#     # weight = torch.bitwise_and(weight, (2 ** module.w_bit) - 1)
-#     # weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
-
-#     weight = torch.bitwise_right_shift(
-#         torch.unsqueeze(module.qweight, 2).expand(-1, -1, 32 // module.w_bit),
-#         wf.unsqueeze(0)).to(torch.int16 if module.w_bit == 8 else torch.int8)
-#     weight = torch.bitwise_and(weight, (2 ** module.w_bit) - 1)
-    
-#     weight = weight.reshape(weight.shape[0], weight.shape[1] * weight.shape[2])
-
-#     # convert weight to ggml format
-#     weight = weight.reshape(weight.shape[0]//module.group_size, module.group_size, weight.shape[1])
-#     weight = weight.permute(2, 0, 1).reshape(weight.shape[2], -1, 2, Q4_1//2)
-#     weight = weight.transpose(2, 3)
-#     weight = torch.bitwise_left_shift(weight,
-#                                       torch.tensor([0, 4], dtype=torch.int8).reshape(1, 1, 1, 2))
-#     weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
-
-#     # convert zeros to ggml format
-#     zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
-#         .unsqueeze(2)\
-#         .expand(-1, -1, module.group_size//Q4_1, -1)\
-#         .reshape(zeros.shape[1], -1, 1)\
-#         .contiguous().to(torch.float16)
-
-#     # convert scales to ggml format
-#     scales = scales.reshape(-1, 1, scales.shape[1]).permute(2, 0, 1)\
-#         .unsqueeze(2)\
-#         .expand(-1, -1, module.group_size//Q4_1, -1)\
-#         .reshape(scales.shape[-1], -1, 1)\
-#         .contiguous().to(torch.float16)
-
-#     m = -(zeros * scales)
-#     d = scales
-
-#     a1 = [d.view(torch.uint8), m.view(torch.uint8), weight.view(torch.uint8)]
-
-#     ggml_weight = torch.cat([d.view(torch.uint8),
-#                              m.view(torch.uint8),
-#                              weight.view(torch.uint8)], dim=-1)
-#     ggml_weight = ggml_weight.reshape([-1])
-
-#     return ggml_weight
-
-
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  replace_embedding=False):
@@ -304,15 +241,17 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
                     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
                     if is_gptq or is_awq:
+                        has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
                             qtype=qtype,
-                            bias=module.bias is not None,
+                            bias=has_bias,
                             mp_group=mp_group,
                         )
-
                         device_type = module.qweight.data.device.type
+                        invalidInputError(device_type != "meta",
+                                          "converting from meta device is not supported")
                         # Copy the weights
                         paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
                                                  requires_grad=False,
@@ -321,6 +260,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=qtype).to(device_type)
                         new_linear._parameters['weight'] = paramsLowBit
+                        if has_bias:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
                     elif qtype != ggml_tensor_qtype["fp16"]:
                         new_linear = LowBitLinear(
                             in_features,
@@ -339,6 +281,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=qtype).to(device_type)
                         new_linear._parameters['weight'] = paramsLowBit
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
                     else:
                         #  only support two size now
                         #  may generalize to other sizes
@@ -358,13 +303,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             trans_weight = module.weight.data.reshape(m//16, 16, n)
                             trans_weight = trans_weight.transpose(1, 2).contiguous()
                             new_linear._parameters['weight'] = nn.Parameter(trans_weight)
+                            if module.bias is not None:
+                                new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                    .to(device_type)
 
                     #  fp16 may generalize to other sizes later
                     if new_linear is not None:
-                        if module.bias is not None:
-                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
-
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors

@@ -31,6 +31,10 @@ def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
                       f"Detected this model is not a low-bit model, please use from_pretrained's"
                       f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
+    if hasattr(self.config, "quantization_config"):
+        delattr(self.config, "quantization_config")
+        delattr(self.config, "_pre_quantization_dtype")
+
     self.to('cpu')
     self.save_pretrained(*args, **kwargs)
     import json
@@ -73,9 +77,6 @@ class _BaseAutoModelClass:
                                        conducting model optimizations. Default to be None.
         :param replace_embedding: Whether to replace the Embedding layer, may need to set it
             to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
-        :param quantization_config: GPTQConfig, default to be None.
-            Currently, `bits=4` and `use_exllama=False` must be set in the config.
-
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
