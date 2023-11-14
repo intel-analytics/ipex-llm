@@ -19,7 +19,7 @@ COPY --from=key-getter /root/intel-oneapi-archive-keyring.gpg /usr/share/keyring
 RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list
 
 RUN mkdir /bigdl/data && mkdir /bigdl/model && \
-# install pytorch 2.0.1
+# install pytorch 2.1.0
     apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
     pip3 install --upgrade pip && \

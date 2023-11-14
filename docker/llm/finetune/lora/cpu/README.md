@@ -20,7 +20,7 @@ Follow [here](https://github.com/kubeflow/mpi-operator/tree/master#installation)
 
 ### 2. Download Image, Base Model and Finetuning Data
 
-Follow [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/lora/docker#prepare-bigdl-image-for-lora-finetuning) to prepare BigDL Lora Finetuning image in your cluster.
+Follow [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/lora/cpu/docker#1-prepare-bigdl-image-for-lora-finetuning) to prepare BigDL Lora Finetuning image in your cluster.
 
 As finetuning is from a base model, first download [Llama2-7b model from the public download site of Hugging Face](https://huggingface.co/meta-llama/Llama-2-7b). Then, download [cleaned alpaca data](https://raw.githubusercontent.com/tloen/alpaca-lora/main/alpaca_data_cleaned_archive.json), which contains all kinds of general knowledge and has already been cleaned. Next, move the downloaded files to a shared directory on your NFS server.
 

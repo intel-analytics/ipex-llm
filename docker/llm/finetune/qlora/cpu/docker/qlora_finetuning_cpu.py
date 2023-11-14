@@ -43,6 +43,7 @@ if __name__ == "__main__":
     def merge(row):
         row['prediction'] = row['quote'] + ' ->: ' + str(row['tags'])
         return row
+    data['train'] = data['train'].map(merge)
     data = data.map(lambda samples: tokenizer(samples["prediction"]), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                 load_in_low_bit="sym_int4",
