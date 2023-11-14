@@ -84,7 +84,8 @@ def main():
         with open(args.description_dict_path, "r") as f:
             description_dict = json.load(f)
 
-    summary = []
+    success = []
+    fail = []
     for prec in args.precision:
         prec_arg = parse_precision(prec, args.model)
         model_args = f"pretrained={args.pretrained},{prec_arg}"
@@ -134,15 +135,20 @@ def main():
                     f"num_fewshot: {args.num_fewshot}, batch_size: {args.batch_size}{f' ({batch_sizes})' if batch_sizes else ''}"
                 )
                 print(evaluator.make_table(results))
-                summary.append(results)
+                success.append(results)
             except Exception as e:
+                fail.append(f"Job config of task={task}, precision={prec} failed. Error Message: {str(e)}")
                 print(f"Job config of task={task}, precision={prec} failed. Error Message: {str(e)}")
     
     ## print all task summary
-    print("Here are results of all tasks:")
-    for results in summary:
+    print("Here are results of all successful tasks:")
+    for results in success:
         print(results['config'])
         print(evaluator.make_table(results))
+
+    if len(fail) > 0:
+        raise RuntimeError('\n'.join(fail))
+    
 
 if __name__ == "__main__":
     main()
