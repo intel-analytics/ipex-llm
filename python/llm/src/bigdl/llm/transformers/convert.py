@@ -75,13 +75,14 @@ def is_linear_module(module):
     out_features = None
     mp_group = None
 
+    is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+
     if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
         result = True
-    elif isinstance(module, nn.Linear) or\
-(is_auto_awq_available() and isinstance(module, WQLinear_GEMM)):
+    elif isinstance(module, nn.Linear) or is_awq:
         in_features = module.in_features
         out_features = module.out_features
         mp_group = None
