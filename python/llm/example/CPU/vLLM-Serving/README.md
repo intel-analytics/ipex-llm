@@ -2,7 +2,13 @@
 
 This example demonstrates how to serving a llama2-7b model using BigDL-LLM 4 bits optimizations with xeon CPUs with adapted vLLM.
 
-## 0. Requirements
+
+## Example: Serving llama2-7b using Xeon CPU
+
+In this example, we will run Llama2-7b model using 48 cores in one socket and provide `OpenAI-compatible` interface for users.
+
+### 1. Install
+
 The original [vLLM](https://github.com/analytics-zoo/vllm) is designed to run with `CUDA` environment. To adapt vLLM into `Intel` platforms, install the dependencies like this:
 
 ```bash
@@ -21,14 +27,6 @@ pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
 ```
-
-## Example: Serving llama2-7b using Xeon CPU
-
-In this example, we will run Llama2-7b model using 48 cores in one socket and provide `OpenAI-compatible` interface for users.
-
-### 1. Install
-
-Install the dependencies according to the instructions mentioned in the `Requirements` section.
 
 ### 2. Configures Recommending environment variables
 
@@ -52,6 +50,9 @@ numactl -C 48-95 -m 1 python offline_inference.py
 ```
 
 #### Service
+
+To fully utilize the dynamic batching feature of the `vLLM`, you can send requests to the service using curl or other similar methods.  The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting all sequences are finished.
+
 ```bash
 #!/bin/bash
 numactl -C 48-95 -m 1 python -m bigdl.llm.vllm.examples.api_server \
@@ -71,5 +72,4 @@ Then you can access the api server using the following way:
                  "max_tokens": 128,
                  "temperature": 0
  }' &
-
 ```
