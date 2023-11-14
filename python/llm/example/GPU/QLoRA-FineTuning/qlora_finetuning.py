@@ -48,7 +48,9 @@ if __name__ == "__main__":
                                                 torch_dtype=torch.float16,
                                                 modules_to_not_convert=["lm_head"],)
     model = model.to('xpu')
-    model.gradient_checkpointing_enable()
+    # Enable gradient_checkpointing if your memory is not enough,
+    # it will slowdown the training speed
+    # model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
     config = LoraConfig(
         r=8, 
@@ -71,7 +73,8 @@ if __name__ == "__main__":
             max_steps=200,
             learning_rate=2e-4,
             save_steps=100,
-            fp16=True,
+            # fp16=True,
+            bf16=True,  # bf16 is more stable in training
             logging_steps=20,
             output_dir="outputs",
             optim="adamw_hf", # paged_adamw_8bit is not supported yet
