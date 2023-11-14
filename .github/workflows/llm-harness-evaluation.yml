@@ -84,10 +84,10 @@ jobs:
             wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           fi
           
-      - name: Upgrade packages
-        shell: bash
-        run: |
-          pip install --upgrade transformers
+      # - name: Upgrade packages
+      #   shell: bash
+      #   run: |
+      #     pip install --upgrade transformers
 
       - name: Run harness
         shell: bash
