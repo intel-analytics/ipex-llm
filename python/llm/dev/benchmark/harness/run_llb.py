@@ -138,10 +138,7 @@ def main():
     ## print all task summary
     print("Here are results of all successful tasks:")
     for results in success:
-        config = results['config']
-        batch_sizes = ",".join(map(str, results["config"]["batch_sizes"]))
-        print(f"{config['model']} ({config['model_args']}), limit: {config['limit']}, provide_description: {args.provide_description}, "
-              f"num_fewshot: {config['num_fewshot']}, batch_size: {config['batch_size']}{f' ({batch_sizes})' if batch_sizes else ''}")
+        print(results['config'])
         print(evaluator.make_table(results))
 
     if len(fail) > 0:
