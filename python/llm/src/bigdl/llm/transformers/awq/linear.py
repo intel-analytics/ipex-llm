@@ -63,7 +63,8 @@ class WQLinear_GEMM(nn.Module):
         self.bits = bits
         self.group_size = group_size if group_size != -1 else in_features
 
-        self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7], dtype=torch.int32) * self.bits).unsqueeze(0)
+        self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
+                                dtype=torch.int32) * self.bits).unsqueeze(0)
 
         # quick sanity check (make sure aligment)
         invalidInputError(self.in_features % self.group_size == 0,
@@ -74,11 +75,11 @@ class WQLinear_GEMM(nn.Module):
         self.register_buffer('qweight',
                              torch.zeros((in_features,
                                           out_features // (32 // self.bits)),
-                                          dtype=torch.int32, device=dev))
+                                         dtype=torch.int32, device=dev))
         self.register_buffer('qzeros',
                              torch.zeros((in_features // self.group_size,
                                           out_features // (32 // self.bits)),
-                                          dtype=torch.int32, device=dev))
+                                         dtype=torch.int32, device=dev))
         self.register_buffer('scales',
                              torch.zeros((in_features // self.group_size, out_features),
                                          dtype=torch.float16, device=dev))
@@ -111,13 +112,13 @@ class WQLinear_GEMM(nn.Module):
             intweight.append(
                 torch.round((linear.weight.data[:, idx] +
                              scale_zeros[idx // group_size]) / awq_linear.scales[idx // group_size])
-                             .to(torch.int)[:, None])
+                            .to(torch.int)[:, None])
         intweight = torch.cat(intweight, dim=1)
         intweight = intweight.t().contiguous()
         intweight = intweight.to(dtype=torch.int32)
         qweight = torch.zeros((intweight.shape[0],
                                intweight.shape[1] // (32 // awq_linear.bits)),
-                               dtype=torch.int32, device=intweight.device)          
+                              dtype=torch.int32, device=intweight.device)
 
         torch.set_printoptions(threshold=10_000)
         print(intweight)
@@ -182,13 +183,13 @@ class WQLinear_GEMV(nn.Module):
                                          dtype=torch.int32, device=dev))
         self.register_buffer('qzeros',
                              torch.zeros((out_features,
-                                          calculate_zeros_width(in_features, self.group_size)),
-                                          dtype=torch.int32, device=dev))
+                                          calculate_zeros_width(in_features,
+                                                                self.group_size)),
+                                         dtype=torch.int32, device=dev))
         self.register_buffer('scales',
                              torch.zeros((out_features,
                                           calculate_zeros_width(in_features, self.group_size)
-                                          * pack_num),
-                                          dtype=torch.float16, device=dev))
+                                          * pack_num), dtype=torch.float16, device=dev))
         if bias:
             self.register_buffer('bias', torch.zeros((out_features),
                                                      dtype=torch.float16, device=dev))
@@ -221,8 +222,9 @@ class WQLinear_GEMV(nn.Module):
         intweight = []
         for idx in range(awq_linear.in_features):
             intweight.append(torch.round((linear.weight.data[:, idx] +
-                                          scale_zeros[:, idx // group_size]) / awq_linear.scales[:, idx // group_size])
-                                          .to(torch.int)[:, None])
+                                          scale_zeros[:, idx // group_size]) /
+                                          awq_linear.scales[:, idx // group_size])
+                                         .to(torch.int)[:, None])
         intweight = torch.cat(intweight, dim=1)
         intweight = intweight.to(dtype=torch.int32)
         qweight = torch.zeros((intweight.shape[0], intweight.shape[1] // 32 * awq_linear.bits),

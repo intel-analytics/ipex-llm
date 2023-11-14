@@ -39,6 +39,7 @@ from transformers.utils.quantization_config import QuantizationConfigMixin
 from transformers.utils.quantization_config import AwqBackendPackingMethod,\
     AWQLinearVersion, QuantizationMethod
 
+
 @dataclass
 class AwqConfig(QuantizationConfigMixin):
     """
@@ -59,7 +60,7 @@ class AwqConfig(QuantizationConfigMixin):
             The version of the quantization algorithm to use.
             GEMM is better for big batch_size (e.g. >= 8) otherwise,
             GEMV is better (e.g. < 8 )
-        backend (`AwqBackendPackingMethod`, *optional*, defaults to 
+        backend (`AwqBackendPackingMethod`, *optional*, defaults to
         `AwqBackendPackingMethod.AUTOAWQ`):
             The quantization backend. Some models might be quantized using `llm-awq` backend.
             This is useful for users that quantize their own models using `llm-awq` library.
@@ -89,9 +90,10 @@ class AwqConfig(QuantizationConfigMixin):
         Safety checker that arguments are correct
         """
         invalidInputError(self.backend == AwqBackendPackingMethod.AUTOAWQ,
-                          f"Only supported quantization backends in {AwqBackendPackingMethod.AUTOAWQ} -
-                            not recognized backend {self.backend}")
+                          "Only supported quantization backends in "
+                          f"{AwqBackendPackingMethod.AUTOAWQ} - "
+                          f"not recognized backend {self.backend}")
 
         invalidInputError(self.version in [AWQLinearVersion.GEMM, AWQLinearVersion.GEMV],
-                          f"Only supported versions are in [AWQLinearVersion.GEMM, AWQLinearVersion.GEMV] -
-                            not recognized version {self.version}")
+                          "Only supported versions are in [AWQLinearVersion.GEMM,"
+                          f"AWQLinearVersion.GEMV] - not recognized version {self.version}")

@@ -20,7 +20,7 @@
 #
 # @article{lin2023awq,
 #   title={AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration},
-#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang, 
+#   author={Lin, Ji and Tang, Jiaming and Tang, Haotian and Yang, Shang and Dang,
 #          Xingyu and Han, Song},
 #   journal={arXiv},
 #   year={2023}

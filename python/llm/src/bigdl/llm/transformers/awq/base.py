@@ -142,7 +142,7 @@ class BaseAWQForCausalLM(nn.Module):
             # Get device map
             device_map = infer_auto_device_map(
                 model,
-                no_split_module_classes=[self.layer_type], 
+                no_split_module_classes=[self.layer_type],
                 dtype=torch_dtype
             )
             del model
@@ -200,7 +200,7 @@ class BaseAWQForCausalLM(nn.Module):
             offload_folder=offload_folder,
             dtype=torch_dtype
         )
-        
+
         # Dispath to devices
         if fuse_layers:
             self.fuse_layers(model)
@@ -291,7 +291,8 @@ class BaseAWQForCausalLM(nn.Module):
                 param = next(layer.parameters())
 
                 # get activation scale
-                scale_like = torch.ones(scale_dict['scale_shape'], dtype=param.dtype, device=param.device)
+                scale_like = torch.ones(scale_dict['scale_shape'], dtype=param.dtype,
+                                        device=param.device)
 
                 # scale activation
                 scaled_act = ScaledActivation(scale_dict['scale_layer'], scale_like)
