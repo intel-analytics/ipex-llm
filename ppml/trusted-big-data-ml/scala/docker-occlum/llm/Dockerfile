@@ -23,7 +23,7 @@ RUN cd /opt && bash ./install_llm_with_conda.sh
 FROM occlum/occlum:0.29.7-ubuntu20.04 as ppml
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

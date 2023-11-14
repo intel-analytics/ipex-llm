@@ -1,4 +1,4 @@
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.5.0-SNAPSHOT
 export DOCKER_NAME=gramine-test-fastchat
 docker run -itd \
         --privileged \

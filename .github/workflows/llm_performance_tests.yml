@@ -13,11 +13,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/llm_performance_tests.yml"
-      - ".github/workflows/llm-binary-build.yml"
-      - ".github/actions/llm/setup-llm-env/action.yml"
-      - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/download-llm-binary/action.yml"
       - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
@@ -88,6 +85,8 @@ jobs:
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
+
     steps:
       - uses: actions/checkout@v3
 
@@ -131,14 +130,16 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-          export http_proxy=${HTTP_PROXY}
-          export https_proxy=${HTTPS_PROXY}
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
-          curl -T ./*.csv ${LLM_FTP_URL}/llm/ggml-actions/perf/
-          cp ./*.csv /mnt/disk1/nightly_perf_gpu/
+          cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
-          python csv_to_html.py -f /mnt/disk1/nightly_perf_gpu/
-
+          python csv_to_html.py -f $CSV_SAVE_PATH
+          cd ../../dev/benchmark/all-in-one/
+          if [ ${{ github.event.schedule}} ]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          fi
           
   llm-performance-test-on-spr:
     needs: llm-cpp-build
@@ -181,7 +182,65 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
           cp ./*.csv /mnt/disk1/nightly_perf_cpu/
           cd ../../../test/benchmark
           python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
+
+  llm-performance-test-on-core:
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+            platform: dp
+            python-version: "3.9"
+          # - os: windows
+          #   platform: lp
+          #   python-version: "3.9"
+    runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-core, "${{ matrix.platform }}"]
+    env:
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      CSV_SAVE_PATH: ${{ github.event.schedule && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade omegaconf pandas
+          python -m pip install --upgrade tiktoken einops transformers_stream_generator
+    
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+
+      - name: Test on core ${{ matrix.platform }}
+        shell: bash
+        run: |
+          mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH
+          cd ../../../test/benchmark
+          python csv_to_html.py -f $CSV_SAVE_PATH
+          cd ../../dev/benchmark/all-in-one/
+          if [ ${{ github.event.schedule}} ]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/core_${{ matrix.platform }}/
+          fi

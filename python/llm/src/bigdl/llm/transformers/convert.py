@@ -67,7 +67,6 @@ if is_auto_gptq_available():
 
 if is_auto_awq_available():
     from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
-    # from awq.modules.linear import WQLinear_GEMM
 
 
 def is_linear_module(module):
