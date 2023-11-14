@@ -111,8 +111,8 @@ class WQLinear_GEMM(nn.Module):
         for idx in range(awq_linear.in_features):
             intweight.append(
                 torch.round((linear.weight.data[:, idx] +
-                             scale_zeros[idx // group_size]) / awq_linear.scales[idx // group_size])
-                            .to(torch.int)[:, None])
+                             scale_zeros[idx // group_size]) /
+                            awq_linear.scales[idx // group_size]).to(torch.int)[:, None])
         intweight = torch.cat(intweight, dim=1)
         intweight = intweight.t().contiguous()
         intweight = intweight.to(dtype=torch.int32)
@@ -221,10 +221,10 @@ class WQLinear_GEMV(nn.Module):
 
         intweight = []
         for idx in range(awq_linear.in_features):
-            intweight.append(torch.round((linear.weight.data[:, idx] +
-                                          scale_zeros[:, idx // group_size]) /
-                                          awq_linear.scales[:, idx // group_size])
-                                         .to(torch.int)[:, None])
+            intweight.append(
+                torch.round((linear.weight.data[:, idx] +
+                             scale_zeros[:, idx // group_size]) /
+                            awq_linear.scales[:, idx // group_size]).to(torch.int)[:, None])
         intweight = torch.cat(intweight, dim=1)
         intweight = intweight.to(dtype=torch.int32)
         qweight = torch.zeros((intweight.shape[0], intweight.shape[1] // 32 * awq_linear.bits),
