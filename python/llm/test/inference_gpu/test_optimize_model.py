@@ -168,7 +168,7 @@ class Test_Optimize_Gpu_Model:
 
         Model = AutoModel
         Tokenizer = AutoTokenizer
-        model_path = os.environ.get('CHATGLM2_ORIGIN_PATH')
+        model_path = os.environ.get('CHATGLM2_6B_ORIGIN_PATH')
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.encoder.layers.27.input_layernorm"
         self_attn = "transformer.encoder.layers.27.self_attention"
