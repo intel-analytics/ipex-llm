@@ -30,7 +30,7 @@ jobs:
           - python-version: "3.9"
             model_name: falcon-7b-instruct-with-patch
             task: hellaswag
-            precision: "sym_int4" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+            precision: fp4 #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         python-version: ["3.9"]
         model_name: [Baichuan2-7B-Chat-LLaMAfied]
         task: [truthfulqa, arc, hellaswag, mmlu]
