@@ -22,6 +22,7 @@ from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.llama import get_ipex_version
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -77,8 +78,16 @@ def apply_rotary_pos_emb_chatglm(x: torch.Tensor, rope_cache: torch.Tensor) -> t
 
 def chatglm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
-                                                         [self.weight.size(0)], self.weight)
+        if get_ipex_version() <= "2.0.110+xpu":
+            hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                            [self.weight.size(0)], self.weight)
+        else:
+            # for ipex >= 2.1
+            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
+                                                               [self.weight.size(0)],
+                                                               self.weight,
+                                                               None,  # bias
+                                                               self.eps)
     else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
