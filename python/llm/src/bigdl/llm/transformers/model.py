@@ -13,6 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#
+# MIT License
+#
+# Copyright (c) 2023 MIT HAN Lab
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 import transformers
 from transformers.configuration_utils import PretrainedConfig
@@ -186,6 +209,8 @@ class _BaseAutoModelClass:
 
         if quant_config and quant_config.quant_method == "awq":
             # The latest transformers only support cuda version
+            # This load awq ckpt logic is copied from 
+            # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
             from accelerate import init_empty_weights, infer_auto_device_map,\
                 load_checkpoint_in_model
             from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\

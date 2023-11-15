@@ -15,7 +15,7 @@
 #
 # ===========================================================================
 #
-# This file is adapted from
+# This file is copied from
 # https://github.com/huggingface/transformers
 #
 # Copyright 2023 The HuggingFace Inc. team. All rights reserved.

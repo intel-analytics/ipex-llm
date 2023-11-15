@@ -113,7 +113,6 @@ Q4_1 = get_ggml_qk_size("asym_int4")
 
 
 def convert_gptq(module, awq=False):
-
     scales = module.scales
 
     zeros = torch.bitwise_right_shift(
