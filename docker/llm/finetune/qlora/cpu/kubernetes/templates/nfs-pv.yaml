@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-bigdl-qlora-finetuning
+  namespace: bigdl-qlora-finetuning
+spec:
+  capacity:
+    storage: 15Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+   path: {{ .Values.nfsPath }}
+   server: {{ .Values.nfsServerIp }}

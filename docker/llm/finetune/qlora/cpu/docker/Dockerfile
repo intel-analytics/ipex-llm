@@ -26,14 +26,14 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip3 install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
     pip install --upgrade torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
+# install CPU bigdl-llm
+    pip3 install --pre --upgrade bigdl-llm[all] -i https://pypi.tuna.tsinghua.edu.cn/simple/ && \
 # install ipex and oneccl
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
 # install huggingface dependencies
     pip install transformers==4.34.0 && \
     pip install peft==0.5.0 datasets && \
-# install CPU bigdl-llm
-    pip install --pre --upgrade bigdl-llm[all] -i https://pypi.tuna.tsinghua.edu.cn/simple/ && \
 # install basic dependencies
     apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
 # install python 3.9
