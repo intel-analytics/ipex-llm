@@ -286,6 +286,8 @@ jobs:
       - name: Install torch and ipex
         shell: cmd
         run: |
+          echo $IPEX_WHEEL_PATH
+          echo %IPEX_WHEEL_PATH%
           python -m pip install $IPEX_WHEEL_PATH
           python -m pip install $TORCH_WHEEL_PATH
 
@@ -299,7 +301,7 @@ jobs:
         shell: cmd
         run: |
           cd .\llm.cpp\bigdl-core-xe
-          C:\Program Files (x86)\Intel\oneAPI\setvars.bat
+          call C:\Program Files (x86)\Intel\oneAPI\setvars.bat
           set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           python setup.py install
       
