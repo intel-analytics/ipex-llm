@@ -47,7 +47,6 @@ from peft import (
 )
 from utils.prompter import Prompter
 
-import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
@@ -62,7 +61,7 @@ def train(
     output_dir: str = "./bigdl-qlora-alpaca",
     # training hyperparams
     batch_size: int = 128,
-    micro_batch_size: int = 2,  # default to be 2, limited by GPU memory
+    micro_batch_size: int = 2,  # default to be 2, limited by CPU memory
     num_epochs: int = 3,
     learning_rate: float = 3e-5,  # default to be 3e-5 to avoid divergence
     cutoff_len: int = 256,
@@ -158,14 +157,14 @@ def train(
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
-            load_in_low_bit="nf4", # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
+            load_in_low_bit="sym_int4", # not support "nf4"
             optimize_model=False,
             torch_dtype=torch.bfloat16,
             # device_map=device_map,
             modules_to_not_convert=["lm_head"],
         )
     print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
-    model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
+    model = model.to("cpu")
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
