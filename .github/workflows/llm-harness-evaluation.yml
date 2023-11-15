@@ -26,17 +26,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # include:
-        #   python-version: "3.9"
-        #   model_name: "stablelm-3b-4e1t"
-        #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        include:
+          - python-version: "3.9"
+            model_name: falcon-7b-instruct-with-patch
+            task: hellaswag
+            precision: "sym_int4" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         python-version: ["3.9"]
-        model_name: [stablelm-3b-4e1t]
-        task: ["truthfulqa"]
-        precision: [sym_int4] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        model_name: [Baichuan2-7B-Chat-LLaMAfied]
+        task: [truthfulqa, arc, hellaswag, mmlu]
+        precision: [sym_int4, fp4, fp8, sym_int8, mixed_fp4, mixed_fp8] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         
-    runs-on: [self-hosted, llm, accuracy, temp-arc01]
+    runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
