@@ -286,10 +286,8 @@ jobs:
       - name: Install torch and ipex
         shell: cmd
         run: |
-          echo $IPEX_WHEEL_PATH
-          echo %IPEX_WHEEL_PATH%
-          python -m pip install $IPEX_WHEEL_PATH
-          python -m pip install $TORCH_WHEEL_PATH
+          python -m pip install %IPEX_WHEEL_PATH%
+          python -m pip install %TORCH_WHEEL_PATH%
 
       - uses: actions/checkout@v3
         with:
