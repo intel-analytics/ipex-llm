@@ -288,6 +288,12 @@ async def create_chat_completion(request: ChatCompletionRequest,
                 delta=DeltaMessage(content=text),
                 finish_reason=finish_reason,
             )
+        elif len(output_token_latency) == 1:
+            choice_data = ChatCompletionResponseStreamChoice(
+                index=index,
+                delta=DeltaMessage(content=text),
+                finish_reason=finish_reason,
+                first_token_time=output_token_latency[0])
         else:
             choice_data = ChatCompletionResponseStreamChoice(
                 index=index,
@@ -525,6 +531,13 @@ async def create_completion(request: CompletionRequest, raw_request: Request):
                 logprobs=logprobs,
                 finish_reason=finish_reason,
             )
+        elif len(output_token_latency) == 1:
+            choice_data = CompletionResponseStreamChoice(
+                index=index,
+                text=text,
+                logprobs=logprobs,
+                finish_reason=finish_reason,
+                first_token_time=output_token_latency[0])
         else:
             choice_data = CompletionResponseStreamChoice(
                 index=index,

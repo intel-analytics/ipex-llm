@@ -91,6 +91,7 @@ class BigDLLlamaForCausalLM(nn.Module):
         self,
         config: LlamaConfig,
         device: Optional[str] = None,
+        max_model_len: Optional[int] = None,
     ):
         super().__init__()
         self.config = config
@@ -136,7 +137,7 @@ class BigDLLlamaForCausalLM(nn.Module):
         self.last_seq_ids = []
         self.tmp_kv_cache = None
         self.pad_token_id = config.pad_token_id
-        self.max_seq_limit = 64
+        self.max_seq_limit = max_model_len
 
     def forward(
         self,
@@ -178,7 +179,7 @@ class BigDLLlamaForCausalLM(nn.Module):
             # pdb.set_trace()
             max_seq_limit = self.max_seq_limit
             if (self.tmp_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
-                if self.tmp_kv_cache[0][0].size(2) < max_seq_limit * 1.5:
+                if self.tmp_kv_cache[0][0].size(2) < max_seq_limit:
                     bigdl_kv_cache = self.tmp_kv_cache
                 else:
                     bigdl_kv_cache = [[tmp.narrow(2, self.tmp_kv_cache[0][0].size(2)
