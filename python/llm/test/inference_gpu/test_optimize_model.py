@@ -136,6 +136,7 @@ class Test_Optimize_Gpu_Model:
                         attn_output_diff.append(t3 - t4)
 
         max_diff_tensor = [torch.max(item).item() for item in attn_output_diff]
+        print(max_diff_tensor)
         assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
 
 
