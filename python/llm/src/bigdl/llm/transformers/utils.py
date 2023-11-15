@@ -146,6 +146,9 @@ def get_autocast_dtype(x):
             return torch.get_autocast_cpu_dtype()
         else:
             return None
+    elif x.device.type == "hpu":
+        if torch.hpu.is_autocast_hpu_enabled():
+            return torch.hpu.get_autocast_hpu_dtype()
     else:
         invalidInputError(False,
                           f"Device {x.device} is not supported.")

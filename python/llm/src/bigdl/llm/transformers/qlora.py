@@ -54,6 +54,8 @@ from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import get_autocast_dtype
 import functools
+from peft.utils.other import transpose
+import torch.nn.functional as F
 
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
@@ -68,24 +70,98 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         lora_dropout: float = 0.0,
         **kwargs,
     ):
-        LowBitLinear.__init__(
-            self,
-            in_features,
-            out_features,
-            qtype=kwargs.get("qtype"),
-            bias=kwargs.get("bias", True),
-            conver_to_half=False,
-        )
+        self._init_empty_weights(LowBitLinear, in_features, out_features,
+                                 qtype=kwargs.get("qtype"),
+                                 bias=kwargs.get("bias", True),
+                                 conver_to_half=False)
         LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
 
         # Freezing the pre-trained weight matrix
         self.weight.requires_grad = False
-
         init_lora_weights = kwargs.pop("init_lora_weights", True)
         self.update_layer(adapter_name, r, lora_alpha, lora_dropout, init_lora_weights)
-        self.active_adapter = adapter_name
+        if hasattr(self, "set_adapter"):
+            self.set_adapter(adapter_name)
+        else:
+            self.adapter_name = adapter_name
 
-    def forward(self, x: torch.Tensor):
+    def merge(self, safe_merge: bool = False) -> None:
+        """
+        Merge the active adapter weights into the base weights
+
+        Args:
+            safe_merge (`bool`, *optional*):
+                If True, the merge operation will be performed in a copy of the original weights and check for NaNs
+                before merging the weights. This is useful if you want to check if the merge operation will produce
+                NaNs. Defaults to `False`.
+        """
+        if self.merged:
+            warnings.warn(
+                f"Already following adapters were merged {','.join(self.merged_adapters)}. "
+                f"You are now additionally merging {','.join(self.active_adapters)}."
+            )
+        for active_adapter in self.active_adapters:
+            if active_adapter in self.lora_A.keys():
+                if safe_merge:
+                    # Note that safe_merge will be slower than the normal merge
+                    # because of the copy operation.
+                    orig_weights = self.weight.data.clone()
+                    orig_weights += self.get_delta_weight(active_adapter)
+
+                    if not torch.isfinite(orig_weights).all():
+                        raise ValueError(
+                            f"NaNs detected in the merged weights. The adapter {active_adapter} seems to be broken"
+                        )
+
+                    self.weight.data = orig_weights
+                else:
+                    self.weight.data += self.get_delta_weight(active_adapter)
+                self.merged_adapters.append(active_adapter)
+
+    def unmerge(self) -> None:
+        if not self.merged:
+            warnings.warn("Already unmerged. Nothing to do.")
+            return
+        while len(self.merged_adapters) > 0:
+            active_adapter = self.merged_adapters.pop()
+            if active_adapter in self.lora_A.keys():
+                self.weight.data -= self.get_delta_weight(active_adapter)
+
+    def get_delta_weight(self, adapter) -> torch.Tensor:
+        """
+        Compute the delta weight for the given adapter.
+
+        Args:
+            adapter (str):
+                The name of the adapter for which the delta weight should be computed.
+        """
+        device = self.lora_B[adapter].weight.device
+        dtype = self.lora_B[adapter].weight.dtype
+
+        # In case users wants to merge the adapter weights that are in
+        # float16 while being on CPU, we need to cast the weights to float32, perform the merge and then cast back to
+        # float16 because the `@` and matmul operation in general is not supported in torch + cpu + fp16.
+        cast_to_fp32 = device.type == "cpu" and dtype == torch.float16
+
+        weight_A = self.lora_A[adapter].weight
+        weight_B = self.lora_B[adapter].weight
+
+        if cast_to_fp32:
+            weight_A = weight_A.float()
+            weight_B = weight_B.float()
+
+        output_tensor = transpose(weight_B @ weight_A, self.fan_in_fan_out) * self.scaling[adapter]
+
+        if cast_to_fp32:
+            output_tensor = output_tensor.to(dtype=dtype)
+
+            # cast back the weights
+            self.lora_A[adapter].weight.data = weight_A.to(dtype)
+            self.lora_B[adapter].weight.data = weight_B.to(dtype)
+
+        return output_tensor
+
+    def _linear(self, x: torch.Tensor) -> torch.Tensor:
         autocast_dtype = get_autocast_dtype(x)
         if x.device.type == "xpu":
             # force to use bf16 on gpu
@@ -93,6 +169,7 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         elif autocast_dtype is not None:
             x = x.to(autocast_dtype)
         result = super().forward(x)
+        return result
 
         if self.disable_adapters or self.active_adapter not in self.lora_A.keys():
             return result
