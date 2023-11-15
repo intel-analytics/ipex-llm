@@ -24,5 +24,5 @@ torchrun --standalone \
          --base_model "meta-llama/Llama-2-7b-hf" \
          --data_path "yahma/alpaca-cleaned" \
          --output_dir "./bigdl-qlora-alpaca" \
-         --micro_batch_size 12 \
-         --batch_size 120
+         --micro_batch_size 8 \
+         --batch_size 128
