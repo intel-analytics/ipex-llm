@@ -209,7 +209,7 @@ class _BaseAutoModelClass:
 
         if quant_config and quant_config.quant_method == "awq":
             # The latest transformers only support cuda version
-            # This load awq ckpt logic is copied from 
+            # This load awq ckpt logic is copied from
             # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
             from accelerate import init_empty_weights, infer_auto_device_map,\
                 load_checkpoint_in_model

@@ -15,7 +15,7 @@
 #
 # ===========================================================================
 #
-# This file is adapted from 
+# This file is adapted from
 # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
 #  and https://github.com/mit-han-lab/llm-awq/blob/main/awq/quantize/quantizer.py
 #
