@@ -56,12 +56,13 @@ if __name__ == '__main__':
     # Generate predicted tokens
     with torch.inference_mode():  
         prompt = RWKV_PROMPT_FORMAT.format(prompt = args.prompt)
-        
+
         inputs = tokenizer(prompt, return_tensors="pt")
         st = time.time()
         output = model.generate(inputs["input_ids"], 
                                 max_new_tokens=args.n_predict)
         end = time.time()
+        
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
