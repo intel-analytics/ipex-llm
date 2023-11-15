@@ -198,3 +198,5 @@ else
   fi
 fi
 
+exec /usr/bin/bash -s -- "bash"
+
