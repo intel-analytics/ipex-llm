@@ -7,8 +7,6 @@ This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main)
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
-# you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[all]
 pip install transformers==4.34.0
 pip install fire datasets peft==0.5.0
