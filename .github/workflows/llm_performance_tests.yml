@@ -289,10 +289,14 @@ jobs:
           python -m pip install %IPEX_WHEEL_PATH%
           python -m pip install %TORCH_WHEEL_PATH%
 
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
-          token: ${{ env.GITHUB_ACCESS_TOKEN }}
+          token: ${{ env.github_access_token }}
           submodules: "recursive"
 
       - name: Install bigdl-core-xe
