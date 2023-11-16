@@ -171,6 +171,8 @@ else
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
+    # Apply optimizations from bigdl-llm
+    source bigdl-llm-init -t
     # First check if user have set OMP_NUM_THREADS by themselves
     if [[ -n "${omp_num_threads}" ]]; then
       echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
@@ -195,4 +197,6 @@ else
     python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
   fi
 fi
+
+exec /usr/bin/bash -s -- "bash"
 

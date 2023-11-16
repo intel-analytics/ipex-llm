@@ -127,9 +127,16 @@ class Test_Optimize_Gpu_Model:
                 else:
                     # 'past_key_value'is of type tuple as default.
                     for i, (t3, t4) in enumerate(zip(t1, t2)):
+                        if model.config.architectures[0] == "ChatGLMModel" and \
+                                hasattr(model.config, 'padded_vocab_size') and \
+                                model.config.padded_vocab_size == 65024:
+                            # chatglm2's past_key_value is expanded 16x for some speedup.
+                            # We need to narrow it here.
+                            t4 = t4[:, :, 15:17, :]
                         attn_output_diff.append(t3 - t4)
 
         max_diff_tensor = [torch.max(item).item() for item in attn_output_diff]
+        print(max_diff_tensor)
         assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
 
 
@@ -155,6 +162,18 @@ class Test_Optimize_Gpu_Model:
         layer_norm = "model.layers.31.input_layernorm"
         self_attn = "model.layers.31.self_attn"
         lower_bound = 5e-2
+
+        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
+
+    def test_chatglm2_gpu_model(self):
+
+        Model = AutoModel
+        Tokenizer = AutoTokenizer
+        model_path = os.environ.get('CHATGLM2_6B_ORIGIN_PATH')
+        # currently only need to compare the output of one self-attention layer.
+        layer_norm = "transformer.encoder.layers.27.input_layernorm"
+        self_attn = "transformer.encoder.layers.27.self_attention"
+        lower_bound = 5e-5
 
         self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
