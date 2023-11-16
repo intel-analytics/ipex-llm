@@ -53,6 +53,10 @@ def is_auto_gptq_available():
     return importlib.util.find_spec("auto_gptq") is not None
 
 
+def is_auto_awq_available():
+    return importlib.util.find_spec("awq") is not None
+
+
 def is_deepspeed_available():
     return importlib.util.find_spec("deepspeed") is not None
 
@@ -61,18 +65,24 @@ if is_auto_gptq_available():
     from auto_gptq.utils.peft_utils import QuantLinearCuda, QuantLinearCudaOld
 
 
+if is_auto_awq_available():
+    from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
+
+
 def is_linear_module(module):
 
     in_features = None
     out_features = None
     mp_group = None
 
+    is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+
     if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
         result = True
-    elif isinstance(module, nn.Linear):
+    elif isinstance(module, nn.Linear) or is_awq:
         in_features = module.in_features
         out_features = module.out_features
         mp_group = None
@@ -102,8 +112,7 @@ from bigdl.llm.transformers.low_bit_linear import get_ggml_qk_size
 Q4_1 = get_ggml_qk_size("asym_int4")
 
 
-def convert_gptq(module):
-
+def convert_gptq(module, awq=False):
     scales = module.scales
 
     zeros = torch.bitwise_right_shift(
@@ -111,14 +120,22 @@ def convert_gptq(module):
         module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
     zeros = torch.bitwise_and(zeros, (2 ** module.bits) - 1)
 
-    zeros = zeros + 1
+    if not awq:
+        zeros = zeros + 1
     zeros = zeros.reshape(scales.shape)
 
-    weight = torch.bitwise_right_shift(
-        torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.bits, -1),
-        module.wf.unsqueeze(-1)).to(torch.int8)
-    weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
-    weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
+    if awq:
+        weight = torch.bitwise_right_shift(
+            torch.unsqueeze(module.qweight, 2).expand(-1, -1, 32 // module.bits),
+            module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
+        weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
+        weight = weight.reshape(weight.shape[0], weight.shape[1] * weight.shape[2])
+    else:
+        weight = torch.bitwise_right_shift(
+            torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.bits, -1),
+            module.wf.unsqueeze(-1)).to(torch.int8)
+        weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
+        weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
 
     # convert weight to ggml format
     weight = weight.reshape(weight.shape[0]//module.group_size, module.group_size, weight.shape[1])
@@ -171,7 +188,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
                     new_linear = None
-                    if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+                    is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
+                    is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+                    if is_gptq or is_awq:
                         has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
                             in_features,
@@ -184,7 +203,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         invalidInputError(device_type != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
-                        paramsLowBit = FP4Params(data=convert_gptq(module),
+                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
                                                  requires_grad=False,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),

@@ -13,6 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#
+# MIT License
+#
+# Copyright (c) 2023 MIT HAN Lab
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 import transformers
 from transformers.configuration_utils import PretrainedConfig
@@ -123,6 +146,29 @@ class _BaseAutoModelClass:
                         from transformers import GPTQConfig
                         user_quantization_config = GPTQConfig(bits=4, use_exllama=False)
                     kwargs["quantization_config"] = user_quantization_config
+                elif q_config["quant_method"] == "awq":
+                    from bigdl.llm.transformers.awq.awq_config import AwqConfig
+                    awq_config = AwqConfig.from_dict(q_config)
+                    invalidInputError(awq_config.bits == 4,
+                                      "Only 4-bit awq is supported in bigdl-llm.")
+                    invalidInputError(awq_config.version == "gemm",
+                                      "Only gemm version is supported in bigdl-llm.")
+                    invalidInputError(awq_config.backend == "autoawq",
+                                      "Only autoawq backend is supported in bigdl-llm.")
+                    invalidInputError(awq_config.zero_point,
+                                      "Only awq zero_point = True is supported in bigdl-llm.")
+                    if load_in_low_bit is not None:
+                        invalidInputError(load_in_low_bit == "asym_int4",
+                                          "You can only load awq model as aysm_int4 low bit type.")
+
+                    load_in_low_bit = "asym_int4"
+
+                    if int(awq_config.group_size) % get_ggml_qk_size(load_in_low_bit) != 0:
+                        invalidInputError(False,
+                                          (f"group_size must be divisible by "
+                                           f"{get_ggml_qk_size(load_in_low_bit)}."))
+
+                    kwargs["quantization_config"] = awq_config
 
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
@@ -156,16 +202,63 @@ class _BaseAutoModelClass:
         # and lead to args missing.
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         replace_embedding = kwargs.pop("replace_embedding", False)
+        quant_config = kwargs.pop("quantization_config", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
-        try:
-            model = cls.HF_Model.from_pretrained(*args, **kwargs)
-        except NotImplementedError:
-            logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
-                        "will fall to traditional load method with higher memory consumption.")
-            _kwargs["low_cpu_mem_usage"] = False
-            model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
-            model.config.update({"bigdl_lcmu_enabled": False})
+        awq_config = None
+
+        if quant_config and quant_config.quant_method == "awq":
+            # The latest transformers only support cuda version
+            # This load awq ckpt logic is copied from
+            # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
+            from accelerate import init_empty_weights, infer_auto_device_map,\
+                load_checkpoint_in_model
+            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\
+                get_layer_type, _load_config
+            awq_config = quant_config
+            model_weights_path, config = _load_config(args[0], '', max_new_tokens=None,
+                                                      safetensors=True)
+            with init_empty_weights():
+                model = cls.HF_Model.from_config(config=config, trust_remote_code=True)
+
+            _replace_with_awq_layers(model, awq_config=awq_config)
+
+            model.tie_weights()
+
+            # Get device map
+            device_map = infer_auto_device_map(
+                model,
+                no_split_module_classes=[get_layer_type(config)],
+                max_memory=None,
+                dtype=config.torch_dtype
+            )
+
+            # Load checkpoint
+            load_checkpoint_in_model(
+                model,
+                checkpoint=model_weights_path,
+                device_map=device_map,
+                offload_folder=None,
+                dtype=config.torch_dtype
+            )
+
+            # Offloading dispatch
+            from accelerate import dispatch_model
+            model = dispatch_model(
+                model,
+                device_map=device_map,
+                offload_dir=None
+            )
+        else:
+            try:
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            except NotImplementedError:
+                logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
+                            "will fall to traditional load method with higher memory consumption.")
+                _kwargs["low_cpu_mem_usage"] = False
+                model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
+                model.config.update({"bigdl_lcmu_enabled": False})
+
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
