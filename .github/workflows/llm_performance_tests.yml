@@ -210,9 +210,6 @@ jobs:
           - os: windows
             platform: dp
             python-version: "3.9"
-          # - os: windows
-          #   platform: lp
-          #   python-version: "3.9"
     runs-on: [self-hosted, llm, perf-igpu]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -257,7 +254,7 @@ jobs:
         shell: cmd
         run: |
           cd .\llm.cpp\bigdl-core-xe
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" 
           set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           python setup.py install
