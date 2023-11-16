@@ -2,6 +2,8 @@
 
 This example demonstrates how to serving a llama2-7b model using BigDL-LLM 4 bits optimizations with xeon CPUs with adapted vLLM.
 
+The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm).
+
 
 ## Example: Serving llama2-7b using Xeon CPU
 
@@ -9,7 +11,7 @@ In this example, we will run Llama2-7b model using 48 cores in one socket and pr
 
 ### 1. Install
 
-The original [vLLM](https://github.com/analytics-zoo/vllm) is designed to run with `CUDA` environment. To adapt vLLM into `Intel` platforms, install the dependencies like this:
+The original [vLLM](https://github.com/vllm-project/vllm) is designed to run with `CUDA` environment. To adapt vLLM into `Intel` platforms, install the dependencies like this:
 
 ```bash
 # First create an conda environment
