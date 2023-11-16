@@ -250,6 +250,8 @@ jobs:
       - name: Install bigdl-core-xe
         shell: cmd
         run: |
+          echo %cd%
+          dir
           cd .\llm.cpp\bigdl-core-xe
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_ENABLE_DEFAULT_CONTEXTS=1
