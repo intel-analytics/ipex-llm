@@ -75,3 +75,18 @@ Then you can access the api server using the following way:
                  "temperature": 0
  }' &
 ```
+### 4. (Optional) Add a new model
+
+Currently we have only supported llama-structure model (including `llama`, `vicuna`, `llama-2`, etc.). To use other model, you may need some adaption to the code.
+
+#### 4.1 Add model code
+
+Create or clone the Pytorch model code to `./models`.
+
+#### 4.2 Rewrite the forward methods
+
+Refering to `./models/bigdl_llama.py`, it's necessary to maintain a `kv_cache`, which is a nested list of dictionary that maps `req_id` to a three-dimensional tensor **(the structure may vary from models)**. Before the model's actual `forward` method, you could prepare a `past_key_values` according to current `req_id`, and after you need to update the `kv_cache` with `output.past_key_values`. The clearence will be executed when the request is finished.
+
+#### 4.3 Register new model
+
+Finally, register your `*ForCausalLM` class to the _MODEL_REGISTRY in `./models/model_loader.py`.
