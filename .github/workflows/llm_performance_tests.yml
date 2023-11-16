@@ -256,7 +256,7 @@ jobs:
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
-          python setup.py install
+          python setup.py install 
       
       - uses: actions/checkout@v3
     
