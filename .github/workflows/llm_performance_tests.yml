@@ -26,7 +26,6 @@ jobs:
 
   llm-performance-test-on-arc:
     if: false # temp block
-#    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -95,7 +94,6 @@ jobs:
           
   llm-performance-test-on-spr:
     if: false # temp block
-#    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -145,7 +143,6 @@ jobs:
 
   llm-performance-test-on-core:
     if: false # temp block
-#    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
