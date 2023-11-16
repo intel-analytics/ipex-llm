@@ -30,6 +30,7 @@ from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, 
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from transformers.utils import logging, ContextManagers
+from bigdl.llm.transformers.models.llama import get_ipex_version
 logger = logging.get_logger(__name__)
 
 try:
@@ -47,8 +48,16 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
-                                                         [self.weight.size(0)], self.weight)
+        if get_ipex_version() <= "2.0.110+xpu":
+            hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
+                                                             [self.weight.size(0)],
+                                                             self.weight)
+        else:
+            hidden_states, _ = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
+                                                                  [self.weight.size(0)],
+                                                                  self.weight,
+                                                                  None,
+                                                                  self.epsilon)
     else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
