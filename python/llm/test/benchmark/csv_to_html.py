@@ -68,15 +68,10 @@ def main():
                     last2[latest_csv_ind]=previous_2_avg_latency
                     diff2[latest_csv_ind]=round((previous_2_avg_latency-latest_2_avg_latency)*100/previous_2_avg_latency,2)
 
-        added_column_last1='last1'
-        added_column_diff1='diff1(%)'
-        added_column_last2='last2'
-        added_column_diff2='diff2(%)'
-
-        latest_csv.insert(loc=3,column=added_column_last1,value=last1)
-        latest_csv.insert(loc=4,column=added_column_diff1,value=diff1)
-        latest_csv.insert(loc=5,column=added_column_last2,value=last2)
-        latest_csv.insert(loc=6,column=added_column_diff2,value=diff2)
+        latest_csv.insert(loc=3,column='last1',value=last1)
+        latest_csv.insert(loc=4,column='diff1(%)',value=diff1)
+        latest_csv.insert(loc=5,column='last2',value=last2)
+        latest_csv.insert(loc=6,column='diff2(%)',value=diff2)
 
     daily_html=csv_files[0].split(".")[0]+".html"
     latest_csv.to_html(daily_html)
