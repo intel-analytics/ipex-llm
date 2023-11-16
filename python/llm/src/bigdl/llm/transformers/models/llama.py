@@ -79,11 +79,11 @@ def llama_rms_norm_forward(self, hidden_states):
             hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
                                                              [self.weight.size(0)], self.weight)
         else:
-            hidden_states, _ = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
-                                                                  [self.weight.size(0)],
-                                                                  self.weight,
-                                                                  None,
-                                                                  self.variance_epsilon)
+            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
+                                                               [self.weight.size(0)],
+                                                               self.weight,
+                                                               None,
+                                                               self.variance_epsilon)
     else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
