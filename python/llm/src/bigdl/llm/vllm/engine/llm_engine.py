@@ -36,7 +36,7 @@
 import time
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
 
-from bigdl.llm.vllm.config import ModelConfig, ParallelConfig, SchedulerConfig
+from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.utils.arg_utils import EngineArgs
 from bigdl.llm.vllm.logger import init_logger
@@ -95,7 +95,7 @@ class LLMEngine:
     def __init__(
         self,
         model_config: ModelConfig,
-        parallel_config: ParallelConfig,
+        # parallel_config: ParallelConfig,
         scheduler_config: SchedulerConfig,
         distributed_init_method: str,
         placement_group,
@@ -120,10 +120,10 @@ class LLMEngine:
         # TODO(woosuk): Print more configs in debug mode.
 
         self.model_config = model_config
-        self.parallel_config = parallel_config
+        # self.parallel_config = parallel_config
         self.scheduler_config = scheduler_config
         self.log_stats = log_stats
-        self._verify_args()
+        # self._verify_args()
 
         self.tokenizer = get_tokenizer(
             model_config.tokenizer,
@@ -154,15 +154,14 @@ class LLMEngine:
             Worker,
         )  # pylint: disable=import-outside-toplevel
 
-        invalidInputError(
-            self.parallel_config.world_size == 1,
-            "Ray is required if parallel_config.world_size > 1.",
-        )
+        # invalidInputError(
+        #     self.parallel_config.world_size == 1,
+        #     "Ray is required if parallel_config.world_size > 1.",
+        # )
 
         self.workers: List[Worker] = []
         worker = Worker(
             self.model_config,
-            self.parallel_config,
             self.scheduler_config,
             0,
             distributed_init_method,

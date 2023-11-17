@@ -35,7 +35,7 @@ import argparse
 import dataclasses
 from dataclasses import dataclass
 from typing import Optional, Tuple
-from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig, ParallelConfig
+from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
 
 
 @dataclass
@@ -50,9 +50,9 @@ class EngineArgs:
     dtype: str = 'auto'
     seed: int = 0
     max_model_len: Optional[int] = None
-    worker_use_ray: bool = False
-    pipeline_parallel_size: int = 1
-    tensor_parallel_size: int = 1
+    # worker_use_ray: bool = False
+    # pipeline_parallel_size: int = 1
+    # tensor_parallel_size: int = 1
     block_size: int = 16
     swap_space: int = 4  # GiB
     gpu_memory_utilization: float = 0.90
@@ -144,21 +144,21 @@ class EngineArgs:
                             default=None,
                             help='model context length. If unspecified, '
                             'will be automatically derived from the model.')
-        # Parallel arguments
-        parser.add_argument('--worker-use-ray',
-                            action='store_true',
-                            help='use Ray for distributed serving, will be '
-                            'automatically set when using more than 1 GPU')
-        parser.add_argument('--pipeline-parallel-size',
-                            '-pp',
-                            type=int,
-                            default=EngineArgs.pipeline_parallel_size,
-                            help='number of pipeline stages')
-        parser.add_argument('--tensor-parallel-size',
-                            '-tp',
-                            type=int,
-                            default=EngineArgs.tensor_parallel_size,
-                            help='number of tensor parallel replicas')
+        # # Parallel arguments
+        # parser.add_argument('--worker-use-ray',
+        #                     action='store_true',
+        #                     help='use Ray for distributed serving, will be '
+        #                     'automatically set when using more than 1 GPU')
+        # parser.add_argument('--pipeline-parallel-size',
+        #                     '-pp',
+        #                     type=int,
+        #                     default=EngineArgs.pipeline_parallel_size,
+        #                     help='number of pipeline stages')
+        # parser.add_argument('--tensor-parallel-size',
+        #                     '-tp',
+        #                     type=int,
+        #                     default=EngineArgs.tensor_parallel_size,
+        #                     help='number of tensor parallel replicas')
         # KV cache arguments
         parser.add_argument('--block-size',
                             type=int,
@@ -214,7 +214,7 @@ class EngineArgs:
         engine_args = cls(**{attr: getattr(args, attr) for attr in attrs})
         return engine_args
 
-    def create_engine_configs(self, ) -> Tuple[ModelConfig, ParallelConfig, SchedulerConfig]:
+    def create_engine_configs(self, ) -> Tuple[ModelConfig, SchedulerConfig]:
         model_config = ModelConfig(self.model, self.tokenizer,
                                    self.tokenizer_mode, self.trust_remote_code,
                                    self.download_dir, self.load_format,
@@ -224,15 +224,16 @@ class EngineArgs:
         scheduler_config = SchedulerConfig(self.max_num_batched_tokens,
                                            self.max_num_seqs,
                                            model_config.max_model_len)
-        parallel_config = ParallelConfig(self.pipeline_parallel_size,
-                                         self.tensor_parallel_size, False)
-        return model_config, parallel_config, scheduler_config
+        # parallel_config = ParallelConfig(self.pipeline_parallel_size,
+        #                                  self.tensor_parallel_size, False)
+        # return model_config, parallel_config, scheduler_config
+        return model_config, scheduler_config
 
 
 @dataclass
 class AsyncEngineArgs(EngineArgs):
     """Arguments for asynchronous vLLM engine."""
-    engine_use_ray: bool = False
+    # engine_use_ray: bool = False
     disable_log_requests: bool = False
     max_log_len: Optional[int] = None
 
@@ -240,10 +241,10 @@ class AsyncEngineArgs(EngineArgs):
     def add_cli_args(
             parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         parser = EngineArgs.add_cli_args(parser)
-        parser.add_argument('--engine-use-ray',
-                            action='store_true',
-                            help='use Ray to start the LLM engine in a '
-                            'separate process as the server process.')
+        # parser.add_argument('--engine-use-ray',
+        #                     action='store_true',
+        #                     help='use Ray to start the LLM engine in a '
+        #                     'separate process as the server process.')
         parser.add_argument('--disable-log-requests',
                             action='store_true',
                             help='disable logging requests')

@@ -238,16 +238,16 @@ class _AsyncLLMEngine(LLMEngine):
         """Runs the given method on all workers."""
         all_outputs = []
         for worker in self.workers:
-            if self.parallel_config.worker_use_ray:
-                executor = partial(worker.execute_method.remote, method)
-            else:
-                executor = getattr(worker, method)
+            # if self.parallel_config.worker_use_ray:
+            #     executor = partial(worker.execute_method.remote, method)
+            # else:
+            executor = getattr(worker, method)
 
             output = executor(*args, **kwargs)
             all_outputs.append(output)
 
-        if self.parallel_config.worker_use_ray:
-            all_outputs = await asyncio.gather(*all_outputs)
+        # if self.parallel_config.worker_use_ray:
+        #     all_outputs = await asyncio.gather(*all_outputs)
 
         if get_all_outputs:
             return all_outputs
@@ -275,9 +275,6 @@ class AsyncLLMEngine:
         worker_use_ray: Whether to use Ray for model workers. Required for
             distributed execution. Should be the same as
             `parallel_config.worker_use_ray`.
-        engine_use_ray: Whether to make LLMEngine a Ray actor. If so, the
-            async frontend will be executed in a separate process as the
-            model workers.
         log_requests: Whether to log the requests.
         start_engine_loop: If True, the background task to run the engine
             will be automatically started in the generate call.
@@ -287,15 +284,15 @@ class AsyncLLMEngine:
     _engine_class: Type[_AsyncLLMEngine] = _AsyncLLMEngine
 
     def __init__(self,
-                 worker_use_ray: bool,
-                 engine_use_ray: bool,
+                 # worker_use_ray: bool,
+                 # engine_use_ray: bool,
                  *args,
                  log_requests: bool = True,
                  max_log_len: Optional[int] = None,
                  start_engine_loop: bool = True,
                  **kwargs) -> None:
-        self.worker_use_ray = worker_use_ray
-        self.engine_use_ray = engine_use_ray
+        # self.worker_use_ray = worker_use_ray
+        # self.engine_use_ray = engine_use_ray
         self.log_requests = log_requests
         self.max_log_len = max_log_len
         self.engine = self._init_engine(*args, **kwargs)
@@ -346,18 +343,18 @@ class AsyncLLMEngine:
         for new_request in new_requests:
             # Add the request into the vLLM engine's waiting queue.
             # TODO: Maybe add add_request_batch to reduce Ray overhead
-            if self.engine_use_ray:
-                await self.engine.add_request.remote(**new_request)
-            else:
-                self.engine.add_request(**new_request)
+            # if self.engine_use_ray:
+            #     await self.engine.add_request.remote(**new_request)
+            # else:
+            self.engine.add_request(**new_request)
 
         if finished_requests:
             await self._engine_abort(finished_requests)
 
-        if self.engine_use_ray:
-            request_outputs = await self.engine.step.remote()
-        else:
-            request_outputs = await self.engine.step_async()
+        # if self.engine_use_ray:
+        #     request_outputs = await self.engine.step.remote()
+        # else:
+        request_outputs = await self.engine.step_async()
 
         # Put the outputs into the corresponding streams.
         for request_output in request_outputs:
@@ -367,10 +364,10 @@ class AsyncLLMEngine:
         return len(request_outputs) > 0
 
     async def _engine_abort(self, request_ids: Iterable[str]):
-        if self.engine_use_ray:
-            await self.engine.abort_request.remote(request_ids)
-        else:
-            self.engine.abort_request(request_ids)
+        # if self.engine_use_ray:
+        #     await self.engine.abort_request.remote(request_ids)
+        # else:
+        self.engine.abort_request(request_ids)
 
     async def run_engine_loop(self):
         # Initialize the RequestTracker here so it uses the right event loop.
@@ -499,10 +496,10 @@ class AsyncLLMEngine:
 
     async def get_model_config(self) -> ModelConfig:
         """Get the model configuration of the vLLM engine."""
-        if self.engine_use_ray:
-            return await self.engine.get_model_config.remote()
-        else:
-            return self.engine.get_model_config()
+        # if self.engine_use_ray:
+        #     return await self.engine.get_model_config.remote()
+        # else:
+        return self.engine.get_model_config()
 
     @classmethod
     def from_engine_args(cls,
@@ -518,8 +515,8 @@ class AsyncLLMEngine:
         distributed_init_method = f"tcp://localhost:{port}"
         # Create the async LLM engine.
         engine = cls(
-            engine_args.worker_use_ray,
-            engine_args.engine_use_ray,
+            # engine_args.worker_use_ray,
+            # engine_args.engine_use_ray,
             # TODO: we use one less here
             *engine_configs,
             distributed_init_method,

@@ -59,13 +59,13 @@ class Worker:
     def __init__(
         self,
         model_config: ModelConfig,
-        parallel_config: ParallelConfig,
+        # parallel_config: ParallelConfig,
         scheduler_config: SchedulerConfig,
         rank: Optional[int] = None,
         distributed_init_method: Optional[str] = None,
     ) -> None:
         self.model_config = model_config
-        self.parallel_config = parallel_config
+        # self.parallel_config = parallel_config
         self.scheduler_config = scheduler_config
         self.rank = rank
         self.distributed_init_method = distributed_init_method
