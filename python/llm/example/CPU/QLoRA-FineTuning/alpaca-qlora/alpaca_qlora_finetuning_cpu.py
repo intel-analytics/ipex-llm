@@ -310,6 +310,7 @@ def train(
             ddp_backend="ccl",
             deepspeed=deepspeed,
         ),
+        # Inputs are dynamically padded to the maximum length among all inputs
         data_collator=transformers.DataCollatorForSeq2Seq(
             tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
         ),
