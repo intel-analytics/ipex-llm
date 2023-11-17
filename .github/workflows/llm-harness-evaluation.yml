@@ -26,15 +26,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - python-version: "3.9"
-            model_name: falcon-7b-instruct-with-patch
-            task: hellaswag
-            precision: fp4 #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        # include:
+        #   - python-version: "3.9"
+        #     model_name: falcon-7b-instruct-with-patch
+        #     task: hellaswag
+        #     precision: fp4 #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         python-version: ["3.9"]
-        model_name: [Baichuan2-7B-Chat-LLaMAfied]
-        task: [truthfulqa, arc, hellaswag, mmlu]
-        precision: [sym_int4, fp4, fp8, sym_int8, mixed_fp4, mixed_fp8] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        model_name: [falcon-7b-instruct-with-patch]
+        task: [mmlu]
+        precision: [fp4] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
         
     runs-on: [self-hosted, llm, accuracy]
     env:
