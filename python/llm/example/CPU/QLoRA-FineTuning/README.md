@@ -20,7 +20,7 @@ pip install datasets
 
 ### 2. Finetune model
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/BigDL/blob/1747ffe60019567482b6976a24b05079274e7fc8/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C6-L53C6). While gradient checkpointing may improve memory efficiency, it slows training by approximately 20%.
-We Recommend using micro_batch_size of 8 for better performance using 48cores in this example.
+We Recommend using micro_batch_size of 8 for better performance using 48cores in this example. You can refer to [this guide](https://huggingface.co/docs/transformers/perf_train_gpu_one) for more details.
 And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
 
 ```
