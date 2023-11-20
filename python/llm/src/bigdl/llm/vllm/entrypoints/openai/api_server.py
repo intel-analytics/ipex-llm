@@ -51,7 +51,7 @@ import numpy as np
 
 from bigdl.llm.vllm.engine.arg_utils import AsyncEngineArgs
 from bigdl.llm.vllm.engine.async_llm_engine import AsyncLLMEngine
-from bigdl.llm.vllm.examples.protocol import (
+from bigdl.llm.vllm.entrypoints.openai.protocol import (
     CompletionResponse, CompletionResponseChoice,
     CompletionResponseStreamChoice, CompletionStreamResponse,
     ChatCompletionResponse, ChatCompletionResponseChoice, ChatMessage,
