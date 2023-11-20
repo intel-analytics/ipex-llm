@@ -46,6 +46,7 @@ from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.vllm.structure.sequence import SequenceData, SamplerOutput, SequenceGroupMetadata
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.vllm.model_executor.utils import set_random_seed
 
 
 class Worker:
@@ -330,10 +331,3 @@ def _check_if_gpu_supports_dtype(torch_dtype: torch.dtype):
                 f"of at least 8.0. Your {gpu_name} GPU has compute capability "
                 f"{compute_capability[0]}.{compute_capability[1]}.")
 
-
-def set_random_seed(seed: int) -> None:
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
