@@ -35,7 +35,7 @@ import copy
 import enum
 import time
 from typing import Dict, List, Optional, Union
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.sampling_params import SamplingParams
 from bigdl.llm.utils.common import invalidInputError
 
 

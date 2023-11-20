@@ -37,9 +37,9 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 from bigdl.llm.vllm.config import SchedulerConfig
 from bigdl.llm.vllm.core.policy import PolicyFactory
 from bigdl.llm.vllm.logger import init_logger
-from bigdl.llm.vllm.structure.sequence import SequenceData, SequenceStatus
-from bigdl.llm.vllm.structure.sequence import (Sequence, SequenceGroup,
-                                               SequenceGroupMetadata)
+from bigdl.llm.vllm.sequence import SequenceData, SequenceStatus
+from bigdl.llm.vllm.sequence import (Sequence, SequenceGroup,
+                                     SequenceGroupMetadata)
 from bigdl.llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)

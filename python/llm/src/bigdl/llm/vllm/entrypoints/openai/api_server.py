@@ -62,8 +62,8 @@ from bigdl.llm.vllm.entrypoints.openai.openai_protocol import (
     ChatCompletionResponseStreamChoice, ChatCompletionStreamResponse,
     ModelList)
 from bigdl.llm.vllm.logger import init_logger
-from bigdl.llm.vllm.structure.outputs import RequestOutput
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.outputs import RequestOutput
+from bigdl.llm.vllm.sampling_params import SamplingParams
 from bigdl.llm.vllm.utils.llm_utils import get_tokenizer
 import uuid
 from bigdl.llm.utils.common import invalidInputError

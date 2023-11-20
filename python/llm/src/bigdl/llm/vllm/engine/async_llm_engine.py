@@ -40,8 +40,8 @@ from bigdl.llm.vllm.config import ModelConfig
 from bigdl.llm.vllm.engine.arg_utils import AsyncEngineArgs
 from bigdl.llm.vllm.engine.llm_engine import LLMEngine
 from bigdl.llm.vllm.logger import init_logger
-from bigdl.llm.vllm.structure.outputs import RequestOutput
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.outputs import RequestOutput
+from bigdl.llm.vllm.sampling_params import SamplingParams
 from bigdl.llm.utils.common import invalidInputError
 logger = init_logger(__name__)
 

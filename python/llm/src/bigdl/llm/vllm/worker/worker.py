@@ -43,8 +43,8 @@ import random
 from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
 from bigdl.llm.vllm.model_executor.model_loader import get_model
 from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
-from bigdl.llm.vllm.structure.sequence import SequenceData, SamplerOutput, SequenceGroupMetadata
+from bigdl.llm.vllm.sampling_params import SamplingParams
+from bigdl.llm.vllm.sequence import SequenceData, SamplerOutput, SequenceGroupMetadata
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.vllm.model_executor.utils import set_random_seed
 

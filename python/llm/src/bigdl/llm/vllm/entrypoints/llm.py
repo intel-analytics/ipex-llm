@@ -39,8 +39,8 @@ from bigdl.llm.vllm.engine.arg_utils import EngineArgs
 from bigdl.llm.vllm.engine.llm_engine import LLMEngine
 
 # from vllm.outputs import RequestOutput
-from bigdl.llm.vllm.structure.outputs import RequestOutput
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.outputs import RequestOutput
+from bigdl.llm.vllm.sampling_params import SamplingParams
 from bigdl.llm.vllm.utils.llm_utils import Counter
 
 

@@ -38,8 +38,8 @@ import torch.nn as nn
 
 from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
 
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams, SamplingType
-from bigdl.llm.vllm.structure.sequence import (SamplerOutput, SequenceGroupMetadata,
+from bigdl.llm.vllm.sampling_params import SamplingParams, SamplingType
+from bigdl.llm.vllm.sequence import (SamplerOutput, SequenceGroupMetadata,
                                                SequenceData, SequenceOutputs)
 
 import time

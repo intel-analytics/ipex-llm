@@ -40,9 +40,9 @@ from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
 from bigdl.llm.vllm.engine.arg_utils import EngineArgs
 from bigdl.llm.vllm.logger import init_logger
-from bigdl.llm.vllm.structure.outputs import RequestOutput
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
-from bigdl.llm.vllm.structure.sequence import (
+from bigdl.llm.vllm.outputs import RequestOutput
+from bigdl.llm.vllm.sampling_params import SamplingParams
+from bigdl.llm.vllm.sequence import (
     SamplerOutput,
     Sequence,
     SequenceGroup,
