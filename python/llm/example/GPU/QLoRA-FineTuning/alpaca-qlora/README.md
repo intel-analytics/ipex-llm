@@ -58,6 +58,18 @@ bash finetune_llama2_7b_pvc_1100_1_card.sh
 bash finetune_llama2_7b_pvc_1100_4_card.sh
 ```
 
+#### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
+
+```bash
+bash finetune_llama2_7b_pvc_1550_1_card.sh
+```
+
+#### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
+
+```bash
+bash finetune_llama2_7b_pvc_1550_4_card.sh
+```
+
 ### 4. Sample Output
 ```log
 {'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
