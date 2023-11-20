@@ -63,6 +63,7 @@ def train(
     batch_size: int = 128,
     micro_batch_size: int = 2,  # default to be 2, limited by CPU memory
     num_epochs: int = 3,
+    max_steps: int = -1,   # if set to a positive number, it will verride num_train_epochs
     learning_rate: float = 3e-5,  # default to be 3e-5 to avoid divergence
     cutoff_len: int = 256,
     val_set_size: int = 2000,
@@ -288,6 +289,7 @@ def train(
             gradient_accumulation_steps=gradient_accumulation_steps,
             # warmup_ratio=0.03,
             # warmup_steps=100,
+            max_steps=max_steps,
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,

@@ -48,20 +48,19 @@ python ./alpaca_qlora_finetuning_cpu.py \
 Now the prompter is for the datasets with `instruction` `input`(optional) and `output`. If you want to use different datasets,
 you can add template file xxx.json in templates. And then update utils.prompter.py's `generate_prompt` method and update `generate_and_tokenize_prompt` method to fix the dataset.
 For example, I want to train llama2-7b with [english_quotes](https://huggingface.co/datasets/Abirate/english_quotes) just like [this example](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py)
-1. add english_quotes.json
+1. add template english_quotes.json
 ```json
 {
-    "prompt_no_input": "{quote} ->: {tags}"
+    "prompt": "“{quote}” ->: {tags}"
 }
 ```
-2. update prompter.py
+2. update prompter.py and add new generate_prompt method
 ```python
-def generate_prompt(self, quote: str, labels: Union[None, list]=None,) -> str:
-    labels = str(labels)
-    if input:
-        res = self.template["prompt"].format(
-            quote=quote, labels=labels
-        )
+def generate_quote_prompt(self, quote: str, tags: Union[None, list]=None,) -> str:
+    tags = str(tags)
+    res = self.template["prompt"].format(
+        quote=quote, tags=tags
+    )
     if self._verbose:
         print(res)
     return res
@@ -69,10 +68,18 @@ def generate_prompt(self, quote: str, labels: Union[None, list]=None,) -> str:
 3. update generate_and_tokenize_prompt method
 ```python
 def generate_and_tokenize_prompt(data_point):
-    full_prompt = prompter.generate_prompt(
-        data_point["quote"], data_point["labels"]
+    full_prompt = prompter.generate_quote_prompt(
+        data_point["quote"], data_point["tags"]
     )
-    user_prompt = prompter.generate_prompt(
-        data_point["quote"], data_point["labels"]
+    user_prompt = prompter.generate_quote_prompt(
+        data_point["quote"], data_point["tags"]
     )
+```
+4. choose prompt `english_quotes` to train
+```bash
+python ./quotes_qlora_finetuning_cpu.py \
+    --base_model "meta-llama/Llama-2-7b-hf" \
+    --data_path "./english_quotes" \
+    --output_dir "./bigdl-qlora-alpaca" \
+    --prompt_template_name "english_quotes"
 ```
