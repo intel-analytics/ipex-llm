@@ -65,7 +65,7 @@ if __name__ == "__main__":
     tokenizer.pad_token_id = 0
     tokenizer.padding_side = "left"
     
-    # To avoid only one core is used on clien CPU
+    # To avoid only one core is used on client CPU
     isa_checker = ISAChecker()
     bf16_flag = isa_checker.check_avx512()
     
