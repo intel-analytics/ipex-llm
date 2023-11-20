@@ -47,29 +47,29 @@ import time
 _SAMPLING_EPS = 1e-5
 
 
-def tensor_model_parallel_all_gather(input_, dim=-1):
-    """All-gather the input tensor across model parallel group."""
-    world_size = get_tensor_model_parallel_world_size()
-    # Bypass the function if we are using only 1 GPU.
-    if world_size == 1:
-        return input_
-    if dim < 0:
-        # Convert negative dim to positive.
-        dim += input_.dim()
-    input_size = input_.size()
-    # Allocate output tensor.
-    output_tensor = torch.empty((world_size, ) + input_size,
-                                dtype=input_.dtype,
-                                device=input_.device)
-    # All-gather.
-    torch.distributed.all_gather_into_tensor(
-        output_tensor, input_, group=get_tensor_model_parallel_group())
-    # Reshape
-    output_tensor = output_tensor.movedim(0, dim)
-    output_tensor = output_tensor.reshape(input_size[:dim] +
-                                          (world_size * input_size[dim], ) +
-                                          input_size[dim + 1:])
-    return output_tensor
+# def tensor_model_parallel_all_gather(input_, dim=-1):
+#     """All-gather the input tensor across model parallel group."""
+#     world_size = get_tensor_model_parallel_world_size()
+#     # Bypass the function if we are using only 1 GPU.
+#     if world_size == 1:
+#         return input_
+#     if dim < 0:
+#         # Convert negative dim to positive.
+#         dim += input_.dim()
+#     input_size = input_.size()
+#     # Allocate output tensor.
+#     output_tensor = torch.empty((world_size, ) + input_size,
+#                                 dtype=input_.dtype,
+#                                 device=input_.device)
+#     # All-gather.
+#     torch.distributed.all_gather_into_tensor(
+#         output_tensor, input_, group=get_tensor_model_parallel_group())
+#     # Reshape
+#     output_tensor = output_tensor.movedim(0, dim)
+#     output_tensor = output_tensor.reshape(input_size[:dim] +
+#                                           (world_size * input_size[dim], ) +
+#                                           input_size[dim + 1:])
+#     return output_tensor
 
 
 class BigDLSampler(nn.Module):
@@ -132,17 +132,17 @@ class BigDLSampler(nn.Module):
         return _sample(probs, logprobs, input_metadata, st_timestamp)
 
 
-def _get_logits(hidden_states: torch.Tensor, embedding: torch.Tensor,
-                embedding_bias: Optional[torch.Tensor],
-                vocab_size: int) -> torch.Tensor:
-    # Get the logits for the next tokens.
-    logits = torch.matmul(hidden_states, embedding.t())
-    if embedding_bias is not None:
-        logits += embedding_bias
-    logits = tensor_model_parallel_all_gather(logits)
-    # Remove paddings in vocab (if any).
-    logits = logits[:, :vocab_size]
-    return logits
+# def _get_logits(hidden_states: torch.Tensor, embedding: torch.Tensor,
+#                 embedding_bias: Optional[torch.Tensor],
+#                 vocab_size: int) -> torch.Tensor:
+#     # Get the logits for the next tokens.
+#     logits = torch.matmul(hidden_states, embedding.t())
+#     if embedding_bias is not None:
+#         logits += embedding_bias
+#     logits = tensor_model_parallel_all_gather(logits)
+#     # Remove paddings in vocab (if any).
+#     logits = logits[:, :vocab_size]
+#     return logits
 
 
 def _prune_hidden_states(

@@ -39,7 +39,7 @@ import torch.nn as nn
 from transformers import PretrainedConfig
 
 from bigdl.llm.vllm.config import ModelConfig
-from bigdl.llm.vllm.models.bigdl_llama import BigDLLlamaForCausalLM
+from bigdl.llm.vllm.model_executor.models.bigdl_llama import BigDLLlamaForCausalLM
 from bigdl.llm.utils.common import invalidInputError
 
 _MODEL_REGISTRY = {

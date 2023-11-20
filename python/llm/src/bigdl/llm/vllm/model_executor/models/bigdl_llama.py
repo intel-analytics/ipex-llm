@@ -38,7 +38,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizerBase, LlamaConfig
 from typing import Optional, Tuple, List, Type, Dict
 
 from bigdl.llm.vllm.structure.sequence import SequenceOutputs, SequenceGroupMetadata
-from .bigdl_sampler import BigDLSampler
+from bigdl.llm.vllm.model_executor.layers.bigdl_sampler import BigDLSampler
 import math
 import time
 
