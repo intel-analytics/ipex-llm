@@ -2,7 +2,7 @@
 set -x
 source /opt/intel/oneapi/setvars.sh
 export CCL_WORKER_COUNT=$WORLD_SIZE
-export CCL_WORKER_AFFINITY=auto
+source bigdl-llm-init -t
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
@@ -22,6 +22,7 @@ then
     -ppn 1 \
     -f /home/mpiuser/hostfile \
     -iface eth0 \
+    --bind-to socket \
     -genv OMP_NUM_THREADS=$OMP_NUM_THREADS \
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
