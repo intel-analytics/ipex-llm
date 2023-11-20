@@ -43,7 +43,6 @@ from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.vllm.utils.llm_utils import get_open_port
 logger = init_logger(__name__)
 
 
@@ -510,17 +509,16 @@ class AsyncLLMEngine:
         engine_configs = engine_args.create_engine_configs()
         # parallel_config = engine_configs[2]
         # Initialize the cluster.
-        # TODO(gc): consider ray condition later
-        port = get_open_port()
-        distributed_init_method = f"tcp://localhost:{port}"
+        # port = get_open_port()
+        # distributed_init_method = f"tcp://localhost:{port}"
         # Create the async LLM engine.
         engine = cls(
             # engine_args.worker_use_ray,
             # engine_args.engine_use_ray,
             # TODO: we use one less here
             *engine_configs,
-            distributed_init_method,
-            None,
+            # distributed_init_method,
+            # None,
             log_requests=not engine_args.disable_log_requests,
             log_stats=not engine_args.disable_log_stats,
             max_log_len=engine_args.max_log_len,

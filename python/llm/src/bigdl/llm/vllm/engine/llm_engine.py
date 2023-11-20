@@ -54,7 +54,6 @@ from bigdl.llm.vllm.utils.llm_utils import (
     Counter,
     get_tokenizer,
     detokenize_incrementally,
-    get_open_port,
 )
 from bigdl.llm.utils.common import invalidInputError
 
@@ -97,8 +96,8 @@ class LLMEngine:
         model_config: ModelConfig,
         # parallel_config: ParallelConfig,
         scheduler_config: SchedulerConfig,
-        distributed_init_method: str,
-        placement_group,
+        # distributed_init_method: str,
+        # placement_group,
         log_stats: bool,
     ) -> None:
         logger.info(
@@ -135,7 +134,7 @@ class LLMEngine:
         self.seq_counter = Counter()
 
         # Create the parallel GPU workers.
-        self._init_workers(distributed_init_method)
+        self._init_workers()
 
         # Co(gc): we create a fixed scheduler
         self.scheduler = FixedWindowScheduler(scheduler_config)
@@ -147,7 +146,7 @@ class LLMEngine:
         # List of (timestamp, num_tokens)
         self.num_generation_tokens: List[Tuple[float, int]] = []
 
-    def _init_workers(self, distributed_init_method: str):
+    def _init_workers(self):
         # Lazy import the Worker to avoid importing torch.cuda/xformers
         # before CUDA_VISIBLE_DEVICES is set in the Worker
         from bigdl.llm.vllm.worker.worker import (
@@ -164,7 +163,7 @@ class LLMEngine:
             self.model_config,
             self.scheduler_config,
             0,
-            distributed_init_method,
+            # distributed_init_method,
         )
         self.workers.append(worker)
         self._run_workers(
@@ -184,15 +183,15 @@ class LLMEngine:
         engine_configs = engine_args.create_engine_configs()
         # parallel_config = engine_configs[2]
         # Initialize cluster locally.
-        port = get_open_port()
+        # port = get_open_port()
         # We need to setup the distributed init method to make sure
         # the distributed megatron code (e.g., get world size) works correctly.
-        distributed_init_method = f"tcp://localhost:{port}"
+        # distributed_init_method = f"tcp://localhost:{port}"
         # Create the LLM engine.
         engine = cls(
             *engine_configs,
-            distributed_init_method,
-            None,
+            # distributed_init_method,
+            # None,
             log_stats=not engine_args.disable_log_stats,
         )
         return engine

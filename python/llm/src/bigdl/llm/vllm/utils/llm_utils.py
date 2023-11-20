@@ -159,12 +159,6 @@ def get_tokenizer(
     return tokenizer
 
 
-def get_open_port():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))
-        return s.getsockname()[1]
-
-
 def detokenize_incrementally(
     tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
     all_input_ids: List[int],
