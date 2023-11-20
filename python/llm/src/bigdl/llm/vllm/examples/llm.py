@@ -35,8 +35,7 @@ from typing import List, Optional, Union
 from tqdm import tqdm
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
-# from vllm.engine.arg_utils import EngineArgs
-from bigdl.llm.vllm.utils.arg_utils import EngineArgs
+from bigdl.llm.vllm.engine.arg_utils import EngineArgs
 from bigdl.llm.vllm.engine.llm_engine import LLMEngine
 
 # from vllm.outputs import RequestOutput

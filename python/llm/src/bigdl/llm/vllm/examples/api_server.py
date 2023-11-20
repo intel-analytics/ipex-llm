@@ -49,7 +49,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from packaging import version
 import numpy as np
 
-from bigdl.llm.vllm.utils.arg_utils import AsyncEngineArgs
+from bigdl.llm.vllm.engine.arg_utils import AsyncEngineArgs
 from bigdl.llm.vllm.engine.async_llm_engine import AsyncLLMEngine
 from bigdl.llm.vllm.examples.protocol import (
     CompletionResponse, CompletionResponseChoice,

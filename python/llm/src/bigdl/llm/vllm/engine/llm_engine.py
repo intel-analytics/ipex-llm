@@ -38,7 +38,7 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
 
 from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
-from bigdl.llm.vllm.utils.arg_utils import EngineArgs
+from bigdl.llm.vllm.engine.arg_utils import EngineArgs
 from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.vllm.structure.outputs import RequestOutput
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
