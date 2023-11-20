@@ -51,7 +51,7 @@ For example, I want to train llama2-7b with [english_quotes](https://huggingface
 1. add template english_quotes.json
 ```json
 {
-    "prompt": "“{quote}” ->: {tags}"
+    "prompt": "{quote} ->: {tags}"
 }
 ```
 2. update prompter.py and add new generate_prompt method
