@@ -59,7 +59,7 @@ docker run -itd \
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
 
-### 3. Start Fine-Tuning
+### 3. Start Fine-Tuning (Local Mode)
 
 Enter the running container:
 
@@ -70,9 +70,7 @@ docker exec -it bigdl-llm-fintune-qlora-cpu bash
 Then, start QLoRA fine-tuning:
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
-And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
 ```bash
-source bigdl-llm-init -t
 bash start-qlora-finetuning-on-cpu.sh
 ```
 
@@ -127,3 +125,31 @@ Inference time: xxx s
 -------------------- Output --------------------
 “QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: ['bigdl'] ['deep-learning'] ['distributed-computing'] ['intel'] ['optimization'] ['training'] ['training-speed']
 ```
+
+### 4. Start Multi-Porcess Fine-Tuning in One Docker
+
+Multi-process parallelism enables higher performance for QLoRA fine-tuning, e.g. Xeon server series with multi-processor-socket architecture is suitable to run one instance on each QLoRA. This can be done by simply invoke >=2 OneCCL instances in BigDL QLoRA docker:
+
+```bash
+docker run -itd \
+ --name=bigdl-llm-fintune-qlora-cpu \
+ --cpuset-cpus="your_expected_range_of_cpu_numbers" \
+ -e STANDALONE_DOCKER=TRUE \
+ -e WORKER_COUNT_DOCKER=your_worker_count \
+ -v your_downloaded_base_model_path:/model \
+ -v your_downloaded_data_path:/data/alpaca_data_cleaned_archive.json \
+ intelanalytics/bigdl-llm-finetune-qlora-cpu:2.5.0-SNAPSHOT \
+ bash
+```
+
+Note that `STANDALONE_DOCKER` is set to **TRUE** here.
+
+Then following the same way as above to enter the docker container and start fine-tuning:
+
+```bash
+bash start-qlora-finetuning-on-cpu.sh
+```
+
+### 5. Start Distributed Fine-Tuning on Kubernetes
+
+Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here]()
