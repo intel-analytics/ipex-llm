@@ -327,7 +327,7 @@ jobs:
           name: windows-avx2
 
   windows-build-avx2:
-    runs-on: [self-hosted, Windows, AVX-VNNI-Build]
+    runs-on: [self-hosted, Windows, AVX-VNNI-Build-Test]
     needs: check-windows-avx2-artifact
     if: needs.check-windows-avx2-artifact.outputs.if-exists == 'false'
     steps:
@@ -371,7 +371,7 @@ jobs:
           name: windows-avx-vnni
 
   windows-build-avx-vnni:
-    runs-on: [self-hosted, Windows, AVX-VNNI-Build]
+    runs-on: [self-hosted, Windows, AVX-VNNI-Build-Test]
     needs: check-windows-avx-vnni-artifact
     if: needs.check-windows-avx-vnni-artifact.outputs.if-exists == 'false'
     steps:
@@ -480,7 +480,7 @@ jobs:
           name: windows-avx
 
   windows-build-avx:
-    runs-on: [self-hosted, Windows, AVX-VNNI-Build]
+    runs-on: [self-hosted, Windows, AVX-VNNI-Build-Test]
     needs: check-windows-avx-artifact
     if: needs.check-windows-avx-artifact.outputs.if-exists == 'false'
     steps:
