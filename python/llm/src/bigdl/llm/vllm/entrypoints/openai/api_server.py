@@ -57,7 +57,7 @@ from bigdl.llm.vllm.entrypoints.openai.protocol import (
     ChatCompletionResponse, ChatCompletionResponseChoice, ChatMessage,
     DeltaMessage, ErrorResponse, LogProbs, ModelCard, ModelPermission,
     UsageInfo)
-from bigdl.llm.vllm.examples.openai_protocol import (
+from bigdl.llm.vllm.entrypoints.openai.openai_protocol import (
     CompletionRequest, ChatCompletionRequest,
     ChatCompletionResponseStreamChoice, ChatCompletionStreamResponse,
     ModelList)
