@@ -152,4 +152,4 @@ bash start-qlora-finetuning-on-cpu.sh
 
 ### 5. Start Distributed Fine-Tuning on Kubernetes
 
-Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here]()
+Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md).
