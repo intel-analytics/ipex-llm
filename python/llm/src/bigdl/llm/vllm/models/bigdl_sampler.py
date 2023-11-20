@@ -36,7 +36,7 @@ from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 
-from bigdl.llm.vllm.structure.input_metadata import InputMetadata
+from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
 
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams, SamplingType
 from bigdl.llm.vllm.structure.sequence import (SamplerOutput, SequenceGroupMetadata,

@@ -73,6 +73,7 @@ class InputMetadata:
         self.num_generation_tokens = context_lens.shape[0]
 
         # Set during the execution of the first attention op.
+        # TODO(gc): we might want to delete this
         self.attn_bias: List[AttentionBias] = []
 
     def __repr__(self) -> str:
