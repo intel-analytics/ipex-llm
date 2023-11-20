@@ -43,3 +43,36 @@ python ./alpaca_qlora_finetuning_cpu.py \
 {'loss': 1.8552, 'learning_rate': 2.9996503623845395e-05, 'epoch': 0.02}                                                                                                                           
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
+
+### Guide to use different prompts or different datasets
+Now the prompter is for the datasets with `instruction` `input`(optional) and `output`. If you want to use different datasets,
+you can add template file xxx.json in templates. And then update utils.prompter.py's `generate_prompt` method and update `generate_and_tokenize_prompt` method to fix the dataset.
+For example, I want to train llama2-7b with [english_quotes](https://huggingface.co/datasets/Abirate/english_quotes) just like [this example](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py)
+1. add english_quotes.json
+```json
+{
+    "prompt_no_input": "{quote} ->: {tags}"
+}
+```
+2. update prompter.py
+```python
+def generate_prompt(self, quote: str, labels: Union[None, list]=None,) -> str:
+    labels = str(labels)
+    if input:
+        res = self.template["prompt"].format(
+            quote=quote, labels=labels
+        )
+    if self._verbose:
+        print(res)
+    return res
+```
+3. update generate_and_tokenize_prompt method
+```python
+def generate_and_tokenize_prompt(data_point):
+    full_prompt = prompter.generate_prompt(
+        data_point["quote"], data_point["labels"]
+    )
+    user_prompt = prompter.generate_prompt(
+        data_point["quote"], data_point["labels"]
+    )
+```
