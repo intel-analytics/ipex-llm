@@ -128,6 +128,8 @@ Inference time: xxx s
 
 ### 4. Start Multi-Porcess Fine-Tuning in One Docker
 
+![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/f25c43b3-2b24-4476-a0fe-804c0ef3c36c)
+
 Multi-process parallelism enables higher performance for QLoRA fine-tuning, e.g. Xeon server series with multi-processor-socket architecture is suitable to run one instance on each QLoRA. This can be done by simply invoke >=2 OneCCL instances in BigDL QLoRA docker:
 
 ```bash
