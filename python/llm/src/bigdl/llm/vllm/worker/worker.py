@@ -40,8 +40,8 @@ import warnings
 import numpy as np
 import random
 
-from bigdl.llm.vllm.config import ModelConfig, ParallelConfig, SchedulerConfig
-from bigdl.llm.vllm.models.model_loader import get_model
+from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
+from bigdl.llm.vllm.model_executor.model_loader import get_model
 from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
 from bigdl.llm.vllm.structure.sampling_params import SamplingParams
 from bigdl.llm.vllm.structure.sequence import SequenceData, SamplerOutput, SequenceGroupMetadata
