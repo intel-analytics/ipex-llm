@@ -1,5 +1,7 @@
 ## Run NF4&BF16-quantized QLoRA Finetuning on Kubernetes with OneCCL
 
+![image](https://github.com/intel-analytics/BigDL/assets/60865256/825f47d9-c864-4f39-a331-adb1e3cb528e)
+
 BigDL here provides a CPU optimization to accelerate the QLoRA finetuning of Llama2-7b, in the power of mixed-precision and distributed training. Detailedly, [Intel OneCCL](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneccl.html), an available Hugging Face backend, is able to speed up the Pytorch computation with BF16 datatype on CPUs, as well as parallel processing on Kubernetes enabled by [Intel MPI](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html). Moreover, advanaced quantization of BigDL-LLM has been applied to improve memory utilization, which makes CPU large-scale fine-tuning possible with runtime NF4 model storage and BF16 computing types.
 
 The architecture is illustrated in the following:
