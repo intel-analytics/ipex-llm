@@ -50,10 +50,9 @@ from bigdl.llm.vllm.sequence import (
     SequenceStatus,
     SequenceOutputs,
 )
+from bigdl.llm.vllm.transformers_utils.tokenizer import get_tokenizer, detokenize_incrementally
 from bigdl.llm.vllm.utils.llm_utils import (
     Counter,
-    get_tokenizer,
-    detokenize_incrementally,
 )
 from bigdl.llm.utils.common import invalidInputError
 

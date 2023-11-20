@@ -64,7 +64,7 @@ from bigdl.llm.vllm.entrypoints.openai.openai_protocol import (
 from bigdl.llm.vllm.logger import init_logger
 from bigdl.llm.vllm.outputs import RequestOutput
 from bigdl.llm.vllm.sampling_params import SamplingParams
-from bigdl.llm.vllm.utils.llm_utils import get_tokenizer
+from bigdl.llm.vllm.transformers_utils.tokenizer import get_tokenizer
 import uuid
 from bigdl.llm.utils.common import invalidInputError
 
