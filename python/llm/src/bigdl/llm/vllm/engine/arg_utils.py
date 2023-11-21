@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/vllm-project/vllm/blob/main/vllm/engine/arg_utils.py
+# https://github.com/vllm-project/vllm/blob/v0.2.1.post1/vllm/engine/arg_utils.py
 # which is licensed under Apache License 2.0
 #
 # Copyright 2023 The vLLM team. All rights reserved.
@@ -50,9 +50,13 @@ class EngineArgs:
     dtype: str = 'auto'
     seed: int = 0
     max_model_len: Optional[int] = None
+    # bigdl-llm specified code change
+    # bigdl-llm change start
+    # summary: disable model parallel, tensor parallel
     # worker_use_ray: bool = False
     # pipeline_parallel_size: int = 1
     # tensor_parallel_size: int = 1
+    # bigdl-llm change end
     block_size: int = 16
     swap_space: int = 4  # GiB
     gpu_memory_utilization: float = 0.90
@@ -62,7 +66,11 @@ class EngineArgs:
     revision: Optional[str] = None
     tokenizer_revision: Optional[str] = None
     quantization: Optional[str] = None
+    # bigdl-llm specified code change
+    # bigdl-llm change start
+    # summary: add device option
     device: Optional[str] = 'cpu'
+    # bigdl-llm change end
 
     def __post_init__(self):
         if self.tokenizer is None:
@@ -144,7 +152,7 @@ class EngineArgs:
                             default=None,
                             help='model context length. If unspecified, '
                             'will be automatically derived from the model.')
-        # # Parallel arguments
+        # disable Parallel arguments
         # parser.add_argument('--worker-use-ray',
         #                     action='store_true',
         #                     help='use Ray for distributed serving, will be '
@@ -224,16 +232,23 @@ class EngineArgs:
         scheduler_config = SchedulerConfig(self.max_num_batched_tokens,
                                            self.max_num_seqs,
                                            model_config.max_model_len)
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: remove parallel config + cache config
         # parallel_config = ParallelConfig(self.pipeline_parallel_size,
         #                                  self.tensor_parallel_size, False)
-        # return model_config, parallel_config, scheduler_config
+        # bigdl-llm change end
         return model_config, scheduler_config
 
 
 @dataclass
 class AsyncEngineArgs(EngineArgs):
     """Arguments for asynchronous vLLM engine."""
+    # bigdl-llm specified code change
+    # bigdl-llm change start
+    # summary: disable ray
     # engine_use_ray: bool = False
+    # bigdl-llm change end
     disable_log_requests: bool = False
     max_log_len: Optional[int] = None
 
@@ -241,10 +256,6 @@ class AsyncEngineArgs(EngineArgs):
     def add_cli_args(
             parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         parser = EngineArgs.add_cli_args(parser)
-        # parser.add_argument('--engine-use-ray',
-        #                     action='store_true',
-        #                     help='use Ray to start the LLM engine in a '
-        #                     'separate process as the server process.')
         parser.add_argument('--disable-log-requests',
                             action='store_true',
                             help='disable logging requests')

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/vllm-project/vllm/blob/main/vllm/sequence.py
+# https://github.com/vllm-project/vllm/blob/v0.2.1.post1/vllm/sequence.py
 # which is licensed under Apache License 2.0
 #
 # Copyright 2023 The vLLM team. All rights reserved.
