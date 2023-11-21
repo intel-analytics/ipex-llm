@@ -39,6 +39,7 @@ from typing import Optional, Tuple, List, Type, Dict
 
 from bigdl.llm.vllm.sequence import SequenceOutputs, SequenceGroupMetadata
 from bigdl.llm.vllm.model_executor.layers.bigdl_sampler import BigDLSampler
+from bigdl.llm.vllm.model_executor.models.bigdl_model import BigDLModelForCausalLM
 import math
 import time
 
@@ -70,22 +71,7 @@ def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
     return x + [padding_id] * (max_len - len(x))
 
 
-def _pad_kv_cache_view(t: torch.Tensor, len: int,
-                       device: torch.device, pos: int = 2) -> torch.Tensor:
-    cur_size = list(t.size())
-    if cur_size[pos] < len:
-        tmp_size = cur_size[:]
-        tmp_size[pos] = len - cur_size[pos]
-        zeros = torch.zeros(tmp_size, device=device)
-        padded_view = torch.cat((zeros, t), dim=pos)
-        return padded_view
-    if cur_size[pos] > len:
-        padded_view = t.narrow(pos, cur_size[pos] - len, len)
-        return padded_view
-    return t
-
-
-class BigDLLlamaForCausalLM(nn.Module):
+class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
 
     def __init__(
         self,
@@ -93,7 +79,7 @@ class BigDLLlamaForCausalLM(nn.Module):
         device: Optional[str] = None,
         max_model_len: Optional[int] = None,
     ):
-        super().__init__()
+        super().__init__(config, device, max_model_len)
         self.config = config
         # TODO(gc): later change this to a switch?
         if True:
@@ -145,8 +131,8 @@ class BigDLLlamaForCausalLM(nn.Module):
         kv_cache: Optional = None,
         input_metadata: Optional = None,
     ) -> Tuple[torch.Tensor, List[Tuple[torch.Tensor, torch.Tensor]]]:
-        kv_cache_0 = self.model.config.num_hidden_layers
-        kv_cache_1 = 2
+        kv_cache_size_0 = self.model.config.num_hidden_layers
+        kv_cache_size_1 = 2
         seq_len = len(seq_group_meta_data_lists)
 
         bigdl_input_ids = []
@@ -176,43 +162,8 @@ class BigDLLlamaForCausalLM(nn.Module):
             bigdl_sampling_params[seq_id] = seq_group_meta_data.sampling_params
 
         if all_decoding:
-            # pdb.set_trace()
-            max_seq_limit = self.max_seq_limit
-            if (self.tmp_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
-                if self.tmp_kv_cache[0][0].size(2) < max_seq_limit:
-                    bigdl_kv_cache = self.tmp_kv_cache
-                else:
-                    bigdl_kv_cache = [[tmp.narrow(2, self.tmp_kv_cache[0][0].size(2)
-                                       - max_seq_limit, max_seq_limit)
-                                       for tmp in tmp_list] for tmp_list in self.tmp_kv_cache]
-            else:
-                bigdl_kv_cache = []
-                for i in range(kv_cache_0):
-                    cur_list = []
-                    for j in range(kv_cache_1):
-                        cur_view = None
-                        for seq_group_meta_data in seq_group_meta_data_lists:
-                            seq_ids = list(seq_group_meta_data.seq_data.keys())
-                            seq_id = seq_ids[0]
-                            seq_data = seq_group_meta_data.seq_data[seq_id]
-                            view_size = [1] + list(kv_cache[seq_id][i][j].shape)
-                            if cur_view is None:
-                                cur_view = kv_cache[seq_id][i][j].view(view_size)
-                            else:
-                                if cur_view.size(2) != view_size[2]:
-                                    max_len = max(cur_view.size(2), view_size[2])
-                                    cur_view = _pad_kv_cache_view(cur_view, max_len, self.device)
-                                    tmp_view = _pad_kv_cache_view(
-                                        kv_cache[seq_id][i][j].view(view_size),
-                                        max_len, self.device)
-                                    cur_view = torch.cat((cur_view, tmp_view), dim=0)
-                                else:
-                                    cur_view = torch.cat(
-                                        (cur_view, kv_cache[seq_id][i][j].view(view_size)), dim=0)
-                        if cur_view.size(2) > max_seq_limit:
-                            cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
-                        cur_list.append(cur_view)
-                    bigdl_kv_cache.append(cur_list)
+            bigdl_kv_cache = self.prepare_kv_cache(cur_seq_ids, seq_group_meta_data_lists,
+                                                   kv_cache, kv_cache_size_0, kv_cache_size_1)
         else:
             bigdl_input_ids = [
                 _pad_to_max(input_ids, max_context_len, self.pad_token_id)
@@ -259,16 +210,8 @@ class BigDLLlamaForCausalLM(nn.Module):
         logits = outputs.logits[:, -1, :]
         bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
 
-        index = 0
-        for seq_id in cur_seq_ids:
-            if kv_cache.get(seq_id) is None:
-                kv_cache[seq_id] = [[[] for _ in range(kv_cache_1)]
-                                    for _ in range(kv_cache_0)]
-            for i in range(kv_cache_0):
-                for j in range(kv_cache_1):
-                    kv_cache[seq_id][i][j] = outputs.past_key_values[i][j][
-                        index]
-            index = index + 1
+        self.update_kv_cache(cur_seq_ids, outputs.past_key_values,
+                             kv_cache, kv_cache_size_0, kv_cache_size_1)
 
         return bigdl_output
 
