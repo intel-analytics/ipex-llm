@@ -38,7 +38,7 @@ import torch
 import transformers
 from datasets import load_dataset
 import accelerate
-
+from peft.tuners.lora import LoraLayer
 from transformers import LlamaTokenizer
 from peft import (
     LoraConfig,
@@ -76,6 +76,7 @@ def train(
     data_path: str = "yahma/alpaca-cleaned",
     output_dir: str = "./bigdl-qlora-alpaca",
     # training hyperparams
+    bf16: bool = True,  # default to bf16
     batch_size: int = 128,
     micro_batch_size: int = 2,  # default to be 2, limited by GPU memory
     num_epochs: int = 3,
@@ -300,6 +301,17 @@ def train(
     #     # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available
     #     model.is_parallelizable = True
     #     model.model_parallel = True
+
+    for name, module in model.named_modules():
+        if isinstance(module, LoraLayer):
+            if bf16:
+                module = module.to(torch.bfloat16)
+        if 'norm' in name:
+            module = module.to(torch.float32)
+        if 'lm_head' in name or 'embed_tokens' in name:
+            if hasattr(module, 'weight'):
+                if bf16 and module.weight.dtype == torch.float32:
+                    module = module.to(torch.bfloat16)
 
     trainer = transformers.Trainer(
         model=model,
