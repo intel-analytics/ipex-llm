@@ -16,6 +16,7 @@ pip install --pre --upgrade bigdl-llm[all]
 pip install transformers==4.34.0
 pip install peft==0.5.0
 pip install datasets
+pip install accelerate==0.23.0
 ```
 
 ### 2. Finetune model
