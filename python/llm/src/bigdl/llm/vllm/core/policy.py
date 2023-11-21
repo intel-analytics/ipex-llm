@@ -37,7 +37,6 @@ from bigdl.llm.vllm.sequence import SequenceGroup
 from bigdl.llm.utils.common import invalidInputError
 
 
-
 class Policy:
 
     def get_priority(
