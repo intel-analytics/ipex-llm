@@ -41,7 +41,7 @@ from bigdl.llm.vllm.engine.llm_engine import LLMEngine
 # from vllm.outputs import RequestOutput
 from bigdl.llm.vllm.outputs import RequestOutput
 from bigdl.llm.vllm.sampling_params import SamplingParams
-from bigdl.llm.vllm.utils.llm_utils import Counter
+from bigdl.llm.vllm.utils import Counter
 
 
 class LLM:
