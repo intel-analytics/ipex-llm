@@ -2,8 +2,7 @@
 
 This example demonstrates how to serving a llama2-7b model using BigDL-LLM 4 bits optimizations with xeon CPUs with adapted vLLM.
 
-The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm).
-
+The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
 
 ## Example: Serving llama2-7b using Xeon CPU
 
