@@ -39,8 +39,9 @@ from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 from bigdl.llm.vllm.utils import random_uuid
-from bigdl.llm.vllm.entrypoints.openai.openai_protocol import (ErrorResponse, ModelPermission, ModelCard,
-                                                     UsageInfo, LogProbs, ChatMessage, DeltaMessage)
+from bigdl.llm.vllm.entrypoints.openai.openai_protocol import (
+    ErrorResponse, ModelPermission, ModelCard, UsageInfo, LogProbs, ChatMessage, DeltaMessage
+)
 
 
 class CompletionResponseChoice(BaseModel):

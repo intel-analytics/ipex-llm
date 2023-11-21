@@ -40,7 +40,7 @@ from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
 
 from bigdl.llm.vllm.sampling_params import SamplingParams, SamplingType
 from bigdl.llm.vllm.sequence import (SamplerOutput, SequenceGroupMetadata,
-                                               SequenceData, SequenceOutputs)
+                                     SequenceData, SequenceOutputs)
 
 import time
 
