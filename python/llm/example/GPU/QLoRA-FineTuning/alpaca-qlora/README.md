@@ -76,6 +76,15 @@ bash finetune_llama2_7b_pvc_1550_1_card.sh
 bash finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
+**Important: If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+```bash
+python ./alpaca_qlora_finetuning.py \
+    --base_model "meta-llama/Llama-2-7b-hf" \
+    --data_path "yahma/alpaca-cleaned" \
+    --output_dir "./bigdl-qlora-alpaca" \
+    --resume_from_checkpoint "./bigdl-qlora-alpaca/checkpoint-1100"
+```
+
 ### 4. Sample Output
 ```log
 {'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
