@@ -44,7 +44,8 @@ if __name__ == "__main__":
         row['prediction'] = row['quote'] + ' ->: ' + str(row['tags'])
         return row
     data['train'] = data['train'].map(merge)
-    data = data.map(lambda samples: tokenizer(samples["prediction"]), batched=True)
+    # use the max_length to reduce memory usage, should be adjusted by different datasets
+    data = data.map(lambda samples: tokenizer(samples["prediction"], max_length=256), batched=True)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_low_bit="sym_int4",
                                                  optimize_model=False,
@@ -85,6 +86,7 @@ if __name__ == "__main__":
             optim="adamw_hf",  # paged_adamw_8bit is not supported yet
             # gradient_checkpointing=True, # can further reduce memory but slower
         ),
+        # Inputs are dynamically padded to the maximum length of a batch
         data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
