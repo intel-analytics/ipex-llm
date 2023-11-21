@@ -14,6 +14,7 @@ usage() {
   echo "WORKER_HOST (default: localhost)."
   echo "WORKER_PORT (default: 21002)."
   echo "MODEL_PATH (default: empty)."
+  echo "STREAM_INTERVAL (default: 1)."
   exit 1
 }
 
@@ -83,6 +84,7 @@ model_path=""
 mode=""
 omp_num_threads=""
 dispatch_method="shortest_queue" # shortest_queue or lottery
+stream_interval=1
 
 # Update rootCA config if needed
 update-ca-certificates
@@ -157,6 +159,10 @@ else
     dispatch_method=$DISPATCH_METHOD
   fi
 
+  if [[ -n $STREAM_INTERVAL ]]; then
+    stream_interval=$STREAM_INTERVAL
+  fi
+
   controller_address="http://$controller_host:$controller_port"
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
@@ -194,7 +200,7 @@ else
     fi
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
+    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address --stream-interval $stream_interval
   fi
 fi
 
