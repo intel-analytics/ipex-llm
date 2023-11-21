@@ -14,17 +14,16 @@
 # limitations under the License.
 #
 
-export CCL_ZE_IPC_EXCHANGE=sockets
 export MASTER_ADDR=127.0.0.1
-export OMP_NUM_THREADS=16 # adjust this to 1/4 of total physical cores
+export OMP_NUM_THREADS=12 # adjust this to 1/4 of total physical cores
+export FI_PROVIDER=tcp
+export CCL_ATL_TRANSPORT=ofi
 
-torchrun --standalone \
-         --nnodes=1 \
-         --nproc-per-node 3 \
-         ./alpaca_qlora_finetuning.py \
-         --base_model "meta-llama/Llama-2-7b-hf" \
-         --data_path "yahma/alpaca-cleaned" \
-         --output_dir "./bigdl-qlora-alpaca" \
-         --gradient_checkpointing False \
-         --micro_batch_size 2 \
-         --batch_size 128
+mpirun -n 3 \
+       python -u ./alpaca_qlora_finetuning.py \
+       --base_model "meta-llama/Llama-2-7b-hf" \
+       --data_path "yahma/alpaca-cleaned" \
+       --output_dir "./bigdl-qlora-alpaca" \
+       --gradient_checkpointing False \
+       --micro_batch_size 2 \
+       --batch_size 128 > training.log

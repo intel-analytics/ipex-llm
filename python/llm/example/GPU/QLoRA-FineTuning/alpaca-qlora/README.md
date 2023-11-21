@@ -40,6 +40,12 @@ bash finetune_llama2_7b_arc_1_card.sh
 bash finetune_llama2_7b_arc_2_card.sh
 ```
 
+#### Finetuning LLaMA2-7B on single Data Center GPU Flex 170
+
+```bash
+bash finetune_llama2_7b_flex_170_1_card.sh
+```
+
 #### Finetuning LLaMA2-7B on three Data Center GPU Flex 170
 
 ```bash
@@ -56,6 +62,18 @@ bash finetune_llama2_7b_pvc_1100_1_card.sh
 
 ```bash
 bash finetune_llama2_7b_pvc_1100_4_card.sh
+```
+
+#### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
+
+```bash
+bash finetune_llama2_7b_pvc_1550_1_card.sh
+```
+
+#### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
+
+```bash
+bash finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
 ### 4. Sample Output

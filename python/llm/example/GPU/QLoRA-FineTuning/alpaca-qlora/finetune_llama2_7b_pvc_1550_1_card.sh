@@ -19,7 +19,7 @@ export OMP_NUM_THREADS=28 # adjust this to 1/4 of total physical cores
 export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
 
-mpirun -n 4 \
+mpirun -n 2 \
        python -u ./alpaca_qlora_finetuning.py \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
