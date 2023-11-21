@@ -87,7 +87,10 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
 
     def forward(self, x: torch.Tensor):
         autocast_dtype = get_autocast_dtype(x)
-        if autocast_dtype is not None:
+        if x.device.type == "xpu":
+            # force to use bf16 on gpu
+            x = x.to(torch.bfloat16)
+        elif autocast_dtype is not None:
             x = x.to(autocast_dtype)
         result = super().forward(x)
 
@@ -95,7 +98,7 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
             return result
         elif self.r[self.active_adapter] > 0:
             result = result.clone()
-            if autocast_dtype is None:
+            if autocast_dtype is None and x.device.type == "cpu":
                 expected_dtype = result.dtype
                 x = x.to(self.lora_A[self.active_adapter].weight.dtype)
                 output = (
@@ -357,3 +360,15 @@ Accelerator._prepare_ipex = patch_prepare_ipex
 # patch transformer for xpu DDP traing
 from transformers import TrainingArguments
 TrainingArguments._setup_devices = _setup_devices
+
+
+def cast_lora_weight(model, dtype=torch.bfloat16):
+    for name, module in model.named_modules():
+        if isinstance(module, LoraLayer):
+            module = module.to(dtype)
+        if 'norm' in name:
+            module = module.to(torch.float32)
+        if 'lm_head' in name or 'embed_tokens' in name:
+            if hasattr(module, 'weight'):
+                if module.weight.dtype == torch.float32:
+                    module = module.to(dtype)
