@@ -9,7 +9,7 @@ pip install omegaconf
 pip install pandas
 ```
 
-Script for MAX GPU uses libtcmalloc.so from gperftools package for potentially better performance.
+Install gperftools to use libtcmalloc.so for MAX GPU to get better performance:
 ```bash
 conda install -c conda-forge -y gperftools=2.10
 ```
