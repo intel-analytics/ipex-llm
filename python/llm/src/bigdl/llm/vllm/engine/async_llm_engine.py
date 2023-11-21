@@ -217,6 +217,10 @@ class _AsyncLLMEngine(LLMEngine):
         # Execute the model.
         # Co(gc): Now that we do not have page table support, we need to pass the
         # list of sequences that have been finished so that we can clean the KVCache.
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: this is the interface between the upper layer and the lower layer.
+        # we are adding the finished_seqs to lower model.
         output = await self._run_workers_async(
             "execute_model",
             seq_group_metadata_list=seq_group_metadata_list,
@@ -225,6 +229,7 @@ class _AsyncLLMEngine(LLMEngine):
             blocks_to_copy={},
             finished_seqs=scheduler_outputs.finished_seqs,
         )
+        # bigdl-llm change end
         return self._process_model_outputs(output, scheduler_outputs) + ignored
 
     async def _run_workers_async(
@@ -235,6 +240,8 @@ class _AsyncLLMEngine(LLMEngine):
         **kwargs,
     ) -> Any:
         """Runs the given method on all workers."""
+        # bigdl-llm specified code change
+        # bigdl-llm change start
         all_outputs = []
         for worker in self.workers:
             # if self.parallel_config.worker_use_ray:
