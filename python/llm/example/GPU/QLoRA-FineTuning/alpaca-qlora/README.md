@@ -40,6 +40,12 @@ bash finetune_llama2_7b_arc_1_card.sh
 bash finetune_llama2_7b_arc_2_card.sh
 ```
 
+#### Finetuning LLaMA2-7B on single Data Center GPU Flex 170
+
+```bash
+bash finetune_llama2_7b_flex_170_1_card.sh
+```
+
 #### Finetuning LLaMA2-7B on three Data Center GPU Flex 170
 
 ```bash
