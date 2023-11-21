@@ -11,6 +11,7 @@ on:
         options:
         - all
         - bigdl-llm-finetune-lora-cpu
+        - bigdl-llm-finetune-qlora-cpu
         - bigdl-llm-finetune-qlora-xpu
         - bigdl-llm-xpu
         - bigdl-llm-cpu
@@ -86,6 +87,33 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-finetune-qlora-cpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-llm-finetune-qlora-cpu
+        run: |
+          echo "##############################################################"
+          echo "####### bigdl-llm-finetune-qlora-cpu ########"
+          echo "##############################################################"
+          export image=intelanalytics/bigdl-llm-finetune-qlora-cpu
+          cd docker/llm/finetune/qlora/cpu/docker
+          sudo docker build \
+            --no-cache=true \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg no_proxy=${NO_PROXY} \
+            -t ${image}:${TAG} -f ./Dockerfile .
+          sudo docker push ${image}:${TAG}
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-finetune-qlora-xpu:
     if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
