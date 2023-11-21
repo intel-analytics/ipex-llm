@@ -102,7 +102,7 @@ if [ "$#" == 0 ]; then
   exec /usr/bin/tini -s -- "bash"
 else
   # Parse command-line options
-  options=$(getopt -o "m:hw:" --long "mode:,help" -n "$0" -- "$@")
+  options=$(getopt -o "m:hw:" --long "mode:,help,worker:" -n "$0" -- "$@")
   if [ $? != 0 ]; then
     usage
   fi
