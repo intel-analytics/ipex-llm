@@ -19,10 +19,10 @@ import os
 
 import transformers
 from transformers import LlamaTokenizer
-from peft.tuners.lora import LoraLayer
 from peft import LoraConfig
 import intel_extension_for_pytorch as ipex
-from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
+from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, \
+    cast_lora_weight
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
 import argparse
@@ -61,16 +61,7 @@ if __name__ == "__main__":
         task_type="CAUSAL_LM"
     )
     model = get_peft_model(model, config)
-
-    for name, module in model.named_modules():
-        if isinstance(module, LoraLayer):
-            module = module.to(torch.bfloat16)
-        if 'norm' in name:
-            module = module.to(torch.float32)
-        if 'lm_head' in name or 'embed_tokens' in name:
-            if hasattr(module, 'weight'):
-                if module.weight.dtype == torch.float32:
-                    module = module.to(torch.bfloat16)
+    cast_lora_weight(model, torch.bfloat16)
 
     tokenizer.pad_token_id = 0
     tokenizer.padding_side = "left"

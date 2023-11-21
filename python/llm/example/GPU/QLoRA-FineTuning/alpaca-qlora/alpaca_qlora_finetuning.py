@@ -38,7 +38,7 @@ import torch
 import transformers
 from datasets import load_dataset
 import accelerate
-from peft.tuners.lora import LoraLayer
+
 from transformers import LlamaTokenizer
 from peft import (
     LoraConfig,
@@ -51,7 +51,8 @@ import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
-from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
+from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
+    cast_lora_weight
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -302,16 +303,8 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    for name, module in model.named_modules():
-        if isinstance(module, LoraLayer):
-            if bf16:
-                module = module.to(torch.bfloat16)
-        if 'norm' in name:
-            module = module.to(torch.float32)
-        if 'lm_head' in name or 'embed_tokens' in name:
-            if hasattr(module, 'weight'):
-                if bf16 and module.weight.dtype == torch.float32:
-                    module = module.to(torch.bfloat16)
+    if bf16:
+        cast_lora_weight(model, torch.bfloat16)
 
     trainer = transformers.Trainer(
         model=model,

@@ -360,3 +360,15 @@ Accelerator._prepare_ipex = patch_prepare_ipex
 # patch transformer for xpu DDP traing
 from transformers import TrainingArguments
 TrainingArguments._setup_devices = _setup_devices
+
+
+def cast_lora_weight(model, dtype=torch.bfloat16):
+    for name, module in model.named_modules():
+        if isinstance(module, LoraLayer):
+            module = module.to(dtype)
+        if 'norm' in name:
+            module = module.to(torch.float32)
+        if 'lm_head' in name or 'embed_tokens' in name:
+            if hasattr(module, 'weight'):
+                if module.weight.dtype == torch.float32:
+                    module = module.to(dtype)
