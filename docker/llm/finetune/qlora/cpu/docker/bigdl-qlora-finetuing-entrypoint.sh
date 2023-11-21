@@ -6,14 +6,14 @@ source bigdl-llm-init -t
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
-  if [ -d "/model" ];
+  if [ -d "/bigdl/model" ];
   then
-    MODEL_PARAM="--repo-id-or-model-path ./model"  # otherwise, default to download from HF repo
+    MODEL_PARAM="--repo-id-or-model-path /bigdl/model"  # otherwise, default to download from HF repo
   fi
 
-  if [ -d "/data/$DATA_SUB_PATH" ];
+  if [ -d "/bigdl/data/$DATA_SUB_PATH" ];
   then
-    DATA_PARAM="/data/$DATA_SUB_PATH" # otherwise, default to download from HF dataset
+    DATA_PARAM="/bigdl/data/$DATA_SUB_PATH" # otherwise, default to download from HF dataset
   fi
 
   sleep 10
@@ -27,7 +27,7 @@ then
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \
-    python qlora_finetuning_cpu.py \
+    python /bigdl/qlora_finetuning_cpu.py \
       $MODEL_PARAM $DATA_PARAM > /home/mpiuser/launcher.log 2>&1
   exit_status=$?
   if [ $exit_status -ne 0 ];

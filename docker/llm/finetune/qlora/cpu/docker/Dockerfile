@@ -59,10 +59,12 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
     sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
 
-COPY ./qlora_finetuning_cpu.py /qlora_finetuning_cpu.py
-COPY ./start-qlora-finetuning-on-cpu.sh /start-qlora-finetuning-on-cpu.sh
-COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl-qlora-finetuing-entrypoint.sh
+ADD https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/CPU/QLoRA-FineTuning/alpaca-qlora/alpaca_qlora_finetuning_cpu.py /bigdl/qlora_finetuning_cpu.py
+# For docker directly run example
+COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
+# For k8s
+COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl/bigdl-qlora-finetuing-entrypoint.sh
 
-RUN chown -R mpiuser /
+RUN chown -R mpiuser /bigdl
 USER mpiuser
 ENTRYPOINT ["/bin/bash"]
