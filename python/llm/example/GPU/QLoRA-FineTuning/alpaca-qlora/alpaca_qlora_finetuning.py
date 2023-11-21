@@ -51,7 +51,8 @@ import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
-from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
+from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
+    cast_lora_weight
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -76,6 +77,7 @@ def train(
     data_path: str = "yahma/alpaca-cleaned",
     output_dir: str = "./bigdl-qlora-alpaca",
     # training hyperparams
+    bf16: bool = True,  # default to bf16
     batch_size: int = 128,
     micro_batch_size: int = 2,  # default to be 2, limited by GPU memory
     num_epochs: int = 3,
@@ -300,6 +302,9 @@ def train(
     #     # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available
     #     model.is_parallelizable = True
     #     model.model_parallel = True
+
+    if bf16:
+        cast_lora_weight(model, torch.bfloat16)
 
     trainer = transformers.Trainer(
         model=model,
