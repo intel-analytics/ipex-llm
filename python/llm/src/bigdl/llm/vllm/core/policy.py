@@ -36,7 +36,6 @@ from typing import List
 from bigdl.llm.vllm.sequence import SequenceGroup
 from bigdl.llm.utils.common import invalidInputError
 
-# We need to adapt this file cause we use our own SequenceGroup
 
 
 class Policy:

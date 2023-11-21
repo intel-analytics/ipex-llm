@@ -55,11 +55,17 @@ class SchedulerOutputs:
         ignored_seq_groups: List[SequenceGroup],
         finished_seqs: List[int],
     ) -> None:
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # Summary: we are removing block table related arguments
+        # We also added finished_seqs so that workers know which sequences
+        # can be safely deleted
         self.scheduled_seq_groups = scheduled_seq_groups
         self.prompt_run = prompt_run
         self.num_batched_tokens = num_batched_tokens
         self.ignored_seq_groups = ignored_seq_groups
         self.finished_seqs = finished_seqs
+        # bigdl-llm change end
 
     def is_empty(self) -> bool:
         # NOTE: We do not consider the ignored sequence groups.
@@ -76,6 +82,13 @@ class FixedWindowScheduler:
         self.prompt_limit = min(self.scheduler_config.max_model_len,
                                 self.scheduler_config.max_num_batched_tokens)
 
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: cache_config is removed as we are not implementing the pagetable structure
+        # block manager is also deleted based on the same reasoning.
+        # As we are not using the pagetable, the swapped area is also deleted because
+        # we cannot decide if there is enough memory or not.
+
         # Instantiate the scheduling policy.
         self.policy = PolicyFactory.get_policy(policy_name="fcfs")
 
@@ -85,6 +98,7 @@ class FixedWindowScheduler:
         self.running: List[SequenceGroup] = []
         self.cleaned: List[int] = []
         # Co(gc): We no longer have the swapped space as we are not deciding which to swap
+        # bigdl-llm change end
 
     def add_seq_group(self, seq_group: SequenceGroup) -> None:
         # Add sequence groups to the waiting queue.
@@ -121,7 +135,6 @@ class FixedWindowScheduler:
 
         # Fix the current time.
         now = time.monotonic()
-
         ignored_seq_groups: List[SequenceGroup] = []
         scheduled: List[SequenceGroup] = []
         finished_seqs: List[int] = self.cleaned.copy()
@@ -154,11 +167,15 @@ class FixedWindowScheduler:
                     self.waiting.pop(0)
                     continue
 
+                # bigdl-llm specified code change
+                # bigdl-llm change start
+                # summary: removing block_manager related logic.
                 # TODO(gc): If you can manage to make block_manager work,
                 #  then this will be fine.
                 # If the sequence group cannot be allocated, stop.
                 # if not self.block_manager.can_allocate(seq_group):
                 #     break
+                # bigdl-llm change end
 
                 # If the number of batched tokens exceeds the limit, stop.
                 if (num_batched_tokens + num_prompt_tokens >
@@ -175,8 +192,11 @@ class FixedWindowScheduler:
                 seq_group = self.waiting.pop(0)
                 for seq in seq_group.get_seqs():
                     seq.status = SequenceStatus.RUNNING
-                # TODO(gc): sames here
+                # bigdl-llm specified code change
+                # bigdl-llm change start
+                # summary: removing block_manager related logic.
                 # self._allocate(seq_group)
+                # bigdl-llm change end
                 self.running.append(seq_group)
                 num_batched_tokens += num_prompt_tokens
                 num_curr_seqs += num_new_seqs
@@ -234,7 +254,12 @@ class FixedWindowScheduler:
         return seq_group_metadata_list, scheduler_outputs
 
     def free_seq(self, seq: Sequence) -> None:
+        # bigdl-llm specified change
+        # bigdl-llm change start
+        # summary: The original code free the block in block_manager.
+        # now, we added it into a list to pass to worker in the next model_execute stage.
         self.cleaned.append(seq.seq_id)
+        # bigdl-llm change end
 
     def free_finished_seq_groups(self) -> None:
         self.running = [
