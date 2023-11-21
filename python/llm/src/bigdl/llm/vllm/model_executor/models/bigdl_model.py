@@ -104,6 +104,8 @@ class BigDLModelForCausalLM(nn.Module):
                 bigdl_kv_cache.append(cur_list)
         return bigdl_kv_cache
 
+    # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
+    # sequence_length, embed_size_per_head).
     def update_kv_cache(
         self,
         cur_seq_ids: List[int],
@@ -119,8 +121,7 @@ class BigDLModelForCausalLM(nn.Module):
                                     for _ in range(kv_cache_size_0)]
             for i in range(kv_cache_size_0):
                 for j in range(kv_cache_size_1):
-                    kv_cache[seq_id][i][j] = past_key_values[i][j][
-                        index]
+                    kv_cache[seq_id][i][j] = past_key_values[i][j][index]
             index = index + 1
 
     def forward(
@@ -129,4 +130,11 @@ class BigDLModelForCausalLM(nn.Module):
         kv_cache: Optional = None,
         input_metadata: Optional = None,
     ) -> Tuple[torch.Tensor, List[Tuple[torch.Tensor, torch.Tensor]]]:
+        pass
+
+    def load_weights(self,
+                     model_name_or_path: str,
+                     cache_dir: Optional[str] = None,
+                     load_format: str = "auto",
+                     revision: Optional[str] = None):
         pass

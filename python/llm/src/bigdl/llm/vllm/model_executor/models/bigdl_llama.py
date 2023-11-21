@@ -13,23 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Some parts of this file is adapted from
-# https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/models/llama.py
-# which is licensed under Apache License 2.0
-#
-# Copyright 2023 The vLLM team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import torch
 from torch import nn
@@ -50,21 +33,6 @@ from transformers.generation.logits_process import (
     TopKLogitsWarper,
     TopPLogitsWarper,
 )
-
-
-def prepare_logits_processor(temperature: float, repetition_penalty: float,
-                             top_p: float, top_k: int) -> LogitsProcessorList:
-    processor_list = LogitsProcessorList()
-    # TemperatureLogitsWarper doesn't accept 0.0, 1.0 makes it a no-op so we skip two cases.
-    if temperature >= 1e-5 and temperature != 1.0:
-        processor_list.append(TemperatureLogitsWarper(temperature))
-    # if repetition_penalty > 1.0:
-    #     processor_list.append(RepetitionPenaltyLogitsProcessor(repetition_penalty))
-    if 1e-8 <= top_p < 1.0:
-        processor_list.append(TopPLogitsWarper(top_p))
-    if top_k > 0:
-        processor_list.append(TopKLogitsWarper(top_k))
-    return processor_list
 
 
 def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
@@ -214,10 +182,3 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                              kv_cache, kv_cache_size_0, kv_cache_size_1)
 
         return bigdl_output
-
-    def load_weights(self,
-                     model_name_or_path: str,
-                     cache_dir: Optional[str] = None,
-                     load_format: str = "auto",
-                     revision: Optional[str] = None):
-        pass

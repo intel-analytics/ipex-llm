@@ -30,6 +30,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# bigdl-llm Intel specified code change
+# 
 
 from typing import Dict, List, Optional, Tuple
 
@@ -46,7 +49,8 @@ import time
 
 _SAMPLING_EPS = 1e-5
 
-
+# Summary: Remove method for GPU distributed.
+# bigdl-llm change start 
 # def tensor_model_parallel_all_gather(input_, dim=-1):
 #     """All-gather the input tensor across model parallel group."""
 #     world_size = get_tensor_model_parallel_world_size()
@@ -70,7 +74,7 @@ _SAMPLING_EPS = 1e-5
 #                                           (world_size * input_size[dim], ) +
 #                                           input_size[dim + 1:])
 #     return output_tensor
-
+# bigdl-llm change end
 
 class BigDLSampler(nn.Module):
     """Samples the next tokens from the model's outputs.
