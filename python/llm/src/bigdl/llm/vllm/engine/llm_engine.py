@@ -36,7 +36,7 @@
 #
 
 import time
-from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union, Dict
 
 from bigdl.llm.vllm.config import ModelConfig, SchedulerConfig
 from bigdl.llm.vllm.core.scheduler import SchedulerOutputs, FixedWindowScheduler
@@ -127,6 +127,7 @@ class LLMEngine:
         # self.parallel_config = parallel_config
         self.scheduler_config = scheduler_config
         self.log_stats = log_stats
+        self.kv_cache = dict()
         # self._verify_args()
 
         self.tokenizer = get_tokenizer(
@@ -142,7 +143,7 @@ class LLMEngine:
         self._init_workers()
 
         # Co(gc): we create a fixed scheduler
-        self.scheduler = FixedWindowScheduler(scheduler_config)
+        self.scheduler = FixedWindowScheduler(scheduler_config, kv_cache=self.kv_cache)
 
         # Logging.
         self.last_logging_time = 0.0
@@ -170,6 +171,7 @@ class LLMEngine:
             self.scheduler_config,
             0,
             # distributed_init_method,
+            kv_cache=self.kv_cache
         )
         self.workers.append(worker)
         self._run_workers(

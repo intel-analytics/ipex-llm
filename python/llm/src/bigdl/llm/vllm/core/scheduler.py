@@ -79,6 +79,7 @@ class FixedWindowScheduler:
     def __init__(
         self,
         scheduler_config: SchedulerConfig,
+        kv_cache: Optional[Dict],
     ) -> None:
         self.scheduler_config = scheduler_config
         self.prompt_limit = min(self.scheduler_config.max_model_len,
@@ -98,6 +99,7 @@ class FixedWindowScheduler:
         # Sequence groups in the RUNNING state.
         self.running: List[SequenceGroup] = []
         self.cleaned: List[int] = []
+        self.kv_cache = kv_cache
         # Co(gc): We no longer have the swapped space as we are not deciding which to swap
         # bigdl-llm change end
 
@@ -258,6 +260,8 @@ class FixedWindowScheduler:
         # summary: The original code free the block in block_manager.
         # now, we added it into a list to pass to worker in the next model_execute stage.
         self.cleaned.append(seq.seq_id)
+        # del self.kv_cache[seq.seq_id]
+        # logger.info(f"freed seqs: {seq.seq_id} . now kv cache is: {list(self.kv_cache.keys())} ")
         # bigdl-llm change end
 
     def free_finished_seq_groups(self) -> None:

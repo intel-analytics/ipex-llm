@@ -23,6 +23,8 @@ from typing import Optional, Tuple, List, Type, Dict
 from bigdl.llm.vllm.sequence import SequenceOutputs, SequenceGroupMetadata
 from bigdl.llm.vllm.model_executor.layers.bigdl_sampler import BigDLSampler
 from bigdl.llm.vllm.model_executor.models.bigdl_model import BigDLModelForCausalLM
+from bigdl.llm.vllm.logger import init_logger
+
 import math
 import time
 
@@ -33,6 +35,9 @@ from transformers.generation.logits_process import (
     TopKLogitsWarper,
     TopPLogitsWarper,
 )
+
+
+logger = init_logger(__name__)
 
 
 def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
@@ -172,13 +177,18 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # pdb.set_trace()
         st_timestamp = time.perf_counter()
         outputs = self.model.forward(**kwargs)
-
+        # tmp = torch.xpu.memory_stats()
+        # logger.info(f"0: {tmp['allocated_bytes.all.current']}")
         self.last_seq_ids = cur_seq_ids[:]
         self.tmp_kv_cache = outputs.past_key_values
         logits = outputs.logits[:, -1, :]
         bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
+        # tmp = torch.xpu.memory_stats()
+        # logger.info(f"before: {tmp['allocated_bytes.all.current']}")
 
         self.update_kv_cache(cur_seq_ids, outputs.past_key_values,
                              kv_cache, kv_cache_size_0, kv_cache_size_1)
 
+        # tmp = torch.xpu.memory_stats()
+        # logger.info(f"after: {tmp['allocated_bytes.all.current']}")
         return bigdl_output
