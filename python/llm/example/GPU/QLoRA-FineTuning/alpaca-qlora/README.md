@@ -13,8 +13,8 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install transformers==4.34.0
-pip install fire datasets peft==0.5.0
+pip install datasets transformers==4.34.0
+pip install fire peft==0.5.0
 pip install oneccl_bind_pt==2.0.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
 pip install accelerate==0.23.0
 ```
@@ -74,6 +74,15 @@ bash finetune_llama2_7b_pvc_1550_1_card.sh
 
 ```bash
 bash finetune_llama2_7b_pvc_1550_4_card.sh
+```
+
+**Important: If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+```bash
+python ./alpaca_qlora_finetuning.py \
+    --base_model "meta-llama/Llama-2-7b-hf" \
+    --data_path "yahma/alpaca-cleaned" \
+    --output_dir "./bigdl-qlora-alpaca" \
+    --resume_from_checkpoint "./bigdl-qlora-alpaca/checkpoint-1100"
 ```
 
 ### 4. Sample Output
