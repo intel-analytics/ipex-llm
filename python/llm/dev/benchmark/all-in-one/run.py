@@ -420,7 +420,7 @@ def run_optimize_model_gpu(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                      use_cache=True, low_cpu_mem_usage=True)
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
