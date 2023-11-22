@@ -8,8 +8,8 @@ This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main)
 conda create -n llm python=3.9
 conda activate llm
 pip install --pre --upgrade bigdl-llm[all]
-pip install transformers==4.34.0
-pip install fire datasets peft==0.5.0
+pip install datasets transformers==4.34.0
+pip install fire peft==0.5.0
 pip install accelerate==0.23.0
 ```
 
