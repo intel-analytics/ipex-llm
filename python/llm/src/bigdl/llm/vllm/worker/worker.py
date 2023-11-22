@@ -57,6 +57,10 @@ class Worker:
     distributed inference, each worker is assigned a partition of the model.
     """
 
+# bigdl-llm specified code change
+# bigdl-llm change start
+# summary: Remove config for parallel and cache engine.
+# Add kv_cache dict and methods to maintain.
     def __init__(
         self,
         model_config: ModelConfig,
@@ -309,6 +313,8 @@ class Worker:
                 cache_events=cache_events,
             )
         return output
+
+# bigdl-llm change end
 
 
 def _pad_to_alignment(x: List[int], multiple_of: int) -> List[int]:

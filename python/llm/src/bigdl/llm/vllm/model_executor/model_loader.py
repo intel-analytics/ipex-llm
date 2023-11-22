@@ -42,6 +42,11 @@ from bigdl.llm.vllm.config import ModelConfig
 from bigdl.llm.vllm.model_executor.models.bigdl_llama import BigDLLlamaForCausalLM
 from bigdl.llm.utils.common import invalidInputError
 
+# bigdl-llm specified code change
+# bigdl-llm change start
+# summary: Currently we only support LLAMA model and users can add their models by adding
+# code in ./models dir and then regitering here.
+
 _MODEL_REGISTRY = {
     # "AquilaModel": AquilaForCausalLM,
     # "BaiChuanForCausalLM": BaiChuanForCausalLM,  # baichuan-7b
@@ -65,6 +70,8 @@ _MODEL_REGISTRY = {
 _MODEL_CLASSES_SUPPORT_QUANTIZATION = [
     #     LlamaForCausalLM,
 ]
+
+# bigdl-llm change end
 
 
 @contextlib.contextmanager
@@ -106,6 +113,10 @@ def get_model(model_config: ModelConfig) -> nn.Module:
         # Load the weights from the cached or downloaded files.
         model.load_weights(model_config.model, model_config.download_dir,
                            model_config.load_format, model_config.revision)
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: Only use cuda when device is gpu.
         if model_config.device == 'gpu':
             model = model.cuda()
+        # bigdl-llm change end
     return model.eval()
