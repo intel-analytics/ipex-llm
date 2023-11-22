@@ -99,6 +99,11 @@ class LLMEngine:
         # placement_group,
         log_stats: bool,
     ) -> None:
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: removing parallel_config and related checks.
+        # distributed_init_method/placement_group is related to these configs
+        # so they are removed too.
         logger.info(
             "Initializing an LLM engine with config: "
             f"model={model_config.model!r}, "
@@ -144,6 +149,7 @@ class LLMEngine:
         self.num_prompt_tokens: List[Tuple[float, int]] = []
         # List of (timestamp, num_tokens)
         self.num_generation_tokens: List[Tuple[float, int]] = []
+        # bigdl-llm change end
 
     def _init_workers(self):
         # Lazy import the Worker to avoid importing torch.cuda/xformers
@@ -178,6 +184,9 @@ class LLMEngine:
     @classmethod
     def from_engine_args(cls, engine_args: EngineArgs) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: remove parallel_config and related settings.
         # Create the engine configs.
         engine_configs = engine_args.create_engine_configs()
         # parallel_config = engine_configs[2]
@@ -375,8 +384,11 @@ class LLMEngine:
                     seq_group.add(seq)
                     if not seq.is_finished():
                         pass
-                        # Co(gc): fork_seq is doing some block manager operations
+                        # bigdl-llm specified code change
+                        # bigdl-llm change start
+                        # summary: fork_seq is doing some block manager ops, so we remove this
                         # self.scheduler.fork_seq(parent, seq)
+                        # bigdl-llm change end
 
             # Free the finished and selected parent sequences' memory in block
             # manager. Keep them in the sequence group as candidate output.
@@ -480,7 +492,11 @@ class LLMEngine:
                 seq_group.add(seq)
                 if not seq.is_finished():
                     pass
+                    # bigdl-llm specified code change
+                    # bigdl-llm change start
+                    # summary: fork_seq is doing some block manager ops, so we remove this
                     # self.scheduler.fork_seq(parent, seq)
+                    # bigdl-llm change end
 
         # Free the finished and selected parent sequences' memory in block
         # manager. Keep them in the sequence group as candidate output.
@@ -586,6 +602,9 @@ class LLMEngine:
         else:
             avg_generation_throughput = 0.0
 
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: removing logging of pagetable related arguments
         # total_num_gpu_blocks = self.cache_config.num_gpu_blocks
         # num_free_gpu_blocks = (
         #     self.scheduler.block_manager.get_num_free_gpu_blocks())
@@ -600,6 +619,8 @@ class LLMEngine:
         #     cpu_cache_usage = num_used_cpu_blocks / total_num_cpu_blocks
         # else:
         #     cpu_cache_usage = 0.0
+
+        # bigdl-llm change end
 
         logger.info(
             "Avg prompt throughput: "
@@ -674,7 +695,9 @@ class LLMEngine:
         """Runs the given method on all workers."""
         all_outputs = []
         for worker in self.workers:
-            # Co(gc): we disable ray here
+            # bigdl-llm specified code change
+            # bigdl-llm change start
+            # summary: we disable ray here
             # if self.parallel_config.worker_use_ray:
             #     executor = partial(worker.execute_method.remote, method)
             # else:
@@ -686,6 +709,7 @@ class LLMEngine:
         # if self.parallel_config.worker_use_ray:
         #     all_outputs = ray.get(all_outputs)
 
+        # bigdl-llm change end
         if get_all_outputs:
             return all_outputs
 

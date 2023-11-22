@@ -38,7 +38,6 @@ from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 from bigdl.llm.vllm.engine.arg_utils import EngineArgs
 from bigdl.llm.vllm.engine.llm_engine import LLMEngine
 
-# from vllm.outputs import RequestOutput
 from bigdl.llm.vllm.outputs import RequestOutput
 from bigdl.llm.vllm.sampling_params import SamplingParams
 from bigdl.llm.vllm.utils import Counter
@@ -107,7 +106,11 @@ class LLM:
         seed: int = 0,
         gpu_memory_utilization: float = 0.9,
         swap_space: int = 4,
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: add device option
         device: Optional[str] = "cpu",
+        # bigdl-llm change end
         **kwargs,
     ) -> None:
         if "disable_log_stats" not in kwargs:

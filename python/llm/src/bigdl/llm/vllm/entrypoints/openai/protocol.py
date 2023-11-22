@@ -43,6 +43,9 @@ from bigdl.llm.vllm.entrypoints.openai.openai_protocol import (
     ErrorResponse, ModelPermission, ModelCard, UsageInfo, LogProbs, ChatMessage, DeltaMessage
 )
 
+# bigdl-llm specified code change
+# bigdl-llm change start
+# summary: add token time recording logic
 
 class CompletionResponseChoice(BaseModel):
     index: int
@@ -94,3 +97,4 @@ class ChatCompletionResponse(BaseModel):
     model: str
     choices: List[ChatCompletionResponseChoice]
     usage: UsageInfo
+# bigdl-llm change end

@@ -514,6 +514,9 @@ class AsyncLLMEngine:
         """Creates an async LLM engine from the engine arguments."""
         # Create the engine configs.
         engine_configs = engine_args.create_engine_configs()
+        # bigdl-llm specified code change
+        # bigdl-llm code change start
+        # summary: remove unrelated configs from the code
         # parallel_config = engine_configs[2]
         # Initialize the cluster.
         # port = get_open_port()
@@ -530,4 +533,5 @@ class AsyncLLMEngine:
             log_stats=not engine_args.disable_log_stats,
             max_log_len=engine_args.max_log_len,
             start_engine_loop=start_engine_loop)
+        # bigdl-llm code change end
         return engine

@@ -289,6 +289,10 @@ async def create_chat_completion(request: ChatCompletionRequest,
                 finish_reason=finish_reason,
             )
         elif len(output_token_latency) == 1:
+        # bigdl-llm specified code change
+        # bigdl-llm change start
+        # summary: add token-time recording related logic
+        # other modifications follow the same logic
             choice_data = ChatCompletionResponseStreamChoice(
                 index=index,
                 delta=DeltaMessage(content=text),
@@ -301,6 +305,7 @@ async def create_chat_completion(request: ChatCompletionRequest,
                 finish_reason=finish_reason,
                 first_token_time=output_token_latency[0],
                 rest_token_time=np.mean(output_token_latency[1:]))
+        # bigdl-llm change end
         response = ChatCompletionStreamResponse(
             id=request_id,
             created=created_time,

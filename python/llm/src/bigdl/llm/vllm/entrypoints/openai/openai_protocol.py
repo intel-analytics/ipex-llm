@@ -42,6 +42,9 @@ from pydantic import BaseModel, Field
 
 from bigdl.llm.vllm.utils import random_uuid
 
+# bigdl-llm specified code change
+# bigdl-llm change start
+# summary: add token time recording logic
 
 class ErrorResponse(BaseModel):
     object: str = "error"
@@ -219,3 +222,4 @@ class ChatCompletionStreamResponse(BaseModel):
     created: int = Field(default_factory=lambda: int(time.time()))
     model: str
     choices: List[ChatCompletionResponseStreamChoice]
+# bigdl-llm change end
