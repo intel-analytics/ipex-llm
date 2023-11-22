@@ -31,6 +31,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# bigdl-llm Intel specified code change
+
+
 from typing import Dict, List, Optional
 from bigdl.llm.vllm.sequence import SequenceGroup, SequenceStatus
 
@@ -59,6 +62,8 @@ class CompletionOutput:
         finish_reason: Optional[str] = None,
         output_token_latency: Optional[List[float]] = None,
     ) -> None:
+        # bigdl-llm change start
+        # summary: add token-recording arguments
         self.index = index
         self.text = text
         self.token_ids = token_ids
@@ -66,6 +71,7 @@ class CompletionOutput:
         self.logprobs = logprobs
         self.finish_reason = finish_reason
         self.output_token_latency = output_token_latency
+        # bigdl-llm change end
 
     def finished(self) -> bool:
         return self.finish_reason is not None

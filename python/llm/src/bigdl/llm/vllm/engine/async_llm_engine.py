@@ -30,6 +30,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# 
+# bigdl-llm Intel specified code change
+# 
 
 import asyncio
 import time
@@ -217,7 +220,6 @@ class _AsyncLLMEngine(LLMEngine):
         # Execute the model.
         # Co(gc): Now that we do not have page table support, we need to pass the
         # list of sequences that have been finished so that we can clean the KVCache.
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: this is the interface between the upper layer and the lower layer.
         # we are adding the finished_seqs to lower model.
@@ -240,7 +242,6 @@ class _AsyncLLMEngine(LLMEngine):
         **kwargs,
     ) -> Any:
         """Runs the given method on all workers."""
-        # bigdl-llm specified code change
         # bigdl-llm change start
         all_outputs = []
         for worker in self.workers:
@@ -514,7 +515,6 @@ class AsyncLLMEngine:
         """Creates an async LLM engine from the engine arguments."""
         # Create the engine configs.
         engine_configs = engine_args.create_engine_configs()
-        # bigdl-llm specified code change
         # bigdl-llm code change start
         # summary: remove unrelated configs from the code
         # parallel_config = engine_configs[2]

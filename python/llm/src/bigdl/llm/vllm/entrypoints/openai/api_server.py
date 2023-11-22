@@ -32,6 +32,9 @@
 # limitations under the License.
 # Adapted from
 # https://github.com/lm-sys/FastChat/blob/168ccc29d3f7edc50823016105c024fe2282732a/fastchat/serve/openai_api_server.py
+# 
+# bigdl-llm Intel specified code change
+# 
 
 import argparse
 import asyncio
@@ -289,7 +292,6 @@ async def create_chat_completion(request: ChatCompletionRequest,
                 finish_reason=finish_reason,
             )
         elif len(output_token_latency) == 1:
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: add token-time recording related logic
         # other modifications follow the same logic

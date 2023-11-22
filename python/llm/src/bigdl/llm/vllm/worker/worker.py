@@ -57,7 +57,7 @@ class Worker:
     distributed inference, each worker is assigned a partition of the model.
     """
 
-# bigdl-llm specified code change
+# bigdl-llm Intel specified code change
 # bigdl-llm change start
 # summary: Remove config for parallel and cache engine.
 # Add kv_cache dict and methods to maintain.

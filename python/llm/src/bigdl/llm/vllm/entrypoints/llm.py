@@ -30,6 +30,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# 
+# bigdl-llm Intel specified code change
+# 
 from typing import List, Optional, Union
 
 from tqdm import tqdm
@@ -106,7 +109,6 @@ class LLM:
         seed: int = 0,
         gpu_memory_utilization: float = 0.9,
         swap_space: int = 4,
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: add device option
         device: Optional[str] = "cpu",

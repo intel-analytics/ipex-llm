@@ -30,6 +30,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# bigdl-llm Intel specified code change
+#
 
 import argparse
 import dataclasses
@@ -50,7 +53,6 @@ class EngineArgs:
     dtype: str = 'auto'
     seed: int = 0
     max_model_len: Optional[int] = None
-    # bigdl-llm specified code change
     # bigdl-llm change start
     # summary: disable model parallel, tensor parallel
     # worker_use_ray: bool = False
@@ -66,7 +68,6 @@ class EngineArgs:
     revision: Optional[str] = None
     tokenizer_revision: Optional[str] = None
     quantization: Optional[str] = None
-    # bigdl-llm specified code change
     # bigdl-llm change start
     # summary: add device option
     device: Optional[str] = 'cpu'
@@ -232,7 +233,6 @@ class EngineArgs:
         scheduler_config = SchedulerConfig(self.max_num_batched_tokens,
                                            self.max_num_seqs,
                                            model_config.max_model_len)
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: remove parallel config + cache config
         # parallel_config = ParallelConfig(self.pipeline_parallel_size,
@@ -244,7 +244,6 @@ class EngineArgs:
 @dataclass
 class AsyncEngineArgs(EngineArgs):
     """Arguments for asynchronous vLLM engine."""
-    # bigdl-llm specified code change
     # bigdl-llm change start
     # summary: disable ray
     # engine_use_ray: bool = False

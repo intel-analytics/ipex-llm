@@ -32,6 +32,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# bigdl-llm Intel specified code change
+# 
 
 import time
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
@@ -99,7 +101,6 @@ class LLMEngine:
         # placement_group,
         log_stats: bool,
     ) -> None:
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: removing parallel_config and related checks.
         # distributed_init_method/placement_group is related to these configs
@@ -184,7 +185,6 @@ class LLMEngine:
     @classmethod
     def from_engine_args(cls, engine_args: EngineArgs) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: remove parallel_config and related settings.
         # Create the engine configs.
@@ -384,7 +384,6 @@ class LLMEngine:
                     seq_group.add(seq)
                     if not seq.is_finished():
                         pass
-                        # bigdl-llm specified code change
                         # bigdl-llm change start
                         # summary: fork_seq is doing some block manager ops, so we remove this
                         # self.scheduler.fork_seq(parent, seq)
@@ -492,7 +491,6 @@ class LLMEngine:
                 seq_group.add(seq)
                 if not seq.is_finished():
                     pass
-                    # bigdl-llm specified code change
                     # bigdl-llm change start
                     # summary: fork_seq is doing some block manager ops, so we remove this
                     # self.scheduler.fork_seq(parent, seq)
@@ -602,7 +600,6 @@ class LLMEngine:
         else:
             avg_generation_throughput = 0.0
 
-        # bigdl-llm specified code change
         # bigdl-llm change start
         # summary: removing logging of pagetable related arguments
         # total_num_gpu_blocks = self.cache_config.num_gpu_blocks
@@ -695,7 +692,6 @@ class LLMEngine:
         """Runs the given method on all workers."""
         all_outputs = []
         for worker in self.workers:
-            # bigdl-llm specified code change
             # bigdl-llm change start
             # summary: we disable ray here
             # if self.parallel_config.worker_use_ray:
