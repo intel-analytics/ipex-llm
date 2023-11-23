@@ -1,16 +1,16 @@
-# Serving LLAMA models using vLLM on Intel platforms (experimental support)
+# vLLM continuous batching on Intel CPUs (experimental support)
 
-This example demonstrates how to serving a llama2-7b model using BigDL-LLM 4 bits optimizations with xeon CPUs with adapted vLLM.
+This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel CPU (with BigDL-LLM 4 bits optimizations).
 
 The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
 
-## Example: Serving llama2-7b using Xeon CPU
+## Example: Serving LLaMA2-7B using Xeon CPU
 
 In this example, we will run Llama2-7b model using 48 cores in one socket and provide `OpenAI-compatible` interface for users.
 
 ### 1. Install
 
-The original [vLLM](https://github.com/vllm-project/vllm) is designed to run with `CUDA` environment. To adapt vLLM into `Intel` platforms, install the dependencies like this:
+To run vLLM continuous batching on Intel CPUs, install the dependencies as follows:
 
 ```bash
 # First create an conda environment
@@ -29,7 +29,7 @@ pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
 ```
 
-### 2. Configures Recommending environment variables
+### 2. Configure recommended environment variables
 
 ```bash
 source bigdl-llm-init
@@ -52,7 +52,7 @@ numactl -C 48-95 -m 1 python offline_inference.py
 
 #### Service
 
-To fully utilize the dynamic batching feature of the `vLLM`, you can send requests to the service using curl or other similar methods.  The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting all sequences are finished.
+To fully utilize the continuous batching feature of the `vLLM`, you can send requests to the service using curl or other similar methods.  The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
 ```bash
 #!/bin/bash
@@ -61,7 +61,7 @@ numactl -C 48-95 -m 1 python -m bigdl.llm.vllm.examples.api_server \
         --load-format 'auto' --device cpu --dtype bfloat16
 ```
 
-Then you can access the api server using the following way:
+Then you can access the api server as follows:
 
 ```bash
 
@@ -74,9 +74,10 @@ Then you can access the api server using the following way:
                  "temperature": 0
  }' &
 ```
+
 ### 4. (Optional) Add a new model
 
-Currently we have only supported llama-structure model (including `llama`, `vicuna`, `llama-2`, etc.). To use other model, you may need some adaption to the code.
+Currently we have only supported LLaMA family model (including `llama`, `vicuna`, `llama-2`, etc.). To use aother model, you may need add some adaptions.
 
 #### 4.1 Add model code
 
@@ -84,7 +85,7 @@ Create or clone the Pytorch model code to `./models`.
 
 #### 4.2 Rewrite the forward methods
 
-Refering to `./models/bigdl_llama.py`, it's necessary to maintain a `kv_cache`, which is a nested list of dictionary that maps `req_id` to a three-dimensional tensor **(the structure may vary from models)**. Before the model's actual `forward` method, you could prepare a `past_key_values` according to current `req_id`, and after you need to update the `kv_cache` with `output.past_key_values`. The clearence will be executed when the request is finished.
+Refering to `./models/bigdl_llama.py`, it's necessary to maintain a `kv_cache`, which is a nested list of dictionary that maps `req_id` to a three-dimensional tensor **(the structure may vary from models)**. Before the model's actual `forward` method, you could prepare a `past_key_values` according to current `req_id`, and after that you need to update the `kv_cache` with `output.past_key_values`. The clearence will be executed when the request is finished.
 
 #### 4.3 Register new model
 
