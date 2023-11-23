@@ -7,11 +7,9 @@ source bigdl-llm-init -t
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
-  cd /bigdl/alpaca-qlora
   sleep 10
   export MASTER_ADDR=$(hostname -i)
   export CPU_CORES=$(nproc)
-  source /opt/intel/oneapi/setvars.sh
   mpirun \
     -n $WORLD_SIZE \
     -ppn 1 \
@@ -22,7 +20,7 @@ then
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \
-    python alpaca_qlora_finetuning_cpu.py \
+    python /bigdl/alpaca-qlora/alpaca_qlora_finetuning_cpu.py \
       --base_model '/bigdl/model'  \
       --data_path "/bigdl/data" \
       --output_dir "/home/mpiuser/finetuned_model" \
