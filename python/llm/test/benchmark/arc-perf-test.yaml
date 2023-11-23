@@ -1,4 +1,5 @@
 repo_id:
+  - 'mistralai/Mistral-7B-v0.1'
   - 'meta-llama/Llama-2-7b-chat-hf'
   - 'meta-llama/Llama-2-13b-chat-hf'
   - 'THUDM/chatglm2-6b'
@@ -15,7 +16,6 @@ repo_id:
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'bigscience/bloomz-7b1'
   - 'fnlp/moss-moon-003-sft'
-  - 'mistralai/Mistral-7B-v0.1'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
