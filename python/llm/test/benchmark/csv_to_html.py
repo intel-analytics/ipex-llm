@@ -34,26 +34,47 @@ def main():
             csv_files.append(file_path)
     csv_files.sort(reverse=True)
 
-    data1 = pd.read_csv(csv_files[0], index_col=0)
+    latest_csv = pd.read_csv(csv_files[0], index_col=0)
 
     if len(csv_files)>1:
-        data2 = pd.read_csv(csv_files[1], index_col=0)
+        previous_csv = pd.read_csv(csv_files[1], index_col=0)
 
-        origin_column_1='1st token avg latency (ms)'
-        origin_column_2='2+ avg latency (ms/token)'
+        last1=['']*len(latest_csv.index)
+        diff1=['']*len(latest_csv.index)
+        last2=['']*len(latest_csv.index)
+        diff2=['']*len(latest_csv.index)
 
-        added_column_1='last1'
-        added_column_2='diff1(%)'
-        added_column_3='last2'
-        added_column_4='diff2(%)'
+        latency_1st_token='1st token avg latency (ms)'
+        latency_2_avg='2+ avg latency (ms/token)'
 
-        data1.insert(loc=3,column=added_column_1,value=data2[origin_column_1])
-        data1.insert(loc=4,column=added_column_2,value=round((data2[origin_column_1]-data1[origin_column_1])*100/data2[origin_column_1],2))
-        data1.insert(loc=5,column=added_column_3,value=data2[origin_column_2])
-        data1.insert(loc=6,column=added_column_4,value=round((data2[origin_column_2]-data1[origin_column_2])*100/data2[origin_column_2],2))
+        for latest_csv_ind,latest_csv_row in latest_csv.iterrows():
+
+            latest_csv_model=latest_csv_row['model'].strip()
+            latest_csv_input_output_pairs=latest_csv_row['input/output tokens'].strip()
+            latest_1st_token_latency=latest_csv_row[latency_1st_token]
+            latest_2_avg_latency=latest_csv_row[latency_2_avg]
+
+            for previous_csv_ind,previous_csv_row in previous_csv.iterrows():
+
+                previous_csv_model=previous_csv_row['model'].strip()
+                previous_csv_input_output_pairs=previous_csv_row['input/output tokens'].strip()
+
+                if latest_csv_model==previous_csv_model and latest_csv_input_output_pairs==previous_csv_input_output_pairs:
+
+                    previous_1st_token_latency=previous_csv_row[latency_1st_token]
+                    previous_2_avg_latency=previous_csv_row[latency_2_avg]
+                    last1[latest_csv_ind]=previous_1st_token_latency
+                    diff1[latest_csv_ind]=round((previous_1st_token_latency-latest_1st_token_latency)*100/previous_1st_token_latency,2)
+                    last2[latest_csv_ind]=previous_2_avg_latency
+                    diff2[latest_csv_ind]=round((previous_2_avg_latency-latest_2_avg_latency)*100/previous_2_avg_latency,2)
+
+        latest_csv.insert(loc=3,column='last1',value=last1)
+        latest_csv.insert(loc=4,column='diff1(%)',value=diff1)
+        latest_csv.insert(loc=5,column='last2',value=last2)
+        latest_csv.insert(loc=6,column='diff2(%)',value=diff2)
 
     daily_html=csv_files[0].split(".")[0]+".html"
-    data1.to_html(daily_html)
+    latest_csv.to_html(daily_html)
 
 if __name__ == "__main__":
     sys.exit(main())

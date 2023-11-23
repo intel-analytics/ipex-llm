@@ -6,6 +6,6 @@ docker build \
   --build-arg no_proxy=.. \
   --rm \
   --no-cache \
-  -t intelanalytics/bigdl-ppml-trusted-bigdl-llm-tdx-windows:2.4.0-SNAPSHOT \
+  -t intelanalytics/bigdl-ppml-trusted-bigdl-llm-tdx-windows:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```

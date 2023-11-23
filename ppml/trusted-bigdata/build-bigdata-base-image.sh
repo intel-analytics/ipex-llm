@@ -7,9 +7,9 @@ export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
 export LOCAL_IP=your_local_ip
 
 export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
-export BASE_IMAGE_TAG=2.4.0-SNAPSHOT
+export BASE_IMAGE_TAG=2.5.0-SNAPSHOT
 export BIGDATA_IMAGE_NAME=bigdl-ppml-trusted-bigdata-gramine
-export BIGDATA_IMAGE_TAG=2.4.0-SNAPSHOT
+export BIGDATA_IMAGE_TAG=2.5.0-SNAPSHOT
 
 Proxy_Modified="sudo docker build \
     --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \

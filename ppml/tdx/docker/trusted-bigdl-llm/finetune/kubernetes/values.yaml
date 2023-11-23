@@ -1,4 +1,4 @@
-imageName: intelanalytics/trusted-bigdl-llm-finetune-tdx:2.4.0-SNAPSHOT
+imageName: intelanalytics/trusted-bigdl-llm-finetune-tdx:2.5.0-SNAPSHOT
 trainerNum: 8
 microBatchSize: 8
 nfsServerIp: your_nfs_server_ip

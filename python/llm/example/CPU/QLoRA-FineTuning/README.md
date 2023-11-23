@@ -16,11 +16,16 @@ pip install --pre --upgrade bigdl-llm[all]
 pip install transformers==4.34.0
 pip install peft==0.5.0
 pip install datasets
+pip install accelerate==0.23.0
 ```
 
 ### 2. Finetune model
+If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/BigDL/blob/1747ffe60019567482b6976a24b05079274e7fc8/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C6-L53C6). While gradient checkpointing may improve memory efficiency, it slows training by approximately 20%.
+We Recommend using micro_batch_size of 8 for better performance using 48cores in this example. You can refer to [this guide](https://huggingface.co/docs/transformers/perf_train_gpu_one) for more details.
+And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
 
 ```
+source bigdl-llm-init -t
 python ./qlora_finetuning_cpu.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --dataset DATASET
 ```
 
@@ -36,9 +41,9 @@ python ./qlora_finetuning_cpu.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH -
 {'loss': 1.1698, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.26}
 {'loss': 1.2044, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.29}
 {'loss': 1.1516, 'learning_rate': 0.0, 'epoch': 0.32}
-{'train_runtime': 474.3254, 'train_samples_per_second': 1.687, 'train_steps_per_second': 0.422, 'train_loss': 1.3923714351654053, 'epoch': 0.32}
-100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [07:54<00:00,  2.37s/it]
-TrainOutput(global_step=200, training_loss=1.3923714351654053, metrics={'train_runtime': 474.3254, 'train_samples_per_second': 1.687, 'train_steps_per_second': 0.422, 'train_loss': 1.3923714351654053, 'epoch': 0.32})
+{'train_runtime': xxx, 'train_samples_per_second': xxx, 'train_steps_per_second': xxx, 'train_loss': 1.3923714351654053, 'epoch': 0.32}
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [xx:xx<xx:xx,  xxxs/it]
+TrainOutput(global_step=200, training_loss=1.3923714351654053, metrics={'train_runtime': xx, 'train_samples_per_second': xx, 'train_steps_per_second': xx, 'train_loss': 1.3923714351654053, 'epoch': 0.32})
 ```
 
 ### 3. Merge the adapter into the original model
@@ -59,7 +64,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt "“
 #### Sample Output
 Base_model output
 ```log
-Inference time: 1.7017452716827393 s
+Inference time: xxx s
 -------------------- Prompt --------------------
 “QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:
 -------------------- Output --------------------
@@ -68,7 +73,7 @@ Inference time: 1.7017452716827393 s
 Merged_model output
 ```log
 Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
-Inference time: 2.864234209060669 s
+Inference time: xxx s
 -------------------- Prompt --------------------
 “QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:
 -------------------- Output --------------------

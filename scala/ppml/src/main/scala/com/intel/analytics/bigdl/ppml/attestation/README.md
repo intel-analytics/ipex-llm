@@ -147,7 +147,7 @@ Here is an example sgx-mrenclave policy. You can configure your `mrenclave` and 
 
 3. Use URL of the specified attestation provider during attestation.
 ```bash
-java -Xmx1g -cp /ppml/spark-3.1.3/examples/jars/*:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.4.0-SNAPSHOT/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -t AzureAttestationService -u <your_attestation_provider_url>
+java -Xmx1g -cp /ppml/spark-3.1.3/examples/jars/*:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.5.0-SNAPSHOT/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -t AzureAttestationService -u <your_attestation_provider_url>
 ```
 
 # VerificationCLI - Attestation Service Verification Interface
