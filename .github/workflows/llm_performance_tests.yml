@@ -74,6 +74,20 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
+      - name: Install dependencies
+        shell: bash
+        # pip install transformers_stream_generator for model internlm-chat-7b-8k
+        # pip install tiktoken for model Qwen-7B-Chat-10-12
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade omegaconf
+          python -m pip install --upgrade pandas
+          python -m pip install --upgrade einops
+          python -m pip install --upgrade transformers_stream_generator
+          python -m pip install --upgrade tiktoken
+          python -m pip install transformers==4.34.0
+
       - name: Test on xpu
         shell: bash
         run: |
