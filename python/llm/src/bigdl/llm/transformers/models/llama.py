@@ -105,7 +105,9 @@ def llama_attention_forward_4_31(
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
+    original_dtype = hidden_states.dtype()
     device = hidden_states.device
+    fsdp_flag = check_flash_attention_available(hidden_states)
 
     if self.config.pretraining_tp > 1:
         key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
@@ -127,6 +129,9 @@ def llama_attention_forward_4_31(
         value_states = torch.cat(value_states, dim=-1)
 
     else:
+        # cast hidden_states into fp16 in advance to make use of flash attention optimization
+        if fsdp_flag and q_len > 1:
+            hidden_states = hidden_states.half()
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
@@ -228,7 +233,7 @@ def llama_attention_forward_4_31(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output, attn_weights, past_key_value
+    return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
 def check_flash_attention_available(query):
