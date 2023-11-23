@@ -47,22 +47,26 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-# Install OpenSSH for MPI to communicate between containers
+# install OpenSSH for MPI to communicate between containers
     apt-get install -y --no-install-recommends openssh-client openssh-server && \
     mkdir -p /var/run/sshd && \
-# Allow OpenSSH to talk to containers without asking for confirmation
+# allow OpenSSH to talk to containers without asking for confirmation
 # by disabling StrictHostKeyChecking.
 # mpi-operator mounts the .ssh folder from a Secret. For that to work, we need
 # to disable UserKnownHostsFile to avoid write permissions.
-# Disabling StrictModes avoids directory and files read permission checks.
+# disabling StrictModes avoids directory and files read permission checks.
     sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config && \
     echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
-    sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
-
-ADD https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/CPU/QLoRA-FineTuning/alpaca-qlora/alpaca_qlora_finetuning_cpu.py /bigdl/qlora_finetuning_cpu.py
-# For docker directly run example
+    sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config && \
+# add bigdl-llm qlora cpu example
+    cd /bigdl && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    mv BigDL/python/llm/example/CPU/QLoRA-FineTuning/* . && \
+    rm -r BigDL
+   
+# for docker directly run example
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
-# For k8s
+# for k8s
 COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl/bigdl-qlora-finetuing-entrypoint.sh
 
 RUN chown -R mpiuser /bigdl
