@@ -30,9 +30,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # bigdl-llm Intel specified code change
-# 
+#
 
 import time
 from typing import Dict, Iterable, List, Optional, Tuple, Union
@@ -84,7 +84,6 @@ class FixedWindowScheduler:
         self.prompt_limit = min(self.scheduler_config.max_model_len,
                                 self.scheduler_config.max_num_batched_tokens)
 
-        # bigdl-llm Intel specified code change
         # bigdl-llm change start
         # summary: cache_config is removed as we are not implementing the pagetable structure
         # block manager is also deleted based on the same reasoning.
@@ -169,7 +168,6 @@ class FixedWindowScheduler:
                     self.waiting.pop(0)
                     continue
 
-                # bigdl-llm Intel specified code change
                 # bigdl-llm change start
                 # summary: removing block_manager related logic.
                 # TODO(gc): If you can manage to make block_manager work,
@@ -194,7 +192,6 @@ class FixedWindowScheduler:
                 seq_group = self.waiting.pop(0)
                 for seq in seq_group.get_seqs():
                     seq.status = SequenceStatus.RUNNING
-                # bigdl-llm Intel specified code change
                 # bigdl-llm change start
                 # summary: removing block_manager related logic.
                 # self._allocate(seq_group)

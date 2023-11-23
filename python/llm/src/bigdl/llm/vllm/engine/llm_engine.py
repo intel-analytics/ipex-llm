@@ -33,7 +33,7 @@
 # limitations under the License.
 #
 # bigdl-llm Intel specified code change
-# 
+#
 
 import time
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Tuple, Union
