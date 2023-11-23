@@ -350,15 +350,14 @@ class PSTracker(object):
             return
         envs = {} if envs is None else envs
         self.hostIP = hostIP
-        sock = socket.socket(get_family(hostIP), socket.SOCK_STREAM)
-        for port in range(port, port_end):
-            try:
-                sock.bind(('', port))
-                self.port = port
-                sock.close()
-                break
-            except socket.error:
-                continue
+        with socket.socket(get_family(hostIP), socket.SOCK_STREAM) as sock:
+            for port in range(port, port_end):
+                try:
+                    sock.bind(('', port))
+                    self.port = port
+                    break
+                except socket.error:
+                    continue
         env = os.environ.copy()
 
         env['DMLC_ROLE'] = 'scheduler'
@@ -404,10 +403,10 @@ def get_host_ip(hostIP=None):
             logging.warn('gethostbyname(socket.getfqdn()) failed... trying on hostname()')
             hostIP = socket.gethostbyname(socket.gethostname())
         if hostIP.startswith("127."):
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            # doesn't have to be reachable
-            s.connect(('10.255.255.255', 1))
-            hostIP = s.getsockname()[0]
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                # doesn't have to be reachable
+                s.connect(('10.255.255.255', 1))
+                hostIP = s.getsockname()[0]
     return hostIP
 
 

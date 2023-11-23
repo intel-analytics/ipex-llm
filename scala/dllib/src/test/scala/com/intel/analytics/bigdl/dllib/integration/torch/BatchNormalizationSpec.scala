@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class BatchNormalizationSpec extends TorchSpec {
@@ -211,11 +211,11 @@ class BatchNormalizationSpec extends TorchSpec {
     })
     val gradOutput = Tensor[Double](16, 3)
     i = 0
-    gradOutput.apply1(_ => new SecureRandom().nextDouble())
+    gradOutput.apply1(_ => Random.nextDouble())
 
     val gradOutput2 = Tensor[Double](16, 3)
     i = 0
-    gradOutput2.apply1(_ => new SecureRandom().nextDouble())
+    gradOutput2.apply1(_ => Random.nextDouble())
 
 
     sbn.zeroGradParameters()
@@ -267,7 +267,7 @@ class BatchNormalizationSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val sbn = new BatchNormalization[Double](3, 1e-3)
-    val input = Tensor[Double](16, 3).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](16, 3).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](sbn, input, 1e-3) should be(true)
@@ -278,7 +278,7 @@ class BatchNormalizationSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val sbn = new BatchNormalization[Double](3, 1e-3)
-    val input = Tensor[Double](16, 3).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](16, 3).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](sbn, input, 1e-3) should be(true)

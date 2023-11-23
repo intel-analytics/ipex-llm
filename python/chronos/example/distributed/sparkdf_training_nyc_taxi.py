@@ -24,7 +24,22 @@ from bigdl.chronos.forecaster import TCNForecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from urllib.parse import urlparse
+from os.path import exists
+from bigdl.dllib.utils import log4Error
 
+
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(exists(parsed_uri.path),
+                                "File Not Exist!")
 
 def generate_spark_df(dataset_path):
     spark = OrcaContext.get_spark_session()
@@ -60,6 +75,7 @@ def get_csv(args):
                 csv_writer.writerow(row)
             f.close()
             dataset_path = 'nyc_taxi.csv'
+    is_local_and_existing_uri(dataset_path)
     return dataset_path
 
 

@@ -44,7 +44,6 @@ init_instance() {
         .resource_limits.user_space_max_size = "SGX_MEM_SIZE" |
         .resource_limits.init_num_of_threads = 10 |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
-        .process.default_heap_size = "SGX_HEAP" |
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="4MB" |
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |

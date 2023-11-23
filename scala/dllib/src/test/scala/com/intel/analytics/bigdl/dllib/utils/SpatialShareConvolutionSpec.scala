@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.models.vgg.{Vgg_16}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
@@ -126,11 +126,11 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
     sharedInception.getParameters()._1.equals(
       inception.getParameters()._1) should be (true)
 
-    new SecureRandom().setSeed(100)
-    val input = Tensor(4, 3, 224, 224).apply1(_ => new SecureRandom().nextFloat())
+    Random.setSeed(100)
+    val input = Tensor(4, 3, 224, 224).apply1(_ => Random.nextFloat())
     RandomGenerator.RNG.setSeed(100)
     val output1 = inception.forward(input).toTensor
-    val gradOutput = output1.clone().apply1(_ => new SecureRandom().nextFloat())
+    val gradOutput = output1.clone().apply1(_ => Random.nextFloat())
     val gradInput1 = inception.backward(input, gradOutput)
 
     RandomGenerator.RNG.setSeed(100)
@@ -150,11 +150,11 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
     sharedVgg.getParameters()._1.equals(
       vgg.getParameters()._1) should be (true)
 
-    new SecureRandom().setSeed(100)
-    val input = Tensor(4, 3, 224, 224).apply1(_ => new SecureRandom().nextFloat())
+    Random.setSeed(100)
+    val input = Tensor(4, 3, 224, 224).apply1(_ => Random.nextFloat())
     RandomGenerator.RNG.setSeed(100)
     val output1 = vgg.forward(input).toTensor
-    val gradOutput = output1.clone().apply1(_ => new SecureRandom().nextFloat())
+    val gradOutput = output1.clone().apply1(_ => Random.nextFloat())
     val gradInput1 = vgg.backward(input, gradOutput)
 
     RandomGenerator.RNG.setSeed(100)
@@ -175,11 +175,11 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
       "depth" -> 18, "dataSet" -> DatasetType.ImageNet)))
     sharedResnet.getParameters()._1.copy(resnet.getParameters()._1)
 
-    new SecureRandom().setSeed(100)
-    val input = Tensor(4, 3, 224, 224).apply1(_ => new SecureRandom().nextFloat())
+    Random.setSeed(100)
+    val input = Tensor(4, 3, 224, 224).apply1(_ => Random.nextFloat())
     RandomGenerator.RNG.setSeed(100)
     val output1 = resnet.forward(input).toTensor
-    val gradOutput = output1.clone().apply1(_ => new SecureRandom().nextFloat())
+    val gradOutput = output1.clone().apply1(_ => Random.nextFloat())
     val gradInput1 = resnet.backward(input, gradOutput)
 
     RandomGenerator.RNG.setSeed(100)

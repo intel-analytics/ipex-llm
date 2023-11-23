@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSpec extends FlatSpec with Matchers {
@@ -52,7 +52,7 @@ class LogSpec extends FlatSpec with Matchers {
 class LogSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val log = Log[Float]().setName("log")
-    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(log, input)
   }
 }

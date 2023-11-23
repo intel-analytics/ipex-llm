@@ -3,7 +3,7 @@
 This is a tutorial about how to use `PPMLContext` in python to read/write files in multiple formats(csv, parquet, json etc.). `PPMLContext` provide the ability to save DataFrame as encrypted files and read encrypted files as a plain DataFrame or RDD.
 
 ### 0.How to submit PPMLContext task
-The step 0 is tested based on intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT,
+The step 0 is tested based on intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT,
 which needs to be configured according to the specific environment if using gramine or other image.
 You can refer to [this example](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#bigdl-simplequery-e2e-example) for more detail.
 1. set python home
@@ -12,7 +12,7 @@ export PYTHONHOME=/opt/python-occlum
 ```
 2. set BigDL python lib
 ```
-export PYTHONPATH=/opt/bigdl-2.4.0-SNAPSHOT/python-lib/
+export PYTHONPATH=/opt/bigdl-2.5.0-SNAPSHOT/python-lib/
 ```
 3. update *.py config. For example, encrypt_csv_util.py
 ```

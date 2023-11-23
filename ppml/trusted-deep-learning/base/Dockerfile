@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.3.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
 ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
@@ -17,16 +17,16 @@ ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.9/dist-packages/:/usr/local/lib/"
 RUN mkdir /ppml/examples
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-ADD ./entrypoint.sh /opt/entrypoint.sh
+COPY ./entrypoint.sh /opt/entrypoint.sh
 
 # Small examples for PyTorch
-ADD ./mnist.py                   /ppml/examples/mnist.py
-ADD ./pert.py                    /ppml/examples/pert.py
-ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
-ADD ./pert_nano.py               /ppml/examples/pert_nano.py
-ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
+COPY ./mnist.py                   /ppml/examples/mnist.py
+COPY ./pert.py                    /ppml/examples/pert.py
+COPY ./pert_ipex.py               /ppml/examples/pert_ipex.py
+COPY ./pert_nano.py               /ppml/examples/pert_nano.py
+COPY ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
-ADD ./filelock.patch             /filelock.patch
+COPY ./filelock.patch             /filelock.patch
 
 
 # PyTorch Dependencies

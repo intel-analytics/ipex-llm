@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ConcatTableSpec extends FlatSpec with Matchers {
@@ -93,7 +93,7 @@ class ConcatTableSerialTest extends ModuleSerializationTest {
     val concatTable = new  ConcatTable[Float]().setName("concatTable")
     concatTable.add(Linear[Float](10, 2))
     concatTable.add(Linear[Float](10, 2))
-    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(concatTable, input)
   }
 }

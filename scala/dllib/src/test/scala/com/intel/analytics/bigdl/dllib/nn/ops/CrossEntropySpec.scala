@@ -19,13 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class CrossEntropySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val crossEntropy = CrossEntropy[Float]().setName("crossEntropy")
-    val output = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
-    val label = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
+    val output = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    val label = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
     val input = T(output, label)
     runSerializationTest(crossEntropy, input)
   }

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class CastSpec extends FlatSpec with Matchers {
   "Cast operation Float" should "works correctly" in {
@@ -53,7 +53,7 @@ class CastSpec extends FlatSpec with Matchers {
 class CastSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val cast = Cast[Float, Float]().setName("cast")
-    val input = Tensor[Float](2, 2).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(cast, input, cast.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

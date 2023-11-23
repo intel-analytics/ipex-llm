@@ -19,12 +19,12 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class SliceLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val sliceLoadTF = new SliceLoadTF[Float]().setName("sliceLoadTF")
-    val input = T(Tensor[Float](3, 2, 3).apply1(_ => new SecureRandom().nextFloat()),
+    val input = T(Tensor[Float](3, 2, 3).apply1(_ => Random.nextFloat()),
       Tensor[Int](T(0, 1, 1)),
       Tensor[Int](T(2, -1, 1)))
     runSerializationTest(sliceLoadTF, input)

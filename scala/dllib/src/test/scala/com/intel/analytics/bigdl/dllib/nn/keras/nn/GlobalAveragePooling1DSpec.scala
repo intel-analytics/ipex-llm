@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class GlobalAveragePooling1DSpec extends KerasBaseSpec{
 
@@ -50,7 +50,7 @@ class GlobalAveragePooling1DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = GlobalAveragePooling1D[Float](inputShape = Shape(3, 24))
     layer.build(Shape(2, 3, 24))
-    val input = Tensor[Float](2, 3, 24).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 3, 24).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 }

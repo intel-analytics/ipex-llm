@@ -14,7 +14,7 @@ final_name=`intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-productio
 
 ### Pull production image from dockerhub and add self libs or source code.
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT
 ```
 1. enter image
 ```bash
@@ -33,7 +33,7 @@ sudo docker run -it \
         -e SGX_KERNEL_HEAP=1GB \
         -e ENABLE_SGX_DEBUG=true \
         -e ATTESTATION=true \
-        intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT \
+        intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT \
         bash 
 ```
 2. Add python code into /opt/py-examples, add python libs in to /opt/python-occlum, add jars into $BIGDL_HOME/jars.
@@ -49,7 +49,7 @@ docker commit $container_name $container_name-build
 ### Pull production-build image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT-build
 ```
 
 ## Using BigDL PPML Occlum EHSM Attestation

@@ -27,7 +27,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -483,7 +483,7 @@ class RecurrentDecoderSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val recDecoder = RecurrentDecoder[Float](5).
       add(ConvLSTMPeephole[Float](7, 7, 3, 3, 1))
-    val input = Tensor[Float](4, 7, 5, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](4, 7, 5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(recDecoder, input)
   }
 }

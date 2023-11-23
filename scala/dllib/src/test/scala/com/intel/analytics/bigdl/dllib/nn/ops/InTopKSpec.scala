@@ -19,12 +19,12 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class InTopKSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val inTopK = InTopK[Float](2).setName("inTopK")
-    val input1 = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
     val input2 = Tensor[Int](2).fill(1)
     val input = T(input1, input2)
     runSerializationTest(inTopK, input)

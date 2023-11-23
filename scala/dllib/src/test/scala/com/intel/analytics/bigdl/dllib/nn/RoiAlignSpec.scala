@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class RoiAlignSpec extends FlatSpec with Matchers {
   "updateOutput Float type" should "work properly" in {

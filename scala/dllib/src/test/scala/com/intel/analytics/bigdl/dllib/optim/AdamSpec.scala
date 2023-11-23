@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class AdamSpec extends FlatSpec with Matchers with BeforeAndAfter {

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.keras.{KerasBaseSpec, KerasRunner, Regularizer}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class ActivityRegularizationSpec extends KerasBaseSpec {
   "ActivityRegularization" should "same as keras" in {
@@ -59,7 +59,7 @@ class ActivityRegularizationSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val activityRegularization = ActivityRegularization[Float](l1 = 0.01, l2 = 0.01).
       setName("activityRegularization")
-    val input = Tensor[Float](5, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(activityRegularization, input)
   }
 }

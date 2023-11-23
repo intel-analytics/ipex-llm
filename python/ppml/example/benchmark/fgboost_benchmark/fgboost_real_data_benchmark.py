@@ -21,7 +21,22 @@ import time
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.data_utils import *
 from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+from urllib.parse import urlparse
+from os.path import exists
+from bigdl.dllib.utils import log4Error
 
+
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(exists(parsed_uri.path),
+                                "File Not Exist!")
 
 
 if __name__ == '__main__':
@@ -44,7 +59,8 @@ if __name__ == '__main__':
                         help='The boosting rounds.')
     args = parser.parse_args()
 
-    init_fl_context()
+    init_fl_context(1)
+    is_local_and_existing_uri(args.train_path)
     df_train = pd.read_csv(args.train_path)
     fgboost_regression = FGBoostRegression()
     
@@ -65,6 +81,7 @@ if __name__ == '__main__':
                            y_stacked.reshape(-1, y_stacked.shape[-1]),
                            num_round=args.num_round)
     
+    is_local_and_existing_uri(args.test_path)
     df_test = pd.read_csv(args.test_path)
     result = fgboost_regression.predict(df_test, feature_columns=df_x.columns)
     

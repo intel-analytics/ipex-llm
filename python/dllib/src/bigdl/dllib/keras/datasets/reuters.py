@@ -54,12 +54,9 @@ def load_data(dest_dir='/tmp/.zoo/dataset', nb_words=None, oov_char=2, test_spli
     """
     path = download_reuters(dest_dir)
 
-    f = open(path, 'rb')
-
-    x, y = cPickle.load(f)
-    # return data and label, need to separate to train and test
-
-    f.close()
+    with open(path, 'rb') as f:
+        x, y = cPickle.load(f)
+        # return data and label, need to separate to train and test
 
     shuffle_by_seed([x, y])
 
@@ -116,11 +113,9 @@ def get_word_index(dest_dir='/tmp/.zoo/dataset', filename='reuters_word_index.pk
                                dest_dir,
                                'https://s3.amazonaws.com/text-datasets/reuters_word_index.pkl')
 
-    f = open(path, 'rb')
+    with open(path, 'rb') as f:
+        data = cPickle.load(f, encoding='latin1')
 
-    data = cPickle.load(f, encoding='latin1')
-
-    f.close()
     return data
 
 

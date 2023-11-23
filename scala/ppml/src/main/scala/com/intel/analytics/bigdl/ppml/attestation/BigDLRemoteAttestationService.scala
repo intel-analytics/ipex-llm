@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.attestation
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 import java.io.{File, InputStream}
 import java.io.{BufferedOutputStream, BufferedInputStream};
+import java.nio.file.{Paths, Path}
 import java.security.{KeyStore, SecureRandom}
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import java.util.{Base64, UUID}
@@ -58,6 +59,7 @@ case class SGXReportDataPolicy(appID: String, reportData: String) extends Policy
 
 case class TDXMRTDPolicy(appID: String, mrTD: String) extends Policy
 case class TDXReportDataPolicy(appID: String, reportData: String) extends Policy
+case class TDXLaunchTimePolicy(appID: String, mrTD: String, rtmr: String) extends Policy
 
 case class Quote(quote: String)
 
@@ -99,6 +101,8 @@ object BigDLRemoteAttestationService {
         JsonUtil.fromJson(classOf[TDXMRTDPolicy], msg)
       case "TDXReportDataPolicy" =>
         JsonUtil.fromJson(classOf[TDXReportDataPolicy], msg)
+      case "TDXLaunchTimePolicy" =>
+        JsonUtil.fromJson(classOf[TDXLaunchTimePolicy], msg)
       case _ =>
         null
     }
@@ -117,7 +121,7 @@ object BigDLRemoteAttestationService {
     val quote = Base64.getDecoder().decode(quoteBase64.getBytes)
     val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
     if (verifyQuoteResult < 0) {
-      val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+      val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
       complete(400, res)
     } else {
       val curPolicyID = JsonUtil.fromJson(classOf[PolicyBase], msg).policyID
@@ -131,7 +135,7 @@ object BigDLRemoteAttestationService {
           case Some(SGXMREnclavePolicy(policyAppID, policyMREnclave)) =>
             val mrEnclave = AttestationUtil.getMREnclaveFromQuote(quote)
             if (appID == policyAppID && mrEnclave == policyMREnclave) {
-              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
               complete(200, res)
             } else {
               val res = "{\"result\": -1}"
@@ -142,7 +146,7 @@ object BigDLRemoteAttestationService {
             val isvProdID = AttestationUtil.getISVProdIDFromQuote(quote)
             if (appID == policyAppID && mrSigner == policyMRSigner &&
               isvProdID == policyISVProdID) {
-              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
               complete(200, res)
             } else {
               val res = "{\"result\": -1}"
@@ -151,7 +155,7 @@ object BigDLRemoteAttestationService {
           case Some(SGXReportDataPolicy(policyAppID, policyReportData)) =>
             val reportData = AttestationUtil.getReportDataFromSGXQuote(quote)
             if (appID == policyAppID && reportData == policyReportData) {
-              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
               complete(200, res)
             } else {
               val res = "{\"result\": -1}"
@@ -161,7 +165,7 @@ object BigDLRemoteAttestationService {
           case Some(TDXMRTDPolicy(policyAppID, policyMRTD)) =>
             val mrTD = AttestationUtil.getMRTDFromQuote(quote)
             if (appID == policyAppID && mrTD == policyMRTD) {
-              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
               complete(200, res)
             } else {
               val res = "{\"result\": -1}"
@@ -170,7 +174,17 @@ object BigDLRemoteAttestationService {
           case Some(TDXReportDataPolicy(policyAppID, policyReportData)) =>
             val reportData = AttestationUtil.getReportDataFromTDXQuote(quote)
             if (appID == policyAppID && reportData == policyReportData) {
-              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
+              complete(200, res)
+            } else {
+              val res = "{\"result\": -1}"
+              complete(400, res)
+            }
+          case Some(TDXLaunchTimePolicy(policyAppID, policyMRTD, policyRTMR)) =>
+            val mrTD = AttestationUtil.getMRTDFromQuote(quote)
+            val rtmr = AttestationUtil.getRTMRFromQuote(quote)
+            if (appID == policyAppID && mrTD == policyMRTD && rtmr == policyRTMR) {
+              val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
               complete(200, res)
             } else {
               val res = "{\"result\": -1}"
@@ -331,7 +345,10 @@ object BigDLRemoteAttestationService {
     val token = httpsKeyStoreToken.toCharArray
 
     val keyStore = KeyStore.getInstance("PKCS12")
-    val keystoreInputStream = new File(httpsKeyStorePath).toURI().toURL().openStream()
+    val tempHttpsKeyStorePath = Paths.get(httpsKeyStorePath).toAbsolutePath.normalize
+    val httpsKeyStoreFile = tempHttpsKeyStorePath.toFile
+    httpsKeyStoreFile.setExecutable(false)
+    val keystoreInputStream = httpsKeyStoreFile.toURI().toURL().openStream()
 
     keyStore.load(keystoreInputStream, token)
 

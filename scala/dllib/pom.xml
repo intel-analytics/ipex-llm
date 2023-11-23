@@ -5,7 +5,7 @@
     <parent>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>2.4.0-SNAPSHOT</version>
+        <version>2.5.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
 	    <artifactId>hadoop-client</artifactId>
-	    <version>3.2.4</version>
+	    <version>${hadoop.version}</version>
             <scope>${spark-scope}</scope>
             <exclusions>
                 <exclusion>
@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.2.4</version>
+            <version>${hadoop.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -114,7 +114,7 @@
                 <exclusion>
                     <groupId>net.minidev</groupId>
                     <artifactId>json-smart</artifactId>
-                </exclusion>
+	        </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>3.6.2</version>
+            <version>3.7.2</version>
             <scope>${spark-scope}</scope>
             <exclusions>
                 <exclusion>
@@ -140,7 +140,7 @@
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
-                </exclusion>
+	        </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -226,7 +226,7 @@
                 <exclusion>
                     <groupId>org.apache.ivy</groupId>
                     <artifactId>ivy</artifactId>
-                </exclusion>
+	        </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -320,7 +320,7 @@
 	<dependency>
             <groupId>ml.dmlc</groupId>
             <artifactId>xgboost4j_${scala.major.version}</artifactId>
-            <version>1.1.2</version>
+	    <version>${xgboost.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.esotericsoftware.kryo</groupId>
@@ -334,8 +334,8 @@
         </dependency>
         <dependency>
             <groupId>ml.dmlc</groupId>
-            <artifactId>xgboost4j-spark_${scala.major.version}</artifactId>
-            <version>1.1.2</version>
+	    <artifactId>xgboost4j-spark_${scala.major.version}</artifactId>
+	    <version>${xgboost.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.esotericsoftware.kryo</groupId>
@@ -472,7 +472,7 @@
                  or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.5.1</version>
                 <configuration>
                     <filters>
                         <filter>

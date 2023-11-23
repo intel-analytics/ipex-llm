@@ -1,5 +1,5 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-attestation-service-base
-ARG BASE_IMAGE_TAG=2.4.0-SNAPSHOT
+ARG BASE_IMAGE_TAG=2.5.0-SNAPSHOT
 
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
@@ -25,8 +25,6 @@ COPY --from=temp /ppml/bash.manifest /ppml/bash.manifest
 
 # 2.2 output mr_enclave and mr_signer to customer
 RUN cd /ppml && \
-    echo "[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:" && \
-    gramine-sgx-quote-dump -m bash.sig|grep mr_enclave && \
-    gramine-sgx-quote-dump -m bash.sig|grep mr_signer
+    gramine-sgx-get-token --output bash.token --sig bash.sig
 
 ENTRYPOINT [ "/ppml/bigdl-as-entrypoint.sh" ]

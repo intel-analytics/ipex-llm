@@ -23,6 +23,7 @@ import scopt.OptionParser
 import java.io.{BufferedOutputStream, BufferedInputStream};
 import java.io.File;
 import java.io.{FileInputStream, FileOutputStream};
+import java.nio.file.{Paths, Path}
 import java.util.Base64
 import java.security.MessageDigest
 import javax.xml.bind.DatatypeConverter
@@ -163,7 +164,9 @@ object AttestationCLI {
           quote = quoteGenerator.getQuote(userReportData)
         } else {
           println("[INFO] Using generated quote, only for debug!")
-          val quoteFile = new File(quotePath)
+          val tempQuotePath = Paths.get(quotePath).toAbsolutePath.normalize
+          val quoteFile = tempQuotePath.toFile
+          quoteFile.setExecutable(false)
           val in = new FileInputStream(quoteFile)
           val bufIn = new BufferedInputStream(in)
           quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray

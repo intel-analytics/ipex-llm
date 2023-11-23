@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class SeparableConvolution2DSpec extends KerasBaseSpec {
 
@@ -108,7 +108,7 @@ class SeparableConvolution2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = SeparableConvolution2D[Float](1, 2, 2, inputShape = Shape(3, 128, 128))
     layer.build(Shape(2, 3, 128, 128))
-    val input = Tensor[Float](2, 3, 128, 128).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 3, 128, 128).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 }

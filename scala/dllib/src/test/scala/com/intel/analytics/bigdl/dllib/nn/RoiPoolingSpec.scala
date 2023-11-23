@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class RoiPoolingSpec extends FlatSpec with Matchers {
   val data = Array(-3.8623801600318241611, -5.5763739585689267031, 10.298773638368681205,
@@ -258,8 +258,8 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
 class RoiPoolingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = T()
-    val input1 = Tensor[Float](1, 1, 2, 2).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](1, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](1, 1, 2, 2).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](1, 5).apply1(_ => Random.nextFloat())
     input(1.0f) = input1
     input(2.0f) = input2
     val roiPooling = new RoiPooling[Float](pooledW = 3,

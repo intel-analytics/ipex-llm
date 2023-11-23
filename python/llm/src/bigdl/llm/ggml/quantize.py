@@ -24,6 +24,20 @@ from pathlib import Path
 dirname, _ = os.path.split(os.path.abspath(__file__))
 libs_dirname = os.path.dirname(dirname)
 
+# ggml quantized tensor type, this is different from below file quantized type(_quantize_type)
+ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
+                     "asym_int4": 3,  # q4_1 in ggml
+                     "sym_int5": 6,   # q5_0 in ggml
+                     "asym_int5": 7,  # q5_1 in ggml
+                     "sym_int8": 8,   # q8_0 in ggml
+                     "nf4": 10,
+                     "nf3": 11,
+                     "fp16": 12,
+                     "fp8": 15,
+                     "fp4": 16,
+                     "mixed_fp4": 17,     # Mixture of Formats Quantization 4 bits
+                     "mixed_fp8": 18}     # Mixture of Formats Quantization 8 bits
+
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
                         "q5_0": 8,
@@ -62,7 +76,7 @@ def quantize(input_path: str, output_path: str,
     :param dtype: Quantization method which differs in the resulting model disk size and
             inference speed. Defalut to `q4_0`. Difference model family may support
             different types, now the supported list is:
-            llama : "q4_0", "q4_1", "q4_2"
+            llama : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
             bloom : "q4_0", "q4_1"
             gptneox : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
             starcoder : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"

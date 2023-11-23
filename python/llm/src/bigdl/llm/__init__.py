@@ -20,3 +20,4 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .convert_model import llm_convert
+from .optimize import optimize_model 

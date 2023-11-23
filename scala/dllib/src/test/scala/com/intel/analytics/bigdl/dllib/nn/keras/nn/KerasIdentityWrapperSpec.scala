@@ -22,14 +22,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class KerasIdentityWrapperSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = new KerasIdentityWrapper(ReLU[Float]())
     layer.build(Shape(20))
-    val inputData = Tensor[Float](2, 20).apply1(_ => new SecureRandom().nextFloat())
+    val inputData = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
     runSerializationTest(layer.asInstanceOf[AbstractModule[_, _, Float]], inputData)
   }
 }

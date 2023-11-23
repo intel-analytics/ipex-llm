@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.MulConstant
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class MulConstantSpec extends TorchSpec {
     "A MulConstant Module " should "generate correct output and grad" in {
     torchCheck()
     val module = new MulConstant[Double](10)
-    val input = Tensor[Double](1, 5).apply1(e => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](1, 5).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](1, 5).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](1, 5).apply1(e => Random.nextDouble())
 
     val code = "module = nn.MulConstant(10)\n" +
       "output = module:forward(input)\n" +

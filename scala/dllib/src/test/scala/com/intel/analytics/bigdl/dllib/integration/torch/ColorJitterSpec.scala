@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
-import java.security.SecureRandom
+import scala.util.Random
 import com.intel.analytics.bigdl.dllib.feature.dataset.LocalArrayDataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{ColorJitter, LabeledBGRImage}
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, TestUtils}

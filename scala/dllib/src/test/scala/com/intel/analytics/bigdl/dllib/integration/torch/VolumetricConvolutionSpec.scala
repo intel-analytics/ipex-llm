@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.Shape
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class VolumetricConvolutionSpec extends TorchSpec {
@@ -53,7 +53,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    val input = Tensor[Double](3, 100, 56, 56).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 100, 56, 56).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -103,7 +103,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH, withBias = false)
 
-    val input = Tensor[Double](3, 100, 56, 56).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 100, 56, 56).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -155,8 +155,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    val input = Tensor[Double](batch, from, int, inj, ini)
-      .apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -207,8 +206,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH, withBias = false)
 
-    val input = Tensor[Double](batch, from, int, inj, ini)
-      .apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -258,7 +256,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    val input = Tensor[Double](from, int, ini, inj).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](from, int, ini, inj).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)
@@ -289,8 +287,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    val input = Tensor[Double](batch, from, int, ini, inj)
-      .apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)
@@ -320,7 +317,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    val input = Tensor[Double](from, int, ini, inj).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](from, int, ini, inj).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](layer, input, 1e-3) should be(true)
@@ -351,8 +348,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
 
-    val input = Tensor[Double](batch, from, int, ini, inj)
-      .apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](batch, from, int, ini, inj).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](layer, input, 1e-3) should be(true)
@@ -382,8 +378,7 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val inj = (outj - 1) * sj + kj - padH * 2
     val batch = 3
 
-    val input = Tensor[Double](batch, from, int, inj, ini)
-      .apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
 
 
     val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,

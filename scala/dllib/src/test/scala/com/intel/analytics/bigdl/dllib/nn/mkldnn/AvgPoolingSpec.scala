@@ -27,14 +27,13 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class AvgPoolingSpec extends BigDLSpecHelper {
   "Avg Pooling with same padding" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => new SecureRandom().nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 480, 14, 14)
-      .apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
 
     val pad = -1
     RNG.setSeed(100)
@@ -74,10 +73,8 @@ class AvgPoolingSpec extends BigDLSpecHelper {
     Engine.setEngineType(MklDnn)
     RNG.setSeed(100)
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 28, 28, 480)
-      .apply1(e => new SecureRandom().nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 14, 14, 480)
-      .apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => Random.nextFloat())
 
     val pad = -1
     RNG.setSeed(100)
@@ -115,10 +112,8 @@ class AvgPoolingSpec extends BigDLSpecHelper {
 
   "Convert average pooling with ceilMode to dnn layer" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 480, 28, 28)
-      .apply1(e => new SecureRandom().nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 480, 14, 14)
-      .apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
     val layer = SpatialAveragePooling[Float](3, 3, 2, 2).ceil()
@@ -158,7 +153,7 @@ class AvgPoolingSpec extends BigDLSpecHelper {
 
   "Avg Pooling test1" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
     val pool = AvgPooling(3, 3, 2, 2)
@@ -185,7 +180,7 @@ class AvgPoolingSpec extends BigDLSpecHelper {
 
   "Avg Pooling test2" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 64, 112, 112).apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](batchSize, 64, 112, 112).apply1(e => Random.nextFloat())
 
     RNG.setSeed(100)
     val pool = AvgPooling(3, 3, 2, 2)

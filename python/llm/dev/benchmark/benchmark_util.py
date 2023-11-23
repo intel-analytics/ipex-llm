@@ -510,8 +510,12 @@ class BenchmarkWrapper:
     learn more about decoding strategies refer to the [text generation strategies guide](../generation_strategies).
     """
     
-    def __init__(self, model):
+    def __init__(self, model, do_print=False):
         self.model = model
+        self.do_print = do_print
+        self.encoder_time = 0.0
+        self.first_cost = 0.0
+        self.rest_cost_mean = 0.0
         print(self.model.__class__)
 
     def __getattr__(self, attr):
@@ -817,10 +821,7 @@ class BenchmarkWrapper:
         return model_kwargs
 
     def _reorder_cache(self, past_key_values, beam_idx):
-        raise NotImplementedError(
-            f"Make sure that a `_reorder_cache` function is correctly implemented in {self.__class__.__module__} to"
-            f" enable beam search for {self.__class__}"
-        )
+        return self.model._reorder_cache(past_key_values, beam_idx)
 
     def _get_logits_warper(
         self,
@@ -1359,9 +1360,14 @@ class BenchmarkWrapper:
         if self.config.is_encoder_decoder and "encoder_outputs" not in model_kwargs:
             # if model is encoder decoder encoder_outputs are created
             # and added to `model_kwargs`
+            enc_st = time.perf_counter()
             model_kwargs = self._prepare_encoder_decoder_kwargs_for_generation(
                 inputs_tensor, model_kwargs, model_input_name
             )
+            enc_end = time.perf_counter()
+            self.encoder_time = enc_end - enc_st
+            if self.do_print:
+                print(f"=====================encoder cost {enc_end - enc_st} s=======================")
 
         # 5. Prepare `input_ids` which will be used for auto-regressive generation
         if self.config.is_encoder_decoder:
@@ -2358,6 +2364,7 @@ class BenchmarkWrapper:
         first_token_time = None
         last_token_time = []
         while True:
+            st = time.perf_counter()
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
@@ -2372,19 +2379,12 @@ class BenchmarkWrapper:
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
             # forward pass to get next token
-            st = time.perf_counter()
             outputs = self(
                 **model_inputs,
                 return_dict=True,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
             )
-            end = time.perf_counter()
-            if first_token_time is None:
-                first_token_time = end - st
-            else:
-                last_token_time.append(end - st)
-
             if synced_gpus and this_peer_finished:
                 continue  # don't waste resources running the code we don't need
 
@@ -2438,16 +2438,29 @@ class BenchmarkWrapper:
                 if unfinished_sequences.max() == 0:
                     this_peer_finished = True
 
+            if self.device.type == "xpu":
+                torch.xpu.synchronize()
+            end = time.perf_counter()
+            if first_token_time is None:
+                first_token_time = end - st
+            else:
+                last_token_time.append(end - st)
+
             # stop if we exceed the maximum length
             if stopping_criteria(input_ids, scores):
                 this_peer_finished = True
 
             if this_peer_finished and not synced_gpus:
                 break
-        
-        print(f"=========First token cost {first_token_time:.4f}s=========")
+
+        if self.do_print:
+            print(f"=========First token cost {first_token_time:.4f} s=========")
         if len(last_token_time) > 1:
-            print(f"=========Rest tokens cost average {np.mean(last_token_time):.4f}s ({len(last_token_time)} tokens in all)=========")
+            self.first_cost = first_token_time
+            self.rest_cost_mean = np.mean(last_token_time)
+            if self.do_print:
+                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                      f" tokens in all)=========")
 
         if streamer is not None:
             streamer.end()
@@ -2646,8 +2659,12 @@ class BenchmarkWrapper:
         unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
 
         this_peer_finished = False  # used by synced_gpus only
+        
+        first_token_time = None
+        last_token_time = []
         # auto-regressive generation
         while True:
+            st = time.perf_counter()
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
@@ -2724,12 +2741,29 @@ class BenchmarkWrapper:
                 if unfinished_sequences.max() == 0:
                     this_peer_finished = True
 
+            if self.device.type == "xpu":
+                torch.xpu.synchronize()
+            end = time.perf_counter()
+            if first_token_time is None:
+                first_token_time = end - st
+            else:
+                last_token_time.append(end - st)
+
             # stop if we exceed the maximum length
             if stopping_criteria(input_ids, scores):
                 this_peer_finished = True
 
             if this_peer_finished and not synced_gpus:
                 break
+
+        if self.do_print:
+            print(f"=========First token cost {first_token_time:.4f} s=========")
+        if len(last_token_time) > 1:
+            self.first_cost = first_token_time
+            self.rest_cost_mean = np.mean(last_token_time)
+            if self.do_print:
+                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                      f" tokens in all)=========")
 
         if streamer is not None:
             streamer.end()
@@ -2942,6 +2976,7 @@ class BenchmarkWrapper:
         last_token_time = []
         this_peer_finished = False  # used by synced_gpus only
         while True:
+            st = time.perf_counter()
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
@@ -2954,18 +2989,12 @@ class BenchmarkWrapper:
 
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
-            st = time.perf_counter()
             outputs = self(
                 **model_inputs,
                 return_dict=True,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
             )
-            end = time.perf_counter()
-            if first_token_time is None:
-                first_token_time = end - st
-            else:
-                last_token_time.append(end - st)
 
             if synced_gpus and this_peer_finished:
                 cur_len = cur_len + 1
@@ -3041,6 +3070,14 @@ class BenchmarkWrapper:
             # increase cur_len
             cur_len = cur_len + 1
 
+            if self.device.type == "xpu":
+                torch.xpu.synchronize()
+            end = time.perf_counter()
+            if first_token_time is None:
+                first_token_time = end - st
+            else:
+                last_token_time.append(end - st)
+
             if beam_scorer.is_done or stopping_criteria(input_ids, scores):
                 if not synced_gpus:
                     break
@@ -3058,9 +3095,14 @@ class BenchmarkWrapper:
             beam_indices=beam_indices,
         )
 
-        print(f"=========First token cost {first_token_time}s=========")
+        if self.do_print:
+            print(f"=========First token cost {first_token_time:.4f} s=========")
         if len(last_token_time) > 1:
-            print(f"=========Rest token cost average {np.mean(last_token_time)}s ({len(last_token_time)}tokens in all)=========")
+            self.first_cost = first_token_time
+            self.rest_cost_mean = np.mean(last_token_time)
+            if self.do_print:
+                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                      f" tokens in all)=========")
 
         if return_dict_in_generate:
             if not output_scores:
@@ -3277,7 +3319,11 @@ class BenchmarkWrapper:
         beam_scores = beam_scores.view((batch_size * num_beams,))
 
         this_peer_finished = False  # used by synced_gpus only
+        
+        first_token_time = None
+        last_token_time = []
         while True:
+            st = time.perf_counter()
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
                 # The following logic allows an early break if all peers finished generating their sequence
@@ -3384,6 +3430,14 @@ class BenchmarkWrapper:
                 else:
                     this_peer_finished = True
 
+            if self.device.type == "xpu":
+                torch.xpu.synchronize()
+            end = time.perf_counter()
+            if first_token_time is None:
+                first_token_time = end - st
+            else:
+                last_token_time.append(end - st)
+
         sequence_outputs = beam_scorer.finalize(
             input_ids,
             beam_scores,
@@ -3394,6 +3448,15 @@ class BenchmarkWrapper:
             max_length=stopping_criteria.max_length,
             beam_indices=beam_indices,
         )
+
+        if self.do_print:
+            print(f"=========First token cost {first_token_time:.4f} s=========")
+        if len(last_token_time) > 1:
+            self.first_cost = first_token_time
+            self.rest_cost_mean = np.mean(last_token_time)
+            if self.do_print:
+                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                      f" tokens in all)=========")
 
         if return_dict_in_generate:
             if not output_scores:

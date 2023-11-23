@@ -19,13 +19,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class TemporalConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val temporalConvolution = TemporalConvolution[Float](10, 8, 5, 2).
       setName("temporalConvolution")
-    val input = Tensor[Float](100, 10).apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](100, 10).apply1(e => Random.nextFloat())
     runSerializationTest(temporalConvolution, input)
   }
 }

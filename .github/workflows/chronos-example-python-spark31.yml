@@ -59,7 +59,8 @@ jobs:
           bash python/dev/release_default_linux_spark3.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
-          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
+          pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[pytorch,inference]
+          pip install -i https://pypi.python.org/simple intel-tensorflow==2.7.0 tf2onnx==1.13.0 tensorflow==2.7.0
           pip install -i https://pypi.python.org/simple python/dllib/src/dist/bigdl_dllib_*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/orca/src/dist/bigdl_orca_*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos_*-py3-none-manylinux1_x86_64.whl

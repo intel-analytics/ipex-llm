@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class AtrousConvolution2DSpec extends KerasBaseSpec {
 
@@ -52,7 +52,7 @@ class AtrousConvolution2DSerialTest extends ModuleSerializationTest {
     val layer = AtrousConvolution2D[Float](32, 2, 4, atrousRate = (2, 2),
       inputShape = Shape(3, 64, 64))
     layer.build(Shape(2, 3, 64, 64))
-    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 }

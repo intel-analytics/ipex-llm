@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
@@ -444,7 +444,7 @@ class SpatialMaxPoolingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialMaxPooling = SpatialMaxPooling[Float](2, 2, 2, 2).
       setName("spatialMaxPooling")
-    val input = Tensor[Float](1, 3, 3).apply1( e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
     runSerializationTest(spatialMaxPooling, input)
   }
 }

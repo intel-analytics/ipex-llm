@@ -27,15 +27,15 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class GraphNodeSpec extends FlatSpec with Matchers {
 
   "Inception bn to Graph" should "generate correct output" in {
     val batchSize = 2
-    new SecureRandom().setSeed(3)
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
-    val labels = Tensor[Float](batchSize).apply1(e => new SecureRandom().nextInt(1000))
+    Random.setSeed(3)
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](batchSize).apply1(e => Random.nextInt(1000))
 
     val inputNew = input.clone()
 
@@ -73,10 +73,10 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val depth = 18
     val batchSize = 4
     val modelSeed = 101
-    new SecureRandom().setSeed(inputSeed)
+    Random.setSeed(inputSeed)
     val classNum: Int = 1000
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => new SecureRandom().nextFloat())
-    val labels = Tensor[Float](batchSize).apply1(e => new SecureRandom().nextInt(classNum))
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => Random.nextFloat())
+    val labels = Tensor[Float](batchSize).apply1(e => Random.nextInt(classNum))
     val seed = modelSeed
     RNG.setSeed(seed)
     val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
@@ -105,9 +105,9 @@ class GraphNodeSpec extends FlatSpec with Matchers {
   }
 
   "AlexNet to Graph" should "generate correct output" in {
-    new SecureRandom().setSeed(1)
-    val input = Tensor[Float](8, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
-    val labels = Tensor[Float](8).apply1(e => new SecureRandom().nextInt(100))
+    Random.setSeed(1)
+    val input = Tensor[Float](8, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](8).apply1(e => Random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -131,9 +131,9 @@ class GraphNodeSpec extends FlatSpec with Matchers {
   }
 
   "Recurrent+LSTM to graph" should "generate correct output" in {
-    new SecureRandom().setSeed(1)
-    val input = Tensor[Float](8, 128, 128).apply1(e => new SecureRandom().nextFloat())
-    val gradOutput = Tensor[Float](8, 128, 128).apply1(e => new SecureRandom().nextFloat())
+    Random.setSeed(1)
+    val input = Tensor[Float](8, 128, 128).apply1(e => Random.nextFloat())
+    val gradOutput = Tensor[Float](8, 128, 128).apply1(e => Random.nextFloat())
 
     val seed = 100
     val inputSize = 128
@@ -160,14 +160,13 @@ class GraphNodeSpec extends FlatSpec with Matchers {
   }
 
   "ParallelTable to graph" should "generate correct output" in {
-    new SecureRandom().setSeed(1)
+    Random.setSeed(1)
     val batchSize = 4
     val hiddenSize = 12
-    val input = T(Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()),
-      Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()))
-    val gradOutput = T(Tensor[Float](batchSize, hiddenSize)
-      .apply1(e => new SecureRandom().nextFloat()),
-      Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()))
+    val input = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
+      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
+    val gradOutput = T(Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()),
+      Tensor[Float](batchSize, hiddenSize).apply1(e => Random.nextFloat()))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -205,8 +204,8 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val model = Bottle[Double](Linear[Double](10, 2), 2, 2)
     model.add(Linear(10, 2))
 
-    val input = Tensor[Double](4, 5, 10).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](4, 10).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](4, 5, 10).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](4, 10).apply1(_ => Random.nextDouble())
 
     val graphModel = model.cloneModule().toGraph(Input())
 

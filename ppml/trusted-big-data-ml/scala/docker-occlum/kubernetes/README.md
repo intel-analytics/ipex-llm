@@ -16,12 +16,12 @@ After our many tests, Using MALLOC_ARENA_MAX=1 is fine in most cases. Hadoop rec
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
-* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT`
+* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT`
 
 1. Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT
 ```
 
 If Dockerhub is not accessible, we can build a docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
@@ -34,7 +34,7 @@ bash build-docker-image.sh
 2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
 3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master URL in `run_spark_xxx.sh`.
 4. Modify `driver.yaml` and `executor.yaml` for your applications.
-   In our demo example, we mount SGX devices into a container or pod. Mount device requires privileged: true. In a production deployment, please use K8S SGX device plugin with the device-plugin setting in yaml.
+   In our demo example, we don't mount SGX devices into a container or pod. Mount device requires privileged: true. In a production deployment, please use K8S SGX device plugin with the device-plugin setting in yaml.
 
 ## Examples
 

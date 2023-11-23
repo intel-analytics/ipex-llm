@@ -14,7 +14,16 @@ on:
         type: choice
         options:
         - all
+        - bigdl-llm-finetune-lora-cpu
+        - bigdl-llm-finetune-qlora-cpu
+        - bigdl-llm-finetune-qlora-xpu
+        - bigdl-llm-xpu
+        - bigdl-llm-cpu
+        - bigdl-llm-serving-xpu
+        - bigdl-llm-serving-cpu
         - bigdl-ppml-gramine-base
+        - bigdl-ppml-trusted-bigdl-llm-gramine-base
+        - bigdl-ppml-trusted-bigdl-llm-gramine-ref
         - bigdl-ppml-trusted-deep-learning-gramine-base
         - bigdl-ppml-trusted-deep-learning-gramine-ref
         - bigdl-ppml-trusted-dl-serving-gramine-base
@@ -22,11 +31,14 @@ on:
         - bigdl-ppml-trusted-big-data-ml-python-gramine
         - bigdl-ppml-trusted-big-data-ml-python-gramine-noattest
         - bigdl-ppml-trusted-big-data-ml-python-graphene
+        - bigdl-ppml-trusted-llm-fastchat-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
         - bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
         - bigdl-ppml-trusted-realtime-ml-scala-graphene
         - bigdl-ppml-trusted-realtime-ml-scala-occlum
+        - trusted-bigdl-llm-serving-tdx
+        - bigdl-ppml-trusted-fastchat-tdx
         - bigdl-ppml-kmsutil
         - bigdl-ppml-pccs
         - bigdl-ppml-trusted-python-toolkit-base
@@ -46,6 +58,209 @@ permissions:
   packages: write
 
 jobs:
+  bigdl-llm-finetune-lora-cpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-finetune-lora-cpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-finetune-lora-cpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-finetune-lora-cpu
+        cd docker/llm/finetune/lora/cpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-finetune-qlora-cpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.sha }}
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-llm-finetune-qlora-cpu
+        run: |
+          echo "##############################################################"
+          echo "####### bigdl-llm-finetune-qlora-cpu ########"
+          echo "##############################################################"
+          export image=intelanalytics/bigdl-llm-finetune-qlora-cpu
+          cd docker/llm/finetune/qlora/cpu/docker
+          sudo docker build \
+            --no-cache=true \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg no_proxy=${NO_PROXY} \
+            -t ${image}:${TAG} -f ./Dockerfile .
+          sudo docker push ${image}:${TAG}
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-finetune-qlora-xpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-finetune-qlora-xpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-finetune-qlora-xpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-finetune-qlora-xpu
+        cd docker/llm/finetune/qlora/xpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-xpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-xpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-xpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-xpu
+        cd docker/llm/inference/xpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-cpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-cpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-cpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-cpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-cpu
+        cd docker/llm/inference/cpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-serving-xpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-serving-xpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-serving-xpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-serving-xpu
+        cd docker/llm/serving/xpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-llm-serving-cpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-llm-serving-cpu
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-llm-serving-cpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-llm-serving-cpu
+        cd docker/llm/serving/cpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
   bigdl-ppml-gramine-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
@@ -76,6 +291,134 @@ jobs:
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
+
+  trusted-bigdl-llm-serving-tdx:
+    if: ${{ github.event.inputs.artifact == 'trusted-bigdl-llm-serving-tdx' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: trusted-bigdl-llm-serving-tdx
+      run: |
+        echo "##############################################################"
+        echo "####### trusted-bigdl-llm-serving-tdx ###########"
+        echo "##############################################################"
+        export image=intelanalytics/trusted-bigdl-llm-serving-tdx
+        export base_image=intelanalytics/bigdl-llm-serving-cpu
+        docker pull ${base_image}:${TAG}
+        cd ppml/tdx/docker/trusted-bigdl-llm/serving/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${base_image}:${TAG}
+
+  bigdl-ppml-trusted-fastchat-tdx:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-fastchat-tdx' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-trusted-fastchat-tdx
+      run: |
+        echo "##############################################################"
+        echo "############## bigdl-ppml-trusted-fastchat-tdx ###############"
+        echo "##############################################################"
+        export image=intelanalytics/bigdl-ppml-trusted-fastchat-tdx
+        cd ppml/tdx/docker/trusted-bigdl-llm-fschat/
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-ppml-trusted-bigdl-llm-gramine-base:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-base' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-trusted-bigdl-llm-gramine-base
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-ppml-trusted-bigdl-llm-gramine-base ########"
+        echo "##############################################################"
+        export base_image=intelanalytics/bigdl-ppml-gramine-base
+        docker pull ${base_image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-base
+        cd ppml/trusted-bigdl-llm/base
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-ppml-trusted-bigdl-llm-gramine-ref:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-ref' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-trusted-bigdl-llm-gramine-ref
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-ppml-trusted-bigdl-llm-gramine-ref ########"
+        echo "##############################################################"
+        export base_image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-base
+        docker pull ${base_image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref
+        cd ppml/trusted-bigdl-llm/ref
+        openssl genrsa -3 -out enclave-key.pem 3072
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-dl-serving-gramine-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-base' || github.event.inputs.artifact == 'all' }}
@@ -124,7 +467,7 @@ jobs:
         echo "##############################################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base
         export image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref
-        cd ppml/trusted-deep-learning/ref
+        cd ppml/trusted-dl-serving/ref
         openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
           --no-cache=true \
@@ -393,7 +736,43 @@ jobs:
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-    
+
+  bigdl-ppml-trusted-llm-fastchat-occlum:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-llm-fastchat-occlum' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.sha }}
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-ppml-trusted-llm-fastchat-occlum
+        run: |
+          echo "########################################"
+          echo "####### llm-fastchat-occlum  ######"
+          echo "########################################"
+          cd ppml/trusted-big-data-ml/scala/docker-occlum/llm
+          export image=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum
+          pwd
+          docker build \
+            --no-cache=true \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
+            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
+            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
+            --build-arg JDK_VERSION=8u192 \
+            --build-arg JDK_URL=${JDK_URL} \
+            --build-arg no_proxy=${NO_PROXY} \
+            -t ${image}:${TAG} -f ./Dockerfile .
+          sudo docker push ${image}:${TAG}
+          docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          docker push 10.239.45.10/arda/${image}:${TAG}
+          docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
   bigdl-ppml-trusted-big-data-ml-scala-occlum:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]

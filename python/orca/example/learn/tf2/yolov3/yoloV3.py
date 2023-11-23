@@ -188,53 +188,52 @@ YOLOV3_TINY_LAYER_LIST = [
 
 
 def load_darknet_weights(model, weights_file, tiny=False):
-    wf = open(weights_file, 'rb')
-    major, minor, revision, seen, _ = np.fromfile(wf, dtype=np.int32, count=5)
+    with open(weights_file, 'rb') as wf:
+        major, minor, revision, seen, _ = np.fromfile(wf, dtype=np.int32, count=5)
 
-    if tiny:
-        layers = YOLOV3_TINY_LAYER_LIST
-    else:
-        layers = YOLOV3_LAYER_LIST
+        if tiny:
+            layers = YOLOV3_TINY_LAYER_LIST
+        else:
+            layers = YOLOV3_LAYER_LIST
 
-    for layer_name in layers:
-        sub_model = model.get_layer(layer_name)
-        for i, layer in enumerate(sub_model.layers):
-            if not layer.name.startswith('conv2d'):
-                continue
-            batch_norm = None
-            if i + 1 < len(sub_model.layers) and \
-                    sub_model.layers[i + 1].name.startswith('batch_norm'):
-                batch_norm = sub_model.layers[i + 1]
+        for layer_name in layers:
+            sub_model = model.get_layer(layer_name)
+            for i, layer in enumerate(sub_model.layers):
+                if not layer.name.startswith('conv2d'):
+                    continue
+                batch_norm = None
+                if i + 1 < len(sub_model.layers) and \
+                        sub_model.layers[i + 1].name.startswith('batch_norm'):
+                    batch_norm = sub_model.layers[i + 1]
 
-            filters = layer.filters
-            size = layer.kernel_size[0]
-            in_dim = layer.get_input_shape_at(0)[-1]
+                filters = layer.filters
+                size = layer.kernel_size[0]
+                in_dim = layer.get_input_shape_at(0)[-1]
 
-            if batch_norm is None:
-                conv_bias = np.fromfile(wf, dtype=np.float32, count=filters)
-            else:
-                # darknet [beta, gamma, mean, variance]
-                bn_weights = np.fromfile(
-                    wf, dtype=np.float32, count=4 * filters)
-                # tf [gamma, beta, mean, variance]
-                bn_weights = bn_weights.reshape((4, filters))[[1, 0, 2, 3]]
+                if batch_norm is None:
+                    conv_bias = np.fromfile(wf, dtype=np.float32, count=filters)
+                else:
+                    # darknet [beta, gamma, mean, variance]
+                    bn_weights = np.fromfile(
+                        wf, dtype=np.float32, count=4 * filters)
+                    # tf [gamma, beta, mean, variance]
+                    bn_weights = bn_weights.reshape((4, filters))[[1, 0, 2, 3]]
 
-            # darknet shape (out_dim, in_dim, height, width)
-            conv_shape = (filters, in_dim, size, size)
-            conv_weights = np.fromfile(
-                wf, dtype=np.float32, count=np.product(conv_shape))
-            # tf shape (height, width, in_dim, out_dim)
-            conv_weights = conv_weights.reshape(
-                conv_shape).transpose([2, 3, 1, 0])
+                # darknet shape (out_dim, in_dim, height, width)
+                conv_shape = (filters, in_dim, size, size)
+                conv_weights = np.fromfile(
+                    wf, dtype=np.float32, count=np.product(conv_shape))
+                # tf shape (height, width, in_dim, out_dim)
+                conv_weights = conv_weights.reshape(
+                    conv_shape).transpose([2, 3, 1, 0])
 
-            if batch_norm is None:
-                layer.set_weights([conv_weights, conv_bias])
-            else:
-                layer.set_weights([conv_weights])
-                batch_norm.set_weights(bn_weights)
+                if batch_norm is None:
+                    layer.set_weights([conv_weights, conv_bias])
+                else:
+                    layer.set_weights([conv_weights])
+                    batch_norm.set_weights(bn_weights)
 
-    invalidInputError(len(wf.read()) == 0, 'failed to read all data')
-    wf.close()
+        invalidInputError(len(wf.read()) == 0, 'failed to read all data')
 
 
 def freeze_all(model, frozen=True):
@@ -627,8 +626,8 @@ def main():
         return model
 
     # prepare data
-    class_map = {name: idx for idx, name in enumerate(
-        open(options.names).read().splitlines())}
+    with open(options.names) as f:
+        class_map = {name: idx for idx, name in enumerate(f.read().splitlines())}
     dataset_path = os.path.join(options.data_dir, "VOCdevkit")
     voc_train_path = os.path.join(options.output_data, "train_dataset")
     voc_val_path = os.path.join(options.output_data, "val_dataset")

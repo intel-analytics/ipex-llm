@@ -1,0 +1,15 @@
+diff --git a/QuoteGeneration/quote_wrapper/tdx_attest/tdx_attest.c b/QuoteGeneration/quote_wrapper/tdx_attest/tdx_attest.c
+index f0a887a..59cfeb3 100644
+--- a/QuoteGeneration/quote_wrapper/tdx_attest/tdx_attest.c
++++ b/QuoteGeneration/quote_wrapper/tdx_attest/tdx_attest.c
+@@ -56,9 +56,8 @@
+ // So add these defines here. Need to remove them later when kernel header
+ // became stable.
+ #define TDX_CMD_GET_REPORT0     _IOWR('T', 1, struct tdx_report_req)
+-#define TDX_CMD_VERIFY_REPORT	_IOR('T', 2, struct tdx_verify_report_req)
+ #define TDX_CMD_EXTEND_RTMR		_IOR('T', 3, struct tdx_extend_rtmr_req)
+-#define TDX_CMD_GET_QUOTE		_IOR('T', 4, struct tdx_quote_req)
++#define TDX_CMD_GET_QUOTE		_IOWR('T', 2, struct tdx_quote_req)
+ 
+ /* TD Quote status codes */
+ #define GET_QUOTE_SUCCESS               0

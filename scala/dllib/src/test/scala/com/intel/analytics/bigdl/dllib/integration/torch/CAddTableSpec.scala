@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{CAddTable, ConcatTable, Linear, Seque
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class CAddTableSpec extends TorchSpec {
@@ -35,8 +35,8 @@ class CAddTableSpec extends TorchSpec {
     ctable.add(new Linear(5, 3))
     model.add(ctable)
     model.add(CAddTable())
-    val input = Tensor[Double](5).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](3).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](5).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](3).apply1(_ => Random.nextDouble())
 
     val output = model.forward(input)
     val gradInput = model.updateGradInput(input, gradOutput)
@@ -71,8 +71,8 @@ class CAddTableSpec extends TorchSpec {
     ctable.add(new Linear(5, 3))
     model.add(ctable)
     model.add(CAddTable(true))
-    val input = Tensor[Double](5).apply1(_ => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](3).apply1(_ => new SecureRandom().nextDouble())
+    val input = Tensor[Double](5).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](3).apply1(_ => Random.nextDouble())
 
     val output = model.forward(input)
     val gradInput = model.updateGradInput(input, gradOutput)

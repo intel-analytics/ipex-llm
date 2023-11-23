@@ -29,7 +29,7 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, calib_data, q_config=None,
                  input_sample=None, channels_last=None, thread_num=None,
                  from_load=False, inplace=False, jit_strict=True,
-                 example_kwarg_inputs=None):
+                 example_kwarg_inputs=None, enable_onednn=False):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -59,24 +59,33 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                be passed to ``torch.jit.trace``. Default to ``None``. Either this
                argument or ``input_sample`` should be specified when ``use_jit`` is
                ``True`` and torch > 2.0, otherwise will be ignored.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN
+               Graph API, which provides a flexible API for aggressive fusion. Default to
+               ``False``. For more details, please refer https://github.com/
+               pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
+               onednn#pytorch---onednn-graph-api-bridge.
         """
         super().__init__(model)
         if from_load:
             self.channels_last = channels_last
             self.jit_strict = jit_strict
+            self.enable_onednn = enable_onednn
             self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                                   precision="int8",
-                                                                  thread_num=thread_num)
+                                                                  thread_num=thread_num,
+                                                                  enable_onednn=enable_onednn)
             return
         self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
         self.jit_strict = jit_strict
+        self.enable_onednn = enable_onednn
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
         self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                               precision="int8",
-                                                              thread_num=thread_num)
+                                                              thread_num=thread_num,
+                                                              enable_onednn=enable_onednn)
         self.thread_num = thread_num
         if q_config is None:
             # default qconfig
@@ -144,7 +153,8 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         status.update({"channels_last": self.channels_last,
                        "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
-                       "jit_strict": self.jit_strict})
+                       "jit_strict": self.jit_strict,
+                       "enable_onednn": self.enable_onednn})
         return status
 
     @staticmethod
@@ -164,7 +174,8 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                                             from_load=from_load,
                                             thread_num=thread_num,
                                             inplace=inplace,
-                                            jit_strict=status["jit_strict"])
+                                            jit_strict=status["jit_strict"],
+                                            enable_onednn=status.get('enable_onednn', False))
 
     def _save_model(self, path, compression="fp32"):
         self.model.save(path / "ckpt.pth")

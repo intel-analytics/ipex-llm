@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.Shape
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
@@ -45,13 +45,13 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
     val layer2 = layer1.cloneModule().asInstanceOf[SpatialDilatedConvolution[Double]]
     layer2.setScaleW(2).setScaleB(0.5)
 
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
 
     val output1 = layer1.forward(input)
     val output2 = layer2.forward(input)
     output1 should be (output2)
 
-    val gradOutput = Tensor[Double]().resizeAs(output1).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output1).apply1(e => Random.nextDouble())
     val gradInput1 = layer1.backward(input, gradOutput)
     val gradInput2 = layer2.backward(input, gradOutput)
     gradInput1 should be (gradInput2)
@@ -72,7 +72,7 @@ class SpatialDilatedConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialDilatedConvolution = SpatialDilatedConvolution[Float](1, 1,
       2, 2, 1, 1, 0, 0).setName("spatialDilatedConvolution")
-    val input = Tensor[Float](1, 3, 3).apply1( e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
     runSerializationTest(spatialDilatedConvolution, input)
   }
 }

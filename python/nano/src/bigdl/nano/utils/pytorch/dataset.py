@@ -38,8 +38,12 @@ def remove_batch_dim_fn(loader):
         def recusive_remove(data):
             if isinstance(data, torch.Tensor):
                 return data.squeeze(0)
-            else:
+            elif isinstance(data, list) or isinstance(data, tuple):
                 return tuple([recusive_remove(x) for x in data])
+            elif isinstance(data, dict):
+                for key in data:
+                    data[key] = data[key].squeeze(0)
+                return data
         return recusive_remove(data)
     loader.collate_fn = warpper_fn
     return loader

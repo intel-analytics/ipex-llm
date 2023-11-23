@@ -29,9 +29,11 @@ permissions:
   packages: write
 
 jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
   bigdl-core-release-python-pypi:
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree-core]
-    
+    needs: llm-cpp-build
     steps:
     - uses: actions/checkout@v3
       with:
@@ -89,7 +91,8 @@ jobs:
         pip install build
         pip install wheel
         pip install twine
-        
+    - name: Download llm binary
+      uses: ./.github/actions/llm/download-llm-binary
     - name: Build package
       run: |
         set -x

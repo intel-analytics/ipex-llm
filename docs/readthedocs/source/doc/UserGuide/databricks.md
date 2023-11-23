@@ -113,8 +113,10 @@ Output on Databricks:
 
 - [Keras example on Databricks](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/databricks/tf_keras_ncf.ipynb)
 - [Pytorch example on Databricks](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/databricks/pytorch_fashion_mnist.ipynb)
-
-> Note that if you want to save model to DBFS, or load model from DBFS, the save/load path should be the **File API Format** on Databricks, which means your save/load path should start with `/dbfs`.
+> Note
+> * If you run Pytorch example with `spark` backend (i.e.`Estimator.from_torch(..., backend="spark")`) on multiple node cluster, you need to set GLOO_SOCKET_IFNAME="eth0" in cluster's configuration as below:
+![](images/db-gloo-socket.png)
+> * If you want to save model to DBFS, or load model from DBFS, the save/load path should be the **File API Format** on Databricks, which means your save/load path should start with `/dbfs`.
 
 ### 6. Other ways to install third-party libraries on Databricks if necessary
 

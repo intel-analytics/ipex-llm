@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
-import java.security.SecureRandom
+import scala.util.Random
 
 class TemporalMaxPoolingSpec extends TorchSpec {
   "A TemporalMaxPooling" should "generate correct output and gradInput" in {
@@ -152,7 +152,7 @@ class TemporalMaxPoolingSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = new TemporalMaxPooling[Double](2, 2)
-    val input = Tensor[Double](1, 3, 3).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](1, 3, 3).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)

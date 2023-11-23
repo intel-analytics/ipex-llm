@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 import java.io.FileWriter
-import java.security.SecureRandom
+import scala.util.Random
 
 class DataFrameHelper extends BigDLSpecHelper {
   val repeatedNum = 100000
@@ -45,7 +45,7 @@ class DataFrameHelper extends BigDLSpecHelper {
   }
 
   def generateCsvData(): (String, String, String) = {
-    new SecureRandom().setSeed(1)
+    Random.setSeed(1)
     val fileName = dir + "/people.csv"
     val encryptFileName = dir + "/people.encrypted"
     val fw = new FileWriter(fileName)

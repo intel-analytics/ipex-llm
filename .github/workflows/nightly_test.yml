@@ -3,7 +3,7 @@ name: Nightly Test
 on:
 
   #pull_request:
-    #branches: [ main ]
+  #  branches: [ main ]
 
   schedule:
     - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
@@ -68,6 +68,7 @@ on:
         - PPML-Scala-UT
         - PPML-Python-UT-Spark3
         - PPML-Occlum-ExampleTests
+        - PPML-Occlum-EDMM-ExampleTests
         - PPML-spark-Local-SimpleQuery-Tests-on-Gramine
         - PPML-RealTime-ML-Occlum
         - PPML-RealTime-ML-Occlum-K8s
@@ -1381,7 +1382,7 @@ jobs:
     - name: set env
       env:
         DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
-        DEFAULT_TAG: '2.4.0-SNAPSHOT'
+        DEFAULT_TAG: '2.5.0-SNAPSHOT'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
         echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
@@ -1401,6 +1402,40 @@ jobs:
         type: job
         job-name: PPML-Occlum-ExampleTests
         runner-hosted-on: 'Shanghai'
+
+  PPML-Occlum-EDMM-ExampleTests:
+    if: ${{ github.event.inputs.artifact == 'PPML-Occlum-EDMM-ExampleTests' }}
+    runs-on: [self-hosted, EDMM]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: set env
+        env:
+          DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+          DEFAULT_TAG: '2.5.0-SNAPSHOT-EDMM'
+        run: |
+          echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+      - name: Run Test
+        uses: ./.github/actions/ppml/ppml-occlum-EDMM-exampletests-action
+        with:
+          image: ${{env.IMAGE}}
+          image-tag: ${{env.TAG}}
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: PPML-Occlum-EDMM-ExampleTests.json
+          type: job
+          job-name: PPML-Occlum-EDMM-ExampleTests
+          runner-hosted-on: 'Shanghai'
 
   PPML-RealTime-ML-Occlum:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-RealTime-ML-Occlum' || github.event.inputs.artifact == 'all' }} 
@@ -1860,4 +1895,3 @@ jobs:
         file-name: nightly-test.json
         type: workflow
   
-

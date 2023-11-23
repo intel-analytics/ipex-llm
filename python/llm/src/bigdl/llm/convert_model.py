@@ -38,7 +38,7 @@ def llm_convert(model,
     This function is able to:
 
         1. Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
-           PyTorch model to lower precision in BigDL-LLM optimized GGML format.
+           / chatglm-like PyTorch model to lower precision in BigDL-LLM optimized GGML format.
         2. Convert Hugging Face GPTQ format llama-like model to BigDL-LLM optimized
            GGML format.
 
@@ -56,7 +56,7 @@ def llm_convert(model,
     :param outfile: Save path of output quantized model. You must pass a **directory** to
            save all related output.
     :param model_family: Which model family your input model belongs to.
-           Now ``llama``/``bloom``/``gptneox``/``starcoder`` has been supported.
+           Now ``llama``/``bloom``/``gptneox``/``starcoder``/``chatglm`` has been supported.
            If ``model_format='gptq'``, only ``llama`` is supported.
     :param dtype: Which quantized precision will be converted.
            If ``model_format='pth'``, `int4` and `int8` are supported,
@@ -124,7 +124,7 @@ def main():
                         help=("outfile,save path of output quantized model."))
     parser.add_argument('-x', '--model-family', type=str, required=True,
                         help=("--model-family: Which model family your input model belongs to."
-                              "Now only `llama`/`bloom`/`gptneox` are supported."))
+                              "Now only `llama`/`bloom`/`gptneox`/`chatglm` are supported."))
     parser.add_argument('-f', '--model-format', type=str, required=True,
                         help=("The model type to be convert to a ggml compatible file."
                               "Now only `pth`/`gptq` are supported."))

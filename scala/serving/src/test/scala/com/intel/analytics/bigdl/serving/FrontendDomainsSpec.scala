@@ -24,11 +24,11 @@ import com.intel.analytics.zoo.serving.http._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
-import java.security.SecureRandom
+import scala.util.Random
 
 class FrontendDomainsSpec extends FlatSpec with Matchers with BeforeAndAfter with Supportive {
 
-  val random = new SecureRandom()
+  val random = new Random()
 
   "ServingError" should "serialized as json" in {
     val message = "contentType not supported"

@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class BlasToDnnSpec extends BigDLSpecHelper {
   override def doBefore(): Unit = {

@@ -19,11 +19,11 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class BottleSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](10).apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
 
     val bottle = new Bottle[Float](Linear[Float](10, 2).
       asInstanceOf[Module[Float]], 2, 2).setName("bottle")

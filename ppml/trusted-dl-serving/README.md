@@ -1,4 +1,5 @@
-# BigDL PPML Trusted Deep Learning Serving Toolkit
+# BigDL PPML Trusted Deep Learning Serving 
+
 SGX-based Trusted Deep Learning Serving (hereinafter called DL-Serving) allows the user to run end-to-end dl-serving services in a secure environment.
 
 The following sections will introduce three different components that are included in this toolkit, which are `TorchServe`, `Triton Inference Server`, and `TensorFlow Serving`.
@@ -52,10 +53,10 @@ Before running the following command, please modify the paths in `./build-custom
 The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to register your MREnclave in the following.
 
 ```log
-......
-[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
-mr_enclave       : c7a8a42af......
-mr_signer        : 6f0627955......
+Attributes:
+    mr_enclave:  56ba......
+    mr_signer:   422c......
+........
 ```
 
 ## Demo
@@ -64,90 +65,78 @@ mr_signer        : 6f0627955......
 
 ### TorchServe
 
-We have included bash scripts for start up `TorchServe` in both native/SGX environment in folder `/ppml/torchserve`. Basically, the user only needs to interact with script `/ppml/torchserve/start-torchserve.sh`. In the following subsections, we will show how to run a `TorchServe` service in SGX environment with two backend workers.
+<img src="https://github.com/Uxito-Ada/BigDL/assets/60865256/28be57a4-f8a6-4b73-b57d-35e17caa4f58" height="300px">
 
-#### Prepare model/config files
+The above picture shows the architecture of BigDL PPML TorchServe, which is slightly different with the native Torchserve:
 
-Same as using normal TorchServe service, users need to prepare the `Model Archive` file using `torch-model-archiver` in advance.  Check [here](https://github.com/pytorch/serve/tree/master/model-archiver#torch-model-archiver-for-torchserve) for detail instructions on how to package the model files into a `mar` file.
+- The frontend and backends of TorchServe are decoupled and run in different pods.
+- TorchServe does not need the config file because it can generate a config file from the parameters in `service/values.yaml` directly.
+- We enable model encryption, SSL and sidecar to ensure the security of TorchServe. 
 
-TorchServe uses a `config.properties` file to store configurations. Examples can be found [here](https://pytorch.org/serve/configuration.html#config-model). An important configuration is `minWorkers`, the start script will try to boot up to `minWorkers` backends.
+To start TorchServe, you need to set the parameters' values in `service/values.yaml` and copy the MAR file which is needed by original TorchServe to `$nfsPath/model/torchserve`.
 
-To ensure end-to-end security, the SSL should be enabled.  You can refer to the official [document](https://pytorch.org/serve/configuration.html#enable-ssl) on how to enable SSL.
+In addition, if you want to enable SSL/TLS traffic to protect communication between pods (frontend and backends), it is allowed to set `istioTLSEnabled` to **true**, while it is noted that [istio](https://istio.io/latest/docs/setup/install/) should be installed in your cluster before enabling. It is shown as below:
 
-
-#### Start TorchServe Service in Native mode
-
-In this section, we will try to launch a TorchServe service in native mode.  The example `config.properties` is shown as follows:
+![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/be4b17eb-6e4e-43c6-b9d1-5e2d622fbf33)
 
 
-```text
-inference_address=http://127.0.0.1:8085
-management_address=http://127.0.0.1:8081
-metrics_address=http://127.0.0.1:8082
-grpc_inference_port=7070
-grpc_management_port=7071
-model_store=/ppml/
-#initial_worker_port=25712
-load_models=NANO_FP32CL.mar
-enable_metrics_api=false
-models={\
-  "NANO_FP32CL": {\
-    "1.0": {\
-        "defaultVersion": true,\
-        "marName": "NANO_FP32CL.mar",\
-        "minWorkers": 2,\
-        "workers": 2,\
-        "maxWorkers": 2,\
-        "batchSize": 1,\
-        "maxBatchDelay": 100,\
-        "responseTimeout": 1200\
-    }\
-  }\
-}
+#### Prepare
+
+First, you need to prepare the MAR , which contains model files and process logic. See [this page](https://github.com/pytorch/serve/tree/master/model-archiver) to build the MAR. You should place the MAR under  `/$nfsPath/model/torchserve/`.(`$nfsPath` is set in `service/values.yaml`)
+
+Then, prepare a sample input file to test the server for correct operation. The input file should be in JSON format as shown below:
+
+```json
+{"input":["This tastes good!"]}
 ```
 
-Assuming the above configuration file is stored at `/ppml/tsconfigfp32cl`, then to start the TorchServe Service:
+We provide MAR encryption function for the security of the model when saved on disk. The encryption algorithms we support are Fernet for model encryption and AES for MAR encryption. To use them, you should prepare the key files and place them under `/$nfsPath/key/torchserve`. Then, several parameters should be set additional when building the MAR.
+```shell
+--encrypted-files Encrypted files that need to be decrypted by fernet with decryption-key.
+--decryption-key Path to key for decrypting model and other files.
+-e/--model-encryption If the model needs to be encrypted.
+--encryption-key Path to key for encrypting MAR.
+```
+#### Run
 
- ```bash
- bash /ppml/torchserve/start-torchserve.sh -c /ppml/tsconfigfp32cl -f "0" -b "1,2"
- ```
-As introduced in this performance tuning [guild](https://tutorials.pytorch.kr/intermediate/torchserve_with_ipex#efficient-cpu-usage-with-core-pinning-for-multi-worker-inference), we also pinned the cpu while booting up our frontend and backends. The `"-f 0"` indicates that the frontend will be pinned to core 0, while the `"-b 1,2"` indicates that the first backend will be pinned to core 1, and the second backend will be pinned to core 2.
+Download the `servic` directory and run the helm command to run it on k8s:
 
-After the service has booted up, we can use the [wrk](https://github.com/wg/wrk) tool to test its throughput, the result with 5 threads and 10 connections are:
+```shell
+cd service
+helm install bigdl-ppml-torchserve .
+```
+You can check the status of pods and services by `kubectl`.
+```shell
+kubectl get all -n bigdl-ppml-serving
 
-```text
-Running 5m test @ http://127.0.0.1:8085/predictions/NANO_FP32CL
-  5 threads and 10 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   355.44ms   19.27ms 783.08ms   98.86%
-    Req/Sec     6.42      2.69    10.00     49.52%
-  8436 requests in 5.00m, 1.95MB read
-Requests/sec:     28.11
-Transfer/sec:      6.67KB
+NAME                                                       READY   STATUS    RESTARTS       AGE
+pod/bigdl-torchserve-backend-deployment-6bbbdd64ff-6kk4q   1/1     Running   0              4m4s
+pod/bigdl-torchserve-backend-deployment-6bbbdd64ff-hpcpx   1/1     Running   0              4m4s
+pod/torchserve-frontend                                    1/1     Running   0              4m4s
+
+NAME                                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/bigdl-torchserve-frontend-service   ClusterIP   ...             <none>        8085/TCP,8081/TCP,8082/TCP   4m4s
+
+NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/bigdl-torchserve-backend-deployment   2/2     2            2           4m4s
+
+NAME                                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/bigdl-torchserve-backend-deployment-6bbbdd64ff   2         2         2       4m4s
+
+```
+Send a prediction request to test if Torchserve is running correctly.
+```shell
+curl https://$clusterIP:$inferencePort/predictions/BERT_LARGE -T sample_input_bert.json  -k
+
+# you should get the inference output as response.
+[
+  [
+    0.1334414780139923,
+    -0.2059822380542755
+  ]
+]
 ```
 
-#### Start TorchServe Service in SGX mode
-
-To start TorchServe service in SGX mode, only a minor modification needs to be made:
-
-```bash
- bash /ppml/torchserve/start-torchserve.sh -c /ppml/tsconfigfp32cl -f "0" -b "1,2" -x
-```
-
-The `"-x"` here indicates that the frontend/backend will be run in SGX environment using Gramine.
-
-The performance result:
-
-```text
-Running 5m test @ http://127.0.0.1:8085/predictions/NANO_FP32CL
-  5 threads and 10 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     1.24s     2.98s   18.61s    92.24%
-    Req/Sec     5.74      2.58    10.00     51.79%
-  6379 requests in 5.00m, 1.48MB read
-Requests/sec:     21.26
-Transfer/sec:      5.04KB
-```
 
 
 ### Triton Server (WIP)
@@ -155,3 +144,5 @@ Transfer/sec:      5.04KB
 
 
 ### TensorFlow Serving (WIP)
+
+

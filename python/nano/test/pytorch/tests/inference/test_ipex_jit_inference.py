@@ -719,9 +719,6 @@ class IPEXJITInference:
 
 
 TORCH_VERSION_CLS = IPEXJITInference
-if TORCH_VERSION_LESS_1_10:
-    print("IPEX Inference Model Without AVX512")
-    TORCH_VERSION_CLS = CaseWithoutAVX2
 
 
 class TestIPEXJITInference(TORCH_VERSION_CLS, TestCase):

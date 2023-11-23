@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-a1234bd-fschat-controller-service
+spec:
+  # You may also want to change this to use the cluster's feature
+  type: NodePort
+  selector:
+    fastchat-appid: a1234bd
+    fastchat-app-type: controller
+  ports:
+    - name: cont-port
+      protocol: TCP
+      port: 21005
+      targetPort: 21005
+    - name: api-port
+      protocol: TCP
+      port: 8000
+      targetPort: 8000

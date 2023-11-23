@@ -48,7 +48,7 @@ if __name__ == '__main__':
     y = np.random.rand(args.data_size)
 
 
-    init_fl_context()
+    init_fl_context(1)
     fgboost_regression = FGBoostRegression(max_depth=3)
     ts = time.time()
     if args.has_label:

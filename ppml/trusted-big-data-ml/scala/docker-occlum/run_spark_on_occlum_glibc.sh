@@ -44,7 +44,6 @@ init_instance() {
         .resource_limits.user_space_max_size = "SGX_MEM_SIZE" |
         .resource_limits.init_num_of_threads = 10 |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
-        .process.default_heap_size = "SGX_HEAP" |
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="4MB" |
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |
@@ -331,7 +330,7 @@ run_spark_pi_client() {
          org.apache.spark.deploy.SparkSubmit \
          --master k8s://https://${kubernetes_master_url}:6443 \
          --deploy-mode client \
-         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT-build \
          --conf spark.driver.host=$LOCAL_IP \
          --conf spark.driver.port=54321 \
          --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
@@ -368,7 +367,7 @@ run_spark_pi_cluster() {
          --name spark-pi-cluster \
          --class org.apache.spark.examples.SparkPi \
          --deploy-mode cluster \
-         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.5.0-SNAPSHOT-build \
          --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
          --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
          --conf spark.kubernetes.driver.podTemplateFile=/opt/k8s/driver.yaml \
@@ -574,6 +573,31 @@ run_spark_lgbm_criteo() {
                 -i /host/data/ -s /host/data/model -I 100 -d 5
 }
 
+run_spark_lgbm_model_encrypt() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark lgbm model encrypt example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                    -XX:-UseCompressedOops \
+                    -XX:ActiveProcessorCount=4 \
+                    -Divy.home="/tmp/.ivy" \
+                    -Dos.name="Linux" \
+                    -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                    -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                    --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+                    --master local[4] \
+                    --py-files local:/py-examples/bigdl.zip \
+                    local:/py-examples/encrypted_lightgbm_model_io.py \
+                    --app_id 123456654321 \
+                    --api_key 123456654321 \
+                    --primary_key_material /host/data/key/simple_encrypted_primary_key \
+                    --input_path /host/data/iris.data \
+                    --output_path /host/data/model \
+                    --input_encrypt_mode plain_text \
+                    --output_encrypt_mode plain_text \
+                    --kms_type SimpleKeyManagementService
+}
+
 run_spark_gbt_e2e() {
     init_instance spark
     build_spark
@@ -769,6 +793,10 @@ case "$arg" in
         ;;
     lgbm_criteo)
         run_spark_lgbm_criteo
+        cd ../
+        ;;
+    lgbm_model_encrypt)
+        run_spark_lgbm_model_encrypt
         cd ../
         ;;
     gbt_e2e)

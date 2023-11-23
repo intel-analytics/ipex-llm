@@ -44,10 +44,9 @@ class FLTest(unittest.TestCase):
 
     def get_available_port(self, port_start, port_end):
         def is_available(p):            
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(('127.0.0.1', p))            
-            sock.close()
-            return result != 0
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                result = sock.connect_ex(('127.0.0.1', p))            
+                return result != 0
         for p in range(port_start, port_end):
             if is_available(p):
                 return p

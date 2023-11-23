@@ -20,14 +20,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class GRUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     RNG.setSeed(100)
     val gru = GRU[Float](100, 100)
     val gruModel = Recurrent[Float]().add(gru).setName("gru")
-    val input = Tensor[Float](2, 20, 100).apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 20, 100).apply1(e => Random.nextFloat())
     runSerializationTest(gruModel, input, gru.getClass)
   }
 }

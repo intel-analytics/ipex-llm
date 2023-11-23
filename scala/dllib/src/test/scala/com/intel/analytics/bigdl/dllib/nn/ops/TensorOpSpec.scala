@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class TensorOpSpec extends FlatSpec with Matchers {
 
@@ -32,7 +32,7 @@ class TensorOpSpec extends FlatSpec with Matchers {
   private def ttCopy() = Tensor[Float]().resizeAs(copiedTT).copy(copiedTT)
 
   "Common TensorOps" should "work correctly" in {
-    val rnd = new SecureRandom().nextFloat()
+    val rnd = Random.nextFloat()
     TensorOp.add[Float](rnd).forward(tt) shouldEqual ttCopy().add(rnd)
     TensorOp.sub[Float](rnd).forward(tt) shouldEqual ttCopy().sub(rnd)
     TensorOp.mul[Float](rnd).forward(tt) shouldEqual ttCopy().mul(rnd)
@@ -115,7 +115,7 @@ class TensorOpSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val op = (((TensorOp[Float]() + 1.5f) ** 2) -> TensorOp.sigmoid()
       ).setName("TensorOP")
-    val input = Tensor[Float](3, 3).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
     runSerializationTest(op, input)
   }
 }

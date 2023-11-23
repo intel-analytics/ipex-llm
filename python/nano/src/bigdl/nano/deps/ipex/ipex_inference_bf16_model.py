@@ -103,7 +103,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     @staticmethod
     def _load(path, model, inplace=False, input_sample=None):
         status = PytorchIPEXJITBF16Model._load_status(path)
-        checkpoint_path = path / status['checkpoint']
+        if isinstance(path, dict):
+            checkpoint_path = path[status['checkpoint']]
+        else:
+            checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
             if status['compression'] == "bf16":
                 invalidInputError(model is not None,

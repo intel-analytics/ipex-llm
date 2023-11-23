@@ -1,6 +1,8 @@
 $llm_dir = (Split-Path -Parent (python -c "import bigdl.llm;print(bigdl.llm.__file__)"))
 $lib_dir = Join-Path $llm_dir "libs"
 
+
+$vnni_enable = ((python -c "from bigdl.llm.utils.isa_checker import check_avx_vnni;print(check_avx_vnni())").ToLower() -eq "true")
 $model_family = ""
 $threads = 8
 $n_predict = 128
@@ -12,7 +14,7 @@ function Display-Help
     Write-Host ""
     Write-Host "options:"
     Write-Host "  -h, --help           show this help message"
-    Write-Host "  -x, --model_family {llama,bloom,gptneox}"
+    Write-Host "  -x, --model_family {llama,bloom,gptneox,starcoder,chatglm}"
     Write-Host "                       family name of model"
     Write-Host "  -t N, --threads N    number of threads to use during computation (default: 8)"
     Write-Host "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
@@ -21,31 +23,44 @@ function Display-Help
 
 function llama
 {
-    $command = "$lib_dir/main-llama.exe -t $threads -n $n_predict $filteredArguments"
+    $exec_file = "main-llama.exe"
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
 
 function bloom
 {
-    $command = "$lib_dir/main-bloom.exe -t $threads -n $n_predict $filteredArguments"
+    $exec_file = "main-bloom.exe"
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
 
 function gptneox
 {
-    $command = "$lib_dir/main-gptneox.exe -t $threads -n $n_predict $filteredArguments"
+    $exec_file = "main-gptneox.exe"
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
 
 function starcoder
 {
-    $command = "$lib_dir/main-starcoder.exe -t $threads -n $n_predict $filteredArguments"
+    $exec_file = "main-starcoder.exe"
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
+
+function chatglm
+{
+    $exec_file = "main-chatglm_vnni.exe"
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict $filteredArguments"
+    Write-Host "$command"
+    Invoke-Expression $command
+}
+
 
 # Remove model_family/x parameter
 $filteredArguments = @()
@@ -88,6 +103,9 @@ switch ($model_family)
     }
     "starcoder" {
         starcoder
+    }
+    "chatglm" {
+        chatglm
     }
     default {
         Write-Host "Invalid model_family: $model_family"

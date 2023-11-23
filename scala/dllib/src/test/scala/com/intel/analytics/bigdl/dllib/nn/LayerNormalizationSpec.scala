@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class LayerNormalizationSpec extends FlatSpec with Matchers {
 
@@ -219,7 +219,7 @@ class LayerNormalizationSpec extends FlatSpec with Matchers {
 class LayerNormalizationSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new LayerNormalization[Float](8).setName("LayerNormalization")
-    val input = Tensor[Float](2, 3, 8).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -227,8 +227,8 @@ class LayerNormalizationSerialTest extends ModuleSerializationTest {
 class CMulTableExpandSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = CMulTableExpand[Float]().setName("CMulTableExpand")
-    val input1 = Tensor[Float](2, 8).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](2, 1).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 8).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2, 1).apply1(_ => Random.nextFloat())
     runSerializationTest(model, T(input1, input2))
   }
 }
@@ -236,8 +236,8 @@ class CMulTableExpandSerialTest extends ModuleSerializationTest {
 class CSubTableExpandSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = CSubTableExpand[Float]().setName("CSubTableExpand")
-    val input1 = Tensor[Float](2, 8).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](2, 1).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 8).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2, 1).apply1(_ => Random.nextFloat())
     runSerializationTest(model, T(input1, input2))
   }
 }
@@ -245,7 +245,7 @@ class CSubTableExpandSerialTest extends ModuleSerializationTest {
 class ExpandSizeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = ExpandSize[Float](Array(2, 8)).setName("ExpandSize")
-    val input = Tensor[Float](2, 1).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 1).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -253,7 +253,7 @@ class ExpandSizeSerialTest extends ModuleSerializationTest {
 class VectorProductSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new VectorProduct[Float](8).setName("VectorProduct")
-    val input = Tensor[Float](2, 8).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 8).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -261,8 +261,8 @@ class VectorProductSerialTest extends ModuleSerializationTest {
 class TableOperationSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new TableOperation[Float](CMulTable()).setName("TableOperation")
-    val input1 = Tensor[Float](2, 8).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](2, 1).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 8).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2, 1).apply1(_ => Random.nextFloat())
     runSerializationTest(model, T(input1, input2))
   }
 }

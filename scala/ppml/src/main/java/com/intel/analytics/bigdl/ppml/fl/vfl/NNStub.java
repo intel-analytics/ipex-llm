@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.ppml.fl.vfl;
 
 import com.google.protobuf.ByteString;
-import com.intel.analytics.bigdl.ckks.CKKS;
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.*;
 import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.*;
 import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceGrpc;
@@ -33,7 +32,6 @@ public class NNStub {
     private static final Logger logger = LoggerFactory.getLogger(NNStub.class);
     private static NNServiceGrpc.NNServiceBlockingStub stub;
     Integer clientID;
-    protected CKKS ckks;
     protected long encrytorPtr;
     public NNStub(Channel channel, Integer clientID) {
         this.clientID = clientID;
@@ -43,64 +41,6 @@ public class NNStub {
     public NNStub(Channel channel, Integer clientID, byte[][] secrets) {
         this.clientID = clientID;
         stub = NNServiceGrpc.newBlockingStub(channel);
-        ckks = new CKKS();
-        encrytorPtr = ckks.createCkksEncryptor(secrets);
-    }
-
-    private EncryptedTensor encrypt(FloatTensor ft) {
-        float[] array = new float[ft.getTensorCount()];
-        for(int i = 0; i < ft.getTensorCount(); i++) {
-            array[i] = ft.getTensorList().get(i);
-        }
-        byte[] encryptedArray = ckks.ckksEncrypt(encrytorPtr, array);
-
-        EncryptedTensor et =
-          EncryptedTensor.newBuilder()
-            .addAllShape(ft.getShapeList())
-            .setTensor(ByteString.copyFrom(encryptedArray))
-            .build();
-        return et;
-    }
-
-    public TensorMap encrypt(TensorMap data) {
-        Map<String, FloatTensor> d = data.getTensorMapMap();
-
-        TensorMap.Builder encryptedDataBuilder = TensorMap.newBuilder()
-          .setMetaData(data.getMetaData());
-        for (Map.Entry<String, FloatTensor> fts: d.entrySet()){
-            encryptedDataBuilder.putEncryptedTensorMap(fts.getKey(),
-              encrypt(fts.getValue()));
-        }
-        return encryptedDataBuilder.build();
-    }
-
-    private FloatTensor decrypt(EncryptedTensor et) {
-        byte[] array = et.getTensor().toByteArray();
-        float[] decryptedArray = ckks.ckksDecrypt(encrytorPtr, array);
-
-        List<Float> floatList = new ArrayList<Float>(decryptedArray.length);
-        for (float v : decryptedArray) {
-            floatList.add(v);
-        }
-
-        FloatTensor ft =
-          FloatTensor.newBuilder()
-            .addAllShape(et.getShapeList())
-            .addAllTensor(floatList)
-            .build();
-        return ft;
-    }
-
-    public TensorMap decrypt(TensorMap data) {
-        Map<String, EncryptedTensor> d = data.getEncryptedTensorMapMap();
-
-        TensorMap.Builder encryptedDataBuilder = TensorMap.newBuilder()
-          .setMetaData(data.getMetaData());
-        for (Map.Entry<String, EncryptedTensor> ets: d.entrySet()){
-            encryptedDataBuilder.putTensorMap(ets.getKey(),
-              decrypt(ets.getValue()));
-        }
-        return encryptedDataBuilder.build();
     }
 
     public TensorMap train(TensorMap data, String algorithm) {
@@ -108,18 +48,10 @@ public class NNStub {
           .newBuilder()
           .setClientuuid(clientID)
           .setAlgorithm(algorithm);
-        if (null != ckks) {
-          TensorMap encryptedData = encrypt(data);
-          trainRequestBuilder.setData(encryptedData);
-          logDebugMessage(encryptedData);
-          return decrypt(stub.train(trainRequestBuilder.build()).getData());
-        } else {
           trainRequestBuilder.setData(data);
           logDebugMessage(data);
           return stub.train(trainRequestBuilder.build()).getData();
-        }
     }
-
 
     public EvaluateResponse evaluate(TensorMap data, String algorithm, Boolean hasReturn) {
         EvaluateRequest.Builder evaluateRequestBuilder = EvaluateRequest
@@ -127,16 +59,8 @@ public class NNStub {
                 .setReturn(hasReturn)
                 .setClientuuid(clientID)
                 .setAlgorithm(algorithm);
-        if (null != ckks) {
-// TODO: evaluate with CKKS
-//            TensorMap encryptedData = encrypt(data);
-//            evaluateRequestBuilder.setData(encryptedData);
-//            logDebugMessage(encryptedData);
-            throw new UnsupportedOperationException("evaluate with CKKS is unspported.");
-        } else {
-            evaluateRequestBuilder.setData(data);
-            logDebugMessage(data);
-        }
+        evaluateRequestBuilder.setData(data);
+        logDebugMessage(data);
         return stub.evaluate(evaluateRequestBuilder.build());
     }
 
@@ -146,16 +70,9 @@ public class NNStub {
                 .setData(data)
                 .setClientuuid(clientID)
                 .setAlgorithm(algorithm);
-        if (null != ckks) {
-            TensorMap encryptedData = encrypt(data);
-            predictRequestBuilder.setData(encryptedData);
-            logDebugMessage(encryptedData);
-            return decrypt(stub.predict(predictRequestBuilder.build()).getData());
-        } else {
-            predictRequestBuilder.setData(data);
-            logDebugMessage(data);
-            return stub.predict(predictRequestBuilder.build()).getData();
-        }
+        predictRequestBuilder.setData(data);
+        logDebugMessage(data);
+        return stub.predict(predictRequestBuilder.build()).getData();
     }
 
     private void logDebugMessage(TensorMap data) {

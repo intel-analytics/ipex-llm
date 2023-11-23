@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class JoinTableSpec extends FlatSpec with Matchers {
@@ -63,8 +63,8 @@ class JoinTableSpec extends FlatSpec with Matchers {
 class JoinTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val joinTable = JoinTable[Float](2, 2).setName("joinTable")
-    val input1 = Tensor[Float](2, 2).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](2, 2).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
     val input = T()
     input(1.toFloat) = input1
     input(2.toFloat) = input2

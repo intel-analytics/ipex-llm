@@ -19,14 +19,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class RnnCellSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val rnnCell = RnnCell[Float](6, 4, Sigmoid[Float]()).setName("rnnCell")
-    val input1 = Tensor[Float](Array(1, 4)).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](Array(1, 4)).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](Array(1, 4)).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](Array(1, 4)).apply1(_ => Random.nextFloat())
     val input = T()
     input(1.0f) = input1
     input(2.0f) = input2

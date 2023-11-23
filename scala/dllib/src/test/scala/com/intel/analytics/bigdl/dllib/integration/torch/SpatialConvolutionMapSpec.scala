@@ -23,7 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.T
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialConvolutionMapSpec extends TorchSpec {
@@ -124,8 +124,8 @@ class SpatialConvolutionMapSpec extends TorchSpec {
     val layer = new SpatialConvolutionMap[Double](
       SpatialConvolutionMap.full[Double](nInputPlane, nOutputPlane), kW, kH)
 
-    new SecureRandom().setSeed(seed)
-    val input = Tensor[Double](16, 3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 32, 32).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -162,8 +162,8 @@ class SpatialConvolutionMapSpec extends TorchSpec {
     val layer = new SpatialConvolutionMap[Double](
       SpatialConvolutionMap.random[Double](nInputPlane, nOutputPlane, 1), kW, kH)
 
-    new SecureRandom().setSeed(seed)
-    val input = Tensor[Double](3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(seed)
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -200,8 +200,8 @@ class SpatialConvolutionMapSpec extends TorchSpec {
     val layer = new SpatialConvolutionMap[Double](
       SpatialConvolutionMap.oneToOne[Double](nInputPlane), kW, kH)
 
-    new SecureRandom().setSeed(seed)
-    val input = Tensor[Double](3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(seed)
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 

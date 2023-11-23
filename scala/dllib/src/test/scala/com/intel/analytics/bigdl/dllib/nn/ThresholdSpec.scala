@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ThresholdSpec extends FlatSpec {
@@ -147,7 +147,7 @@ class ThresholdSpec extends FlatSpec {
 class ThresholdSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val threshold = Threshold[Float](0.5).setName("threshold")
-    val input = Tensor[Float](5, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(threshold, input)
   }
 }

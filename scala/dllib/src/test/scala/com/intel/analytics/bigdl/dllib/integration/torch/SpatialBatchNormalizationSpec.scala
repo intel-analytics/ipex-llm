@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization, GradientChecker, 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import java.security.SecureRandom
+import scala.util.Random
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.utils.TestUtils

@@ -15,15 +15,17 @@
 #
 
 ARG SPARK_VERSION=2.4.6
+ARG HADOOP_VERSION=2.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ARG DEBIAN_FRONTEND=noninteractive
 
 # stage.1 jdk & spark
 FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
+ARG HADOOP_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
@@ -40,10 +42,10 @@ RUN apt-get update --fix-missing && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 # spark
-    wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
+    rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
     cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
     # remove log4j 1.x jars
     rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
@@ -55,8 +57,8 @@ RUN apt-get update --fix-missing && \
     wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
     wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
-ADD ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
-ADD ./spark-defaults.conf ${SPARK_HOME}/conf/spark-defaults.conf
+COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
+COPY ./spark-defaults.conf ${SPARK_HOME}/conf/spark-defaults.conf
 RUN ln -fs /bin/bash /bin/sh
 RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -77,7 +79,7 @@ ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip  git
-ADD ./download-bigdl.sh /opt
+COPY ./download-bigdl.sh /opt
 
 RUN chmod a+x /opt/download-bigdl.sh && \
     mkdir -p /opt/bigdl-examples/python
@@ -116,7 +118,7 @@ COPY --from=spark /opt/jdk /opt/jdk
 COPY --from=spark /opt/spark /opt/work/spark-${SPARK_VERSION}
 COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION} /opt/work/bigdl-${BIGDL_VERSION}
 
-ADD ./install-python-env.sh /opt
+COPY ./install-python-env.sh /opt
 RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update --fix-missing && \
@@ -138,8 +140,8 @@ RUN apt-get update --fix-missing && \
 RUN echo "source activate bigdl" > ~/.bashrc
 ENV PATH /usr/local/envs/bigdl/bin:$PATH
 
-ADD ./start-notebook.sh /opt/work
-ADD ./start-notebook-k8s.sh /opt/work
+COPY ./start-notebook.sh /opt/work
+COPY ./start-notebook-k8s.sh /opt/work
 RUN chmod a+x /opt/work/start-notebook.sh && \
     chmod a+x /opt/work/start-notebook-k8s.sh
 

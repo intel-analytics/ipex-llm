@@ -69,6 +69,14 @@ def mkdirs(path):
     callZooFunc("float", "mkdirs", path)
 
 
+def rmdir(path):
+    callZooFunc("float", "rmdir", path)
+
+
+def is_file(path):
+    return callZooFunc("float", "isFile", path)
+
+
 def is_local_path(path):
     if path.startswith("/dbfs"):
         return False
@@ -96,16 +104,13 @@ def enable_multi_fs_save(save_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 if "overwrite" in kwargs:
                     put_local_file_to_remote(temp_path, path, over_write=kwargs['overwrite'])
                 else:
                     put_local_file_to_remote(temp_path, path)
-            finally:
-                os.remove(temp_path)
             return result
 
     return save_mult_fs
@@ -119,12 +124,11 @@ def enable_multi_fs_load_static(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
-                return load_func(temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
+                output = load_func(temp_path, *args, **kwargs)
+            return output
 
     return multi_fs_load
 
@@ -138,12 +142,10 @@ def enable_multi_fs_load(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
 
     return multi_fs_load
 
@@ -157,24 +159,18 @@ def enable_hdfs_load(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                         stdout=subprocess.PIPE).communicate()[0]
-            os.environ["CLASSPATH"] = classpath.decode("utf-8")
-            import pyarrow.fs as pafs
-            import pyarrow as pa
-            hdfs = pa.hdfs.connect()
-            if not hdfs.isfile(path):
-                os.mkdir(temp_path)
-            pafs.copy_files(path, temp_path)
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                             stdout=subprocess.PIPE).communicate()[0]
+                os.environ["CLASSPATH"] = classpath.decode("utf-8")
+                import pyarrow.fs as pafs
+                import pyarrow as pa
+                hdfs = pa.hdfs.connect()
+                if not hdfs.isfile(path):
+                    os.mkdir(temp_path)
+                pafs.copy_files(path, temp_path)
                 return load_func(temp_path, *args, **kwargs)
-            finally:
-                if os.path.isdir(temp_path):
-                    import shutil
-                    shutil.rmtree(temp_path)
-                else:
-                    os.remove(temp_path)
 
     return multi_fs_load
 
@@ -183,27 +179,31 @@ def get_remote_file_to_local(remote_path, local_path, over_write=False):
     callZooFunc("float", "getRemoteFileToLocal", remote_path, local_path, over_write)
 
 
-def get_remote_dir_to_local(remote_dir, local_dir):
+def get_remote_dir_to_local(remote_dir, local_dir, over_write=False):
     # get remote file lists
     file_list = get_file_list(remote_dir)
     # get remote files to local
-    [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
+    [get_remote_file_to_local(file,
+                              os.path.join(local_dir, os.path.basename(file)),
+                              over_write=over_write)
      for file in file_list]
 
 
-def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
+def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir, over_write=False):
     remote_dir = os.path.dirname(remote_path_prefix)
     prefix = os.path.basename(remote_path_prefix)
     # get remote file lists
     file_list = get_file_list(remote_dir)
     file_list = [file for file in file_list if os.path.basename(file).startswith(prefix)]
     # get remote files to local
-    [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
+    [get_remote_file_to_local(file,
+                              os.path.join(local_dir, os.path.basename(file)),
+                              over_write=over_write)
      for file in file_list]
 
 
-def get_remote_dir_tree_to_local(remote_dir, local_dir):
-    if os.path.exists(local_dir):
+def get_remote_dir_tree_to_local(remote_dir, local_dir, over_write=False):
+    if not os.path.exists(local_dir):
         os.makedirs(local_dir)
     # get remote file lists
     file_list = get_file_list(remote_dir, recursive=True)
@@ -212,7 +212,9 @@ def get_remote_dir_tree_to_local(remote_dir, local_dir):
         filename = os.path.basename(file)
         if not os.path.exists(local_subdir):
             os.makedirs(local_subdir)
-        get_remote_file_to_local(file, os.path.join(local_subdir, filename))
+        get_remote_file_to_local(file,
+                                 os.path.join(local_subdir, filename),
+                                 over_write=over_write)
 
 
 def put_local_file_to_remote(local_path, remote_path, over_write=False):

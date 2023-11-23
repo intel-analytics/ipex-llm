@@ -17,6 +17,9 @@
 import os
 from bigdl.dllib.nncontext import ZooContext
 from bigdl.dllib.utils.log4Error import *
+import pickle
+import hmac
+import hashlib
 
 
 class OrcaContextMeta(type):
@@ -173,7 +176,7 @@ def _check_python_micro_version():
 
 
 def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g", num_nodes=1,
-                      init_ray_on_spark=False, **kwargs):
+                      init_ray_on_spark=False, init_executor_gateway=True, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
     across the cluster if necessary) or an OrcaRayContext when the runtime is ray.
@@ -207,6 +210,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
     :param init_ray_on_spark: Whether to launch Ray services across the cluster.
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
+    :param init_executor_gateway: Whether to launch Java gateway on executors. Default to be True.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any.
 
@@ -351,6 +355,9 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
         if init_ray_on_spark:
             driver_cores = 0  # This is the default value.
             ray_ctx.init(driver_cores=driver_cores)
+        if init_executor_gateway:
+            from bigdl.dllib.utils.common import init_executor_gateway
+            init_executor_gateway(sc=sc)
         return sc
     else:
         invalidInputError(False,
@@ -385,3 +392,41 @@ def stop_orca_context():
             ray_ctx = OrcaRayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()
+
+# Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
+# To safely use python pickle
+
+
+class SafePickle:
+    key = b'shared-key'
+    """
+    Example:
+        >>> from bigdl.orca.common import SafePickle
+        >>> with open(file_path, 'wb') as file:
+        >>>     signature = SafePickle.dump(data, file, return_digest=True)
+        >>> with open(file_path, 'rb') as file:
+        >>>     data = SafePickle.load(file, signature)
+    """
+    @classmethod
+    def dump(self, obj, file, return_digest=False, *args, **kwargs):
+        if return_digest:
+            pickled_data = pickle.dumps(obj)
+            file.write(pickled_data)
+            digest = hmac.new(self.key, pickled_data, hashlib.sha1).hexdigest()
+            return digest
+        else:
+            pickle.dump(obj, file, *args, **kwargs)
+
+    @classmethod
+    def load(self, file, digest=None, *args, **kwargs):
+        if digest:
+            content = file.read()
+            new_digest = hmac.new(self.key, content, hashlib.sha1).hexdigest()
+            if digest != new_digest:
+                invalidInputError(False, 'Pickle safe check failed')
+            file.seek(0)
+        return pickle.load(file, *args, **kwargs)
+
+    @classmethod
+    def dumps(self, obj, *args, **kwargs):
+        return pickle.dumps(obj, *args, **kwargs)

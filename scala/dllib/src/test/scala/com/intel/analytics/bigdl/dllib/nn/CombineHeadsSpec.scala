@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class CombineHeadsSpec extends FlatSpec with Matchers {
 
@@ -119,7 +119,7 @@ class CombineHeadsSpec extends FlatSpec with Matchers {
 class CombineHeadsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = new CombineHeads[Float]().setName("combine_heads")
-    val input = Tensor[Float](2, 4, 3, 2).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 4, 3, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 }

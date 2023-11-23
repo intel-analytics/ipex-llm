@@ -147,9 +147,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, epoch, total_loss):
 
         total_dataset += 16
         if batch % 20 == 0:
-            msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
-                epoch, batch, len(dataloader),
-                100. * batch / len(dataloader), loss.item())
+            msg = "Train Epoch: {} loss={:.4f}".format(epoch, loss.item())
             logging.info(msg)
 
     return total_loss, total_dataset

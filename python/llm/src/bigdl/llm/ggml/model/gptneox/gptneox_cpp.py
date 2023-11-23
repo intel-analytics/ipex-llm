@@ -54,6 +54,7 @@ from ctypes import (
     c_char_p,
     c_void_p,
     c_bool,
+    pointer,
     POINTER,
     _Pointer,  # type: ignore
     Structure,
@@ -63,30 +64,12 @@ from ctypes import (
 )
 import pathlib
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.utils import get_avx_flags
+from bigdl.llm.utils.utils import get_shared_lib_info
 
 
 # Load the library
 def _load_shared_library(lib_base_name: str):
-    # Determine the file extension based on the platform
-    if sys.platform.startswith("linux") or sys.platform == "darwin":
-        lib_ext = ".so"
-    elif sys.platform == "win32":
-        lib_ext = ".dll"
-    else:
-        invalidInputError(False, "Unsupported platform.")
-
-    avx = get_avx_flags()
-
-    # Construct the paths to the possible shared library names (python/llm/src/bigdl/llm/libs)
-    _base_path = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
-    _base_path = _base_path / 'libs'
-    # Searching for the library in the current directory under the name "libgptneox" (default name
-    # for gptneoxcpp) and "gptneox" (default name for this repo)
-    _lib_paths = [
-        _base_path / f"lib{lib_base_name}{avx}{lib_ext}",
-        _base_path / f"{lib_base_name}{avx}{lib_ext}",
-    ]
+    _base_path, _lib_paths = get_shared_lib_info(lib_base_name=lib_base_name)
 
     if "GPTNEOX_CPP_LIB" in os.environ:
         lib_base_name = os.environ["GPTNEOX_CPP_LIB"]
@@ -98,6 +81,7 @@ def _load_shared_library(lib_base_name: str):
     # Add the library directory to the DLL search path on Windows (if needed)
     if sys.platform == "win32" and sys.version_info >= (3, 8):
         os.add_dll_directory(str(_base_path))
+        os.environ["PATH"] = str(_base_path) + ";" + os.environ["PATH"]
         cdll_args["winmode"] = 0
 
     # Try to load the shared library, handling potential errors
@@ -230,10 +214,10 @@ _lib.gptneox_mlock_supported.restype = c_bool
 def gptneox_init_from_file(
     path_model: bytes, params: gptneox_context_params
 ) -> gptneox_context_p:
-    return _lib.gptneox_init_from_file(path_model, params)
+    return _lib.gptneox_init_from_file(path_model, pointer(params))
 
 
-_lib.gptneox_init_from_file.argtypes = [c_char_p, gptneox_context_params]
+_lib.gptneox_init_from_file.argtypes = [c_char_p, gptneox_context_params_p]
 _lib.gptneox_init_from_file.restype = gptneox_context_p
 
 

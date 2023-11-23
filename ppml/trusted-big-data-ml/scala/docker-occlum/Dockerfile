@@ -167,7 +167,7 @@ RUN mkdir /ppml && cd /ppml && \
     cd LightGBM && mkdir build && cd build && \
     cmake -DUSE_SWIG=ON -DUSE_SSL=1 .. && make -j4
 
-ADD ./install_python_with_conda.sh /opt
+COPY ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
 #add jindo sdk to support oss
@@ -178,8 +178,7 @@ RUN cd /opt && \
 
 FROM occlum/occlum:0.30.0-ubuntu20.04 as ppml
 
-MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ENV HADOOP_VERSION=${HADOOP_VERSION}
@@ -209,7 +208,7 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 # Add 01.org & key
 #RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
 #    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
-RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list && \
+RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 # RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
 #     wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
@@ -251,20 +250,20 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/tpch.zip /opt/py-examples/tpch
 COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/main.py /opt/py-examples/tpch/
 
 # Copy scripts & other files
-ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
-ADD ./sqlSuites /opt/sqlSuites
-ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
+COPY ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
+COPY ./sqlSuites /opt/sqlSuites
+COPY ./log4j2.xml /opt/spark/conf/log4j2.xml
 
 # For get_quote C compile
 RUN rm /root/demos/remote_attestation/dcap/c_app/dcap_c_test.c
-ADD ./dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
-ADD ./dcap-ppml.yaml /root/demos/remote_attestation/dcap/
-ADD ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
+COPY ./dcap_c_test.c /root/demos/remote_attestation/dcap/c_app/
+COPY ./dcap-ppml.yaml /root/demos/remote_attestation/dcap/
+COPY ./get_quote_on_ppml.sh /root/demos/remote_attestation/dcap
 
 # For attestation
-ADD ./verify-attestation-service.sh /opt
-ADD ./print_enclave_signer.sh /opt
-ADD ./register.sh /opt
+COPY ./verify-attestation-service.sh /opt
+COPY ./print_enclave_signer.sh /opt
+COPY ./register.sh /opt
 
 COPY ./entrypoint.sh /opt/
 COPY ./ehsm_entry.sh /opt/
@@ -282,9 +281,9 @@ RUN chmod a+x /opt/entrypoint.sh && \
     rm -rf /var/run/aesmd
 
 # Add python lib
-ADD ./python-glibc.yaml /opt/python-glibc.yaml
+COPY ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
-ADD ./py-examples /opt/py-examples
+COPY ./py-examples /opt/py-examples
 
 # Prepare Bigdl python libs
 RUN unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \

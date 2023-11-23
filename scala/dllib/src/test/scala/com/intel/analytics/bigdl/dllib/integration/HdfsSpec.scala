@@ -43,7 +43,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-import java.security.SecureRandom
+import scala.util.Random
 
 
 @com.intel.analytics.bigdl.tags.Integration
@@ -177,7 +177,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
   "Persist and Load Caffe to/from HDFS" should "works properly" in {
 
-    val input1 = Tensor(10).apply1( e => new SecureRandom().nextDouble())
+    val input1 = Tensor(10).apply1( e => Random.nextDouble())
 
     val input2 = Tensor()
 

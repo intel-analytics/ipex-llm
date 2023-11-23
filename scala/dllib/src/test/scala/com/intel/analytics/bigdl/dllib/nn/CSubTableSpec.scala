@@ -19,15 +19,15 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class CSubTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val csubTable = CSubTable[Float]().setName("csubTable")
 
-    val input1 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2

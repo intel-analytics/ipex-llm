@@ -63,14 +63,18 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
     from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 
-    path = Path(path)
-    if not path.exists():
-        invalidInputError(False, "{} doesn't exist.".format(path))
-    meta_path = path / "nano_model_meta.yml"
-    if not meta_path.exists():
-        invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
-    with open(meta_path, 'r') as f:
-        metadata = yaml.safe_load(f)
+    if isinstance(path, dict):
+        metadata = yaml.safe_load(path["nano_model_meta.yml"])
+        path["nano_model_meta.yml"].seek(0)
+    else:
+        path = Path(path)
+        if not path.exists():
+            invalidInputError(False, "{} doesn't exist.".format(path))
+        meta_path = path / "nano_model_meta.yml"
+        if not meta_path.exists():
+            invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
+        with open(meta_path, 'r') as f:
+            metadata = yaml.safe_load(f)
     model_type = metadata.get('ModelType', None)
     result = None
     if model_type == 'PytorchOpenVINOModel':
@@ -106,7 +110,10 @@ def load_model(path, model: nn.Module = None, input_sample=None,
         if "thread_num" in metadata and metadata["thread_num"] is not None:
             thread_num = int(metadata["thread_num"])
         if checkpoint_path:
-            checkpoint_path = path / metadata['checkpoint']
+            if isinstance(path, dict):
+                checkpoint_path = path[metadata['checkpoint']]
+            else:
+                checkpoint_path = path / metadata['checkpoint']
             state_dict = torch.load(checkpoint_path, map_location='cpu')
             if metadata['compression'] == "bf16":
                 state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")

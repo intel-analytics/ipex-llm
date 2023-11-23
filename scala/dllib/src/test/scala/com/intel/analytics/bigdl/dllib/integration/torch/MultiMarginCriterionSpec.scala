@@ -17,17 +17,17 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.MultiMarginCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class MultiMarginCriterionSpec extends TorchSpec {
     "A MultiMarginCriterion " should "generate correct output and grad with " +
     "one dimension and weights not null" in {
     torchCheck()
-    val input = Tensor[Double](3).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3).apply1(e => Random.nextDouble())
     val target = Tensor[Double](1)
     target(Array(1)) = 2
-    val weights = Tensor[Double](3).apply1(e => new SecureRandom().nextDouble())
+    val weights = Tensor[Double](3).apply1(e => Random.nextDouble())
 
     val layer = new MultiMarginCriterion[Double](1, weights)
     val start = System.nanoTime()
@@ -55,13 +55,13 @@ class MultiMarginCriterionSpec extends TorchSpec {
   "A MultiMarginCriterion " should "generate correct output and grad with " +
     "two dimensions and weights not null" in {
     torchCheck()
-    val input = Tensor[Double](3, 2).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 2).apply1(e => Random.nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 1
     target(Array(2)) = 1
     target(Array(3)) = 2
 
-    val weights = Tensor[Double](2).apply1(e => new SecureRandom().nextDouble())
+    val weights = Tensor[Double](2).apply1(e => Random.nextDouble())
 
     val layer = new MultiMarginCriterion[Double](1, weights)
     val start = System.nanoTime()
@@ -88,7 +88,7 @@ class MultiMarginCriterionSpec extends TorchSpec {
 
   "A MultiMarginCriterion " should "generate correct output and grad with weights null" in {
     torchCheck()
-    val input = Tensor[Double](3, 2).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 2).apply1(e => Random.nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 2
     target(Array(2)) = 1

@@ -18,7 +18,9 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo", "sigfig", "prophet"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo", "sigfig", "prophet",
+                        "accelerate", "langchain", "pydantic", "transformers", "ray", "sklearn", "torchmetrics",
+                        "pandas", "pmdarima", "scipy", "optuna", "cloudpickle", "xgboost", "filelock"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
@@ -29,11 +31,12 @@ sys.path.insert(0, os.path.abspath("../../../python/dllib/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/llm/src/"))
 
 # -- Project information -----------------------------------------------------
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-  "header_links_before_dropdown": 8,
+  "header_links_before_dropdown": 9,
   "icon_links": [
         {
             "name": "GitHub Repository for BigDL",

@@ -19,6 +19,23 @@ from os import listdir
 from argparse import ArgumentParser
 import pandas as pd
 
+from urllib.parse import urlparse
+from os.path import exists
+from bigdl.dllib.utils import log4Error
+
+
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(exists(parsed_uri.path),
+                                "File Not Exist!")
+
 
 def _parse_args():
     parser = ArgumentParser()
@@ -36,6 +53,7 @@ if __name__ == '__main__':
 
     input_files = [f for f in listdir(args.input_folder) if f.endswith(".parquet")]
     for f in input_files:
+        is_local_and_existing_uri(os.path.join(args.input_folder, f))
         df = pd.read_parquet(os.path.join(args.input_folder, f))
         df = df.rename(columns={"text_ tokens": "text_tokens"})
         # This is a typo. Other typos include enaging...

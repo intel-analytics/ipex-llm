@@ -19,14 +19,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class ConcatV2LoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val concatv2 = new ConcatV2LoadTF[Float]().setName("concatv2LoadTF")
-    val input = T(Tensor[Float](1, 2).apply1(_ => new SecureRandom().nextFloat()),
-      Tensor[Float](1, 2).apply1(_ => new SecureRandom().nextFloat()),
+    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
       Tensor[Int](T(1)))
     runSerializationTest(concatv2, input)
   }

@@ -20,6 +20,7 @@ import java.io.File
 import java.security.{KeyStore, SecureRandom}
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
+import java.net.URI
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.{ConnectionContext, Http}
@@ -46,6 +47,16 @@ object FrontEndApp extends Supportive with EncryptSupportive {
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
 
+  def isLocalURI(path: String): Unit = {
+    val uri = new URI(path)
+    val scheme = uri.getScheme
+    if (scheme != null && !scheme.equalsIgnoreCase("file")) {
+      logger.error(s"$path isn't a local file")
+    } else {
+      logger.info(s"$path is a local file")
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     timing(s"$name started successfully.")() {
       val arguments = timing("parse arguments")() {
@@ -58,6 +69,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
       val servableManager = new ServableManager
       logger.info("Multi Serving Mode")
       timing("load servable manager")() {
+        isLocalURI(arguments.servableManagerPath)
         try servableManager.load(arguments.servableManagerPath, purePredictTimersMap,
           modelInferenceTimersMap)
         catch {
@@ -70,16 +82,16 @@ object FrontEndApp extends Supportive with EncryptSupportive {
                  modelMetaDataList:
                  - !<ClusterServingMetaData>
                     modelName: "1"
-                    modelVersion:"1.0"
+                    modelVersion: "1.0"
                     redisHost: "localhost"
                     redisPort: "6381"
                     redisInputQueue: "serving_stream2"
                     redisOutputQueue: "cluster-serving_serving_stream2:"
-                 - !<InflerenceModelMetaData>
+                 - !<InferenceModelMetaData>
                     modelName: "1"
-                    modelVersion:"1.0"
-                    modelPath:"/"
-                    modelType:"OpenVINO"
+                    modelVersion: "1.0"
+                    modelPath: "/"
+                    modelType: "OpenVINO"
                     features:
                       - "a"
                       - "b"
@@ -110,6 +122,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
             try {
               if (redisPutter == null) {
                 val redisPutterName = s"redis-putter"
+                isLocalURI(arguments.redissTrustStorePath)
                 redisPutter = timing(s"$redisPutterName initialized.")() {
                   val redisPutterProps = Props(new RedisPutActor(
                     arguments.redisHost,
@@ -287,6 +300,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
         }
       }
       if (arguments.httpsEnabled) {
+        isLocalURI(arguments.httpsKeyStorePath)
         val serverContext = defineServerContext(arguments.httpsKeyStoreToken,
           arguments.httpsKeyStorePath)
         Http().bindAndHandle(route, arguments.interface, port = arguments.securePort,

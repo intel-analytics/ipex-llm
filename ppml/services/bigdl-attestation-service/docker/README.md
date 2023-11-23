@@ -1,7 +1,7 @@
 ## 1. Build base image
 You can pull the BigDL Remote Attestation Service base image from dockerhub.
 ``` bash
-docker pull intelanalytics/bigdl-attestation-service-base:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-attestation-service-base:2.5.0-SNAPSHOT
 ```
 Or you can clone BigDL repository and build the image with `build-docker-image.sh`.
 ```bash
@@ -19,7 +19,7 @@ bash build-custom-image.sh
 
 Or you can pull the BigDL Remote Attestation Service reference image from dockerhub. (**NOT feasible in production**)
 ``` bash
-docker pull intelanalytics/bigdl-attestation-service-reference:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-attestation-service-reference:2.5.0-SNAPSHOT
 ```
 
 ## 3. Start container
@@ -29,7 +29,7 @@ export DATA_PATH=
 export KEYS_PATH=
 export NFS_INPUT_PATH=
 export LOCAL_IP=
-export DOCKER_IMAGE=intelanalytics/bigdl-attestation-service-reference:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-attestation-service-reference:2.5.0-SNAPSHOT
 
 export PCCS_URL=
 export HTTPS_KEY_STORE_TOKEN=

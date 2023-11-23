@@ -39,3 +39,15 @@ def invalidOperationError(condition, errMsg, fixMsg=None, cause=None):
             raise cause
         else:
             raise RuntimeError(errMsg)
+
+class MuteHFLogger():
+    def __init__(self, logger, speak_level=logging.ERROR) -> None:
+        self.logger = logger
+        self.speak_level = speak_level
+        self.old_level = logger.getEffectiveLevel()
+
+    def __enter__(self):
+        self.logger.setLevel(self.speak_level)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.logger.setLevel(self.old_level)
