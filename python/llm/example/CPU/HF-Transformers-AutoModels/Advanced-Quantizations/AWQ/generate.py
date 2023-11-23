@@ -22,13 +22,17 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1#instruction-format
-MISTRAL_PROMPT_FORMAT = """[INST] {prompt} [/INST]"""
+# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
+LLAMA2_PROMPT_FORMAT = """### HUMAN:
+{prompt}
+
+### RESPONSE:
+"""
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mistral model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="TheBloke/Mistral-7B-Instruct-v0.1-AWQ",
-                        help='The huggingface repo id for the Mistral AWQ models (e.g. `TheBloke/Mistral-7B-Instruct-v0.1-AWQ` and `TheBloke/Mistral-7B-v0.1-AWQ`) to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for AWQ model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="TheBloke/Llama-2-7B-Chat-AWQ",
+                        help='The huggingface repo id'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -49,7 +53,7 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = MISTRAL_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
@@ -61,5 +65,7 @@ if __name__ == '__main__':
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
+        print('-'*20, 'Prompt', '-'*20)
+        print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
