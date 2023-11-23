@@ -23,7 +23,7 @@ spec:
              name: bigdl-qlora-finetuning-launcher
              securityContext:
               runAsUser: 1000
-             command: ['sh' , '-c', 'bash /bigdl-qlora-finetuing-entrypoint.sh']
+             command: ['sh' , '-c', 'bash /bigdl/bigdl-qlora-finetuing-entrypoint.sh']
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -61,7 +61,7 @@ spec:
             name: bigdl-qlora-finetuning-worker
             securityContext:
               runAsUser: 1000
-            command: ['sh' , '-c', 'bash /bigdl-qlora-finetuing-entrypoint.sh']
+            command: ['sh' , '-c', 'bash /bigdl/bigdl-qlora-finetuing-entrypoint.sh']
             env:
             - name: WORKER_ROLE
               value: "trainer"
