@@ -122,7 +122,10 @@ class LLM:
             tokenizer=tokenizer,
             tokenizer_mode=tokenizer_mode,
             trust_remote_code=trust_remote_code,
-            tensor_parallel_size=tensor_parallel_size,
+            # bigdl-llm change start
+            # summary: disable parallel config.
+            # tensor_parallel_size=tensor_parallel_size,
+            # bigdl-llm change end
             dtype=dtype,
             quantization=quantization,
             revision=revision,
