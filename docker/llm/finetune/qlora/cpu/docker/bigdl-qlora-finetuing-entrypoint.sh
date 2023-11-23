@@ -25,7 +25,7 @@ then
       --data_path "/bigdl/data" \
       --output_dir "/home/mpiuser/finetuned_model" \
       --batch_size 128 \
-      --micro_batch_size 16 > /home/mpiuser/launcher.log 2>&1
+      --micro_batch_size $MICRO_BATCH_SIZE > /home/mpiuser/launcher.log 2>&1
   exit_status=$?
   if [ $exit_status -ne 0 ];
   then
