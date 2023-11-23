@@ -37,11 +37,9 @@ spec:
                value: "bigdl-qlora-finetuning-job-worker-0.bigdl-qlora-finetuning-job-worker"
              - name: DATA_SUB_PATH
                value: "{{ .Values.dataSubPath }}"
-             - name: OMP_NUM_THREADS
-               value: "{{ .Values.ompNumThreads }}"
-             - name: "http_proxy"
+             - name: http_proxy
                value: "{{ .Values.httpProxy }}"
-             - name: "https_proxy"
+             - name: https_proxy
                value: "{{ .Values.httpsProxy }}"
              - name: LOCAL_POD_NAME
                valueFrom:
@@ -75,9 +73,9 @@ spec:
               value: "42679"
             - name: MASTER_ADDR
               value: "bigdl-qlora-finetuning-job-worker-0.bigdl-qlora-finetuning-job-worker"
-            - name: "http_proxy"
+            - name: http_proxy
               value: "{{ .Values.httpProxy }}"
-            - name: "https_proxy"
+            - name: https_proxy
               value: "{{ .Values.httpsProxy }}"
             - name: LOCAL_POD_NAME
               valueFrom:
