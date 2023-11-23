@@ -105,9 +105,17 @@ def llama_attention_forward_4_31(
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
-    original_dtype = hidden_states.dtype()
     device = hidden_states.device
-    fsdp_flag = check_flash_attention_available(hidden_states)
+    # for flash attention
+    original_dtype = hidden_states.dtype
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = check_flash_attention_available(hidden_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag and q_len > 1:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
 
     if self.config.pretraining_tp > 1:
         key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
@@ -129,9 +137,6 @@ def llama_attention_forward_4_31(
         value_states = torch.cat(value_states, dim=-1)
 
     else:
-        # cast hidden_states into fp16 in advance to make use of flash attention optimization
-        if fsdp_flag and q_len > 1:
-            hidden_states = hidden_states.half()
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
@@ -199,18 +204,23 @@ def llama_attention_forward_4_31(
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                     dtype=hidden_states.dtype)
+                                                                     dtype=attention_dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                         dtype=hidden_states.dtype)
+                                                                         dtype=attention_dtype)
 
-    if check_flash_attention_available(query_states) and q_len > 1:
+    if fsdp_flag and q_len > 1:
         # now only use flash attention for first token
-        attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states,
+        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
+                                                     key_states,
+                                                     value_states,
                                                      is_causal=True)
+        attn_weights = None
     else:
         # otherwise, use native attention
-        attn_output = native_sdp(query_states, key_states, value_states, attention_mask,
-                                 bsz, q_len, kv_seq_len, self.head_dim, self.num_heads)
+        attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                               attention_mask,
+                                               bsz, q_len, kv_seq_len,
+                                               self.head_dim, self.num_heads)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
@@ -273,6 +283,6 @@ def native_sdp(query, key, value, attention_mask,
 
     # upcast attention to fp32
     attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                         dtype=torch.float32).to(query.dtype)
+                                         dtype=torch.float32).to(value.dtype)
     attn_output = torch.matmul(attn_weights, value)
-    return attn_output
+    return attn_output, attn_weights
