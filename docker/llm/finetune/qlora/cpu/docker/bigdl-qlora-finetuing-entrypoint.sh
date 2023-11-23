@@ -1,4 +1,5 @@
 #!/bin/bash
+# this is to run alpaca qlora on k8s
 set -x
 source /opt/intel/oneapi/setvars.sh
 export CCL_WORKER_COUNT=$WORLD_SIZE
@@ -6,29 +7,27 @@ source bigdl-llm-init -t
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
-  if [ -d "/bigdl/model" ];
-  then
-    MODEL_PARAM="--repo-id-or-model-path /bigdl/model"  # otherwise, default to download from HF repo
-  fi
-
-  if [ -d "/bigdl/data/$DATA_SUB_PATH" ];
-  then
-    DATA_PARAM="/bigdl/data/$DATA_SUB_PATH" # otherwise, default to download from HF dataset
-  fi
-
+  cd /bigdl/alpaca-qlora
   sleep 10
+  export MASTER_ADDR=$(hostname -i)
+  export CPU_CORES=$(nproc)
+  source /opt/intel/oneapi/setvars.sh
   mpirun \
     -n $WORLD_SIZE \
     -ppn 1 \
     -f /home/mpiuser/hostfile \
     -iface eth0 \
     --bind-to socket \
-    -genv OMP_NUM_THREADS=$OMP_NUM_THREADS \
+    -genv OMP_NUM_THREADS=$((CPU_CORES / WORLD_SIZE))\
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \
-    python /bigdl/qlora_finetuning_cpu.py \
-      $MODEL_PARAM $DATA_PARAM > /home/mpiuser/launcher.log 2>&1
+    python alpaca_qlora_finetuning_cpu.py \
+      --base_model '/bigdl/model'  \
+      --data_path "/bigdl/data" \
+      --output_dir "/home/mpiuser/finetuned_model" \
+      --batch_size 128 \
+      --micro_batch_size 16 > /home/mpiuser/launcher.log 2>&1
   exit_status=$?
   if [ $exit_status -ne 0 ];
   then

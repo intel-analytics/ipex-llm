@@ -38,8 +38,8 @@ docker run -itd \
    --name=bigdl-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   -v $BASE_MODE_PATH:/model \
-   -v $DATA_PATH:/data/english_quotes \
+   -v $BASE_MODE_PATH:/bigdl/model \
+   -v $DATA_PATH:/bigdl/data/english_quotes \
    intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
 ```
 
@@ -138,10 +138,9 @@ docker run -itd \
  --cpuset-cpus="your_expected_range_of_cpu_numbers" \
  -e STANDALONE_DOCKER=TRUE \
  -e WORKER_COUNT_DOCKER=your_worker_count \
- -v your_downloaded_base_model_path:/model \
- -v your_downloaded_data_path:/data/alpaca_data_cleaned_archive.json \
- intelanalytics/bigdl-llm-finetune-qlora-cpu:2.5.0-SNAPSHOT \
- bash
+ -v your_downloaded_base_model_path:/bigdl/model \
+ -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
+ intelanalytics/bigdl-llm-finetune-qlora-cpu:2.5.0-SNAPSHOT
 ```
 
 Note that `STANDALONE_DOCKER` is set to **TRUE** here.
