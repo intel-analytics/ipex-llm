@@ -100,6 +100,8 @@ class _BaseAutoModelClass:
                                        conducting model optimizations. Default to be None.
         :param replace_embedding: Whether to replace the Embedding layer, may need to set it
             to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+        :param safe_bmm: Whether to replace the torch.bmm ops, may need to set it
+            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -202,6 +204,7 @@ class _BaseAutoModelClass:
         # and lead to args missing.
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         replace_embedding = kwargs.pop("replace_embedding", False)
+        safe_bmm = kwargs.pop("safe_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -262,7 +265,7 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     replace_embedding=replace_embedding)
+                                     replace_embedding=replace_embedding, safe_bmm=safe_bmm)
         model.config.update({"bigdl_transformers_low_bit": q_k})
         model.config.update({"tie_word_embeddings": False})
 
@@ -300,6 +303,7 @@ class _BaseAutoModelClass:
 
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
         replace_embedding = kwargs.pop("replace_embedding", False)
+        safe_bmm = kwargs.pop("safe_bmm", False)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -411,7 +415,7 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     replace_embedding=replace_embedding)
+                                     replace_embedding=replace_embedding, safe_bmm=safe_bmm)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
