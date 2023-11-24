@@ -271,13 +271,15 @@ def setup_package():
                     "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     all_requires += CONVERT_DEP
 
-    # install with -f https://developer.intel.com/ipex-whl-stable-xpu
+    # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_requires = copy.deepcopy(all_requires)
     xpu_requires.remove('torch')
-    xpu_requires += ["torch==2.0.1a0",
-                     "torchvision==0.15.2a0",
+    xpu_requires += ["torch==2.0.1a0;platform_system=='Linux'",
+                     "torch==2.0.0a0+gitc6a572f;platform_system=='Windows'",
+                     "torchvision==0.15.2a0;platform_system=='Linux'",
                      "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                     "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'",
+                     "intel_extension_for_pytorch==2.0.110+gitba7f6c1;platform_system=='Windows'",
+                     "bigdl-core-xe==" + VERSION + ";(platform_system=='Linux' or platform_system=='Windows')",
                      "bigdl-core-xe-esimd==" + VERSION + ";platform_system=='Linux'"]
 
     serving_requires = ['py-cpuinfo']
