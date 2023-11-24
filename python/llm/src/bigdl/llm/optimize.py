@@ -26,6 +26,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import extract_local_archive_file, get_local_shard_files
 import transformers
+import warnings
 from transformers import PreTrainedModel
 from .utils.common import MuteHFLogger
 from .utils.lazy_load_torch import LazyLoadTensors
@@ -193,7 +194,7 @@ def load_low_bit(model, model_path):
 
 
 def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None,
-                   replace_embedding=False, safe_bmm=False):
+                   cpu_embedding=False, lightweight_bmm=False, **kwargs):
     """
     A method to optimize any pytorch model.
 
@@ -203,9 +204,9 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     :param optimize_llm: Whether to further optimize llm model.
     :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
         when conducting model optimizations. Default to be None.
-    :param replace_embedding: Whether to replace the Embedding layer, may need to set it
+    :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
         to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
-    :param safe_bmm: Whether to replace the torch.bmm ops, may need to set it
+    :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
         to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
 
     :return: The optimized model.
@@ -228,13 +229,17 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     invalidInputError(model.device.type == 'cpu',
                       "Expect model on device `cpu`, "
                       f"but got device type {model.device.type}")
+    if kwargs.pop("replace_embedding", False):
+        warnings.warn("replace_embedding is deprecated and will be removed in a future version,"
+                      " please use cpu_embedding instead.", FutureWarning)
+        cpu_embedding = True
     qtype = ggml_tensor_qtype[low_bit]
     model = ggml_convert_low_bit(model,
                                  qtype=qtype,
                                  optimize_model=optimize_llm,
                                  modules_to_not_convert=modules_to_not_convert,
-                                 replace_embedding=replace_embedding,
-                                 safe_bmm=safe_bmm)
+                                 cpu_embedding=cpu_embedding,
+                                 lightweight_bmm=lightweight_bmm)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()
