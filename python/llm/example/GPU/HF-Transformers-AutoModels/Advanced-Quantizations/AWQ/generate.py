@@ -23,7 +23,7 @@ from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-LLAMA2_PROMPT_FORMAT = """### HUMAN:
+PROMPT_FORMAT = """### HUMAN:
 {prompt}
 
 ### RESPONSE:
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to("xpu")
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
