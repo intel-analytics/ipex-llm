@@ -46,9 +46,10 @@ class BigDLLM(BaseLM):
         tokenizer=None,
         batch_size=1,
         load_in_8bit: Optional[bool] = False,
-        trust_remote_code: Optional[bool] = False,
+        trust_remote_code: Optional[bool] = True,
         load_in_low_bit=None,
         dtype: Optional[Union[str, torch.dtype]] = "auto",
+        **kwargs
     ):
         super().__init__()
 
@@ -58,8 +59,8 @@ class BigDLLM(BaseLM):
             import intel_extension_for_pytorch as ipex
         model = AutoModelForCausalLM.from_pretrained(pretrained,
                                           load_in_low_bit=load_in_low_bit,
-                                          optimize_model=True,
-                                          trust_remote_code=True,
+                                          optimize_model=kwargs.get('optimize_model', True),
+                                          trust_remote_code=trust_remote_code,
                                           use_cache=True,
                                           torch_dtype=_get_dtype(dtype))
         print(model) # print model to check precision
