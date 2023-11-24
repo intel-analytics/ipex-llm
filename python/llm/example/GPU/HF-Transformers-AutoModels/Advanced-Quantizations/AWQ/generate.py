@@ -19,18 +19,18 @@ import time
 import argparse
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-LLAMA2_PROMPT_FORMAT = """### HUMAN:
+PROMPT_FORMAT = """### HUMAN:
 {prompt}
 
 ### RESPONSE:
 """
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for AWQ model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="TheBloke/Llama-2-7B-Chat-AWQ",
                         help='The huggingface repo id'
                              ', or the path to the huggingface checkpoint folder')
@@ -49,11 +49,11 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,).to("xpu")
 
     # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to("xpu")
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
