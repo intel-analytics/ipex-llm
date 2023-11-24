@@ -58,7 +58,7 @@ class BigDLLM(BaseLM):
             import intel_extension_for_pytorch as ipex
         model = AutoModelForCausalLM.from_pretrained(pretrained,
                                           load_in_low_bit=load_in_low_bit,
-                                          optimize_model=True,
+                                          optimize_model=False,
                                           trust_remote_code=True,
                                           use_cache=True,
                                           torch_dtype=_get_dtype(dtype))
