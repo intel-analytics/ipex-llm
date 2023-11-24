@@ -90,7 +90,7 @@ def main():
         prec_arg = parse_precision(prec, args.model)
         model_args = f"pretrained={args.pretrained},{prec_arg}"
         if len(args.model_args) > 0:
-            model_args += args.model_args
+            model_args = f"{model_args},{args.model_args}"
         for task in args.tasks:
             task_names=task_map.get(task, task).split(',')
             num_fewshot = task_to_n_few_shots.get(task, args.num_fewshot)
