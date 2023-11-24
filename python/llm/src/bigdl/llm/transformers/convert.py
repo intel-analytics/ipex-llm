@@ -172,7 +172,7 @@ def convert_gptq(module, awq=False):
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
-                                 replace_embedding=False):
+                                 cpu_embedding=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
@@ -265,7 +265,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         model._modules[name].requires_grad_(False)
 
                         module.weight = None
-        elif replace_embedding and type(module) == nn.Embedding:
+        elif cpu_embedding and type(module) == nn.Embedding:
             # skip user-defined Embedding layer
             if platform.system().lower() == 'windows':
                 model._modules[name] = LLMEmbedding(
@@ -287,7 +287,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 modules_to_not_convert,
                 current_key_name,
                 convert_shape_only,
-                replace_embedding,
+                cpu_embedding,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -321,7 +321,8 @@ def _optimize_pre(model):
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
-                         modules_to_not_convert=None, replace_embedding=False):
+                         modules_to_not_convert=None, cpu_embedding=False,
+                         lightweight_bmm=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -332,7 +333,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
-        None, convert_shape_only, replace_embedding,
+        None, convert_shape_only, cpu_embedding,
     )
     if not has_been_replaced:
         warnings.warn(
@@ -349,7 +350,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         pass
 
     if optimize_model:
-        model = _optimize_post(model)
+        model = _optimize_post(model, lightweight_bmm)
     return model
 
 
@@ -361,7 +362,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def _optimize_post(model):
+def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
@@ -593,4 +594,18 @@ def _optimize_post(model):
         convert_forward(model,
                         module.MistralRMSNorm,
                         llama_rms_norm_forward)
+    elif model.config.model_type == "whisper" and lightweight_bmm:
+        if platform.system().lower() == 'windows':
+            from bigdl.llm.transformers.bmm import SafeBMM
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            old_fwd = module.WhisperAttention.forward
+
+            def safe_bmm_fwd(*args, **kwargs):
+                with SafeBMM():
+                    return old_fwd(*args, **kwargs)
+
+            convert_forward(model,
+                            module.WhisperAttention,
+                            safe_bmm_fwd)
     return model
