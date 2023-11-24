@@ -131,6 +131,8 @@ def get_blocks(model):
         layers = model.transformer.h
     elif "neox" in str(model.__class__).lower():
         layers = model.gpt_neox.layers
+    elif "mistral" in str(model.__class__).lower():
+        layers = model.model.layers
     else:
         invalidInputError(False, f"Model type {type(model)} isn't supported.")
     return layers
