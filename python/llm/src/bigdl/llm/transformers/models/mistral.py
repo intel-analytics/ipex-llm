@@ -114,6 +114,11 @@ def mistral_attention_forward(
                                                        dtype=cache_k.dtype,
                                                        device=device)
 
+            new_cache_k[:] = cache_k
+            new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
+
         key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
     elif use_cache:
