@@ -30,7 +30,7 @@ class CPUPinnedParam(Parameter):
         if device.type == 'xpu':
             if convert_to_format is not None and self.dim() in (4, 5):
                 return super().to('cpu', dtype,
-                            non_blocking, memory_format=convert_to_format)
+                                  non_blocking, memory_format=convert_to_format)
             return super().to('cpu', dtype, non_blocking)
         return super().to(*args, **kwargs)
 
