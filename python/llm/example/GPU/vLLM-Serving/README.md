@@ -4,15 +4,15 @@ This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous b
 
 The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
 
-## Example: Serving LLaMA2-7B using Xeon GPU
+## Example: Serving LLaMA2-7B using Intel GPU
 
 In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-compatible` interface for users.
 
 ### 0. Environment
 
-To use Intel GPUs for deep-learning tasks, you should install the oneAPI Base Toolkit from [here](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) first.
+To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit. Please check the requirements at [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU#requirements).
 
-After install the toolkit, run the following in your environment before starting vLLM GPU:
+After install the toolkit, run the following commands in your environment before starting vLLM GPU:
 ```bash
 source /opt/intel/oneapi/setvars.sh
 # sycl-ls will list all the compatible Intel GPUs in your environment
