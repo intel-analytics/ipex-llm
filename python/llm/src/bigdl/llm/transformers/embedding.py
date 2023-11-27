@@ -49,7 +49,7 @@ class LLMEmbedding(torch.nn.Embedding):
                  device=None, dtype=None) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq, sparse,
-                         _weight)
+                         _weight, device, dtype)
         self.weight = CPUPinnedParam(self.weight.data, requires_grad=not _freeze)
 
     def forward(self, x: Tensor):
