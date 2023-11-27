@@ -83,42 +83,15 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # change csv name
+          sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
-          current_date=$(date +%Y-%m-%d)
-          for file in *.csv; do
-              if [ -e "$file" ] && [[ "$file" == *"$current_date"* ]]; then
-                  filename="${file%.*}"
-                  extension="${file##*.}"
-
-                  new_filename="${filename}_test1.${extension}"
-                  mv "$file" "$new_filename"
-              fi
-          done
-
-      - name: switch transformers version
-        shell: bash
-        # pip install transformers_stream_generator for model internlm-chat-7b-8k
-        # pip install tiktoken for model Qwen-7B-Chat-10-12
-        run: |
+          # upgrade transformers for model Mistral-7B-v0.1
           python -m pip install transformers==4.34.0
-          source /opt/intel/oneapi/setvars.sh
-          export USE_XETLA=OFF
-          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          mv python/llm/test/benchmark/arc-perf-test2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          mv ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
+          # change csv name
+          sed -i 's/test1/test2/g' run.py
           python run.py
-          current_date=$(date +%Y-%m-%d)
-          for file in *.csv; do
-              if [ -e "$file" ] && [[ "$file" == *"$current_date"* ]] && [[ "$file" != *test1* ]]; then
-                  filename="${file%.*}"
-                  extension="${file##*.}"
-
-                  new_filename="${filename}_test2.${extension}"
-                  mv "$file" "$new_filename"
-              fi
-          done
           python ../../../test/benchmark/concat_csv.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
