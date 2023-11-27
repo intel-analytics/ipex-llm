@@ -51,7 +51,7 @@ Explore the optimized performance of models like `chatglm2-6b` and `llama-2-13b-
 
 ### Verified Models & Examples
 
-BigDL-LLM can be applied to transformer-based models. Here's a list of verified models along with examples for CPU and GPU usage:
+By design, BigDL-LLM can be applied to any transformer-based model. Here's a list of verified models along with examples for CPU and GPU usage:
   
 | Model      | CPU Example                                                    | GPU Example                                                     |
 |------------|----------------------------------------------------------------|-----------------------------------------------------------------|
