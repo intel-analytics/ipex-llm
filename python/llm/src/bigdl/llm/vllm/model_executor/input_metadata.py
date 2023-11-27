@@ -33,7 +33,7 @@
 
 from typing import Dict, List, Optional, Tuple
 import torch
-from xformers.ops import AttentionBias
+# from xformers.ops import AttentionBias
 from bigdl.llm.vllm.sequence import SequenceData
 from bigdl.llm.vllm.sampling_params import SamplingParams
 
@@ -74,7 +74,7 @@ class InputMetadata:
 
         # Set during the execution of the first attention op.
         # TODO(gc): we might want to delete this
-        self.attn_bias: List[AttentionBias] = []
+        # self.attn_bias: List[AttentionBias] = []
 
     def __repr__(self) -> str:
         # Print only useful metadata.
