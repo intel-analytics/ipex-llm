@@ -1,7 +1,7 @@
 ## BigDL-LLM
 
 
-**[BigDL-LLM](https://bigdl.readthedocs.io/en/latest/doc/LLM/index.html)** [^2] is a library designed for running large language models (LLMs) efficiently on Intel XPU, ranging from laptops to GPUs to cloud environments. It leverages low-bit optimizationsfor low-latency performance[^1] across various PyTorch models.
+**[BigDL-LLM](https://bigdl.readthedocs.io/en/latest/doc/LLM/index.html)** [^2] is a library designed for running large language models (LLMs) efficiently on Intel XPU, ranging from laptops to GPUs to cloud environments. It leverages low-bit (INT4/INT5/INT8,etc.) optimizations to achieve low-latency performance[^1] across various PyTorch models.
 
 ### Key Features
 
@@ -199,9 +199,7 @@ Note that lower  `LIBC` version on your Linux system may be incompatible with `b
 | starcoder    | Windows  | GCC 13.1.0         |       |
 
 
-### Footnotes
 
 [^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
-
-[^2] *BigDL-LLM is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
+[^2]: *BigDL-LLM is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
