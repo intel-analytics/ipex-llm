@@ -21,7 +21,8 @@ from torch.nn import functional as F
 from torch.nn import Parameter
 from typing import Optional
 
-# To prevent insufficient available memory when moving embedding from XPU back to CPU, 
+
+# To prevent insufficient available memory when moving embedding from XPU back to CPU,
 # we can pin the embedding to CPU if `replace_embedding==True`.
 class CPUPinnedParam(Parameter):
     def to(self, *args, **kwargs):
@@ -30,12 +31,21 @@ class CPUPinnedParam(Parameter):
             return self
         return super().to(*args, **kwargs)
 
+
 class LLMEmbedding(torch.nn.Embedding):
-    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: Optional[int] = None,
-                 max_norm: Optional[float] = None, norm_type: float = 2., scale_grad_by_freq: bool = False,
-                 sparse: bool = False, _weight: Optional[Tensor] = None, _freeze: bool = False,
+    def __init__(self,
+                 num_embeddings: int,
+                 embedding_dim: int,
+                 padding_idx: Optional[int] = None,
+                 max_norm: Optional[float] = None,
+                 norm_type: float = 2.,
+                 scale_grad_by_freq: bool = False,
+                 sparse: bool = False,
+                 _weight: Optional[Tensor] = None,
+                 _freeze: bool = False,
                  device=None, dtype=None) -> None:
-        super().__init__(num_embeddings, embedding_dim, padding_idx, max_norm, norm_type, scale_grad_by_freq, sparse,
+        super().__init__(num_embeddings, embedding_dim, padding_idx,
+                         max_norm, norm_type, scale_grad_by_freq, sparse,
                          _weight)
         self.weight = CPUPinnedParam(self.weight.data, requires_grad=not _freeze)
 
