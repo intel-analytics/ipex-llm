@@ -58,7 +58,6 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
-          python -m pip install transformers==4.34.0
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -74,20 +73,6 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Install dependencies
-        shell: bash
-        # pip install transformers_stream_generator for model internlm-chat-7b-8k
-        # pip install tiktoken for model Qwen-7B-Chat-10-12
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade omegaconf
-          python -m pip install --upgrade pandas
-          python -m pip install --upgrade einops
-          python -m pip install --upgrade transformers_stream_generator
-          python -m pip install --upgrade tiktoken
-          python -m pip install transformers==4.34.0
-
       - name: Test on xpu
         shell: bash
         run: |
@@ -99,6 +84,42 @@ jobs:
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
+          current_date=$(date +%Y-%m-%d)
+          for file in *.csv; do
+              if [ -e "$file" ] && [[ "$file" == *"$current_date"* ]]; then
+                  filename="${file%.*}"
+                  extension="${file##*.}"
+
+                  new_filename="${filename}_test1.${extension}"
+                  mv "$file" "$new_filename"
+              fi
+          done
+
+      - name: switch transformers version
+        shell: bash
+        # pip install transformers_stream_generator for model internlm-chat-7b-8k
+        # pip install tiktoken for model Qwen-7B-Chat-10-12
+        run: |
+          python -m pip install transformers==4.34.0
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          mv python/llm/test/benchmark/arc-perf-test2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          python run.py
+          current_date=$(date +%Y-%m-%d)
+          for file in *.csv; do
+              if [ -e "$file" ] && [[ "$file" == *"$current_date"* ]] && [[ "$file" != *test1* ]]; then
+                  filename="${file%.*}"
+                  extension="${file##*.}"
+
+                  new_filename="${filename}_test2.${extension}"
+                  mv "$file" "$new_filename"
+              fi
+          done
+          python ../../../test/benchmark/concat_csv.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
           python csv_to_html.py -f $CSV_SAVE_PATH

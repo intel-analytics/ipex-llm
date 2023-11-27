@@ -1,21 +1,20 @@
 repo_id:
-  - 'mistralai/Mistral-7B-v0.1'
   - 'meta-llama/Llama-2-7b-chat-hf'
-  - 'meta-llama/Llama-2-13b-chat-hf'
-  - 'THUDM/chatglm2-6b'
-  - 'tiiuae/falcon-7b-instruct-with-patch'
-  - 'mosaicml/mpt-7b-chat'
-  - 'redpajama/gptneox-7b-redpajama-bf16'
-  - 'bigcode/starcoder-15.5b'
-  - 'databricks/dolly-v1-6b'
-  - 'databricks/dolly-v2-7b'
-  - 'databricks/dolly-v2-12b'
-  - 'internlm/internlm-chat-7b-8k'
-  - 'Qwen/Qwen-7B-Chat-10-12'
-  - 'BAAI/AquilaChat-7B'
-  - 'baichuan-inc/Baichuan2-7B-Chat'
-  - 'bigscience/bloomz-7b1'
-  - 'fnlp/moss-moon-003-sft'
+  # - 'meta-llama/Llama-2-13b-chat-hf'
+  # - 'THUDM/chatglm2-6b'
+  # - 'tiiuae/falcon-7b-instruct-with-patch'
+  # - 'mosaicml/mpt-7b-chat'
+  # - 'redpajama/gptneox-7b-redpajama-bf16'
+  # - 'bigcode/starcoder-15.5b'
+  # - 'databricks/dolly-v1-6b'
+  # - 'databricks/dolly-v2-7b'
+  # - 'databricks/dolly-v2-12b'
+  # - 'internlm/internlm-chat-7b-8k'
+  # - 'Qwen/Qwen-7B-Chat-10-12'
+  # - 'BAAI/AquilaChat-7B'
+  # - 'baichuan-inc/Baichuan2-7B-Chat'
+  # - 'bigscience/bloomz-7b1'
+  # - 'fnlp/moss-moon-003-sft'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -23,8 +22,8 @@ num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 in_out_pairs:
   - '32-32'
-  - '1024-128'
-  - '2048-256'
+  # - '1024-128'
+  # - '2048-256'
 test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 
