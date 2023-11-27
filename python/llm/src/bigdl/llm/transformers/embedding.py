@@ -23,7 +23,7 @@ from typing import Optional
 
 
 # To prevent insufficient available memory when moving embedding from XPU back to CPU,
-# we can pin the embedding to CPU if `replace_embedding==True`.
+# we can pin the embedding to CPU if `cpu_embedding==True`.
 class CPUPinnedParam(Parameter):
     def to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
