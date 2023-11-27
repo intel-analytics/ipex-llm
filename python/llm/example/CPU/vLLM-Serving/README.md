@@ -17,13 +17,12 @@ To run vLLM continuous batching on Intel CPUs, install the dependencies as follo
 conda create -n bigdl-vllm python==3.9
 conda activate bigdl-vllm
 # Install dependencies
-pip install --pre --upgrade bigdl-llm[all]
+pip3 install numpy
+pip3 install --pre --upgrade bigdl-llm[all]
 pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
-pip3 install numpy
 pip3 install "torch==2.0.1"
 pip3 install "transformers>=4.33.1"  # Required for Code Llama.
-pip3 install "xformers == 0.0.22"
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
