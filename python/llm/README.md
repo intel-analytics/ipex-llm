@@ -6,7 +6,7 @@
 ### Key Features
 
 - Optimized performance and low memory footprint on a wide range of Intel XPU devices (Xeon/Core/Flex/Arc/iGPU)
-- Various low-bit support: **INT4**/INT5/INT8/FP4/NF4/FP8, etc
+- Various low-bit optimizations: **INT4**/INT5/INT8/FP4/NF4/FP8, etc
 - Allows for both inference and fine-tune
 - Easy-to-use APIs (compatible with HF transformers, langchain, peft, etc.)
 - Verfied on 30+ models with abundant examples
