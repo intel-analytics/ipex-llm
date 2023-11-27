@@ -1,28 +1,44 @@
-# vLLM continuous batching on Intel CPUs (experimental support)
+# vLLM continuous batching on Intel GPUs (experimental support)
 
-This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel CPU (with BigDL-LLM 4 bits optimizations).
+This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel GPU (with BigDL-LLM low-bits optimizations).
 
 The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
 
-## Example: Serving LLaMA2-7B using Xeon CPU
+## Example: Serving LLaMA2-7B using Xeon GPU
 
-In this example, we will run Llama2-7b model using 48 cores in one socket and provide `OpenAI-compatible` interface for users.
+In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-compatible` interface for users.
+
+### 0. Environment
+
+To use Intel GPUs for deep-learning tasks, you should install the oneAPI Base Toolkit from [here](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) first.
+
+After install the toolkit, run the following in your environment before starting vLLM GPU:
+```bash
+source /opt/intel/oneapi/setvars.sh
+# sycl-ls will list all the compatible Intel GPUs in your environment
+sycl-ls
+
+# Example output with one Arc A770:
+[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
+[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
+[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
+[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
+```
 
 ### 1. Install
 
-To run vLLM continuous batching on Intel CPUs, install the dependencies as follows:
+To run vLLM continuous batching on Intel GPUs, install the dependencies as follows:
 
 ```bash
 # First create an conda environment
 conda create -n bigdl-vllm python==3.9
 conda activate bigdl-vllm
 # Install dependencies
-pip3 install numpy
-pip3 install --pre --upgrade bigdl-llm[all]
 pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
-pip3 install "torch==2.0.1"
+pip3 install numpy
 pip3 install "transformers>=4.33.1"  # Required for Code Llama.
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
@@ -31,7 +47,8 @@ pip3 install "pydantic<2"  # Required for OpenAI server.
 ### 2. Configure recommended environment variables
 
 ```bash
-source bigdl-llm-init -t
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
 
 ### 3. Offline inference/Service
@@ -55,9 +72,10 @@ To fully utilize the continuous batching feature of the `vLLM`, you can send req
 
 ```bash
 #!/bin/bash
-numactl -C 48-95 -m 1 python -m bigdl.llm.vllm.entrypoints.openai.api_server \
-        --model /MODEL_PATH/Llama-2-7b-chat-hf-bigdl/ --port 8000  \
-        --load-format 'auto' --device cpu --dtype bfloat16 \
+#!/bin/bash
+python -m bigdl.llm.vllm.entrypoints.openai.api_server \
+        --model /MODEL_PATH/Llama-2-7b-chat-hf/ --port 8000  \
+        --load-format 'auto' --device xpu --dtype bfloat16 \
         --max-num-batched-tokens 4096
 ```
 
