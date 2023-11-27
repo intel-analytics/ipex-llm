@@ -92,7 +92,6 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         else:
             self.device = torch.device(device)
         self.dtype = self.model.dtype
-        self.kv_cache_size = [0]
         self.last_seq_ids = []
         self.tmp_kv_cache = None
         self.pad_token_id = config.pad_token_id
@@ -175,6 +174,8 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 # "return_dict": True,
             }
         # pdb.set_trace()
+        if self.device.type == 'xpu':
+            torch.xpu.empty_cache()
         st_timestamp = time.perf_counter()
         outputs = self.model.forward(**kwargs)
         # tmp = torch.xpu.memory_stats()
@@ -189,7 +190,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"before: {tmp['allocated_bytes.all.current']}")
 
-        self.update_kv_cache(cur_seq_ids, outputs.past_key_values,
+        self.update_kv_cache(cur_seq_ids,
                              kv_cache, kv_cache_size_0, kv_cache_size_1)
 
         # tmp = torch.xpu.memory_stats()

@@ -91,11 +91,12 @@ class Worker:
         """
         This function cleans the finished sequences and their KVCache in self.kv_cache
         """
-        for seq_id in finished_seqs:
-            if seq_id not in self.kv_cache.keys():
-                # warnings.warn(f"Duplicate key {seq_id} received during clean worker's KVCache")
-                continue
-            del self.kv_cache[seq_id]
+        pass
+        # for seq_id in finished_seqs:
+        #     if seq_id not in self.kv_cache.keys():
+        #         # warnings.warn(f"Duplicate key {seq_id} received during clean worker's KVCache")
+        #         continue
+        #     del self.kv_cache[seq_id]
 
     def init_model(self):
         if self.model_config.device == 'gpu':
