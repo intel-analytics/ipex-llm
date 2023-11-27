@@ -13,7 +13,7 @@
 
 ### Quick Links
 - [API Documentation](#api-documentation)
-- [List of Verified Models/Examples](#verified-models)
+- [List of Verified Models/Examples](#verified-models--examples)
 - [Try BigDL-LLM without Installation](#portable-zip-run-bigdl-llm-without-installation)
 - [Installation Guide](#installation)
 - [Usage Examples](#usage-examples)
