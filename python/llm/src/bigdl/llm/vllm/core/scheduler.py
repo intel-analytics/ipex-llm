@@ -153,7 +153,7 @@ class FixedWindowScheduler:
             # Co(gc): If there are waiting requests, we will just try to add it into the
             # running state if not exceeds the stage
             # Co(gc): Record seq_len for prefill requests
-            seq_lens = List[int] = []
+            seq_lens = []
             # Co(gc): prefilled requests are prioritized over decoding stage requests
             while self.waiting:
                 seq_group = self.waiting[0]
