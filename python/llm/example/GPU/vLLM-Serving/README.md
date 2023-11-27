@@ -61,9 +61,7 @@ To run offline inference using vLLM for a quick impression, use the following ex
 #!/bin/bash
 
 # Please first modify the MODEL_PATH in offline_inference.py
-
-numactl -C 48-95 -m 1 python offline_inference.py
-
+python offline_inference.py
 ```
 
 #### Service
