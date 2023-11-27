@@ -52,9 +52,22 @@ class BigDLModelForCausalLM(nn.Module):
                 "cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = torch.device(device)
+            if device == 'xpu':
+                try:
+                    import intel_extension_for_pytorch as ipex
+                except ImportError:
+                    print("Intel Extension for PyTorch is not installed, \
+                        but is required for xpu inference.")
+
         self.max_seq_limit = max_model_len
         self.last_kv_cache = None
         self.last_seq_ids = None
+
+    def _set_last_kv_cache(self, last_kv_cache):
+        self.last_kv_cache = last_kv_cache
+    
+    def _set_last_seq_ids(self, last_seq_ids):
+        self.last_seq_ids = last_seq_ids
 
     # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
     # sequence_length, embed_size_per_head).
@@ -69,7 +82,7 @@ class BigDLModelForCausalLM(nn.Module):
         max_seq_limit = self.max_seq_limit
         if (self.last_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
             if self.last_kv_cache[0][0].size(2) < max_seq_limit:
-                bigdl_kv_cache = self.tmp_kv_cache
+                bigdl_kv_cache = self.last_kv_cache
             else:
                 bigdl_kv_cache = [[tmp.narrow(2, self.last_kv_cache[0][0].size(2)
                                    - max_seq_limit, max_seq_limit)

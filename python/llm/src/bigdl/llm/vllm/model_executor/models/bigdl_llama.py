@@ -179,8 +179,11 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         outputs = self.model.forward(**kwargs)
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"0: {tmp['allocated_bytes.all.current']}")
-        self.last_seq_ids = cur_seq_ids[:]
-        self.tmp_kv_cache = outputs.past_key_values
+        # self.last_seq_ids = cur_seq_ids[:]
+        # self.last_kv_cache = outputs.past_key_values
+        self._set_last_seq_ids(cur_seq_ids[:])
+        self._set_last_kv_cache(outputs.past_key_values)
+        
         logits = outputs.logits[:, -1, :]
         bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
         # tmp = torch.xpu.memory_stats()
