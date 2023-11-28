@@ -44,6 +44,7 @@ from .utils import extract_local_archive_file, \
     get_local_shard_files
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.transformers.gguf.api import load_gguf_model
 import torch
 import warnings
 import copy
@@ -188,6 +189,25 @@ class _BaseAutoModelClass:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
 
+        return model
+
+    @staticmethod
+    def from_gguf(fpath: str, optimize_model: bool = True, cpu_embedding: bool = False):
+        """
+        Load a gguf model and convert it to bigdl-llm model
+
+        :param fpath: Path to gguf model file
+        :param optimize_model: Whether to further optimize llm model, defaults to True
+        :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
+            to `True` when running BigDL-LLM on GPU on Windows, defaults to False
+
+        :return: An optimized bigdl-llm model
+        """
+        from bigdl.llm.optimize import optimize_model as optimize_model_fn
+
+        model, low_bit = load_gguf_model(fpath, dtype=torch.half)
+        model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=optimize_model,
+                                  cpu_embedding=cpu_embedding)
         return model
 
     @classmethod
