@@ -1,4 +1,4 @@
-# for the models which required the version of transformers 4.34.0
+# For the models that require transformers 4.34.0
 repo_id:
   - 'mistralai/Mistral-7B-v0.1'
 local_model_hub: '/mnt/disk1/models'
