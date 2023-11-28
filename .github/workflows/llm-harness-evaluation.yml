@@ -104,7 +104,7 @@ jobs:
 
       - name: Compare with golden accuracy
         shell: bash
-        if: ${{github.event_name == 'schedule'}}
+        
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
         run: |
           echo '{' >> golden_results.json
