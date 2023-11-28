@@ -35,6 +35,7 @@ jobs:
         model_name: [stablelm-3b-4e1t, Mistral-7B-v0.1]
         task: [truthfulqa, arc]
         precision: [mixed_4bit, fp8] 
+        device: [xpu]
         
     runs-on: [self-hosted, llm, accuracy]
     env:
@@ -98,6 +99,22 @@ jobs:
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
-          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
+          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device ${{ matrix.device }} --tasks ${{ matrix.task }} --batch_size 1 --no_cache --output_path results
+
+
+      - name: Compare with golden accuracy
+        shell: bash
+        if: ${{github.event_name == 'schedule'}}
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
+        run: |
+          echo '{' >> golden_results.json
+
+          echo '"stablelm-3b-4e1t": {"xpu": {"sym_int4": {"truthfulqa_mc": {"mc1": 0.4,"mc1_stderr": 0.16329931618554522,"mc2": 0.46830478972624556,"mc2_stderr": 0.119}, "arc_challenge": {"acc": 0.5, "acc_stderr": 0.5, "acc_norm": 0.5, "acc_norm_stderr": 0.5}}}}' >> golden_results.json
+
+          echo '}' >> golden_results.json
+
+          python accuracy_regression.py results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json golden_results.json
+
+          
 
         
