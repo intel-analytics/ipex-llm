@@ -187,6 +187,8 @@ def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
     """
 
     is_gptq_quantized = getattr(model, "quantization_method", None) == "gptq"
+    if is_gptq_quantized:
+        print("==============gptq")
     for name, param in model.named_parameters():
         # freeze base model's layers
         param.requires_grad = False
@@ -394,3 +396,5 @@ def cast_lora_weight(model, dtype=torch.bfloat16):
             if hasattr(module, 'weight'):
                 if module.weight.dtype == torch.float32:
                     module = module.to(dtype)
+                    if 'lm_head' in name:
+                        print(module.weight)
