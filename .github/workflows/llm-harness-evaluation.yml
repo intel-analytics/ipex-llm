@@ -32,9 +32,9 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: [stablelm-3b-4e1t]
-        task: [winogrande, drop, gsm8k] # truthfulqa, arc, hellaswag, mmlu, winogrande, drop, gsm8k
-        precision: [sym_int4] #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
+        model_name: [stablelm-3b-4e1t, Mistral-7B-v0.1]
+        task: [truthfulqa, arc]
+        precision: [mixed_4bit, fp8] 
         
     runs-on: [self-hosted, llm, accuracy]
     env:
@@ -99,4 +99,5 @@ jobs:
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
           python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
+
         
