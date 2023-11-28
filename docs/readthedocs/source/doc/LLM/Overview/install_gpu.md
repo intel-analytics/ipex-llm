@@ -36,18 +36,23 @@ BigDL-LLM for GPU supports has been verified on:
 
 To apply Intel GPU acceleration, there're several steps for tools installation and environment preparation:
 
-* Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
+* Step 1, only Linux system is supported now, Ubuntu 22.04 and Linux kernel 5.19.0 is prefered.
+  ```eval_rst
+  .. note::
+
+     Ubuntu 22.04 and Linux kernel 5.19.0-41-generic is mostly used in our test environment. But default linux kernel of ubuntu 22.04.3 is 6.2.0-35-generic, so we recommonded you to downgrade kernel to 5.19.0-41-generic to archive the best performance.
+  ```
 * Step 2, please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
   ```eval_rst
   .. note::
 
-    IPEX 2.0.110+xpu requires Intel GPU Driver version is `Stable 647.21 <https://dgpu-docs.intel.com/releases/stable_647_21_20230714.html>`_.
+    IPEX 2.0.110+xpu requires Intel GPU Driver version >= stable_647_21_20230714, see `release page <https://dgpu-docs.intel.com/releases/index.html>`_ for latest version.
   ```
 * Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html). OneMKL and DPC++ compiler are needed, others are optional.
   ```eval_rst
   .. note::
 
-    IPEX 2.0.110+xpu requires Intel® oneAPI Base Toolkit's version >= 2023.2.0.
+    IPEX 2.0.110+xpu requires Intel® oneAPI Base Toolkit's version == 2023.2.0. We recommand you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh>`_ to install oneapi.
   ```
 
 ## Environment Setup
