@@ -79,6 +79,7 @@ class FixedWindowScheduler:
     def __init__(
         self,
         scheduler_config: SchedulerConfig,
+        kv_cache: Optional,
     ) -> None:
         self.scheduler_config = scheduler_config
         self.prompt_limit = min(self.scheduler_config.max_model_len,
@@ -98,6 +99,7 @@ class FixedWindowScheduler:
         # Sequence groups in the RUNNING state.
         self.running: List[SequenceGroup] = []
         self.cleaned: List[int] = []
+        self.kv_cache = kv_cache
         # Co(gc): We no longer have the swapped space as we are not deciding which to swap
         # bigdl-llm change end
 
@@ -150,6 +152,8 @@ class FixedWindowScheduler:
             # We restrict how many requests that can be run using these three arguments
             # Co(gc): If there are waiting requests, we will just try to add it into the
             # running state if not exceeds the stage
+            # Co(gc): Record seq_len for prefill requests
+            seq_lens = []
             # Co(gc): prefilled requests are prioritized over decoding stage requests
             while self.waiting:
                 seq_group = self.waiting[0]
@@ -178,7 +182,9 @@ class FixedWindowScheduler:
                 # bigdl-llm change end
 
                 # If the number of batched tokens exceeds the limit, stop.
-                if (num_batched_tokens + num_prompt_tokens >
+                new_seq_lens = seq_lens + [num_prompt_tokens]
+                num_batched_tokens = len(new_seq_lens) * max(new_seq_lens)
+                if (num_batched_tokens >
                         self.scheduler_config.max_num_batched_tokens):
                     break
 
@@ -192,6 +198,8 @@ class FixedWindowScheduler:
                 seq_group = self.waiting.pop(0)
                 for seq in seq_group.get_seqs():
                     seq.status = SequenceStatus.RUNNING
+                # Co(gc): Only updated the seq_lens when all check passes
+                seq_lens = new_seq_lens
                 # bigdl-llm change start
                 # summary: removing block_manager related logic.
                 # self._allocate(seq_group)
@@ -204,7 +212,7 @@ class FixedWindowScheduler:
             scheduler_outputs = SchedulerOutputs(
                 scheduled_seq_groups=scheduled,
                 prompt_run=True,
-                num_batched_tokens=num_batched_tokens,
+                num_batched_tokens=len(seq_lens) * max(seq_lens) if seq_lens else 0,
                 ignored_seq_groups=ignored_seq_groups,
                 finished_seqs=finished_seqs,
             )
@@ -258,6 +266,13 @@ class FixedWindowScheduler:
         # summary: The original code free the block in block_manager.
         # now, we added it into a list to pass to worker in the next model_execute stage.
         self.cleaned.append(seq.seq_id)
+        for i in range(len(self.kv_cache)):
+            for j in range(2):
+                if not self.kv_cache[i][j].get(seq.seq_id) is None:
+                    del self.kv_cache[i][j][seq.seq_id]
+        # del self.kv_cache[seq.seq_id]
+        # logger.info(f"freed seqs: {seq.seq_id} .
+        # now kv cache is: {list(self.kv_cache[0][0].keys())} ")
         # bigdl-llm change end
 
     def free_finished_seq_groups(self) -> None:
