@@ -83,7 +83,16 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # change csv name
+          sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
+          # upgrade transformers for model Mistral-7B-v0.1
+          python -m pip install transformers==4.34.0
+          mv ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
+          # change csv name
+          sed -i 's/test1/test2/g' run.py
+          python run.py
+          python ../../../test/benchmark/concat_csv.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
           python csv_to_html.py -f $CSV_SAVE_PATH
