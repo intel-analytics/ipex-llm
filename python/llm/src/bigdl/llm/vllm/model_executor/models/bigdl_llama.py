@@ -24,10 +24,8 @@ from bigdl.llm.vllm.sequence import SequenceOutputs, SequenceGroupMetadata
 from bigdl.llm.vllm.model_executor.layers.bigdl_sampler import BigDLSampler
 from bigdl.llm.vllm.model_executor.models.bigdl_model import BigDLModelForCausalLM
 from bigdl.llm.vllm.logger import init_logger
-
 import math
 import time
-
 from transformers.generation.logits_process import (
     LogitsProcessorList,
     RepetitionPenaltyLogitsProcessor,
@@ -184,7 +182,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # self.last_kv_cache = outputs.past_key_values
         self._set_last_seq_ids(cur_seq_ids[:])
         self._set_last_kv_cache(outputs.past_key_values)
-        
+
         logits = outputs.logits[:, -1, :]
         bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
         # tmp = torch.xpu.memory_stats()

@@ -271,7 +271,8 @@ class FixedWindowScheduler:
                 if not self.kv_cache[i][j].get(seq.seq_id) is None:
                     del self.kv_cache[i][j][seq.seq_id]
         # del self.kv_cache[seq.seq_id]
-        # logger.info(f"freed seqs: {seq.seq_id} . now kv cache is: {list(self.kv_cache.keys())} ")
+        # logger.info(f"freed seqs: {seq.seq_id} .
+        # now kv cache is: {list(self.kv_cache[0][0].keys())} ")
         # bigdl-llm change end
 
     def free_finished_seq_groups(self) -> None:

@@ -250,8 +250,8 @@ class _AsyncLLMEngine(LLMEngine):
             # else:
             executor = getattr(worker, method)
             coros.append(asyncio.get_event_loop().run_in_executor(
-                    None, partial(executor, *args, **kwargs)))
-            
+                         None, partial(executor, *args, **kwargs)))
+
             all_outputs = await asyncio.gather(*coros)
 
         # if self.parallel_config.worker_use_ray:

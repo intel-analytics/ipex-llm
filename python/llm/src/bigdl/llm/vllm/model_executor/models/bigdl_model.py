@@ -24,12 +24,14 @@ from bigdl.llm.transformers.models.utils import extend_kv_cache
 
 zero_cache_dict = {}
 
+
 def get_zero_tensor(length, cur_size, device, pos):
     if length not in zero_cache_dict:
         tmp_size = cur_size[:]
         tmp_size[pos] = length
         zero_cache_dict[length] = torch.zeros(tmp_size, device=device)
     return zero_cache_dict[length].narrow(pos, 0, length - cur_size[pos])
+
 
 def _pad_kv_cache_view(t: torch.Tensor, len: int,
                        device: torch.device, pos: int = 2) -> torch.Tensor:
@@ -43,6 +45,7 @@ def _pad_kv_cache_view(t: torch.Tensor, len: int,
         return padded_view
     else:
         return t
+
 
 class BigDLModelForCausalLM(nn.Module):
 
@@ -72,7 +75,7 @@ class BigDLModelForCausalLM(nn.Module):
 
     def _set_last_kv_cache(self, last_kv_cache):
         self.last_kv_cache = last_kv_cache
-    
+
     def _set_last_seq_ids(self, last_seq_ids):
         self.last_seq_ids = last_seq_ids
 
@@ -110,20 +113,20 @@ class BigDLModelForCausalLM(nn.Module):
                         view_size = [1] + list(kv_cache[i][j][seq_id].shape)
                         views.append(kv_cache[i][j][seq_id].view(view_size))
                         max_len = max(max_len, view_size[2])
-                    
+
                     views = [_pad_kv_cache_view(v, max_len, self.device) for v in views]
                     cur_view = torch.cat(views, dim=0)
-                    
+
                     if cur_view.size(2) > max_seq_limit * 1.5:
                         cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
                     cur_list.append(cur_view)
-                    
+
                     for seq_group_meta_data in seq_group_meta_data_lists:
                         seq_ids = list(seq_group_meta_data.seq_data.keys())
                         seq_id = seq_ids[0]
                         del kv_cache[i][j][seq_id]
                 bigdl_kv_cache.append(cur_list)
-            
+
         return bigdl_kv_cache
 
     # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
