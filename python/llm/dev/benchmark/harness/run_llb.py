@@ -96,7 +96,7 @@ def main():
         for task in args.tasks:
             task_names=task_map.get(task, task).split(',')
             num_fewshot = task_to_n_few_shots.get(task, args.num_fewshot)
-            log_dir = f"{output_path}/{model_name}/{prec}"
+            log_dir = f"{output_path}/{model_name}/{args.device}/{prec}/{task}"
             os.makedirs(log_dir, exist_ok=True)
             try:
                 results = evaluator.simple_evaluate(
@@ -129,7 +129,7 @@ def main():
                 print(dumped)
 
                 if args.output_path:
-                    with open(f"{log_dir}/{task}.json", "w") as f:
+                    with open(f"{log_dir}/result.json", "w") as f:
                         f.write(dumped)
                 success.append(results)
             except Exception as e:
