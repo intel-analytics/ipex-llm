@@ -48,7 +48,7 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-Nano env variables
+# set BigDL-LLM env variables
 source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
