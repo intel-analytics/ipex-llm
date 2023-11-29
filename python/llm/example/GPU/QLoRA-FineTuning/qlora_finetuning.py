@@ -62,6 +62,7 @@ if __name__ == "__main__":
     )
     model = get_peft_model(model, config)
     cast_lora_weight(model, torch.bfloat16)
+    torch.xpu.synchronize()
 
     tokenizer.pad_token_id = 0
     tokenizer.padding_side = "left"

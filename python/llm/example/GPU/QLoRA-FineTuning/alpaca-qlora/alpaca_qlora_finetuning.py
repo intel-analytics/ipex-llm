@@ -285,6 +285,7 @@ def train(
 
     if bf16:
         cast_lora_weight(model, torch.bfloat16)
+        torch.xpu.synchronize()
 
     trainer = transformers.Trainer(
         model=model,
