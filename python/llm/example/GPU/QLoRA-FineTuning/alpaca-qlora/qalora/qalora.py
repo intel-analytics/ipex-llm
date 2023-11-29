@@ -201,6 +201,7 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     save_steps: int = field(default=250, metadata={"help": 'How often to save a model'})
     save_total_limit: int = field(default=40, metadata={"help": 'How many checkpoints to save before the oldest is overwritten'})
     bf16: bool = field(default=True, metadata={"help": 'Train in bf16?'})
+    use_cpu: bool = field(default=False, metadata={"help": 'Train using cpu'})
 
 @dataclass
 class GenerationArguments:
@@ -298,13 +299,15 @@ def get_accelerate_model(args, checkpoint_dir):
     # )
     model = AutoModelForCausalLM.from_pretrained(
             args.model_path,
-            load_in_4bit=True,
+            # load_in_4bit=True,
+            load_in_low_bit="asym_int4",
             optimize_model=False,
             torch_dtype=torch.float,
             trust_remote_code=True,
             modules_to_not_convert=["lm_head"],
         )
-    model.model.quantize_config = model.quantize_config
+    # print(model.model.quantize_config)
+    # model.model.quantize_config = model.quantize_config
     model = model.to("xpu")
     model.train()
 
@@ -353,6 +356,7 @@ def get_accelerate_model(args, checkpoint_dir):
     if args.bf16:
         print("cast lora weight bf16")
         cast_lora_weight(model, torch.bfloat16)
+        torch.xpu.synchronize()
     return model
 
 def print_trainable_parameters(args, model):

@@ -19,13 +19,15 @@ source /opt/intel/oneapi/setvars.sh
 export PYTHONPATH=/home/arda/yina/BigDL/python/llm/src
 
 python ./qalora.py \
-    --model_path "/mnt/disk1/models/Llama-2-7B-GPTQ" \
+    --model_path "/mnt/disk1/models/Llama-2-7b-chat-hf" \
     --dataset "alpaca-clean" \
     --output_dir "./bigdl-qalora-alpaca" \
     --learning_rate 0.0002 \
     --bf16 False \
     --gradient_accumulation_steps 4 \
     --optim "adamw_torch" \
+    # --use_cpu True \
+    # --model_path "/mnt/disk1/models/Llama-2-7B-GPTQ" \
     # --do_eval True \
     # --do_train False \
     # --lora_r 64 \
