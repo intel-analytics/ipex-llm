@@ -121,7 +121,7 @@ class GGUFHeader:
         invalidInputError(magic == "GGUF", "not a valid gguf file")
 
         version, n_tensors, n_kv = struct.unpack("<IQQ", data[4:])
-        invalidInputError(version == 2, "only gguf v2 is supported")
+        invalidInputError(version in [2, 3], "only gguf v2 and v3 is supported")
 
         self.magic = magic
         self.version = version
@@ -209,9 +209,9 @@ class GGUFTensorLoader:
             1: self.convert_f16_tensor,         # f16
             2: self.convert_q4_0_tensor,        # q4_0
             3: self.convert_q4_1_tensor,        # q4_1
-            6: self.convert_unknown_tensor,     # q5_0
-            7: self.convert_unknown_tensor,     # q5_1
-            8: self.convert_unknown_tensor,     # q8_0
+            6: self.convert_q5_0_tensor,        # q5_0
+            7: self.convert_q5_1_tensor,        # q5_1
+            8: self.convert_q8_0_tensor,        # q8_0
             9: self.convert_unknown_tensor,     # q8_1
             10: self.convert_unknown_tensor,    # q2_k
             11: self.convert_unknown_tensor,    # q3_k
@@ -265,7 +265,63 @@ class GGUFTensorLoader:
         return result
 
     def convert_q4_1_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
-        invalidInputError(False, "q4_1 conversion is not implemented")
+        # see https://github.com/ggerganov/llama.cpp/blob
+        # /b38a16dfcff88d547f78f52d1bea31b84a05aff7/ggml-quants.c#L1094
+
+        block_size = self.block_size[3]
+        tensor = tensor.reshape((-1, block_size))
+        scales, base, data = tensor[:, :2], tensor[:, 2:4], tensor[:, 4:]
+        scales = scales.view(torch.half)
+        base = base.view(torch.half)
+        data = torch.cat([data & 0xF, data >> 4], dim=-1)
+        result = (data * scales + base).reshape(dims)
+        return result
+
+    def convert_q5_0_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
+        # see https://github.com/ggerganov/llama.cpp/blob
+        # /b38a16dfcff88d547f78f52d1bea31b84a05aff7/ggml-quants.c#L1115
+
+        block_size = self.block_size[6]
+        tensor = tensor.reshape((-1, block_size))
+        scales, hdata, ldata = tensor[:, :2], tensor[:, 2:6], tensor[:, 6:]
+        scales = scales.view(torch.half)
+        # hdata = hdata.view(torch.int)
+        hdata = hdata.clone().view(torch.int)   # clone hdata to fix memory address alignment
+        shift = torch.arange(0, 32, 1)
+        hdata = (((hdata.expand(-1, 32) >> shift) << 4) & 0x10).byte()
+        ldata = torch.cat([ldata & 0xF, ldata >> 4], dim=-1)
+        data = (hdata | ldata).view(torch.int8) - 16
+        result = (data * scales).reshape(dims)
+        return result
+
+    def convert_q5_1_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
+        # https://github.com/ggerganov/llama.cpp/blob
+        # /b38a16dfcff88d547f78f52d1bea31b84a05aff7/ggml-quants.c#L1141
+
+        block_size = self.block_size[7]
+        tensor = tensor.reshape((-1, block_size))
+        scales, base, hdata, ldata = tensor[:, :2], tensor[:, 2:4], tensor[:, 4:8], tensor[:, 8:]
+        scales = scales.view(torch.half)
+        base = base.view(torch.half)
+        hdata = hdata.view(torch.int)
+        shift = torch.arange(0, 32, 1)
+        hdata = (((hdata.expand(-1, 32) >> shift) << 4) & 0x10).byte()
+        ldata = torch.cat([ldata & 0xF, ldata >> 4], dim=-1)
+        data = hdata | ldata
+        result = (data * scales + base).reshape(dims)
+        return result
+
+    def convert_q8_0_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
+        # https://github.com/ggerganov/llama.cpp/blob
+        # /b38a16dfcff88d547f78f52d1bea31b84a05aff7/ggml-quants.c#L1168
+
+        block_size = self.block_size[8]
+        tensor = tensor.reshape((-1, block_size))
+        scales, data = tensor[:, :2], tensor[:, 2:]
+        scales = scales.view(torch.half)
+        data = data.view(torch.int8)
+        result = (data * scales).reshape(dims)
+        return result
 
     def convert_q6_k_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
         # see https://github.com/ggerganov/llama.cpp/blob
