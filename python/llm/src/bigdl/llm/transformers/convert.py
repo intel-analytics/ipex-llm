@@ -108,11 +108,10 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-from bigdl.llm.transformers.low_bit_linear import get_ggml_qk_size
-Q4_1 = get_ggml_qk_size("asym_int4")
-
-
 def convert_gptq(module, awq=False):
+    from bigdl.llm.transformers.low_bit_linear import get_ggml_qk_size
+    Q4_1 = get_ggml_qk_size("asym_int4")
+
     scales = module.scales
 
     zeros = torch.bitwise_right_shift(
