@@ -19,7 +19,11 @@ from bigdl.llm.utils.common import invalidInputError
 
 
 qtype_map = {
-    2: "sym_int4"       # q4_0
+    2: "sym_int4",      # q4_0
+    3: "asym_int4",     # q4_1
+    7: "sym_int8",      # q8_0
+    8: "sym_int5",      # q5_0
+    9: "asym_int5",     # q5_1
 }
 
 
