@@ -32,21 +32,18 @@ This example used the existing llama2-chat-7b-hf model from the server and you c
 - Open four terminals. Three for setting up API and one for testing
   - launch the controller, terminal 1 run
       ```
-      cd FastChat
       python -m fastchat.serve.controller
       ```
       > Sample output: `Uvicorn running on http://localhost:21001 (Press CTRL+C to quit)`
 
   - launch the model worker(s), terminal 2 run 
       ```
-      cd FastChat
       export no_proxy="localhost"
       python -m fastchat.serve.model_worker --model-path YOUR_LLM_PATH --device cpu --bigdl_load
       ```
       > Sample output: `127.0.0.1:41170 - "POST /worker_get_status HTTP/1.1" 200 OK`
   - launch the RESTful API server, terminal 3 run 
       ```
-      cd FastChat
       python -m fastchat.serve.openai_api_server --host localhost --port 8000
       ```
       > Sample output: `127.0.0.1:34020 - "POST /v1/chat/completions HTTP/1.1" 200 OK`
