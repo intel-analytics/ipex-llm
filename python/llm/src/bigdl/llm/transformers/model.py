@@ -194,21 +194,21 @@ class _BaseAutoModelClass:
     @staticmethod
     def from_gguf(fpath: str, optimize_model: bool = True, cpu_embedding: bool = False):
         """
-        Load a gguf model and convert it to bigdl-llm model
+        Load gguf model and tokenizer and convert it to bigdl-llm model and huggingface tokenzier
 
         :param fpath: Path to gguf model file
         :param optimize_model: Whether to further optimize llm model, defaults to True
         :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
             to `True` when running BigDL-LLM on GPU on Windows, defaults to False
 
-        :return: An optimized bigdl-llm model
+        :return: An optimized bigdl-llm model and a huggingface tokenizer
         """
         from bigdl.llm.optimize import optimize_model as optimize_model_fn
 
-        model, low_bit = load_gguf_model(fpath, dtype=torch.half)
+        model, tokenizer, low_bit = load_gguf_model(fpath, dtype=torch.half)
         model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=optimize_model,
                                   cpu_embedding=cpu_embedding)
-        return model
+        return model, tokenizer
 
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
