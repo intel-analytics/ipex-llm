@@ -213,6 +213,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)
                     elif qtype != ggml_tensor_qtype["fp16"]:
+                        device_type = module.weight.data.device.type
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
@@ -220,10 +221,10 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-
-                        device_type = module.weight.data.device.type
                         # Copy the weights
-                        paramsLowBit = FP4Params(data=module.weight.data,
+                        data = module.weight.data.to("cpu") if device_type != "meta" \
+                            else module.weight.data
+                        paramsLowBit = FP4Params(data=data,
                                                  requires_grad=False,
                                                  quantized=False,
                                                  _shape=None,

@@ -184,6 +184,7 @@ def ggml_convert_fp32(tensor: torch.Tensor, weight_shape: tuple, k: int, qtype: 
 class FP4Params(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
+                scales=None,
                 requires_grad=False,
                 quantized=False,
                 _shape=None,
@@ -194,6 +195,7 @@ class FP4Params(torch.nn.Parameter):
 
         self = torch.Tensor._make_subclass(cls, data, requires_grad)
         self.data = data
+        self.scales = scales
         self.quantized = quantized
         self._shape = _shape
         self.qtype = qtype
@@ -259,6 +261,21 @@ class FP4Params(torch.nn.Parameter):
     def get_shape(self):
         return self._shape
 
+    def detach(self):
+        data = self.data.detach()
+        if self.scales is not None:
+            scales = self.scales.detach()
+            assert scales.shape[0] > 0
+        else:
+            scales = None
+        return FP4Params(data,
+                         scales=scales,
+                         requires_grad=self.requires_grad,
+                         quantized=self.quantized,
+                        _shape=self._shape,
+                        convert_shape_only=self.convert_shape_only,
+                        qtype=self.qtype)
+
     @overload
     def to(self: T, device: Optional[Union[int, device]]=...,
            dtype: Optional[Union[dtype, str]]=..., non_blocking: bool=...,) -> T:
@@ -278,36 +295,72 @@ class FP4Params(torch.nn.Parameter):
             return self.quantize(device.type)
         elif device is not None and device.type == "meta" and self.data.device.type == "meta":
             return self.quantize(device.type)
-        elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
+        elif (device is not None and \
+              (device.type == "xpu" or device.type == "hpu") and \
+                self.data.device.type == "cpu"):
             # enter xpu logic, compile linear_int4 extension at first time
+            numel = reduce(mul, self._shape, 1)
             self.quantize(device)  # tensor is cpu now
             self.data = ggml_q_format_convet_cpu2xpu(self.data,
-                                                     reduce(mul, self._shape, 1),
+                                                     numel,
                                                      self.qtype)
-            new_param = FP4Params(super().to(device=device,
-                                             dtype=dtype,
-                                             non_blocking=non_blocking),
-                                  requires_grad=self.requires_grad,
-                                  quantized=self.quantized,
-                                  _shape=self._shape,
-                                  qtype=self.qtype)
+            if device.type == "xpu":
+                new_param = FP4Params(super().to(device=device,
+                                                dtype=dtype,
+                                                non_blocking=non_blocking),
+                                    requires_grad=self.requires_grad,
+                                    quantized=self.quantized,
+                                    _shape=self._shape,
+                                    qtype=self.qtype)
+            else:
+                invalidInputError(self.qtype in {SYM_INT4}, "only support sym_int4 on hpu")
+                assert self.scales is None
+                scales_offset = (numel // 2)
+                self.scales = self.data[scales_offset:].clone().detach().view(torch.float16).to(torch.bfloat16).to(device)
+                self.data = self.data[:scales_offset].clone().detach()
+                assert self.scales.shape[0] > 0, f"self.data size is {self.data.shape}, scales_offset is {scales_offset}"
+                new_param = FP4Params(super().to(device=device,
+                                                dtype=dtype,
+                                                non_blocking=non_blocking),
+                                    scales=self.scales,
+                                    requires_grad=self.requires_grad,
+                                    quantized=self.quantized,
+                                    _shape=self._shape,
+                                    qtype=self.qtype)
             return new_param
-        elif (device is not None and device.type == "cpu" and self.data.device.type == "xpu"):
-            new_param = FP4Params(super().to(device=device,
-                                             dtype=dtype,
-                                             non_blocking=non_blocking),
-                                  requires_grad=self.requires_grad,
-                                  quantized=self.quantized,
-                                  _shape=self._shape,
-                                  qtype=self.qtype)
+        elif (device is not None and \
+              device.type == "cpu" and \
+                (self.data.device.type == "xpu" or self.data.device.type == "hpu")):
+            if self.data.device.type == "xpu":
+                new_param = FP4Params(super().to(device=device,
+                                                dtype=dtype,
+                                                non_blocking=non_blocking),
+                                    requires_grad=self.requires_grad,
+                                    quantized=self.quantized,
+                                    _shape=self._shape,
+                                    qtype=self.qtype)
+            else:
+                self.scales = self.scales.to(device)
+                cpu_data = super().to(device=device,
+                                      dtype=dtype,
+                                      non_blocking=non_blocking)
+                packed_data = torch.cat((cpu_data, self.scales.view(torch.uint8)))
+                new_param = FP4Params(packed_data,
+                                      requires_grad=self.requires_grad,
+                                      quantized=self.quantized,
+                                      _shape=self._shape,
+                                      qtype=self.qtype)
             new_param.data = ggml_q_format_convet_xpu2cpu(new_param.data,
                                                           reduce(mul, new_param._shape, 1),
                                                           new_param.qtype)
             return new_param
         else:
+            if self.scales is not None:
+                self.scales = self.scales.to(device)
             new_param = FP4Params(super().to(device=device,
                                              dtype=dtype,
                                              non_blocking=non_blocking),
+                                  scales=self.scales,
                                   requires_grad=self.requires_grad,
                                   quantized=self.quantized,
                                   _shape=self._shape,
@@ -417,8 +470,8 @@ class MatMulLowBitCPU(torch.autograd.Function):
 
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True, mp_group=None):
-        super().__init__(input_features, output_features, bias)
+                 conver_to_half=True, mp_group=None, device=None):
+        super().__init__(input_features, output_features, bias, device=device)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
                                 quantized=False, _shape=None, qtype=qtype)
@@ -475,6 +528,17 @@ class LowBitLinear(nn.Linear):
                 dist.inference_all_reduce(result, group=self.mp_group)
             if self.bias is not None:
                 result += self.bias
+        elif x0.device.type == "hpu":
+            # result = MatMulLowBitHPU.apply(x_2d, self.weight, self.weight_shape)
+            from bigdl.llm.transformers.torch_dequant import torch_dequant
+            dequant_weight = torch_dequant(self.weight.data, self.weight.scales, self.weight.qtype, self.weight_shape, x.dtype)
+            result = torch.matmul(x, dequant_weight.T)
+            new_shape = x_shape[:-1] + (self.out_len,)
+            result = result.view(new_shape)
+
+            if self.bias is not None:
+                result += self.bias
+            result.to(x.dtype)
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
