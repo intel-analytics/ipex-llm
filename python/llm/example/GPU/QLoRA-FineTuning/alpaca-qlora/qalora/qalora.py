@@ -299,8 +299,9 @@ def get_accelerate_model(args, checkpoint_dir):
     # )
     model = AutoModelForCausalLM.from_pretrained(
             args.model_path,
-            # load_in_4bit=True,
-            load_in_low_bit="asym_int4",
+            load_in_4bit=True,
+            # load_in_low_bit="asym_int4",
+            # load_in_low_bit="nf4",
             optimize_model=False,
             torch_dtype=torch.float,
             trust_remote_code=True,
