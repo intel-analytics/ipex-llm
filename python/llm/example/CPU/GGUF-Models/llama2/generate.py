@@ -33,9 +33,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--model', type=str, required=True,
                         help='Path to a gguf model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
@@ -44,13 +41,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     model_path = args.model
-    tokenizer_path = args.repo_id_or_model_path
 
-    # Load a gguf model and convert it to a bigdl-llm optimized model
-    model = AutoModelForCausalLM.from_gguf(model_path)
-
-    # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_path, trust_remote_code=True)
+    # Load gguf model and vocab, then convert them to bigdl-llm model and huggingface tokenizer
+    model, tokenizer = AutoModelForCausalLM.from_gguf(model_path)
 
     # Generate predicted tokens
     with torch.inference_mode():
