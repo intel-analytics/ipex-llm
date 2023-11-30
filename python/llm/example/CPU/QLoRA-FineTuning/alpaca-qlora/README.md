@@ -97,3 +97,28 @@ python ./quotes_qlora_finetuning_cpu.py \
     --output_dir "./bigdl-qlora-alpaca" \
     --prompt_template_name "english_quotes"
 ```
+
+
+### Guide to finetuning QLoRA using different models
+Make sure you fully understand the entire finetune process.
+Using [Baichuan-7B](https://huggingface.co/baichuan-inc/Baichuan-7B/tree/main) as an example:
+1. Update the Tokenizer first. Because the base example is for llama model.
+```bash
+from transformers import LlamaTokenizer
+AutoTokenizer.from_pretrained(base_model)
+```
+2. Maybe some models need to add `trusted_remote_code=True` in from_pretrained model and tokenizer
+```
+tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(base_model, xxxxx, trust_remote_code=True)
+```
+3. Modify the `target_modules` according to the model you need to train, you can refer to [here](https://stackoverflow.com/questions/76768226/target-modules-for-applying-peft-lora-on-different-models/76779946#76779946).
+Or just search for the recommended training target modules.
+```bash 
+lora_target_modules: List[str] = ["W_pack"]
+```
+4. Maybe need to change the `tokenizer.pad_token_id = tokenizer.eod_id` (Qwen)
+5. (Only for baichuan) According to this [issue](https://github.com/baichuan-inc/Baichuan2/issues/204#issuecomment-1774372008), 
+need to modify the [tokenization_baichuan.py](https://huggingface.co/baichuan-inc/Baichuan-7B/blob/main/tokenization_baichuan.py#L74) to fix issue. 
+6. finetune as normal
+7. Maybe need to Comment out some unnecessary aaserts to ensure successful merge weight
