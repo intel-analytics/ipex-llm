@@ -80,7 +80,7 @@ sudo docker run -itd \
         -e WORKER_PORT=$worker_port \
         -e OMP_NUM_THREADS=48 \
         -e MODEL_PATH=/llm/models/Llama-2-7b-chat-hf \
-	      -v $MODEL_PATH:/llm/models/ \
+	-v $MODEL_PATH:/llm/models/ \
         $DOCKER_IMAGE -m worker -w vllm_worker # use -w model_worker if vllm worker is not needed
 ```
 
