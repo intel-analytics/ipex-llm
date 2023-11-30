@@ -78,7 +78,7 @@ class BigDLLM(BaseLM):
     @property
     def eot_token_id(self):
         # we use EOT because end of *text* is more accurate for what we're doing than end of *sentence*
-        return self.model.token_eos()
+        return self.tokenizer.eos_token_id
 
     @property
     def max_length(self):
@@ -103,7 +103,7 @@ class BigDLLM(BaseLM):
         return input_ids
 
     def tok_decode(self, tokens):
-        return self.tokenizer.decode(output[0], skip_special_tokens=True)
+        return self.tokenizer.decode(tokens, skip_special_tokens=True)
 
     def _model_call(self, inps):
         """
@@ -119,4 +119,10 @@ class BigDLLM(BaseLM):
             return res
 
     def _model_generate(self, context, max_length, eos_token_id):
-        return self.model(context, max_tokens=max_length, stop=["Q:", "\n"], echo=True)
+        generation_kwargs = {"do_sample": False, "max_length": max_length}
+        if eos_token_id is not None:
+            generation_kwargs["eos_token_id"] = eos_token_id
+            generation_kwargs[
+                "pad_token_id"
+            ] = eos_token_id  # setting eos_token_id as pad token
+        return self.model.generate(context, **generation_kwargs)
