@@ -33,7 +33,7 @@ The entrypoint of the image will try to set `OMP_NUM_THREADS` to the correct num
 
 ### Vllm usage
 
-If the worker is expected to run in vllm mode, you should set the args `-w vllm_worker` in worker part of deployment.yaml. 
+If you want to use the vllm AsyncLLMEngine for serving, you should set the args -w vllm_worker in worker part of deployment.yaml.
 
 
 ### Controller
