@@ -43,13 +43,13 @@ api_host=localhost
 api_port=8000
 sudo docker run -itd \
         --net=host \
-	      --privileged \
+	--privileged \
         --cpuset-cpus="0-47" \
         --cpuset-mems="0" \
         --memory="64G" \
         --name=serving-cpu-controller \
         --shm-size="16g" \
-	      -e ENABLE_PERF_OUTPUT="true" \
+	-e ENABLE_PERF_OUTPUT="true" \
         -e CONTROLLER_HOST=$controller_host \
         -e CONTROLLER_PORT=$controller_port \
         -e API_HOST=$api_host \
@@ -67,13 +67,13 @@ worker_host=localhost
 worker_port=23001
 sudo docker run -itd \
         --net=host \
-	      --privileged \
+	--privileged \
         --cpuset-cpus="0-47" \
         --cpuset-mems="0" \
         --memory="64G" \
         --name="serving-cpu-worker" \
         --shm-size="16g" \
-	      -e ENABLE_PERF_OUTPUT="true" \
+	-e ENABLE_PERF_OUTPUT="true" \
         -e CONTROLLER_HOST=$controller_host \
         -e CONTROLLER_PORT=$controller_port \
         -e WORKER_HOST=$worker_host \
