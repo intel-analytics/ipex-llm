@@ -65,10 +65,6 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
     )
 
-    lora_weight = lora_model.base_model.model.model.layers[
-        0
-    ].self_attn.q_proj.weight
-
     # merge weights - new merging method from peft
     lora_model = lora_model.merge_and_unload()
 
