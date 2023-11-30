@@ -44,6 +44,9 @@ python ./alpaca_qlora_finetuning_cpu.py \
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
+### Guide to finetuning QLoRA on one node with multiple sockets
+
+
 ### Guide to use different prompts or different datasets
 Now the prompter is for the datasets with `instruction` `input`(optional) and `output`. If you want to use different datasets,
 you can add template file xxx.json in templates. And then update utils.prompter.py's `generate_prompt` method and update `generate_and_tokenize_prompt` method to fix the dataset.

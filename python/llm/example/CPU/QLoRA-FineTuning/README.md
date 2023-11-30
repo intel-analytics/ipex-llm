@@ -3,6 +3,11 @@
 This example demonstrates how to finetune a llama2-7b model using Big-LLM 4bit optimizations on [Intel CPUs](../README.md).
 
 
+## Distributed Training Guide
+1. [Single node with single socket](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/QLoRA-FineTuning#example-finetune-llama2-7b-using-qlora)
+2. [Single node with multiple sockets]()
+3. multiple nodes with multiple sockets
+
 ## Example: Finetune llama2-7b using QLoRA
 
 This example is ported from [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k). 
