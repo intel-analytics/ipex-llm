@@ -40,7 +40,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y numactl && \
     pip install --upgrade omegaconf && \
     pip install --upgrade pandas && \
-# Install vllm dependency
+# Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
 # Copy vLLM-Serving
