@@ -113,7 +113,7 @@ jobs:
           echo '  "stablelm-3b-4e1t": {"xpu": {' >> golden_results.json
 
           echo '    "mixed_fp4": {' >> golden_results.json
-          echo '      "truthfulqa_mc": "truthfulqa_mc": {"mc1": 0.24357405140758873,"mc1_stderr": 0.015026354824910782,"mc2": 0.37399115063281224,"mc2_stderr": 0.013684003173581748},'>> golden_results.json
+          echo '      "truthfulqa_mc": {"mc1": 0.24357405140758873,"mc1_stderr": 0.015026354824910782,"mc2": 0.37399115063281224,"mc2_stderr": 0.013684003173581748},'>> golden_results.json
           echo '      "arc_challenge": {"acc": 0.5, "acc_stderr": 0.5, "acc_norm": 0.5, "acc_norm_stderr": 0.5}' >> golden_results.json
           echo '    },' >> golden_results.json
           echo '    "fp8": {' >> golden_results.json
@@ -128,11 +128,10 @@ jobs:
           echo '      "arc_challenge": {"acc": 0.5674061433447098,"acc_stderr": 0.014478005694182528,"acc_norm": 0.5989761092150171,"acc_norm_stderr": 0.014322255790719867}' >> golden_results.json
           echo '    },' >> golden_results.json
           echo '    "fp8": {' >> golden_results.json
-          echo '      "truthfulqa_mc":  {"mc1": 0.2778457772337821,"mc1_stderr": 0.015680929364024643,"mc2": 0.4212635093545362,"mc2_stderr": 0.01414660694632397},' >> golden_results.json
-          echo '      "arc_challenge": {"acc": 0.5639931740614335,"acc_stderr": 0.014491225699230916, "acc_norm": 0.5998293515358362,"acc_norm_stderr": 0.014317197787809174}' >> golden_results.json
+          echo '      "truthfulqa_mc": {"mc1": 0.2778457772337821,"mc1_stderr": 0.015680929364024643,"mc2": 0.4212635093545362,"mc2_stderr": 0.01414660694632397},' >> golden_results.json
+          echo '      "arc_challenge": {"acc": 0.5639931740614335,"acc_stderr": 0.014491225699230916,"acc_norm": 0.5998293515358362,"acc_norm_stderr": 0.014317197787809174}' >> golden_results.json
           echo '    }' >> golden_results.json
           echo '  }}' >> golden_results.json
-
 
           echo '}' >> golden_results.json
 
