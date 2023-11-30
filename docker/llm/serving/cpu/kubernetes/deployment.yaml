@@ -87,8 +87,8 @@ spec:
               fieldPath: status.podIP
         - name: WORKER_PORT # fixed
           value: "21841"
-        - name: MODEL_PATH # Change this
-          value: "/llm/models/vicuna-7b-v1.5-bigdl/"
+        - name: MODEL_PATH
+          value: "/llm/models/vicuna-7b-v1.5-bigdl/" # change this to your model
         - name: OMP_NUM_THREADS
           value: "16"
         resources:
