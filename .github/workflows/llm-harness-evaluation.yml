@@ -87,7 +87,7 @@ jobs:
       - name: Upgrade packages
         shell: bash
         run: |
-          pip install --upgrade transformers
+          pip install --upgrade transformers==4.34.0
 
       - name: Run harness
         shell: bash
