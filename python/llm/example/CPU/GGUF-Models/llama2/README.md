@@ -1,11 +1,12 @@
-# Llama2
-In this directory, you will find examples on how you could load gguf Llama2 model and convert it to bigdl-llm model. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) and [llama-2-7b-chat.Q4_1.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as reference Llama2 gguf models.
+# Loading GGUF models
+In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) and [llama-2-7b-chat.Q4_1.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as reference LLaMA2 GGUF models.
+>Note: Only LLaMA2 family models are currently supported
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Load gguf model using `from_gguf()` API
-In the example [generate.py](./generate.py), we show a basic use case to load a gguf Llama2 model and convert it to a bigdl-llm model using `from_gguf()` API, with BigDL-LLM optimizations.
+In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `bigdl-llm` using `from_gguf()` API, with BigDL-LLM optimizations.
 
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
@@ -45,7 +46,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--model`: path to gguf model, it should be a file with name like `llama-2-7b-chat.Q4_0.gguf`
+- `--model`: path to GGUF model, it should be a file with name like `llama-2-7b-chat.Q4_0.gguf`
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
