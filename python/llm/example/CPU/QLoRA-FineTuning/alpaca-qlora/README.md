@@ -44,6 +44,20 @@ python ./alpaca_qlora_finetuning_cpu.py \
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
+### Guide to finetuning QLoRA on one node with multiple sockets
+1. install extra lib
+```bash
+# need to run the alpaca stand-alone version first
+# for using mpirun
+pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable
+```
+2. modify conf in `finetune_one_node_two_sockets.sh` and run
+```
+source ${conda_env}/lib/python3.9/site-packages/oneccl_bindings_for_pytorch/env/setvars.sh
+bash finetune_one_node_two_sockets.sh
+```
+
+
 ### Guide to use different prompts or different datasets
 Now the prompter is for the datasets with `instruction` `input`(optional) and `output`. If you want to use different datasets,
 you can add template file xxx.json in templates. And then update utils.prompter.py's `generate_prompt` method and update `generate_and_tokenize_prompt` method to fix the dataset.
