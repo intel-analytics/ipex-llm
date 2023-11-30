@@ -36,7 +36,7 @@ jobs:
         task: [winogrande, drop, gsm8k] # truthfulqa, arc, hellaswag, mmlu, winogrande, drop, gsm8k
         precision: [sym_int4] #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         
-    runs-on: [self-hosted, llm, accuracy, temp-arc01]
+    runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
