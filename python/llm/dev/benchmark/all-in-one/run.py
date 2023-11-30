@@ -38,6 +38,8 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
 
 CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 
+LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
+
 results = []
 
 
@@ -668,6 +670,14 @@ def run_transformer_int4_gpu_win(repo_id,
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True, cpu_embedding=cpu_embedding)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif repo_id in LLAVA_IDS:
+        llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
+        sys.path.append(rf"{llava_repo_dir}")
+        from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
