@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
+import os
 import torch
 from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
-from transformers import LlamaConfig, LlamaForCausalLM
+from tempfile import NamedTemporaryFile
+from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
 from ..gguf import GGUFFileLoader
 
@@ -79,12 +81,29 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     model = model.cpu()
 
-    return model
+    # see https://github.com/google/sentencepiece/blob/master/src/sentencepiece_model.proto
+    from transformers.convert_slow_tokenizer import import_protobuf
+    spm_pb2 = import_protobuf("Failed to import protobuf")
+
+    pieces = loader.tokenizer_pieces()
+    trainer_spec = spm_pb2.TrainerSpec(byte_fallback=True,
+                                       model_type=spm_pb2.TrainerSpec.ModelType.BPE)
+    proto = spm_pb2.ModelProto(pieces=pieces, trainer_spec=trainer_spec)
+    proto = proto.SerializeToString()
+
+    with NamedTemporaryFile(delete=False) as f:
+        f.write(proto)
+        f.close()
+        tokenizer = LlamaTokenizer(f.name)
+        os.remove(f.name)
+
+    return model, tokenizer
 
 
 def restore_llama_weight(ckpt: dict, n_head: int, n_head_kv: int):
     # see https://github.com/ggerganov/llama.cpp/blob
     # /3e73d31d9cc0232882ce61c64742aff3ecfec416/convert.py#L978
+
     for name, weight in ckpt.items():
         head, hd_size = weight.shape[0], weight.shape[1:]
         if name.endswith("attn_q.weight"):
