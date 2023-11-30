@@ -31,7 +31,7 @@ sudo docker run -itd \
 After the container is booted, you could get into the container through `docker exec`.
 
 To run model-serving using `BigDL-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/BigDL/tree/main/python/llm/src/bigdl/llm/serving).
-Also you can set environment variables and start arguments while running a container to get serving started initially. You may need to boot several containers to support. One controller container and at least one worker container are needed. The api server address(host and port) and controller address are set in controller container, and you need to set the same controller address as above and model path on your machine in worker container.
+Also you can set environment variables and start arguments while running a container to get serving started initially. You may need to boot several containers to support. One controller container and at least one worker container are needed. The api server address(host and port) and controller address are set in controller container, and you need to set the same controller address as above, model path on your machine and worker address in worker container.
 
 To start a controller container:
 ```bash
