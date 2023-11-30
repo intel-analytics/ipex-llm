@@ -45,6 +45,17 @@ python ./alpaca_qlora_finetuning_cpu.py \
 ```
 
 ### Guide to finetuning QLoRA on one node with multiple sockets
+1. install extra lib
+```bash
+# need to run the alpaca stand-alone version first
+# for using mpirun
+pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable
+```
+2. modify conf in `finetune_one_node_two_sockets.sh` and run
+```
+source ${conda_env}/lib/python3.9/site-packages/oneccl_bindings_for_pytorch/env/setvars.sh
+bash finetune_one_node_two_sockets.sh
+```
 
 
 ### Guide to use different prompts or different datasets
