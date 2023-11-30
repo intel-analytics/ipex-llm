@@ -36,10 +36,15 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Download all-in-one benchmark
     git clone https://github.com/intel-analytics/BigDL && \
     cp -r ./BigDL/python/llm/dev/benchmark/ ./benchmark && \
-    rm -rf ./BigDL && \
 # Install all-in-one dependencies
     apt-get install -y numactl && \
     pip install --upgrade omegaconf && \
-    pip install --upgrade pandas
+    pip install --upgrade pandas && \
+# Install vllm dependency
+    pip install --upgrade fastapi && \
+    pip install --upgrade "uvicorn[standard]" && \
+# Copy vLLM-Serving
+    cp -r ./python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./BigDL
 
 ENTRYPOINT ["/bin/bash"]
