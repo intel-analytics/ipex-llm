@@ -44,7 +44,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
 # Copy vLLM-Serving
-    cp -r ./python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
+    cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL
 
 ENTRYPOINT ["/bin/bash"]
