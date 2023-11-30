@@ -107,7 +107,7 @@ Using [Baichuan-7B](https://huggingface.co/baichuan-inc/Baichuan-7B/tree/main) a
 from transformers import LlamaTokenizer
 AutoTokenizer.from_pretrained(base_model)
 ```
-2. Maybe some models need to add `trusted_remote_code=True` in from_pretrained model and tokenizer
+2. Maybe some models need to add `trust_remote_code=True` in from_pretrained model and tokenizer
 ```
 tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(base_model, xxxxx, trust_remote_code=True)
@@ -121,4 +121,9 @@ lora_target_modules: List[str] = ["W_pack"]
 5. (Only for baichuan) According to this [issue](https://github.com/baichuan-inc/Baichuan2/issues/204#issuecomment-1774372008), 
 need to modify the [tokenization_baichuan.py](https://huggingface.co/baichuan-inc/Baichuan-7B/blob/main/tokenization_baichuan.py#L74) to fix issue. 
 6. finetune as normal
-7. Maybe need to Comment out some unnecessary aaserts to ensure successful merge weight
+7. Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/QLoRA-FineTuning/export_merged_model.py) to merge. But also need to update tokenizer and model to ensure successful merge weight.
+```bash
+from transformers import AutoTokenizer  # noqa: F402
+tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+base_model = AutoModelForCausalLM.from_pretrained(base_model,trust_remote_code=True)
+```

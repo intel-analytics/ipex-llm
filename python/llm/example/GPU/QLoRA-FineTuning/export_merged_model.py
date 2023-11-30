@@ -58,9 +58,6 @@ if __name__ == "__main__":
         device_map={"": "cpu"},
     )
 
-    first_weight = base_model.model.layers[0].self_attn.q_proj.weight
-    first_weight_old = first_weight.clone()
-
     lora_model = PeftModel.from_pretrained(
         base_model,
         adapter_path,
