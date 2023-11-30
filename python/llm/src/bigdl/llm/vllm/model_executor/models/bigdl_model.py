@@ -21,6 +21,10 @@ from transformers import LlamaConfig
 
 from bigdl.llm.vllm.sequence import SequenceOutputs, SequenceGroupMetadata
 from bigdl.llm.transformers.models.utils import extend_kv_cache
+from bigdl.llm.vllm.logger import init_logger
+
+logger = init_logger(__name__)
+
 
 zero_cache_dict = {}
 
