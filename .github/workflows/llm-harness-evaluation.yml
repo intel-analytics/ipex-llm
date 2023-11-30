@@ -30,11 +30,11 @@ jobs:
         #   python-version: "3.9"
         #   model_name: "stablelm-3b-4e1t"
         #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
         model_name: [stablelm-3b-4e1t]
-        task: ["truthfulqa"]
-        precision: [sym_int4] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        task: [winogrande, drop, gsm8k] # truthfulqa, arc, hellaswag, mmlu, winogrande, drop, gsm8k
+        precision: [sym_int4] #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         
     runs-on: [self-hosted, llm, accuracy, temp-arc01]
     env:
@@ -78,11 +78,9 @@ jobs:
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           if [ ! -d $HARNESS_HF_HOME ]; then
             mkdir -p $HARNESS_HF_HOME
-            wget -r -nH -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
           fi
-          if [ ! -d $MODEL_PATH ]; then
-            wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
-          fi
+          wget -r -nH -nc -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
+          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
       - name: Upgrade packages
         shell: bash
