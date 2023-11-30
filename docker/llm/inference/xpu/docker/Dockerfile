@@ -5,6 +5,8 @@ ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
+ENV USE_XETLA=OFF
+ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 COPY chat.py /llm/chat.py
 
@@ -38,4 +40,11 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get update && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev && \
     # Install related libary of chat.py
-    pip install --upgrade colorama
+    pip install --upgrade colorama && \
+    # Install vllm dependencies
+    pip install --upgrade fastapi && \
+    pip install --upgrade "uvicorn[standard]" && \
+    # Download vLLM-Serving
+    git clone https://github.com/intel-analytics/BigDL && \
+    cp -r ./BigDL/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./BigDL
