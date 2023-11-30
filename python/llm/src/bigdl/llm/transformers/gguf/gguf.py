@@ -372,3 +372,25 @@ class GGUFFileLoader:
 
     def tensors_iter(self):
         return self.tensor_loader
+
+    def tokenizer_pieces(self):
+        from transformers.convert_slow_tokenizer import import_protobuf
+        spm_pb2 = import_protobuf("Failed to import protobuf")
+
+        tokens = self.config['tokenizer.ggml.tokens']
+        scores = self.config['tokenizer.ggml.scores']
+        token_types = self.config['tokenizer.ggml.token_type']
+
+        pieces = [
+            spm_pb2.ModelProto.SentencePiece(
+                piece=token,
+                score=score,
+                type=token_type,
+            )
+            for token, score, token_type in tqdm(
+                zip(tokens, scores, token_types),
+                "Loading gguf vocab"
+            )
+        ]
+
+        return pieces

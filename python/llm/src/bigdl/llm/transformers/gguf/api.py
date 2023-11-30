@@ -41,8 +41,8 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
         if model_family == "llama":
             from .models.llama import load_gguf_llama
 
-            model = load_gguf_llama(loader, dtype)
+            model, tokenizer = load_gguf_llama(loader, dtype)
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
-        return model, low_bit
+        return model, tokenizer, low_bit
