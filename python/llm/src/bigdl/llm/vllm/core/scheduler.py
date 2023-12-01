@@ -118,7 +118,6 @@ class FixedWindowScheduler:
         self.kv_cache = kv_cache
         # Co(gc): We no longer have the swapped space as we are not deciding which to swap
         self.swapped: List[SequenceGroup] = []
-        self.seq_ability = 8
         # bigdl-llm change end
 
     def add_seq_group(self, seq_group: SequenceGroup) -> None:
@@ -174,7 +173,7 @@ class FixedWindowScheduler:
             # Co(gc): Record seq_len for prefill requests
             seq_lens = []
             # Co(gc): prefilled requests are prioritized over decoding stage requests
-            while self.waiting and self.seq_ability > 0:
+            while self.waiting:
                 seq_group = self.waiting[0]
 
                 invalidInputError(seq_group.num_seqs() == 1,
@@ -217,7 +216,6 @@ class FixedWindowScheduler:
                 seq_group = self.waiting.pop(0)
                 for seq in seq_group.get_seqs():
                     seq.status = SequenceStatus.RUNNING
-                    self.seq_ability -= 1
                 # Co(gc): Only updated the seq_lens when all check passes
                 seq_lens = new_seq_lens
                 # bigdl-llm change start
@@ -247,22 +245,22 @@ class FixedWindowScheduler:
         preempted: List[SequenceGroup] = []
         while self.running:
             seq_group = self.running.pop(0)
-            while self.seq_ability < 0:
-                if self.running:
-                    # Preempt the lowest-priority sequence groups.
-                    victim_seq_group = self.running.pop(-1)
-                    self._preempt(victim_seq_group)
-                    preempted.append(victim_seq_group)
-                else:
-                    # No other sequence groups can be preempted.
-                    # Preempt the current sequence group.
-                    self._preempt(seq_group)
-                    preempted.append(seq_group)
-                    break
-            else:
-                # Append new slots to the sequence group.
-                # self._append_slot(seq_group, blocks_to_copy)
-                running.append(seq_group)
+            # while self.seq_ability < 0:
+            #     if self.running:
+            #         # Preempt the lowest-priority sequence groups.
+            #         victim_seq_group = self.running.pop(-1)
+            #         self._preempt(victim_seq_group)
+            #         preempted.append(victim_seq_group)
+            #     else:
+            #         # No other sequence groups can be preempted.
+            #         # Preempt the current sequence group.
+            #         self._preempt(seq_group)
+            #         preempted.append(seq_group)
+            #         break
+            # else:
+            #     # Append new slots to the sequence group.
+            #     # self._append_slot(seq_group, blocks_to_copy)
+            running.append(seq_group)
         self.running = running
 
         # TODO (txy): inplement below methods
@@ -338,13 +336,10 @@ class FixedWindowScheduler:
         # summary: The original code free the block in block_manager.
         # now, we added it into a list to pass to worker in the next model_execute stage.
         self.cleaned.append(seq.seq_id)
-        deleted = 0
         for i in range(len(self.kv_cache)):
             for j in range(2):
                 if not self.kv_cache[i][j].get(seq.seq_id) is None:
                     del self.kv_cache[i][j][seq.seq_id]
-                    deleted = 1
-        self.seq_ability += deleted
         # del self.kv_cache[seq.seq_id]
         # logger.info(f"freed seqs: {seq.seq_id} .
         # now kv cache is: {list(self.kv_cache[0][0].keys())} ")
@@ -384,7 +379,6 @@ class FixedWindowScheduler:
             self._preempt_by_swap(seq_group, blocks_to_swap_out)
         else:
             raise AssertionError("Invalid preemption mode.")  # noqa
-        self.seq_ability += 1
 
     def _preempt_by_recompute(
         self,
