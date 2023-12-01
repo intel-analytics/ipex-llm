@@ -7,16 +7,15 @@ source bigdl-llm-init -t
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
-  sleep 10
-  export MASTER_ADDR=$(hostname -i)
-  export CPU_CORES=$(nproc)
+  sleep 10 # wait for worker pods to be ready
+  export ACCELERATE_USE_CPU=True
   mpirun \
     -n $WORLD_SIZE \
     -ppn 1 \
     -f /home/mpiuser/hostfile \
     -iface eth0 \
     --bind-to socket \
-    -genv OMP_NUM_THREADS=$((CPU_CORES / WORLD_SIZE))\
+    -genv OMP_NUM_THREADS=48 \
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \
