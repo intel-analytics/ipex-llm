@@ -47,43 +47,43 @@ lora_scale = lora_config["lora_alpha"] / lora_config["r"]
 lora_path = os.path.join(lora_path, "adapter_model.bin")
 
 # # model = torch.load(base_path, map_location='cpu')
-# base_model = AutoModelForCausalLM.from_pretrained(
-#         base_path,
-#         # load_in_low_bit="nf4", # should load the orignal model
-#         torch_dtype=torch.float16,
-#         device_map={"": "cpu"},
-#     )
+base_model = AutoModelForCausalLM.from_pretrained(
+        base_path,
+        # load_in_low_bit="nf4", # should load the orignal model
+        torch_dtype=torch.float16,
+        device_map={"": "cpu"},
+    )
 lora = torch.load(lora_path, map_location='cpu')
 tmp_keys = [key[17:-14] for key in lora.keys() if 'lora_A' in key]
 
 for tmp_key in tmp_keys:
     a = lora['base_model.model.'+tmp_key+'.lora_A.weight']
-    b = lora['base_model.model.'+tmp_key+'.lora_B.weight']
-    lora['base_model.model.'+tmp_key+'.lora_A.weight'] = torch.repeat_interleave(a, 64, dim=0) * lora_scale / 64
-    lora['base_model.model.'+tmp_key+'.lora_B.weight'] = torch.repeat_interleave(b, 64, dim=1) * lora_scale / 64
+    # b = lora['base_model.model.'+tmp_key+'.lora_B.weight']
+    lora['base_model.model.'+tmp_key+'.lora_A.weight'] = torch.repeat_interleave(a, 64, dim=1) * lora_scale / 64
+    # lora['base_model.model.'+tmp_key+'.lora_B.weight'] = torch.repeat_interleave(b, 64, dim=0) * lora_scale / 64
 
 torch.save(lora, mid_lora_path)
 
-lora2 = torch.load(mid_lora_path, map_location='cpu')
-for tmp_key in tmp_keys:
-    a = lora['base_model.model.'+tmp_key+'.lora_A.weight']
-    b = lora['base_model.model.'+tmp_key+'.lora_B.weight']
-    print(f"{tmp_key}, lora a size: {a.shape}, lora b size: {b.shape}")
+# lora2 = torch.load(mid_lora_path, map_location='cpu')
+# for tmp_key in tmp_keys:
+#     a = lora['base_model.model.'+tmp_key+'.lora_A.weight']
+#     b = lora['base_model.model.'+tmp_key+'.lora_B.weight']
+#     print(f"{tmp_key}, lora a size: {a.shape}, lora b size: {b.shape}")
 
-# lora_model = PeftModel.from_pretrained(
-#         base_model,
-#         mid_path,
-#         device_map={"": "cpu"},
-#         torch_dtype=torch.float16,
-#     )
+lora_model = PeftModel.from_pretrained(
+        base_model,
+        mid_path,
+        device_map={"": "cpu"},
+        torch_dtype=torch.float16,
+    )
 
-# lora_model = lora_model.merge_and_unload()
+lora_model = lora_model.merge_and_unload()
 
-# lora_model.train(False)
+lora_model.train(False)
 
-# lora_model_sd = lora_model.state_dict()
-# deloreanized_sd = {
-#     k.replace("base_model.model.", ""): v
-#     for k, v in lora_model_sd.items()
-#     if "lora" not in k
-# }
+lora_model_sd = lora_model.state_dict()
+deloreanized_sd = {
+    k.replace("base_model.model.", ""): v
+    for k, v in lora_model_sd.items()
+    if "lora" not in k
+}
