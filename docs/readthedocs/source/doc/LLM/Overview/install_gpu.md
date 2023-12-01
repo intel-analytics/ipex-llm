@@ -87,10 +87,10 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 ## Installing from Wheels
 
-You can also install BigDL-LLM from source achieve. First you need to download the wheel files from [our wheels](http://ec2-52-27-27-201.us-west-2.compute.amazonaws.com/ipex-release.php?device=xpu&repo=us&release=stable). 
+You can also install BigDL-LLM from source achieves. First you need to download the files from [our wheels](http://ec2-52-27-27-201.us-west-2.compute.amazonaws.com/ipex-release.php?device=xpu&repo=us&release=stable). 
 
 ```bash
-# get the wheels on linux
+# get the wheels on Linux system
 wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.0.1a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
 wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.15.2a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
 wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.0.110%2Bxpu-cp39-cp39-linux_x86_64.whl
