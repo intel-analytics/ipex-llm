@@ -173,11 +173,6 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             }
         # pdb.set_trace()
 
-        # logger.info(f"{all_decoding}: {cur_seq_ids}")
-        # if True:
-        #     if (cur_seq_ids != self.last_seq_ids) and (not self.last_kv_cache is None):
-        #         del self.last_kv_cache
-
         if self.device.type == 'xpu':
             torch.xpu.empty_cache()
         st_timestamp = time.perf_counter()
@@ -194,8 +189,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"before: {tmp['allocated_bytes.all.current']}")
 
-        if True:
-            self.update_kv_cache(cur_seq_ids,
+        self.update_kv_cache(cur_seq_ids,
                                  kv_cache, kv_cache_size_0, kv_cache_size_1)
 
         # tmp = torch.xpu.memory_stats()
