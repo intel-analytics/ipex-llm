@@ -100,7 +100,7 @@ python ./quotes_qlora_finetuning_cpu.py \
 
 
 ### Guide to finetuning QLoRA using different models
-Make sure you fully understand the entire finetune process.
+Make sure you fully understand the entire finetune process and the model is the latest version.
 Using [Baichuan-7B](https://huggingface.co/baichuan-inc/Baichuan-7B/tree/main) as an example:
 1. Update the Tokenizer first. Because the base example is for llama model.
 ```bash
