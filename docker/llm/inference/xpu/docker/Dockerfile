@@ -45,6 +45,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
     # Download vLLM-Serving
+    cd /llm && \
     git clone https://github.com/intel-analytics/BigDL && \
     cp -r ./BigDL/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL
