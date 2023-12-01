@@ -102,7 +102,9 @@ spec:
               mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
             resources:
               requests:
-                cpu: {{ .Values.cpuPerPod }}
+                cpu: 48
+              limits:
+                cpu: 48
           volumes:
           - name: nfs-storage
             persistentVolumeClaim:
