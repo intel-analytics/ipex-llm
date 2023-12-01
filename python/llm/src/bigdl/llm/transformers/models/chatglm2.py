@@ -232,13 +232,13 @@ def chatglm2_attention_forward_8eb45c(
         key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
         key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
         key_layer = key_layer.contiguous().view((batch_size,
-                                                 self.num_attention_heads_per_partition,
+                                                 self.num_multi_query_groups_per_partition,
                                                  key_length,
                                                  self.hidden_size_per_attention_head))
         value_layer = value_layer.permute(1, 2, 0, 3).unsqueeze(-3)
         value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
         value_layer = value_layer.contiguous().view((batch_size,
-                                                     self.num_attention_heads_per_partition,
+                                                     self.num_multi_query_groups_per_partition,
                                                      key_length,
                                                      self.hidden_size_per_attention_head))
 
@@ -251,13 +251,13 @@ def chatglm2_attention_forward_8eb45c(
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_cache_k, new_cache_v = extend_kv_cache(batch_size,
-                                                       self.num_attention_heads_per_partition,
-                                                       self.hidden_size_per_attention_head,
-                                                       past_length,
-                                                       max_cache_length,
-                                                       dtype=query_layer.dtype,
-                                                       device=device)
+            new_cache_k, new_cache_v = init_kv_cache(batch_size,
+                                                     self.num_multi_query_groups_per_partition,
+                                                     self.hidden_size_per_attention_head,
+                                                     past_length,
+                                                     max_cache_length,
+                                                     dtype=query_layer.dtype,
+                                                     device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
             cache_k = new_cache_k
@@ -269,7 +269,7 @@ def chatglm2_attention_forward_8eb45c(
 
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        key_cache, value_cache = init_kv_cache(batch_size, self.num_attention_heads_per_partition,
+        key_cache, value_cache = init_kv_cache(batch_size, self.num_multi_query_groups_per_partition,
                                                self.hidden_size_per_attention_head, cur_length,
                                                max_cache_length,
                                                dtype=query_layer.dtype, device=device)
@@ -279,13 +279,30 @@ def chatglm2_attention_forward_8eb45c(
         value_layer = value_cache
 
     if use_cache:
-        kv_cache = (key_layer, value_layer)
+        cache_key_layer = key_layer
+        cache_value_layer = value_layer
     else:
         kv_cache = None
 
     # ==================================
     # core attention computation
     # ==================================
+    if self.multi_query_attention:
+        key_layer = key_layer.unsqueeze(-3)
+        key_layer = key_layer.expand(-1, -1, 16, -1, -1)
+        save_length = key_layer.size(3)
+        key_layer = key_layer.contiguous().view((batch_size,
+                                                 self.num_attention_heads_per_partition,
+                                                 save_length,
+                                                 self.hidden_size_per_attention_head))
+
+        value_layer = value_layer.unsqueeze(-3)
+        value_layer = value_layer.expand(-1, -1, 16, -1, -1)
+        value_layer = value_layer.contiguous().view((batch_size,
+                                                     self.num_attention_heads_per_partition,
+                                                     save_length,
+                                                     self.hidden_size_per_attention_head))
+    
     context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
@@ -294,7 +311,7 @@ def chatglm2_attention_forward_8eb45c(
 
     output = self.dense(context_layer)
 
-    return output, (key_layer.permute(2, 0, 1, 3), value_layer.permute(2, 0, 1, 3))
+    return output, (cache_key_layer.permute(2, 0, 1, 3), cache_value_layer.permute(2, 0, 1, 3))
 
 
 def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
