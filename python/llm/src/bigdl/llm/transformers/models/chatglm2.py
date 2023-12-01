@@ -266,10 +266,10 @@ def chatglm2_attention_forward_8eb45c(
         key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
 
     elif use_cache:
-
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
-        key_cache, value_cache = init_kv_cache(batch_size, self.num_multi_query_groups_per_partition,
+        key_cache, value_cache = init_kv_cache(batch_size,
+                                               self.num_multi_query_groups_per_partition,
                                                self.hidden_size_per_attention_head, cur_length,
                                                max_cache_length,
                                                dtype=query_layer.dtype, device=device)
