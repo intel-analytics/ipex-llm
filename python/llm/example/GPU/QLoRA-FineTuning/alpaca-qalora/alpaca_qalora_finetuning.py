@@ -45,7 +45,7 @@ from peft import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
 )
-from utils.prompter import Prompter
+from ..utils.prompter import Prompter
 
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -294,7 +294,7 @@ def train(
             learning_rate=learning_rate,
             lr_scheduler_type="constant",
             bf16=True,  # ensure training more stable
-            logging_steps=10,
+            logging_steps=1,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
             save_strategy="steps",

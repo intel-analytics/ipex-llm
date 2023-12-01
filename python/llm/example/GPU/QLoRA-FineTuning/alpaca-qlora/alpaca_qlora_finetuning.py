@@ -45,7 +45,7 @@ from peft import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
 )
-from utils.prompter import Prompter
+from ..utils.prompter import Prompter
 
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
