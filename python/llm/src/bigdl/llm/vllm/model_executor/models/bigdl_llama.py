@@ -190,7 +190,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # logger.info(f"before: {tmp['allocated_bytes.all.current']}")
 
         self.update_kv_cache(cur_seq_ids,
-                                 kv_cache, kv_cache_size_0, kv_cache_size_1)
+                             kv_cache, kv_cache_size_0, kv_cache_size_1)
 
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"after: {tmp['allocated_bytes.all.current']}")
