@@ -17,6 +17,11 @@ Please refer to [Environment Setup](#environment-setup) for more information.
 
 .. important::
 
+   ``https://developer.intel.com/ipex-whl-stable-xpu`` is currently the only achievable source for ``-f`` option since ipex and specific torch versions are not released on pypi.
+
+
+.. important::
+
    ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
 ```
 
@@ -68,6 +73,13 @@ conda activate llm
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for GPU
 ```
 
+```eval_rst
+
+.. note::
+ If you have network issues when installing ipex, you can refer to [Installing from Wheels](#installing-from-wheels) to install BigDL-LLM from source achieves.
+
+```
+
 Then for running a LLM model with BigDL-LLM optimizations, several environment variables are recommended:
 
 ```bash
@@ -76,4 +88,36 @@ source /opt/intel/oneapi/setvars.sh
 
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
+## Installing from Wheels
+
+First you can download the wheel files from [our wheels](http://ec2-52-27-27-201.us-west-2.compute.amazonaws.com/ipex-release.php?device=xpu&repo=us&release=stable). 
+
+```bash
+# get the wheels on linux
+wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.0.1a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
+
+wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.15.2a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
+
+wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.0.110%2Bxpu-cp39-cp39-linux_x86_64.whl
+
+```
+
+```eval_rst
+.. note::
+
+   ``torch`` and ``torchvision`` are prerequisites for installing ``intel_extension_for_pytorch``.
+```
+
+Then you may install directly from the wheel archives using following commands:
+
+```bash
+# install the packages
+python -m pip install torch-2.0.1a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
+
+python -m pip install torchvision-0.15.2a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
+
+python -m pip install intel_extension_for_pytorch-2.0.110+xpu-cp39-cp39-linux_x86_64.whl
+
 ```
