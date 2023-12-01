@@ -56,6 +56,18 @@ spec:
       replicas: {{ .Values.trainerNum }}
       template:
         spec:
+          affinity:
+             podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                        - key: training.kubeflow.org/job-role
+                          operator: In
+                          values:
+                            - worker
+                    topologyKey: kubernetes.io/hostname
           containers:
           - image: {{ .Values.imageName }}
             name: bigdl-qlora-finetuning-worker
