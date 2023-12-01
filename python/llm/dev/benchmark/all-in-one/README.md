@@ -9,6 +9,11 @@ pip install omegaconf
 pip install pandas
 ```
 
+Install gperftools to use libtcmalloc.so for MAX GPU to get better performance:
+```bash
+conda install -c conda-forge -y gperftools=2.10
+```
+
 ## Config
 Config YAML file has following format
 ```yaml
@@ -46,3 +51,5 @@ For SPR performance, run `bash run-spr.sh`.
 > Please install torch nightly version to avoid `Illegal instruction (core dumped)` issue, you can follow the following command to install: `pip install --pre --upgrade torch --index-url https://download.pytorch.org/whl/nightly/cpu`
 
 For ARC performance, run `bash run-arc.sh`.
+
+For MAX GPU performance, run `bash run-max-gpu.sh`.

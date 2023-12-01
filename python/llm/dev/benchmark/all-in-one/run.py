@@ -394,6 +394,7 @@ def run_transformer_int4_gpu(repo_id,
                                             actual_in_len, actual_out_len])
             except RuntimeError:
                 pass
+    del model
     torch.xpu.empty_cache()
     return result
 
@@ -419,7 +420,7 @@ def run_optimize_model_gpu(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                      use_cache=True, low_cpu_mem_usage=True)
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -473,6 +474,7 @@ def run_optimize_model_gpu(repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                            actual_in_len, actual_out_len])
+    del model
     torch.xpu.empty_cache()
     return result
 
@@ -544,6 +546,7 @@ def run_ipex_fp16_gpu(repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                            actual_in_len, actual_out_len])
+    del model
     torch.xpu.empty_cache()
     return result
 
