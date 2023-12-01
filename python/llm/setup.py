@@ -271,6 +271,10 @@ def setup_package():
                     "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     all_requires += CONVERT_DEP
 
+    cpu_requires = copy.deepcopy(all_requires)
+    cpu_requires.remove('torch')
+    cpu_requires += ["torch==2.1.0+cpu;platform_system=='Linux'"]
+
     # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_requires = copy.deepcopy(all_requires)
     xpu_requires.remove('torch')
@@ -307,6 +311,7 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
+                        "cpu": cpu_requires,
                         "xpu": xpu_requires,
                         "serving": serving_requires},
         classifiers=[
