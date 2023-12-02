@@ -35,7 +35,7 @@ jobs:
         python-version: ["3.9"]
         model_name: [Nous-Hermes-Llama2-13b, Llama2-7b-guanaco-dolphin-500, Mistral-7B-v0.1]
         task: [winogrande, gsm8k]
-        precision: [mixed_fp4, fp8] 
+        precision: [sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8] 
         device: [xpu]
         
     runs-on: [self-hosted, llm, accuracy]
