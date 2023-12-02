@@ -63,6 +63,7 @@ def get_int_from_env(env_keys, default):
 
 local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+world_size = 1 if world_size <= 0 world_size # ENV PMI_SIZE can be 0
 port = get_int_from_env(["MASTER_PORT"], 29500)
 os.environ["LOCAL_RANK"] = str(local_rank)
 os.environ["WORLD_SIZE"] = str(world_size)
@@ -173,18 +174,17 @@ def train(
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
-            load_in_low_bit="sym_int4", # not support "nf4"
+            load_in_low_bit="sym_int4", # CPU does not support "nf4"
             optimize_model=False,
             torch_dtype=torch.bfloat16,
-            # device_map=device_map,
             modules_to_not_convert=["lm_head"],
         )
-    print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
+    print(f"Model loaded on rank {local_rank}")
     model = model.to("cpu")
-    print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
+    print(f"Model moved to rank {local_rank}")
 
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
-    print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
+    print(f"Tokenizer loaded on rank {local_rank}")
 
     tokenizer.pad_token_id = (
         0  # unk. we want this to be different from the eos token
@@ -317,16 +317,12 @@ def train(
             output_dir=output_dir,
             save_total_limit=100,
             load_best_model_at_end=True if val_set_size > 0 else False,
-            ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
             gradient_checkpointing=gradient_checkpointing,
             ddp_backend="ccl" if ddp else None,
     )
-    if ddp:
-        from accelerate.state import PartialState
-        args.distributed_state = PartialState(cpu=True, backend=args.ddp_backend)
 
     trainer = transformers.Trainer(
         model=model,
@@ -351,3 +347,4 @@ def train(
 
 if __name__ == "__main__":
     fire.Fire(train)
+
