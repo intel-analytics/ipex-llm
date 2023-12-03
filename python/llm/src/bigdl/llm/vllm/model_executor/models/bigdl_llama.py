@@ -172,6 +172,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 # "return_dict": True,
             }
         # pdb.set_trace()
+
         if self.device.type == 'xpu':
             torch.xpu.empty_cache()
         st_timestamp = time.perf_counter()
