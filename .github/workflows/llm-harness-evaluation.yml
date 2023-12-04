@@ -195,6 +195,13 @@ jobs:
           path:
             ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/*.json
 
+      - name: echo single result
+        shell: bash
+        
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/
+        run: |
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json
+
   llm-harness-summary:
     if: ${{ always() }}
     needs: llm-harness-evalution
