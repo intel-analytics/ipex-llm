@@ -12,7 +12,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 ```
 
 ### 2. Run
@@ -40,8 +40,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
+# set BigDL-LLM env variables
+source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

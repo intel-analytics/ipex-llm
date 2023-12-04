@@ -25,9 +25,9 @@ from bigdl.llm import optimize_model
 BLUELM_PROMPT_FORMAT = "[|Human|]:{prompt}[|AI|]:"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for BlueLM model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="vivo-ai/BlueLM-7B-Chat",
-                        help='The huggingface repo id for the ChatGLM model to be downloaded'
+                        help='The huggingface repo id for the BlueLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')

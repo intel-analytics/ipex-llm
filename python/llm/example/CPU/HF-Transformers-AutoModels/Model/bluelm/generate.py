@@ -26,7 +26,7 @@ from transformers import AutoTokenizer
 BLUELM_PROMPT_FORMAT = "[|Human|]:{prompt}[|AI|]:"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for BlueLM model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="vivo-ai/BlueLM-7B-Chat",
                         help='The huggingface repo id for the BlueLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')

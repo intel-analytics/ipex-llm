@@ -1,4 +1,4 @@
-# ChatGLM
+# BlueLM
 In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate BlueLM models. For illustration purposes, we utilize the [vivo-ai/BlueLM-7B-Chat](https://huggingface.co/vivo-ai/BlueLM-7B-Chat) as a reference BlueLM model.
 
 ## Requirements
@@ -32,8 +32,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
+# set BigDL-LLM env variables
+source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
@@ -44,7 +44,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the ChatGLM model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'vivo-ai/BlueLM-7B-Chat'`.
+- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the BlueLM model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'vivo-ai/BlueLM-7B-Chat'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -54,4 +54,12 @@ In the example, several arguments can be passed to satisfy your requirements:
 Inference time: xxxx s
 -------------------- Output --------------------
 AI是什么？ AI是人工智能（Artificial Intelligence）的缩写，是一种模拟人类智能思维过程的技术。它可以让计算机系统通过学习和适应，自主地完成各种任务，
+```
+
+```log
+Inference time: xxxx s
+-------------------- Output --------------------
+What is AI? AI is an AI, or artificial intelligence, that can be defined as the simulation of human intelligence processes by machines, especially computer systems.
+
+AI is not
 ```

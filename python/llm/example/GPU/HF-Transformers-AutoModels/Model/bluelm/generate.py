@@ -23,12 +23,12 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-BAICHUAN_PROMPT_FORMAT = "[|Human|]:{prompt}[|AI|]:"
+BLUELM_PROMPT_FORMAT = "[|Human|]:{prompt}[|AI|]:"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for BlueLM model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="vivo-ai/BlueLM-7B-Chat",
-                        help='The huggingface repo id for the Baichuan model to be downloaded'
+                        help='The huggingface repo id for the BlueLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = BAICHUAN_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = BLUELM_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
