@@ -9,19 +9,19 @@ concurrency:
 on:
   schedule:
     - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm_performance_tests.yml"
+      - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
     uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
@@ -208,7 +208,7 @@ jobs:
           fi
 
   llm-performance-test-on-igpu:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -252,6 +252,17 @@ jobs:
 
           call conda deactivate
 
+      - name: Set directory envs
+        shell: bash
+        run: |
+          if [ ${{ github.event.schedule}} ]; then
+            echo "CSV_SAVE_PATH=${CSV_NIGHTLY_PATH}" >> "$GITHUB_ENV"
+          else
+            echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
+          fi
+          cur_date=$(date +%Y-%m-%d)
+          echo "LOG_FILE=${CSV_SAVE_PATH}\log\${cur_date}_output.txt" >> "$GITHUB_ENV"
+
       - name: Prepare igpu perf test
         shell: bash
         run: |
@@ -272,13 +283,7 @@ jobs:
 
           move python\llm\test\benchmark\igpu-perf-test.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
-              set y=%%c
-              set m=%%a
-              set d=%%b
-          )
-          set logfile=%y%-%m%-%d%_output.txt
-          python run.py >> log\%logfile% 2>&1
+          python run.py >> %LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -301,13 +306,7 @@ jobs:
 
           move python\llm\test\benchmark\igpu-perf-test-434.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
-              set y=%%c
-              set m=%%a
-              set d=%%b
-          )
-          set logfile=%y%-%m%-%d%_output.txt
-          python run.py >> log\%logfile% 2>&1
+          python run.py >> %LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -319,11 +318,6 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
-          IF "${{ github.event_name }}"=="schedule" (
-              set CSV_SAVE_PATH=%CSV_NIGHTLY_PATH%
-          ) ELSE (
-              set CSV_SAVE_PATH=%CSV_PR_PATH%
-          )
           copy *.csv %CSV_SAVE_PATH%
           del /q *.csv
           cd ..\..\..\test\benchmark
