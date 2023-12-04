@@ -171,7 +171,13 @@ jobs:
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
-          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device ${{ matrix.device }} --tasks ${{ matrix.task }} --batch_size 1 --no_cache --output_path results
+          python run_llb.py \
+          --model bigdl-llm \
+          --pretrained ${MODEL_PATH} \
+          --precision ${{ matrix.precision }} \
+          --device ${{ matrix.device }} \
+          --tasks ${{ matrix.task }} \
+          --batch_size 1 --no_cache --output_path results
 
 
       - name: Compare with golden accuracy
@@ -179,8 +185,10 @@ jobs:
         if: ${{github.event_name == 'schedule'}}
         working-directory: ${{ github.workspace }}/python/llm
         run: |
-          python test/benchmark/harness_nightly/accuracy_regression.py dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json test/benchmark/harness_nightly/golden_results.json
-
+          python test/benchmark/harness_nightly/accuracy_regression.py \
+          dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json \
+          test/benchmark/harness_nightly/golden_results.json
+        
           
 
         
