@@ -21,6 +21,6 @@ export CCL_ATL_TRANSPORT=ofi
 
 mpirun -n 2 \
        python -u ./alpaca_qlora_finetuning.py \
-       --base_model /mnt/disk1/models/Llama-2-7b-hf \
-       --data_path '/home/arda/binbin/dataset/alpaca-cleaned/alpaca_data_cleaned.json' \
+       --base_model "meta-llama/Llama-2-7b-hf" \
+       --data_path "yahma/alpaca-cleaned" \
        --output_dir "./bigdl-qlora-alpaca" > training.log

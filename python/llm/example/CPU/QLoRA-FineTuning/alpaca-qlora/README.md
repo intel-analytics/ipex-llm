@@ -44,6 +44,20 @@ python ./alpaca_qlora_finetuning_cpu.py \
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
+### Guide to finetuning QLoRA on one node with multiple sockets
+1. install extra lib
+```bash
+# need to run the alpaca stand-alone version first
+# for using mpirun
+pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable
+```
+2. modify conf in `finetune_one_node_two_sockets.sh` and run
+```
+source ${conda_env}/lib/python3.9/site-packages/oneccl_bindings_for_pytorch/env/setvars.sh
+bash finetune_one_node_two_sockets.sh
+```
+
+
 ### Guide to use different prompts or different datasets
 Now the prompter is for the datasets with `instruction` `input`(optional) and `output`. If you want to use different datasets,
 you can add template file xxx.json in templates. And then update utils.prompter.py's `generate_prompt` method and update `generate_and_tokenize_prompt` method to fix the dataset.
@@ -82,4 +96,34 @@ python ./quotes_qlora_finetuning_cpu.py \
     --data_path "./english_quotes" \
     --output_dir "./bigdl-qlora-alpaca" \
     --prompt_template_name "english_quotes"
+```
+
+
+### Guide to finetuning QLoRA using different models
+Make sure you fully understand the entire finetune process and the model is the latest version.
+Using [Baichuan-7B](https://huggingface.co/baichuan-inc/Baichuan-7B/tree/main) as an example:
+1. Update the Tokenizer first. Because the base example is for llama model.
+```bash
+from transformers import LlamaTokenizer
+AutoTokenizer.from_pretrained(base_model)
+```
+2. Maybe some models need to add `trust_remote_code=True` in from_pretrained model and tokenizer
+```
+tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(base_model, xxxxx, trust_remote_code=True)
+```
+3. Modify the `target_modules` according to the model you need to train, you can refer to [here](https://stackoverflow.com/questions/76768226/target-modules-for-applying-peft-lora-on-different-models/76779946#76779946).
+Or just search for the recommended training target modules.
+```bash 
+lora_target_modules: List[str] = ["W_pack"]
+```
+4. Maybe need to change the `tokenizer.pad_token_id = tokenizer.eod_id` (Qwen)
+5. (Only for baichuan) According to this [issue](https://github.com/baichuan-inc/Baichuan2/issues/204#issuecomment-1774372008), 
+need to modify the [tokenization_baichuan.py](https://huggingface.co/baichuan-inc/Baichuan-7B/blob/main/tokenization_baichuan.py#L74) to fix issue. 
+6. finetune as normal
+7. Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/QLoRA-FineTuning/export_merged_model.py) to merge. But also need to update tokenizer and model to ensure successful merge weight.
+```bash
+from transformers import AutoTokenizer  # noqa: F402
+tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+base_model = AutoModelForCausalLM.from_pretrained(base_model,trust_remote_code=True)
 ```

@@ -68,6 +68,7 @@ class Worker:
         scheduler_config: SchedulerConfig,
         rank: Optional[int] = None,
         # distributed_init_method: Optional[str] = None,
+        kv_cache: Optional[Dict] = None,
     ) -> None:
         self.model_config = model_config
         # self.parallel_config = parallel_config
@@ -84,17 +85,18 @@ class Worker:
         self.cache_events = None
         self.gpu_cache = None
 
-        self.kv_cache = dict()
+        self.kv_cache = kv_cache
 
     def clean_finished_seqs(self, finished_seqs: List[int]):
         """
         This function cleans the finished sequences and their KVCache in self.kv_cache
         """
-        for seq_id in finished_seqs:
-            if seq_id not in self.kv_cache.keys():
-                warnings.warn(f"Duplicate key {seq_id} received during clean worker's KVCache")
-                continue
-            del self.kv_cache[seq_id]
+        pass
+        # for seq_id in finished_seqs:
+        #     if seq_id not in self.kv_cache.keys():
+        #         # warnings.warn(f"Duplicate key {seq_id} received during clean worker's KVCache")
+        #         continue
+        #     del self.kv_cache[seq_id]
 
     def init_model(self):
         if self.model_config.device == 'gpu':
@@ -281,6 +283,10 @@ class Worker:
         #     cache_events = None
         if finished_seqs:
             self.clean_finished_seqs(finished_seqs)
+
+        # if self.model_config.device == 'xpu':
+        #     import intel_extension_for_pytorch as ipex
+        #     torch.xpu.empty_cache()
 
         cache_events = None
         # If there is no input, we don't need to execute the model.

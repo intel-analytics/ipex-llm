@@ -51,7 +51,23 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
+from bigdl.llm.utils.isa_checker import ISAChecker
 
+def get_int_from_env(env_keys, default):
+    """Returns the first positive env value found in the `env_keys` list or the default."""
+    for e in env_keys:
+        val = int(os.environ.get(e, -1))
+        if val >= 0:
+            return val
+    return default
+
+local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
+world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+port = get_int_from_env(["MASTER_PORT"], 29500)
+os.environ["LOCAL_RANK"] = str(local_rank)
+os.environ["WORLD_SIZE"] = str(world_size)
+os.environ["RANK"] = str(local_rank)
+os.environ["MASTER_PORT"] = str(port)
 
 def train(
     # model/data params
@@ -278,6 +294,9 @@ def train(
     else:
         train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
         val_data = None
+
+    isa_checker = ISAChecker()
+    bf16_flag = isa_checker.check_avx512()
     args = transformers.TrainingArguments(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
@@ -288,7 +307,7 @@ def train(
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             lr_scheduler_type="cosine",
-            bf16=True,  # ensure training more stable
+            bf16=bf16_flag,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",

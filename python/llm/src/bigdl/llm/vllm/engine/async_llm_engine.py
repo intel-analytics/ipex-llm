@@ -243,15 +243,16 @@ class _AsyncLLMEngine(LLMEngine):
     ) -> Any:
         """Runs the given method on all workers."""
         # bigdl-llm change start
-        all_outputs = []
+        coros = []
         for worker in self.workers:
             # if self.parallel_config.worker_use_ray:
             #     executor = partial(worker.execute_method.remote, method)
             # else:
             executor = getattr(worker, method)
+            coros.append(asyncio.get_event_loop().run_in_executor(
+                         None, partial(executor, *args, **kwargs)))
 
-            output = executor(*args, **kwargs)
-            all_outputs.append(output)
+            all_outputs = await asyncio.gather(*coros)
 
         # if self.parallel_config.worker_use_ray:
         #     all_outputs = await asyncio.gather(*all_outputs)

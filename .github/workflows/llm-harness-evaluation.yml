@@ -7,9 +7,10 @@ concurrency:
 
 # Controls when the action will run.
 on:
-  # schedule:
-  #   - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  schedule:
+    - cron: "00 13 * * 5" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
+    types: ready_for_review
     branches: [main]
     paths:
       - ".github/workflows/llm-harness-evaluation.yml"
@@ -30,13 +31,14 @@ jobs:
         #   python-version: "3.9"
         #   model_name: "stablelm-3b-4e1t"
         #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: [stablelm-3b-4e1t]
-        task: ["truthfulqa"]
-        precision: [sym_int4] #options: sym_int4, fp4, nf4, mixed_4bit, fp8
+        model_name: [stablelm-3b-4e1t,Mistral-7B-v0.1]
+        task: [truthfulqa, arc]
+        precision: [mixed_fp4, fp8] 
+        device: [xpu]
         
-    runs-on: [self-hosted, llm, accuracy, temp-arc01]
+    runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
@@ -78,16 +80,14 @@ jobs:
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           if [ ! -d $HARNESS_HF_HOME ]; then
             mkdir -p $HARNESS_HF_HOME
-            wget -r -nH -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
           fi
-          if [ ! -d $MODEL_PATH ]; then
-            wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
-          fi
+          wget -r -nH -nc -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
+          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
       - name: Upgrade packages
         shell: bash
         run: |
-          pip install --upgrade transformers
+          pip install --upgrade transformers==4.34.0
 
       - name: Run harness
         shell: bash
@@ -100,5 +100,16 @@ jobs:
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
-          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --batch_size 1 --no_cache
+          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device ${{ matrix.device }} --tasks ${{ matrix.task }} --batch_size 1 --no_cache --output_path results
+
+
+      - name: Compare with golden accuracy
+        shell: bash
+        if: ${{github.event_name == 'schedule'}}
+        working-directory: ${{ github.workspace }}/python/llm
+        run: |
+          python test/benchmark/harness_nightly/accuracy_regression.py dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json test/benchmark/harness_nightly/golden_results.json
+
+          
+
         

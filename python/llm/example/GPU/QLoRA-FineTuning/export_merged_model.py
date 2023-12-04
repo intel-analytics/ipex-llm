@@ -58,19 +58,12 @@ if __name__ == "__main__":
         device_map={"": "cpu"},
     )
 
-    first_weight = base_model.model.layers[0].self_attn.q_proj.weight
-    first_weight_old = first_weight.clone()
-
     lora_model = PeftModel.from_pretrained(
         base_model,
         adapter_path,
         device_map={"": "cpu"},
         torch_dtype=torch.float16,
     )
-
-    lora_weight = lora_model.base_model.model.model.layers[
-        0
-    ].self_attn.q_proj.weight
 
     # merge weights - new merging method from peft
     lora_model = lora_model.merge_and_unload()

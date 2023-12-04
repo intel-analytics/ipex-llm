@@ -289,9 +289,6 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    if bf16:
-        cast_lora_weight(model, torch.bfloat16)
-
     trainer = transformers.Trainer(
         model=model,
         train_dataset=train_data,

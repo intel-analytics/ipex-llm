@@ -20,21 +20,35 @@ from typing import Optional, Tuple, List, Type, Dict
 from transformers import LlamaConfig
 
 from bigdl.llm.vllm.sequence import SequenceOutputs, SequenceGroupMetadata
+from bigdl.llm.transformers.models.utils import extend_kv_cache
+from bigdl.llm.vllm.logger import init_logger
+
+logger = init_logger(__name__)
+
+
+zero_cache_dict = {}
+
+
+def get_zero_tensor(length, cur_size, device, pos):
+    if length not in zero_cache_dict:
+        tmp_size = cur_size[:]
+        tmp_size[pos] = length
+        zero_cache_dict[length] = torch.zeros(tmp_size, device=device)
+    return zero_cache_dict[length].narrow(pos, 0, length - cur_size[pos])
 
 
 def _pad_kv_cache_view(t: torch.Tensor, len: int,
                        device: torch.device, pos: int = 2) -> torch.Tensor:
     cur_size = list(t.size())
     if cur_size[pos] < len:
-        tmp_size = cur_size[:]
-        tmp_size[pos] = len - cur_size[pos]
-        zeros = torch.zeros(tmp_size, device=device)
+        zeros = get_zero_tensor(len, cur_size, device, pos)
         padded_view = torch.cat((zeros, t), dim=pos)
         return padded_view
-    if cur_size[pos] > len:
+    elif cur_size[pos] > len:
         padded_view = t.narrow(pos, cur_size[pos] - len, len)
         return padded_view
-    return t
+    else:
+        return t
 
 
 class BigDLModelForCausalLM(nn.Module):
@@ -52,9 +66,22 @@ class BigDLModelForCausalLM(nn.Module):
                 "cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = torch.device(device)
+            if device == 'xpu':
+                try:
+                    import intel_extension_for_pytorch as ipex
+                except ImportError:
+                    print("Intel Extension for PyTorch is not installed, \
+                        but is required for xpu inference.")
+
         self.max_seq_limit = max_model_len
         self.last_kv_cache = None
         self.last_seq_ids = None
+
+    def _set_last_kv_cache(self, last_kv_cache):
+        self.last_kv_cache = last_kv_cache
+
+    def _set_last_seq_ids(self, last_seq_ids):
+        self.last_seq_ids = last_seq_ids
 
     # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
     # sequence_length, embed_size_per_head).
@@ -68,40 +95,42 @@ class BigDLModelForCausalLM(nn.Module):
     ):
         max_seq_limit = self.max_seq_limit
         if (self.last_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
-            if self.last_kv_cache[0][0].size(2) < max_seq_limit:
-                bigdl_kv_cache = self.tmp_kv_cache
+            if self.last_kv_cache[0][0].size(2) < max_seq_limit * 1.5:
+                bigdl_kv_cache = self.last_kv_cache
             else:
                 bigdl_kv_cache = [[tmp.narrow(2, self.last_kv_cache[0][0].size(2)
                                    - max_seq_limit, max_seq_limit)
                                    for tmp in tmp_list] for tmp_list in self.last_kv_cache]
+                del self.last_kv_cache
         else:
+            del self.last_kv_cache
             bigdl_kv_cache = []
             for i in range(kv_cache_size_0):
                 cur_list = []
                 for j in range(kv_cache_size_1):
-                    cur_view = None
+                    views = []
+                    max_len = 0
                     for seq_group_meta_data in seq_group_meta_data_lists:
                         seq_ids = list(seq_group_meta_data.seq_data.keys())
                         seq_id = seq_ids[0]
                         seq_data = seq_group_meta_data.seq_data[seq_id]
-                        view_size = [1] + list(kv_cache[seq_id][i][j].shape)
-                        if cur_view is None:
-                            cur_view = kv_cache[seq_id][i][j].view(view_size)
-                        else:
-                            if cur_view.size(2) != view_size[2]:
-                                max_len = max(cur_view.size(2), view_size[2])
-                                cur_view = _pad_kv_cache_view(cur_view, max_len, self.device)
-                                tmp_view = _pad_kv_cache_view(
-                                    kv_cache[seq_id][i][j].view(view_size),
-                                    max_len, self.device)
-                                cur_view = torch.cat((cur_view, tmp_view), dim=0)
-                            else:
-                                cur_view = torch.cat(
-                                    (cur_view, kv_cache[seq_id][i][j].view(view_size)), dim=0)
+                        view_size = [1] + list(kv_cache[i][j][seq_id].shape)
+                        views.append(kv_cache[i][j][seq_id].view(view_size))
+                        max_len = max(max_len, view_size[2])
+
+                    views = [_pad_kv_cache_view(v, max_len, self.device) for v in views]
+                    cur_view = torch.cat(views, dim=0)
+
                     if cur_view.size(2) > max_seq_limit:
                         cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
                     cur_list.append(cur_view)
+
+                    for seq_group_meta_data in seq_group_meta_data_lists:
+                        seq_ids = list(seq_group_meta_data.seq_data.keys())
+                        seq_id = seq_ids[0]
+                        del kv_cache[i][j][seq_id]
                 bigdl_kv_cache.append(cur_list)
+
         return bigdl_kv_cache
 
     # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
@@ -109,20 +138,16 @@ class BigDLModelForCausalLM(nn.Module):
     def update_kv_cache(
         self,
         cur_seq_ids: List[int],
-        past_key_values: List[List[torch.Tensor]],
-        kv_cache: Dict,
+        kv_cache,
         kv_cache_size_0: int,
         kv_cache_size_1: int,
     ) -> None:
-        index = 0
-        for seq_id in cur_seq_ids:
-            if kv_cache.get(seq_id) is None:
-                kv_cache[seq_id] = [[[] for _ in range(kv_cache_size_1)]
-                                    for _ in range(kv_cache_size_0)]
-            for i in range(kv_cache_size_0):
-                for j in range(kv_cache_size_1):
-                    kv_cache[seq_id][i][j] = past_key_values[i][j][index]
-            index = index + 1
+        for i in range(kv_cache_size_0):
+            for j in range(kv_cache_size_1):
+                index = 0
+                for seq_id in cur_seq_ids:
+                    kv_cache[i][j][seq_id] = self.last_kv_cache[i][j][index]
+                    index = index + 1
 
     def forward(
         self,

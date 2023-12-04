@@ -44,6 +44,7 @@ from .utils import extract_local_archive_file, \
     get_local_shard_files
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.transformers.gguf.api import load_gguf_model
 import torch
 import warnings
 import copy
@@ -98,7 +99,9 @@ class _BaseAutoModelClass:
                                Default to be True.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
                                        conducting model optimizations. Default to be None.
-        :param replace_embedding: Whether to replace the Embedding layer, may need to set it
+        :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
+            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+        :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
             to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
         :return: a model instance
         """
@@ -188,6 +191,25 @@ class _BaseAutoModelClass:
 
         return model
 
+    @staticmethod
+    def from_gguf(fpath: str, optimize_model: bool = True, cpu_embedding: bool = False):
+        """
+        Load gguf model and tokenizer and convert it to bigdl-llm model and huggingface tokenzier
+
+        :param fpath: Path to gguf model file
+        :param optimize_model: Whether to further optimize llm model, defaults to True
+        :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
+            to `True` when running BigDL-LLM on GPU on Windows, defaults to False
+
+        :return: An optimized bigdl-llm model and a huggingface tokenizer
+        """
+        from bigdl.llm.optimize import optimize_model as optimize_model_fn
+
+        model, tokenizer, low_bit = load_gguf_model(fpath, dtype=torch.half)
+        model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=optimize_model,
+                                  cpu_embedding=cpu_embedding)
+        return model, tokenizer
+
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
         from .convert import ggml_convert_low_bit
@@ -201,7 +223,12 @@ class _BaseAutoModelClass:
         # `from_pretrained`` may pop items out in dict
         # and lead to args missing.
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
-        replace_embedding = kwargs.pop("replace_embedding", False)
+        cpu_embedding = kwargs.pop("cpu_embedding", False)
+        if kwargs.pop("replace_embedding", False):
+            warnings.warn("replace_embedding is deprecated and will be removed in a future version,"
+                          " please use cpu_embedding instead.", FutureWarning)
+            cpu_embedding = True
+        lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -262,7 +289,7 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     replace_embedding=replace_embedding)
+                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
         model.config.update({"bigdl_transformers_low_bit": q_k})
         model.config.update({"tie_word_embeddings": False})
 
@@ -299,7 +326,12 @@ class _BaseAutoModelClass:
         import os
 
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", None)
-        replace_embedding = kwargs.pop("replace_embedding", False)
+        cpu_embedding = kwargs.pop("cpu_embedding", False)
+        if kwargs.pop("replace_embedding", False):
+            warnings.warn("replace_embedding is deprecated and will be removed in a future version,"
+                          " please use cpu_embedding instead.", FutureWarning)
+            cpu_embedding = True
+        lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -411,7 +443,7 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     replace_embedding=replace_embedding)
+                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

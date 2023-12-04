@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/vllm-project/vllm/blob/main/examples/offline_inference.py
+# https://github.com/vllm-project/vllm/blob/v0.2.1.post1/examples/offline_inference.py
 # which is licensed under Apache License 2.0
 #
 # Copyright 2023 The vLLM team. All rights reserved.
@@ -31,8 +31,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bigdl.llm.vllm.examples.llm import LLM
-from bigdl.llm.vllm.structure.sampling_params import SamplingParams
+from bigdl.llm.vllm.entrypoints.llm import LLM
+from bigdl.llm.vllm.sampling_params import SamplingParams
 
 # Sample prompts.
 prompts = [

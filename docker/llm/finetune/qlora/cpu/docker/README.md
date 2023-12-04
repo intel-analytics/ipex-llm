@@ -38,8 +38,8 @@ docker run -itd \
    --name=bigdl-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   -v $BASE_MODE_PATH:/model \
-   -v $DATA_PATH:/data/english_quotes \
+   -v $BASE_MODE_PATH:/bigdl/model \
+   -v $DATA_PATH:/bigdl/data/english_quotes \
    intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
 ```
 
@@ -59,7 +59,7 @@ docker run -itd \
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
 
-### 3. Start Fine-Tuning
+### 3. Start Fine-Tuning (Local Mode)
 
 Enter the running container:
 
@@ -70,9 +70,7 @@ docker exec -it bigdl-llm-fintune-qlora-cpu bash
 Then, start QLoRA fine-tuning:
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
-And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
 ```bash
-source bigdl-llm-init -t
 bash start-qlora-finetuning-on-cpu.sh
 ```
 
@@ -127,3 +125,32 @@ Inference time: xxx s
 -------------------- Output --------------------
 “QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: ['bigdl'] ['deep-learning'] ['distributed-computing'] ['intel'] ['optimization'] ['training'] ['training-speed']
 ```
+
+### 4. Start Multi-Porcess Fine-Tuning in One Docker
+
+<img src="https://github.com/Uxito-Ada/BigDL/assets/60865256/f25c43b3-2b24-4476-a0fe-804c0ef3c36c" height="240px"><br>
+
+Multi-process parallelism enables higher performance for QLoRA fine-tuning, e.g. Xeon server series with multi-processor-socket architecture is suitable to run one instance on each QLoRA. This can be done by simply invoke >=2 OneCCL instances in BigDL QLoRA docker:
+
+```bash
+docker run -itd \
+ --name=bigdl-llm-fintune-qlora-cpu \
+ --cpuset-cpus="your_expected_range_of_cpu_numbers" \
+ -e STANDALONE_DOCKER=TRUE \
+ -e WORKER_COUNT_DOCKER=your_worker_count \
+ -v your_downloaded_base_model_path:/bigdl/model \
+ -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
+ intelanalytics/bigdl-llm-finetune-qlora-cpu:2.5.0-SNAPSHOT
+```
+
+Note that `STANDALONE_DOCKER` is set to **TRUE** here.
+
+Then following the same way as above to enter the docker container and start fine-tuning:
+
+```bash
+bash start-qlora-finetuning-on-cpu.sh
+```
+
+### 5. Start Distributed Fine-Tuning on Kubernetes
+
+Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md).

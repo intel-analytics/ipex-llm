@@ -213,7 +213,11 @@ else
     echo "Worker type: $worker_type"
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address --stream-interval $stream_interval
+    if [ "$worker_type" == "fastchat.serve.model_worker" ]; then
+      python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address --stream-interval $stream_interval
+    elif [ "$worker_type" == "fastchat.serve.vllm_worker" ]; then
+      python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
+    fi
   fi
 fi
 

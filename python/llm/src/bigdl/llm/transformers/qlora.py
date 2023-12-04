@@ -170,6 +170,10 @@ def get_peft_model(*args, **kwargs):
     finally:
         LoraModel._create_new_module = old_create_new_module
 
+    if model.device.type == "xpu":
+        cast_lora_weight(model, torch.bfloat16)
+        torch.xpu.synchronize()
+
     return model
 
 
