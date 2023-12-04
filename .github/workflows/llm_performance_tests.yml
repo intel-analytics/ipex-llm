@@ -272,7 +272,13 @@ jobs:
 
           move python\llm\test\benchmark\igpu-perf-test.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          python run.py
+          for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
+              set y=%%c
+              set m=%%a
+              set d=%%b
+          )
+          set logfile=%y%-%m%-%d%_output.txt
+          python run.py >> log\%logfile% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -295,7 +301,13 @@ jobs:
 
           move python\llm\test\benchmark\igpu-perf-test-434.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          python run.py
+          for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
+              set y=%%c
+              set m=%%a
+              set d=%%b
+          )
+          set logfile=%y%-%m%-%d%_output.txt
+          python run.py >> log\%logfile% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
