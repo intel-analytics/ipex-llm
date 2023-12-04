@@ -64,7 +64,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-
+    
     assert not args.provide_description  # not implemented
 
     if args.limit:
@@ -86,14 +86,18 @@ def main():
 
     success = []
     fail = []
+    model_name = os.path.basename(os.path.realpath(args.pretrained))
+    output_path = args.output_path if args.output_path else "results"
     for prec in args.precision:
         prec_arg = parse_precision(prec, args.model)
         model_args = f"pretrained={args.pretrained},{prec_arg}"
         if len(args.model_args) > 0:
-            model_args += args.model_args
+            model_args = f"{model_args},{args.model_args}"
         for task in args.tasks:
             task_names=task_map.get(task, task).split(',')
             num_fewshot = task_to_n_few_shots.get(task, args.num_fewshot)
+            log_dir = f"{output_path}/{model_name}/{args.device}/{prec}/{task}"
+            os.makedirs(log_dir, exist_ok=True)
             try:
                 results = evaluator.simple_evaluate(
                     model=args.model,
@@ -109,7 +113,7 @@ def main():
                     decontamination_ngrams_path=args.decontamination_ngrams_path,
                     check_integrity=args.check_integrity,
                     write_out=args.write_out,
-                    output_base_path=args.output_base_path,
+                    output_base_path=log_dir
                 )
                 if len(results['results']) > 1:
                     average = {}
@@ -117,18 +121,15 @@ def main():
                         for metric, value in subtask.items():
                             average[metric] = average.get(metric, []) + [value]
                     for k, v in average.items():
-                        average[k] = sum(average[k]) / len(average[k]) if not k.endswith("_stderr") else 0
-                    results['results'][f"avg_{task}"] = average
-                    results['versions'][f"avg_{task}"] = 1
+                        average[k] = sum(v) / len(v) if not k.endswith("_stderr") else 0
+                    results['results'][task] = average
+                    results['versions'][task] = 1
 
                 dumped = json.dumps(results, indent=2)
                 print(dumped)
 
                 if args.output_path:
-                    dirname = os.path.dirname(args.output_path)
-                    if dirname:
-                        os.makedirs(dirname, exist_ok=True)
-                    with open(args.output_path, "w") as f:
+                    with open(f"{log_dir}/result.json", "w") as f:
                         f.write(dumped)
                 success.append(results)
             except Exception as e:

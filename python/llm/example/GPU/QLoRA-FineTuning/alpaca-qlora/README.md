@@ -13,8 +13,9 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install transformers==4.34.0
-pip install fire datasets peft==0.5.0
+pip install datasets transformers==4.34.0
+pip install fire peft==0.5.0
+pip install oneccl_bind_pt==2.0.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
 pip install accelerate==0.23.0
 ```
 
@@ -23,20 +24,68 @@ pip install accelerate==0.23.0
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Finetuning LLaMA-2-7B on a single Arc:
+### 3. Finetune
 
-Example usage:
+Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device:
 
+#### Finetuning LLaMA2-7B on single Arc A770
+
+```bash
+bash finetune_llama2_7b_arc_1_card.sh
 ```
+
+#### Finetuning LLaMA2-7B on two Arc A770
+
+```bash
+bash finetune_llama2_7b_arc_2_card.sh
+```
+
+#### Finetuning LLaMA2-7B on single Data Center GPU Flex 170
+
+```bash
+bash finetune_llama2_7b_flex_170_1_card.sh
+```
+
+#### Finetuning LLaMA2-7B on three Data Center GPU Flex 170
+
+```bash
+bash finetune_llama2_7b_flex_170_3_card.sh
+```
+
+#### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1100
+
+```bash
+bash finetune_llama2_7b_pvc_1100_1_card.sh
+```
+
+#### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
+
+```bash
+bash finetune_llama2_7b_pvc_1100_4_card.sh
+```
+
+#### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
+
+```bash
+bash finetune_llama2_7b_pvc_1550_1_card.sh
+```
+
+#### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
+
+```bash
+bash finetune_llama2_7b_pvc_1550_4_card.sh
+```
+
+**Important: If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+```bash
 python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./bigdl-qlora-alpaca"
+    --output_dir "./bigdl-qlora-alpaca" \
+    --resume_from_checkpoint "./bigdl-qlora-alpaca/checkpoint-1100"
 ```
 
-**Note**: You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file.
-
-#### Sample Output
+### 4. Sample Output
 ```log
 {'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
 {'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                           

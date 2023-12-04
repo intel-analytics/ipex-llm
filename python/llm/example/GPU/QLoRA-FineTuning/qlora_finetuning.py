@@ -19,7 +19,6 @@ import os
 
 import transformers
 from transformers import LlamaTokenizer
-
 from peft import LoraConfig
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
@@ -61,6 +60,7 @@ if __name__ == "__main__":
         task_type="CAUSAL_LM"
     )
     model = get_peft_model(model, config)
+
     tokenizer.pad_token_id = 0
     tokenizer.padding_side = "left"
     trainer = transformers.Trainer(
@@ -73,7 +73,6 @@ if __name__ == "__main__":
             max_steps=200,
             learning_rate=2e-5,
             save_steps=100,
-            # fp16=True,
             bf16=True,  # bf16 is more stable in training
             logging_steps=20,
             output_dir="outputs",

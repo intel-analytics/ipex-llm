@@ -53,6 +53,21 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 
+def get_int_from_env(env_keys, default):
+    """Returns the first positive env value found in the `env_keys` list or the default."""
+    for e in env_keys:
+        val = int(os.environ.get(e, -1))
+        if val >= 0:
+            return val
+    return default
+ 
+local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
+world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+port = get_int_from_env(["MASTER_PORT"], 29500)
+os.environ["LOCAL_RANK"] = str(local_rank)
+os.environ["WORLD_SIZE"] = str(world_size)
+os.environ["RANK"] = str(local_rank)
+os.environ["MASTER_PORT"] = str(port)
 
 def train(
     # model/data params
@@ -61,6 +76,7 @@ def train(
     data_path: str = "yahma/alpaca-cleaned",
     output_dir: str = "./bigdl-qlora-alpaca",
     # training hyperparams
+    bf16: bool = True,  # default to bf16
     batch_size: int = 128,
     micro_batch_size: int = 2,  # default to be 2, limited by GPU memory
     num_epochs: int = 3,
@@ -244,26 +260,6 @@ def train(
     else:
         data = load_dataset(data_path)
 
-    if resume_from_checkpoint:
-        # Check the available weights and load them
-        checkpoint_name = os.path.join(
-            resume_from_checkpoint, "pytorch_model.bin"
-        )  # Full checkpoint
-        if not os.path.exists(checkpoint_name):
-            checkpoint_name = os.path.join(
-                resume_from_checkpoint, "adapter_model.bin"
-            )  # only LoRA model - LoRA config above has to fit
-            resume_from_checkpoint = (
-                False  # So the trainer won't try loading its state
-            )
-        # The two files above have a different name depending on how they were saved, but are actually the same.
-        if os.path.exists(checkpoint_name):
-            print(f"Restarting from {checkpoint_name}")
-            adapters_weights = torch.load(checkpoint_name)
-            set_peft_model_state_dict(model, adapters_weights)
-        else:
-            print(f"Checkpoint {checkpoint_name} not found")
-
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
     if val_set_size > 0:
@@ -316,6 +312,7 @@ def train(
             gradient_checkpointing=gradient_checkpointing,
             ddp_backend="ccl",
             deepspeed=deepspeed,
+            save_safetensors=False,
         ),
         data_collator=transformers.DataCollatorForSeq2Seq(
             tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
