@@ -111,14 +111,16 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
                 x = x.to(self.lora_A[self.active_adapter].weight.dtype)
                 output = (
                     self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](self.qa_pool(x)))
+                        self.lora_A[self.active_adapter](
+                            self.lora_dropout[self.active_adapter](self.qa_pool(x)))
                     ).to(expected_dtype)
                     * self.scaling[self.active_adapter]
                 )
             else:
                 output = (
                     self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](self.qa_pool(x)))
+                        self.lora_A[self.active_adapter](
+                            self.lora_dropout[self.active_adapter](self.qa_pool(x)))
                     )
                     * self.scaling[self.active_adapter]
                 )
@@ -191,8 +193,6 @@ def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
     """
 
     is_gptq_quantized = getattr(model, "quantization_method", None) == "gptq"
-    if is_gptq_quantized:
-        print("==============gptq")
     for name, param in model.named_parameters():
         # freeze base model's layers
         param.requires_grad = False

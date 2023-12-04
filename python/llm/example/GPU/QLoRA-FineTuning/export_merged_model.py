@@ -36,6 +36,8 @@ from transformers import LlamaTokenizer  # noqa: F402
 from bigdl.llm.transformers.qlora import PeftModel
 from bigdl.llm.transformers import AutoModelForCausalLM
 import argparse
+import tempfile
+import shutil
 
 if __name__ == "__main__":
 
@@ -45,11 +47,36 @@ if __name__ == "__main__":
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--adapter_path', type=str,)
     parser.add_argument('--output_path', type=str,)
+    parser.add_argument("--qalora", action="store_true", default=False,
+                        help="Merge a qalora adapter")
 
     args = parser.parse_args()
     base_model = model_path = args.repo_id_or_model_path
     adapter_path = args.adapter_path
+    qalora = args.qalora
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
+
+    temp_dir = None
+    if qalora:
+        temp_dir = tempfile.TemporaryDirectory()
+        tmpdirname = os.path.join(temp_dir.name, "adapter")
+        try:
+            shutil.copytree(adapter_path, tmpdirname)
+        except OSError as e:
+            print(f"Error: {e}")
+        mid_lora_path = os.path.join(tmpdirname, "adapter_model.bin")
+
+        adapter_path = os.path.join(adapter_path, "adapter_model.bin")
+
+        lora = torch.load(adapter_path, map_location='cpu')
+        tmp_keys = [key[17:-14] for key in lora.keys() if 'lora_A' in key]
+
+        for tmp_key in tmp_keys:
+            a = lora['base_model.model.'+tmp_key+'.lora_A.weight'] / 64
+            lora['base_model.model.'+tmp_key+'.lora_A.weight'] = torch.repeat_interleave(a, 64, dim=1)
+
+        torch.save(lora, mid_lora_path)
+        adapter_path = tmpdirname
 
     base_model = AutoModelForCausalLM.from_pretrained(
         base_model,
@@ -79,3 +106,6 @@ if __name__ == "__main__":
 
     base_model.save_pretrained(args.output_path, state_dict=deloreanized_sd)
     tokenizer.save_pretrained(args.output_path)
+
+    if qalora and temp_dir:
+        temp_dir.cleanup()

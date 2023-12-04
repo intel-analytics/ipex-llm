@@ -14,24 +14,20 @@
 # limitations under the License.
 #
 
-source /home/wangruonan/intel/oneapi/setvars.sh --force
-export PYTHONPATH=/home/wangruonan/yina/BigDL/python/llm/src
-
 export MASTER_ADDR=127.0.0.1
 export OMP_NUM_THREADS=28 # adjust this to 1/4 of total physical cores
 export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
 
 mpirun -n 2 \
-       python -u ./alpaca_qalora_finetuning.py \
-       --base_model "/dev/shm/models/Llama-2-7b-chat-hf" \
-       --data_path "/home/wangruonan/yina/alpaca-cleaned" \
-       --output_dir "./bigdl-qalora-alpaca-2tile" \
+       python -u ./alpaca_qlora_finetuning.py \
+       --base_model "meta-llama/Llama-2-7b-hf" \
+       --data_path "yahma/alpaca-cleaned" \
+       --output_dir "./bigdl-qlora-alpaca" \
        --qalora True \
        --learning_rate 9e-5 \
        --micro_batch_size 8 \
        --batch_size 128 \
-       --gradient_checkpointing False \
        --lora_r 8 \
        --lora_alpha 16 \
        --lora_dropout 0.05 \

@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 
-source /opt/intel/oneapi/setvars.sh
-export PYTHONPATH=/home/arda/yina/BigDL/python/llm/src
-
 export MASTER_ADDR=127.0.0.1
 export OMP_NUM_THREADS=6 # adjust this to 1/4 of total physical cores
 export FI_PROVIDER=tcp
@@ -24,13 +21,12 @@ export CCL_ATL_TRANSPORT=ofi
 
 mpirun -n 2 \
        python -u ./alpaca_qlora_finetuning.py \
-       --base_model /mnt/disk1/models/Llama-2-7b-hf \
-       --data_path '/home/arda/binbin/dataset/alpaca-cleaned/alpaca_data_cleaned.json' \
+       --base_model "meta-llama/Llama-2-7b-hf" \
+       --data_path "yahma/alpaca-cleaned" \
        --output_dir "./bigdl-qlora-alpaca" \
        --learning_rate 9e-5 \
        --micro_batch_size 2 \
        --batch_size 128 \
-       --gradient_checkpointing False \
        --lora_r 8 \
        --lora_alpha 16 \
        --lora_dropout 0.05 \
