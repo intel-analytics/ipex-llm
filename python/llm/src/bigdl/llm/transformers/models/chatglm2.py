@@ -300,8 +300,10 @@ def chatglm2_attention_forward_8eb45c(
     # core attention computation
     # ==================================
     if self.multi_query_attention:
+        query_group_size = self.num_attention_heads_per_partition // \
+            self.num_multi_query_groups_per_partition
         key_layer = key_layer.unsqueeze(-3)
-        key_layer = key_layer.expand(-1, -1, 16, -1, -1)
+        key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
         save_length = key_layer.size(3)
         key_layer = key_layer.contiguous().view((batch_size,
                                                  self.num_attention_heads_per_partition,
@@ -309,12 +311,12 @@ def chatglm2_attention_forward_8eb45c(
                                                  self.hidden_size_per_attention_head))
 
         value_layer = value_layer.unsqueeze(-3)
-        value_layer = value_layer.expand(-1, -1, 16, -1, -1)
+        value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
         value_layer = value_layer.contiguous().view((batch_size,
                                                      self.num_attention_heads_per_partition,
                                                      save_length,
                                                      self.hidden_size_per_attention_head))
-    
+
     context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
