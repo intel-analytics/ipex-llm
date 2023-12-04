@@ -21,6 +21,41 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
+  set-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      model_name: ${{ steps.set-matrix.outputs.model_name }}
+      precision: ${{ steps.set-matrix.outputs.model_name }}
+      task: ${{ steps.set-matrix.outputs.model_name }}
+    steps:
+      - name: set-nightly-env
+        if: ${{github.event_name == 'schedule'}}
+        env:
+          NIGHTLY_MATRIX_MODEL_NAME: "[stablelm-3b-4e1t,Mistral-7B-v0.1]"
+          NIGHTLY_MATRIX_TASK: "[truthfulqa, arc]"
+          NIGHTLY_MATRIX_PRECISION: "[mixed_fp4, fp8]"
+        run: |
+            echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GIT_ENV
+            echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GIT_ENV
+            echo "task=$NIGHTLY_MATRIX_TASK" >> $GIT_ENV
+
+      - name: set-pr-env
+        if: ${{github.event_name == 'pull-request'}}
+        env:
+          PR_MATRIX_MODEL_NAME: "[stablelm-3b-4e1t]"
+          PR_MATRIX_TASK: "[truthfulqa]"
+          PR_MATRIX_PRECISION: "[mixed_fp4]"
+        run: |
+            echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GIT_ENV
+            echo "precision=$PR_MATRIX_PRECISION" >> $GIT_ENV
+            echo "task=$PR_MATRIX_TASK" >> $GIT_ENV
+
+      - name: set-matrix
+        id: set-matrix
+        run: |
+            echo "model_name=$model_name" >> $GIT_OUTPUT
+            echo "precision=$precision" >> $GIT_OUTPUT
+            echo "task=$task" >> $GIT_OUTPUT
   llm-harness-evalution:
     timeout-minutes: 1000
     needs: llm-cpp-build
