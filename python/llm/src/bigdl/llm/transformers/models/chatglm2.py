@@ -227,16 +227,14 @@ def chatglm2_attention_forward_8eb45c(
 
     if self.multi_query_attention:
         key_length = key_layer.size(0)
-        query_group_size = self.num_attention_heads_per_partition // \
-            self.num_multi_query_groups_per_partition
         key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
-        key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
+        key_layer = key_layer.expand(-1, -1, 1, -1, -1)
         key_layer = key_layer.contiguous().view((batch_size,
                                                  self.num_multi_query_groups_per_partition,
                                                  key_length,
                                                  self.hidden_size_per_attention_head))
         value_layer = value_layer.permute(1, 2, 0, 3).unsqueeze(-3)
-        value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
+        value_layer = value_layer.expand(-1, -1, 1, -1, -1)
         value_layer = value_layer.contiguous().view((batch_size,
                                                      self.num_multi_query_groups_per_partition,
                                                      key_length,
