@@ -53,23 +53,6 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.utils.isa_checker import ISAChecker
 
-def get_int_from_env(env_keys, default):
-    """Returns the first positive env value found in the `env_keys` list or the default."""
-    for e in env_keys:
-        val = int(os.environ.get(e, -1))
-        if val >= 0:
-            return val
-    return default
-
-local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
-world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
-world_size = 1 if world_size <= 0 world_size # ENV PMI_SIZE can be 0
-port = get_int_from_env(["MASTER_PORT"], 29500)
-os.environ["LOCAL_RANK"] = str(local_rank)
-os.environ["WORLD_SIZE"] = str(world_size)
-os.environ["RANK"] = str(local_rank)
-os.environ["MASTER_PORT"] = str(port)
-
 def train(
     # model/data params
     base_model: str = "meta-llama/Llama-2-7b-hf",  # the only required argument, default to be "meta-llama/Llama-2-7b-hf"
@@ -135,6 +118,7 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
+            f"gradient_checkpointing: {gradient_checkpointing}\n"
         )
     assert (
         base_model
@@ -144,7 +128,11 @@ def train(
     prompter = Prompter(prompt_template_name)
 
     device_map = "auto"
-    world_size = int(os.environ.get("WORLD_SIZE", 1))
+    pmi_world_size = int(os.environ.get('PMI_SIZE', -1))
+    if pmi_world_size > 0:
+        os.environ['WORLD_SIZE'] = str(pmi_world_size)
+    world_size = 1 if pmi_world_size == 0 else pmi_world_size
+    print(f"world_size: {world_size}!!")
     ddp = world_size != 1
     if ddp:
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
@@ -174,23 +162,23 @@ def train(
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
-            load_in_low_bit="sym_int4", # CPU does not support "nf4"
+            load_in_low_bit="sym_int4", # not support "nf4"
             optimize_model=False,
             torch_dtype=torch.bfloat16,
             modules_to_not_convert=["lm_head"],
         )
-    print(f"Model loaded on rank {local_rank}")
+    print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
     model = model.to("cpu")
-    print(f"Model moved to rank {local_rank}")
+    print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
-    print(f"Tokenizer loaded on rank {local_rank}")
+    print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer.pad_token_id = (
         0  # unk. we want this to be different from the eos token
     )
     tokenizer.padding_side = "left"  # Allow batched inference
-    
+
     print(model)
 
     def tokenize(prompt, add_eos_token=True):
@@ -242,7 +230,7 @@ def train(
         return tokenized_full_prompt
 
     # Prepare a BigDL-LLM compatible Peft model
-    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=gradient_checkpointing)
+    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False) #gradient_checkpointing)
 
     config = LoraConfig(
         r=lora_r,
@@ -302,12 +290,12 @@ def train(
             gradient_accumulation_steps=gradient_accumulation_steps,
             # warmup_ratio=0.03,
             # warmup_steps=100,
-            max_steps=max_steps,
+            #max_steps=max_steps,
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             lr_scheduler_type="cosine",
-            bf16=bf16_flag,  # ensure training more stable
+            bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
@@ -317,11 +305,13 @@ def train(
             output_dir=output_dir,
             save_total_limit=100,
             load_best_model_at_end=True if val_set_size > 0 else False,
+            ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
             gradient_checkpointing=gradient_checkpointing,
-            ddp_backend="ccl" if ddp else None,
+            gradient_checkpointing_kwargs={"use_reentrant": False},
+            ddp_backend="ccl",
     )
 
     trainer = transformers.Trainer(
