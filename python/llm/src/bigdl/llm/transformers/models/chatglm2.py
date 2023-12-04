@@ -240,8 +240,8 @@ def chatglm2_attention_forward_8eb45c(
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
     if self.multi_query_attention:
-        key_layer = key_layer.permute(1, 2, 0, 3) # [bs, nh/k, sl, hn]
-        value_layer = value_layer.permute(1, 2, 0, 3) # [bs, nh/k, sl, hn]
+        key_layer = key_layer.permute(1, 2, 0, 3)  # [bs, nh/k, sl, hn]
+        value_layer = value_layer.permute(1, 2, 0, 3)  # [bs, nh/k, sl, hn]
 
     # adjust key and value for inference
     if kv_cache is not None:
