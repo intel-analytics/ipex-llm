@@ -66,9 +66,9 @@ jobs:
       - name: set-pr-env
         if: ${{github.event_name == 'workflow_dispatch'}}
         env:
-          MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', join(inputs.model_name, ', '))}}
-          MANUAL_MATRIX_TASK: ${{format('[ {0} ]', join(inputs.task, ', '))}}
-          MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', join(inputs.precision, ', '))}}
+          MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
+          MANUAL_MATRIX_TASK: ${{format('[ {0} ]', inputs.task)}}
+          MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
         run: |
             echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$MANUAL_MATRIX_TASK" >> $GITHUB_ENV
