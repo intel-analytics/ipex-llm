@@ -317,7 +317,7 @@ jobs:
           call conda activate igpu-perf
 
           cd python\llm\dev\benchmark\all-in-one
-          move %LOG_FILE% %CSV_SAVE_PATH%
+          move %LOG_FILE% %CSV_SAVE_PATH%\log\
           python ..\..\..\test\benchmark\concat_csv.py
           copy *.csv %CSV_SAVE_PATH%
           del /q *.csv
