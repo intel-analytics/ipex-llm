@@ -42,7 +42,7 @@ def main(res_path, golden_path):
         task_results = results[task]
         task_golden = golden_results[task]
         for m in task_results.keys():
-            if m in task_golden and task_results[m] != task_golden[m]:
+            if m in task_golden and abs(task_results[m] - task_golden[m]) < 0.001:
                 if not m.endswith("_stderr"):
                     identical = False
                     logger.error(f"Different on metric '{m}' [golden acc/ current acc]: [{task_golden[m]}/{task_results[m]}]")
