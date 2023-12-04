@@ -41,7 +41,6 @@ import accelerate
 
 from transformers import LlamaTokenizer
 from peft import (
-    LoraConfig,
     get_peft_model_state_dict,
     set_peft_model_state_dict,
 )
@@ -52,7 +51,7 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
-    cast_lora_weight
+    cast_lora_weight, LoraConfig
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -110,6 +109,7 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
+    qalora: bool = False, # if True, use qa-lora https://github.com/yuhuixu1993/qa-lora/
 ):
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
@@ -136,6 +136,7 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
+            f"qalora: {qalora}\n"
         )
     assert (
         base_model
@@ -172,10 +173,13 @@ def train(
             modules_to_not_convert=["lm_head"],
         )
     else:
-        # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
+        # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
+        # Default 4-bit format for qa-lora is sym_int4
+        low_bit_format = "sym_int4" if qalora else "nf4" 
+        # Load the base model from a directory or the HF Hub to 4-bit format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
-            load_in_low_bit="nf4", # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
+            load_in_low_bit=low_bit_format,
             optimize_model=False,
             torch_dtype=torch.bfloat16,
             # device_map=device_map,
@@ -253,7 +257,9 @@ def train(
         lora_dropout=lora_dropout,
         bias="none",
         task_type="CAUSAL_LM",
+        qa_lora=qalora,
     )
+    print(f"Lora Config: {config}")
     model = get_peft_model(model, config)
 
     if data_path.endswith(".json") or data_path.endswith(".jsonl"):

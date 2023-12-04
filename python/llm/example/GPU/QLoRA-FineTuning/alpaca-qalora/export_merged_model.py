@@ -30,60 +30,71 @@
 # limitations under the License.
 import os
 import torch
-from transformers import AutoModelForCausalLM
-from peft import LoraConfig
+from transformers import LlamaTokenizer  # noqa: F402
 from bigdl.llm.transformers.qlora import PeftModel
+from bigdl.llm.transformers import AutoModelForCausalLM
+import argparse
+import tempfile
+import shutil
 
+if __name__ == "__main__":
 
-lora_path = "/home/arda/yina/checkpoint-1100"
-base_path = "/mnt/disk1/models/Llama-2-7b-chat-hf"
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
+                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
+                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--adapter_path', type=str,)
+    parser.add_argument('--output_path', type=str,)
 
-mid_path = "/home/arda/yina/qalora_adapter/"
-mid_lora_path = os.path.join(mid_path, "adapter_model.bin")
+    args = parser.parse_args()
+    base_model = model_path = args.repo_id_or_model_path
+    adapter_path = args.adapter_path
 
-lora_config = LoraConfig.from_json_file(os.path.join(lora_path, "adapter_config.json"))
-lora_scale = lora_config["lora_alpha"] / lora_config["r"]
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        print('created temporary directory', tmpdirname)
+        tmpdirname = os.path.join(tmpdirname, "adapter")
+        try:
+            shutil.copytree(adapter_path, tmpdirname)
+        except OSError as e:
+            print(f"Error: {e}")
+        mid_lora_path = os.path.join(tmpdirname, "adapter_model.bin")
 
-lora_path = os.path.join(lora_path, "adapter_model.bin")
+        adapter_path = os.path.join(adapter_path, "adapter_model.bin")
 
-# # model = torch.load(base_path, map_location='cpu')
-base_model = AutoModelForCausalLM.from_pretrained(
-        base_path,
-        # load_in_low_bit="nf4", # should load the orignal model
-        torch_dtype=torch.float16,
-        device_map={"": "cpu"},
-    )
-lora = torch.load(lora_path, map_location='cpu')
-tmp_keys = [key[17:-14] for key in lora.keys() if 'lora_A' in key]
+        lora = torch.load(adapter_path, map_location='cpu')
+        tmp_keys = [key[17:-14] for key in lora.keys() if 'lora_A' in key]
 
-for tmp_key in tmp_keys:
-    a = lora['base_model.model.'+tmp_key+'.lora_A.weight']
-    # b = lora['base_model.model.'+tmp_key+'.lora_B.weight']
-    lora['base_model.model.'+tmp_key+'.lora_A.weight'] = torch.repeat_interleave(a, 64, dim=1) * lora_scale / 64
-    # lora['base_model.model.'+tmp_key+'.lora_B.weight'] = torch.repeat_interleave(b, 64, dim=0) * lora_scale / 64
+        for tmp_key in tmp_keys:
+            a = lora['base_model.model.'+tmp_key+'.lora_A.weight'] / 64
+            lora['base_model.model.'+tmp_key+'.lora_A.weight'] = torch.repeat_interleave(a, 64, dim=1)
 
-torch.save(lora, mid_lora_path)
+        torch.save(lora, mid_lora_path)
 
-# lora2 = torch.load(mid_lora_path, map_location='cpu')
-# for tmp_key in tmp_keys:
-#     a = lora['base_model.model.'+tmp_key+'.lora_A.weight']
-#     b = lora['base_model.model.'+tmp_key+'.lora_B.weight']
-#     print(f"{tmp_key}, lora a size: {a.shape}, lora b size: {b.shape}")
+        tokenizer = LlamaTokenizer.from_pretrained(base_model)
+        base_model = AutoModelForCausalLM.from_pretrained(
+                base_model,
+                # load_in_low_bit="nf4", # should load the orignal model
+                torch_dtype=torch.float16,
+                device_map={"": "cpu"},
+            )
 
-lora_model = PeftModel.from_pretrained(
-        base_model,
-        mid_path,
-        device_map={"": "cpu"},
-        torch_dtype=torch.float16,
-    )
+        lora_model = PeftModel.from_pretrained(
+                base_model,
+                tmpdirname,
+                device_map={"": "cpu"},
+                torch_dtype=torch.float16,
+            )
 
-lora_model = lora_model.merge_and_unload()
+        lora_model = lora_model.merge_and_unload()
 
-lora_model.train(False)
+        lora_model.train(False)
 
-lora_model_sd = lora_model.state_dict()
-deloreanized_sd = {
-    k.replace("base_model.model.", ""): v
-    for k, v in lora_model_sd.items()
-    if "lora" not in k
-}
+        lora_model_sd = lora_model.state_dict()
+        deloreanized_sd = {
+            k.replace("base_model.model.", ""): v
+            for k, v in lora_model_sd.items()
+            if "lora" not in k
+        }
+
+        base_model.save_pretrained(args.output_path, state_dict=deloreanized_sd)
+        tokenizer.save_pretrained(args.output_path)

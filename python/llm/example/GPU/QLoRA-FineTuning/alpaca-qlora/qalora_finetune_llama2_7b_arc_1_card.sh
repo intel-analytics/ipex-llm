@@ -15,20 +15,19 @@
 #
 
 # You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
-source /home/wangruonan/intel/oneapi/setvars.sh --force
-# export ONEAPI_DEVICE_SELECTOR=level_zero:6
-# sycl-ls
-export PYTHONPATH=/home/wangruonan/yina/BigDL/python/llm/src
+source /opt/intel/oneapi/setvars.sh
+export PYTHONPATH=/home/arda/yina/BigDL/python/llm/src
 
-python ./alpaca_qalora_finetuning.py \
-    --base_model "/home/wangruonan/models/Llama-2-13b-chat-hf" \
-    --data_path "/home/wangruonan/yina/alpaca-cleaned" \
+python ./alpaca_qlora_finetuning.py \
+    --base_model "/mnt/disk1/models/Llama-2-7b-chat-hf" \
+    --data_path "/mnt/disk1/data/alpaca-cleaned" \
     --output_dir "./bigdl-qalora-alpaca-2" \
     --learning_rate 9e-5 \
-    --micro_batch_size 8 \
+    --micro_batch_size 2 \
     --batch_size 128 \
     --gradient_checkpointing False \
     --lora_r 8 \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
-    --val_set_size 2000
+    --val_set_size 2000 \
+    --qalora True
