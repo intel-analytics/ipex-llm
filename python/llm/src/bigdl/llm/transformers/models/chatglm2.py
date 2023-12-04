@@ -240,19 +240,8 @@ def chatglm2_attention_forward_8eb45c(
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
     if self.multi_query_attention:
-        key_length = key_layer.size(0)
-        key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
-        key_layer = key_layer.expand(-1, -1, 1, -1, -1)
-        key_layer = key_layer.contiguous().view((batch_size,
-                                                 self.num_multi_query_groups_per_partition,
-                                                 key_length,
-                                                 self.hidden_size_per_attention_head))
-        value_layer = value_layer.permute(1, 2, 0, 3).unsqueeze(-3)
-        value_layer = value_layer.expand(-1, -1, 1, -1, -1)
-        value_layer = value_layer.contiguous().view((batch_size,
-                                                     self.num_multi_query_groups_per_partition,
-                                                     key_length,
-                                                     self.hidden_size_per_attention_head))
+        key_layer = key_layer.permute(1, 2, 0, 3) # [bs, nh/k, sl, hn]
+        value_layer = value_layer.permute(1, 2, 0, 3) # [bs, nh/k, sl, hn]
 
     # adjust key and value for inference
     if kv_cache is not None:
@@ -300,6 +289,8 @@ def chatglm2_attention_forward_8eb45c(
     # core attention computation
     # ==================================
     if self.multi_query_attention:
+        # [bs, nh/k, sl, hn] --> [bs, nh, sl, hn]
+        # expend key_layer/value_layer for core attention computation
         query_group_size = self.num_attention_heads_per_partition // \
             self.num_multi_query_groups_per_partition
         key_layer = key_layer.unsqueeze(-3)
@@ -309,7 +300,6 @@ def chatglm2_attention_forward_8eb45c(
                                                  self.num_attention_heads_per_partition,
                                                  save_length,
                                                  self.hidden_size_per_attention_head))
-
         value_layer = value_layer.unsqueeze(-3)
         value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
         value_layer = value_layer.contiguous().view((batch_size,
