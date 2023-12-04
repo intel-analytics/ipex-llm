@@ -193,7 +193,7 @@ jobs:
         with:
           name: harness_results
           path:
-            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/*.json
+            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/**
 
       - name: echo single result
         shell: bash
