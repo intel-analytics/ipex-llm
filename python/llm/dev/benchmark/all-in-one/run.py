@@ -76,7 +76,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
                             num_beams,
                             low_bit,
-                            cpu_embedding,
+                            cpu_embedding if 'win' in test_api else 'N/A',
                             result[in_out_pair][-1][5] if 'win' in test_api else 'N/A']) # currently only peak mem for win gpu is caught here
 
 
