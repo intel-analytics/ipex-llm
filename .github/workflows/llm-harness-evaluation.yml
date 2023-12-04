@@ -105,7 +105,7 @@ jobs:
 
       - name: Compare with golden accuracy
         shell: bash
-        
+        if: ${{github.event_name == 'schedule'}}
         working-directory: ${{ github.workspace }}/python/llm
         run: |
           python test/benchmark/harness_nightly/accuracy_regression.py dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json test/benchmark/harness_nightly/golden_results.json
