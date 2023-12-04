@@ -91,6 +91,7 @@ jobs:
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "task=$task" >> $GITHUB_OUTPUT
+            echo 'runner=$runner' >> $GITHUB_OUTPUT
   llm-harness-evalution:
     timeout-minutes: 1000
     needs: [llm-cpp-build, set-matrix]
