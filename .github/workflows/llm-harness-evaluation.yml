@@ -32,7 +32,7 @@ on:
       runs-on:
         description: 'Labels to filter the runners.'
         default: 'accuracy'
-        required: true
+        required: false
         type: string
 
 
