@@ -26,7 +26,7 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the large language model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default="fp4",
-                        choices=['fp8', 'sym_int8', 'fp4', 'mixed_fp8', 'mixed_fp4'],
+                        choices=['fp8', 'sym_int8', 'fp4', 'sym_int4', 'mixed_fp8', 'mixed_fp4'],
                         help='The quantization type the model will convert to.')
     parser.add_argument('--save-path', type=str, default=None,
                         help='The path to save the low-bit model.')
