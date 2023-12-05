@@ -136,16 +136,12 @@ def train(
     prompter = Prompter(prompt_template_name)
 
     device_map = "auto"
-    pmi_world_size = int(os.environ.get('PMI_SIZE', -1))
-    if pmi_world_size > 0:
-        os.environ['WORLD_SIZE'] = str(pmi_world_size)
-    world_size = 1 if pmi_world_size == 0 else pmi_world_size
-    print(f"world_size: {world_size}")
-    ddp = world_size != 1
-    if ddp:
-        device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
-        gradient_accumulation_steps = gradient_accumulation_steps // world_size
-    else: # Local mode
+    if os.environ.get("LOCAL_POD_NAME", "") != "": # K8S dist
+        pmi_world_size = int(os.environ.get('PMI_SIZE', -1))
+        if pmi_world_size > 0:
+            os.environ['WORLD_SIZE'] = str(pmi_world_size)
+        world_size = 1 if pmi_world_size == 0 else pmi_world_size
+    else: # Standalone (centralized or multi-process)
         local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
         world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
         port = get_int_from_env(["MASTER_PORT"], 29500)
@@ -153,6 +149,12 @@ def train(
         os.environ["WORLD_SIZE"] = str(world_size)
         os.environ["RANK"] = str(local_rank)
         os.environ["MASTER_PORT"] = str(port)
+    
+    print(f"world_size: {world_size}")
+    ddp = world_size != 1
+    if ddp:
+        device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
+        gradient_accumulation_steps = gradient_accumulation_steps // world_size
 
     # Check if parameter passed or if set within environ
     use_wandb = len(wandb_project) > 0 or (
