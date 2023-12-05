@@ -171,7 +171,13 @@ jobs:
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
-          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device ${{ matrix.device }} --tasks ${{ matrix.task }} --batch_size 1 --no_cache --output_path results
+          python run_llb.py \
+          --model bigdl-llm \
+          --pretrained ${MODEL_PATH} \
+          --precision ${{ matrix.precision }} \
+          --device ${{ matrix.device }} \
+          --tasks ${{ matrix.task }} \
+          --batch_size 1 --no_cache --output_path results
 
 
       - name: Compare with golden accuracy
@@ -179,8 +185,45 @@ jobs:
         if: ${{github.event_name == 'schedule'}}
         working-directory: ${{ github.workspace }}/python/llm
         run: |
-          python test/benchmark/harness_nightly/accuracy_regression.py dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json test/benchmark/harness_nightly/golden_results.json
-
-          
-
+          python test/benchmark/harness_nightly/accuracy_regression.py \
+          dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json \
+          test/benchmark/harness_nightly/golden_results.json
         
+      - uses: actions/upload-artifact@v3
+        with:
+          name: harness_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/**
+
+      - name: echo single result
+        shell: bash
+        
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/
+        run: |
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json
+
+  llm-harness-summary:
+    if: ${{ always() }}
+    needs: llm-harness-evalution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: harness_results
+          path: results          
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py results
