@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# The code is adapted from: https://www.kaggle.com/code/simjeg/platypus2-70b-without-wikipedia-rag.
+#
 
 import argparse
 import gc
@@ -25,7 +27,6 @@ import intel_extension_for_pytorch as ipex
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from optimum.bettertransformer import BetterTransformer
 from safetensors.torch import load_file, save_file
 from tqdm.auto import tqdm
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
@@ -223,7 +224,6 @@ class LowMemoryLlama(GenerationMixin):
         with init_empty_weights():
             self.model = AutoModelForCausalLM.from_config(self.config)
             self.model = optimize_model(self.model)
-            self.model = BetterTransformer.transform(self.model)
             self.model.tie_weights()
 
         self.layers = [self.model.model.embed_tokens] + list(self.model.model.layers) \
@@ -325,9 +325,9 @@ if __name__ == '__main__':
                         help='Whether to split weights by layer. If this argument is enabled, per-layer weights will'
                              ' be generated and saved to `--splitted-weights-path`. This argument only needs to be'
                              ' enabled once for the same model.')
-    parser.add_argument('--max-cache-num', type=int, default=100,
+    parser.add_argument('--max-cache-num', type=int, default=200,
                         help='The maximum number of weights saved in the cache_dict. You can adjust this'
-                         ' number based on your GPU memory. Default is 100.')
+                         ' number based on your GPU memory. Default is 200.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
