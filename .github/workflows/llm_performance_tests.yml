@@ -309,7 +309,6 @@ jobs:
           move ..\..\..\test\benchmark\32-igpu-perf-test-434.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move *.csv %CSV_SAVE_PATH%\32\
 
           call conda deactivate
 
