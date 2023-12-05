@@ -109,7 +109,7 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
-    qalora: bool = False, # if True, use qa-lora https://github.com/yuhuixu1993/qa-lora/
+    qa_lora: bool = False, # if True, use qa-lora https://arxiv.org/abs/2309.14717
 ):
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
@@ -136,7 +136,7 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
-            f"qalora: {qalora}\n"
+            f"qa_lora: {qa_lora}\n"
         )
     assert (
         base_model
@@ -175,7 +175,7 @@ def train(
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
         # Default 4-bit format for qa-lora is sym_int4
-        low_bit_format = "sym_int4" if qalora else "nf4" 
+        low_bit_format = "sym_int4" if qa_lora else "nf4" 
         # Load the base model from a directory or the HF Hub to 4-bit format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
@@ -257,7 +257,7 @@ def train(
         lora_dropout=lora_dropout,
         bias="none",
         task_type="CAUSAL_LM",
-        qa_lora=qalora,
+        qa_lora=qa_lora,
     )
     print(f"Lora Config: {config}")
     model = get_peft_model(model, config)
@@ -301,7 +301,7 @@ def train(
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            lr_scheduler_type="cosine",
+            lr_scheduler_type="constant" if qa_lora else "cosine",
             bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",

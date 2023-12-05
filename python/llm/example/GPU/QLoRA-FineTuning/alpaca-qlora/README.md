@@ -1,6 +1,6 @@
-# Alpaca QLoRA & QALora Finetuning (experimental support)
+# Alpaca QLoRA & QA-LoRA Finetuning (experimental support)
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) and [QALora](https://github.com/yuhuixu1993/qa-lora/) to BigDL-LLM QLoRA on [Intel GPUs](../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314) or [QA-LoRA](https://arxiv.org/abs/2309.14717) algorithm) on [Intel GPU](../../README.md).
 
 ### 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
@@ -28,7 +28,7 @@ source /opt/intel/oneapi/setvars.sh
 
 Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device:
 
-#### QLora
+#### QLoRA
 
 ##### Finetuning LLaMA2-7B on single Arc A770
 
@@ -78,7 +78,7 @@ bash finetune_llama2_7b_pvc_1550_1_card.sh
 bash finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
-#### QALora
+#### QA-LoRA
 ##### Finetuning LLaMA2-7B on single Arc A770
 
 ```bash
@@ -120,16 +120,8 @@ python ./alpaca_qlora_finetuning.py \
 ```
 
 ### 4. Merge the adapter into the original model
-
-#### QLora
-
 ```
 python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
-```
-
-#### QALora
-```
-python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged --qalora
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.

@@ -158,7 +158,7 @@ from dataclasses import dataclass, field
 @dataclass
 class LoraConfig(LoraConfigBase):
 
-    qa_lora: bool = field(default=False, metadata={"help": "enable qa lora"})
+    qa_lora: bool = field(default=False, metadata={"help": "enable qa-lora"})
 
 
 def get_peft_model(*args, **kwargs):
