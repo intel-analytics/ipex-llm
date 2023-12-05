@@ -53,6 +53,14 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.utils.isa_checker import ISAChecker
 
+def get_int_from_env(env_keys, default):
+    """Returns the first positive env value found in the `env_keys` list or the default."""
+    for e in env_keys:
+        val = int(os.environ.get(e, -1))
+        if val >= 0:
+            return val
+    return default
+
 def train(
     # model/data params
     base_model: str = "meta-llama/Llama-2-7b-hf",  # the only required argument, default to be "meta-llama/Llama-2-7b-hf"
@@ -132,11 +140,19 @@ def train(
     if pmi_world_size > 0:
         os.environ['WORLD_SIZE'] = str(pmi_world_size)
     world_size = 1 if pmi_world_size == 0 else pmi_world_size
-    print(f"world_size: {world_size}!!")
+    print(f"world_size: {world_size}")
     ddp = world_size != 1
     if ddp:
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
         gradient_accumulation_steps = gradient_accumulation_steps // world_size
+    else: # Local mode
+        local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
+        world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+        port = get_int_from_env(["MASTER_PORT"], 29500)
+        os.environ["LOCAL_RANK"] = str(local_rank)
+        os.environ["WORLD_SIZE"] = str(world_size)
+        os.environ["RANK"] = str(local_rank)
+        os.environ["MASTER_PORT"] = str(port)
 
     # Check if parameter passed or if set within environ
     use_wandb = len(wandb_project) > 0 or (
@@ -230,7 +246,7 @@ def train(
         return tokenized_full_prompt
 
     # Prepare a BigDL-LLM compatible Peft model
-    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False) #gradient_checkpointing)
+    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=gradient_checkpointing)
 
     config = LoraConfig(
         r=lora_r,
@@ -295,7 +311,7 @@ def train(
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
             lr_scheduler_type="cosine",
-            bf16=True,  # ensure training more stable
+            bf16=bf16_flag,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
@@ -311,7 +327,7 @@ def train(
             run_name=wandb_run_name if use_wandb else None,
             gradient_checkpointing=gradient_checkpointing,
             gradient_checkpointing_kwargs={"use_reentrant": False},
-            ddp_backend="ccl",
+            ddp_backend="ccl" if ddp else None,
     )
 
     trainer = transformers.Trainer(
