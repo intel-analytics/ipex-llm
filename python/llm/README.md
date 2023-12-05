@@ -39,7 +39,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Model      | CPU Example                                                    | GPU Example                                                     |
 |------------|----------------------------------------------------------------|-----------------------------------------------------------------|
 | LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](example/GPU/HF-Transformers-AutoModels/Model/vicuna)|
-| LLaMA 2    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](example/GPU/HF-Transformers-AutoModels/Model/llama2) |
+| LLaMA 2    | [link1](example/CPU/Native-Models), [link2](example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link1](example/GPU/HF-Transformers-AutoModels/Model/llama2), [link2-low GPU memory example](example/GPU/PyTorch-Models/Model/llama2#example-2---low-memory-version-predict-tokens-using-generate-api) |
 | ChatGLM    | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
 | ChatGLM2   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm2)   |
 | ChatGLM3   | [link](example/CPU/HF-Transformers-AutoModels/Model/chatglm3)  | [link](example/GPU/HF-Transformers-AutoModels/Model/chatglm3)   |
