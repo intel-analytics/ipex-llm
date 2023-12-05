@@ -269,7 +269,8 @@ jobs:
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf-test.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/32-igpu-perf-test.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/512-igpu-perf-test.yaml
 
       - name: Test on igpu
         shell: cmd
@@ -281,9 +282,9 @@ jobs:
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
-          move python\llm\test\benchmark\igpu-perf-test.yaml python\llm\dev\benchmark\all-in-one\config.yaml
+          move python\llm\test\benchmark\512-igpu-perf-test.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          python run.py >> %LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -292,7 +293,9 @@ jobs:
         shell: bash
         run: |
           sed -i 's/test1/test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf-test-434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/32-igpu-perf-test-434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/512-igpu-perf-test-434.yaml
+
 
       - name: Test on igpu for Mistral
         shell: cmd
@@ -304,9 +307,9 @@ jobs:
           set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
 
-          move python\llm\test\benchmark\igpu-perf-test-434.yaml python\llm\dev\benchmark\all-in-one\config.yaml
+          move python\llm\test\benchmark\512-igpu-perf-test-434.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          python run.py >> %LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -317,7 +320,6 @@ jobs:
           call conda activate igpu-perf
 
           cd python\llm\dev\benchmark\all-in-one
-          move %LOG_FILE% %CSV_SAVE_PATH%\log\
           python ..\..\..\test\benchmark\concat_csv.py
           copy *.csv %CSV_SAVE_PATH%
           del /q *.csv
