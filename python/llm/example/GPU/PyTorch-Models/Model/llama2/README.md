@@ -70,10 +70,12 @@ AI, or artificial intelligence, refers to the ability of machines to perform tas
 
 ## Example 2 - Low Memory Version: Predict Tokens using `generate()` API
 
-Sometimes your GPU does not have enough memory to load the entire 4-bit model in your GPU (e.g. [meta-llama/Llama-2-70b-chat-hf](https://huggingface.co/meta-llama/Llama-2-70b-chat-hf)). In the example [low_memory_generate.py](./low_memory_generate.py), we show one way of how to load Llama models with very low GPU memory consumption. However this could be much slower than the original way. The implementation is adapted from [here](https://www.kaggle.com/code/simjeg/platypus2-70b-without-wikipedia-rag).
+If you're not able to load the full 4-bit model (e.g. [meta-llama/Llama-2-70b-chat-hf](https://huggingface.co/meta-llama/Llama-2-70b-chat-hf)) in one GPU as shown in [Example 1](#example-1---basic-version-predict-tokens-using-generate-api), you may try this example instead.
+
+In [low_memory_generate.py](./low_memory_generate.py), we show a way to load very large models with very low GPU memory footprint. However this could be much slower than the standard way. The implementation is adapted from [here](https://www.kaggle.com/code/simjeg/platypus2-70b-without-wikipedia-rag).
 
 ### 1. Environment setup
-Please refer to [example 1](#example-1---basic-version-predict-tokens-using-generate-api) for more information.
+Please refer to [Example 1](#example-1---basic-version-predict-tokens-using-generate-api) for more information.
 
 ### 2. Run
 
@@ -81,7 +83,7 @@ Please refer to [example 1](#example-1---basic-version-predict-tokens-using-gene
 python ./low_memory_generate.py --split-weight --splitted-weights-path ${SPLITTED_WEIGHTS_PATH}
 ```
 
-In the example, besides arguments in [example 1](#3-run), several other arguments can be passed to satisfy your requirements:
+In the example, besides arguments in [Example 1](#3-run), several other arguments can be passed to satisfy your requirements:
 
 - `--splitted-weights-path`: argument defining folder saving per-layer weights.
 - `--split-weight`: argument defining whether to split weights by layer. If this argument is enabled, per-layer weights will be generated and saved to `--splitted-weights-path`. This argument only needs to be enabled once for the same model.
