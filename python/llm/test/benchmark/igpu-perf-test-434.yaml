@@ -7,7 +7,7 @@ num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 in_out_pairs:
   - '32-32'
-  - '512-64'
+  # - '512-64'
   # - '1024-128'
 test_api:
   # - "transformer_int4"
