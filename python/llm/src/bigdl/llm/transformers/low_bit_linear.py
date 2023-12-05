@@ -59,7 +59,7 @@ import ctypes
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 IS_SERVER = is_server()
 IS_SPR = is_spr()
-TORCH_LINEAR_THRESHOLD = 96
+TORCH_LINEAR_THRESHOLD = int(os.getenv("BIGDL_LLM_LINEAR_THRESHOLD", "512"))
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 ASYM_INT4 = ggml_tensor_qtype["asym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
