@@ -249,6 +249,7 @@ jobs:
 
           pip install %whl_name%[xpu] -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          pip list
 
           call conda deactivate
 
@@ -367,8 +368,9 @@ jobs:
 
           call conda deactivate
 
-      - name: Remove conda env
-        if: ${{ always() }}
-        shell: cmd
-        run: |
-          call conda env remove -n igpu-perf -y
+      # for test on machine when encountering error
+      # - name: Remove conda env
+      #   if: ${{ always() }}
+      #   shell: cmd
+      #   run: |
+      #     call conda env remove -n igpu-perf -y
