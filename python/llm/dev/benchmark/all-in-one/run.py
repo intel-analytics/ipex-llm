@@ -751,6 +751,7 @@ def run_transformer_int4_gpu_win_with_bf16_nonlinear(repo_id,
                                                      num_beams,
                                                      low_bit,
                                                      cpu_embedding):
+    print("run_transformer_int4_gpu_win_with_bf16_nonlinear")
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
