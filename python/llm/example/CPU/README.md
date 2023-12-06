@@ -18,6 +18,13 @@ This folder contains examples of running BigDL-LLM on Intel CPU:
 - Intel® Xeon® processors
 
 **Operating System**:
-- Ubuntu 20.04 or later
-- CentOS 7 or later
+- Ubuntu 20.04 or later (glibc>=2.17)
+- CentOS 7 or later (glibc>=2.17)
 - Windows 10/11, with or without WSL
+
+## Best Known Configuration on Linux
+For better performance, it is recommended to set environment variables on Linux with the help of BigDL-LLM:
+```bash
+pip install bigdl-llm
+source bigdl-llm-init
+```
