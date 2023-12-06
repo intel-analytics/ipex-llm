@@ -35,6 +35,7 @@ from transformers.generation.logits_process import (
     TopPLogitsWarper,
 )
 
+import pdb
 
 logger = init_logger(__name__)
 
@@ -172,7 +173,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             bigdl_attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
             kwargs = {
                 "input_ids": bigdl_input_ids,
-                "position_ids": bigdl_position_ids,
+                # "position_ids": bigdl_position_ids,
                 "attention_mask": bigdl_attention_mask,
                 "past_key_values": bigdl_kv_cache,
                 "use_cache": True,
@@ -199,6 +200,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # self.last_kv_cache = outputs.past_key_values
         self._set_last_seq_ids(cur_seq_ids[:])
         self._set_last_kv_cache(outputs.past_key_values)
+        # pdb.set_trace()
 
         logits = outputs.logits[:, -1, :]
         bigdl_output = self.sampler(logits, input_metadata, st_timestamp)
