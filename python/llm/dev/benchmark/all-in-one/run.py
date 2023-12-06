@@ -19,6 +19,7 @@
 import torch
 import time
 import gc
+import traceback
 
 import numpy as np
 from datetime import date
@@ -733,6 +734,7 @@ def run_transformer_int4_gpu_win(repo_id,
                                             actual_in_len, actual_out_len, gpu_peak_mem])
                     torch.xpu.empty_cache()
             except RuntimeError:
+                traceback.print_exc()
                 pass
     model.to('cpu')
     torch.xpu.synchronize()
