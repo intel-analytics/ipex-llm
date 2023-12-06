@@ -110,7 +110,7 @@ class BigDLModelForCausalLM(nn.Module):
             bigdl_kv_cache = []
             max_kv_len = max(kv_cache[0][0][processed_seq_id].size(dim=1) for processed_seq_id in cur_seq_ids)
             # TODO: decide whether we need this max_seq_limit
-            max_kv_len = max(max_kv_len, max_seq_limit)
+            max_kv_len = min(max_kv_len, max_seq_limit)
             for layer in range(num_layers):
                 cur_list = []
                 for kv in range(kv_cache_size_1):
