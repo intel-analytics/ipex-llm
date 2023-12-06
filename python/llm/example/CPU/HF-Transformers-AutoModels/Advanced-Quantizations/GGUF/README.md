@@ -5,6 +5,9 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
+**Important: Please make sure you have installed `transformers==4.33.0` to run the example.**
+
+
 ## Example: Load gguf model using `from_gguf()` API
 In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `bigdl-llm` using `from_gguf()` API, with BigDL-LLM optimizations.
 
