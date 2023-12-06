@@ -1,5 +1,5 @@
 # Loading GGUF models
-In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) and [llama-2-7b-chat.Q4_1.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as reference LLaMA2 GGUF models.
+In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as a reference LLaMA2 GGUF model.
 >Note: Only LLaMA2 family models are currently supported
 
 ## Requirements
