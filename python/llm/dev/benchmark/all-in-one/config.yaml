@@ -21,4 +21,5 @@ test_api:
   # - "optimize_model_gpu"  # on Intel GPU
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
   # - "transformer_int4_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
+  # - "transformer_int4_gpu_win_with_bf16_nonlinear" # on Intel GPU for Windows with bf16 for non-linear layers (catch GPU peak memory)
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
