@@ -3,7 +3,7 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 >Note: Only LLaMA2 family models are currently supported
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
 
 **Important: Please make sure you have installed `transformers==4.33.0` to run the example.**
 
