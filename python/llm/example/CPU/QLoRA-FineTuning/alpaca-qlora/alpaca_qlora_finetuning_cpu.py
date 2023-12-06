@@ -328,7 +328,7 @@ def train(
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
             gradient_checkpointing=gradient_checkpointing,
-            gradient_checkpointing_kwargs={"use_reentrant": False},
+            gradient_checkpointing_kwargs={"use_reentrant": False} if gradient_checkpointing else None,
             ddp_backend="ccl" if ddp else None,
     )
 
