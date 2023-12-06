@@ -40,7 +40,16 @@ logger = init_logger(__name__)
 
 
 def _pad_to_max(x: List[int], max_len: int, padding_id: int = 0) -> List[int]:
-    return x + [padding_id] * (max_len - len(x))
+    return [padding_id] * (max_len - len(x)) + x
+
+
+def _get_attention_mask_for_prompts(
+    input_ids: List[List[int]], max_prompt_len: int
+) -> List[List[int]]:
+    attention_mask = [
+        [0] * (max_prompt_len - len(prompt)) + [1] * len(prompt) for prompt in input_ids
+    ]
+    return attention_mask
 
 
 class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
@@ -105,7 +114,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
     ) -> Tuple[torch.Tensor, List[Tuple[torch.Tensor, torch.Tensor]]]:
         num_layers = self.model.config.num_hidden_layers
         # One for key, one for value
-        kv_cache_size_1 = 2
+        decoder_kv_size = 2
 
         bigdl_input_ids = []
         bigdl_position_ids = []
@@ -138,8 +147,9 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
 
         if is_decoding_stage:
             bigdl_kv_cache = self.prepare_kv_cache(cur_seq_ids, seq_group_meta_data_lists,
-                                                   kv_cache, num_layers, kv_cache_size_1)
+                                                   kv_cache, num_layers, decoder_kv_size)
         else:
+            bigdl_attention_mask = _get_attention_mask_for_prompts(bigdl_input_ids, max_prompt_len)
             bigdl_input_ids = [
                 _pad_to_max(input_ids, max_prompt_len, self.pad_token_id)
                 for input_ids in bigdl_input_ids
@@ -157,6 +167,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 bigdl_attention_mask.append(cur_attention_mask)
 
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
+
         if is_decoding_stage:
             bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
             bigdl_attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
@@ -171,6 +182,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         else:
             kwargs = {
                 "input_ids": bigdl_input_ids,
+                "attention_mask": torch.tensor(bigdl_attention_mask, device=self.device),
                 # "position_ids": bigdl_position_ids,
                 "past_key_values": None,
                 "use_cache": True,
@@ -195,7 +207,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # logger.info(f"before: {tmp['allocated_bytes.all.current']}")
 
         self.update_kv_cache(cur_seq_ids,
-                             kv_cache, num_layers, kv_cache_size_1)
+                             kv_cache, num_layers, decoder_kv_size)
 
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"after: {tmp['allocated_bytes.all.current']}")
