@@ -16,42 +16,40 @@ After installing conda, create a Python environment for BigDL-LLM:
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
-pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install --upgrade transformers==4.33.0  # upgrade transformers
 ```
 
-### 2. Run
-After setting up the Python environment, you could run the example by following steps.
+### 2. Configures OneAPI environment variables
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
 
-#### 2.1 Client
-On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+### 3. Run
+
+For optimal performance on Arc, it is recommended to set several environment variables.
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
+```
 python ./generate.py --model <path_to_gguf_model> --prompt 'What is AI?'
 ```
-More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
-#### 2.2 Server
-For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration-on-linux) for more information), and run the example with all the physical cores of a single socket.
+More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.
 
-E.g. on Linux,
-```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
-
-# e.g. for a server with 48 cores per socket
-export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py --model <path_to_gguf_model> --prompt 'What is AI?'
-```
-More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
-
-#### 2.3 Arguments Info
+#### 3.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--model`: path to GGUF model, it should be a file with name like `llama-2-7b-chat.Q4_0.gguf`
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-#### 2.4 Sample Output
+#### 3.4 Sample Output
 #### [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
 ```log
 Inference time: xxxx s
