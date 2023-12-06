@@ -62,6 +62,24 @@ def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: 
     return out
 
 
+def bloom_layer_norm_forward(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        print("fused layer norm")
+        import linear_q4_0
+        hidden_states = linear_q4_0.fused_layer_norm(hidden_states,
+                                                     [self.weight.size(0)],
+                                                     self.weight,
+                                                     None,
+                                                     self.eps)
+    else:
+        input_dtype = hidden_states.dtype
+        hidden_states = hidden_states.to(torch.float32)
+        mu = hidden_states.mean(-1, keepdim=True)
+        sigma = hidden_states.std(-1, keepdim=True, unbiased=False)
+        return (hidden_states - mu) / sigma * self.weight
+    return hidden_states
+
+
 def bloom_attention_forward(
         self,
         hidden_states: torch.Tensor,

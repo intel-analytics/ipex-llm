@@ -452,11 +452,14 @@ def _optimize_post(model, lightweight_bmm=False):
     elif "bloom" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.bloom import bloom_attention_forward
+        from bigdl.llm.transformers.models.bloom import bloom_attention_forward, bloom_layer_norm_forward
         convert_forward(model,
                         module.BloomAttention,
                         bloom_attention_forward
                         )
+        convert_forward(model,
+                        module.LayerNorm,
+                        bloom_layer_norm_forward)
     elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
