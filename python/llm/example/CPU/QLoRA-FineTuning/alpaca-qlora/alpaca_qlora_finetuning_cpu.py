@@ -61,14 +61,6 @@ def get_int_from_env(env_keys, default):
             return val
     return default
 
-local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
-world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
-port = get_int_from_env(["MASTER_PORT"], 29500)
-os.environ["LOCAL_RANK"] = str(local_rank)
-os.environ["WORLD_SIZE"] = str(world_size)
-os.environ["RANK"] = str(local_rank)
-os.environ["MASTER_PORT"] = str(port)
-
 def train(
     # model/data params
     base_model: str = "meta-llama/Llama-2-7b-hf",  # the only required argument, default to be "meta-llama/Llama-2-7b-hf"
@@ -134,6 +126,7 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
+            f"gradient_checkpointing: {gradient_checkpointing}\n"
         )
     assert (
         base_model
@@ -143,7 +136,21 @@ def train(
     prompter = Prompter(prompt_template_name)
 
     device_map = "auto"
-    world_size = int(os.environ.get("WORLD_SIZE", 1))
+    if os.environ.get("LOCAL_POD_NAME", "") != "": # K8S dist
+        pmi_world_size = int(os.environ.get('PMI_SIZE', -1))
+        if pmi_world_size > 0:
+            os.environ['WORLD_SIZE'] = str(pmi_world_size)
+        world_size = 1 if pmi_world_size == 0 else pmi_world_size
+    else: # Standalone (centralized or multi-process)
+        local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
+        world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+        port = get_int_from_env(["MASTER_PORT"], 29500)
+        os.environ["LOCAL_RANK"] = str(local_rank)
+        os.environ["WORLD_SIZE"] = str(world_size)
+        os.environ["RANK"] = str(local_rank)
+        os.environ["MASTER_PORT"] = str(port)
+    
+    print(f"world_size: {world_size}")
     ddp = world_size != 1
     if ddp:
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
@@ -176,7 +183,6 @@ def train(
             load_in_low_bit="sym_int4", # not support "nf4"
             optimize_model=False,
             torch_dtype=torch.bfloat16,
-            # device_map=device_map,
             modules_to_not_convert=["lm_head"],
         )
     print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
@@ -190,7 +196,7 @@ def train(
         0  # unk. we want this to be different from the eos token
     )
     tokenizer.padding_side = "left"  # Allow batched inference
-    
+
     print(model)
 
     def tokenize(prompt, add_eos_token=True):
@@ -322,11 +328,9 @@ def train(
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
             gradient_checkpointing=gradient_checkpointing,
+            gradient_checkpointing_kwargs={"use_reentrant": False} if gradient_checkpointing else None,
             ddp_backend="ccl" if ddp else None,
     )
-    if ddp:
-        from accelerate.state import PartialState
-        args.distributed_state = PartialState(cpu=True, backend=args.ddp_backend)
 
     trainer = transformers.Trainer(
         model=model,
@@ -351,3 +355,4 @@ def train(
 
 if __name__ == "__main__":
     fire.Fire(train)
+

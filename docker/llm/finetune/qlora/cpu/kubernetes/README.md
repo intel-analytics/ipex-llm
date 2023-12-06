@@ -1,4 +1,4 @@
-## Run NF4&BF16-quantized QLoRA Finetuning on Kubernetes with OneCCL
+## Run Distributed QLoRA Fine-Tuning on Kubernetes with OneCCL
 
 ![image](https://github.com/intel-analytics/BigDL/assets/60865256/825f47d9-c864-4f39-a331-adb1e3cb528e)
 
