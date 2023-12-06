@@ -249,6 +249,7 @@ jobs:
 
           pip install %whl_name%[xpu] -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          pip list
 
           call conda deactivate
 
@@ -263,15 +264,15 @@ jobs:
           cur_date=$(date +%Y-%m-%d)
           echo "LOG_FILE=${cur_date}_output.txt" >> "$GITHUB_ENV"
 
-      - name: Prepare igpu perf test
+      - name: Prepare igpu perf test (32)
         shell: bash
         run: |
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf-test.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/32-igpu-perf-test.yaml
 
-      - name: Test on igpu
+      - name: Test on igpu (32)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -281,20 +282,20 @@ jobs:
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
-          move python\llm\test\benchmark\igpu-perf-test.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          python run.py >> %LOG_FILE% 2>&1
+          move ..\..\..\test\benchmark\32-igpu-perf-test.yaml config.yaml
+          python run.py >> %CSV_SAVE_PATH%\32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Mistral
+      - name: Prepare igpu perf test for Mistral (32)
         shell: bash
         run: |
           sed -i 's/test1/test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf-test-434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/32-igpu-perf-test-434.yaml
 
-      - name: Test on igpu for Mistral
+      - name: Test on igpu for Mistral (32)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -304,31 +305,71 @@ jobs:
           set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
 
-          move python\llm\test\benchmark\igpu-perf-test-434.yaml python\llm\dev\benchmark\all-in-one\config.yaml
           cd python\llm\dev\benchmark\all-in-one
-          python run.py >> %LOG_FILE% 2>&1
+          move ..\..\..\test\benchmark\32-igpu-perf-test-434.yaml config.yaml
+          python run.py >> %CSV_SAVE_PATH%\32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Concat csv and generate html
+      - name: Concat csv and generate html (32)
         shell: cmd
         run: |
           call conda activate igpu-perf
 
           cd python\llm\dev\benchmark\all-in-one
-          move %LOG_FILE% %CSV_SAVE_PATH%\log\
           python ..\..\..\test\benchmark\concat_csv.py
-          copy *.csv %CSV_SAVE_PATH%
+          copy *.csv %CSV_SAVE_PATH%\32\
           del /q *.csv
           cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%
+          python csv_to_html.py -f %CSV_SAVE_PATH%\32\
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Remove conda env
-        if: ${{ always() }}
+      # TODO: create a action function here for different input
+      - name: Prepare igpu perf test (512)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test2/{today}/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/512-igpu-perf-test.yaml
+
+      - name: Test on igpu (512)
         shell: cmd
         run: |
-          call conda env remove -n igpu-perf -y
+          call conda activate igpu-perf
+          pip install transformers==4.31.0
+
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
+          set SYCL_CACHE_PERSISTENT=1
+          REM for llava
+          set TRANSFORMERS_OFFLINE=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\512-igpu-perf-test.yaml config.yaml
+          python run.py >> %CSV_SAVE_PATH%\512\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          call conda deactivate
+
+      - name: Generate html (512)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+
+          cd python\llm\dev\benchmark\all-in-one
+          copy *.csv %CSV_SAVE_PATH%\512\
+          del /q *.csv
+          cd ..\..\..\test\benchmark
+          python csv_to_html.py -f %CSV_SAVE_PATH%\512\
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          call conda deactivate
+
+      # for test on machine when encountering error
+      # - name: Remove conda env
+      #   if: ${{ always() }}
+      #   shell: cmd
+      #   run: |
+      #     call conda env remove -n igpu-perf -y
