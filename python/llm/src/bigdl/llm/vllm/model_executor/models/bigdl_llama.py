@@ -144,7 +144,6 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 bigdl_input_ids.append([cur_seq_input_ids[-1]])
         # 1. Assemble bigdl_input_ids end
 
-
         if is_decoding_stage:
             bigdl_kv_cache = self.prepare_kv_cache(cur_seq_ids, seq_group_meta_data_lists,
                                                    kv_cache, num_layers, decoder_kv_size)

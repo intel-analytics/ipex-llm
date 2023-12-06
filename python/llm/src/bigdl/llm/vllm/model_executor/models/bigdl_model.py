@@ -108,8 +108,8 @@ class BigDLModelForCausalLM(nn.Module):
         else:
             del self.last_kv_cache
             bigdl_kv_cache = []
-            max_kv_len = max(kv_cache[0][0][processed_seq_id].size(dim=1) for processed_seq_id in cur_seq_ids)
-            # TODO: decide whether we need this max_seq_limit
+            max_kv_len = max(kv_cache[0][0][processed_seq_id].size(dim=1)
+                             for processed_seq_id in cur_seq_ids)
             max_kv_len = min(max_kv_len, max_seq_limit)
             for layer in range(num_layers):
                 cur_list = []
@@ -126,7 +126,8 @@ class BigDLModelForCausalLM(nn.Module):
                         # Clean
                         kv_cache[layer][kv][processed_kv_cache] = None
                         if processed_kv_cache.size(dim=1) != max_kv_len:
-                            processed_kv_cache = _pad_kv_cache_view(processed_kv_cache, max_kv_len, self.device, 1)
+                            processed_kv_cache = _pad_kv_cache_view(processed_kv_cache, max_kv_len,
+                                                                    self.device, 1)
                             # Do padding
                         kv_list.append(processed_kv_cache)
                     current_layer_kv_cache = torch.stack(kv_list, dim=0)
