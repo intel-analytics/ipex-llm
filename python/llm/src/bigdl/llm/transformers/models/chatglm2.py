@@ -313,9 +313,11 @@ def chatglm2_attention_forward_8eb45c(
         key_layer = key_cache
         value_layer = value_cache
 
+    cache_key_layer = key_layer
+    cache_value_layer = value_layer
+
     if use_cache:
-        cache_key_layer = key_layer
-        cache_value_layer = value_layer
+        kv_cache = (key_layer, value_layer)
     else:
         kv_cache = None
 
