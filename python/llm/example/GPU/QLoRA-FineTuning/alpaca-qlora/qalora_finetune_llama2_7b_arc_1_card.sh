@@ -26,4 +26,4 @@ python ./alpaca_qlora_finetuning.py \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
     --val_set_size 2000 \
-    --qalora True
+    --qa_lora True

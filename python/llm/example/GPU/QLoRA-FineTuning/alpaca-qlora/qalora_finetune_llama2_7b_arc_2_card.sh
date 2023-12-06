@@ -31,4 +31,4 @@ mpirun -n 2 \
        --lora_alpha 16 \
        --lora_dropout 0.05 \
        --val_set_size 2000 \
-       --qalora True > training.log
+       --qa_lora True > training.log
