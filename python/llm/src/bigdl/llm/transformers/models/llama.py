@@ -96,7 +96,7 @@ def llama_rms_norm_forward(self, hidden_states):
         hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
         return self.weight * hidden_states.to(input_dtype)
 
-
+import linear_q4_0
 def llama_attention_forward_4_31(
     self,
     hidden_states: torch.Tensor,
@@ -120,55 +120,77 @@ def llama_attention_forward_4_31(
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype
-
-    if self.config.pretraining_tp > 1:
-        key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
-        query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-                                                // self.config.pretraining_tp, dim=0)
-        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
-        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
-
-        query_states = [F.linear(hidden_states, query_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        query_states = torch.cat(query_states, dim=-1)
-
-        key_states = [F.linear(hidden_states, key_slices[i])
-                      for i in range(self.config.pretraining_tp)]
-        key_states = torch.cat(key_states, dim=-1)
-
-        value_states = [F.linear(hidden_states, value_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        value_states = torch.cat(value_states, dim=-1)
-
+    
+    if hidden_states.shape[0] * hidden_states.shape[1] == 1:
+        hidden_states = hidden_states.view(1, -1)
+        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
+                                                                        hidden_states,
+                                                                        hidden_states,
+                                                                        self.q_proj.weight,
+                                                                        self.k_proj.weight,
+                                                                        self.v_proj.weight,
+                                                                        position_ids,
+                                                                        self.q_proj.weight.qtype,
+                                                                        hidden_states.shape[1],
+                                                                        self.num_heads,
+                                                                        self.head_dim,
+                                                                        )
+        # query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+        #                                                              key_states,
+        #                                                              position_ids,
+        #                                                             "llama")
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value[0].shape[-2]
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if self.config.pretraining_tp > 1:
+            key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
+            query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
+                                                    // self.config.pretraining_tp, dim=0)
+            key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
+            value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
 
-    query_states = query_states.view(bsz, q_len,
-                                     self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,
-                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+            query_states = [F.linear(hidden_states, query_slices[i])
+                            for i in range(self.config.pretraining_tp)]
+            query_states = torch.cat(query_states, dim=-1)
 
-    kv_seq_len = key_states.shape[-2]
-    if past_key_value is not None:
-        kv_seq_len += past_key_value[0].shape[-2]
+            key_states = [F.linear(hidden_states, key_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+            key_states = torch.cat(key_states, dim=-1)
 
-    use_fuse_rope = query_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
-    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+            value_states = [F.linear(hidden_states, value_slices[i])
+                            for i in range(self.config.pretraining_tp)]
+            value_states = torch.cat(value_states, dim=-1)
 
-    if use_fuse_rope:
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "llama")
-    else:
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids, "llama")
+        else:
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+
+        query_states = query_states.view(bsz, q_len,
+                                        self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                    self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                        self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value[0].shape[-2]
+
+        use_fuse_rope = query_states.device.type == "xpu"
+        use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+        use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+
+        if use_fuse_rope:
+            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                        key_states,
+                                                                        position_ids,
+                                                                        "llama")
+        else:
+            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, position_ids, "llama")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
