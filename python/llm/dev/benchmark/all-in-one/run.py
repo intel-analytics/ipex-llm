@@ -353,9 +353,6 @@ def run_transformer_int4_gpu(repo_id,
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True)
-        # from bigdl.llm.transformers import AutoModelForSeq2SeqLM
-        # model = AutoModelForSeq2SeqLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-        #                                              trust_remote_code=True, use_cache=True, modules_to_not_convert=["wo", "lm_head"])
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
