@@ -13,7 +13,7 @@
 
 ### Latest update
 - [2023/12] `bigdl-llm` now supports [FP8 and FP4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) on Intel ***GPU***.
-- [2023/11] Initial support for directly loading [GGUF](python/llm/example/CPU/GGUF-Models/llama2), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models in to `bigdl-llm` is available.
+- [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models in to `bigdl-llm` is available.
 - [2023/11] Initial support for [vLLM continuous batching](python/llm/example/CPU/vLLM-Serving) is availabe on Intel ***CPU***.
 - [2023/11] Initial support for [vLLM continuous batching](python/llm/example/GPU/vLLM-Serving) is availabe on Intel ***GPU***.
 - [2023/10] [QLoRA finetuning](python/llm/example/CPU/QLoRA-FineTuning) on Intel ***CPU*** is available.
