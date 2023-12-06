@@ -109,8 +109,8 @@ def is_linear_module(module):
 
 
 def convert_gptq(module, awq=False):
-    from bigdl.llm.transformers.low_bit_linear import get_ggml_qk_size
-    Q4_1 = get_ggml_qk_size("asym_int4")
+    from bigdl.llm.transformers.low_bit_linear import get_block_size
+    Q4_1 = get_block_size("asym_int4")
 
     scales = module.scales
 

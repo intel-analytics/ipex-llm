@@ -49,7 +49,7 @@
 # limitations under the License.
 
 import torch
-from bigdl.llm.transformers.low_bit_linear import LowBitLinear
+from bigdl.llm.transformers.low_bit_linear import LowBitLinear, get_qk_size
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import get_autocast_dtype
@@ -66,6 +66,7 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         r: int = 0,
         lora_alpha: int = 1,
         lora_dropout: float = 0.0,
+        qa_lora: bool = True,
         **kwargs,
     ):
         LowBitLinear.__init__(
@@ -76,7 +77,10 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
             bias=kwargs.get("bias", True),
             conver_to_half=False,
         )
-        LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
+
+        qk_size = get_qk_size(kwargs.get("qtype"))
+        lora_in_features = in_features // qk_size if qa_lora else in_features
+        LoraLayer.__init__(self, in_features=lora_in_features, out_features=out_features)
 
         # Freezing the pre-trained weight matrix
         self.weight.requires_grad = False
@@ -84,6 +88,10 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         init_lora_weights = kwargs.pop("init_lora_weights", True)
         self.update_layer(adapter_name, r, lora_alpha, lora_dropout, init_lora_weights)
         self.active_adapter = adapter_name
+        if qa_lora:
+            self.qa_pool = torch.nn.AvgPool1d(qk_size)
+        else:
+            self.qa_pool = torch.nn.Identity()
 
     def forward(self, x: torch.Tensor):
         autocast_dtype = get_autocast_dtype(x)
@@ -103,14 +111,16 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
                 x = x.to(self.lora_A[self.active_adapter].weight.dtype)
                 output = (
                     self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+                        self.lora_A[self.active_adapter](
+                            self.lora_dropout[self.active_adapter](self.qa_pool(x)))
                     ).to(expected_dtype)
                     * self.scaling[self.active_adapter]
                 )
             else:
                 output = (
                     self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](self.lora_dropout[self.active_adapter](x))
+                        self.lora_A[self.active_adapter](
+                            self.lora_dropout[self.active_adapter](self.qa_pool(x)))
                     )
                     * self.scaling[self.active_adapter]
                 )
@@ -126,6 +136,7 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
         low_bit_kwargs.update(
             {
                 "qtype": target.qtype,
+                "qa_lora": lora_config.qa_lora,
             }
         )
         new_module = LoraLowBitLinear(adapter_name,
@@ -140,6 +151,14 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
 
 
 from peft.tuners.lora import LoraModel
+from peft.tuners.lora import LoraConfig as LoraConfigBase
+from dataclasses import dataclass, field
+
+
+@dataclass
+class LoraConfig(LoraConfigBase):
+
+    qa_lora: bool = field(default=False, metadata={"help": "enable qa-lora"})
 
 
 def get_peft_model(*args, **kwargs):
@@ -356,6 +375,10 @@ def _setup_devices(self) -> "torch.device":
             if device.type == "cuda":
                 torch.cuda.set_device(device)
     return device
+
+from peft.mapping import PEFT_TYPE_TO_CONFIG_MAPPING
+
+PEFT_TYPE_TO_CONFIG_MAPPING["lora"] = LoraConfig
 
 # workaround a IPEX bug that prevents resume training in bf16
 from accelerate import Accelerator

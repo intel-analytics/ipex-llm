@@ -71,8 +71,12 @@ MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 
 
-def get_ggml_qk_size(qtype: str):
+def get_block_size(qtype: str):
     return ggml.ggml_qk_size(ggml_tensor_qtype[qtype])
+
+
+def get_qk_size(qtype: int):
+    return ggml.ggml_qk_size(qtype)
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
