@@ -112,7 +112,7 @@ if __name__ == "__main__":
         base_model.save_pretrained(args.output_path, state_dict=deloreanized_sd)
         tokenizer.save_pretrained(args.output_path)
     except Exception as e:
-        print(f"Failed to merget the adapter, error: {e}.")
+        print(f"Failed to merge the adapter, error: {e}.")
     finally:
         if qa_lora and temp_dir:
            temp_dir.cleanup()

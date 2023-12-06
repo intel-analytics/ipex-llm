@@ -162,7 +162,6 @@ class LoraConfig(LoraConfigBase):
 
 
 def get_peft_model(*args, **kwargs):
-
     old_create_new_module = LoraModel._create_new_module
     LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
                                                                   old_create_new_module))
