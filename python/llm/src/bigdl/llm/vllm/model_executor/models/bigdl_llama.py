@@ -186,6 +186,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 "use_cache": True,
                 # "return_dict": True,
             }
+            del self.last_kv_cache
         # pdb.set_trace()
 
         if self.device.type == 'xpu':
