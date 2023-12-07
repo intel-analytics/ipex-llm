@@ -7,7 +7,7 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [Mistral-7B-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-v0.1-AWQ)
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU#system-support) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a AWQ model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
