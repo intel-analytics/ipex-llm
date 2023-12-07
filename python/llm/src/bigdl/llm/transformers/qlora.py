@@ -165,6 +165,16 @@ def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
     LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
                                                                   old_create_new_module))
+    lora_config, in_args = (args[1], True) if len(args) > 1 else (kwargs.get("peft_config", 
+                                                                             LoraConfig()), False)
+    if not isinstance(lora_config, LoraConfig):
+        lora_config = LoraConfig(**lora_config.to_dict())
+        if in_args:
+            args = list(args)
+            args[1] = lora_config
+        else:
+            kwargs["peft_config"] = lora_config
+
     try:
         from peft import get_peft_model as get_peft_model_original
         model = get_peft_model_original(*args, **kwargs)
