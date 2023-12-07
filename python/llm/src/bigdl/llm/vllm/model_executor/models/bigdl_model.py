@@ -108,42 +108,31 @@ class BigDLModelForCausalLM(nn.Module):
         else:
             del self.last_kv_cache
             bigdl_kv_cache = []
-            max_kv_len = max(kv_cache[0][0][processed_seq_id].size(dim=1)
-                             for processed_seq_id in cur_seq_ids)
+            max_kv_len = max(
+                seq_group_meta_data.seq_data[next(iter(seq_group_meta_data.seq_data))].get_len()
+                for seq_group_meta_data in seq_group_meta_data_lists
+            )
             max_kv_len = min(max_kv_len, max_seq_limit)
-            for layer in range(num_layers):
+
+            for i in range(num_layers):
                 cur_list = []
-                for kv in range(kv_cache_size_1):
-                    kv_list = []
-                    # for seq_group_meta_data in seq_group_meta_data_lists:
-                    #     seq_ids = list(seq_group_meta_data.seq_data.keys())
-                    #     seq_id = seq_ids[0]
-                    #     # seq_data = seq_group_meta_data.seq_data[seq_id]
-                    #     view_size = [1] + list(kv_cache[layer][kv][seq_id].shape)
-                    #     kv_list.append(kv_cache[layer][kv][seq_id].view(view_size))
-                    for seq_id in cur_seq_ids:
-                        processed_kv_cache = kv_cache[layer][kv][seq_id]
-                        # Clean
-                        kv_cache[layer][kv][processed_kv_cache] = None
-                        if processed_kv_cache.size(dim=1) != max_kv_len:
-                            processed_kv_cache = _pad_kv_cache_view(processed_kv_cache, max_kv_len,
-                                                                    self.device, 1)
-                            # Do padding
-                        kv_list.append(processed_kv_cache)
-                    current_layer_kv_cache = torch.stack(kv_list, dim=0)
-                    kv_list.clear()
+                for j in range(kv_cache_size_1):
+                    views = []
+                    for seq_group_meta_data in seq_group_meta_data_lists:
+                        seq_ids = list(seq_group_meta_data.seq_data.keys())
+                        seq_id = seq_ids[0]
+                        view_size = [1] + list(kv_cache[i][j][seq_id].shape)
+                        views.append(kv_cache[i][j][seq_id].view(view_size))
 
-                    # kv_list = [_pad_kv_cache_view(v, max_kv_len, self.device) for v in kv_list]
-                    # cur_view = torch.cat(kv_list, dim=0)
+                    views = [_pad_kv_cache_view(v, max_kv_len, self.device) for v in views]
+                    cur_view = torch.cat(views, dim=0)
+                    cur_list.append(cur_view)
 
-                    # if cur_view.size(2) > max_seq_limit:
-                    #     cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
-                    cur_list.append(current_layer_kv_cache)
+                    for seq_group_meta_data in seq_group_meta_data_lists:
+                        seq_ids = list(seq_group_meta_data.seq_data.keys())
+                        seq_id = seq_ids[0]
+                        del kv_cache[i][j][seq_id]
 
-                    # for seq_group_meta_data in seq_group_meta_data_lists:
-                    #     seq_ids = list(seq_group_meta_data.seq_data.keys())
-                    #     seq_id = seq_ids[0]
-                    #     del kv_cache[layer][kv][seq_id]
                 bigdl_kv_cache.append(cur_list)
 
         return bigdl_kv_cache
