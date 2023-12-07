@@ -50,3 +50,10 @@ class GlibcChecker:
                     f"Detected glibc version: {glibc_version}. "
                     f"(required: >= {self.min_glibc_version}) "
                     f"Please upgrade your operating system with a newer version of glibc.")
+
+
+glibc_checker = GlibcChecker("2.17")
+
+
+def check_glibc_version():
+    glibc_checker.check_requirements()
