@@ -18,6 +18,8 @@ import os
 import platform
 from packaging import version
 from importlib.metadata import distribution, PackageNotFoundError
+from bigdl.llm.utils.common import log4Error
+
 
 class GlibcChecker:
     def __init__(self, min_glibc_version):
@@ -41,11 +43,12 @@ class GlibcChecker:
         return version.parse(glibc_version_str)
 
     def check_requirements(self):
-        if self.is_linux():
-            if not self.is_bigdl_core_xe_installed():
-                glibc_version = self.get_glibc_version()
-                if glibc_version < version.parse(self.min_glibc_version):
-                    raise RuntimeError(f"glibc version too old: {glibc_version}, required: >= {self.min_glibc_version}")
+        if self.is_linux() and not self.is_bigdl_core_xe_installed():
+            glibc_version = self.get_glibc_version()
+            if glibc_version < version.parse(self.min_glibc_version):
+                log4Error.invalidInputError(f"glibc version too old: {glibc_version}, 
+                                            required: >= {self.min_glibc_version}")
+
 
 glibc_checker = GlibcChecker(min_glibc_version="2.17")
 glibc_checker.check_requirements()
