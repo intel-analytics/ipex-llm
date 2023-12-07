@@ -391,6 +391,8 @@ TrainingArguments._setup_devices = _setup_devices
 
 def cast_lora_weight(model, dtype=torch.bfloat16):
     for name, module in model.named_modules():
+        if isinstance(module, LowBitLinear):
+            module.compute_dtype = dtype
         if isinstance(module, LoraLayer):
             module = module.to(dtype)
         if 'norm' in name:

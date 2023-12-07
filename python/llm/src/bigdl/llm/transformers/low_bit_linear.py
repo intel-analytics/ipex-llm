@@ -50,6 +50,7 @@ from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
 from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
+from bigdl.llm.transformers.utils import get_autocast_dtype
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -433,8 +434,16 @@ class LowBitLinear(nn.Linear):
         self.qtype = qtype
         self.conver_to_half = conver_to_half
         self.mp_group = mp_group
+        self.compute_dtype = None  # only for training
 
     def forward(self, x: torch.Tensor):
+        # below logic is for training
+        autocast_dtype = get_autocast_dtype(x)
+        if self.compute_dtype is not None and x.device.type == "xpu":
+            x = x.to(self.compute_dtype)  # solve GC issue for unlora module
+        elif autocast_dtype is not None:
+            x = x.to(autocast_dtype)
+
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
