@@ -47,28 +47,27 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
 def baichuan_13b_rms_norm_forward(self, hidden_states):
-    optimized_rms_norm = False
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         if get_ipex_version() <= "2.0.110+xpu":
-            if self.epsilon == 1e-6:
-                hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
-                                                                 [self.weight.size(0)],
-                                                                 self.weight)
-                optimized_rms_norm = True
+            import linear_q4_0
+            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
+                                                       [self.weight.size(0)],
+                                                       self.weight,
+                                                       None,
+                                                       self.epsilon)
         else:
             hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
                                                                [self.weight.size(0)],
                                                                self.weight,
                                                                None,
                                                                self.epsilon)
-            optimized_rms_norm = True
-    if not optimized_rms_norm:
+        return hidden_states
+    else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
         variance = hidden_states.pow(2).mean(-1, keepdim=True)
         hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
         return self.weight * hidden_states.to(input_dtype)
-    return hidden_states
 
 
 def baichuan_attention_forward_7b(
