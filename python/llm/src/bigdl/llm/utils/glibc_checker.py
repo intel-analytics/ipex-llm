@@ -46,5 +46,7 @@ class GlibcChecker:
         if self.is_linux() and not self.is_bigdl_core_xe_installed():
             glibc_version = self.get_glibc_version()
             if glibc_version < version.parse(self.min_glibc_version):
-                log4Error.invalidInputError(f"glibc version too old: {glibc_version}, 
-                                            required: >= {self.min_glibc_version}")
+                log4Error.invalidInputError(glibc_version >= version.parse(self.min_glibc_version),
+                    f"Detected glibc version: {glibc_version}. "
+                    f"(required: >= {self.min_glibc_version}) "
+                    f"Please upgrade your operating system with a newer version of glibc.")
