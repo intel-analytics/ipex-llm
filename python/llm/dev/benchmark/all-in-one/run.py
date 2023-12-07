@@ -401,6 +401,7 @@ def run_transformer_int4_gpu(repo_id,
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                             actual_in_len, actual_out_len])
             except RuntimeError:
+                traceback.print_exc()
                 pass
     del model
     torch.xpu.empty_cache()
