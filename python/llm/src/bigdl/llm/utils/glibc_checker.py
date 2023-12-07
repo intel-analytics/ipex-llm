@@ -28,7 +28,8 @@ class GlibcChecker:
     @staticmethod
     def is_linux():
         return platform.system() == "Linux"
-
+    
+    # Check if xpu version installed
     @staticmethod
     def is_bigdl_core_xe_installed():
         try:
@@ -44,6 +45,7 @@ class GlibcChecker:
 
     def check_requirements(self):
         if self.is_linux() and not self.is_bigdl_core_xe_installed():
+            # Only raise error for CPU
             glibc_version = self.get_glibc_version()
             if glibc_version < version.parse(self.min_glibc_version):
                 log4Error.invalidInputError(glibc_version >= version.parse(self.min_glibc_version),
