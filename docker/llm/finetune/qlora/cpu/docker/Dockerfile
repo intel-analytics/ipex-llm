@@ -11,7 +11,7 @@ FROM debian:bullseye as builder
 ARG http_proxy
 ARG https_proxy
 ENV TZ=Asia/Shanghai
-ARG PIP_NO_CACHE_DIR=true
+ARG PIP_NO_CACHE_DIR=false
 ENV TRANSFORMERS_COMMIT_ID=95fe0f5
 
 # add public key
@@ -64,7 +64,7 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     rm -r BigDL && \
     chown -R mpiuser /bigdl
    
-# fro standalone
+# for standalone
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
 
 USER mpiuser
