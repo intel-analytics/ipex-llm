@@ -6,69 +6,67 @@ RUN apt-get update && \
     apt-get install -y curl gpg && \
     curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /root/intel-oneapi-archive-keyring.gpg
 
-FROM mpioperator/intel as builder
+FROM debian:bullseye as builder
 
 ARG http_proxy
 ARG https_proxy
 ENV TZ=Asia/Shanghai
-ARG PIP_NO_CACHE_DIR=false
+ARG PIP_NO_CACHE_DIR=true
 ENV TRANSFORMERS_COMMIT_ID=95fe0f5
 
 # add public key
 COPY --from=key-getter /root/intel-oneapi-archive-keyring.gpg /usr/share/keyrings/intel-oneapi-archive-keyring.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list
 
-
 RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
-# install pytorch 2.1.0
     apt-get update && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
+    apt install -y --no-install-recommends openssh-server openssh-client libcap2-bin gnupg2 ca-certificates \ 
+    python3-pip python3.9-dev python3-wheel python3.9-distutils git software-properties-common && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /var/run/sshd && \
+    setcap CAP_NET_BIND_SERVICE=+eip /usr/sbin/sshd && \
+    apt remove libcap2-bin -y && \
+    sed -i "s/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g" /etc/ssh/ssh_config && \
+    echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
+    sed -i "s/[ #]\(.*Port \).*/ \1$port/g" /etc/ssh/ssh_config && \
+    sed -i "s/#\(StrictModes \).*/\1no/g" /etc/ssh/sshd_config && \
+    sed -i "s/#\(Port \).*/\1$port/g" /etc/ssh/sshd_config && \
+    useradd -m mpiuser && \
+    cp -r /etc/ssh/sshd_config /home/mpiuser/.sshd_config && \
+    echo "Port $port" >> /home/mpiuser/.sshd_config && \
+# install pytorch 2.1.0
     pip3 install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
     pip install --upgrade torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
 # install CPU bigdl-llm
-    pip3 install --pre --upgrade bigdl-llm[all] -i https://pypi.tuna.tsinghua.edu.cn/simple/ && \
+    pip3 install --pre --upgrade bigdl-llm[all] && \
 # install ipex and oneccl
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
 # install huggingface dependencies
-    pip install datasets https://files.pythonhosted.org/packages/9a/06/e4ec2a321e57c03b7e9345d709d554a52c33760e5015fdff0919d9459af0/transformers-4.35.0-py3-none-any.whl && \
+    pip install datasets transformers==4.34.0 && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
 # install basic dependencies
-    apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
-# install python 3.9
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 && \
-    rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
+# Install Intel oneAPI keys.
+    apt remove -y gnupg2 ca-certificates && \
+    apt autoremove -y && \
+    apt update && \
+    apt install -y --no-install-recommends dnsutils intel-oneapi-mpi && \
+    rm -rf /var/lib/apt/lists/* && \
+# get qlora example code
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-# install OpenSSH for MPI to communicate between containers
-    apt-get install -y --no-install-recommends openssh-client openssh-server && \
-    mkdir -p /var/run/sshd && \
-# allow OpenSSH to talk to containers without asking for confirmation
-# by disabling StrictHostKeyChecking.
-# mpi-operator mounts the .ssh folder from a Secret. For that to work, we need
-# to disable UserKnownHostsFile to avoid write permissions.
-# disabling StrictModes avoids directory and files read permission checks.
-    sed -i 's/[ #]\(.*StrictHostKeyChecking \).*/ \1no/g' /etc/ssh/ssh_config && \
-    echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
-    sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config && \
-# add bigdl-llm qlora cpu example
     cd /bigdl && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv BigDL/python/llm/example/CPU/QLoRA-FineTuning/* . && \
-    rm -r BigDL
+    rm -r BigDL && \
+    chown -R mpiuser /bigdl
    
-# for docker directly run example
+# fro standalone
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
-# for k8s
-COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl/bigdl-qlora-finetuing-entrypoint.sh
 
-RUN chown -R mpiuser /bigdl
 USER mpiuser
+
 ENTRYPOINT ["/bin/bash"]
