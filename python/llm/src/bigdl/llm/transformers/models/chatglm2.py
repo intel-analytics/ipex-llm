@@ -79,12 +79,12 @@ def apply_rotary_pos_emb_chatglm(x: torch.Tensor, rope_cache: torch.Tensor) -> t
 def chatglm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         if get_ipex_version() <= "2.0.110+xpu":
-           import linear_q4_0
-           hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
-                                                      [self.weight.size(0)],
-                                                      self.weight,
-                                                      None,
-                                                      self.eps)
+            import linear_q4_0
+            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
+                                                       [self.weight.size(0)],
+                                                       self.weight,
+                                                       None,
+                                                       self.eps)
         else:
             # for ipex >= 2.1
             hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
