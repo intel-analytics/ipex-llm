@@ -27,6 +27,7 @@ from bigdl.llm.vllm.logger import init_logger
 import math
 import time
 from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
+import os
 from transformers.generation.logits_process import (
     LogitsProcessorList,
     RepetitionPenaltyLogitsProcessor,
@@ -62,42 +63,62 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         super().__init__(config, device, max_model_len)
         self.config = config
         # TODO(gc): later change this to a switch?
-        if True:
+        use_bigdl_lowbit = os.getenv("VLLM_USE_BIGDL_LOWBIT")
+        if use_bigdl_lowbit.lower() == "true":
             from bigdl.llm.transformers import AutoModelForCausalLM
             from bigdl.llm import optimize_model
+            if device == 'cpu':
+                model = AutoModelForCausalLM.from_pretrained(
+                    config._name_or_path,
+                    low_cpu_mem_usage=True,
+                    trust_remote_code=True,
+                    use_cache=True,
+                )
+                self.model = optimize_model(model)
+                self.sampler = BigDLSampler(config.vocab_size, device)
+            elif device == 'xpu':
+                try:
+                    import intel_extension_for_pytorch as ipex
+                except ImportError:
+                    print("Intel Extension for PyTorch is not installed, \
+                        but is required for xpu inference.")
 
-        # low_bit = 'sym_int4'
-        if device == 'cpu':
-            model = AutoModelForCausalLM.from_pretrained(
-                config._name_or_path,
-                low_cpu_mem_usage=True,
-                trust_remote_code=True,
-                use_cache=True,
-            )
-            self.model = optimize_model(model)
-            self.sampler = BigDLSampler(config.vocab_size, device)
-        elif device == 'xpu':
-            try:
-                import intel_extension_for_pytorch as ipex
-            except ImportError:
-                print("Intel Extension for PyTorch is not installed, \
-                       but is required for xpu inference.")
-
-            low_bit = 'sym_int4'
-            model = AutoModelForCausalLM.from_pretrained(
-                config._name_or_path,
-                load_in_low_bit=low_bit,
-                trust_remote_code=True,
-                use_cache=True,
-            )
-            self.model = model.to('xpu')
-            self.sampler = BigDLSampler(config.vocab_size, device).to('xpu')
-
-        if device is None:
-            self.device = torch.device(
-                "cuda" if torch.cuda.is_available() else "cpu")
+                low_bit = 'sym_int4'
+                model = AutoModelForCausalLM.from_pretrained(
+                    config._name_or_path,
+                    load_in_low_bit=low_bit,
+                    trust_remote_code=True,
+                    use_cache=True,
+                )
+                self.model = model.to('xpu')
+                self.sampler = BigDLSampler(config.vocab_size, device).to('xpu')
         else:
-            self.device = torch.device(device)
+            from transformers import AutoModelForCausalLM
+            if device == 'cpu':
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    config._name_or_path,
+                    low_cpu_mem_usage=True,
+                    trust_remote_code=True,
+                    use_cache=True,
+                )
+                self.sampler = BigDLSampler(config.vocab_size, device)
+            elif device == 'xpu':
+                try:
+                    import intel_extension_for_pytorch as ipex
+                except ImportError:
+                    print("Intel Extension for PyTorch is not installed, \
+                        but is required for xpu inference.")
+                model = AutoModelForCausalLM.from_pretrained(
+                    config._name_or_path,
+                    load_in_low_bit=low_bit,
+                    trust_remote_code=True,
+                    use_cache=True,
+                )
+                self.model = model.to('xpu')
+                self.sampler = BigDLSampler(
+                    config.vocab_size, device).to('xpu')
+
+        self.device = torch.device(device)
         self.dtype = self.model.dtype
         self.last_seq_ids = []
         self.tmp_kv_cache = None
@@ -116,7 +137,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         decoder_kv_size = 2
 
         bigdl_input_ids = []
-        bigdl_position_ids = []
+        # bigdl_position_ids = []
         bigdl_attention_mask = []
 
         cur_seq_ids = []
