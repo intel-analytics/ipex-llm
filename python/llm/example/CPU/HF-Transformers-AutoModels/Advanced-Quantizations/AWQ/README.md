@@ -9,7 +9,7 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [vicuna-13B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-13B-v1.5-AWQ)
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../REAME.md#system-support) for more information.
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a AWQ model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
