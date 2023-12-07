@@ -48,7 +48,3 @@ class GlibcChecker:
             if glibc_version < version.parse(self.min_glibc_version):
                 log4Error.invalidInputError(f"glibc version too old: {glibc_version}, 
                                             required: >= {self.min_glibc_version}")
-
-
-glibc_checker = GlibcChecker(min_glibc_version="2.17")
-glibc_checker.check_requirements()
