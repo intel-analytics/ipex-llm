@@ -219,6 +219,13 @@ def llama_attention_forward_4_31(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
+    # need add more check here
+    elif q_len == 1 and query_states.device.type == "xpu" and query_states.dtype ==torch.float16:
+        import sdp_fp16_esimd
+        attn_output = sdp_fp16_esimd.forward(query_states,
+                                             key_states.contiguous(),
+                                             value_states.contiguous())
+        attn_output = attn_output.view(query_states.shape)
     else:
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
