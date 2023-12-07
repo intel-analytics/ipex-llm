@@ -48,10 +48,12 @@ class GlibcChecker:
             # Only raise error for CPU
             glibc_version = self.get_glibc_version()
             if glibc_version < version.parse(self.min_glibc_version):
-                log4Error.invalidInputError(glibc_version >= version.parse(self.min_glibc_version),
+                log4Error.invalidInputError(
+                    glibc_version >= version.parse(self.min_glibc_version),
                     f"Detected glibc version: {glibc_version}. "
                     f"(required: >= {self.min_glibc_version}) "
-                    f"Please upgrade your operating system with a newer version of glibc.")
+                    "Please upgrade your operating system with a newer version of glibc."
+                )
 
 
 glibc_checker = GlibcChecker("2.17")

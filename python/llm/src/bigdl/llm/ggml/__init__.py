@@ -19,5 +19,7 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+from bigdl.llm.utils.glibc_checker import check_glibc_version
 from bigdl.llm.utils.common import LazyImport
 convert_model = LazyImport('bigdl.llm.ggml.convert_model.convert_model')
+check_glibc_version()
