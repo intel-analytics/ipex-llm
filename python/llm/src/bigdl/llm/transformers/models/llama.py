@@ -96,6 +96,24 @@ def llama_rms_norm_forward(self, hidden_states):
         hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
         return self.weight * hidden_states.to(input_dtype)
 
+
+def llama_mlp_forward(
+    self,
+    x: torch.Tensor,
+) -> torch.Tensor:
+    if x.shape[1] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+            and not (self.training and x.requires_grad):
+        import linear_q4_0
+        x_2d = x.view(-1, x.shape[-1])
+        if not x_2d.is_contiguous():
+            x_2d = x_2d.contiguous()
+        return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+            x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
+            x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+        ))
+    return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+
+
 import linear_q4_0
 def llama_attention_forward_4_31(
     self,
