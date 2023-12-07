@@ -485,6 +485,7 @@ def _optimize_post(model, lightweight_bmm=False):
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_7b
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_mlp_forward
             convert_forward(model,
                             module.Attention,
                             baichuan_attention_forward_7b
@@ -492,12 +493,16 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.RMSNorm,
                             llama_rms_norm_forward)
+            convert_forward(model,
+                            module.MLP,
+                            baichuan_mlp_forward)
         elif model.config.hidden_size == 5120:
             # baichuan2-13B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
             from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_mlp_forward
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
@@ -506,6 +511,9 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.RMSNorm,
                             baichuan_13b_rms_norm_forward)
+            convert_forward(model,
+                            module.MLP,
+                            baichuan_mlp_forward)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:
