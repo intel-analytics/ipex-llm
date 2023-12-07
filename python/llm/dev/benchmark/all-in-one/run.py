@@ -42,7 +42,7 @@ CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 
 results = []
-
+excludes = []
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
@@ -91,6 +91,13 @@ def get_model_path(repo_id, local_model_hub):
     else:
         return repo_id
 
+def should_exclude(repo_id, in_out):
+    for item in excludes:
+        exclude_model_id = item.split(':')[0]
+        exclude_in_out = item.split(':')[1]
+        if exclude_model_id == repo_id and exclude_in_out == in_out.split('-')[0]:
+            return True
+    return False
 
 def run_native_int4(repo_id,
                     local_model_hub,
@@ -367,6 +374,9 @@ def run_transformer_int4_gpu(repo_id,
     result = {}
     with torch.inference_mode():
         for in_out in in_out_pairs:
+            if excludes and should_exclude(repo_id, in_out):
+                result[in_out] = []
+                continue
             try:
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
@@ -747,6 +757,8 @@ if __name__ == '__main__':
     from omegaconf import OmegaConf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
     today = date.today()
+    if 'exclude' in conf:
+        excludes = conf['exclude']
     
     import pandas as pd
     for api in conf.test_api:
