@@ -5,6 +5,8 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [Llama-2-7B-Chat-AWQ](https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ)
 - [Mistral-7B-Instruct-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-AWQ)
 - [Mistral-7B-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-v0.1-AWQ)
+- [vicuna-7B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-7B-v1.5-AWQ)
+- [vicuna-13B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-13B-v1.5-AWQ)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU#system-support) for more information.
