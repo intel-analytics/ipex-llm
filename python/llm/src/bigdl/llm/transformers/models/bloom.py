@@ -76,7 +76,7 @@ def bloom_layer_norm_forward(self, hidden_states):
         mu = hidden_states.mean(-1, keepdim=True)
         variance = hidden_states.pow(2).mean(-1, keepdim=True)
         sigma  = torch.rsqrt(variance + self.eps)
-        return ((hidden_states - mu) / sigma).to(input_dtype) * self.weight + self.bias
+        return ((hidden_states - mu) * sigma).to(input_dtype) * self.weight + self.bias
     return hidden_states
 
 
