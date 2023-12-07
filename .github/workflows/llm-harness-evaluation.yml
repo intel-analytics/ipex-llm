@@ -109,7 +109,7 @@ jobs:
         precision: [sym_int4, fp4, fp8, mixed_fp4, mixed_fp8, sym_int8]
         device: [xpu]
         
-    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
+    runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
