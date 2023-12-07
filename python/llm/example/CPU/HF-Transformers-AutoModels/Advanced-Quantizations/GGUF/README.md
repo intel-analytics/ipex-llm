@@ -1,9 +1,12 @@
 # Loading GGUF models
-In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) and [llama-2-7b-chat.Q4_1.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as reference LLaMA2 GGUF models.
+In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as a reference LLaMA2 GGUF model.
 >Note: Only LLaMA2 family models are currently supported
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
+
+**Important: Please make sure you have installed `transformers==4.33.0` to run the example.**
+
 
 ## Example: Load gguf model using `from_gguf()` API
 In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `bigdl-llm` using `from_gguf()` API, with BigDL-LLM optimizations.
@@ -17,6 +20,7 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install transformers==4.33.0  # upgrade transformers
 ```
 
 ### 2. Run
@@ -50,7 +54,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-#### 2.3 Sample Output
+#### 2.4 Sample Output
 #### [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
 ```log
 Inference time: xxxx s
@@ -61,16 +65,4 @@ What is AI?
 ### RESPONSE:
 
 AI is a term used to describe a type of computer software that is designed to perform tasks that typically require human intelligence, such as visual perception, speech
-```
-
-#### [llama-2-7b-chat.Q4_1.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
-```log
-Inference time: xxxx s
--------------------- Output --------------------
-### HUMAN:
-What is AI?
-
-### RESPONSE:
-
-Artificial intelligence (AI) is the field of study focused on creating machines that can perform tasks that typically require human intelligence, such as understanding language,
 ```

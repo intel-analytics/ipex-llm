@@ -37,6 +37,8 @@ spec:
                value: "bigdl-qlora-finetuning-job-worker-0.bigdl-qlora-finetuning-job-worker"
              - name: DATA_SUB_PATH
                value: "{{ .Values.dataSubPath }}"
+             - name: ENABLE_GRADIENT_CHECKPOINT
+               value: "{{ .Values.enableGradientCheckpoint }}"
              - name: http_proxy
                value: "{{ .Values.httpProxy }}"
              - name: https_proxy
@@ -85,6 +87,8 @@ spec:
               value: "42679"
             - name: MASTER_ADDR
               value: "bigdl-qlora-finetuning-job-worker-0.bigdl-qlora-finetuning-job-worker"
+            - name: ENABLE_GRADIENT_CHECKPOINT
+              value: "{{ .Values.enableGradientCheckpoint }}"
             - name: http_proxy
               value: "{{ .Values.httpProxy }}"
             - name: https_proxy

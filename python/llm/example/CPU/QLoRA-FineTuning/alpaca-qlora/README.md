@@ -127,3 +127,10 @@ from transformers import AutoTokenizer  # noqa: F402
 tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
 base_model = AutoModelForCausalLM.from_pretrained(base_model,trust_remote_code=True)
 ```
+
+
+### 4. Finetuning in docker and multiple nodes (k8s)
+
+If you want to run multi-process fine-tuning, or do not want to manually install the above dependencies, we provide a docker solution to quickly start a one-container finetuning. Please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/qlora/cpu/docker#fine-tune-llm-with-bigdl-llm-container).
+
+Moreover, for users with multiple CPU server resources e.g. Xeon series like SPR and ICX, we give a k8s distributed solution, where machines and processor sockets are allowed to collaborate by one click easily. Please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md) for how to run QLoRA on k8s.

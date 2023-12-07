@@ -316,6 +316,8 @@ If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the
     ```
     Note that you are recommended **NOT** to install BigDL Orca with pip install command in the conda environment if you use spark-submit to avoid possible conflicts.
 
+    If you are using `requirements_ray.txt`, you need to additionally install `ray[default]` with version 1.9.2 in your environment.
+
 2. Pack the current activate conda environment to an archive:
     ```bash
     conda pack -o environment.tar.gz
