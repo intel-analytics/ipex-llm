@@ -21,6 +21,12 @@ import sys
 import argparse
 import pandas as pd
 
+def highlight_vals(val, max=-3.0, color='yellow'):
+    if val < max:
+        return 'background-color: %s' % color
+    else:
+        return ''
+
 def main():
     parser = argparse.ArgumentParser(description="convert .csv file to .html file")
     parser.add_argument("-f", "--folder_path", type=str, dest="folder_path",
@@ -74,7 +80,14 @@ def main():
         latest_csv.insert(loc=6,column='diff2(%)',value=diff2)
 
     daily_html=csv_files[0].split(".")[0]+".html"
-    latest_csv.to_html(daily_html)
+
+    subset=['diff1(%)','diff2(%)']
+    columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
+             'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}'}
+
+    with open(daily_html, 'w') as f:
+        f.write(latest_csv.style.format(columns).applymap(highlight_vals, subset)
+                        .set_table_attributes("border=1").render())
 
 if __name__ == "__main__":
     sys.exit(main())
