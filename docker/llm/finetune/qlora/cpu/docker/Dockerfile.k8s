@@ -12,7 +12,7 @@ FROM mpioperator/intel as builder
 ARG http_proxy
 ARG https_proxy
 ENV TZ=Asia/Shanghai
-ARG PIP_NO_CACHE_DIR=true
+ARG PIP_NO_CACHE_DIR=false
 ENV TRANSFORMERS_COMMIT_ID=95fe0f5
 
 # add public key
