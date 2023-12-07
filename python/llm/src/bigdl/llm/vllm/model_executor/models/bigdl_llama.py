@@ -162,14 +162,14 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 seq_id = seq_ids[0]
                 seq_data = seq_group_meta_data.seq_data[seq_id]
                 cur_pos = seq_data.get_len()
-                bigdl_position_ids.append([cur_pos - 1])
+                # bigdl_position_ids.append([cur_pos - 1])
                 cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
                 bigdl_attention_mask.append(cur_attention_mask)
 
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
 
         if is_decoding_stage:
-            bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
+            # bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
             bigdl_attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
             kwargs = {
                 "input_ids": bigdl_input_ids,
