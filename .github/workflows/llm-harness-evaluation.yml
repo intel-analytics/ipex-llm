@@ -104,11 +104,9 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         task: ${{ fromJson(needs.set-matrix.outputs.task) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
-
         device: [xpu]
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
