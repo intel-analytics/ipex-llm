@@ -258,6 +258,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
 
                     #  fp16 may generalize to other sizes later
                     if new_linear is not None:
+                        if not module.training:
+                            new_linear.eval()
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
