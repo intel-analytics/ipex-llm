@@ -54,7 +54,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
           python -m pip install --upgrade omegaconf
-          python -m pip install pandas==1.5.3
+          python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
@@ -95,7 +95,9 @@ jobs:
           python ../../../test/benchmark/concat_csv.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
+          python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
+          python check_html_lines.py -f $CSV_SAVE_PATH -n 49
           cd ../../dev/benchmark/all-in-one/
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
@@ -148,6 +150,7 @@ jobs:
           python run.py
           cp ./*.csv /mnt/disk1/nightly_perf_cpu/
           cd ../../../test/benchmark
+          python -m pip install pandas==1.5.3
           python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
 
   llm-performance-test-on-core:
@@ -201,6 +204,7 @@ jobs:
           python run.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
+          python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
           if [ ${{ github.event.schedule}} ]; then

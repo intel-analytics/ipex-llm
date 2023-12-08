@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# Python program to concat CSVs
+# Python program to check if the number of lines in html meets expectation
 
 import os
 import sys
@@ -22,27 +22,28 @@ import argparse
 import pandas as pd
 
 def main():
-    parser = argparse.ArgumentParser(description="concat .csv files")
+    parser = argparse.ArgumentParser(description="check if the number of lines in html meets expectation")
     parser.add_argument("-f", "--folder_path", type=str, dest="folder_path",
-                        help="The directory which stores the .csv files", default="./")
+                        help="The directory which stores the .html files", default="/mnt/disk1/nightly_perf_gpu/")
+    parser.add_argument("-n", "--expected_lines", type=int, dest="expected_lines",
+                        help="the number of expected html lines", default=0)
+
     args = parser.parse_args()
 
     csv_files = []
     for file_name in os.listdir(args.folder_path):
         file_path = os.path.join(args.folder_path, file_name)
-        if os.path.isfile(file_path) and file_name.endswith(".csv"):
+        if os.path.isfile(file_path) and file_name.endswith(".html"):
             csv_files.append(file_path)
-    csv_files.sort()
+    csv_files.sort(reverse=True)
 
-    df1 = pd.read_csv(csv_files[0], index_col=0)
-    df2 = pd.read_csv(csv_files[1], index_col=0)
-    merged_df = pd.concat([df1, df2], ignore_index=True)
-    merged_df.reset_index(drop=True, inplace=True)
+    number_of_expected_lines=args.expected_lines
 
-    merged_csv=csv_files[0].replace("_test1", "")
-    merged_df.to_csv(merged_csv)
-    os.remove(csv_files[0])
-    os.remove(csv_files[1])
+    html_data = pd.read_html(csv_files[0])
+    num_rows = len(html_data[0])
+
+    if num_rows!=number_of_expected_lines:
+        raise ValueError("The number of arc perf test results does not match the expected value. Please check carefully.")
 
 if __name__ == "__main__":
     sys.exit(main())
