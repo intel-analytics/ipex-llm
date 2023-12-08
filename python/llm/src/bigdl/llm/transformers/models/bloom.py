@@ -72,12 +72,7 @@ def bloom_layer_norm_forward(self, hidden_states):
                                                      self.eps)
         return hidden_states
     else:
-        input_dtype = hidden_states.dtype
-        hidden_states = hidden_states.to(torch.float32)
-        mu = hidden_states.mean(-1, keepdim=True)
-        variance = torch.var(hidden_states, -1, keepdim=True, unbiased=False)
-        sigma = torch.sqrt(variance + self.eps)
-        return ((hidden_states - mu) / sigma).to(input_dtype) * self.weight + self.bias
+        return F.layer_norm(hidden_states, self.normalized_shape, self.weight, self.bias, self.eps)
 
 
 def bloom_attention_forward(
