@@ -13,23 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-import multiprocessing
 
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModelForCausalLM
 
 import inspect
 from lm_eval.models.huggingface import AutoCausalLM
 from functools import partial
 
 class BigDLLM(AutoCausalLM):
+    AUTO_MODEL_CLASS = AutoModelForCausalLM
     AutoCausalLM_ARGS = inspect.getfullargspec(AutoCausalLM.__init__).args
     def __init__(self, *args, **kwargs):
         self.bigdl_llm_kwargs = {}
-        for k, v in kwargs.items():
+        keys = list(kwargs.keys())
+        for k in keys:
             if k not in self.AutoCausalLM_ARGS:
-                kwargs.pop(k)           
-                self.bigdl_llm_kwargs[k] = v
-        self.AUTO_MODEL_CLASS = partial(AutoModelForCausalLM, **self.bigdl_llm_kwargs)
+                self.bigdl_llm_kwargs[k] = kwargs[k]
+                kwargs.pop(k)   
+        AutoModelForCausalLM.from_pretrained = partial(AutoModelForCausalLM.from_pretrained, **self.bigdl_llm_kwargs)
         super().__init__(*args, **kwargs)
-    
+
+    @property
+    def add_special_tokens(self) -> bool:
+        return False
