@@ -39,6 +39,9 @@ def main():
     merged_df = pd.concat([df1, df2], ignore_index=True)
     merged_df.reset_index(drop=True, inplace=True)
 
+    if len(merged_df)!=49:
+        raise ValueError("The number of arc perf test results does not match the expected value. Please check carefully.")
+
     merged_csv=csv_files[0].replace("_test1", "")
     merged_df.to_csv(merged_csv)
     os.remove(csv_files[0])
