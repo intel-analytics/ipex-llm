@@ -104,7 +104,7 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: [mpt-7b-chat, Baichuan2-7B-Chat-LLaMAfied, falcon-7b-instruct]
+        model_name: [falcon-7b-instruct-with-patch]
         task: [winogrande]
         precision: [sym_int4, fp4, fp8, mixed_fp4, mixed_fp8, sym_int8]
         device: [xpu]
