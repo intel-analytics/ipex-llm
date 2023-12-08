@@ -139,10 +139,7 @@ jobs:
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
         shell: bash
         run: |
-          git clone https://github.com/EleutherAI/lm-evaluation-harness.git
-          cd  lm-evaluation-harness
-          git checkout e81d3cc
-          pip install -e .
+          pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@e81d3cc
       
       - name: Download models and datasets
         shell: bash
