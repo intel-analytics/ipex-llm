@@ -231,6 +231,28 @@ jobs:
         run: |
           sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
 
+      # - name: Install bigdl-llm and other related packages
+      #   shell: cmd
+      #   run: |
+      #     call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
+      #     call conda activate igpu-perf
+
+      #     pip install --upgrade pip
+      #     pip install --upgrade wheel
+      #     pip install --upgrade omegaconf pandas
+      #     pip install --upgrade tiktoken einops transformers_stream_generator
+
+      #     cd python\llm
+      #     python setup.py clean --all bdist_wheel --win
+      #     if not exist dist\bigdl_llm*.whl (exit /b 1)
+      #     for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
+
+      #     pip install %whl_name%[xpu] -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     pip list
+
+      #     call conda deactivate
+
       - name: Install bigdl-llm and other related packages
         shell: cmd
         run: |
@@ -242,12 +264,7 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          cd python\llm
-          python setup.py clean --all bdist_wheel --win
-          if not exist dist\bigdl_llm*.whl (exit /b 1)
-          for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
-
-          pip install %whl_name%[xpu] -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
+          pip install --pre bigdl-llm[xpu]==2.5.0b20231206 -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
           if %ERRORLEVEL% neq 0 (exit /b 1)
           pip list
 
