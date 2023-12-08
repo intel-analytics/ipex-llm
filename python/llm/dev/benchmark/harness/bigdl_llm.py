@@ -18,111 +18,18 @@ import multiprocessing
 
 from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
 
-import torch
-from typing import Optional, Union
-from lm_eval.base import BaseLM
+import inspect
+from lm_eval.models.huggingface import AutoCausalLM
+from functools import partial
 
-from transformers import AutoTokenizer, LlamaTokenizer
-
-def _get_dtype(
-    dtype: Union[str, torch.dtype]
-) -> torch.dtype:
-    """Converts `dtype` from `str` to torch.dtype when possible. Does not use an instantiated HF AutoConfig"""
-    if isinstance(dtype, str) and dtype != "auto":
-        # Convert `str` args torch dtype: `float16` -> `torch.float16`
-        _torch_dtype = getattr(torch, dtype)
-    else:
-        _torch_dtype = dtype
-    return _torch_dtype
-
-class BigDLLM(BaseLM):
-    def __init__(
-        self,
-        device="xpu",
-        pretrained="gpt2",
-        revision="main",
-        low_cpu_mem_usage=None,
-        subfolder=None,
-        tokenizer=None,
-        batch_size=1,
-        load_in_8bit: Optional[bool] = False,
-        trust_remote_code: Optional[bool] = True,
-        load_in_low_bit=None,
-        dtype: Optional[Union[str, torch.dtype]] = "auto",
-        **kwargs
-    ):
-        super().__init__()
-
-        assert isinstance(pretrained, str)
-        assert isinstance(batch_size, (int,str))
-        if 'xpu' in device:
-            import intel_extension_for_pytorch as ipex
-        model = AutoModelForCausalLM.from_pretrained(pretrained,
-                                          load_in_low_bit=load_in_low_bit,
-                                          optimize_model=kwargs.get('optimize_model', True),
-                                          trust_remote_code=trust_remote_code,
-                                          use_cache=True,
-                                          torch_dtype=_get_dtype(dtype))
-        print(model) # print model to check precision
-        self._device = device
-        self.model = model.to(device)
-
-        self.tokenizer = AutoTokenizer.from_pretrained(pretrained, trust_remote_code=True)
-
-        # setup for automatic batch size detection
-        if batch_size == 'auto':
-            self.batch_size_per_gpu = batch_size
-        else:
-            self.batch_size_per_gpu = int(batch_size)
-
-    @property
-    def eot_token_id(self):
-        # we use EOT because end of *text* is more accurate for what we're doing than end of *sentence*
-        return self.tokenizer.eos_token_id
-
-    @property
-    def max_length(self):
-        return 2048  # TODO: how to get this from config
-
-    @property
-    def max_gen_toks(self):
-        return 256
-
-    @property
-    def batch_size(self):
-        # TODO: fix multi-gpu
-        return self.batch_size_per_gpu  # * gpus
-
-    @property
-    def device(self):
-        # TODO: fix multi-gpu
-        return torch.device(self._device)
-
-    def tok_encode(self, string: str):
-        input_ids = self.tokenizer.encode(string)
-        return input_ids
-
-    def tok_decode(self, tokens):
-        return self.tokenizer.decode(tokens, skip_special_tokens=True)
-
-    def _model_call(self, inps):
-        """
-        inps: a torch tensor of shape [batch, sequence]
-        the size of sequence may vary from call to call
-
-        returns: a torch tensor of shape [batch, sequence, vocab] with the
-        logits returned from the model
-        """
-        with torch.inference_mode():
-            inps = inps.to(self.device)
-            res = self.model(inps)[0]
-            return res
-
-    def _model_generate(self, context, max_length, eos_token_id):
-        generation_kwargs = {"do_sample": False, "max_length": max_length}
-        if eos_token_id is not None:
-            generation_kwargs["eos_token_id"] = eos_token_id
-            generation_kwargs[
-                "pad_token_id"
-            ] = eos_token_id  # setting eos_token_id as pad token
-        return self.model.generate(context, **generation_kwargs)
+class BigDLLM(AutoCausalLM):
+    AutoCausalLM_ARGS = inspect.getfullargspec(AutoCausalLM.__init__).args
+    def __init__(self, *args, **kwargs):
+        self.bigdl_llm_kwargs = {}
+        for k, v in kwargs.items():
+            if k not in self.AutoCausalLM_ARGS:
+                kwargs.pop(k)           
+                self.bigdl_llm_kwargs[k] = v
+        self.AUTO_MODEL_CLASS = partial(AutoModelForCausalLM, **self.bigdl_llm_kwargs)
+        super().__init__(*args, **kwargs)
+    
