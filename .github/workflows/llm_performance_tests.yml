@@ -9,19 +9,19 @@ concurrency:
 on:
   schedule:
     - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm_performance_tests.yml"
-      - "python/llm/test/benchmark/**"
-      - "python/llm/dev/benchmark/all-in-one/**"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm_performance_tests.yml"
+  #     - "python/llm/test/benchmark/**"
+  #     - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
     uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
@@ -208,7 +208,7 @@ jobs:
           fi
 
   llm-performance-test-on-igpu:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -332,8 +332,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
-          copy *.csv %CSV_SAVE_PATH%\32-32\
-          del /q *.csv
+          move *.csv %CSV_SAVE_PATH%\32-32\
           REM cd ..\..\..\test\benchmark
           REM python csv_to_html.py -f %CSV_SAVE_PATH%\32-32\
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -401,8 +400,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
-          copy *.csv %CSV_SAVE_PATH%\32-256\
-          del /q *.csv
+          move *.csv %CSV_SAVE_PATH%\32-256\
           REM cd ..\..\..\test\benchmark
           REM python csv_to_html.py -f %CSV_SAVE_PATH%\32-256\
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -470,8 +468,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
-          copy *.csv %CSV_SAVE_PATH%\32-512\
-          del /q *.csv
+          move *.csv %CSV_SAVE_PATH%\32-512\
           REM cd ..\..\..\test\benchmark
           REM python csv_to_html.py -f %CSV_SAVE_PATH%\32-512\
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -513,8 +510,7 @@ jobs:
           call conda activate html-gen
 
           cd python\llm\dev\benchmark\all-in-one
-          copy *.csv %CSV_SAVE_PATH%\512-64\
-          del /q *.csv
+          move *.csv %CSV_SAVE_PATH%\512-64\
           REM cd ..\..\..\test\benchmark
           REM python csv_to_html.py -f %CSV_SAVE_PATH%\512-64\
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
