@@ -240,7 +240,7 @@ def chatglm2_attention_forward_8eb45c(
             key_layer = apply_rotary_pos_emb_chatglm(key_layer, rotary_pos_emb)
 
     if self.multi_query_attention:
-        if device.type == "xpu":
+        if device.type == "xpu" and batch_size > 1:
             key_layer = key_layer.permute(1, 2, 0, 3)  # [bs, nh/k, sl, hn]
             value_layer = value_layer.permute(1, 2, 0, 3)  # [bs, nh/k, sl, hn]
         else:
@@ -269,7 +269,7 @@ def chatglm2_attention_forward_8eb45c(
 
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
-            if device.type == "xpu":
+            if device.type == "xpu" and batch_size > 1:
                 new_cache_k, new_cache_v = init_kv_cache(batch_size,
                                                          self.num_multi_query_groups_per_partition,
                                                          self.hidden_size_per_attention_head,
@@ -296,7 +296,7 @@ def chatglm2_attention_forward_8eb45c(
         max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
             + KV_CACHE_ALLOC_BLOCK_LENGTH
 
-        if device.type == "xpu":
+        if device.type == "xpu" and batch_size > 1:
             nums_per_partition = self.num_multi_query_groups_per_partition
         else:
             nums_per_partition = self.num_attention_heads_per_partition
@@ -324,24 +324,25 @@ def chatglm2_attention_forward_8eb45c(
     # ==================================
     # core attention computation
     # ==================================
-    if self.multi_query_attention and device.type == "xpu":
-        # [bs, nh/k, sl, hn] --> [bs, nh, sl, hn]
-        # expend key_layer/value_layer for core attention computation
-        query_group_size = self.num_attention_heads_per_partition // \
-            self.num_multi_query_groups_per_partition
-        key_layer = key_layer.unsqueeze(-3)
-        key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
-        save_length = key_layer.size(3)
-        key_layer = key_layer.contiguous().view((batch_size,
-                                                 self.num_attention_heads_per_partition,
-                                                 save_length,
-                                                 self.hidden_size_per_attention_head))
-        value_layer = value_layer.unsqueeze(-3)
-        value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
-        value_layer = value_layer.contiguous().view((batch_size,
+    if device.type == "xpu" and batch_size > 1:
+        if self.multi_query_attention:
+            # [bs, nh/k, sl, hn] --> [bs, nh, sl, hn]
+            # expend key_layer/value_layer for core attention computation
+            query_group_size = self.num_attention_heads_per_partition // \
+                self.num_multi_query_groups_per_partition
+            key_layer = key_layer.unsqueeze(-3)
+            key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
+            save_length = key_layer.size(3)
+            key_layer = key_layer.contiguous().view((batch_size,
                                                      self.num_attention_heads_per_partition,
                                                      save_length,
                                                      self.hidden_size_per_attention_head))
+            value_layer = value_layer.unsqueeze(-3)
+            value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
+            value_layer = value_layer.contiguous().view((batch_size,
+                                                         self.num_attention_heads_per_partition,
+                                                         save_length,
+                                                         self.hidden_size_per_attention_head))
 
     context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
 
