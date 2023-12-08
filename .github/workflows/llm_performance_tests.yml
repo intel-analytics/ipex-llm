@@ -279,8 +279,8 @@ jobs:
         run: |
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{current_dir}\/{api}-results-{today}.csv/32(32)-{current_dir}\/{api}-results-{today}_test1.csv/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32(32).yaml
+          sed -i 's/{current_dir}\/{api}-results-{today}.csv/32-32-{current_dir}\/{api}-results-{today}_test1.csv/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32.yaml
 
       - name: Test on igpu (32-32)
         shell: cmd
@@ -294,7 +294,7 @@ jobs:
           set TRANSFORMERS_OFFLINE=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32(32).yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\32-32.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -304,7 +304,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32(32)-434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_434.yaml
 
       - name: Test on igpu for Mistral (32-32)
         shell: cmd
@@ -318,7 +318,7 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32(32)-434.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\32-32_434.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -345,9 +345,9 @@ jobs:
         shell: bash
         run: |
           # hide time info
-          sed -i 's/32(32)/32(256)/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/32-32/32-256/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32(256).yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-256.yaml
 
       - name: Test on igpu (32-256)
         shell: cmd
@@ -363,7 +363,7 @@ jobs:
           set TRANSFORMERS_OFFLINE=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32(256).yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\32-256.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32-256\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -373,7 +373,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32(256)-434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-256_434.yaml
 
       - name: Test on igpu for Mistral (32-256)
         shell: cmd
@@ -387,7 +387,7 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32(256)-434.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\32-256_434.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32-256\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -414,9 +414,9 @@ jobs:
         shell: bash
         run: |
           # hide time info
-          sed -i 's/32(256)/32(512)/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/32-256/32-512/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32(512).yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-512.yaml
 
       - name: Test on igpu (32-512)
         shell: cmd
@@ -432,7 +432,7 @@ jobs:
           set TRANSFORMERS_OFFLINE=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32(512).yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\32-512.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -442,7 +442,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32(512)-434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-512_434.yaml
 
       - name: Test on igpu for Mistral (32-512)
         shell: cmd
@@ -456,7 +456,7 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32(512)-434.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\32-512_434.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -482,9 +482,9 @@ jobs:
       - name: Prepare igpu perf test (512-64)
         shell: bash
         run: |
-          sed -i 's/32(512)/512(64)/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/32-512/512-64/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test2/{today}/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/512(64).yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/512-64.yaml
 
       - name: Test on igpu (512-64)
         shell: cmd
@@ -500,7 +500,7 @@ jobs:
           set TRANSFORMERS_OFFLINE=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\512(64).yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\512-64.yaml config.yaml
           python run.py >> %CSV_SAVE_PATH%\512-64\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
