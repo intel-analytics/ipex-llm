@@ -264,7 +264,7 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          pip install --pre bigdl-llm[xpu]==2.5.0b20231206 -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
+          pip install --pre bigdl-llm[xpu]==2.5.0b20231207 -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
           if %ERRORLEVEL% neq 0 (exit /b 1)
           pip list
 
