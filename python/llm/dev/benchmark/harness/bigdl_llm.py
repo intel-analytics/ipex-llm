@@ -24,6 +24,8 @@ class BigDLLM(AutoCausalLM):
     AUTO_MODEL_CLASS = AutoModelForCausalLM
     AutoCausalLM_ARGS = inspect.getfullargspec(AutoCausalLM.__init__).args
     def __init__(self, *args, **kwargs):
+        if 'device' in kwargs and 'xpu' in kwargs['device']:
+            import intel_extension_for_pytorch
         self.bigdl_llm_kwargs = {}
         keys = list(kwargs.keys())
         for k in keys:
