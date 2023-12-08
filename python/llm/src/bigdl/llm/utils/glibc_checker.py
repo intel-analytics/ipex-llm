@@ -29,9 +29,9 @@ class GlibcChecker:
     def is_linux():
         return platform.system() == "Linux"
 
-    # Check if xpu version installed
     @staticmethod
     def is_bigdl_core_xe_installed():
+        # Check if xpu version installed
         try:
             distribution('bigdl-core-xe')
             return True
