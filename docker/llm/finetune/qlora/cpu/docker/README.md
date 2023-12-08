@@ -7,7 +7,11 @@ The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu:2.4.0-SNAPSHOT
+# For standalone
+docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+
+# For k8s
+docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -31,7 +35,7 @@ docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
   -t intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
-  -f ./Dockerfile .
+  -f ./Dockerfile.k8s .
 ```
 
 ### 2. Prepare Base Model, Data and Container
