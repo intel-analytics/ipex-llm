@@ -392,6 +392,12 @@ def _optimize_post(model, lightweight_bmm=False):
         # todo implement 4.28.0 ~ 4.30.2
         pass
 
+    # convert all nn.LayerNorm
+    from bigdl.llm.transformers.models.bloom import bloom_layer_norm_forward
+    convert_forward(model,
+                    nn.LayerNorm,
+                    bloom_layer_norm_forward)
+
     if model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
         if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
             # chatglm2-6b-32k
@@ -453,14 +459,10 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.bloom import bloom_attention_forward
-        from bigdl.llm.transformers.models.bloom import bloom_layer_norm_forward
         convert_forward(model,
                         module.BloomAttention,
                         bloom_attention_forward
                         )
-        convert_forward(model,
-                        module.LayerNorm,
-                        bloom_layer_norm_forward)
     elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
