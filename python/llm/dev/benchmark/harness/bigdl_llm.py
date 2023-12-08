@@ -22,6 +22,8 @@ from lm_eval import utils
 from functools import partial
 
 
+# wrap  and force the Reorderer to be in a decrease order
+# This is a workaround to avoid frequent memory allocation which may cause OOM
 def force_decrease_order(Reorderer):
     def DecreaseReorderer(arr, fn):
         def _collate(x):
@@ -37,8 +39,6 @@ class BigDLLM(AutoCausalLM):
     AUTO_MODEL_CLASS = AutoModelForCausalLM
     AutoCausalLM_ARGS = inspect.getfullargspec(AutoCausalLM.__init__).args
     def __init__(self, *args, **kwargs):
-        # wrap  and force the Reorderer to be in a decrease order
-        # This is a workaround to avoid frequent memory allocation which may cause OOM
         if 'device' in kwargs and 'xpu' in kwargs['device']:
             import intel_extension_for_pytorch
         self.bigdl_llm_kwargs = {}
