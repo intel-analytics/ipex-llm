@@ -84,7 +84,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
         now = len(generated_text) - 1
         if now > pos:
-            if '\n<' in generated_text:
+            if '\n<' in generated_text or '\n\'t' in generated_text or '\n\n' in generated_text:
                 break
             else:
                 print("".join(generated_text[pos:now]), end="", flush=True)
