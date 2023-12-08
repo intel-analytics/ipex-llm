@@ -125,3 +125,10 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
+
+### 5. Troubleshooting
+- If you fail to finetune on multi cards because of following error message:
+  ```bash
+  RuntimeError: oneCCL: comm_selector.cpp:57 create_comm_impl: EXCEPTION: ze_data was not initialized
+  ```
+  Please try `sudo apt install level-zero-dev` to fix it.
