@@ -139,27 +139,23 @@ def llama_attention_forward_4_31(
     else:
         attention_dtype = original_dtype
     
-    if hidden_states.shape[0] * hidden_states.shape[1] == 1:
+    if hidden_states.shape[0] * hidden_states.shape[1] == 1 and past_key_value is not None and past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3):
         hidden_states = hidden_states.view(1, -1)
+        kv_seq_len = past_key_value[0].shape[-2]
+        cache_k = past_key_value[0]
+        cache_v = past_key_value[1]
         query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                        hidden_states,
-                                                                        hidden_states,
                                                                         self.q_proj.weight,
                                                                         self.k_proj.weight,
                                                                         self.v_proj.weight,
                                                                         position_ids,
+                                                                        cache_k, cache_v,
                                                                         self.q_proj.weight.qtype,
-                                                                        hidden_states.shape[1],
-                                                                        self.num_heads,
+                                                                        kv_seq_len,
                                                                         self.head_dim,
                                                                         )
-        # query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-        #                                                              key_states,
-        #                                                              position_ids,
-        #                                                             "llama")
-        kv_seq_len = key_states.shape[-2]
-        if past_key_value is not None:
-            kv_seq_len += past_key_value[0].shape[-2]
+        kv_seq_len += 1
+
     else:
         if self.config.pretraining_tp > 1:
             key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
@@ -210,39 +206,39 @@ def llama_attention_forward_4_31(
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids, "llama")
 
-    if past_key_value is not None:
-        # reuse k, v, self_attention
-        cache_k = past_key_value[0]
-        cache_v = past_key_value[1]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
+        if past_key_value is not None:
+            # reuse k, v, self_attention
+            cache_k = past_key_value[0]
+            cache_v = past_key_value[1]
+            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                        self.num_key_value_heads,  # Support GQA
+                                                        self.head_dim,
+                                                        cache_k.size(2),
+                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                        dtype=cache_k.dtype,
+                                                        device=device)
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
 
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+            key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_key_value_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
+        elif use_cache:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_key_states, new_value_states = init_kv_cache(bsz,
+                                                            self.num_key_value_heads,
+                                                            self.head_dim,
+                                                            kv_seq_len,
+                                                            max_cache_length,
+                                                            dtype=key_states.dtype,
+                                                            device=device)
+            new_key_states[:] = key_states
+            new_value_states[:] = value_states
+            key_states = new_key_states
+            value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
 
