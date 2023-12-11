@@ -754,10 +754,11 @@ if __name__ == '__main__':
     for api in conf.test_api:
         for model in conf.repo_id:
             in_out_pairs = conf['in_out_pairs'].copy()
-            for in_out in conf['in_out_pairs']:
-                model_id_input = model + ':' + in_out.split('-')[0]
-                if model_id_input in excludes:
-                    in_out_pairs.remove(model_id_input)
+            if 'exclude' in conf:
+                for in_out in conf['in_out_pairs']:
+                    model_id_input = model + ':' + in_out.split('-')[0]
+                    if model_id_input in excludes:
+                        in_out_pairs.remove(in_out)
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
