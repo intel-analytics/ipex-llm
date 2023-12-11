@@ -241,6 +241,8 @@ def chatglm2_attention_forward_8eb45c(
 
     if self.multi_query_attention:
         if device.type == "xpu" and batch_size > 1:
+            # Optimize memory usage and support beam_search on gpu.
+            # If you use beam_search for generation, the batch_size will larger than 1.
             key_layer = key_layer.permute(1, 2, 0, 3)  # [bs, nh/k, sl, hn]
             value_layer = value_layer.permute(1, 2, 0, 3)  # [bs, nh/k, sl, hn]
         else:
@@ -270,6 +272,8 @@ def chatglm2_attention_forward_8eb45c(
         if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             if device.type == "xpu" and batch_size > 1:
+                # Optimize memory usage and support beam_search on gpu.
+                # If you use beam_search for generation, the batch_size will larger than 1.
                 new_cache_k, new_cache_v = init_kv_cache(batch_size,
                                                          self.num_multi_query_groups_per_partition,
                                                          self.hidden_size_per_attention_head,
@@ -297,6 +301,8 @@ def chatglm2_attention_forward_8eb45c(
             + KV_CACHE_ALLOC_BLOCK_LENGTH
 
         if device.type == "xpu" and batch_size > 1:
+            # Optimize memory usage and support beam_search on gpu.
+            # If you use beam_search for generation, the batch_size will larger than 1.
             nums_per_partition = self.num_multi_query_groups_per_partition
         else:
             nums_per_partition = self.num_attention_heads_per_partition
@@ -325,9 +331,11 @@ def chatglm2_attention_forward_8eb45c(
     # core attention computation
     # ==================================
     if device.type == "xpu" and batch_size > 1:
+        # Optimize memory usage and support beam_search on gpu.
+        # If you use beam_search for generation, the batch_size will larger than 1.
         if self.multi_query_attention:
             # [bs, nh/k, sl, hn] --> [bs, nh, sl, hn]
-            # expend key_layer/value_layer for core attention computation
+            # expend key_layer/value_layer for core attention computation.
             query_group_size = self.num_attention_heads_per_partition // \
                 self.num_multi_query_groups_per_partition
             key_layer = key_layer.unsqueeze(-3)
