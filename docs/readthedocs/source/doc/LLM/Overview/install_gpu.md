@@ -5,7 +5,7 @@
 Install BigDL-LLM for GPU supports using pip through:
 
 ```bash
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for GPU
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for Intel GPU
 ```
 
 Please refer to [Environment Setup](#environment-setup) for more information.
@@ -85,9 +85,9 @@ export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
 
-## Installing from Wheels
+## Installing bigdl-llm[xpu] dependencies from Wheels
 
-You can also install BigDL-LLM from source achieves. First you need to install the target torch/torchvision/ipex versions from download whls [here](http://ec2-52-27-27-201.us-west-2.compute.amazonaws.com/ipex-release.php?device=xpu&repo=us&release=stable) before installing bigdl-llm. 
+You can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to install the target torch/torchvision/ipex versions from downloaded whls [here](http://ec2-52-27-27-201.us-west-2.compute.amazonaws.com/ipex-release.php?device=xpu&repo=us&release=stable) before installing bigdl-llm. 
 
 ```bash
 # get the wheels on Linux system
@@ -111,6 +111,6 @@ python -m pip install torch-2.0.1a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
 python -m pip install torchvision-0.15.2a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
 python -m pip install intel_extension_for_pytorch-2.0.110+xpu-cp39-cp39-linux_x86_64.whl
 
-# install bigdl-llm for GPU
+# install bigdl-llm for Intel GPU
 pip install --pre --upgrade bigdl-llm[xpu]
 ```
