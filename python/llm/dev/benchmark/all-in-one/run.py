@@ -42,7 +42,7 @@ CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 
 results = []
-excludes = []
+
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
@@ -91,13 +91,6 @@ def get_model_path(repo_id, local_model_hub):
     else:
         return repo_id
 
-def should_exclude(repo_id, in_out):
-    for item in excludes:
-        exclude_model_id = item.split(':')[0]
-        exclude_in_out = item.split(':')[1]
-        if exclude_model_id == repo_id and exclude_in_out == in_out.split('-')[0]:
-            return True
-    return False
 
 def run_native_int4(repo_id,
                     local_model_hub,
@@ -374,9 +367,6 @@ def run_transformer_int4_gpu(repo_id,
     result = {}
     with torch.inference_mode():
         for in_out in in_out_pairs:
-            if excludes and should_exclude(repo_id, in_out):
-                result[in_out] = []
-                continue
             try:
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
@@ -763,7 +753,12 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         for model in conf.repo_id:
-            run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+            in_out_pairs = conf['in_out_pairs'].copy()
+            for in_out in conf['in_out_pairs']:
+                model_id_input = model + ':' + in_out.split('-')[0]
+                if model_id_input in excludes:
+                    in_out_pairs.remove(model_id_input)
+            run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
