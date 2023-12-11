@@ -392,6 +392,12 @@ def _optimize_post(model, lightweight_bmm=False):
         # todo implement 4.28.0 ~ 4.30.2
         pass
 
+    # convert all nn.LayerNorm
+    from bigdl.llm.transformers.models.bloom import bloom_layer_norm_forward
+    convert_forward(model,
+                    nn.LayerNorm,
+                    bloom_layer_norm_forward)
+
     if model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
         if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
             # chatglm2-6b-32k
