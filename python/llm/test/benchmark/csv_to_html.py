@@ -22,17 +22,20 @@ import argparse
 import pandas as pd
 
 def highlight_vals(val, max=3.0):
-    if val > max:
-        return 'background-color: %s' % 'green'
-    elif val < -max:
-        return 'background-color: %s' % 'red'
+    if isinstance(val, float):
+        if val > max:
+            return 'background-color: %s' % 'green'
+        elif val <= -max:
+            return 'background-color: %s' % 'red'
     else:
         return ''
 
 def main():
     parser = argparse.ArgumentParser(description="convert .csv file to .html file")
     parser.add_argument("-f", "--folder_path", type=str, dest="folder_path",
-                        help="The directory which stores the .csv file", default="/mnt/disk1/nightly_perf/")
+                        help="The directory which stores the .csv file", default="/mnt/disk1/nightly_perf_gpu/")
+    parser.add_argument("-t", "--threshold", type=float, dest="threshold",
+                        help="the threshold of highlight values", default=3.0)
     args = parser.parse_args()
 
     csv_files = []
@@ -42,7 +45,10 @@ def main():
             csv_files.append(file_path)
     csv_files.sort(reverse=True)
 
+    highlight_threshold=args.threshold
+
     latest_csv = pd.read_csv(csv_files[0], index_col=0)
+    daily_html=csv_files[0].split(".")[0]+".html"
 
     if len(csv_files)>1:
         previous_csv = pd.read_csv(csv_files[1], index_col=0)
@@ -62,6 +68,8 @@ def main():
             latest_1st_token_latency=latest_csv_row[latency_1st_token]
             latest_2_avg_latency=latest_csv_row[latency_2_avg]
 
+            in_previous_flag=False
+
             for previous_csv_ind,previous_csv_row in previous_csv.iterrows():
 
                 previous_csv_model=previous_csv_row['model'].strip()
@@ -75,21 +83,28 @@ def main():
                     diff1[latest_csv_ind]=round((previous_1st_token_latency-latest_1st_token_latency)*100/previous_1st_token_latency,2)
                     last2[latest_csv_ind]=previous_2_avg_latency
                     diff2[latest_csv_ind]=round((previous_2_avg_latency-latest_2_avg_latency)*100/previous_2_avg_latency,2)
+                    in_previous_flag=True
+
+            if not in_previous_flag:
+                last1[latest_csv_ind]=pd.NA
+                diff1[latest_csv_ind]=pd.NA
+                last2[latest_csv_ind]=pd.NA
+                diff2[latest_csv_ind]=pd.NA
 
         latest_csv.insert(loc=3,column='last1',value=last1)
         latest_csv.insert(loc=4,column='diff1(%)',value=diff1)
         latest_csv.insert(loc=5,column='last2',value=last2)
         latest_csv.insert(loc=6,column='diff2(%)',value=diff2)
 
-    daily_html=csv_files[0].split(".")[0]+".html"
+        subset=['diff1(%)','diff2(%)']
+        columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
+                'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}', 'peak mem (GB)': '{:.2f}'}
 
-    subset=['diff1(%)','diff2(%)']
-    columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
-             'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}'}
-
-    with open(daily_html, 'w') as f:
-        f.write(latest_csv.style.format(columns).applymap(highlight_vals, subset)
-                        .set_table_attributes("border=1").render())
+        with open(daily_html, 'w') as f:
+            f.write(latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=highlight_threshold), subset)
+                            .set_table_attributes("border=1").render())
+    else:
+        latest_csv.to_html(daily_html)
 
 if __name__ == "__main__":
     sys.exit(main())
