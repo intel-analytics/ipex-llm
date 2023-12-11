@@ -33,6 +33,8 @@ def main():
     parser = argparse.ArgumentParser(description="convert .csv file to .html file")
     parser.add_argument("-f", "--folder_path", type=str, dest="folder_path",
                         help="The directory which stores the .csv file", default="/mnt/disk1/nightly_perf/")
+    parser.add_argument("-t", "--threshold", type=float, dest="threshold",
+                        help="the threshold of highlight values", default=3.0)
     args = parser.parse_args()
 
     csv_files = []
@@ -42,15 +44,17 @@ def main():
             csv_files.append(file_path)
     csv_files.sort(reverse=True)
 
+    highlight_threshold=args.threshold
+
     latest_csv = pd.read_csv(csv_files[0], index_col=0)
 
     if len(csv_files)>1:
         previous_csv = pd.read_csv(csv_files[1], index_col=0)
 
-        last1=['']*len(latest_csv.index)
-        diff1=['']*len(latest_csv.index)
-        last2=['']*len(latest_csv.index)
-        diff2=['']*len(latest_csv.index)
+        last1=[0.0]*len(latest_csv.index)
+        diff1=[0.0]*len(latest_csv.index)
+        last2=[0.0]*len(latest_csv.index)
+        diff2=[0.0]*len(latest_csv.index)
 
         latency_1st_token='1st token avg latency (ms)'
         latency_2_avg='2+ avg latency (ms/token)'
@@ -85,10 +89,10 @@ def main():
 
     subset=['diff1(%)','diff2(%)']
     columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
-             'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}'}
+             'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}', 'peak mem (GB)': '{:.2f}'}
 
     with open(daily_html, 'w') as f:
-        f.write(latest_csv.style.format(columns).applymap(highlight_vals, subset)
+        f.write(latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=highlight_threshold), subset)
                         .set_table_attributes("border=1").render())
 
 if __name__ == "__main__":
