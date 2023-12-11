@@ -219,8 +219,9 @@ def llama_attention_forward_4_31(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
-    elif q_len == 1 and query_states.device.type == "xpu" and query_states.dtype == torch.float16  and \
-        flex_sdp_check(self.head_dim, query_states.device):
+    elif q_len == 1 and query_states.device.type == "xpu" and \
+            query_states.dtype == torch.float16 and \
+            flex_sdp_check(self.head_dim, query_states.device):
         # now only use flex sdp for rest token
         import linear_fp16_esimd
         if hasattr(linear_fp16_esimd, "sdp_forward"):
@@ -287,7 +288,8 @@ def flex_sdp_check(head_dim, query_device):
         return False
     else:
         device_name = torch.xpu.get_device_name(query_device.index)
-        if device_name.startswith("Intel(R) Arc(TM)") or device_name.startswith("Intel(R) Data Center GPU Flex"):
+        if device_name.startswith("Intel(R) Arc(TM)") or \
+                device_name.startswith("Intel(R) Data Center GPU Flex"):
             # iGPU?
             return True
         else:
