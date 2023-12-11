@@ -292,7 +292,7 @@ def setup_package():
                          # "intel_extension_for_pytorch==2.0.110+gitba7f6c1;platform_system=='Windows'",
                         "bigdl-core-xe-21==" + VERSION + ";platform_system=='Linux'",
                         "bigdl-core-xe-esimd-21==" + VERSION + ";platform_system=='Linux'"]
-    xpu_requires = xpu_21_requires
+    xpu_requires = xpu_20_requires
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
 
@@ -318,7 +318,7 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires,  # default to lastest ipex public version
+                        "xpu": xpu_requires,  # default to ipex 2.0 now
                         "xpu_20": xpu_20_requires,
                         "xpu_21": xpu_21_requires,
                         "serving": serving_requires},
