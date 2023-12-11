@@ -103,8 +103,8 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: [falcon-7b-instruct-with-patch]
-        task: [winogrande]
+        model_name: [Mistral-7B-v0.1]
+        task: [gsm8k]
         precision: [sym_int4, fp4, fp8, mixed_fp4, mixed_fp8, sym_int8]
         device: [xpu]
         
