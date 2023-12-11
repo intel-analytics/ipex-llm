@@ -336,10 +336,10 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           move *.csv %CSV_SAVE_PATH%\32-32\
-          REM cd ..\..\..\test\benchmark
-          REM python csv_to_html.py -f %CSV_SAVE_PATH%\32-32\
-          REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          REM move *.csv %CSV_SAVE_PATH%
+          cd ..\..\..\test\benchmark
+          python csv_to_html.py -f %CSV_SAVE_PATH%\32-32\
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          move *.csv %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -404,10 +404,10 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           move *.csv %CSV_SAVE_PATH%\32-256\
-          REM cd ..\..\..\test\benchmark
-          REM python csv_to_html.py -f %CSV_SAVE_PATH%\32-256\
-          REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          REM move *.csv %CSV_SAVE_PATH%
+          cd ..\..\..\test\benchmark
+          python csv_to_html.py -f %CSV_SAVE_PATH%\32-256\
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          move *.csv %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -472,10 +472,10 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           move *.csv %CSV_SAVE_PATH%\32-512\
-          REM cd ..\..\..\test\benchmark
-          REM python csv_to_html.py -f %CSV_SAVE_PATH%\32-512\
-          REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          REM move *.csv %CSV_SAVE_PATH%
+          cd ..\..\..\test\benchmark
+          python csv_to_html.py -f %CSV_SAVE_PATH%\32-512\
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          move *.csv %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -514,10 +514,10 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move *.csv %CSV_SAVE_PATH%\512-64\
-          REM cd ..\..\..\test\benchmark
-          REM python csv_to_html.py -f %CSV_SAVE_PATH%\512-64\
-          REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          REM move *.csv %CSV_SAVE_PATH%
+          cd ..\..\..\test\benchmark
+          python csv_to_html.py -f %CSV_SAVE_PATH%\512-64\
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          move *.csv %CSV_SAVE_PATH%
 
           call conda deactivate
 
