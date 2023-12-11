@@ -7,6 +7,7 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [Mistral-7B-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-v0.1-AWQ)
 - [vicuna-7B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-7B-v1.5-AWQ)
 - [vicuna-13B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-13B-v1.5-AWQ)
+- [Yi-6B-AWQ](https://huggingface.co/TheBloke/Yi-6B-AWQ)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -23,6 +24,7 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 pip install transformers==4.35.0
 pip install autoawq==0.1.6 --no-deps
 pip install accelerate==0.24.1
+pip install einops
 ```
 
 ### 2. Configures OneAPI environment variables
