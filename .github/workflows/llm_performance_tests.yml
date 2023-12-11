@@ -406,7 +406,7 @@ jobs:
           move *.csv %CSV_SAVE_PATH%\32-256\
           cd ..\..\..\test\benchmark
           python csv_to_html.py -f %CSV_SAVE_PATH%\32-256\
-          Rif %ERRORLEVEL% neq 0 (exit /b 1)
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           move *.csv %CSV_SAVE_PATH%
 
           call conda deactivate
