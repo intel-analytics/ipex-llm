@@ -10,7 +10,6 @@ on:
   schedule:
     - cron: "00 13 * * 5" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
-    types: ready_for_review
     branches: [main]
     paths:
       - ".github/workflows/llm-harness-evaluation.yml"
@@ -139,10 +138,7 @@ jobs:
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
         shell: bash
         run: |
-          git clone https://github.com/EleutherAI/lm-evaluation-harness.git
-          cd  lm-evaluation-harness
-          git checkout e81d3cc
-          pip install -e .
+          pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@e81d3cc
       
       - name: Download models and datasets
         shell: bash

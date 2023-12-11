@@ -136,7 +136,7 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
         low_bit_kwargs.update(
             {
                 "qtype": target.qtype,
-                "qa_lora": lora_config.qa_lora,
+                "qa_lora": lora_config.qa_lora if hasattr(lora_config, "qa_lora") else False,
             }
         )
         new_module = LoraLowBitLinear(adapter_name,
@@ -165,6 +165,7 @@ def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
     LoraModel._create_new_module = staticmethod(functools.partial(_create_new_module,
                                                                   old_create_new_module))
+
     try:
         from peft import get_peft_model as get_peft_model_original
         model = get_peft_model_original(*args, **kwargs)
