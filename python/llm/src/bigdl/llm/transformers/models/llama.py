@@ -219,13 +219,21 @@ def llama_attention_forward_4_31(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
-    # need add more check here
-    elif q_len == 1 and query_states.device.type == "xpu" and query_states.dtype ==torch.float16:
-        import sdp_fp16_esimd
-        attn_output = sdp_fp16_esimd.forward(query_states,
-                                             key_states.contiguous(),
-                                             value_states.contiguous())
-        attn_output = attn_output.view(query_states.shape)
+    elif q_len == 1 and query_states.device.type == "xpu" and query_states.dtype == torch.float16  and \
+        flex_sdp_check(self.head_dim, query_states.device):
+        # now only use flex sdp for rest token
+        import linear_fp16_esimd
+        if hasattr(linear_fp16_esimd, "sdp_forward"):
+            attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                        key_states.contiguous(),
+                                                        value_states.contiguous())
+            attn_output = attn_output.view(query_states.shape)
+            attn_weights = None
+        else:
+            attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                                   attention_mask,
+                                                   bsz, q_len, kv_seq_len,
+                                                   self.head_dim, self.num_heads)
     else:
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
@@ -271,6 +279,19 @@ def check_flash_attention_available(query):
         # may update this later
         return False
     return True
+
+
+def flex_sdp_check(head_dim, query_device):
+    if head_dim != 128:
+        # only supporr head_dim = 128 now
+        return False
+    else:
+        device_name = torch.xpu.get_device_name(query_device.index)
+        if device_name.startswith("Intel(R) Arc(TM)") or device_name.startswith("Intel(R) Data Center GPU Flex"):
+            # iGPU?
+            return True
+        else:
+            return False
 
 
 def native_sdp(query, key, value, attention_mask,
