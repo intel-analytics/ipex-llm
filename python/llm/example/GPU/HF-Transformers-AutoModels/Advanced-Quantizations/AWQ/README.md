@@ -1,21 +1,29 @@
 # AWQ
+
 This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel GPU.
 
 ## Verified Models
+
 - [Llama-2-7B-Chat-AWQ](https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ)
 - [Mistral-7B-Instruct-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-AWQ)
 - [Mistral-7B-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-v0.1-AWQ)
 - [vicuna-7B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-7B-v1.5-AWQ)
 - [vicuna-13B-v1.5-AWQ](https://huggingface.co/TheBloke/vicuna-13B-v1.5-AWQ)
+- [llava-v1.5-13B-AWQ](https://huggingface.co/TheBloke/llava-v1.5-13B-AWQ)
 - [Yi-6B-AWQ](https://huggingface.co/TheBloke/Yi-6B-AWQ)
 
 ## Requirements
+
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
+
 In the example [generate.py](./generate.py), we show a basic use case for a AWQ model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+
 ### 1. Install
+
 We suggest using conda to manage environment:
+
 ```bash
 conda create -n llm python=3.9
 conda activate llm
@@ -28,6 +36,7 @@ pip install einops
 ```
 
 ### 2. Configures OneAPI environment variables
+
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
@@ -46,6 +55,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
+
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the AWQ model (e.g. `TheBloke/Llama-2-7B-Chat-AWQ`, `TheBloke/Mistral-7B-Instruct-v0.1-AWQ`, `TheBloke/Mistral-7B-v0.1-AWQ`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'TheBloke/Llama-2-7B-Chat-AWQ'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
@@ -55,7 +65,9 @@ Arguments info:
 > Please select the appropriate size of the Llama2 model based on the capabilities of your machine.
 
 #### 2.3 Sample Output
-#### ["TheBloke/Llama-2-7B-Chat-AWQ"](https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ)
+
+#### [&#34;TheBloke/Llama-2-7B-Chat-AWQ&#34;](https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ)
+
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
