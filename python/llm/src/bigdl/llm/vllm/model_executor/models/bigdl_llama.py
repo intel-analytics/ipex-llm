@@ -63,7 +63,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         super().__init__(config, device, max_model_len)
         self.config = config
         # TODO(gc): later change this to a switch?
-        use_bigdl_lowbit = os.getenv("VLLM_USE_BIGDL_LOWBIT")
+        use_bigdl_lowbit = os.getenv("VLLM_USE_BIGDL_LOWBIT", "")
         if use_bigdl_lowbit.lower() == "true":
             from bigdl.llm.transformers import AutoModelForCausalLM
             from bigdl.llm import optimize_model
@@ -110,7 +110,6 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                         but is required for xpu inference.")
                 model = AutoModelForCausalLM.from_pretrained(
                     config._name_or_path,
-                    load_in_low_bit=low_bit,
                     trust_remote_code=True,
                     use_cache=True,
                 )
@@ -125,6 +124,12 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         self.pad_token_id = config.pad_token_id
         self.max_seq_limit = max_model_len
 
+    # GC: Note for selective batching
+    # KV_CACHE in the format of num_layers x 2 x (seq_id -> torch.Tensor)
+    # past_key_values in the format of num_layers x len(seq_id) x (2 x torch.Tensor)
+    # If we set num_layers to 9, have 10 sequences in total.
+    # then, for the kv_cache, we get 9 x 2 x 10 = 180 tensors
+    # for past_key_values, we get 9 x 10 x 2 = 180 tensors
     def forward(
         self,
         seq_group_meta_data_lists: List[SequenceGroupMetadata],
@@ -165,8 +170,8 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # 1. Assemble bigdl_input_ids end
 
         if is_decoding_stage:
-            bigdl_kv_cache = self.prepare_kv_cache(cur_seq_ids, seq_group_meta_data_lists,
-                                                   kv_cache, num_layers, decoder_kv_size)
+            bigdl_kv_cache = self.prepare_kv_cache_llama(cur_seq_ids,
+                                                         kv_cache, num_layers)
         else:
             bigdl_attention_mask = _get_attention_mask_for_prompts(bigdl_input_ids, max_prompt_len)
             bigdl_input_ids = [
@@ -174,26 +179,28 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 for input_ids in bigdl_input_ids
             ]
 
-        if is_decoding_stage:
-            cur_seq_len = bigdl_kv_cache[0][0].size(2)
-            for seq_group_meta_data in seq_group_meta_data_lists:
-                seq_ids = list(seq_group_meta_data.seq_data.keys())
-                seq_id = seq_ids[0]
-                seq_data = seq_group_meta_data.seq_data[seq_id]
-                cur_pos = seq_data.get_len()
-                # bigdl_position_ids.append([cur_pos - 1])
-                cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
-                bigdl_attention_mask.append(cur_attention_mask)
+        # GC(co): by using selective_batching, we no longer need to create
+        # attention_mask for decoding.
+        # if is_decoding_stage:
+        #     cur_seq_len = bigdl_kv_cache[0][0].size(2)
+        #     for seq_group_meta_data in seq_group_meta_data_lists:
+        #         seq_ids = list(seq_group_meta_data.seq_data.keys())
+        #         seq_id = seq_ids[0]
+        #         seq_data = seq_group_meta_data.seq_data[seq_id]
+        #         cur_pos = seq_data.get_len()
+        #         # bigdl_position_ids.append([cur_pos - 1])
+        #         cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
+        #         bigdl_attention_mask.append(cur_attention_mask)
 
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
 
         if is_decoding_stage:
-            # bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
-            bigdl_attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
             kwargs = {
                 "input_ids": bigdl_input_ids,
+                # gc(co): we rely on underlying model to generate position_ids
                 # "position_ids": bigdl_position_ids,
-                "attention_mask": bigdl_attention_mask,
+                # gc(co): we no longer need attention_mask
+                # "attention_mask": bigdl_attention_mask,
                 "past_key_values": bigdl_kv_cache,
                 "use_cache": True,
                 # "return_dict": True,
@@ -207,6 +214,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 "use_cache": True,
                 # "return_dict": True,
             }
+            # Prefill may need additional space, which forces us to delete the last_kv_cache
             if self.last_kv_cache:
                 del self.last_kv_cache
         # pdb.set_trace()
