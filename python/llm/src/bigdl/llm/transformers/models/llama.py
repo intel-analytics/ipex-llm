@@ -286,7 +286,7 @@ def use_esimd_sdp(q_len, head_dim, query_states):
         # esimd_sdp only has optimization for FP16 now
         return False
     else:
-        device_name = torch.xpu.get_device_name(query_device.index)
+        device_name = torch.xpu.get_device_name(query_states.device.index)
         if device_name.startswith("Intel(R) Arc(TM)") or \
                 device_name.startswith("Intel(R) Data Center GPU Flex"):
             import linear_fp16_esimd
