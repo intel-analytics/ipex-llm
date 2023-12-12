@@ -344,14 +344,14 @@ def chatglm2_attention_forward_8eb45c(
             key_layer = key_layer.unsqueeze(-3)
             key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
             save_length = key_layer.size(3)
-            # [bs, np, sl, hn] --> [b, nh, sq, hn]
+            # [bs, np, sl, hn] --> [bs, nh, sl, hn]
             key_layer = key_layer.contiguous().view((batch_size,
                                                      self.num_attention_heads_per_partition,
                                                      save_length,
                                                      self.hidden_size_per_attention_head))
             value_layer = value_layer.unsqueeze(-3)
             value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
-            # [bs, np, sl, hn] --> [b, nh, sq, hn]
+            # [bs, np, sl, hn] --> [bs, nh, sl, hn]
             value_layer = value_layer.contiguous().view((batch_size,
                                                          self.num_attention_heads_per_partition,
                                                          save_length,
