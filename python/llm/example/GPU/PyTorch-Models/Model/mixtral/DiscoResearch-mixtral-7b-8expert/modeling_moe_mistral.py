@@ -16,8 +16,7 @@
 
 # ===========================================================================
 #
-# This file is adapted from
-# https://huggingface.co/DiscoResearch/mixtral-7b-8expert/blob/main/configuration_moe_mistral.py
+# This file is adapted from https://huggingface.co/DiscoResearch/mixtral-7b-8expert/blob/main/configuration_moe_mistral.py
 #
 # Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
 #
