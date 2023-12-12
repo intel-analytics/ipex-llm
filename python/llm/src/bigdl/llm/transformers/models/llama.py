@@ -287,7 +287,7 @@ def use_esimd_sdp(q_len, head_dim, query_states):
         return False
     else:
         device_name = torch.xpu.get_device_name(query_states.device.index)
-        if device_name.startswith("Intel(R) Arc(TM)") or \
+        if device_name.startswith("Intel(R) Arc(TM) A") or \
                 device_name.startswith("Intel(R) Data Center GPU Flex"):
             import linear_fp16_esimd
             if hasattr(linear_fp16_esimd, "sdp_forward"):
