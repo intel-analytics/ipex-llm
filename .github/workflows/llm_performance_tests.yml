@@ -339,7 +339,7 @@ jobs:
           cd ..\..\..\test\benchmark
           python csv_to_html.py -f %CSV_SAVE_PATH%\32-32\
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move *.csv %CSV_SAVE_PATH%
+          move %CSV_SAVE_PATH%\32-32\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -407,7 +407,7 @@ jobs:
           cd ..\..\..\test\benchmark
           python csv_to_html.py -f %CSV_SAVE_PATH%\32-256\
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move *.csv %CSV_SAVE_PATH%
+          move %CSV_SAVE_PATH%\32-256\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -475,7 +475,7 @@ jobs:
           cd ..\..\..\test\benchmark
           python csv_to_html.py -f %CSV_SAVE_PATH%\32-512\
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move *.csv %CSV_SAVE_PATH%
+          move %CSV_SAVE_PATH%\32-512\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -517,7 +517,7 @@ jobs:
           cd ..\..\..\test\benchmark
           python csv_to_html.py -f %CSV_SAVE_PATH%\512-64\
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move *.csv %CSV_SAVE_PATH%
+          move %CSV_SAVE_PATH%\512-64\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 
