@@ -73,7 +73,7 @@ conda activate llm
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for GPU
 ```
 
-If you encounter network issues when installing ipex, you can refer to  [Installing bigdl-llm[xpu] dependencies from Wheels](#installing-bigdl-llm[xpu]-dependencies-from-wheels) as an alternative method.
+If you encounter network issues when installing ipex, you can refer to  [Installing bigdl-llm[xpu] dependencies from Wheels](#installing-bigdl-llmxpu-dependencies-from-wheels) as an alternative method.
 
 Then for running a LLM model with BigDL-LLM optimizations, several environment variables are recommended:
 
