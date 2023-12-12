@@ -620,8 +620,8 @@ def _optimize_post(model, lightweight_bmm=False):
             model.config.architectures[0] == "MixtralForCausalLM":
             # For DiscoResearch/mixtral-7b-8expert
             invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
-                            "Please upgrade transformers to 4.36.0 or higher version "
-                            "to run Mixtral models.")
+                              "Please upgrade transformers to 4.36.0 or higher version "
+                              "to run Mixtral models.")
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             convert_forward(model,
