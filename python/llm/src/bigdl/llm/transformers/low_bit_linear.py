@@ -513,8 +513,11 @@ class LowBitLinear(nn.Linear):
                     result = F.linear(x, x0_fp32)
                 else:
                     # Weight does not need a convert
-                    result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                     new_shape = x_shape[:-1] + (self.out_len,)
+                    # If 0 in input shape, e.g., [0, 4096]
+                    if 0 in x_2d.shape:
+                        return torch.empty(new_shape, dtype=torch.float32)
+                    result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                     result = result.view(new_shape)
             # allreduce to combine partial results and add bias if necessary
             if self.mp_group is not None:
