@@ -754,7 +754,7 @@ if __name__ == '__main__':
     for api in conf.test_api:
         for model in conf.repo_id:
             in_out_pairs = conf['in_out_pairs'].copy()
-            if 'exclude' in conf:
+            if excludes:
                 for in_out in conf['in_out_pairs']:
                     model_id_input = model + ':' + in_out.split('-')[0]
                     if model_id_input in excludes:
