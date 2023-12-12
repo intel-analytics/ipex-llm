@@ -25,8 +25,7 @@ pip install transformers==4.36.0
 ```
 
 ### 2. Download Model and Replace File
-If you select the Mixtral model ([DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert)), please note that `flash_attn` dependency is required. To address this issue, we have provided updated file ([DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py](./DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py)), which can be used to run on Intel GPUs.
-
+To run [DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert) model on Intel GPU, we have provided an updated version [DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py](./DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py) of `modeling_moe_mistral.py`.
 
 #### 2.1 Download Model
 You could use the following code to download [DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert).
