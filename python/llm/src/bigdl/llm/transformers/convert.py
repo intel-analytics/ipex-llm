@@ -617,7 +617,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_rms_norm_forward)
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
-            model.config.architectures[0] == "MixtralForCausalLM":
+                model.config.architectures[0] == "MixtralForCausalLM":
             # For DiscoResearch/mixtral-7b-8expert
             invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
                               "Please upgrade transformers to 4.36.0 or higher version "
