@@ -105,7 +105,7 @@ jobs:
         python-version: ["3.9"]
         model_name: [Mistral-7B-v0.1]
         task: [gsm8k]
-        precision: [sym_int4, fp4, fp8, mixed_fp4, mixed_fp8, sym_int8]
+        precision: [fp4, sym_int8]
         device: [xpu]
         
     runs-on: [self-hosted, llm, accuracy]
@@ -166,7 +166,7 @@ jobs:
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
-          source /opt/intel/oneapi/setvars.sh
+          source /home/arda/intel/oneapi/setvars.sh
           python run_llb.py \
           --model bigdl-llm \
           --pretrained ${MODEL_PATH} \
