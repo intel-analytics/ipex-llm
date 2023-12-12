@@ -616,6 +616,15 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MistralRMSNorm,
                         llama_rms_norm_forward)
+    elif model.config.model_type == "mixtral":
+        invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
+                          "Please upgrade transformers to 4.36.0 or higher version "
+                          "to run Mixtral models.")
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model,
+                        module.MixtralRMSNorm,
+                        llama_rms_norm_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
