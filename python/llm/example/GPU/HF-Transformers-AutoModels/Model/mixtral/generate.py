@@ -28,8 +28,8 @@ MIXTRAL_PROMPT_FORMAT = """<s>[INST] {prompt} [/INST]"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mixtral model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="'DiscoResearch/mixtral-7b-8expert'",
-                        help='The huggingface repo id for the Mixtral (e.g. `DiscoResearch/mixtral-7b-8expert`) to be downloaded,'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="'mistralai/Mixtral-8x7B-Instruct-v0.1'",
+                        help='The huggingface repo id for the Mixtral (e.g. `mistralai/Mixtral-8x7B-Instruct-v0.1` and `DiscoResearch/mixtral-7b-8expert`) to be downloaded,'
                              ', or the path to the huggingface checkpoint folder. For model `DiscoResearch/mixtral-7b-8expert`, '
                              'you should input the path to the model folder in which `modeling_moe_mistral.py` has been replaced.')
     parser.add_argument('--prompt', type=str, default="What is AI?",
