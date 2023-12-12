@@ -618,15 +618,15 @@ def _optimize_post(model, lightweight_bmm=False):
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
             model.config.architectures[0] == "MixtralForCausalLM":
-                # For DiscoResearch/mixtral-7b-8expert
-                invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
-                                  "Please upgrade transformers to 4.36.0 or higher version "
-                                  "to run Mixtral models.")
-                modeling_module_name = model.__class__.__module__
-                module = importlib.import_module(modeling_module_name)
-                convert_forward(model,
-                                module.MistralRMSNorm,
-                                llama_rms_norm_forward)
+            # For DiscoResearch/mixtral-7b-8expert
+            invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
+                            "Please upgrade transformers to 4.36.0 or higher version "
+                            "to run Mixtral models.")
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model,
+                            module.MistralRMSNorm,
+                            llama_rms_norm_forward)
         else:
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
