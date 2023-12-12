@@ -70,13 +70,13 @@ jobs:
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /opt/intel/oneapi/setvars.sh
+          source /home/arda/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu
         shell: bash
         run: |
-          source /opt/intel/oneapi/setvars.sh
+          source /home/arda/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
