@@ -605,7 +605,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.AquilaRMSNorm,
                         llama_rms_norm_forward)
-    elif model.config.model_type == "mistral":
+    elif model.config.model_type == "mistral" and model.config.architectures[0] == "MistralForCausalLM":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.mistral import mistral_attention_forward
@@ -616,15 +616,24 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MistralRMSNorm,
                         llama_rms_norm_forward)
-    elif model.config.model_type == "mixtral":
+    elif model.config.architectures is not None and model.config.architectures[0] == "MixtralForCausalLM":
         invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
                           "Please upgrade transformers to 4.36.0 or higher version "
                           "to run Mixtral models.")
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        convert_forward(model,
-                        module.MixtralRMSNorm,
-                        llama_rms_norm_forward)
+        if model.config.model_type == "mixtral":
+            # For mistralai/Mixtral-8x7B-v0.1
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model,
+                            module.MixtralRMSNorm,
+                            llama_rms_norm_forward)
+        elif model.config.model_type == "mistral":
+            # For DiscoResearch/mixtral-7b-8expert
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model,
+                            module.MistralRMSNorm,
+                            llama_rms_norm_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
