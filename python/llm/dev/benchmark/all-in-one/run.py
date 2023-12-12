@@ -733,7 +733,7 @@ def run_transformer_int4_gpu_win(repo_id,
                     if i >= warm_up:
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                             actual_in_len, actual_out_len, gpu_peak_mem])
-                    torch.xpu.empty_cache()
+                    # torch.xpu.empty_cache() # this may make first token slower
             except RuntimeError:
                 traceback.print_exc()
                 pass
