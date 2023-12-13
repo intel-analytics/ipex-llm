@@ -86,6 +86,7 @@ def mistral_attention_forward(
     value_states = value_states.view(bsz, q_len,
                                      self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
+    kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         if self.layer_idx is None:
             raise ValueError(
@@ -106,10 +107,9 @@ def mistral_attention_forward(
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                         cos, sin, position_ids, "mistral")
     
-    
+
     if past_key_value is not None:
         # reuse k, v, self_attention
-        
         if len(past_key_value.key_cache) <= self.layer_idx:
             past_key_value.key_cache.append(key_states)
             past_key_value.value_cache.append(value_states)
@@ -120,12 +120,12 @@ def mistral_attention_forward(
             if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
                 # allocate new
                 new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                        self.num_key_value_heads,  # Support GQA
-                                                        self.head_dim,
-                                                        cache_k.size(2),
-                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                        dtype=cache_k.dtype,
-                                                        device=device)
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
 
                 new_cache_k[:] = cache_k
                 new_cache_v[:] = cache_v
@@ -133,6 +133,9 @@ def mistral_attention_forward(
                 cache_v = new_cache_v
 
             key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+
+            past_key_value.key_cache[self.layer_idx] = key_states
+            past_key_value.value_cache[self.layer_idx] = value_states
 
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
