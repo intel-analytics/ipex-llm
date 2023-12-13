@@ -455,7 +455,7 @@ class LowBitLinear(nn.Linear):
         # Activation is empty tensor, e.g., [0, 4096]
         if 0 in x_shape:
             # return empty tensor with output shape
-            return torch.empty(new_shape, dtype=x.dtype)
+            return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
         x_2d = x.view(-1, x_shape[-1])
         # x0 for weight
