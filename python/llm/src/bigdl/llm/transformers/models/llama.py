@@ -219,6 +219,13 @@ def llama_attention_forward_4_31(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
+    elif use_esimd_sdp(q_len, self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states.contiguous(),
+                                                    value_states.contiguous())
+        attn_output = attn_output.view(query_states.shape)
+        attn_weights = None
     else:
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
@@ -264,6 +271,32 @@ def check_flash_attention_available(query):
         # may update this later
         return False
     return True
+
+
+def use_esimd_sdp(q_len, head_dim, query_states):
+    if head_dim != 128:
+        # esimd_sdp only support head_dim = 128 now
+        return False
+    elif q_len != 1:
+        # esimd_sdp only support rest token now
+        return False
+    elif query_states.device.type != "xpu":
+        # esimd_sdp only support GPU now
+        return False
+    elif query_states.dtype != torch.float16:
+        # esimd_sdp only has optimization for FP16 now
+        return False
+    else:
+        device_name = torch.xpu.get_device_name(query_states.device.index)
+        if device_name.startswith("Intel(R) Arc(TM) A") or \
+                device_name.startswith("Intel(R) Data Center GPU Flex"):
+            import linear_fp16_esimd
+            if hasattr(linear_fp16_esimd, "sdp_forward"):
+                return True
+            else:
+                return False
+        else:
+            return False
 
 
 def native_sdp(query, key, value, attention_mask,

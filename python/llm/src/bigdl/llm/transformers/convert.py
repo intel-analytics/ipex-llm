@@ -249,8 +249,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
 
                             # convert here
                             m, n = module.weight.data.shape
-                            trans_weight = module.weight.data.reshape(m//16, 16, n)
-                            trans_weight = trans_weight.transpose(1, 2).contiguous()
+                            if module.in_features == 11008:
+                                trans_weight = module.weight.data.reshape(m//8, 8, n)
+                                trans_weight = trans_weight.transpose(1, 2).contiguous()
+                            elif module.in_features == 4096:
+                                trans_weight = module.weight.data.reshape(m//16, 16, n)
+                                trans_weight = trans_weight.transpose(1, 2).contiguous()
                             new_linear._parameters['weight'] = nn.Parameter(trans_weight)
                             if module.bias is not None:
                                 new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
