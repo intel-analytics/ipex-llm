@@ -135,7 +135,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
 
         extra = Extra.forbid
     
-    def embed(self, text: str):
+    def embed(self, text: str, encode_kwargs):
         """Compute doc embeddings using a HuggingFace transformer model.
 
         Args:
@@ -144,7 +144,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
         Returns:
             List of embeddings, one for each text.
         """
-        input_ids = self.tokenizer.encode(text, return_tensors="pt")  # shape: [1, T]
+        input_ids = self.tokenizer.encode(text, return_tensors="pt", **encode_kwargs)  # shape: [1, T]
         embeddings = self.model(input_ids, return_dict=False)[0]  # shape: [1, T, N]
         embeddings = embeddings.squeeze(0).detach().numpy()
         embeddings = np.mean(embeddings, axis=0)
@@ -160,7 +160,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
             List of embeddings, one for each text.
         """
         texts = list(map(lambda x: x.replace("\n", " "), texts))
-        embeddings = [self.embed(text, **self.encode_kwargs).tolist() for text in texts]
+        embeddings = [self.embed(text, self.encode_kwargs).tolist() for text in texts]
         return embeddings
 
     def embed_query(self, text: str) -> List[float]:
@@ -173,5 +173,5 @@ class TransformersEmbeddings(BaseModel, Embeddings):
             Embeddings for the text.
         """
         text = text.replace("\n", " ")
-        embedding = self.embed(text, **self.encode_kwargs)
+        embedding = self.embed(text, self.encode_kwargs)
         return embedding.tolist()
