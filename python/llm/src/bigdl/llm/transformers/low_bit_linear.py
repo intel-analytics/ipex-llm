@@ -448,13 +448,14 @@ class LowBitLinear(nn.Linear):
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
-        # [batch, input_token_num, in_len]
+        # [batch, input_num, in_len]
+        # input_num == token num for Transformer
         x_shape = x.shape
-        # Output shape, e.g., [batch, input_token_num, out_len]
+        # Output shape, e.g., [batch, input_num, out_len]
         new_shape = x_shape[:-1] + (self.out_len,)
-        # Activation is empty tensor, e.g., [0, 4096]
+        # Activation is empty tensor, e.g., [1, 0, 4096]
         if 0 in x_shape:
-            # return empty tensor with output shape
+            # return empty tensor with output shape, x.dtype and x.device
             return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
         x_2d = x.view(-1, x_shape[-1])
