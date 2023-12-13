@@ -274,25 +274,26 @@ def setup_package():
     # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
     xpu_20_requires = copy.deepcopy(all_requires)
     xpu_20_requires.remove('torch')
+    # xpu_20 only works for linux now
     xpu_20_requires += ["torch==2.0.1a0;platform_system=='Linux'",
-                        "torch==2.0.0a0+gitc6a572f;platform_system=='Windows'",
                         "torchvision==0.15.2a0;platform_system=='Linux'",
                         "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                        "intel_extension_for_pytorch==2.0.110+gitba7f6c1;platform_system=='Windows'",
-                        "bigdl-core-xe==" + VERSION + ";(platform_system=='Linux' or platform_system=='Windows')",
+                        "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'",
                         "bigdl-core-xe-esimd==" + VERSION + ";platform_system=='Linux'"]
 
     xpu_21_requires = copy.deepcopy(all_requires)
     xpu_21_requires.remove('torch')
-    # release linux first
-    xpu_21_requires += ["torch==2.1.0a0;platform_system=='Linux'",
-                         # "torch==2.0.0a0+gitc6a572f;platform_system=='Windows'",
-                        "torchvision==0.16.0a0;platform_system=='Linux'",
-                        "intel_extension_for_pytorch==2.1.10+xpu;platform_system=='Linux'",
-                         # "intel_extension_for_pytorch==2.0.110+gitba7f6c1;platform_system=='Windows'",
-                        "bigdl-core-xe-21==" + VERSION + ";platform_system=='Linux'",
+    xpu_21_requires += ["torch==2.1.0a0",
+                        "torchvision==0.16.0a0",
+                        "intel_extension_for_pytorch==2.1.10+xpu",
+                        "bigdl-core-xe-21==" + VERSION,
                         "bigdl-core-xe-esimd-21==" + VERSION + ";platform_system=='Linux'"]
-    xpu_requires = xpu_20_requires
+    # default to ipex 2.0 for linux and 2.1 for windows
+    xpu_requires = copy.deepcopy(xpu_20_requires)
+    xpu_requires.extend(["torch==2.1.0a0;platform_system=='Windows'",
+                         "torchvision==0.16.0a0;platform_system=='Windows'",
+                         "intel_extension_for_pytorch==2.1.10+xpu;platform_system=='Windows'",
+                         "bigdl-core-xe-21==" + VERSION + ";platform_system=='Windows'"])
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
 
@@ -318,7 +319,7 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires,  # default to ipex 2.0 now
+                        "xpu": xpu_requires,  # default to ipex 2.0 for linux and 2.1 for windows
                         "xpu_20": xpu_20_requires,
                         "xpu_21": xpu_21_requires,
                         "serving": serving_requires},
