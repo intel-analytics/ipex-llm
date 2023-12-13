@@ -62,11 +62,10 @@ def mixtral_moeblock_forward(self,
     # we cast back to the input dtype
     routing_weights = routing_weights.to(hidden_states.dtype)
 
-    final_hidden_states = torch.zeros(
-        (batch_size * sequence_length, hidden_dim), dtype=hidden_states.dtype, device=hidden_states.device
-    )
-
     if bs > 1:
+        final_hidden_states = torch.zeros(
+            (batch_size * sequence_length, hidden_dim), dtype=hidden_states.dtype, device=hidden_states.device
+        )
         # One hot encode the selected experts to create an expert mask
         # this will be used to easily index which expert is going to be sollicitated
         expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts).permute(2, 1, 0)
@@ -98,6 +97,10 @@ def mixtral_moeblock_forward(self,
             exp_id = selected_experts[idx]
             expert_layer = self.experts[exp_id]
             weight = routing_weights[:, idx]
-            final_hidden_states = final_hidden_states + expert_layer(hidden_states, weight)
+            if idx == 0:
+                final_hidden_states = expert_layer(hidden_states, weight)
+            else:
+                final_hidden_states = final_hidden_states + expert_layer(hidden_states, weight)
+
     final_hidden_states = final_hidden_states.reshape(batch_size, sequence_length, hidden_dim)
     return final_hidden_states, router_logits
