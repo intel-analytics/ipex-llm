@@ -47,7 +47,7 @@ from bigdl.llm.utils.common import invalidInputError
 
 
 def mixtral_moeblock_forward(self,
-                             hidden_states: torch.Tensor
+                             hidden_states: torch.Tensor,
 ) -> torch.Tensor:
     """ """
     batch_size, sequence_length, hidden_dim = hidden_states.shape
@@ -64,11 +64,14 @@ def mixtral_moeblock_forward(self,
 
     if bs > 1:
         final_hidden_states = torch.zeros(
-            (batch_size * sequence_length, hidden_dim), dtype=hidden_states.dtype, device=hidden_states.device
+            (batch_size * sequence_length, hidden_dim),
+            dtype=hidden_states.dtype,
+            device=hidden_states.device
         )
         # One hot encode the selected experts to create an expert mask
         # this will be used to easily index which expert is going to be sollicitated
-        expert_mask = torch.nn.functional.one_hot(selected_experts, num_classes=self.num_experts).permute(2, 1, 0)
+        expert_mask = torch.nn.functional.one_hot(selected_experts,
+                                                  num_classes=self.num_experts).permute(2, 1, 0)
 
         # Loop over all available experts in the model and perform the computation on each expert
         for expert_idx in range(self.num_experts):
@@ -86,7 +89,8 @@ def mixtral_moeblock_forward(self,
             # the current expert. We need to make sure to multiply the output hidden
             # states by `routing_weights` on the corresponding tokens (top-1 and top-2)
             current_state = hidden_states[None, top_x_list].reshape(-1, hidden_dim)
-            current_hidden_states = expert_layer(current_state) * routing_weights[top_x_list, idx_list, None]
+            current_hidden_states = expert_layer(current_state,
+                                                 routing_weights[top_x_list, idx_list, None])
 
             # However `index_add_` only support torch tensors for indexing so we'll use
             # the `top_x` tensor here.
