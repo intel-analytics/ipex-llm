@@ -114,7 +114,19 @@ def llama_mlp_forward(
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
 
-import linear_q4_0
+def is_enough_kv_cache_room(past_key_value):
+    return past_key_value is not None and \
+        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
+
+
+def should_use_fuse_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+    use_fuse_rope = use_fuse_rope and position_ids is not None
+    return use_fuse_rope
+
+
 def llama_attention_forward_4_31(
     self,
     hidden_states: torch.Tensor,
@@ -138,27 +150,35 @@ def llama_attention_forward_4_31(
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype
-    
-    if hidden_states.shape[0] * hidden_states.shape[1] == 1 and past_key_value is not None and past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3):
+
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    enough_kv_room = is_enough_kv_cache_room(past_key_value)
+
+    # single batch decoding fast path
+    # forward_qkv takes will perform QKV projection, rotary position embedding
+    # and save the key/value states to cache, then return query states and the
+    # extended key/value cache
+    if bsz * q_len == 1 and enough_kv_room and self.config.pretraining_tp <= 1 and use_fuse_rope:
         hidden_states = hidden_states.view(1, -1)
         kv_seq_len = past_key_value[0].shape[-2]
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
+        import linear_q4_0
         query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                        self.q_proj.weight,
-                                                                        self.k_proj.weight,
-                                                                        self.v_proj.weight,
-                                                                        position_ids,
-                                                                        cache_k, cache_v,
-                                                                        self.q_proj.weight.qtype,
-                                                                        kv_seq_len,
-                                                                        self.head_dim,
-                                                                        )
+                                                                         self.q_proj.weight,
+                                                                         self.k_proj.weight,
+                                                                         self.v_proj.weight,
+                                                                         position_ids,
+                                                                         cache_k, cache_v,
+                                                                         self.q_proj.weight.qtype,
+                                                                         kv_seq_len,
+                                                                         self.head_dim)
         kv_seq_len += 1
 
     else:
         if self.config.pretraining_tp > 1:
-            key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
+            key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
+                                 self.config.pretraining_tp)
             query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
                                                     // self.config.pretraining_tp, dim=0)
             key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
@@ -169,7 +189,7 @@ def llama_attention_forward_4_31(
             query_states = torch.cat(query_states, dim=-1)
 
             key_states = [F.linear(hidden_states, key_slices[i])
-                        for i in range(self.config.pretraining_tp)]
+                          for i in range(self.config.pretraining_tp)]
             key_states = torch.cat(key_states, dim=-1)
 
             value_states = [F.linear(hidden_states, value_slices[i])
@@ -182,25 +202,21 @@ def llama_attention_forward_4_31(
             value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
-                                        self.num_heads, self.head_dim).transpose(1, 2)
+                                         self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len,
-                                    self.num_key_value_heads, self.head_dim).transpose(1, 2)
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
         value_states = value_states.view(bsz, q_len,
-                                        self.num_key_value_heads, self.head_dim).transpose(1, 2)
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
         kv_seq_len = key_states.shape[-2]
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
 
-        use_fuse_rope = query_states.device.type == "xpu"
-        use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
-        use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
-
         if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                        key_states,
-                                                                        position_ids,
-                                                                        "llama")
+                                                                         key_states,
+                                                                         position_ids,
+                                                                         "llama")
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -210,15 +226,15 @@ def llama_attention_forward_4_31(
             # reuse k, v, self_attention
             cache_k = past_key_value[0]
             cache_v = past_key_value[1]
-            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if not enough_kv_room:
                 # allocate new
                 new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                        self.num_key_value_heads,  # Support GQA
-                                                        self.head_dim,
-                                                        cache_k.size(2),
-                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                        dtype=cache_k.dtype,
-                                                        device=device)
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
                 new_cache_k[:] = cache_k
                 new_cache_v[:] = cache_v
                 cache_k = new_cache_k
@@ -229,12 +245,12 @@ def llama_attention_forward_4_31(
         elif use_cache:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_key_states, new_value_states = init_kv_cache(bsz,
-                                                            self.num_key_value_heads,
-                                                            self.head_dim,
-                                                            kv_seq_len,
-                                                            max_cache_length,
-                                                            dtype=key_states.dtype,
-                                                            device=device)
+                                                             self.num_key_value_heads,
+                                                             self.head_dim,
+                                                             kv_seq_len,
+                                                             max_cache_length,
+                                                             dtype=key_states.dtype,
+                                                             device=device)
             new_key_states[:] = key_states
             new_value_states[:] = value_states
             key_states = new_key_states
