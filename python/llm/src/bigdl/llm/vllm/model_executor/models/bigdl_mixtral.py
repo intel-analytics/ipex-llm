@@ -102,7 +102,10 @@ class BigDLMixtralForCausalLM(BigDLModelForCausalLM):
         self.dtype = self.model.dtype
         self.last_seq_ids = []
         self.tmp_kv_cache = None
-        self.pad_token_id = config.pad_token_id
+        if config.pad_token_id is None:
+            self.pad_token_id = config.eos_token_id
+        else:
+            self.pad_token_id = config.pad_token_id
         self.max_seq_limit = max_model_len
 
     def forward(
