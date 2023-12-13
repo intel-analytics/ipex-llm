@@ -41,6 +41,7 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -153,12 +154,16 @@ def llama_attention_forward_4_31(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room(past_key_value)
+    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    no_tp = not self.config.pretraining_tp > 1
+    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+                          enough_kv_room and bsz * q_len == 1)
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
     # and save the key/value states to cache, then return query states and the
     # extended key/value cache
-    if bsz * q_len == 1 and enough_kv_room and self.config.pretraining_tp <= 1 and use_fuse_rope:
+    if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         kv_seq_len = past_key_value[0].shape[-2]
         cache_k = past_key_value[0]
