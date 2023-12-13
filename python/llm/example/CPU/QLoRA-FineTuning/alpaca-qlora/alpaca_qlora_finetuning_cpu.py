@@ -58,7 +58,7 @@ def get_int_from_env(env_keys, default):
         val = int(os.environ.get(e, -1))
         if val >= 0:
             return val
-    return default
+    return int(default)
 
 def train(
     # model/data params
