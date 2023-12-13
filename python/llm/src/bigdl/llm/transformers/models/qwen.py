@@ -210,3 +210,17 @@ def qwen_attention_forward(
             outputs += (attn_weight,)
 
     return outputs
+
+
+def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
+    if x.shape[1] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+            and not (self.training and x.requires_grad):
+        import linear_q4_0
+        x_2d = x.view(-1, x.shape[-1])
+        if not x_2d.is_contiguous():
+            x_2d = x_2d.contiguous()
+        return self.c_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+            x_2d, self.w2.weight.data, self.w1.weight.data,
+            x_2d.shape[0], x_2d.shape[1], self.w2.out_len,
+        ))
+    return self.c_proj(F.silu(self.w2(x)) * self.w1(x))
