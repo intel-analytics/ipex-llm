@@ -606,6 +606,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.AquilaRMSNorm,
                         llama_rms_norm_forward)
     elif model.config.model_type == "mixtral":
+        from bigdl.llm.transformers.models.mixtral import mixtral_sparse_moe_block_forward
         # For mistralai/Mixtral-8x7B-v0.1
         invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
                           "Please upgrade transformers to 4.36.0 or higher version "
@@ -615,6 +616,10 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralRMSNorm,
                         llama_rms_norm_forward)
+        convert_forward(model,
+                        module.MixtralSparseMoeBlock,
+                        mixtral_sparse_moe_block_forward)
+
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
                 model.config.architectures[0] == "MixtralForCausalLM":
