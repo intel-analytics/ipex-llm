@@ -1,5 +1,5 @@
 # Mixtral
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Mixtral models. For illustration purposes, we utilize the [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) and [DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert) as reference Mixtral models.
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Mixtral models. For illustration purposes, we utilize the [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) as a reference Mixtral model.
 
 ## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -24,30 +24,12 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 pip install transformers==4.36.0
 ```
 
-### (Optional) 2. Download Model and Replace File
-To run [DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert) model on Intel GPU, we have provided an updated version [DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py](./DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py) of `modeling_moe_mistral.py`.
-
-
-#### 2.1 Download Model
-You could use the following code to download [DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert).
-
-```python
-from huggingface_hub import snapshot_download
-
-# for DiscoResearch/mixtral-7b-8expert
-model_path = snapshot_download(repo_id='DiscoResearch/mixtral-7b-8expert')
-print(f'DiscoResearch/mixtral-7b-8expert checkpoint is downloaded to {model_path}')
-```
-
-#### 2.2 Replace `modeling_moe_mistral.py`
-For `DiscoResearch/mixtral-7b-8expert`, you should replace the `modeling_moe_mistral.py` with [DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py](./DiscoResearch-mixtral-7b-8expert/modeling_moe_mistral.py).
-
-### 3. Configures OneAPI environment variables
+### 2. Configures OneAPI environment variables
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 4. Run
+### 3. Run
 
 For optimal performance on Arc, it is recommended to set several environment variables.
 
@@ -62,7 +44,7 @@ python ./generate.py --prompt 'What is AI?'
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Mixtral model (e.g. `mistralai/Mixtral-8x7B-Instruct-v0.1` and `DiscoResearch/mixtral-7b-8expert`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mistralai/Mixtral-8x7B-Instruct-v0.1'`. For model `DiscoResearch/mixtral-7b-8expert`, you should input the path to the model folder in which `modeling_moe_mistral.py` has been replaced.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Mixtral model (e.g. `mistralai/Mixtral-8x7B-Instruct-v0.1`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mistralai/Mixtral-8x7B-Instruct-v0.1'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -72,13 +54,4 @@ In the example, several arguments can be passed to satisfy your requirements:
 Inference time: xxxx s 
 -------------------- Output --------------------
 [INST] What is AI? [/INST] AI, or Artificial Intelligence, refers to the development of computer systems that can perform tasks that would normally require human intelligence to accomplish. These tasks can include things
-```
-
-#### [DiscoResearch/mixtral-7b-8expert](https://huggingface.co/DiscoResearch/mixtral-7b-8expert)
-```log
-Inference time: xxxx s
--------------------- Output --------------------
-[INST] What is AI? [/INST]
-
-[INST] Artificial Intelligence (AI) is the ability of a computer program or a machine to think and learn. It is also a field of
 ```
