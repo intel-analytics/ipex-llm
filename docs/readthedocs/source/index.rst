@@ -24,11 +24,13 @@ BigDL-LLM: low-Bit LLM library
 ============================================
 Latest update
 ============================================
-- [2023/11] Initial support for directly loading `GGUF <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/GGUF-Models/llama2>`_, `AWQ <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ>`_ and `GPTQ <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ>`_ models in to ``bigdl-llm`` is available.
+- [2023/12] ``bigdl-llm`` now supports `QA-LoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#qa-lora>`_ (see `"QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models" <https://arxiv.org/abs/2309.14717>`_).
+- [2023/12] ``bigdl-llm`` now supports `FP8 and FP4 inference <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_ on Intel **GPU**.
+- [2023/11] Initial support for directly loading `GGUF <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF>`_, `AWQ <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ>`_ and `GPTQ <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ>`_ models in to ``bigdl-llm`` is available.
 - [2023/11] Initial support for `vLLM continuous batching <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/vLLM-Serving>`_ is availabe on Intel **CPU**.
 - [2023/11] Initial support for `vLLM continuous batching <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/vLLM-Serving>`_ is availabe on Intel **GPU**.
-- [2023/10] `QLoRA finetuning <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/QLoRA-FineTuning>`_ on Intel **CPU** is available.
-- [2023/10] `QLoRA finetuning <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/QLoRA-FineTuning>`_ on Intel **GPU** is available.
+- [2023/10] ``bigdl-llm`` now supports `QLoRA finetuning <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/QLoRA-FineTuning>`_ on Intel **CPU**.
+- [2023/10] ``bigdl-llm`` now supports `QLoRA finetuning <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/QLoRA-FineTuning>`_ on Intel **GPU**.
 - [2023/09] ``bigdl-llm`` now supports `Intel GPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU>`_ (including Arc, Flex and MAX)
 - [2023/09] ``bigdl-llm`` `tutorial <https://github.com/intel-analytics/bigdl-llm-tutorial>`_ is released.
 - Over 30 models have been verified on ``bigdl-llm``, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS* and more; see the complete list `here <https://github.com/intel-analytics/bigdl#verified-models>`_.

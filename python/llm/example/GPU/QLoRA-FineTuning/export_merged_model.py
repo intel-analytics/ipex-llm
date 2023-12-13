@@ -31,11 +31,13 @@
 import os
 
 import torch
-import transformers
 from transformers import LlamaTokenizer  # noqa: F402
-from bigdl.llm.transformers.qlora import PeftModel
+from bigdl.llm.transformers.qlora import PeftModel, LoraConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers.low_bit_linear import get_block_size
 import argparse
+import tempfile
+import shutil
 
 if __name__ == "__main__":
 
@@ -51,31 +53,66 @@ if __name__ == "__main__":
     adapter_path = args.adapter_path
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
 
-    base_model = AutoModelForCausalLM.from_pretrained(
-        base_model,
-        # load_in_low_bit="nf4", # should load the orignal model
-        torch_dtype=torch.float16,
-        device_map={"": "cpu"},
-    )
+    lora_config = LoraConfig.from_json_file(os.path.join(adapter_path, "adapter_config.json"))
+    qa_lora = lora_config.get("qa_lora", False)
 
-    lora_model = PeftModel.from_pretrained(
-        base_model,
-        adapter_path,
-        device_map={"": "cpu"},
-        torch_dtype=torch.float16,
-    )
+    temp_dir = None
+    if qa_lora:
+        # Convert the qa-lora adapter to the correct shapes
+        # The default 4-bit format for qa_lora is sym_int4
+        block_size = get_block_size("sym_int4")
+        temp_dir = tempfile.TemporaryDirectory()
+        tmpdirname = os.path.join(temp_dir.name, "adapter")
+        try:
+            shutil.copytree(adapter_path, tmpdirname)
+        except Exception as e:
+            print(f"Failed to copy adapter dir, error: {e}")
+        mid_lora_path = os.path.join(tmpdirname, "adapter_model.bin")
 
-    # merge weights - new merging method from peft
-    lora_model = lora_model.merge_and_unload()
+        adapter_path = os.path.join(adapter_path, "adapter_model.bin")
 
-    lora_model.train(False)
+        lora = torch.load(adapter_path, map_location='cpu')
+        # Get lora_a names
+        tmp_keys = [key for key in lora.keys() if 'lora_A' in key]
 
-    lora_model_sd = lora_model.state_dict()
-    deloreanized_sd = {
-        k.replace("base_model.model.", ""): v
-        for k, v in lora_model_sd.items()
-        if "lora" not in k
-    }
+        for tmp_key in tmp_keys:
+            lora_a = lora[tmp_key] / block_size
+            lora[tmp_key] = torch.repeat_interleave(lora_a, block_size, dim=1)
 
-    base_model.save_pretrained(args.output_path, state_dict=deloreanized_sd)
-    tokenizer.save_pretrained(args.output_path)
+        torch.save(lora, mid_lora_path)
+        adapter_path = tmpdirname
+
+    try:
+        base_model = AutoModelForCausalLM.from_pretrained(
+            base_model,
+            # load_in_low_bit="nf4", # should load the orignal model
+            torch_dtype=torch.float16,
+            device_map={"": "cpu"},
+        )
+
+        lora_model = PeftModel.from_pretrained(
+            base_model,
+            adapter_path,
+            device_map={"": "cpu"},
+            torch_dtype=torch.float16,
+        )
+
+        # merge weights - new merging method from peft
+        lora_model = lora_model.merge_and_unload()
+
+        lora_model.train(False)
+
+        lora_model_sd = lora_model.state_dict()
+        deloreanized_sd = {
+            k.replace("base_model.model.", ""): v
+            for k, v in lora_model_sd.items()
+            if "lora" not in k
+        }
+
+        base_model.save_pretrained(args.output_path, state_dict=deloreanized_sd)
+        tokenizer.save_pretrained(args.output_path)
+    except Exception as e:
+        print(f"Failed to merge the adapter, error: {e}.")
+    finally:
+        if qa_lora and temp_dir:
+           temp_dir.cleanup()

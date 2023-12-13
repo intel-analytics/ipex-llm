@@ -70,6 +70,7 @@ layer_type_dict = {
     "mistral": "MistralDecoderLayer",
     "gpt_neox": "GPTNeoXDecoderLayer",
     "aquila": "AquilaDecoderLayer",
+    "Yi": "YiDecoderLayer",
 }
 
 
@@ -132,6 +133,8 @@ def get_blocks(model):
     elif "neox" in str(model.__class__).lower():
         layers = model.gpt_neox.layers
     elif "mistral" in str(model.__class__).lower():
+        layers = model.model.layers
+    elif "yi" in str(model.__class__).lower():
         layers = model.model.layers
     else:
         invalidInputError(False, f"Model type {type(model)} isn't supported.")

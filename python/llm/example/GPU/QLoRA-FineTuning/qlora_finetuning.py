@@ -19,8 +19,8 @@ import os
 
 import transformers
 from transformers import LlamaTokenizer
-from peft import LoraConfig
 import intel_extension_for_pytorch as ipex
+from peft import LoraConfig
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset

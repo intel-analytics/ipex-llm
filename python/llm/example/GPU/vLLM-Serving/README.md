@@ -38,7 +38,7 @@ pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install numpy
 pip3 install "transformers>=4.33.1"  # Required for Code Llama.
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade "bigdl-llm[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.

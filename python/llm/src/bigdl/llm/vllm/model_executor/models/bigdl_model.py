@@ -21,6 +21,10 @@ from transformers import LlamaConfig
 
 from bigdl.llm.vllm.sequence import SequenceOutputs, SequenceGroupMetadata
 from bigdl.llm.transformers.models.utils import extend_kv_cache
+from bigdl.llm.vllm.logger import init_logger
+
+logger = init_logger(__name__)
+
 
 zero_cache_dict = {}
 
@@ -86,45 +90,49 @@ class BigDLModelForCausalLM(nn.Module):
         cur_seq_ids: List[int],
         seq_group_meta_data_lists: List[SequenceGroupMetadata],
         kv_cache: Dict,
-        kv_cache_size_0: int,
+        num_layers: int,
         kv_cache_size_1: int,
     ):
         max_seq_limit = self.max_seq_limit
         if (self.last_kv_cache is not None) and cur_seq_ids == self.last_seq_ids:
             if self.last_kv_cache[0][0].size(2) < max_seq_limit * 1.5:
                 bigdl_kv_cache = self.last_kv_cache
+                # Immediately set it to None to decrease ref-count
+                self.last_kv_cache = None
             else:
                 bigdl_kv_cache = [[tmp.narrow(2, self.last_kv_cache[0][0].size(2)
                                    - max_seq_limit, max_seq_limit)
                                    for tmp in tmp_list] for tmp_list in self.last_kv_cache]
                 del self.last_kv_cache
+                self.last_kv_cache = None
         else:
             del self.last_kv_cache
             bigdl_kv_cache = []
-            for i in range(kv_cache_size_0):
+            max_kv_len = max(
+                seq_group_meta_data.seq_data[next(iter(seq_group_meta_data.seq_data))].get_len()
+                for seq_group_meta_data in seq_group_meta_data_lists
+            )
+            max_kv_len = min(max_kv_len, max_seq_limit)
+
+            for i in range(num_layers):
                 cur_list = []
                 for j in range(kv_cache_size_1):
                     views = []
-                    max_len = 0
                     for seq_group_meta_data in seq_group_meta_data_lists:
                         seq_ids = list(seq_group_meta_data.seq_data.keys())
                         seq_id = seq_ids[0]
-                        seq_data = seq_group_meta_data.seq_data[seq_id]
                         view_size = [1] + list(kv_cache[i][j][seq_id].shape)
                         views.append(kv_cache[i][j][seq_id].view(view_size))
-                        max_len = max(max_len, view_size[2])
 
-                    views = [_pad_kv_cache_view(v, max_len, self.device) for v in views]
+                    views = [_pad_kv_cache_view(v, max_kv_len, self.device) for v in views]
                     cur_view = torch.cat(views, dim=0)
-
-                    if cur_view.size(2) > max_seq_limit:
-                        cur_view = _pad_kv_cache_view(cur_view, max_seq_limit, self.device)
                     cur_list.append(cur_view)
 
                     for seq_group_meta_data in seq_group_meta_data_lists:
                         seq_ids = list(seq_group_meta_data.seq_data.keys())
                         seq_id = seq_ids[0]
                         del kv_cache[i][j][seq_id]
+
                 bigdl_kv_cache.append(cur_list)
 
         return bigdl_kv_cache
@@ -135,15 +143,15 @@ class BigDLModelForCausalLM(nn.Module):
         self,
         cur_seq_ids: List[int],
         kv_cache,
-        kv_cache_size_0: int,
+        layer: int,
         kv_cache_size_1: int,
     ) -> None:
-        for i in range(kv_cache_size_0):
+        for i in range(layer):
             for j in range(kv_cache_size_1):
-                index = 0
+                batch_dim = 0
                 for seq_id in cur_seq_ids:
-                    kv_cache[i][j][seq_id] = self.last_kv_cache[i][j][index]
-                    index = index + 1
+                    kv_cache[i][j][seq_id] = self.last_kv_cache[i][j][batch_dim]
+                    batch_dim = batch_dim + 1
 
     def forward(
         self,

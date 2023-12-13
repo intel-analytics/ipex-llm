@@ -10,20 +10,90 @@ on:
   schedule:
     - cron: "00 13 * * 5" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
-    types: ready_for_review
     branches: [main]
     paths:
       - ".github/workflows/llm-harness-evaluation.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'A list of models added to the job matrix.'
+        required: true
+        type: string
+      precision:
+        description: 'A list of precisions added to the job matrix'
+        required: true
+        type: string
+      task:
+        description: 'A list of precisions added to the job matrix'
+        required: true
+        type: string
+      runs-on:
+        description: 'Labels to filter the runners.'
+        default: 'accuracy'
+        required: false
+        type: string
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
+  set-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      model_name: ${{ steps.set-matrix.outputs.model_name }}
+      precision: ${{ steps.set-matrix.outputs.precision }}
+      task: ${{ steps.set-matrix.outputs.task }}
+      runner: ${{ steps.set-matrix.outputs.runner }}
+    steps:
+      - name: set-nightly-env
+        if: ${{github.event_name == 'schedule'}}
+        env:
+          NIGHTLY_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t","Mistral-7B-v0.1"]'
+          NIGHTLY_MATRIX_TASK: '["truthfulqa", "arc"]'
+          NIGHTLY_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
+          NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy"]'
+        run: |
+            echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "task=$NIGHTLY_MATRIX_TASK" >> $GITHUB_ENV
+            echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
+
+      - name: set-pr-env
+        if: ${{github.event_name == 'pull_request'}}
+        env:
+          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t"]'
+          PR_MATRIX_TASK: '["truthfulqa"]'
+          PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
+          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
+        run: |
+            echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "task=$PR_MATRIX_TASK" >> $GITHUB_ENV
+            echo "runner=$PR_LABELS" >> $GITHUB_ENV
+      - name: set-manual-env
+        if: ${{github.event_name == 'workflow_dispatch'}}
+        env:
+          MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
+          MANUAL_MATRIX_TASK: ${{format('[ {0} ]', inputs.task)}}
+          MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
+          MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.precision)}}
+        run: |
+            echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$MANUAL_MATRIX_TASK" >> $GITHUB_ENV
+            echo "task=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
+      - name: set-matrix
+        id: set-matrix
+        run: |
+            echo "model_name=$model_name" >> $GITHUB_OUTPUT
+            echo "precision=$precision" >> $GITHUB_OUTPUT
+            echo "task=$task" >> $GITHUB_OUTPUT
+            echo "runner=$runner" >> $GITHUB_OUTPUT
   llm-harness-evalution:
     timeout-minutes: 1000
-    needs: llm-cpp-build
+    needs: [llm-cpp-build, set-matrix]
     strategy:
       fail-fast: false
       matrix:
@@ -33,12 +103,12 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: [stablelm-3b-4e1t,Mistral-7B-v0.1]
-        task: [truthfulqa, arc]
-        precision: [mixed_fp4, fp8] 
+        model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
+        task: ${{ fromJson(needs.set-matrix.outputs.task) }}
+        precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         device: [xpu]
         
-    runs-on: [self-hosted, llm, accuracy]
+    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
@@ -68,10 +138,7 @@ jobs:
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
         shell: bash
         run: |
-          git clone https://github.com/EleutherAI/lm-evaluation-harness.git
-          cd  lm-evaluation-harness
-          git checkout e81d3cc
-          pip install -e .
+          pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@e81d3cc
       
       - name: Download models and datasets
         shell: bash
@@ -100,16 +167,59 @@ jobs:
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
-          python run_llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device ${{ matrix.device }} --tasks ${{ matrix.task }} --batch_size 1 --no_cache --output_path results
+          python run_llb.py \
+          --model bigdl-llm \
+          --pretrained ${MODEL_PATH} \
+          --precision ${{ matrix.precision }} \
+          --device ${{ matrix.device }} \
+          --tasks ${{ matrix.task }} \
+          --batch_size 1 --no_cache --output_path results
 
 
       - name: Compare with golden accuracy
         shell: bash
-        
+        if: ${{github.event_name == 'schedule'}}
         working-directory: ${{ github.workspace }}/python/llm
         run: |
-          python test/benchmark/harness_nightly/accuracy_regression.py dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json test/benchmark/harness_nightly/golden_results.json
-
-          
-
+          python test/benchmark/harness_nightly/accuracy_regression.py \
+          dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json \
+          test/benchmark/harness_nightly/golden_results.json
         
+      - uses: actions/upload-artifact@v3
+        with:
+          name: harness_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/**
+
+      - name: echo single result
+        shell: bash
+        
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/
+        run: |
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json
+
+  llm-harness-summary:
+    if: ${{ always() }}
+    needs: llm-harness-evalution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: harness_results
+          path: results          
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py results

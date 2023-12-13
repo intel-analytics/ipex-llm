@@ -50,6 +50,7 @@ from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
 from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
+from bigdl.llm.transformers.utils import get_autocast_dtype
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -59,7 +60,7 @@ import ctypes
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 IS_SERVER = is_server()
 IS_SPR = is_spr()
-TORCH_LINEAR_THRESHOLD = 96
+TORCH_LINEAR_THRESHOLD = int(os.getenv("BIGDL_LLM_LINEAR_THRESHOLD", "512"))
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 ASYM_INT4 = ggml_tensor_qtype["asym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
@@ -71,8 +72,12 @@ MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 
 
-def get_ggml_qk_size(qtype: str):
+def get_block_size(qtype: str):
     return ggml.ggml_qk_size(ggml_tensor_qtype[qtype])
+
+
+def get_qk_size(qtype: int):
+    return ggml.ggml_qk_size(qtype)
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
@@ -429,8 +434,17 @@ class LowBitLinear(nn.Linear):
         self.qtype = qtype
         self.conver_to_half = conver_to_half
         self.mp_group = mp_group
+        self.compute_dtype = None  # only for training
 
     def forward(self, x: torch.Tensor):
+        if self.training:
+            # below logic is only for training
+            autocast_dtype = get_autocast_dtype(x)
+            if self.compute_dtype is not None and x.device.type == "xpu":
+                x = x.to(self.compute_dtype)  # solve GC issue for unlora module
+            elif autocast_dtype is not None:
+                x = x.to(autocast_dtype)
+
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
@@ -453,9 +467,16 @@ class LowBitLinear(nn.Linear):
                 x_2d = x_2d.contiguous()
 
             input_seq_size = x_shape[1]
-            if self.training and x_2d.requires_grad:
-                result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
+            if self.training:
+                # training path
+                if x_2d.requires_grad:
+                    result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
+                else:
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data,
+                                                     self.weight.qtype,
+                                                     input_seq_size)
             else:
+                # inference path
                 # current workaround to reduce first token latency of fp32 input
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
