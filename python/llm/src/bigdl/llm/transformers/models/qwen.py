@@ -211,6 +211,7 @@ def qwen_attention_forward(
 
     return outputs
 
+
 def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
     if x.shape[1] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
             and not (self.training and x.requires_grad):
