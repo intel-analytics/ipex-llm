@@ -86,9 +86,15 @@ def mistral_attention_forward(
     value_states = value_states.view(bsz, q_len,
                                      self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
-    kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
-        kv_seq_len += past_key_value[0].shape[-2]
+        if self.layer_idx is None:
+            raise ValueError(
+                f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
+                "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
+                "with a layer index."
+            )
+        kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+
 
     if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -99,27 +105,34 @@ def mistral_attention_forward(
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                         cos, sin, position_ids, "mistral")
-
+    
+    
     if past_key_value is not None:
         # reuse k, v, self_attention
-        cache_k = past_key_value[0]
-        cache_v = past_key_value[1]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
+        
+        if len(past_key_value.key_cache) <= self.layer_idx:
+            past_key_value.key_cache.append(key_states)
+            past_key_value.value_cache.append(value_states)
+        else:
+            cache_k = past_key_value.key_cache[self.layer_idx]
+            cache_v = past_key_value.value_cache[self.layer_idx]
 
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
+            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                        self.num_key_value_heads,  # Support GQA
+                                                        self.head_dim,
+                                                        cache_k.size(2),
+                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                        dtype=cache_k.dtype,
+                                                        device=device)
 
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
+
+            key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
@@ -135,9 +148,6 @@ def mistral_attention_forward(
         key_states = new_key_states
         value_states = new_value_states
 
-    past_key_value = (key_states, value_states) if use_cache else None
-
-    # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
