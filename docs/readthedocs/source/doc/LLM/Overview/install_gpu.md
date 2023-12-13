@@ -73,7 +73,7 @@ conda activate llm
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for GPU
 ```
 
-If you encounter network issues when installing ipex, you can refer to  [Installing bigdl-llm[xpu] dependencies from Wheels](#installing-bigdl-llmxpu-dependencies-from-wheels) as an alternative method.
+If you encounter network issues when installing ipex, you can refer to  [Installing xpu dependencies from Wheels](#installing-xpu-dependencies-from-wheels) as an alternative method.
 
 Then for running a LLM model with BigDL-LLM optimizations, several environment variables are recommended:
 
@@ -85,7 +85,7 @@ export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
 
-## Installing bigdl-llm[xpu] dependencies from Wheels
+## Installing xpu dependencies from Wheels
 
 You can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to install the target torch/torchvision/ipex versions from downloaded whls [here](http://ec2-52-27-27-201.us-west-2.compute.amazonaws.com/ipex-release.php?device=xpu&repo=us&release=stable) before installing bigdl-llm. 
 
