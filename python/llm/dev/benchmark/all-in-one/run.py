@@ -42,6 +42,7 @@ CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 
 results = []
+excludes = []
 
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
@@ -748,11 +749,19 @@ if __name__ == '__main__':
     from omegaconf import OmegaConf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
     today = date.today()
+    if 'exclude' in conf:
+        excludes = conf['exclude']
     
     import pandas as pd
     for api in conf.test_api:
         for model in conf.repo_id:
-            run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+            in_out_pairs = conf['in_out_pairs'].copy()
+            if excludes:
+                for in_out in conf['in_out_pairs']:
+                    model_id_input = model + ':' + in_out.split('-')[0]
+                    if model_id_input in excludes:
+                        in_out_pairs.remove(in_out)
+            run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 

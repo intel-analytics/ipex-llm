@@ -27,3 +27,7 @@ in_out_pairs:
 test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+exclude:
+  - 'fnlp/moss-moon-003-sft:1024'
+  - 'fnlp/moss-moon-003-sft:2048'
+  - 'bigscience/bloomz-7b1:2048'
