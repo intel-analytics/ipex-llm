@@ -44,12 +44,14 @@
 import warnings
 import torch
 import argparse
+import os
+from transformers.utils import is_torch_xpu_available
 import os, sys
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-stream_llm_src = CURRENT_DIR + "/streaming_llm/"
+stream_llm_src = CURRENT_DIR.replace("GPU", "CPU") + "/streaming_llm/"
 sys.path.append(stream_llm_src)
-from streaming_llm.utils import load, download_url, load_jsonl
-from streaming_llm.enable_streaming_llm import enable_streaming_llm
+from utils import load, download_url, load_jsonl
+from enable_streaming_llm import enable_streaming_llm
 warnings.filterwarnings("ignore")
 
 
@@ -96,7 +98,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
 
 
 @torch.no_grad()
-def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=1000):
+def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=200):
     past_key_values = None
     for idx, prompt in enumerate(prompts):
         prompt = "USER: " + prompt + "\n\nASSISTANT: "
@@ -110,11 +112,14 @@ def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=10
 
         past_key_values = greedy_generate(
             model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len
-        )
+       
+        )        
 
 
 def main(args):
     model, tokenizer = load(args.repo_id_or_model_path)
+    # device = 'xpu' if is_torch_xpu_available() else 'cpu'
+    # model = model.to(device)
     test_filepath = os.path.join(args.data_root, "mt_bench.jsonl")
     print(f"Loading data from {test_filepath} ...")
 
@@ -153,7 +158,7 @@ if __name__ == "__main__":
     parser.add_argument("--data-root", type=str, default="data/")
     parser.add_argument("--enable-streaming", action="store_true")
     parser.add_argument("--start-size", type=int, default=4)
-    parser.add_argument("--recent-size", type=int, default=2000)
+    parser.add_argument("--recent-size", type=int, default=500)
     args = parser.parse_args()
 
     main(args)
