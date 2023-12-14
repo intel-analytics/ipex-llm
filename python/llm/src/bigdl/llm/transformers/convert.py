@@ -404,7 +404,7 @@ def replace_func(m, target_m, func_name, new_func):
         if isinstance(sub_m, target_m):
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
-        convert_forward(sub_m, target_m, new_func)
+        replace_func(sub_m, target_m, func_name, new_func)
 
 
 def _optimize_post(model, lightweight_bmm=False):
