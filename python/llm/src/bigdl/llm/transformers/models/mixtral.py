@@ -171,6 +171,10 @@ def mixtral_attention_forward(
                                                         cos, sin, position_ids, "mixtral")
 
     if past_key_value is not None:
+        # update the number of seen tokens
+        if self.layer_idx == 0:
+            past_key_value.seen_tokens += key_states.shape[-2]
+
         # reuse k, v, self_attention
         # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
         if len(past_key_value.key_cache) <= self.layer_idx:
