@@ -94,7 +94,9 @@ You may install **`bigdl-llm`** on Intel GPU as follows:
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> See Note: `bigdl-llm` has been tested on Python 3.9
+
+See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
 
 ##### Run Model
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
