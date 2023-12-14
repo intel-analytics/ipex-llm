@@ -8,7 +8,7 @@ model_family refers to the conf['general.architecture'] of the GGUF file
 - BaiChuan
 
 
-## Verified Models
+## Verified Models(Q4_0)
 - [Llama-2-7B-Chat-GGUF](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
 - [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF)
 - [Baichuan2-7B-Chat-GGUF](https://huggingface.co/second-state/Baichuan2-7B-Chat-GGUF/tree/main)
