@@ -399,6 +399,14 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
+def replace_func(m, target_m, func_name, new_func):
+    for _, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            bound_method = new_func.__get__(sub_m, sub_m.__class__)
+            setattr(sub_m, func_name, bound_method)
+        convert_forward(sub_m, target_m, new_func)
+
+
 def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
@@ -569,6 +577,7 @@ def _optimize_post(model, lightweight_bmm=False):
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
             from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             from bigdl.llm.transformers.models.baichuan2 import baichuan_mlp_forward
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_get_alibi_mask
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
@@ -580,6 +589,10 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.MLP,
                             baichuan_mlp_forward)
+            replace_func(model,
+                         module.BaichuanModel,
+                         "get_alibi_mask",
+                         baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:
