@@ -15,7 +15,6 @@
 #
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
@@ -46,7 +45,6 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -54,8 +52,7 @@ if __name__ == '__main__':
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = MIXTRAL_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('cpu')
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
@@ -67,7 +64,6 @@ if __name__ == '__main__':
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
-        torch.xpu.synchronize()
         end = time.time()
         output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)

@@ -40,6 +40,8 @@ from transformers import PretrainedConfig
 
 from bigdl.llm.vllm.config import ModelConfig
 from bigdl.llm.vllm.model_executor.models.bigdl_llama import BigDLLlamaForCausalLM
+from bigdl.llm.vllm.model_executor.models.bigdl_mixtral import BigDLMixtralForCausalLM
+
 from bigdl.llm.utils.common import invalidInputError
 
 # bigdl-llm Intel specified code change
@@ -61,6 +63,7 @@ _MODEL_REGISTRY = {
     "LlamaForCausalLM": BigDLLlamaForCausalLM,
     # "LLaMAForCausalLM": LlamaForCausalLM,  # For decapoda-research/llama-*
     # "MistralForCausalLM": MistralForCausalLM,
+    "MixtralForCausalLM": BigDLMixtralForCausalLM,
     # "MPTForCausalLM": MPTForCausalLM,
     # "OPTForCausalLM": OPTForCausalLM,
     # "QWenLMHeadModel": QWenLMHeadModel,
