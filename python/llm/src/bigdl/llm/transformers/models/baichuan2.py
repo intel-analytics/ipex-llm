@@ -50,24 +50,25 @@ def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         if get_ipex_version() <= "2.0.110+xpu":
             import linear_q4_0
-            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
+            result = linear_q4_0.fused_rms_norm(hidden_states,
                                                        [self.weight.size(0)],
                                                        self.weight,
                                                        None,
                                                        self.epsilon)
+            # if nelement == 0, means fused norm failed, go back to python implement.
+            if result.nelement != 0:
+                return result
         else:
-            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
+            return torch.ops.torch_ipex.fast_rms_norm(hidden_states,
                                                                [self.weight.size(0)],
                                                                self.weight,
                                                                None,
                                                                self.epsilon)
-        return hidden_states
-    else:
-        input_dtype = hidden_states.dtype
-        hidden_states = hidden_states.to(torch.float32)
-        variance = hidden_states.pow(2).mean(-1, keepdim=True)
-        hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
-        return self.weight * hidden_states.to(input_dtype)
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
+    return self.weight * hidden_states.to(input_dtype)
 
 
 def baichuan_mlp_forward(
