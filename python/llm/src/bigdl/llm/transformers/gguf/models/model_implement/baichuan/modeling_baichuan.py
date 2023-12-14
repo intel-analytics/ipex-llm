@@ -202,11 +202,11 @@ class Attention(nn.Module):
         proj = self.W_pack(hidden_states)
         proj = proj.unflatten(-1, (3, self.hidden_size)).unsqueeze(0).transpose(0, -2).squeeze(-2)
         query_states = (proj[0].view(bsz, q_len, self.num_heads, self.head_dim).
-                        transpose(1,2))  # batch_size x source_len x hidden_size
+                        transpose(1, 2))  # batch_size x source_len x hidden_size
         key_states = (proj[1].view(bsz, q_len, self.num_heads, self.head_dim)
-                      .transpose(1,2))  # batch_size x target_len x head_size
+                      .transpose(1, 2))  # batch_size x target_len x head_size
         value_states = (proj[2].view(bsz, q_len, self.num_heads, self.head_dim)
-                        .transpose(1,2))  # batch_size x source_len x hidden_size
+                        .transpose(1, 2))  # batch_size x source_len x hidden_size
 
         kv_seq_len = key_states.shape[-2]
         if past_key_value is not None:
@@ -227,7 +227,7 @@ class Attention(nn.Module):
             self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            raise ValueError(
+            logger.error(
                 f"Attention weights should be of size "
                 f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
                 f" {attn_weights.size()}"
@@ -235,7 +235,7 @@ class Attention(nn.Module):
 
         if attention_mask is not None:
             if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                raise ValueError(
+                logger.error(
                     f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                     f" but is {attention_mask.size()}"
                 )
@@ -249,7 +249,7 @@ class Attention(nn.Module):
         attn_output = torch.matmul(attn_weights, value_states)
 
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            raise ValueError(
+            logger.error(
                 f"`attn_output` should be of "
                 f"size {(bsz, self.num_heads, q_len, self.head_dim)}, "
                 f"but is"
@@ -430,7 +430,7 @@ class Model(PreTrainedModel):
             output_hidden_states: Optional[bool] = None,
             return_dict: Optional[bool] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
-        output_attentions = output_attentions if output_attentions is not None\
+        output_attentions = output_attentions if output_attentions is not None \
             else self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None
@@ -442,7 +442,7 @@ class Model(PreTrainedModel):
 
         # retrieve input_ids and inputs_embeds
         if input_ids is not None and inputs_embeds is not None:
-            raise ValueError(
+            logger.error(
                 "You cannot specify both decoder_input_ids "
                 "and decoder_inputs_embeds at the same time")
         elif input_ids is not None:
@@ -450,7 +450,7 @@ class Model(PreTrainedModel):
         elif inputs_embeds is not None:
             batch_size, seq_length, _ = inputs_embeds.shape
         else:
-            raise ValueError(
+            logger.error(
                 "You have to specify either decoder_input_ids or decoder_inputs_embeds")
 
         seq_length_with_past = seq_length
@@ -626,10 +626,11 @@ class BaiChuanForCausalLM(PreTrainedModel):
         "Hey, are you consciours? Can you talk to me?\nI'm not consciours, but I can talk to you."
         ```"""
 
-        output_attentions = output_attentions if output_attentions is not None else\
+        output_attentions = output_attentions if output_attentions is not None else \
             self.config.output_attentions
         output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+            output_hidden_states if output_hidden_states is not None
+            else self.config.output_hidden_states
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
@@ -709,5 +710,6 @@ class BaiChuanForCausalLM(PreTrainedModel):
         reordered_past = ()
         for layer_past in past_key_values:
             reordered_past += (
-            tuple(past_state.index_select(0, beam_idx) for past_state in layer_past),)
+                tuple(past_state.index_select(0, beam_idx) for past_state in layer_past),
+            )
         return reordered_past
