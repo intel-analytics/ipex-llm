@@ -5,7 +5,7 @@
 Install BigDL-LLM for GPU supports using pip through:
 
 ```bash
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu # install bigdl-llm for Intel GPU
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 Please refer to [Environment Setup](#environment-setup) for more information.
@@ -13,7 +13,9 @@ Please refer to [Environment Setup](#environment-setup) for more information.
 ```eval_rst
 .. note::
 
-   The above command will install ``intel_extension_for_pytorch==2.0.110+xpu`` as default. You can install specific ``ipex``/``torch`` version for your need.
+   For Linux users, the above command will install ``intel_extension_for_pytorch==2.0.110+xpu`` as default. You could also use
+
+
 
 .. important::
 
