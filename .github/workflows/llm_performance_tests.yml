@@ -232,7 +232,8 @@ jobs:
       - name: Prepare for install bigdl-llm from source
         shell: bash
         run: |
-          sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
 
       - name: Install bigdl-llm and other related packages
         shell: cmd
