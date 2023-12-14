@@ -476,7 +476,7 @@ class LowBitLinear(nn.Linear):
                 x_2d = x_2d.contiguous()
 
             input_seq_size = x_shape[1]
-            if self.training:
+            if self.training and not torch.is_inference_mode_enabled():
                 # training path
                 if x_2d.requires_grad:
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
