@@ -39,9 +39,13 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
 
     with torch.no_grad():
         if model_family == "llama":
-            from .models.llama import load_gguf_llama
-
-            model, tokenizer = load_gguf_llama(loader, dtype)
+            if "mixtral" in loader.config["general.name"].lower():
+                # mixtral, which also enjoys a general architecture of llama
+                from .models.mixtral import load_gguf_mixtral
+                model, tokenizer = load_gguf_mixtral(loader, dtype)
+            else:
+                from .models.llama import load_gguf_llama
+                model, tokenizer = load_gguf_llama(loader, dtype)
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
