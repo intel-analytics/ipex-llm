@@ -127,6 +127,7 @@ def mixtral_moeblock_forward(self,
     final_hidden_states = final_hidden_states.reshape(batch_size, sequence_length, hidden_dim)
     return final_hidden_states, router_logits
 
+
 def mixtral_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -153,24 +154,21 @@ def mixtral_attention_forward(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         if self.layer_idx is None:
-            raise ValueError(
-                f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
-                "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
-                "with a layer index."
-            )
+            invalidInputError(False, "The cache structure has changed since version v4.36. "
+                                     f"If you are using {self.__class__.__name__} for "
+                                     "auto-regressive decodingwith k/v caching, please make sure "
+                                     "to initialize the attention class with a layer index.")
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-
 
     if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                      key_states,
                                                                      position_ids,
-                                                                     "mistral")
+                                                                     "mixtral")
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids, "mistral")
-    
+                                                        cos, sin, position_ids, "mixtral")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
