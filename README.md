@@ -13,7 +13,7 @@
 
 ### Latest update :fire: 
 - [2023/12] `bigdl-llm` now supports [Mixtra-7x8B](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) on both Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral).
-- [2023/12]`bigdl-llm` now supports [QA-LoRA](python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#qa-lora) (see *["QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"](https://arxiv.org/abs/2309.14717)*)
+- [2023/12] `bigdl-llm` now supports [QA-LoRA](python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#qa-lora) (see *["QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"](https://arxiv.org/abs/2309.14717)*)
 - [2023/12] `bigdl-llm` now supports [FP8 and FP4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) on Intel ***GPU***.
 - [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models in to `bigdl-llm` is available.
 - [2023/11] Initial support for [vLLM continuous batching](python/llm/example/CPU/vLLM-Serving) is availabe on Intel ***CPU***.
