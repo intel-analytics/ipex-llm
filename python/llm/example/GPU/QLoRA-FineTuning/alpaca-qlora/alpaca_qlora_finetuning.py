@@ -60,6 +60,12 @@ def get_int_from_env(env_keys, default):
         if val >= 0:
             return val
     return default
+
+def _get_trainer_cls(relora_steps):
+    if relora_steps > 0:
+        from bigdl.llm.transformers.relora import ReLoRATrainer
+        return ReLoRATrainer
+    return transformers.Trainer
  
 local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
@@ -110,6 +116,12 @@ def train(
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
     qa_lora: bool = False, # if True, use qa-lora https://arxiv.org/abs/2309.14717
+    # relora params, if relora_steps > 0,
+    # Implements the ReLoRA training procedure from https://arxiv.org/abs/2307.05695,
+    # minus the initial full fine-tune.
+    relora_steps: int = 0,         # Number of steps per ReLoRA restart
+    relora_warmup_steps: int = 10,   # Number of per-restart warmup steps
+    relora_cpu_offload: bool = True, # True to perform lora weight merges on cpu during restarts, for modest gpu memory savings
 ):
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
@@ -137,6 +149,9 @@ def train(
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
             f"qa_lora: {qa_lora}\n"
+            f"relora_steps: {relora_steps}\n"
+            f"relora_warmup_steps: {relora_warmup_steps}\n"
+            f"relora_cpu_offload: {relora_cpu_offload}\n"
         )
     assert (
         base_model
@@ -289,10 +304,19 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer = transformers.Trainer(
+    trainer_cls = _get_trainer_cls(relora_steps=relora_steps)
+    extra_args = {}
+    if relora_steps > 0:
+        extra_args["base_model"] = base_model
+        extra_args["relora_steps"] = relora_steps
+        extra_args["relora_warmup_steps"] = relora_warmup_steps
+        extra_args["relora_cpu_offload"] = relora_cpu_offload
+
+    trainer = trainer_cls(
         model=model,
         train_dataset=train_data,
         eval_dataset=val_data,
+        **extra_args,
         args=transformers.TrainingArguments(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
@@ -300,6 +324,7 @@ def train(
             # warmup_steps=100,
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
+            # max_steps=130,
             learning_rate=learning_rate,
             lr_scheduler_type="constant" if qa_lora else "cosine",
             bf16=True,  # ensure training more stable
@@ -310,7 +335,7 @@ def train(
             eval_steps=100 if val_set_size > 0 else None,
             save_steps=100,
             output_dir=output_dir,
-            save_total_limit=100,
+            save_total_limit=100 if relora_steps < 1 else 4,
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
