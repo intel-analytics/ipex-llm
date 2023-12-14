@@ -32,10 +32,11 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     num_experts_per_tok = config['llama.expert_used_count']
     n_head = config['llama.attention.head_count']
     n_head_kv = config['llama.attention.head_count_kv']
+    hidden_size = config['llama.embedding_length']
 
     mixtral_config = MixtralConfig(
         vocab_size=len(config['tokenizer.ggml.tokens']),
-        hidden_size=config['llama.embedding_length'],
+        hidden_size=hidden_size,
         intermediate_size=config['llama.feed_forward_length'],
         num_hidden_layers=config['llama.block_count'],
         num_attention_heads=config['llama.attention.head_count'],
@@ -50,7 +51,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     )
 
     ckpt = loader.tensors(dtype)
-    from llama import restore_llama_weight
+    from .llama import restore_llama_weight
     ckpt = restore_llama_weight(ckpt, n_head, n_head_kv)
 
     state_dict = {}
@@ -70,20 +71,22 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
             ckpt[f'blk.{i}.attn_norm.weight']
         state_dict[f'model.layers.{i}.post_attention_layernorm.weight'] = \
             ckpt[f'blk.{i}.ffn_norm.weight']
+        state_dict[f'model.layers.{i}.block_sparse_moe.gate.weight'] = \
+            ckpt[f'blk.{i}.ffn_gate_inp.weight'].reshape(num_local_experts, hidden_size)
         for j in range(num_local_experts):
             state_dict[f'model.layers.{i}.block_sparse_moe.experts.{j}.w1.weight'] = \
                 (ckpt[f'blk.{i}.ffn_gate.{j}.weight'])
             state_dict[f'model.layers.{i}.block_sparse_moe.experts.{j}.w2.weight'] = \
-                ckpt[f'blk.{i}.ffn_up.{j}.weight'].transpose(0, 1)
+                ckpt[f'blk.{i}.ffn_down.{j}.weight']
             state_dict[f'model.layers.{i}.block_sparse_moe.experts.{j}.w3.weight'] = \
-                ckpt[f'blk.{i}.ffn_down.{j}.weight'].transpose(0, 1)
+                ckpt[f'blk.{i}.ffn_up.{j}.weight']
 
     with init_empty_weights():
         model = MixtralForCausalLM(mixtral_config)
 
     for name, weight in state_dict.items():
         set_module_tensor_to_device(model, name, "cpu", weight)
-
+    
     model = model.cpu()
 
     from transformers.convert_slow_tokenizer import import_protobuf
