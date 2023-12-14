@@ -1,11 +1,11 @@
 # Loading GGUF models
-In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as a reference LLaMA2 GGUF model.
->Note: Only LLaMA2 family models are currently supported
+In this directory, you will find examples on how to load GGUF model into `bigdl-llm`.
 
 ## Support Model Family
 model_family refers to the conf['general.architecture'] of the GGUF file
 - Llama
 - BaiChuan
+- Mistral(share Llama family)
 
 
 ## Verified Models(Q4_0)
