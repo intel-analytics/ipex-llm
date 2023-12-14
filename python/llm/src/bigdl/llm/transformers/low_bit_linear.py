@@ -439,7 +439,7 @@ class LowBitLinear(nn.Linear):
     def forward(self, x: torch.Tensor):
         # Due to inconsistent training status in some models like Baichuan-7b-Chat,
         # we should check both self.training and torch.is_inference_mode_enabled().
-        is_training = self.training and not torch.is_inference_mode_enabled():
+        is_training = self.training and not torch.is_inference_mode_enabled()
         if is_training:
             # below logic is only for training
             autocast_dtype = get_autocast_dtype(x)
