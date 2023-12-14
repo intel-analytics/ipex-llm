@@ -39,6 +39,7 @@ except ImportError:
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
 apply_rotary_emb_func = None
 
@@ -214,6 +215,7 @@ def qwen_attention_forward(
 
 def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
     if x.shape[1] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+            and self.w2.qtype == ggml_tensor_qtype["sym_int4"] \
             and not (self.training and x.requires_grad):
         import linear_q4_0
         x_2d = x.view(-1, x.shape[-1])
