@@ -50,7 +50,8 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     )
 
     ckpt = loader.tensors(dtype)
-    ckpt = restore_mixtral_weight(ckpt, n_head, n_head_kv)
+    from llama import restore_llama_weight
+    ckpt = restore_llama_weight(ckpt, n_head, n_head_kv)
 
     state_dict = {}
     state_dict['model.embed_tokens.weight'] = ckpt['token_embd.weight']
@@ -85,7 +86,6 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     model = model.cpu()
 
-    # see https://github.com/google/sentencepiece/blob/master/src/sentencepiece_model.proto
     from transformers.convert_slow_tokenizer import import_protobuf
     spm_pb2 = import_protobuf("Failed to import protobuf")
 
@@ -102,18 +102,4 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         os.remove(f.name)
 
     return model, tokenizer
-
-
-def restore_mixtral_weight(ckpt: dict, n_head: int, n_head_kv: int):
-    for name, weight in ckpt.items():
-        head, hd_size = weight.shape[0], weight.shape[1:]
-        if name.endswith("attn_q.weight"):
-            ckpt[name] = (weight.reshape(n_head, head // n_head // 2, 2, *hd_size)
-                                .swapaxes(1, 2)
-                                .reshape(weight.shape))
-        elif name.endswith("attn_k.weight"):
-            ckpt[name] = (weight.reshape(n_head_kv, head // n_head_kv // 2, 2, *hd_size)
-                                .swapaxes(1, 2)
-                                .reshape(weight.shape))
-    return ckpt
 
