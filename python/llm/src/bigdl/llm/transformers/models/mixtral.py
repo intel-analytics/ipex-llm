@@ -172,6 +172,7 @@ def mixtral_attention_forward(
 
     if past_key_value is not None:
         # reuse k, v, self_attention
+        # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
         if len(past_key_value.key_cache) <= self.layer_idx:
             past_key_value.key_cache.append(key_states)
             past_key_value.value_cache.append(value_states)
@@ -196,23 +197,11 @@ def mixtral_attention_forward(
 
             key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
+            # update past_key_value
             past_key_value.key_cache[self.layer_idx] = key_states
             past_key_value.value_cache[self.layer_idx] = value_states
 
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_key_value_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
-
+     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
