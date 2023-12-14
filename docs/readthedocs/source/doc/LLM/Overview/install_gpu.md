@@ -16,7 +16,7 @@
 
       .. note::
 
-         We currently supoort the Ubuntu 20.04 operating system or later.
+         We currently support the Ubuntu 20.04 operating system or later.
 
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here're several prerequisite steps for tools installation and environment preparation:
 
@@ -33,7 +33,7 @@
 
         .. seealso::
 
-           We recommand you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh>`_ to install oneapi.
+           We recommend you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh>`_ to install oneapi.
 
    .. tab:: Windows
 
@@ -76,7 +76,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
          conda create -n llm python=3.9 libuv
          conda activate llm
 
-         pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 ```
 
@@ -109,7 +109,7 @@ To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisit
   ```eval_rst
   .. seealso::
 
-     We recommand you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh>`_ to install oneapi.
+     We recommend you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh>`_ to install oneapi.
   ```
 
 ### Install BigDL-LLM
@@ -149,6 +149,8 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 .. tabs::
    .. tab:: Linux
 
+      For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
+
       .. code-block:: bash
 
          # configures OneAPI environment variables
@@ -156,6 +158,21 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+      
+      For Intel Data Center GPU Max Series, we recommend:
+
+      .. code-block:: bash
+
+         # configures OneAPI environment variables
+         source /opt/intel/oneapi/setvars.sh
+
+         export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         export ENABLE_SDP_FUSION=1
+
+      Please note that ``libtcmalloc.so`` can installed by ``conda install -c conda-forge -y gperftools=2.10``
+
+
 
    .. tab:: Windows
 
