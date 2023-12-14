@@ -147,15 +147,15 @@ def run_transformer_int4(repo_id,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto')
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto').eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True)
+                                                     use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True)
+                                                     use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
@@ -344,17 +344,17 @@ def run_transformer_int4_gpu(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                          trust_remote_code=True, use_cache=True)
+                                          trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True)
+                                                     use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                     trust_remote_code=True, use_cache=True)
+                                                     trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
@@ -425,19 +425,19 @@ def run_optimize_model_gpu(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
-                                          trust_remote_code=True, use_cache=True)
+                                          trust_remote_code=True, use_cache=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                     use_cache=True, low_cpu_mem_usage=True)
+                                                     use_cache=True, low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
-                                                     trust_remote_code=True, use_cache=True)
+                                                     trust_remote_code=True, use_cache=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
