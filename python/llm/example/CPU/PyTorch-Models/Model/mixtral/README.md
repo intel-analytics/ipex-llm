@@ -18,7 +18,7 @@ conda activate llm
 
 # below command will install PyTorch CPU as default
 pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
-pip install --pre --upgrade bigdl-llm
+pip install --pre --upgrade bigdl-llm[all]
 
 # Please make sure you are using a stable version of Transformers, 4.36.0 or newer.
 pip install transformers==4.36.0
