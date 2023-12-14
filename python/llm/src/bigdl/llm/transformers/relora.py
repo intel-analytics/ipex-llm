@@ -56,16 +56,18 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 import torch.distributed as dist
 from bigdl.llm.transformers.qlora import LoraLowBitLinear
 from bigdl.llm.transformers.low_bit_linear import FP4Params
+from bigdl.llm.utils.common import invalidInputError
 
 LOG = logging.getLogger("bigdl.llm.relora")
+
 
 class ReLoRATrainer(Trainer):
     """
     Trainer subclass that uses the OneCycleLR scheduler
     """
 
-    def __init__(self, *args, base_model="meta-llama/Llama-2-7b-hf", 
-                 relora_steps=150, relora_warmup_steps=10, 
+    def __init__(self, *args, base_model="meta-llama/Llama-2-7b-hf",
+                 relora_steps=150, relora_warmup_steps=10,
                  relora_cpu_offload=False, **kwargs):
         self.lr_scheduler = None
         self.relora_steps = relora_steps
@@ -73,7 +75,7 @@ class ReLoRATrainer(Trainer):
         self.relora_cpu_offload = relora_cpu_offload
         callbacks = kwargs.get("callbacks", [])
         if self.relora_steps > 0:
-            callbacks.append(ReLoRACallback(relora_steps=relora_steps, 
+            callbacks.append(ReLoRACallback(relora_steps=relora_steps,
                                             relora_cpu_offload=relora_cpu_offload,
                                             base_model=base_model))
         kwargs["callbacks"] = callbacks
@@ -109,6 +111,7 @@ def is_distributed():
     """
     return dist.is_available() and dist.is_initialized()
 
+
 def is_main_process():
     """
     Check if the current process is the main process.
@@ -117,7 +120,8 @@ def is_main_process():
     if not is_distributed():
         return True
     return dist.get_rank() == 0
-    
+
+
 def reset_optimizer(optimizer: torch.optim.Optimizer):
     reset_steps = 0
     reset_keys = {}
@@ -143,7 +147,7 @@ def reset_optimizer(optimizer: torch.optim.Optimizer):
 class ReLoRACallback(TrainerCallback):
     """Callback to merge LoRA weights into the base model and save full-weight checkpoints"""
 
-    def __init__(self, relora_steps=150, relora_cpu_offload=False, 
+    def __init__(self, relora_steps=150, relora_cpu_offload=False,
                  base_model="meta-llama/Llama-2-7b-hf", resume_from_checkpoint=None):
         self.relora_steps = relora_steps
         self.cpu_offload = relora_cpu_offload
@@ -153,9 +157,8 @@ class ReLoRACallback(TrainerCallback):
         if not os.path.exists(self.last_full_model):
             self.last_full_model = str(Path(snapshot_download(base_model)))
 
-        assert os.path.exists(
-            self.last_full_model
-        ), "for ReLORA base_model must be a local path"
+        invalidInputError(os.path.exists(self.last_full_model),
+                          "for ReLORA base_model must be a local path")
 
         self.num_lora_restarts = 0
         self.need_full_save = False
@@ -370,10 +373,9 @@ def update_weights(
     if isinstance(target, LoraLowBitLinear):
         # LOG.info(f"new fp4params {device}, {target.weight.data}, {target.weight.data.device}")
         new_low_bit_params = FP4Params(new_weight.cpu(),
-                                  qtype=target.qtype).to("cpu")
+                                       qtype=target.qtype).to("cpu")
         new_low_bit_params = new_low_bit_params.to(device=device)
         target._parameters['weight'] = new_low_bit_params
-        # LOG.info(f"quantize, {target.weight.data}, device: {device}, {target.weight.data.device}, dtype: {target.weight.qtype}")
 
 
 def merge_and_save(
