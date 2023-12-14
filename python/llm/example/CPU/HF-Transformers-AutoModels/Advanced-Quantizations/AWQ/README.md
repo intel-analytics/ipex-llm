@@ -35,7 +35,6 @@ pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
 pip install transformers==4.35.0
 pip install accelerate==0.24.1
 pip install einops
-pip install bigdl-llm==2.5.0b20231212
 ```
 
 ### 2. Run
