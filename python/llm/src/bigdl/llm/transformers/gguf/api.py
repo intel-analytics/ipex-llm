@@ -39,7 +39,7 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
 
     with torch.no_grad():
         if model_family == "llama":
-            model_name = loader.config["general.name"]
+            model_name = loader.config["general.name"].lower()
             if "mistral" in model_name:
                 from .models.mistral import load_gguf_mistral
                 model, tokenizer = load_gguf_mistral(loader, dtype)
