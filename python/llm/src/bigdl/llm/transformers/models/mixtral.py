@@ -201,7 +201,7 @@ def mixtral_attention_forward(
             past_key_value.key_cache[self.layer_idx] = key_states
             past_key_value.value_cache[self.layer_idx] = value_states
 
-     # repeat k/v heads if n_kv_heads < n_heads
+    # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
