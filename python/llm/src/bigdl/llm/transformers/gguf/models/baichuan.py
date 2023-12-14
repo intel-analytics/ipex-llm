@@ -105,7 +105,7 @@ def load_gguf_baichuan(loader: GGUFFileLoader, dtype: torch.dtype = torch.float)
 
 def restore_baichuan_weight(ckpt: dict, n_head: int, n_head_kv: int):
     # see https://github.com/ggerganov/llama.cpp/blob/master/convert-hf-to-gguf.py#L535
-    
+
     for name, weight in ckpt.items():
         head, hd_size = weight.shape[0], weight.shape[1:]
         if n_head != n_head_kv:

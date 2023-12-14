@@ -22,7 +22,8 @@ from transformers import PreTrainedModel, add_start_docstrings
 from transformers.activations import ACT2FN
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast, \
     SequenceClassifierOutputWithPast
-from transformers.utils import logging, add_start_docstrings_to_model_forward, replace_return_docstrings
+from transformers.utils import logging, add_start_docstrings_to_model_forward, \
+    replace_return_docstrings
 
 import math
 from typing import List, Optional, Tuple, Union
@@ -32,24 +33,27 @@ import torch.utils.checkpoint
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
-
 logger = logging.get_logger(__name__)
+
 
 # Copied from transformers.models.bart.modeling_bart._make_causal_mask
 def _make_causal_mask(
-        input_ids_shape: torch.Size, dtype: torch.dtype, device: torch.device, past_key_values_length: int = 0
+        input_ids_shape: torch.Size, dtype: torch.dtype, device: torch.device,
+        past_key_values_length: int = 0
 ):
     """
     Make causal mask used for bi-directional self-attention.
     """
     bsz, tgt_len = input_ids_shape
-    mask = torch.full((tgt_len, tgt_len), torch.tensor(torch.finfo(dtype).min, device=device), device=device)
+    mask = torch.full((tgt_len, tgt_len), torch.tensor(torch.finfo(dtype).min,
+                                                       device=device), device=device)
     mask_cond = torch.arange(mask.size(-1), device=device)
     mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
     mask = mask.to(dtype)
 
     if past_key_values_length > 0:
-        mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)
+        mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype,
+                                      device=device), mask], dim=-1)
     return mask[None, None, :, :].expand(bsz, 1, tgt_len, tgt_len + past_key_values_length)
 
 
@@ -96,21 +100,25 @@ class RotaryEmbedding(torch.nn.Module):
 
         # Build here to make `torch.jit.trace` work.
         self.max_seq_len_cached = max_position_embeddings
-        t = torch.arange(self.max_seq_len_cached, device=self.inv_freq.device, dtype=self.inv_freq.dtype)
+        t = torch.arange(self.max_seq_len_cached, device=self.inv_freq.device,
+                         dtype=self.inv_freq.dtype)
         freqs = torch.einsum("i,j->ij", t, self.inv_freq)
-        # Different from paper, but it uses a different permutation in order to obtain the same calculation
+        # Different from paper, but it uses a different permutation
+        # in order to obtain the same calculation
         emb = torch.cat((freqs, freqs), dim=-1)
         self.register_buffer("cos_cached", emb.cos()[None, None, :, :], persistent=False)
         self.register_buffer("sin_cached", emb.sin()[None, None, :, :], persistent=False)
 
     def forward(self, x, seq_len=None):
         # x: [bs, num_attention_heads, seq_len, head_size]
-        # This `if` block is unlikely to be run after we build sin/cos in `__init__`. Keep the logic here just in case.
+        # This `if` block is unlikely to be run after we build sin/cos
+        # in `__init__`. Keep the logic here just in case.
         if seq_len > self.max_seq_len_cached:
             self.max_seq_len_cached = seq_len
             t = torch.arange(self.max_seq_len_cached, device=x.device, dtype=self.inv_freq.dtype)
             freqs = torch.einsum("i,j->ij", t, self.inv_freq)
-            # Different from paper, but it uses a different permutation in order to obtain the same calculation
+            # Different from paper, but it uses a different permutation
+            # in order to obtain the same calculation
             emb = torch.cat((freqs, freqs), dim=-1).to(x.device)
             self.register_buffer("cos_cached", emb.cos()[None, None, :, :], persistent=False)
             self.register_buffer("sin_cached", emb.sin()[None, None, :, :], persistent=False)
@@ -167,16 +175,18 @@ class Attention(nn.Module):
         self.max_position_embeddings = config.max_position_embeddings
 
         if (self.head_dim * self.num_heads) != self.hidden_size:
-            raise ValueError(
-                f"hidden_size must be divisible by num_heads (got `hidden_size`: {self.hidden_size}"
+            logger.error(
+                f"hidden_size must be divisible by num_heads (got `hidden_size`:{self.hidden_size}"
                 f" and `num_heads`: {self.num_heads})."
             )
         self.W_pack = nn.Linear(self.hidden_size, 3 * self.hidden_size, bias=False)
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
-        self.rotary_emb = RotaryEmbedding(self.head_dim, max_position_embeddings=self.max_position_embeddings)
+        self.rotary_emb = RotaryEmbedding(self.head_dim,
+                                          max_position_embeddings=self.max_position_embeddings)
 
     def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
-        return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
+        return (tensor.view(bsz, seq_len, self.num_heads, self.head_dim).
+                transpose(1, 2).contiguous())
 
     def forward(
             self,
@@ -191,18 +201,19 @@ class Attention(nn.Module):
 
         proj = self.W_pack(hidden_states)
         proj = proj.unflatten(-1, (3, self.hidden_size)).unsqueeze(0).transpose(0, -2).squeeze(-2)
-        query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                         2)  # batch_size x source_len x hidden_size
-        key_states = proj[1].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                       2)  # batch_size x target_len x head_size
-        value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1,
-                                                                                         2)  # batch_size x source_len x hidden_size
+        query_states = (proj[0].view(bsz, q_len, self.num_heads, self.head_dim).
+                        transpose(1,2))  # batch_size x source_len x hidden_size
+        key_states = (proj[1].view(bsz, q_len, self.num_heads, self.head_dim)
+                      .transpose(1,2))  # batch_size x target_len x head_size
+        value_states = (proj[2].view(bsz, q_len, self.num_heads, self.head_dim)
+                        .transpose(1,2))  # batch_size x source_len x hidden_size
 
         kv_seq_len = key_states.shape[-2]
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin,
+                                                        position_ids)
         # [bsz, nh, t, hd]
 
         if past_key_value is not None:
@@ -212,29 +223,36 @@ class Attention(nn.Module):
 
         past_key_value = (key_states, value_states) if use_cache else None
 
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(
+            self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
             raise ValueError(
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f"Attention weights should be of size "
+                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
                 f" {attn_weights.size()}"
             )
 
         if attention_mask is not None:
             if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                 raise ValueError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
                 )
             attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
+            attn_weights = torch.max(attn_weights,
+                                     torch.tensor(torch.finfo(attn_weights.dtype).min))
 
         # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(
+            query_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
 
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
             raise ValueError(
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                f"`attn_output` should be of "
+                f"size {(bsz, self.num_heads, q_len, self.head_dim)}, "
+                f"but is"
                 f" {attn_output.size()}"
             )
 
@@ -273,16 +291,21 @@ class DecoderLayer(nn.Module):
     ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
         """
         Args:
-            hidden_states (`torch.FloatTensor`): input to the layer of shape `(batch, seq_len, embed_dim)`
+            hidden_states (`torch.FloatTensor`): input to the layer of shape
+            `(batch, seq_len, embed_dim)`
             attention_mask (`torch.FloatTensor`, *optional*): attention mask of size
-                `(batch, 1, tgt_len, src_len)` where padding elements are indicated by very large negative values.
+                `(batch, 1, tgt_len, src_len)` where padding elements are
+                indicated by very large negative values.
             output_attentions (`bool`, *optional*):
-                Whether or not to return the attentions tensors of all attention layers. See `attentions` under
+                Whether or not to return the attentions tensors of all
+                 attention layers. See `attentions` under
                 returned tensors for more detail.
             use_cache (`bool`, *optional*):
-                If set to `True`, `past_key_values` key value states are returned and can be used to speed up decoding
+                If set to `True`, `past_key_values` key value states are
+                 returned and can be used to speed up decoding
                 (see `past_key_values`).
-            past_key_value (`Tuple(torch.FloatTensor)`, *optional*): cached past key and value projection states
+            past_key_value (`Tuple(torch.FloatTensor)`, *optional*):
+            cached past key and value projection states
         """
 
         residual = hidden_states
@@ -342,7 +365,8 @@ class PreTrainedModel(PreTrainedModel):
 
 class Model(PreTrainedModel):
     """
-    Transformer decoder consisting of *config.num_hidden_layers* layers. Each layer is a [`DecoderLayer`]
+    Transformer decoder consisting of *config.num_hidden_layers* layers.
+    Each layer is a [`DecoderLayer`]
 
     Args:
         config: BaiChuanConfig
@@ -368,7 +392,8 @@ class Model(PreTrainedModel):
         self.embed_tokens = value
 
     # Copied from transformers.models.bart.modeling_bart.BartDecoder._prepare_decoder_attention_mask
-    def _prepare_decoder_attention_mask(self, attention_mask, input_shape, inputs_embeds, past_key_values_length):
+    def _prepare_decoder_attention_mask(self, attention_mask, input_shape, inputs_embeds,
+                                        past_key_values_length):
         # create causal mask
         # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
         combined_attention_mask = None
@@ -382,11 +407,13 @@ class Model(PreTrainedModel):
 
         if attention_mask is not None:
             # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
-            expanded_attn_mask = _expand_mask(attention_mask, inputs_embeds.dtype, tgt_len=input_shape[-1]).to(
+            expanded_attn_mask = _expand_mask(attention_mask, inputs_embeds.dtype,
+                                              tgt_len=input_shape[-1]).to(
                 inputs_embeds.device
             )
             combined_attention_mask = (
-                expanded_attn_mask if combined_attention_mask is None else expanded_attn_mask + combined_attention_mask
+                expanded_attn_mask if combined_attention_mask is None
+                else expanded_attn_mask + combined_attention_mask
             )
 
         return combined_attention_mask
@@ -403,9 +430,11 @@ class Model(PreTrainedModel):
             output_hidden_states: Optional[bool] = None,
             return_dict: Optional[bool] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
-        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        output_attentions = output_attentions if output_attentions is not None\
+            else self.config.output_attentions
         output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+            output_hidden_states if output_hidden_states is not None
+            else self.config.output_hidden_states
         )
         use_cache = use_cache if use_cache is not None else self.config.use_cache
 
@@ -413,13 +442,16 @@ class Model(PreTrainedModel):
 
         # retrieve input_ids and inputs_embeds
         if input_ids is not None and inputs_embeds is not None:
-            raise ValueError("You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
+            raise ValueError(
+                "You cannot specify both decoder_input_ids "
+                "and decoder_inputs_embeds at the same time")
         elif input_ids is not None:
             batch_size, seq_length = input_ids.shape
         elif inputs_embeds is not None:
             batch_size, seq_length, _ = inputs_embeds.shape
         else:
-            raise ValueError("You have to specify either decoder_input_ids or decoder_inputs_embeds")
+            raise ValueError(
+                "You have to specify either decoder_input_ids or decoder_inputs_embeds")
 
         seq_length_with_past = seq_length
         past_key_values_length = 0
@@ -431,7 +463,8 @@ class Model(PreTrainedModel):
         if position_ids is None:
             device = input_ids.device if input_ids is not None else inputs_embeds.device
             position_ids = torch.arange(
-                past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+                past_key_values_length, seq_length + past_key_values_length, dtype=torch.long,
+                device=device
             )
             position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
         else:
@@ -453,7 +486,8 @@ class Model(PreTrainedModel):
         if self.gradient_checkpointing and self.training:
             if use_cache:
                 logger.warning_once(
-                    "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                    "`use_cache=True` is incompatible with "
+                    "gradient checkpointing. Setting `use_cache=False`..."
                 )
                 use_cache = False
 
@@ -510,7 +544,9 @@ class Model(PreTrainedModel):
 
         next_cache = next_decoder_cache if use_cache else None
         if not return_dict:
-            return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
+            return tuple(
+                v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if
+                v is not None)
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
@@ -563,9 +599,12 @@ class BaiChuanForCausalLM(PreTrainedModel):
         r"""
         Args:
             labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
-                Labels for computing the masked language modeling loss. Indices should either be in `[0, ...,
-                config.vocab_size]` or -100 (see `input_ids` docstring). Tokens with indices set to `-100` are ignored
-                (masked), the loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`.
+                Labels for computing the masked language modeling loss.
+                 Indices should either be in `[0, ...,
+                config.vocab_size]` or -100 (see `input_ids` docstring).
+                 Tokens with indices set to `-100` are ignored
+                (masked), the loss is only computed for the tokens
+                with labels in `[0, ..., config.vocab_size]`.
 
         Returns:
 
@@ -582,11 +621,13 @@ class BaiChuanForCausalLM(PreTrainedModel):
 
         >>> # Generate
         >>> generate_ids = model.generate(inputs.input_ids, max_length=30)
-        >>> tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        >>> tokenizer.batch_decode(generate_ids, skip_special_tokens=True,
+        clean_up_tokenization_spaces=False)[0]
         "Hey, are you consciours? Can you talk to me?\nI'm not consciours, but I can talk to you."
         ```"""
 
-        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        output_attentions = output_attentions if output_attentions is not None else\
+            self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
@@ -667,5 +708,6 @@ class BaiChuanForCausalLM(PreTrainedModel):
     def _reorder_cache(past_key_values, beam_idx):
         reordered_past = ()
         for layer_past in past_key_values:
-            reordered_past += (tuple(past_state.index_select(0, beam_idx) for past_state in layer_past),)
+            reordered_past += (
+            tuple(past_state.index_select(0, beam_idx) for past_state in layer_past),)
         return reordered_past
