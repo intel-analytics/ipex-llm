@@ -103,12 +103,12 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
-        task: ${{ fromJson(needs.set-matrix.outputs.task) }}
-        precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
+        model_name: [Mistral-7B-v0.1]
+        task: [gsm8k]
+        precision: [fp4, sym_int8]
         device: [xpu]
         
-    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
+    runs-on: [self-hosted, llm, accuracy]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
@@ -166,7 +166,7 @@ jobs:
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
-          source /opt/intel/oneapi/setvars.sh
+          source /home/arda/intel/oneapi/setvars.sh
           python run_llb.py \
           --model bigdl-llm \
           --pretrained ${MODEL_PATH} \
