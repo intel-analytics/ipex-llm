@@ -84,7 +84,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
 ```eval_rst
 .. note::
 
-   BigDL-LLM for GPU with PyTorch 2.0 only supports Ubuntu 20.04 operating system or later.
+   BigDL-LLM for GPU with PyTorch 2.0 supports Ubuntu 20.04 operating system or later.
 ```
 
 ### Prerequisite
@@ -127,13 +127,6 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-```
-
-
-```eval_rst
-.. note::
-
-   BigDL-LLM with PyTorch 2.0 only supports Ubuntu 20.04 operating system or later.
 ```
 
 ## Known issues
