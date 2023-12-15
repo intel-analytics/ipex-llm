@@ -86,7 +86,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     for name, weight in state_dict.items():
         set_module_tensor_to_device(model, name, "cpu", weight)
-    
+
     model = model.cpu()
 
     from transformers.convert_slow_tokenizer import import_protobuf
@@ -105,4 +105,3 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         os.remove(f.name)
 
     return model, tokenizer
-

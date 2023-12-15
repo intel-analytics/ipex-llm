@@ -1,11 +1,16 @@
 # Loading GGUF models
-In this directory, you will find examples on how to load GGUF model into `bigdl-llm`. For illustration purposes, we utilize the [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main) as a reference LLaMA2 GGUF model.
->Note: Only LLaMA2 family models are currently supported
+In this directory, you will find examples on how to load GGUF model into `bigdl-llm`.
+>Note: Only LLaMA2 family models are currently supported.
+
+## Verified Models
+
+- [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
+- [mixtral-8x7b-v0.1.Q4_0.gguf](https://huggingface.co/TheBloke/Mixtral-8x7B-v0.1-GGUF)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
 
-**Important: Please make sure you have installed `transformers==4.33.0` to run the example.**
+**Important: Please make sure you have installed `transformers==4.36.0` to run the example.**
 
 ## Example: Load gguf model using `from_gguf()` API
 In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `bigdl-llm` using `from_gguf()` API, with BigDL-LLM optimizations.
