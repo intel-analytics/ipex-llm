@@ -620,7 +620,11 @@ def _optimize_post(model, lightweight_bmm=False):
                           "to run Mixtral models.")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.mixtral import mixtral_moeblock_forward
+        from bigdl.llm.transformers.models.mixtral import mixtral_moeblock_forward, \
+            mixtral_attention_forward
+        convert_forward(model,
+                        module.MixtralAttention,
+                        mixtral_attention_forward)
         convert_forward(model,
                         module.MixtralRMSNorm,
                         llama_rms_norm_forward)
