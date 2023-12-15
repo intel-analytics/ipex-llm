@@ -30,12 +30,12 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --upgrade jupyterlab && \
     git clone https://github.com/intel-analytics/bigdl-llm-tutorial && \
     chmod +x /llm/start-notebook.sh && \
-# Download chat.py script
-    pip install --upgrade colorama && \
-    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py && \
 # Download all-in-one benchmark
     git clone https://github.com/intel-analytics/BigDL && \
     cp -r ./BigDL/python/llm/dev/benchmark/ ./benchmark && \
+# Copy chat.py script
+    pip install --upgrade colorama && \
+    cp -r ./BigDL/python/llm/portable-zip/ ./portable-zip && \
 # Install all-in-one dependencies
     apt-get install -y numactl && \
     pip install --upgrade omegaconf && \
