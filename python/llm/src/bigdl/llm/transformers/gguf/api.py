@@ -32,6 +32,7 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
 
     loader = GGUFFileLoader(fpath)
     model_family = loader.config["general.architecture"]
+    print("model_family:" + model_family)
     qtype = loader.config["general.file_type"]
 
     invalidInputError(qtype in qtype_map, f"Unsupported gguf quantize type: {qtype}")
@@ -47,6 +48,10 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
                 from .models.llama import load_gguf_llama
 
                 model, tokenizer = load_gguf_llama(loader, dtype)
+        elif model_family == "baichuan":
+            from .models.baichuan import load_gguf_baichuan
+
+            model, tokenizer = load_gguf_baichuan(loader, dtype)
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
