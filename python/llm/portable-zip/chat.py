@@ -229,7 +229,7 @@ if __name__ == "__main__":
     elif model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
         chatglm2_stream_chat(model=model, tokenizer=tokenizer)
     else:
-        kv_cache = StartRecentKVCache()
+        kv_cache = StartRecentKVCache(start_size=start_size)
         stream_chat(model=model,
                     tokenizer=tokenizer,
                     kv_cache=kv_cache)
