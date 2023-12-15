@@ -77,10 +77,10 @@ def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
         result = linear_q4_0.fused_rms_norm(hidden_states,
-                                                   [self.weight.size(0)],
-                                                   self.weight,
-                                                   None,
-                                                   self.variance_epsilon)
+                                            [self.weight.size(0)],
+                                            self.weight,
+                                            None,
+                                            self.variance_epsilon)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
             return result

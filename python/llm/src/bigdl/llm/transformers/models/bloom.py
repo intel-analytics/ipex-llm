@@ -66,10 +66,10 @@ def bloom_layer_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
         result = linear_q4_0.fused_layer_norm(hidden_states,
-                                                     [self.weight.size(0)],
-                                                     self.weight,
-                                                     self.bias,
-                                                     self.eps)
+                                              [self.weight.size(0)],
+                                              self.weight,
+                                              self.bias,
+                                              self.eps)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
             return result
