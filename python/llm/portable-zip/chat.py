@@ -58,6 +58,7 @@ HUMAN_ID = "<human>"
 BOT_ID = "<bot>"
 
 def get_stop_words_ids(chat_format, tokenizer):
+    # https://github.com/QwenLM/Qwen/blob/main/examples/vllm_wrapper.py#L23
     if chat_format == "Qwen":
         stop_words_ids = [[tokenizer.im_end_id], [tokenizer.im_start_id], [tokenizer.eod_id]]
     else:
@@ -117,7 +118,8 @@ def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[])
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
-        if user_input == "stop": # let's stop the conversation when user input "stop"
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
             break
         prompt = f"{HUMAN_ID} {user_input}\n{BOT_ID} "
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
@@ -140,7 +142,8 @@ def chatglm2_stream_chat(model, tokenizer):
 
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
-        if user_input == "stop": # let's stop the conversation when user input "stop"
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
             break
         print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
         prompt = f"问：{user_input}\n答："
@@ -167,8 +170,10 @@ def qwen_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_word
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
-        if user_input == "stop": # let's stop the conversation when user input "stop"
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
             break
+        # https://huggingface.co/Qwen/Qwen-7B-Chat/blob/main/generation_config.json#L2
         prompt = f"""
             <|im_start|>system
             You are a helpful assistant.
