@@ -43,6 +43,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
+# Add Qwen support
+    pip install --upgrade transformers_stream_generator einops && \
 # Copy vLLM-Serving
     cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL
