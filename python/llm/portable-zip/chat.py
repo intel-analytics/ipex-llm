@@ -133,11 +133,12 @@ def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[])
         )
 
 @torch.no_grad()
-def chatglm2_stream_chat(model, tokenizer):
+def chatglm3_stream_chat(model, tokenizer):
     chat_history = []
     past_key_values = None
     current_length = 0
-    stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(HUMAN_ID, tokenizer)])
+    # https://github.com/THUDM/ChatGLM3/issues/274#issuecomment-1810160305
+    stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(["<|user|>", "<|observation|>"], tokenizer)])
     max_past_length = 2048
 
     while True:
@@ -146,7 +147,14 @@ def chatglm2_stream_chat(model, tokenizer):
         if user_input == "stop":
             break
         print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
-        prompt = f"问：{user_input}\n答："
+        # https://github.com/THUDM/ChatGLM3/blob/main/PROMPT_en.md
+        prompt = f"""
+            <|system|>
+            You are an intelligent AI assistant, named ChatGLM3. Follow the user's instructions carefully.
+            <|user|>
+            {user_input}
+            <|assistant|>
+        """
         for response, chat_history, past_key_values in model.stream_chat(tokenizer, prompt,
                                                                          history=chat_history,
                                                                          stopping_criteria=stopping_criteria,
