@@ -1,11 +1,11 @@
 # Loading GGUF models
 In this directory, you will find examples on how to load GGUF model into `bigdl-llm`.
->Note: Only LLaMA2 family models are currently supported.
 
-## Verified Models
-
-- [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
-- [mixtral-8x7b-v0.1.Q4_0.gguf](https://huggingface.co/TheBloke/Mixtral-8x7B-v0.1-GGUF)
+## Verified Models(Q4_0)
+- [Llama-2-7B-Chat-GGUF](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
+- [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF)
+- [Mixtral-8x7B-v0.1-GGUF](https://huggingface.co/TheBloke/Mixtral-8x7B-v0.1-GGUF)
+- [Baichuan2-7B-Chat-GGUF](https://huggingface.co/second-state/Baichuan2-7B-Chat-GGUF/tree/main)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
@@ -25,7 +25,7 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
-pip install transformers==4.33.0  # upgrade transformers
+pip install transformers==4.34.0  # upgrade transformers
 ```
 
 ### 2. Run

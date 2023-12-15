@@ -18,12 +18,11 @@ import torch
 import time
 import argparse
 
-from transformers import LlamaTokenizer
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-LLAMA2_PROMPT_FORMAT = """### HUMAN:
+PROMPT_FORMAT = """### HUMAN:
 {prompt}
 
 ### RESPONSE:
@@ -47,7 +46,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
         output = model.generate(input_ids,

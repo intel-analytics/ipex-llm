@@ -98,6 +98,7 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
+          python ../../../test/benchmark/check_results.py -n 48
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
@@ -232,7 +233,8 @@ jobs:
       - name: Prepare for install bigdl-llm from source
         shell: bash
         run: |
-          sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
 
       - name: Install bigdl-llm and other related packages
         shell: cmd
