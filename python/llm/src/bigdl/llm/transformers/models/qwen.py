@@ -38,7 +38,7 @@ except ImportError:
 
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half
-from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
 apply_rotary_emb_func = None
@@ -190,13 +190,17 @@ def qwen_attention_forward(
             and not self.is_fp32
             and not query.is_cuda
         ):
-            raise Exception(_ERROR_INPUT_CPU_QUERY_WITH_FLASH_ATTN_ACTIVATED)
+            invalidOperationError(False,
+                                  None,
+                                  None,
+                                  Exception(_ERROR_INPUT_CPU_QUERY_WITH_FLASH_ATTN_ACTIVATED))
 
         if not self.use_cache_quantization and SUPPORT_TORCH2:
             if attention_mask is not None:
                 attention_mask = attention_mask.expand(-1, -1, query.size(2), -1)
                 if causal_mask is not None:
-                    attention_mask = attention_mask.masked_fill(~causal_mask, torch.finfo(query.dtype).min)
+                    attention_mask = attention_mask.masked_fill(~causal_mask,
+                                                                torch.finfo(query.dtype).min)
             else:
                 attention_mask = causal_mask
             attn_output = F.scaled_dot_product_attention(
@@ -220,9 +224,11 @@ def qwen_attention_forward(
             and flash_attn_unpadded_func is not None
             and not self.is_fp32
         ):
-            raise ValueError("Cannot output attentions while using flash-attn")
+            invalidInputError(False,
+                              f"Cannot output attentions while using flash-attn")
         elif not self.use_cache_quantization and SUPPORT_TORCH2:
-            raise ValueError("Cannot output attentions while using scaled_dot_product_attention")
+            invalidInputError(False,
+                              f"Cannot output attentions while using scaled_dot_product_attention")
         else:
             outputs += (attn_weight,)
 
