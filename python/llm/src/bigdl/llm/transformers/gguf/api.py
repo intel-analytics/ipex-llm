@@ -40,9 +40,14 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
 
     with torch.no_grad():
         if model_family == "llama":
-            from .models.llama import load_gguf_llama
+            model_name = loader.config["general.name"].lower()
+            if "mistral" in model_name:
+                from .models.mistral import load_gguf_mistral
+                model, tokenizer = load_gguf_mistral(loader, dtype)
+            else:
+                from .models.llama import load_gguf_llama
 
-            model, tokenizer = load_gguf_llama(loader, dtype)
+                model, tokenizer = load_gguf_llama(loader, dtype)
         elif model_family == "baichuan":
             from .models.baichuan import load_gguf_baichuan
 
