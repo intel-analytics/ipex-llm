@@ -75,22 +75,15 @@ def get_ipex_version():
 
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        if get_ipex_version() <= "2.0.110+xpu":
-            import linear_q4_0
-            result = linear_q4_0.fused_rms_norm(hidden_states,
-                                                       [self.weight.size(0)],
-                                                       self.weight,
-                                                       None,
-                                                       self.variance_epsilon)
-            # if nelement == 0, means fused norm failed, go back to python implement.
-            if result.nelement != 0:
-                return result
-        else:
-            return torch.ops.torch_ipex.fast_rms_norm(hidden_states,
-                                                               [self.weight.size(0)],
-                                                               self.weight,
-                                                               None,
-                                                               self.variance_epsilon)
+        import linear_q4_0
+        result = linear_q4_0.fused_rms_norm(hidden_states,
+                                                   [self.weight.size(0)],
+                                                   self.weight,
+                                                   None,
+                                                   self.variance_epsilon)
+        # if nelement == 0, means fused norm failed, go back to python implement.
+        if result.nelement != 0:
+            return result
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
     variance = hidden_states.pow(2).mean(-1, keepdim=True)
