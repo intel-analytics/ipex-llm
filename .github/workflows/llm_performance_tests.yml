@@ -2,7 +2,7 @@ name: LLM Performance Test
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
-  group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
+  # group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 # Controls when the action will run.
@@ -21,11 +21,11 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
     uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -98,7 +98,8 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
-          python ../../../test/benchmark/check_results.py -n 45
+          python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
+          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
