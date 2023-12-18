@@ -20,3 +20,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 import pkgutil
 __path__ = pkgutil.extend_path(__path__, __name__)  # type: ignore
+
+# Import Intel Extension for PyTorch as ipex if XPU version is installed
+from bigdl.llm.utils.ipex_importer import ipex_importer
+ipex_importer.import_ipex()
