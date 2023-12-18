@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import warnings
 from importlib.metadata import distribution, PackageNotFoundError
-
+import sys
 
 class IPEXImporter:
     """
@@ -23,7 +23,7 @@ class IPEXImporter:
     if bigdl-llm xpu version is installed.
     """
     def __init__(self):
-        pass
+        self.ipex_version = None
 
     @staticmethod
     def is_xpu_version_installed():
@@ -32,12 +32,11 @@ class IPEXImporter:
 
         Returns ture if installed false if not
         """
-        try:
-            distribution('bigdl-core-xe')
+        if 'bigdl-core-xe' in sys.modules:
             return True
-        except PackageNotFoundError:
+        else:
             return False
-    
+
     def import_ipex(self):
         """
         Try to import Intel Extension for PyTorch as ipex
@@ -45,11 +44,20 @@ class IPEXImporter:
         Raises ImportError if failed
         """
         if self.is_xpu_version_installed():
-            try:
-                import intel_extension_for_pytorch as ipex
-            except ImportError:
-                print("Intel Extension for PyTorch is not installed, \
-                    but is required for xpu inference.")
+            from intel_extension_for_pytorch import ipex
+            self.ipex_version = ipex.__version__
 
+    def get_ipex_version(self):
+        """
+        Get ipex version
+
+        Raises ImportError if cannot import Intel Extension for PyTorch
+        """
+        if self.ipex_version is not None:
+            return self.ipex_version
+
+        import intel_extension_for_pytorch as ipex
+        self.ipex_version = ipex.__version__
+        return self.ipex_version
 
 ipex_importer = IPEXImporter()
