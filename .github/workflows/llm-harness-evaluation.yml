@@ -21,7 +21,7 @@ on:
         required: true
         type: string
       precision:
-        description: 'Precisions, , seperated by comma and must be quoted.'
+        description: 'Precisions, seperated by comma and must be quoted.'
         required: true
         type: string
       task:
