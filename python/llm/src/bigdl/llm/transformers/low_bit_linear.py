@@ -70,6 +70,7 @@ FP8 = ggml_tensor_qtype["fp8"]
 FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
+FP8E5 = ggml_tensor_qtype["fp8e5"]
 
 
 def get_block_size(qtype: str):
@@ -117,7 +118,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -142,7 +143,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -511,7 +512,7 @@ class LowBitLinear(nn.Linear):
             # CPU logic
             # todo may need to set a different number on different platforms
             invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8
-                              and self.qtype != FP4,
+                              and self.qtype != FP4 and self.qtype != FP8E5,
                               "NF3, NF4, FP4 and FP8 quantization are currently not"
                               " supported on CPU")
             if self.training and x.requires_grad:
