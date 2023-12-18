@@ -63,10 +63,10 @@ jobs:
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
-          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t"]'
+          PR_MATRIX_MODEL_NAME: '["Mistral-7B-v0.1"]'
           PR_MATRIX_TASK: '["truthfulqa"]'
           PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
-          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
+          PR_LABELS: '["self-hosted", "llm", "accuracy"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
@@ -173,7 +173,8 @@ jobs:
           --precision ${{ matrix.precision }} \
           --device ${{ matrix.device }} \
           --tasks ${{ matrix.task }} \
-          --batch_size 1 --no_cache --output_path results
+          --batch_size 1 --no_cache --output_path results \
+          --model_args add_special_tokens=True
 
 
       - name: Compare with golden accuracy
