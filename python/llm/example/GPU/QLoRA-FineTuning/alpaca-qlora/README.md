@@ -97,7 +97,8 @@ bash qalora_finetune_llama2_7b_arc_2_card.sh
 bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 ```
 
-**Important: If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+### 4. (Optional) Resume Training
+If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
 ```bash
 python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
@@ -106,7 +107,7 @@ python ./alpaca_qlora_finetuning.py \
     --resume_from_checkpoint "./bigdl-qlora-alpaca/checkpoint-1100"
 ```
 
-### 4. Sample Output
+### 5. Sample Output
 ```log
 {'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
 {'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                           
