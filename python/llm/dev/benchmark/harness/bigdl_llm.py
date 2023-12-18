@@ -55,6 +55,32 @@ class BigDLLM(AutoCausalLM):
     def add_special_tokens(self) -> bool:
         return False
     
+    @property
+    def eot_token_id(self):
+        # we use EOT because end of *text* is more accurate for what we're doing than end of *sentence*
+        return self.tokenizer.eos_token_id
+
+    @property
+    def max_length(self):
+        return 2048  # TODO: how to get this from config
+
+    @property
+    def max_gen_toks(self):
+        return 256
+
+
+    @property
+    def device(self):
+        # TODO: fix multi-gpu
+        return torch.device(self._device)
+
+    def tok_encode(self, string: str):
+        input_ids = self.tokenizer.encode(string)
+        return input_ids
+
+    def tok_decode(self, tokens):
+        return self.tokenizer.decode(tokens, skip_special_tokens=True)
+
     def _model_call(self, inps):
         """
         inps: a torch tensor of shape [batch, sequence]
@@ -66,3 +92,12 @@ class BigDLLM(AutoCausalLM):
             inps = inps.to(self.device)
             res = self.model(inps)[0]
             return res
+
+    def _model_generate(self, context, max_length, eos_token_id):
+        generation_kwargs = {"do_sample": False, "max_length": max_length}
+        if eos_token_id is not None:
+            generation_kwargs["eos_token_id"] = eos_token_id
+            generation_kwargs[
+                "pad_token_id"
+            ] = eos_token_id  # setting eos_token_id as pad token
+        return self.model.generate(context, **generation_kwargs)
