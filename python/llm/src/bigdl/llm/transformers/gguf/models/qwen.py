@@ -15,12 +15,13 @@
 #
 
 import os
+
 import torch
 from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
-from tempfile import NamedTemporaryFile
-from .model_implement.qwen.modeling_qwen import QWenLMHeadModel
+
 from .model_implement.qwen.configuration_qwen import QWenConfig
+from .model_implement.qwen.modeling_qwen import QWenLMHeadModel
 from .model_implement.qwen.tokenization_qwen import QWenTokenizer
 from ..gguf import GGUFFileLoader
 
@@ -81,6 +82,8 @@ def load_gguf_qwen(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     output_temp_file = "./temp_qwen_tokenizer.tmp"
     with open(output_temp_file, 'w', encoding='utf-8') as f:
         import base64
+        # see https://github.com/simonJJJ/llama.cpp/
+        # blob/ad04d174f623711b15bdddd16050b7af9db9ef0b/convert-hf-to-gguf.py#L889
         for i in range(len(pieces)):
             token = pieces[i].piece
             score = int(pieces[i].score)
@@ -93,9 +96,10 @@ def load_gguf_qwen(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     return model, tokenizer
 
-    import base64
+
 def string_to_token_bytes(s):
-    # see
+    # see https://github.com/simonJJJ/llama.cpp/blob/
+    # ad04d174f623711b15bdddd16050b7af9db9ef0b/convert-hf-to-gguf.py#L842
     from transformers.models.gpt2.tokenization_gpt2 import bytes_to_unicode
     byte_decoder = {v: k for k, v in bytes_to_unicode().items()}
     return bytes([byte_decoder[char] for char in s])
