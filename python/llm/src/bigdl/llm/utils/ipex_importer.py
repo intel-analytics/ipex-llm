@@ -17,6 +17,7 @@
 from importlib.metadata import distribution, PackageNotFoundError
 import logging
 
+
 class IPEXImporter:
     """
     Auto import Intel Extension for PyTorch as ipex,
@@ -24,7 +25,6 @@ class IPEXImporter:
     """
     def __init__(self):
         self.ipex_version = None
-
 
     @staticmethod
     def is_xpu_version_installed():
@@ -51,7 +51,6 @@ class IPEXImporter:
             self.ipex_version = ipex.__version__
             logging.info("intel_extension_for_pytorch auto imported")
 
-
     def get_ipex_version(self):
         """
         Get ipex version
@@ -64,5 +63,6 @@ class IPEXImporter:
         import intel_extension_for_pytorch as ipex
         self.ipex_version = ipex.__version__
         return self.ipex_version
+
 
 ipex_importer = IPEXImporter()
