@@ -15,7 +15,7 @@
 #
 
 from bigdl.llm.transformers import AutoModelForCausalLM
-
+import torch
 import inspect
 from lm_eval.models.huggingface import AutoCausalLM
 from lm_eval import utils
@@ -54,3 +54,15 @@ class BigDLLM(AutoCausalLM):
     @property
     def add_special_tokens(self) -> bool:
         return False
+    
+    def _model_call(self, inps):
+        """
+        inps: a torch tensor of shape [batch, sequence]
+        the size of sequence may vary from call to call
+        returns: a torch tensor of shape [batch, sequence, vocab] with the
+        logits returned from the model
+        """
+        with torch.inference_mode():
+            inps = inps.to(self.device)
+            res = self.model(inps)[0]
+            return res
