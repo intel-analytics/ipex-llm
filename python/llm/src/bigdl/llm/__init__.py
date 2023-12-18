@@ -23,5 +23,5 @@ from .convert_model import llm_convert
 from .optimize import optimize_model
 
 # Import Intel Extension for PyTorch as ipex if XPU version is installed
-from bigdl.llm.utils.ipex_importer import ipex_importer
+from .utils.ipex_importer import ipex_importer
 ipex_importer.import_ipex()

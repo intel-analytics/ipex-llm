@@ -15,8 +15,7 @@
 #
 
 from importlib.metadata import distribution, PackageNotFoundError
-import sys
-
+import logging
 
 class IPEXImporter:
     """
@@ -26,6 +25,7 @@ class IPEXImporter:
     def __init__(self):
         self.ipex_version = None
 
+
     @staticmethod
     def is_xpu_version_installed():
         """
@@ -33,9 +33,11 @@ class IPEXImporter:
 
         Returns ture if installed false if not
         """
-        if 'bigdl-core-xe' in sys.modules:
+        # Check if xpu version installed
+        try:
+            distribution('bigdl-core-xe')
             return True
-        else:
+        except PackageNotFoundError:
             return False
 
     def import_ipex(self):
@@ -45,8 +47,10 @@ class IPEXImporter:
         Raises ImportError if failed
         """
         if self.is_xpu_version_installed():
-            from intel_extension_for_pytorch import ipex
+            import intel_extension_for_pytorch as ipex
             self.ipex_version = ipex.__version__
+            logging.info("intel_extension_for_pytorch auto imported")
+
 
     def get_ipex_version(self):
         """
