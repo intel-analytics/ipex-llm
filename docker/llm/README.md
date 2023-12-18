@@ -73,7 +73,7 @@ You can download models and bind the model directory from host machine to contai
 
 After entering the container through `docker exec`, you can run chat.py by:
 ```bash
-cd /llm
+cd /llm/portable-zip
 python chat.py --model-path YOUR_MODEL_PATH
 ```
 If your model is chatglm-6b and mounted on /llm/models, you can excute:
