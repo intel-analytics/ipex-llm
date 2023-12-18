@@ -621,7 +621,7 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.mixtral import mixtral_moeblock_forward, \
-            mixtral_attention_forward
+            mixtral_attention_forward, mixtral_mlp_forward
         convert_forward(model,
                         module.MixtralAttention,
                         mixtral_attention_forward)
@@ -631,6 +631,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralSparseMoeBlock,
                         mixtral_moeblock_forward)
+        convert_forward(model,
+                        module.MixtralBLockSparseTop2MLP,
+                        mixtral_mlp_forward)
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
                 model.config.architectures[0] == "MixtralForCausalLM":
