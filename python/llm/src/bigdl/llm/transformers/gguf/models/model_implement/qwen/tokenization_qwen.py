@@ -113,6 +113,7 @@ class QWenTokenizer(PreTrainedTokenizer):
         )
         assert (
             len(self.mergeable_ranks) + len(self.special_tokens) == enc.n_vocab
+        or len(self.mergeable_ranks) == enc.n_vocab
         ), f"{len(self.mergeable_ranks) + len(self.special_tokens)} != {enc.n_vocab} in encoding"
 
         self.decoder = {

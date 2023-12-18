@@ -25,7 +25,7 @@ from .model_implement.qwen.tokenization_qwen import QWenTokenizer
 from ..gguf import GGUFFileLoader
 
 
-def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
+def load_gguf_qwen(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     config = loader.config
 
     qwen_config = QWenConfig(
