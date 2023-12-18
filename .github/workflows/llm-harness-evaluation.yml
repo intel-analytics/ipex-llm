@@ -29,7 +29,7 @@ on:
         required: true
         type: string
       runs-on:
-        description: 'Labels to filter the runners, , seperated by comma and must be quoted.'
+        description: 'Labels to filter the runners, seperated by comma and must be quoted.'
         default: "accuracy"
         required: false
         type: string
