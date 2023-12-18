@@ -52,6 +52,10 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
             from .models.baichuan import load_gguf_baichuan
 
             model, tokenizer = load_gguf_baichuan(loader, dtype)
+        elif model_family == "qwen":
+            from .models.qwen import load_gguf_qwen
+
+            model, tokenizer = load_gguf_qwen(loader, dtype)
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
