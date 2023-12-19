@@ -2,10 +2,10 @@
 
 This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314) or [QA-LoRA](https://arxiv.org/abs/2309.14717) algorithm) on [Intel GPU](../../README.md). Several models (Llama2 / Falcon / Mistral) have been verified based on this example.
 
-### 0. Requirements
+## 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
 
-### 1. Install
+## 1. Install
 
 ```bash
 conda create -n llm python=3.9
@@ -19,17 +19,17 @@ pip install oneccl_bind_pt==2.1.100+xpu -f https://developer.intel.com/ipex-whl-
 pip install accelerate==0.23.0
 ```
 
-### 2. Configures OneAPI environment variables
+## 2. Configures OneAPI environment variables
 ```bash
 # intel_extension_for_pytorch==2.1.10+xpu requires oneAPI 2024.0
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Finetune
+## 3. Finetune
 
 Here, we provide example usages on different models and different hardwares. Please refer to the appropriate script based on your device:
 
-#### 3.1 Llama2 series
+### 3.1 Llama2 series
 <details><summary>Show LLaMA2-7B example</summary>
 
 #### QLoRA
@@ -103,12 +103,35 @@ bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 </details>
 
 
-#### 3.2 Mistral
+### 3.2 Mistral
+<details><summary>Show Mistral-7B-v0.1 example</summary>
 
-#### 3.3 Falcon-40B
+#### QLoRA
 
+##### Finetuning Mistral-7B-v0.1 on single Intel Data Center GPU Max 1100
 
-### 4. (Optional) Resume Training
+##### Finetuning Mistral-7B-v0.1 on single Tile Intel Data Center GPU Max 1550
+
+</details>
+
+### 3.3 Falcon
+<details><summary>Show falcon-40b example</summary>
+
+#### QLoRA
+
+##### Finetuning falcon-40b on single Intel Data Center GPU Max 1100
+```bash
+bash falcon-script/finetune_falcon_40b_pvc_1100_1_card.sh
+```
+
+##### Finetuning falcon-40b on single Tile Intel Data Center GPU Max 1550
+```bash
+bash falcon-script/finetune_falcon_40b_pvc_1550_1_tile.sh
+```
+
+</details>
+
+## 4. (Optional) Resume Training
 If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
 ```bash
 python ./alpaca_qlora_finetuning.py \
@@ -118,7 +141,7 @@ python ./alpaca_qlora_finetuning.py \
     --resume_from_checkpoint "./bigdl-qlora-alpaca/checkpoint-1100"
 ```
 
-### 5. Sample Loss Output
+## 5. Sample Loss Output
 ```log
 {'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
 {'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                           
@@ -131,14 +154,14 @@ python ./alpaca_qlora_finetuning.py \
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
-### 6. Merge the adapter into the original model
+## 6. Merge the adapter into the original model
 ```
 python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
-### 7. Troubleshooting
+## 7. Troubleshooting
 - If you fail to finetune on multi cards because of following error message:
   ```bash
   RuntimeError: oneCCL: comm_selector.cpp:57 create_comm_impl: EXCEPTION: ze_data was not initialized

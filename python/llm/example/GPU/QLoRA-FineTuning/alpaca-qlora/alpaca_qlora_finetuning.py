@@ -175,7 +175,7 @@ def train(
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
         # Default 4-bit format for qa-lora is sym_int4
-        low_bit_format = "sym_int4" if qa_lora else "nf4" 
+        low_bit_format = "sym_int4" if qa_lora else "nf4"
         # Load the base model from a directory or the HF Hub to 4-bit format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
@@ -189,7 +189,10 @@ def train(
     model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
-    tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    if "llama" in str(base_model).lower():
+        tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(base_model)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer.pad_token_id = (
