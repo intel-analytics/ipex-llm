@@ -79,7 +79,7 @@ jobs:
           source /home/arda/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          mv python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
@@ -88,7 +88,7 @@ jobs:
           python run.py
           # upgrade transformers for model Mistral-7B-v0.1
           python -m pip install transformers==4.34.0
-          mv ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
+          cp ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
           # change csv name
           sed -i 's/test1/test2/g' run.py
           python run.py
