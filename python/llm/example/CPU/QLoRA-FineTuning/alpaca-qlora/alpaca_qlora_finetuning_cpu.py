@@ -46,6 +46,7 @@ from peft import (
 )
 from utils.prompter import Prompter
 
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
@@ -177,10 +178,9 @@ def train(
         )
     else:
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
-        from transformers import BitsAndBytesConfig
         int4_config = BitsAndBytesConfig(
             load_in_4bit=True,
-            bnb_4bit_quant_type="sym_int4",
+            bnb_4bit_quant_type="int4",
             bnb_4bit_compute_dtype=torch.bfloat16
         )
         model = AutoModelForCausalLM.from_pretrained(base_model,

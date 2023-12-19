@@ -145,6 +145,8 @@ class _BaseAutoModelClass:
                     warnings.warn(
                         "BigDL LLM QloRA is not support fp4 now, use default nf4", FutureWarning)
                     load_in_low_bit = "nf4"
+                elif bnb_4bit_type == "int4":
+                    load_in_low_bit = "sym_int4"
                 else:
                     # fo cpu
                     load_in_low_bit = bnb_4bit_type

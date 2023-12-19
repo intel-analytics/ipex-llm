@@ -21,6 +21,7 @@ import transformers
 from transformers import LlamaTokenizer
 import intel_extension_for_pytorch as ipex
 from peft import LoraConfig
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
@@ -42,7 +43,6 @@ if __name__ == "__main__":
     data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
 
-    from transformers import BitsAndBytesConfig
     nf4_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",

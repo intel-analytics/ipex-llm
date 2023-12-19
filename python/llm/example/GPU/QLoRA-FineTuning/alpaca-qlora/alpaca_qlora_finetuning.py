@@ -47,6 +47,7 @@ from peft import (
 from utils.prompter import Prompter
 
 import intel_extension_for_pytorch as ipex
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
@@ -202,7 +203,6 @@ def train(
             low_bit_format = "bf16"
         else:
             low_bit_format = "nf4"
-        from transformers import BitsAndBytesConfig
         nf4_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type=low_bit_format,

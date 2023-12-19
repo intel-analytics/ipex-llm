@@ -20,6 +20,7 @@ import os
 import transformers
 from transformers import LlamaTokenizer
 
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
@@ -46,10 +47,9 @@ if __name__ == "__main__":
     # use the max_length to reduce memory usage, should be adjusted by different datasets
     data = data.map(lambda samples: tokenizer(samples["prediction"], max_length=256), batched=True)
 
-    from transformers import BitsAndBytesConfig
     int4_config = BitsAndBytesConfig(
         load_in_4bit=True,
-        bnb_4bit_quant_type="sym_int4",
+        bnb_4bit_quant_type="int4",
         bnb_4bit_compute_dtype=torch.bfloat16
     )
     model = AutoModelForCausalLM.from_pretrained(model_path,
