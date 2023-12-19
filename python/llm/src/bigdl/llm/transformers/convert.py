@@ -374,7 +374,12 @@ def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
+<<<<<<< HEAD
     from bigdl.llm.transformers.models.llama import llama_mlp_forward
+=======
+    from bigdl.llm.transformers.models.llama import llama_attention_selective_batching_forward_4_31
+    from bigdl.llm.transformers.models.llama import llama_model_selective_batching_forward_4_31
+>>>>>>> 372980fd83 (temp)
     from transformers.modeling_utils import PreTrainedModel
 
     # All huggingface format models are inherited from `PreTrainedModel`
@@ -388,14 +393,22 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(
             model,
             transformers.models.llama.modeling_llama.LlamaAttention,
-            llama_attention_forward_4_31,)
+            llama_attention_selective_batching_forward_4_31,)
         convert_forward(
             model,
             transformers.models.llama.modeling_llama.LlamaRMSNorm,
             llama_rms_norm_forward,)
+<<<<<<< HEAD
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
+=======
+        convert_forward(
+            model,
+            transformers.models.llama.modeling_llama.LlamaModel,
+            llama_model_selective_batching_forward_4_31,
+        )
+>>>>>>> 372980fd83 (temp)
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass

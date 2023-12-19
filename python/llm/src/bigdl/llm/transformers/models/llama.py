@@ -34,13 +34,14 @@
 import torch
 import importlib
 import torch.nn as nn
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union, List
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
@@ -310,6 +311,234 @@ def llama_attention_forward_4_31(
     return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
+# dev-note: this differs to original llama model in the aspect
+# that it has different format for past_key_value
+def llama_attention_selective_batching_forward_4_31(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    padding_mask: Optional[torch.LongTensor] = None,
+    **kwargs,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    bsz, q_len, _ = hidden_states.size()
+    device = hidden_states.device
+    # for flash attention
+    original_dtype = hidden_states.dtype
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = check_flash_attention_available(hidden_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag and q_len > 1:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
+
+    # TODO: delete
+    # print("use fsdp_flag:" + str(fsdp_flag))
+    # TODO: consider this branch later
+    if self.config.pretraining_tp > 1:
+        key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
+        query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
+                                                // self.config.pretraining_tp, dim=0)
+        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
+        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
+
+        query_states = [F.linear(hidden_states, query_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+        query_states = torch.cat(query_states, dim=-1)
+
+        key_states = [F.linear(hidden_states, key_slices[i])
+                      for i in range(self.config.pretraining_tp)]
+        key_states = torch.cat(key_states, dim=-1)
+
+        value_states = [F.linear(hidden_states, value_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+        value_states = torch.cat(value_states, dim=-1)
+
+    else:
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
+        value_states = self.v_proj(hidden_states)
+
+    query_states = query_states.view(bsz, q_len,
+                                     self.num_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(bsz, q_len,
+                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    value_states = value_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+    if past_key_value is not None:
+        updated_past_key_values = []
+        # Apply rotary_embeddings
+        max_kv_length = max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
+        max_kv_length += key_states.shape[-2]
+
+        # TODO: decide if we need to use_fuse_rope
+        cos, sin = self.rotary_emb(value_states, seq_len=max_kv_length)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin,
+                                                        position_ids, "llama")
+        # End of applying rotary_embedding
+
+        batched_attention_output = []
+        for batch in range(bsz):
+            # 2. concat key_states, value_states
+            # Get current key_states, value_states from previous cache
+            past_k, past_v = past_key_value[batch]
+            # Should be len + 1
+            current_kv_len = past_k.shape[-2] + 1
+            if past_k.stride()[1] <= past_k.size(2) * past_k.size(3):
+                new_past_k, new_past_v = extend_kv_cache(1,
+                                                         self.num_key_value_heads,
+                                                         self.head_dim,
+                                                         past_k.size(2),
+                                                         current_kv_len +
+                                                         KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                         dtype=past_k.dtype,
+                                                         device=device)
+                new_past_k[:] = past_k
+                new_past_v[:] = past_v
+                past_k = new_past_k
+                past_v = new_past_v
+            current_key_states, current_value_states = append_kv_cache(past_k, past_v,  # noqa
+                                                                       key_states[batch:batch + 1, :, :, :],  # noqa
+                                                                       value_states[batch:batch + 1, :, :, :]  # noqa
+                                                                       )
+            # 2. concat key_states, value_states ends
+
+            # 3. Record key_states, and value_states
+            updated_past_key_values.append((current_key_states, current_value_states))
+            # 3. Record key_states, value_states end
+
+            # 4. repeat kv
+            # repeat k/v heads if n_kv_heads < n_heads
+            current_key_states = repeat_kv(current_key_states, self.num_key_value_groups)
+            current_value_states = repeat_kv(current_value_states, self.num_key_value_groups)
+            # 4. repeat kv ends
+
+            # TODO: decide if we want to use flash attention
+            # 5. Attention calculation
+            # TODO: decide if we need to apply attention mask
+            # TODO: fix attention weight
+            attn_output, attn_weights = native_sdp(query_states[batch:batch + 1, :, :, :],
+                                                   current_key_states,
+                                                   current_value_states,
+                                                   None,
+                                                   1,
+                                                   1,
+                                                   current_kv_len,
+                                                   self.head_dim,
+                                                   self.num_heads)
+            batched_attention_output.append(attn_output)
+            # 5. Attention calculation ends
+        # Concat attention output together
+        # (1, num_heads, 1, head_dim)
+        attn_output = torch.concat(batched_attention_output, dim=0)
+        batched_attention_output.clear()
+        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+            raise ValueError(  # noqa
+                "`attn_output` should be of size "
+                f"{repr((bsz, self.num_heads, q_len, self.head_dim))}, but is "
+                f"{repr(attn_output.size())}"
+            )
+        attn_output = attn_output.transpose(1, 2).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+        attn_output = self.o_proj(attn_output)
+        # Apply rotary_embedding first in a batch
+
+        # TODO: this output_attentions is not correct, we are not concat attention weight
+        if not output_attentions:
+            attn_weights = None
+        return attn_output, attn_weights, updated_past_key_values if use_cache else None
+
+    kv_seq_len = key_states.shape[-2]
+    if past_key_value is not None:
+        kv_seq_len += past_key_value[0].shape[-2]
+
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+
+    # TODO: we do not know if this have the same effect
+    if use_fuse_rope:
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "llama")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "llama")
+
+    # past_key_value is None
+    if use_cache:
+        past_key_value = []
+        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+        new_key_states, new_value_states = init_kv_cache(bsz,
+                                                         self.num_key_value_heads,
+                                                         self.head_dim,
+                                                         kv_seq_len,
+                                                         max_cache_length,
+                                                         dtype=key_states.dtype,
+                                                         device=device)
+        new_key_states[:] = key_states
+        new_value_states[:] = value_states
+        key_states = new_key_states
+        value_states = new_value_states
+        for batch in range(bsz):
+            past_key_value.append((key_states[batch: batch + 1, :, :, :],
+                                   value_states[batch: batch+1, :, :, :]))
+    # past_key_value = (key_states, value_states) if use_cache else None
+    else:
+        past_key_value = None
+
+    # repeat k/v heads if n_kv_heads < n_heads
+    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                     dtype=attention_dtype)
+    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                         dtype=attention_dtype)
+
+    if fsdp_flag and q_len > 1:
+        # now only use flash attention for first token
+        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
+                                                     key_states,
+                                                     value_states,
+                                                     is_causal=True)
+        attn_weights = None
+    else:
+        # otherwise, use native attention
+        attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                               attention_mask,
+                                               bsz, q_len, kv_seq_len,
+                                               self.head_dim, self.num_heads)
+
+    attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
+    if attn_output.size() != attn_output_size:
+        invalidInputError(False,
+                          f"`attn_output` should be of size {attn_output_size},"
+                          f" but is {attn_output.size()}")
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+
+    if self.config.pretraining_tp > 1:
+        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
+                                                 dim=1)
+        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
+                           for i in range(self.config.pretraining_tp)])
+    else:
+        attn_output = self.o_proj(attn_output)
+
+    if not output_attentions:
+        attn_weights = None
+
+    return attn_output.to(original_dtype), attn_weights, past_key_value
+
+
 def check_flash_attention_available(query):
     # check whether ipex flash attention can be used
     if query.device.type != "xpu":
@@ -376,3 +605,159 @@ def native_sdp(query, key, value, attention_mask,
                                          dtype=torch.float32).to(value.dtype)
     attn_output = torch.matmul(attn_weights, value)
     return attn_output, attn_weights
+
+
+def llama_model_selective_batching_forward_4_31(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    print("#########################We are using the newest code!!!")
+    if output_attentions is not None:
+        output_attentions = output_attentions
+    else:
+        output_attentions = self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None
+        else self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # retrieve input_ids and inputs_embeds
+    if input_ids is not None and inputs_embeds is not None:
+        raise ValueError("You cannot specify both decoder_input_ids"  # noqa
+                         " and decoder_inputs_embeds at the same time")
+    elif input_ids is not None:
+        batch_size, seq_length = input_ids.shape
+    elif inputs_embeds is not None:
+        batch_size, seq_length, _ = inputs_embeds.shape
+    else:
+        raise ValueError("You have to specify either "  # noqa
+                         "decoder_input_ids or decoder_inputs_embeds")
+
+    seq_length_with_past = seq_length
+    past_key_values_length = 0
+
+    # The original position_ids in the format of [1, 1]
+    # However, this only applies when kv_len is the same for all the sequences
+    # We should set it to format of [batch, position_id]
+    # TODO: validate correctness
+    device = input_ids.device if input_ids is not None else inputs_embeds.device
+    if past_key_values is None:
+        # For prefill
+        position_ids = torch.arange(0, seq_length, dtype=torch.long, device=device)
+        position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    else:
+        past_key_values_length = []
+        for sequence_kv in past_key_values[0]:
+            key = sequence_kv[0]
+            past_key_values_length.append(key.shape[-2])
+        position_ids = torch.tensor(past_key_values_length, dtype=torch.long, device=device)
+        position_ids = position_ids.unsqueeze(0).view(-1, 1)
+
+    if past_key_values is not None:
+        # past_key_values in the format of num_layers x num_seqs x 2
+        # TODO: this may be incorrect
+        past_key_values_length = past_key_values[0][0][0].shape[2]
+        seq_length_with_past = seq_length_with_past + past_key_values_length
+
+    # if position_ids is None:
+    #     device = input_ids.device if input_ids is not None else inputs_embeds.device
+    #     # [start, end)
+    #     position_ids = torch.arange(
+    #         past_key_values_length, seq_length +
+    #         past_key_values_length, dtype=torch.long, device=device
+    #     )
+    #     position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    # else:
+    #     position_ids = position_ids.view(-1, seq_length).long()
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+    # embed positions
+    # TODO: only generate attention_mask for prefilling
+    if attention_mask is None:
+        attention_mask = torch.ones(
+            (batch_size, seq_length_with_past), dtype=torch.bool, device=inputs_embeds.device
+        )
+    attention_mask = self._prepare_decoder_attention_mask(
+        attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+    )
+
+    hidden_states = inputs_embeds
+
+    if self.gradient_checkpointing and self.training:
+        if use_cache:
+            use_cache = False
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = () if use_cache else None
+
+    for idx, decoder_layer in enumerate(self.layers):
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        past_key_value = past_key_values[idx] if past_key_values is not None else None
+
+        if self.gradient_checkpointing and self.training:
+
+            def create_custom_forward(module):
+                def custom_forward(*inputs):
+                    # None for past_key_value
+                    return module(*inputs, output_attentions, None)
+
+                return custom_forward
+
+            layer_outputs = torch.utils.checkpoint.checkpoint(
+                create_custom_forward(decoder_layer),
+                hidden_states,
+                attention_mask,
+                position_ids,
+                None,
+            )
+        else:
+            layer_outputs = decoder_layer(
+                hidden_states,
+                # TODO: decide if we need this attention_mask,
+                # we are not using the attention mask when decoding
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                past_key_value=past_key_value,
+                output_attentions=output_attentions,
+                use_cache=use_cache,
+            )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache += (layer_outputs[2 if output_attentions else 1],)
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = next_decoder_cache if use_cache else None
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)  # noqa
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
+    )

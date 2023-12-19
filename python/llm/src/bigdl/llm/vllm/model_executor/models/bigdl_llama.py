@@ -120,7 +120,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         self.device = torch.device(device)
         self.dtype = self.model.dtype
         self.last_seq_ids = []
-        self.tmp_kv_cache = None
+        self.last_kv_cache = None
         self.pad_token_id = config.pad_token_id
         self.max_seq_limit = max_model_len
 
@@ -216,7 +216,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             }
             # Prefill may need additional space, which forces us to delete the last_kv_cache
             if self.last_kv_cache:
-                del self.last_kv_cache
+                self.last_kv_cache = None
         # pdb.set_trace()
 
         if self.device.type == 'xpu':
