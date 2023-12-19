@@ -30,8 +30,8 @@ def main():
                         help="name of yaml", default="")
     args = parser.parse_args()
 
-    special_word_in_csv = args.csv_name
-    file_list = [file for file in os.listdir() if file.endswith('.csv') and special_word_in_csv in file]
+    csv_name = args.csv_name
+    file_list = [file for file in os.listdir() if file.endswith('.csv') and csv_name in file]
     csv_dataframe = pd.read_csv(file_list[0], index_col=0)
     num_already_test_cases = len(csv_dataframe)
     already_test_cases = []
