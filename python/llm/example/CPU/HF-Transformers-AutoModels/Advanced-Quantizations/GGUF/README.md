@@ -4,12 +4,13 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 ## Verified Models(Q4_0)
 - [Llama-2-7B-Chat-GGUF](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
 - [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF)
+- [Mixtral-8x7B-v0.1-GGUF](https://huggingface.co/TheBloke/Mixtral-8x7B-v0.1-GGUF)
 - [Baichuan2-7B-Chat-GGUF](https://huggingface.co/second-state/Baichuan2-7B-Chat-GGUF/tree/main)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
 
-**Important: Please make sure you have installed `transformers==4.33.0` to run the example.**
+**Important: Please make sure you have installed `transformers==4.36.0` to run the example.**
 
 
 ## Example: Load gguf model using `from_gguf()` API
