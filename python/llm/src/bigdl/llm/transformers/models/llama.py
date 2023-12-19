@@ -197,7 +197,6 @@ def llama_attention_forward_4_31(
             value_states = [F.linear(hidden_states, value_slices[i])
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
-
         else:
             query_states = self.q_proj(hidden_states)
             key_states = self.k_proj(hidden_states)
@@ -311,6 +310,39 @@ def llama_attention_forward_4_31(
     return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
+# Return attn_output, attn_weights
+def calculate_xpu_sdp(fsdp_flag, q_len, head_dim, num_heads, q_states, k_states, v_states, current_kv_length):
+    if fsdp_flag and q_len > 1:
+        # TODO: delete
+        print("F.scaled_dot_product_attention")
+        attn_output = F.scaled_dot_product_attention(q_states,
+                                                     k_states,
+                                                     v_states,
+                                                     is_causal=True)
+        return attn_output, None
+    elif use_esimd_sdp(q_len, head_dim, q_states):
+        import linear_fp16_esimd
+        # TODO: delete
+        print("linear_fp16_esimd")
+        attn_output = linear_fp16_esimd.sdp_forward(q_states,
+                                                    k_states.contiguous(),
+                                                    v_states.contiguous())
+        attn_output = attn_output.view(q_states.shape)
+        return attn_output, None
+    else:
+        # TODO: delete
+        print("native sdp")
+        attn_output, attn_weights = native_sdp(q_states,
+                                               k_states,
+                                               v_states,
+                                               None,
+                                               1,
+                                               1,
+                                               current_kv_length,
+                                               head_dim,
+                                               num_heads)
+        return attn_output, attn_weights
+
 # dev-note: this differs to original llama model in the aspect
 # that it has different format for past_key_value
 def llama_attention_selective_batching_forward_4_31(
@@ -337,183 +369,189 @@ def llama_attention_selective_batching_forward_4_31(
     else:
         attention_dtype = original_dtype
 
-    # TODO: delete
-    # print("use fsdp_flag:" + str(fsdp_flag))
-    # TODO: consider this branch later
-    if self.config.pretraining_tp > 1:
-        key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
-        query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-                                                // self.config.pretraining_tp, dim=0)
-        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
-        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
+    # dev: new changes from yang's pr
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    # We have unusual past_key_value format we have only one batch
+    enough_kv_room = is_enough_kv_cache_room(past_key_value[0][0])
+    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    no_tp = not self.config.pretraining_tp > 1
+    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+                          enough_kv_room and bsz * q_len == 1)
 
-        query_states = [F.linear(hidden_states, query_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        query_states = torch.cat(query_states, dim=-1)
-
-        key_states = [F.linear(hidden_states, key_slices[i])
-                      for i in range(self.config.pretraining_tp)]
-        key_states = torch.cat(key_states, dim=-1)
-
-        value_states = [F.linear(hidden_states, value_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        value_states = torch.cat(value_states, dim=-1)
-
+    # we put the new kv_caches into this
+    updated_past_key_values = []
+    if decoding_fast_path:
+        # 1, 1, hidden_dimension
+        # TODO: delete
+        print("Debug: Decoding fast path")
+        hidden_states = hidden_states.view(1, -1)
+        kv_seq_len = past_key_value[0][0].shape[-2]
+        cache_k = past_key_value[0][0]
+        cache_v = past_key_value[0][1]
+        import linear_q4_0
+        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
+                                                                         self.q_proj.weight,
+                                                                         self.k_proj.weight,
+                                                                         self.v_proj.weight,
+                                                                         position_ids,
+                                                                         cache_k, cache_v,
+                                                                         self.q_proj.weight.qtype,
+                                                                         kv_seq_len,
+                                                                         self.head_dim)
+        kv_seq_len += 1
+        # Append kv_cache
+        updated_past_key_values.append((key_states, value_states))
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if self.config.pretraining_tp > 1:
+            # TODO: implement the case with pretraining_tp
+            raise ValueError("selective batching: we have not implemented feature with"
+                             " pretraining_tp > 1")
+        else:
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
 
-    query_states = query_states.view(bsz, q_len,
-                                     self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,
-                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        query_states = query_states.view(bsz, q_len,
+                                        self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                    self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                        self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
-    if past_key_value is not None:
-        updated_past_key_values = []
-        # Apply rotary_embeddings
-        max_kv_length = max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
-        max_kv_length += key_states.shape[-2]
+        if past_key_value is not None:
+            # Decoding
+            # Apply rotary_embeddings
+            max_kv_length = max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
+            max_kv_length += key_states.shape[-2]
 
-        # TODO: decide if we need to use_fuse_rope
-        cos, sin = self.rotary_emb(value_states, seq_len=max_kv_length)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin,
-                                                        position_ids, "llama")
-        # End of applying rotary_embedding
+            # TODO: decide if we need to use_fuse_rope
+            cos, sin = self.rotary_emb(value_states, seq_len=max_kv_length)
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin,
+                                                            position_ids, "llama")
+            # End of applying rotary_embedding
+            batched_attention_output = []
+            for batch in range(bsz):
+                # 2. concat key_states, value_states
+                # Get current key_states, value_states from previous cache
+                past_k, past_v = past_key_value[batch]
+                # Should be len + 1
+                current_kv_len = past_k.shape[-2] + 1
+                if past_k.stride()[1] <= past_k.size(2) * past_k.size(3):
+                    new_past_k, new_past_v = extend_kv_cache(1,
+                                                            self.num_key_value_heads,
+                                                            self.head_dim,
+                                                            past_k.size(2),
+                                                            current_kv_len +
+                                                            KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                            dtype=past_k.dtype,
+                                                            device=device)
+                    new_past_k[:] = past_k
+                    new_past_v[:] = past_v
+                    past_k = new_past_k
+                    past_v = new_past_v
+                current_key_states, current_value_states = append_kv_cache(past_k, past_v,  # noqa
+                                                                        key_states[batch:batch + 1, :, :, :],  # noqa
+                                                                        value_states[batch:batch + 1, :, :, :]  # noqa
+                                                                        )
+                # 2. concat key_states, value_states ends
 
-        batched_attention_output = []
-        for batch in range(bsz):
-            # 2. concat key_states, value_states
-            # Get current key_states, value_states from previous cache
-            past_k, past_v = past_key_value[batch]
-            # Should be len + 1
-            current_kv_len = past_k.shape[-2] + 1
-            if past_k.stride()[1] <= past_k.size(2) * past_k.size(3):
-                new_past_k, new_past_v = extend_kv_cache(1,
-                                                         self.num_key_value_heads,
-                                                         self.head_dim,
-                                                         past_k.size(2),
-                                                         current_kv_len +
-                                                         KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                         dtype=past_k.dtype,
-                                                         device=device)
-                new_past_k[:] = past_k
-                new_past_v[:] = past_v
-                past_k = new_past_k
-                past_v = new_past_v
-            current_key_states, current_value_states = append_kv_cache(past_k, past_v,  # noqa
-                                                                       key_states[batch:batch + 1, :, :, :],  # noqa
-                                                                       value_states[batch:batch + 1, :, :, :]  # noqa
-                                                                       )
-            # 2. concat key_states, value_states ends
+                # 3. Record key_states, and value_states
+                updated_past_key_values.append((current_key_states, current_value_states))
+                # 3. Record key_states, value_states end
 
-            # 3. Record key_states, and value_states
-            updated_past_key_values.append((current_key_states, current_value_states))
-            # 3. Record key_states, value_states end
+                # 4. repeat kv
+                # repeat k/v heads if n_kv_heads < n_heads
+                current_key_states = repeat_kv(current_key_states, self.num_key_value_groups)
+                current_value_states = repeat_kv(current_value_states, self.num_key_value_groups)
+                # 4. repeat kv ends
 
-            # 4. repeat kv
-            # repeat k/v heads if n_kv_heads < n_heads
-            current_key_states = repeat_kv(current_key_states, self.num_key_value_groups)
-            current_value_states = repeat_kv(current_value_states, self.num_key_value_groups)
-            # 4. repeat kv ends
-
-            # TODO: decide if we want to use flash attention
-            # 5. Attention calculation
-            # TODO: decide if we need to apply attention mask
-            # TODO: fix attention weight
-            attn_output, attn_weights = native_sdp(query_states[batch:batch + 1, :, :, :],
-                                                   current_key_states,
-                                                   current_value_states,
-                                                   None,
-                                                   1,
-                                                   1,
-                                                   current_kv_len,
-                                                   self.head_dim,
-                                                   self.num_heads)
-            batched_attention_output.append(attn_output)
+                # 5. Attention calculation
+                # TODO: decide if we need to apply attention mask
+                # TODO: fix attention weight
+                attn_output, attn_weights = calculate_xpu_sdp(fsdp_flag,
+                                                              q_len,
+                                                              self.head_dim,
+                                                              self.num_heads,
+                                                              query_states[batch:batch + 1, :, :, :],
+                                                              current_key_states,
+                                                              current_value_states,
+                                                              current_kv_len)
+                batched_attention_output.append(attn_output)
             # 5. Attention calculation ends
-        # Concat attention output together
-        # (1, num_heads, 1, head_dim)
-        attn_output = torch.concat(batched_attention_output, dim=0)
-        batched_attention_output.clear()
-        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            raise ValueError(  # noqa
-                "`attn_output` should be of size "
-                f"{repr((bsz, self.num_heads, q_len, self.head_dim))}, but is "
-                f"{repr(attn_output.size())}"
-            )
-        attn_output = attn_output.transpose(1, 2).contiguous()
-        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-        attn_output = self.o_proj(attn_output)
-        # Apply rotary_embedding first in a batch
+            # Concat attention output together
+            # (1, num_heads, 1, head_dim)
+            attn_output = torch.concat(batched_attention_output, dim=0)
+            batched_attention_output.clear()
+            if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+                raise ValueError(  # noqa
+                    "`attn_output` should be of size "
+                    f"{repr((bsz, self.num_heads, q_len, self.head_dim))}, but is "
+                    f"{repr(attn_output.size())}"
+                )
+            attn_output = attn_output.transpose(1, 2).contiguous()
+            attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+            attn_output = self.o_proj(attn_output)
+            # Apply rotary_embedding first in a batch
 
-        # TODO: this output_attentions is not correct, we are not concat attention weight
-        if not output_attentions:
-            attn_weights = None
-        return attn_output, attn_weights, updated_past_key_values if use_cache else None
+            # TODO: this output_attentions is not correct, we are not concat attention weight
+            if not output_attentions:
+                attn_weights = None
+            return attn_output, attn_weights, updated_past_key_values if use_cache else None
 
-    kv_seq_len = key_states.shape[-2]
-    if past_key_value is not None:
-        kv_seq_len += past_key_value[0].shape[-2]
+        # past_key_values is None
 
-    use_fuse_rope = query_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
-    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+        # TODO: we assume this is prefill stage, but this may not
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value[0].shape[-2]
 
-    # TODO: we do not know if this have the same effect
-    if use_fuse_rope:
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "llama")
-    else:
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids, "llama")
+        # TODO: we do not know if this have the same effect
+        if use_fuse_rope:
+            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                        key_states,
+                                                                        position_ids,
+                                                                        "llama")
+        else:
+            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, position_ids, "llama")
 
-    # past_key_value is None
-    if use_cache:
-        past_key_value = []
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_key_value_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
-        for batch in range(bsz):
-            past_key_value.append((key_states[batch: batch + 1, :, :, :],
-                                   value_states[batch: batch+1, :, :, :]))
-    # past_key_value = (key_states, value_states) if use_cache else None
-    else:
-        past_key_value = None
+        # past_key_value is None
+        if use_cache:
+            # past_key_value = []
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_key_states, new_value_states = init_kv_cache(bsz,
+                                                            self.num_key_value_heads,
+                                                            self.head_dim,
+                                                            kv_seq_len,
+                                                            max_cache_length,
+                                                            dtype=key_states.dtype,
+                                                            device=device)
+            new_key_states[:] = key_states
+            new_value_states[:] = value_states
+            key_states = new_key_states
+            value_states = new_value_states
+            for batch in range(bsz):
+                updated_past_key_values.append((key_states[batch: batch + 1, :, :, :],
+                                    value_states[batch: batch+1, :, :, :]))
+        # past_key_value = (key_states, value_states) if use_cache else None
+        else:
+            # past_key_value = None
+            updated_past_key_values = None
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
                                                                      dtype=attention_dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
-
-    if fsdp_flag and q_len > 1:
-        # now only use flash attention for first token
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
-                                                     key_states,
-                                                     value_states,
-                                                     is_causal=True)
-        attn_weights = None
-    else:
-        # otherwise, use native attention
-        attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                               attention_mask,
-                                               bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads)
+    attn_output, attn_weights = calculate_xpu_sdp(fsdp_flag,
+                                                  q_len,
+                                                  self.head_dim,
+                                                  self.num_heads,
+                                                  query_states,
+                                                  key_states,
+                                                  value_states,
+                                                  kv_seq_len)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
@@ -525,11 +563,7 @@ def llama_attention_selective_batching_forward_4_31(
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
     if self.config.pretraining_tp > 1:
-        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
-        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
-                                                 dim=1)
-        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
-                           for i in range(self.config.pretraining_tp)])
+        raise ValueError("Not Implemented")
     else:
         attn_output = self.o_proj(attn_output)
 
