@@ -68,16 +68,19 @@ class ReLoRATrainer(Trainer):
 
     def __init__(self, *args, base_model="meta-llama/Llama-2-7b-hf",
                  relora_steps=150, relora_warmup_steps=10,
-                 relora_cpu_offload=False, **kwargs):
+                 relora_cpu_offload=False,
+                 resume_from_checkpoint=False, **kwargs):
         self.lr_scheduler = None
         self.relora_steps = relora_steps
         self.relora_warmup_steps = relora_warmup_steps
         self.relora_cpu_offload = relora_cpu_offload
         callbacks = kwargs.get("callbacks", [])
         if self.relora_steps > 0:
-            callbacks.append(ReLoRACallback(relora_steps=relora_steps,
-                                            relora_cpu_offload=relora_cpu_offload,
-                                            base_model=base_model))
+            callbacks.append(
+                ReLoRACallback(relora_steps=relora_steps,
+                               relora_cpu_offload=relora_cpu_offload,
+                               base_model=base_model,
+                               resume_from_checkpoint=resume_from_checkpoint))
         kwargs["callbacks"] = callbacks
         super().__init__(*args, **kwargs)
 

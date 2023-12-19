@@ -1,6 +1,6 @@
 # Alpaca QLoRA & QA-LoRA Finetuning (experimental support)
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314) or [QA-LoRA](https://arxiv.org/abs/2309.14717) algorithm) on [Intel GPU](../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314), [QA-LoRA](https://arxiv.org/abs/2309.14717) or [ReLoRA](https://arxiv.org/abs/2307.05695) algorithm) on [Intel GPU](../../README.md).
 
 ### 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
@@ -95,6 +95,19 @@ bash qalora_finetune_llama2_7b_arc_2_card.sh
 
 ```bash
 bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
+```
+
+#### ReLoRA
+##### Finetuning LLaMA2-7B on single Arc A770
+
+```bash
+bash relora_finetune_llama2_7b_arc_1_card.sh
+```
+
+##### Finetuning LLaMA2-7B on two Arc A770
+
+```bash
+bash relora_finetune_llama2_7b_arc_2_card.sh
 ```
 
 **Important: If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
