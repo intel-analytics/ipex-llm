@@ -66,7 +66,7 @@ jobs:
           PR_MATRIX_MODEL_NAME: '["Mistral-7B-v0.1"]'
           PR_MATRIX_TASK: '["truthfulqa"]'
           PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
-          PR_LABELS: '["self-hosted", "llm", "accuracy"]'
+          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV

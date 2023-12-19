@@ -69,15 +69,6 @@ class BigDLLM(AutoCausalLM):
         return 256
 
 
-    @property
-    def device(self):
-        # TODO: fix multi-gpu
-        return torch.device(self._device)
-
-    def tok_encode(self, string: str):
-        input_ids = self.tokenizer.encode(string)
-        return input_ids
-
     def tok_decode(self, tokens):
         return self.tokenizer.decode(tokens, skip_special_tokens=True)
 
