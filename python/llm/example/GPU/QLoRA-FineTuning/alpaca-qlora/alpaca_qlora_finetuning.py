@@ -311,6 +311,7 @@ def train(
         extra_args["relora_steps"] = relora_steps
         extra_args["relora_warmup_steps"] = relora_warmup_steps
         extra_args["relora_cpu_offload"] = relora_cpu_offload
+        extra_args["resume_from_checkpoint"] = resume_from_checkpoint
 
     trainer = trainer_cls(
         model=model,
