@@ -46,7 +46,7 @@ if __name__ == "__main__":
     nf4_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16
+        bnb_4bit_compute_dtype=torch.bfloat16
     )
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  quantization_config=nf4_config, )
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # model = AutoModelForCausalLM.from_pretrained(model_path,
     #                                             load_in_low_bit="nf4",
     #                                             optimize_model=False,
-    #                                             torch_dtype=torch.float16,
+    #                                             torch_dtype=torch.bfloat16,
     #                                             modules_to_not_convert=["lm_head"],)
     model = model.to('xpu')
     # Enable gradient_checkpointing if your memory is not enough,
