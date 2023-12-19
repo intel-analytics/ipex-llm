@@ -21,7 +21,11 @@
 
 from .convert_model import llm_convert
 from .optimize import optimize_model
+import os
 
-# Import Intel Extension for PyTorch as ipex if XPU version is installed
-from .utils.ipex_importer import ipex_importer
-ipex_importer.import_ipex()
+# Default is true, set to false to avoid auto importing Intel Extension for PyTorch.
+AUTO_IMPORT_IPEX = os.getenv("AUTO_IMPORT_IPEX", 'True').lower() in ('true', '1', 't')
+if AUTO_IMPORT_IPEX:
+    # Import Intel Extension for PyTorch as ipex if XPU version is installed
+    from .utils.ipex_importer import ipex_importer
+    ipex_importer.import_ipex()

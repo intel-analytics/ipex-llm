@@ -59,9 +59,12 @@ class IPEXImporter:
         """
         if self.ipex_version is not None:
             return self.ipex_version
-
-        import intel_extension_for_pytorch as ipex
-        self.ipex_version = ipex.__version__
+        # try to import Intel Extension for PyTorch and get version
+        try:
+            import intel_extension_for_pytorch as ipex
+            self.ipex_version = ipex.__version__
+        except ImportError:
+            self.ipex_version = None
         return self.ipex_version
 
 
