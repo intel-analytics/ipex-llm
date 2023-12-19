@@ -136,6 +136,20 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
 
+        if user_quantization_config is not None and \
+        "BitsAndBytesConfig" in str(user_quantization_config.__class__):
+            print(user_quantization_config)
+            if user_quantization_config.bnb_4bit_quant_type is not None:
+                load_in_low_bit = user_quantization_config.bnb_4bit_quant_type
+            else:
+                load_in_low_bit = "sym_int4"
+            if user_quantization_config.bnb_4bit_compute_dtype is not None:
+                kwargs["torch_dtype"] = user_quantization_config.bnb_4bit_compute_dtype
+            else:
+                kwargs["torch_dtype"] = torch.float32
+            optimize_model = False
+            kwargs["modules_to_not_convert"] = ["lm_head"]
+
         if load_in_4bit or load_in_low_bit:
 
             if config_dict.get("quantization_config", None) is not None:
