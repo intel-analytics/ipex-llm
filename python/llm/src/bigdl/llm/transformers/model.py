@@ -143,13 +143,16 @@ class _BaseAutoModelClass:
                     load_in_low_bit = "nf4"
                 elif bnb_4bit_type == "fp4":
                     warnings.warn(
-                        "BigDL LLM QloRA is not support fp4 now, use default nf4", FutureWarning)
+                        "BigDL LLM QLoRA is not support fp4 now, use default nf4", FutureWarning)
                     load_in_low_bit = "nf4"
                 elif bnb_4bit_type == "int4":
                     load_in_low_bit = "sym_int4"
                 else:
                     # fo cpu
                     load_in_low_bit = bnb_4bit_type
+            if user_quantization_config.bnb_4bit_use_double_quant is True:
+                warnings.warn(
+                    "BigDL LLM QLoRA is not support double quant now, set to False", FutureWarning)
             if user_quantization_config.bnb_4bit_compute_dtype is not None:
                 kwargs["torch_dtype"] = user_quantization_config.bnb_4bit_compute_dtype
             else:

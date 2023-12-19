@@ -180,6 +180,7 @@ def train(
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
         int4_config = BitsAndBytesConfig(
             load_in_4bit=True,
+            bnb_4bit_use_double_quant=False,
             bnb_4bit_quant_type="int4",
             bnb_4bit_compute_dtype=torch.bfloat16
         )

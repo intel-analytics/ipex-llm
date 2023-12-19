@@ -205,6 +205,7 @@ def train(
             low_bit_format = "nf4"
         nf4_config = BitsAndBytesConfig(
             load_in_4bit=True,
+            bnb_4bit_use_double_quant=False,
             bnb_4bit_quant_type=low_bit_format,
             bnb_4bit_compute_dtype=torch.bfloat16
         )
