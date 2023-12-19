@@ -346,6 +346,7 @@ def _gen_alibi_mask(tensor, n_head, max_pos):
 
 MASK_BLOCK_SIZE = 64
 
+
 def baichuan_13b_get_alibi_mask(self, tensor, seq_length_with_past):
     if self.training:
         slopes = torch.Tensor(_get_interleave(self.n_head))
@@ -378,7 +379,8 @@ def baichuan_13b_get_alibi_mask(self, tensor, seq_length_with_past):
                 persistent=False,
             )
         if seq_length_with_past > self.max_cache_pos:
-            # When max_cache_pos is not enough for current sequence length, increase by MASK_BLOCK_SIZE and recalculate
+            # When max_cache_pos is not enough for current sequence length,
+            # increase by MASK_BLOCK_SIZE and recalculate future_mask.
             self.max_cache_pos = seq_length_with_past + MASK_BLOCK_SIZE
             self.register_buffer(
                 "future_mask",
