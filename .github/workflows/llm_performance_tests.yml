@@ -92,14 +92,14 @@ jobs:
           # change csv name
           sed -i 's/test1/test2/g' run.py
           python run.py
+          python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
+          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           python ../../../test/benchmark/concat_csv.py
           cp ./*.csv $CSV_SAVE_PATH
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
-          python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
-          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
