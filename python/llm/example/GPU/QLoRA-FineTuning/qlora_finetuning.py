@@ -41,11 +41,22 @@ if __name__ == "__main__":
 
     data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
+
+    from transformers import BitsAndBytesConfig
+    nf4_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16
+    )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                load_in_low_bit="nf4",
-                                                optimize_model=False,
-                                                torch_dtype=torch.float16,
-                                                modules_to_not_convert=["lm_head"],)
+                                                 quantization_config=nf4_config, )
+
+    # also support now
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                             load_in_low_bit="nf4",
+    #                                             optimize_model=False,
+    #                                             torch_dtype=torch.float16,
+    #                                             modules_to_not_convert=["lm_head"],)
     model = model.to('xpu')
     # Enable gradient_checkpointing if your memory is not enough,
     # it will slowdown the training speed

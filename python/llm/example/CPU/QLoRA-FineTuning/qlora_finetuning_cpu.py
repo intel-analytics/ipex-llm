@@ -50,7 +50,7 @@ if __name__ == "__main__":
     int4_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="sym_int4",
-        bnb_4bit_compute_dtype=torch.bfloat16
+        bnb_4bit_compute_dtype=torch.float16
     )
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  quantization_config=int4_config, )
