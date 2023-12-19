@@ -27,7 +27,7 @@ source /opt/intel/oneapi/setvars.sh
 
 ## 3. Finetune
 
-Here, we provide example usages on different models and different hardwares. Please refer to the appropriate script based on your device:
+Here, we provide example usages on different models and different hardwares. Please refer to the appropriate script based on your model and device:
 
 ### 3.1 Llama2 series
 <details><summary>Show LLaMA2-7B example</summary>
@@ -37,31 +37,31 @@ Here, we provide example usages on different models and different hardwares. Ple
 ##### Finetuning LLaMA2-7B on single Arc A770
 
 ```bash
-bash finetune_llama2_7b_arc_1_card.sh
+bash llama2-script/finetune_llama2_7b_arc_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on two Arc A770
 
 ```bash
-bash finetune_llama2_7b_arc_2_card.sh
+bash llama2-script/finetune_llama2_7b_arc_2_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on single Data Center GPU Flex 170
 
 ```bash
-bash finetune_llama2_7b_flex_170_1_card.sh
+bash llama2-script/finetune_llama2_7b_flex_170_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on three Data Center GPU Flex 170
 
 ```bash
-bash finetune_llama2_7b_flex_170_3_card.sh
+bash llama2-script/finetune_llama2_7b_flex_170_3_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1100
 
 ```bash
-bash finetune_llama2_7b_pvc_1100_1_card.sh
+bash llama2-script/finetune_llama2_7b_pvc_1100_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
@@ -73,44 +73,72 @@ bash finetune_llama2_7b_pvc_1100_4_card.sh
 ##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
 
 ```bash
-bash finetune_llama2_7b_pvc_1550_1_card.sh
+bash llama2-script/finetune_llama2_7b_pvc_1550_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
 
 ```bash
-bash finetune_llama2_7b_pvc_1550_4_card.sh
+bash llama2-script/finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
 #### QA-LoRA
 ##### Finetuning LLaMA2-7B on single Arc A770
 
 ```bash
-bash qalora_finetune_llama2_7b_arc_1_card.sh
+bash llama2-script/qalora_finetune_llama2_7b_arc_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on two Arc A770
 
 ```bash
-bash qalora_finetune_llama2_7b_arc_2_card.sh
+bash llama2-script/qalora_finetune_llama2_7b_arc_2_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on single Tile Intel Data Center GPU Max 1550
 
 ```bash
-bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
+bash llama2-script/qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 ```
 </details>
 
+<details><summary>Show LLaMA2-13B example</summary>
+
+</details>
+
+<details><summary>Show LLaMA2-70B example</summary>
+
+</details>
 
 ### 3.2 Mistral
 <details><summary>Show Mistral-7B-v0.1 example</summary>
 
+Please note that if you want to finetune `Mistral-7B-v0.1`, you should upgrade `transformers` to `4.36.1` first:
+```
+pip install transformers==4.36.1
+```
+
 #### QLoRA
 
+##### Finetuning Mistral-7B-v0.1 on single Arc A770
+```bash
+bash mistral-script/finetune_mistral_7b_arc_1card.sh
+```
+
 ##### Finetuning Mistral-7B-v0.1 on single Intel Data Center GPU Max 1100
+```bash
+bash mistral-script/finetune_mistral_7b_pvc_1100_1card.sh
+```
 
 ##### Finetuning Mistral-7B-v0.1 on single Tile Intel Data Center GPU Max 1550
+```bash
+bash mistral-script/finetune_mistral_7b_pvc_1550_1tile.sh
+```
+
+##### Finetuning Mistral-7B-v0.1 on four Intel Data Center GPU Max 1550
+```bash
+bash mistral-script/finetune_mistral_7b_pvc_1550_4card.sh
+```
 
 </details>
 

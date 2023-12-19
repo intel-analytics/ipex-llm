@@ -15,10 +15,13 @@
 #
 
 # You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
-python alpaca_qlora_finetuning.py \
-    --micro_batch_size 8 \
-    --batch_size 128 \
-    --num_epochs 3 \
-    --gradient_checkpointing True \
-    --base_model 'tiiuae/falcon-40b'  \
-    --lora_target_modules "["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"]"
+export MASTER_ADDR=127.0.0.1
+export OMP_NUM_THREADS=7  # adjust this to 1/4 of total physical cores
+export FI_PROVIDER=tcp
+
+mpirun -n 8 \
+       python -u ./alpaca_qlora_finetuning.py \
+       --base_model "mistralai/Mistral-7B-v0.1" \
+       --data_path "yahma/alpaca-cleaned" \
+       --output_dir "./bigdl-qlora-alpaca" \
+       --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj']" > training.log
