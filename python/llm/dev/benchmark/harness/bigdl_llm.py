@@ -69,6 +69,10 @@ class BigDLLM(AutoCausalLM):
         return 256
 
 
+    def tok_encode(self, string: str):
+        input_ids = self.tokenizer.encode(string, add_special_tokens=self.add_special_tokens)
+        return input_ids
+
     def tok_decode(self, tokens):
         return self.tokenizer.decode(tokens, skip_special_tokens=True)
 
