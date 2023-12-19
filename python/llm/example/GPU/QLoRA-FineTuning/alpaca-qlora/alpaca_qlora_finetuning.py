@@ -39,7 +39,7 @@ import transformers
 from datasets import load_dataset
 import accelerate
 
-from transformers import LlamaTokenizer
+from transformers import LlamaTokenizer, AutoTokenizer
 from peft import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
@@ -51,7 +51,7 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
-    cast_lora_weight, LoraConfig
+    LoraConfig
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
