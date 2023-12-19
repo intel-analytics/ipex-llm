@@ -173,7 +173,8 @@ def baichuan_attention_forward_7b(
 
         scaling_factor = 1 / math.sqrt(query_states.size(-1))
         attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
-        attn_output += attention_mask
+        if attention_mask is not None:
+            attn_output += attention_mask
         attn_output = torch.softmax(attn_output, -1)
         attn_output = torch.matmul(attn_output, value_states)
 
