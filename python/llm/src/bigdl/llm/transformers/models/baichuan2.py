@@ -167,10 +167,16 @@ def baichuan_attention_forward_7b(
             query_states, key_states, value_states, attn_bias=xops.LowerTriangularMask()
         )
     else:
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True,
-                                            enable_mem_efficient=True):
-            attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states,
-                                                         attn_mask=attention_mask)
+        if attention_mask is not None:
+            if attention_mask.dtype == torch.bool:
+                attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
+
+        scaling_factor = 1 / math.sqrt(query_states.size(-1))
+        attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
+        attn_output += attention_mask
+        attn_output = torch.softmax(attn_output, -1)
+        attn_output = torch.matmul(attn_output, value_states)
+
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     attn_output = self.o_proj(attn_output)
