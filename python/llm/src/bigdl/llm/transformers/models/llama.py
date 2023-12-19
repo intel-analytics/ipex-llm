@@ -311,7 +311,7 @@ def llama_attention_forward_4_31(
 
 
 # Return attn_output, attn_weights
-def calculate_xpu_sdp(fsdp_flag, q_len, head_dim, num_heads, q_states, k_states, v_states, current_kv_length):
+def calculate_xpu_sdp(fsdp_flag, bsz, q_len, head_dim, num_heads, q_states, k_states, v_states, current_kv_length, attention_mask):
     if fsdp_flag and q_len > 1:
         # TODO: delete
         print("F.scaled_dot_product_attention")
@@ -335,9 +335,9 @@ def calculate_xpu_sdp(fsdp_flag, q_len, head_dim, num_heads, q_states, k_states,
         attn_output, attn_weights = native_sdp(q_states,
                                                k_states,
                                                v_states,
-                                               None,
-                                               1,
-                                               1,
+                                               attention_mask,
+                                               bsz,
+                                               q_len,
                                                current_kv_length,
                                                head_dim,
                                                num_heads)
@@ -372,7 +372,7 @@ def llama_attention_selective_batching_forward_4_31(
     # dev: new changes from yang's pr
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     # We have unusual past_key_value format we have only one batch
-    enough_kv_room = is_enough_kv_cache_room(past_key_value[0][0])
+    enough_kv_room = past_key_value is not None and is_enough_kv_cache_room(past_key_value[0])
     is_q4_0 = self.q_proj.qtype == SYM_INT4
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
@@ -381,6 +381,7 @@ def llama_attention_selective_batching_forward_4_31(
     # we put the new kv_caches into this
     updated_past_key_values = []
     if decoding_fast_path:
+        # This decoding fast path?
         # 1, 1, hidden_dimension
         # TODO: delete
         print("Debug: Decoding fast path")
@@ -469,13 +470,15 @@ def llama_attention_selective_batching_forward_4_31(
                 # TODO: decide if we need to apply attention mask
                 # TODO: fix attention weight
                 attn_output, attn_weights = calculate_xpu_sdp(fsdp_flag,
-                                                              q_len,
+                                                              1,
+                                                              1,
                                                               self.head_dim,
                                                               self.num_heads,
                                                               query_states[batch:batch + 1, :, :, :],
                                                               current_key_states,
                                                               current_value_states,
-                                                              current_kv_len)
+                                                              current_kv_len,
+                                                              None)
                 batched_attention_output.append(attn_output)
             # 5. Attention calculation ends
             # Concat attention output together
@@ -483,6 +486,7 @@ def llama_attention_selective_batching_forward_4_31(
             attn_output = torch.concat(batched_attention_output, dim=0)
             batched_attention_output.clear()
             if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+                print("we are here 2")
                 raise ValueError(  # noqa
                     "`attn_output` should be of size "
                     f"{repr((bsz, self.num_heads, q_len, self.head_dim))}, but is "
@@ -502,8 +506,6 @@ def llama_attention_selective_batching_forward_4_31(
 
         # TODO: we assume this is prefill stage, but this may not
         kv_seq_len = key_states.shape[-2]
-        if past_key_value is not None:
-            kv_seq_len += past_key_value[0].shape[-2]
 
         # TODO: we do not know if this have the same effect
         if use_fuse_rope:
@@ -544,17 +546,28 @@ def llama_attention_selective_batching_forward_4_31(
                                                                      dtype=attention_dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
+    print("q_len is " + str(q_len))
+    print("kv_seq_len is " + str(kv_seq_len))
+    
+    print(query_states[0][0][0][0])
+    print(key_states[0][0][0][0])
+    print(value_states[0][0][0][0])
+    # TODO: this might be wrong for decoding
+    # TODO: for decoding we do not want to apply attention_mask
     attn_output, attn_weights = calculate_xpu_sdp(fsdp_flag,
+                                                  bsz,
                                                   q_len,
                                                   self.head_dim,
                                                   self.num_heads,
                                                   query_states,
                                                   key_states,
                                                   value_states,
-                                                  kv_seq_len)
-
+                                                  kv_seq_len,
+                                                  attention_mask)
+    print(attn_output[0][0][0][0])
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
+        print("we are at here 1")
         invalidInputError(False,
                           f"`attn_output` should be of size {attn_output_size},"
                           f" but is {attn_output.size()}")
@@ -570,7 +583,7 @@ def llama_attention_selective_batching_forward_4_31(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output.to(original_dtype), attn_weights, past_key_value
+    return attn_output.to(original_dtype), attn_weights, updated_past_key_values
 
 
 def check_flash_attention_available(query):
