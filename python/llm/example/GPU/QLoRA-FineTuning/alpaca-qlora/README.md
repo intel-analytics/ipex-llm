@@ -104,9 +104,40 @@ bash llama2-script/qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 
 <details><summary>Show LLaMA2-13B example</summary>
 
+#### QLoRA
+##### Finetuning LLaMA2-13B on single Intel Data Center GPU Max 1100
+
+```bash
+bash llama2-script/qalora_finetune_llama2_13b_pvc_1100_1_card.sh
+```
+
+##### Finetuning LLaMA2-13B on single Tile Intel Data Center GPU Max 1550
+
+```bash
+bash llama2-script/qalora_finetune_llama2_13b_pvc_1550_1_tile.sh
+```
+
+##### Finetuning LLaMA2-13B on four Intel Data Center GPU Max 1550
+
+```bash
+bash llama2-script/qalora_finetune_llama2_13b_pvc_1550_4_card.sh
+```
 </details>
 
 <details><summary>Show LLaMA2-70B example</summary>
+
+#### QLoRA
+##### Finetuning LLaMA2-70B on single Tile Intel Data Center GPU Max 1550
+
+```bash
+bash llama2-script/finetune_llama2_70b_pvc_1550_1_tile.sh
+```
+
+##### Finetuning LLaMA2-70B on four Intel Data Center GPU Max 1550
+Please note that, to avoid CPU OOM when convert 8 LLaMA2-70B at the same time, you can convert a nf4 model first, and pass related directory to `saved_low_bit_model`.
+```bash
+bash llama2-script/finetune_llama2_70b_pvc_1550_4_card.sh
+```
 
 </details>
 
@@ -122,22 +153,22 @@ pip install transformers==4.36.1
 
 ##### Finetuning Mistral-7B-v0.1 on single Arc A770
 ```bash
-bash mistral-script/finetune_mistral_7b_arc_1card.sh
+bash mistral-script/finetune_mistral_7b_arc_1_card.sh
 ```
 
 ##### Finetuning Mistral-7B-v0.1 on single Intel Data Center GPU Max 1100
 ```bash
-bash mistral-script/finetune_mistral_7b_pvc_1100_1card.sh
+bash mistral-script/finetune_mistral_7b_pvc_1100_1_card.sh
 ```
 
 ##### Finetuning Mistral-7B-v0.1 on single Tile Intel Data Center GPU Max 1550
 ```bash
-bash mistral-script/finetune_mistral_7b_pvc_1550_1tile.sh
+bash mistral-script/finetune_mistral_7b_pvc_1550_1_tile.sh
 ```
 
 ##### Finetuning Mistral-7B-v0.1 on four Intel Data Center GPU Max 1550
 ```bash
-bash mistral-script/finetune_mistral_7b_pvc_1550_4card.sh
+bash mistral-script/finetune_mistral_7b_pvc_1550_4_card.sh
 ```
 
 </details>
@@ -195,3 +226,6 @@ Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface trans
   RuntimeError: oneCCL: comm_selector.cpp:57 create_comm_impl: EXCEPTION: ze_data was not initialized
   ```
   Please try `sudo apt install level-zero-dev` to fix it.
+
+- If you fail to finetune as out of GPU memory:
+  You can enable gradient checkpoint first by adding `--gradient_checkpointing True` in your script, which is a efficient memory saving method of training.

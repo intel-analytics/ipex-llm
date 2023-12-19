@@ -16,9 +16,8 @@
 
 # You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
 python ./alpaca_qlora_finetuning.py \
-    --base_model "meta-llama/Llama-2-70b-hf" \
+    --base_model "meta-llama/Llama-2-13b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-qlora-alpaca" \
     --micro_batch_size 8 \
-    --batch_size 128 \
-    --gradient_checkpointing True
+    --batch_size 128
