@@ -661,6 +661,9 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.MistralRMSNorm,
                             llama_rms_norm_forward)
+            convert_forward(model,
+                            module.MistralMLP,
+                            llama_mlp_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
