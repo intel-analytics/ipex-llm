@@ -17,6 +17,7 @@
 # https://huggingface.co/THUDM/chatglm2-6b/blob/8eb45c842594b8473f291d0f94e7bbe86ffc67d8/modeling_chatglm.py
 #
 
+import math
 import torch
 from typing import Optional, Tuple, List
 import torch.nn.functional as F
@@ -370,9 +371,13 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                                              value_layer,
                                                                              attention_mask,
                                                                              is_causal=True)
+        elif attention_mask is None:
+            scaling_factor = 1 / math.sqrt(query_layer.size(-1))
+            attn = torch.matmul(query_layer * scaling_factor, key_layer.transpose(-2, -1))
+            attn = torch.softmax(attn, -1)
+            context_layer = torch.matmul(attn, value_layer)
         else:
-            if attention_mask is not None:
-                attention_mask = ~attention_mask
+            attention_mask = ~attention_mask
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
