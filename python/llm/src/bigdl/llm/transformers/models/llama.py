@@ -103,11 +103,6 @@ def llama_mlp_forward(
             and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
             and not (self.training and x.requires_grad):
         import linear_q4_0
-<<<<<<< HEAD
-=======
-        x_2d = x.view(-1, x.shape[-1])
-        print(x_2d.shape)
->>>>>>> 22c9b3c573 (Remove print statement)
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
         return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
