@@ -166,11 +166,7 @@ jobs:
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
-<<<<<<< HEAD
           source $HOME/intel/oneapi/setvars.sh
-=======
-          source /home/arda/intel/oneapi/setvars.sh
->>>>>>> 51deca28e9 (rerun failed task(fp4, sym_int8))
           python run_llb.py \
           --model bigdl-llm \
           --pretrained ${MODEL_PATH} \
