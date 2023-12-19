@@ -66,7 +66,7 @@ ASYM_INT4 = ggml_tensor_qtype["asym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
-FP8 = ggml_tensor_qtype["fp8"]
+FP8E4 = ggml_tensor_qtype["fp8e4"]
 FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
@@ -118,7 +118,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8, FP8E5]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8E4, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -143,7 +143,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8, FP8E5]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8E4, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -246,12 +246,12 @@ class FP4Params(torch.nn.Parameter):
                     self.qtype = SYM_INT8
                 else:
                     q8_0_mse, w_quant_q8_0 = self.ggml_mse(w, SYM_INT8, device=device)
-                    fp8_mse, w_quant_fp8 = self.ggml_mse(w, FP8, device=device)
+                    fp8_mse, w_quant_fp8 = self.ggml_mse(w, FP8E4, device=device)
                     if q8_0_mse <= fp8_mse:
                         self.qtype = SYM_INT8
                         self.data = w_quant_q8_0
                     else:
-                        self.qtype = FP8
+                        self.qtype = FP8E4
                         self.data = w_quant_fp8
             else:
                 w_quantized = ggml_convert_qtype(w, self.qtype,
@@ -511,7 +511,7 @@ class LowBitLinear(nn.Linear):
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8E4
                               and self.qtype != FP4 and self.qtype != FP8E5,
                               "NF3, NF4, FP4 and FP8 quantization are currently not"
                               " supported on CPU")
