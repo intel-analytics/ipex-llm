@@ -177,13 +177,22 @@ def train(
         )
     else:
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
-        model = AutoModelForCausalLM.from_pretrained(
-            base_model,
-            load_in_low_bit="sym_int4", # not support "nf4"
-            optimize_model=False,
-            torch_dtype=torch.bfloat16,
-            modules_to_not_convert=["lm_head"],
+        from transformers import BitsAndBytesConfig
+        int4_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="sym_int4",
+            bnb_4bit_compute_dtype=torch.bfloat16
         )
+        model = AutoModelForCausalLM.from_pretrained(base_model,
+                                                     quantization_config=int4_config, )
+        # also support now
+        # model = AutoModelForCausalLM.from_pretrained(
+        #     base_model,
+        #     load_in_low_bit="sym_int4", # not support "nf4"
+        #     optimize_model=False,
+        #     torch_dtype=torch.bfloat16,
+        #     modules_to_not_convert=["lm_head"],
+        # )
     print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
     model = model.to("cpu")
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")

@@ -137,7 +137,6 @@ class _BaseAutoModelClass:
 
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
-            print(user_quantization_config)
             if user_quantization_config.bnb_4bit_quant_type is not None:
                 load_in_low_bit = user_quantization_config.bnb_4bit_quant_type
             else:

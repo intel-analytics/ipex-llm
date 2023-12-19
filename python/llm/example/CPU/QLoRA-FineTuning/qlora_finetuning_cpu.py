@@ -45,11 +45,23 @@ if __name__ == "__main__":
     data['train'] = data['train'].map(merge)
     # use the max_length to reduce memory usage, should be adjusted by different datasets
     data = data.map(lambda samples: tokenizer(samples["prediction"], max_length=256), batched=True)
+
+    from transformers import BitsAndBytesConfig
+    int4_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="sym_int4",
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_low_bit="sym_int4",
-                                                 optimize_model=False,
-                                                 torch_dtype=torch.float16,
-                                                 modules_to_not_convert=["lm_head"], )
+                                                 quantization_config=int4_config, )
+
+    # also support now
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                              load_in_low_bit="sym_int4",
+    #                                              optimize_model=False,
+    #                                              torch_dtype=torch.float16,
+    #                                              modules_to_not_convert=["lm_head"], )
+
     model = model.to('cpu')
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False)
     model.enable_input_require_grads()
