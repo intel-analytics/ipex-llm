@@ -138,9 +138,16 @@ class _BaseAutoModelClass:
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
             if user_quantization_config.bnb_4bit_quant_type is not None:
-                load_in_low_bit = user_quantization_config.bnb_4bit_quant_type
-            else:
-                load_in_low_bit = "sym_int4"
+                bnb_4bit_type = user_quantization_config.bnb_4bit_quant_type
+                if bnb_4bit_type == "nf4":
+                    load_in_low_bit = "nf4"
+                elif bnb_4bit_type == "fp4":
+                    warnings.warn(
+                        "BigDL LLM QloRA is not support fp4 now, use default nf4", FutureWarning)
+                    load_in_low_bit = "nf4"
+                else:
+                    # fo cpu
+                    load_in_low_bit = bnb_4bit_type
             if user_quantization_config.bnb_4bit_compute_dtype is not None:
                 kwargs["torch_dtype"] = user_quantization_config.bnb_4bit_compute_dtype
             else:
