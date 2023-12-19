@@ -88,7 +88,6 @@ def save_low_bit(self, *args, **kwargs):
 
 
 class _BaseAutoModelClass:
-
     HF_MODEL = None
 
     @classmethod
@@ -137,7 +136,7 @@ class _BaseAutoModelClass:
         user_quantization_config = kwargs.pop("quantization_config", None)
 
         if user_quantization_config is not None and \
-        "BitsAndBytesConfig" in str(user_quantization_config.__class__):
+                "BitsAndBytesConfig" in str(user_quantization_config.__class__):
             print(user_quantization_config)
             if user_quantization_config.bnb_4bit_quant_type is not None:
                 load_in_low_bit = user_quantization_config.bnb_4bit_quant_type
@@ -267,9 +266,9 @@ class _BaseAutoModelClass:
             # The latest transformers only support cuda version
             # This load awq ckpt logic is copied from
             # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
-            from accelerate import init_empty_weights, infer_auto_device_map,\
+            from accelerate import init_empty_weights, infer_auto_device_map, \
                 load_checkpoint_in_model
-            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\
+            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers, \
                 get_layer_type, _load_config
             awq_config = quant_config
             model_weights_path, config = _load_config(args[0], '', max_new_tokens=None,
@@ -411,7 +410,7 @@ class _BaseAutoModelClass:
         if has_remote_code and trust_remote_code:
             class_ref = config.auto_map[cls.HF_Model.__name__]
             model_class = get_class_from_dynamic_module(
-                class_ref, pretrained_model_name_or_path,  **kwargs
+                class_ref, pretrained_model_name_or_path, **kwargs
             )
             if os.path.isdir(pretrained_model_name_or_path):
                 model_class.register_for_auto_class(cls.HF_Model.__name__)
