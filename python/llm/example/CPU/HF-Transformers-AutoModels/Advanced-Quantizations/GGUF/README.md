@@ -27,7 +27,7 @@ pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightl
 pip install transformers==4.34.0  # upgrade transformers
 ```
 
-** (Optional) Support for LLM-AWQ Backend **
+**(Optional) Support for LLM-AWQ Backend**
 
 BigDL-LLM uses `autoawq` as its default awq backend, and also automatically supports `llmawq` if your model is orginally quantized by llmawq. You can directly input an llmawq model in the same way as autoawq, after installing the following dependencies:
 
