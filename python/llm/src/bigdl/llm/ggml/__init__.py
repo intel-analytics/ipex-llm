@@ -20,4 +20,12 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from bigdl.llm.utils.common import LazyImport
+import os
+
 convert_model = LazyImport('bigdl.llm.ggml.convert_model.convert_model')
+
+# Default is false, set to true to auto importing glibc_checker.
+BIGDL_GLIBC_CHECK = os.getenv("BIGDL_GLIBC_CHECK", 'False').lower() in ('true', '1', 't')
+if BIGDL_GLIBC_CHECK:
+    from bigdl.llm.utils.glibc_checker import check_glibc_version
+    check_glibc_version()
