@@ -60,7 +60,7 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "_pre_quantization_dtype")
 
     self.to('cpu')
-    
+
     architectures = getattr(self.config, "architectures", None)
     model_type = getattr(self.config, "model_type", None)
     self.save_pretrained(*args, **kwargs)
