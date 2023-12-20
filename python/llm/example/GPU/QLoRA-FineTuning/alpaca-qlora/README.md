@@ -228,4 +228,5 @@ Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface trans
   Please try `sudo apt install level-zero-dev` to fix it.
 
 - If you fail to finetune as out of GPU memory:
-  You can enable gradient checkpoint first by adding `--gradient_checkpointing True` in your script, which is a efficient memory saving method of training.
+
+  You can enable gradient checkpoint first by adding `--gradient_checkpointing True` in your script, which is an efficient memory saving method of training.
