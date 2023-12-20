@@ -331,7 +331,7 @@ def calculate_xpu_sdp(fsdp_flag, bsz, q_len, head_dim, num_heads, q_states, k_st
         return attn_output, None
     else:
         # TODO: delete
-        print("native sdp")
+        #print("native sdp")
         attn_output, attn_weights = native_sdp(q_states,
                                                k_states,
                                                v_states,
@@ -380,11 +380,13 @@ def llama_attention_selective_batching_forward_4_31(
 
     # we put the new kv_caches into this
     updated_past_key_values = []
+    # TODO: change this later
+    decoding_fast_path = False
     if decoding_fast_path:
         # This decoding fast path?
         # 1, 1, hidden_dimension
         # TODO: delete
-        print("Debug: Decoding fast path")
+        #print("Debug: Decoding fast path")
         hidden_states = hidden_states.view(1, -1)
         kv_seq_len = past_key_value[0][0].shape[-2]
         cache_k = past_key_value[0][0]
@@ -467,7 +469,6 @@ def llama_attention_selective_batching_forward_4_31(
                 # 4. repeat kv ends
 
                 # 5. Attention calculation
-                # TODO: decide if we need to apply attention mask
                 # TODO: fix attention weight
                 attn_output, attn_weights = calculate_xpu_sdp(fsdp_flag,
                                                               1,
@@ -478,7 +479,7 @@ def llama_attention_selective_batching_forward_4_31(
                                                               current_key_states,
                                                               current_value_states,
                                                               current_kv_len,
-                                                              None)
+                                                              attention_mask[batch])
                 batched_attention_output.append(attn_output)
             # 5. Attention calculation ends
             # Concat attention output together
@@ -486,7 +487,6 @@ def llama_attention_selective_batching_forward_4_31(
             attn_output = torch.concat(batched_attention_output, dim=0)
             batched_attention_output.clear()
             if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-                print("we are here 2")
                 raise ValueError(  # noqa
                     "`attn_output` should be of size "
                     f"{repr((bsz, self.num_heads, q_len, self.head_dim))}, but is "
@@ -542,16 +542,20 @@ def llama_attention_selective_batching_forward_4_31(
             updated_past_key_values = None
 
     # repeat k/v heads if n_kv_heads < n_heads
+
+    if not decoding_fast_path:
+        print(f"Prefill with batching size {bsz}")
+
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
                                                                      dtype=attention_dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
-    print("q_len is " + str(q_len))
-    print("kv_seq_len is " + str(kv_seq_len))
+    #print("q_len is " + str(q_len))
+    #print("kv_seq_len is " + str(kv_seq_len))
     
-    print(query_states[0][0][0][0])
-    print(key_states[0][0][0][0])
-    print(value_states[0][0][0][0])
+    #print(query_states[0][0][0][0])
+    #print(key_states[0][0][0][0])
+    #print(value_states[0][0][0][0])
     # TODO: this might be wrong for decoding
     # TODO: for decoding we do not want to apply attention_mask
     attn_output, attn_weights = calculate_xpu_sdp(fsdp_flag,
@@ -564,10 +568,10 @@ def llama_attention_selective_batching_forward_4_31(
                                                   value_states,
                                                   kv_seq_len,
                                                   attention_mask)
-    print(attn_output[0][0][0][0])
+    #print(attn_output[0][0][0][0])
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
-        print("we are at here 1")
+        #print("we are at here 1")
         invalidInputError(False,
                           f"`attn_output` should be of size {attn_output_size},"
                           f" but is {attn_output.size()}")
@@ -698,17 +702,25 @@ def llama_model_selective_batching_forward_4_31(
     # We should set it to format of [batch, position_id]
     # TODO: validate correctness
     device = input_ids.device if input_ids is not None else inputs_embeds.device
-    if past_key_values is None:
-        # For prefill
-        position_ids = torch.arange(0, seq_length, dtype=torch.long, device=device)
-        position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    if position_ids is None:
+        # This should never happened in our case
+        print("position_ids is None!!!")
+        raise ValueError("Position_ids should never be None")
     else:
-        past_key_values_length = []
-        for sequence_kv in past_key_values[0]:
-            key = sequence_kv[0]
-            past_key_values_length.append(key.shape[-2])
-        position_ids = torch.tensor(past_key_values_length, dtype=torch.long, device=device)
-        position_ids = position_ids.unsqueeze(0).view(-1, 1)
+        print(f"Original position_ids is {position_ids}")
+        position_ids = position_ids.view(-1, seq_length)
+        print(f"after position_ids is {position_ids}")
+    # if past_key_values is None:
+    #     # For prefill
+    #     position_ids = torch.arange(0, seq_length, dtype=torch.long, device=device)
+    #     position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    # else:
+    #     past_key_values_length = []
+    #     for sequence_kv in past_key_values[0]:
+    #         key = sequence_kv[0]
+    #         past_key_values_length.append(key.shape[-2])
+    #     position_ids = torch.tensor(past_key_values_length, dtype=torch.long, device=device)
+    #     position_ids = position_ids.unsqueeze(0).view(-1, 1)
 
     if past_key_values is not None:
         # past_key_values in the format of num_layers x num_seqs x 2
@@ -732,12 +744,20 @@ def llama_model_selective_batching_forward_4_31(
     # embed positions
     # TODO: only generate attention_mask for prefilling
     if attention_mask is None:
-        attention_mask = torch.ones(
-            (batch_size, seq_length_with_past), dtype=torch.bool, device=inputs_embeds.device
+        raise ValueError("attention_mask should never be None")
+    if past_key_values is None:
+        attention_mask = self._prepare_decoder_attention_mask(
+            attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
         )
-    attention_mask = self._prepare_decoder_attention_mask(
-        attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
-    )
+    else:
+        i = 0
+        for attn_mask in attention_mask:
+            past_key_value_length = past_key_values[0][i][0].shape[2]
+            new_mask = self._prepare_decoder_attention_mask(
+                attn_mask, (1, seq_length), inputs_embeds, past_key_value_length
+            )
+            attention_mask[i] = new_mask
+            i+=1
 
     hidden_states = inputs_embeds
 

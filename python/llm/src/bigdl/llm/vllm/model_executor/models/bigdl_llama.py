@@ -179,37 +179,50 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 for input_ids in bigdl_input_ids
             ]
 
-        # GC(co): by using selective_batching, we no longer need to create
-        # attention_mask for decoding.
-        # if is_decoding_stage:
-        #     cur_seq_len = bigdl_kv_cache[0][0].size(2)
-        #     for seq_group_meta_data in seq_group_meta_data_lists:
-        #         seq_ids = list(seq_group_meta_data.seq_data.keys())
-        #         seq_id = seq_ids[0]
-        #         seq_data = seq_group_meta_data.seq_data[seq_id]
-        #         cur_pos = seq_data.get_len()
-        #         # bigdl_position_ids.append([cur_pos - 1])
-        #         cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
-        #         bigdl_attention_mask.append(cur_attention_mask)
+        # TODO: this could be deleted after prefill stage is also selective_batched
+        decoding_attention_mask_list = []
+        decoding_position_ids = []
+        # Attention_mask for decoding could also be a list of tensors due to inconsistent length of kv_cache
+        # num_layers x len(seq_id) x (2 x torch.Tensor)
+        if is_decoding_stage:
+            batch = 0
+            for seq_group_meta_data in seq_group_meta_data_lists:
+                # Get current seq_len in kv_cache
+                current_seq_len = bigdl_kv_cache[0][batch][0].size(2)
+                batch += 1
+                seq_ids = list(seq_group_meta_data.seq_data.keys())
+                seq_data = seq_group_meta_data.seq_data[seq_ids[0]]
+                cur_pos = seq_data.get_len()
+                decoding_position_ids.append(cur_pos - 1)
+                # Total length: current_seq_len + 1
+                cur_attention_mask = [0] * (current_seq_len - cur_pos + 1) + [1] * (cur_pos)
+                decoding_attention_mask_list.append(cur_attention_mask)
+
 
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
 
+        # TODO: prefill requests could also be sbed, so that we can remove attention_mask forever
         if is_decoding_stage:
+            attention_mask = [torch.tensor(x, device=self.device).unsqueeze(0) for x in decoding_attention_mask_list]
+            position_ids = torch.tensor(decoding_position_ids).long().unsqueeze(-1)
             kwargs = {
                 "input_ids": bigdl_input_ids,
                 # gc(co): we rely on underlying model to generate position_ids
-                # "position_ids": bigdl_position_ids,
-                # gc(co): we no longer need attention_mask
-                # "attention_mask": bigdl_attention_mask,
+                "position_ids": position_ids,
+                "attention_mask": attention_mask,
                 "past_key_values": bigdl_kv_cache,
                 "use_cache": True,
                 # "return_dict": True,
             }
         else:
+            # Prefill stage
+            attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
+            position_ids = attention_mask.long().cumsum(-1) - 1
+            position_ids.masked_fill_(attention_mask == 0, 1)
             kwargs = {
                 "input_ids": bigdl_input_ids,
-                "attention_mask": torch.tensor(bigdl_attention_mask, device=self.device),
-                # "position_ids": bigdl_position_ids,
+                "attention_mask": attention_mask,
+                "position_ids": position_ids,
                 "past_key_values": None,
                 "use_cache": True,
                 # "return_dict": True,
