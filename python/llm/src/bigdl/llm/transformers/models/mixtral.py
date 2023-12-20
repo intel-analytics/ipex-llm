@@ -258,7 +258,7 @@ def mixtral_mlp_forward(
     x: torch.Tensor,
     routing_weights
 ) -> torch.Tensor:
-    if x.shape[0] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+    if x.shape[0] == 1 and x.device.type == 'xpu' \
             and self.w1.qtype == ggml_tensor_qtype["sym_int4"] \
             and not (self.training and x.requires_grad):
         import linear_q4_0
