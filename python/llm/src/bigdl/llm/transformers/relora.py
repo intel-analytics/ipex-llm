@@ -144,7 +144,6 @@ def reset_optimizer(optimizer: torch.optim.Optimizer):
                         reset_keys[key] = 1
                     else:
                         reset_keys[key] += 1
-    LOG.info(f"reset steps: {reset_steps}, reset keys: {reset_keys}")
 
 
 class ReLoRACallback(TrainerCallback):
