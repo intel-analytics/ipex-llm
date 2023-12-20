@@ -198,11 +198,6 @@ class _BaseAutoModelClass:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
-            model.config.update({"architectures": config_dict.get("architectures")})
-            model.config.update({"model_type": config_dict.get("model_type")})
-            # add save_low_bit to pretrained model dynamically
-            import types
-            model.save_low_bit = types.MethodType(save_low_bit, model)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -310,6 +305,10 @@ class _BaseAutoModelClass:
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
         model.config.update({"bigdl_transformers_low_bit": q_k})
         model.config.update({"tie_word_embeddings": False})
+
+        # add save_low_bit to pretrained model dynamically
+        import types
+        model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
 
