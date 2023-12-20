@@ -8,13 +8,13 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+    - cron: "00 14 * * *" # GMT time, 13:00 GMT == 21:00 China
+   pull_request:
+     branches: [#9730]
+     paths:
+       - ".github/workflows/llm_performance_tests.yml"
+       - "python/llm/test/benchmark/**"
+       - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
