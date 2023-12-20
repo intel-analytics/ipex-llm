@@ -71,6 +71,10 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
     return use_fuse_rope
 
 
+def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
+    return q_type == SYM_INT4 and use_fuse_rope and enough_kv_room and bs == 1
+
+
 def mistral_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -86,9 +90,10 @@ def mistral_attention_forward(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room(past_key_value)
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
-    decoding_fast_path = (is_q4_0 and use_fuse_rope and
-                          enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
+                                                use_fuse_rope,
+                                                enough_kv_room,
+                                                bsz * q_len)
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -121,7 +126,7 @@ def mistral_attention_forward(
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
 
-        if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+        if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
@@ -135,7 +140,7 @@ def mistral_attention_forward(
             # reuse k, v, self_attention
             cache_k = past_key_value[0]
             cache_v = past_key_value[1]
-            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if not enough_kv_room:
                 # allocate new
                 new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                            self.num_key_value_heads,  # Support GQA
