@@ -378,8 +378,14 @@ class GGUFFileLoader:
         spm_pb2 = import_protobuf("Failed to import protobuf")
 
         tokens = self.config['tokenizer.ggml.tokens']
-        scores = self.config['tokenizer.ggml.scores']
         token_types = self.config['tokenizer.ggml.token_type']
+        if 'tokenizer.ggml.scores' in self.config:
+            scores = self.config['tokenizer.ggml.scores']
+        elif self.config['tokenizer.ggml.model'] == "gpt2":
+            # no use ['tokenizer.ggml.merges']
+            scores = list(range(len(tokens)))
+        else:
+            raise ValueError("Invalid configuration: 'scores' is not provided.")
 
         pieces = [
             spm_pb2.ModelProto.SentencePiece(
