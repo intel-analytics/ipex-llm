@@ -185,6 +185,8 @@ class _BaseAutoModelClass:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+            model.config.update({"architectures": config_dict.get("architectures")})
+            model.config.update({"model_type": config_dict.get("model_type")})
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
