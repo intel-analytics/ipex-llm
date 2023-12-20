@@ -197,10 +197,11 @@ def mixtral_attention_forward(
         kv_seq_len = key_states.shape[-2]
         if past_key_value is not None:
             if self.layer_idx is None:
-                invalidInputError(False, "The cache structure has changed since version v4.36. "
-                                         f"If you are using {self.__class__.__name__} for "
-                                         "auto-regressive decodingwith k/v caching, please make sure "
-                                         "to initialize the attention class with a layer index.")
+                invalidInputError(False,
+                                  "The cache structure has changed since version v4.36. "
+                                  f"If you are using {self.__class__.__name__} for "
+                                  "auto-regressive decodingwith k/v caching, please make sure "
+                                  "to initialize the attention class with a layer index.")
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
@@ -229,20 +230,23 @@ def mixtral_attention_forward(
 
                 if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
                     # allocate new
-                    new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                               self.num_key_value_heads,  # Support GQA
-                                                               self.head_dim,
-                                                               cache_k.size(2),
-                                                               kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                               dtype=cache_k.dtype,
-                                                               device=device)
+                    new_c_k, new_c_v = extend_kv_cache(bsz,
+                                                       self.num_key_value_heads,  # Support GQA
+                                                       self.head_dim,
+                                                       cache_k.size(2),
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                       dtype=cache_k.dtype,
+                                                       device=device)
 
-                    new_cache_k[:] = cache_k
-                    new_cache_v[:] = cache_v
-                    cache_k = new_cache_k
-                    cache_v = new_cache_v
+                    new_c_k[:] = cache_k
+                    new_c_v[:] = cache_v
+                    cache_k = new_c_k
+                    cache_v = new_c_v
 
-                key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+                key_states, value_states = append_kv_cache(cache_k,
+                                                           cache_v,
+                                                           key_states,
+                                                           value_states)
 
                 # update past_key_value
                 past_key_value.key_cache[self.layer_idx] = key_states
