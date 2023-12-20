@@ -130,13 +130,8 @@ def mixtral_moeblock_forward(self,
     return final_hidden_states, router_logits
 
 
-
-def is_enough_kv_cache_room(past_key_value):
-    if past_key_value is not None:
-        print(len(past_key_value))
-        print(past_key_value[0].size())
-        print(past_key_value[1].size())
-    return past_key_value is not None and \
+def is_enough_kv_cache_room(past_key_value, idx):
+    return past_key_value is not None and len(past_key_value.key_cache) > idx and \
         past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
 
 
@@ -161,33 +156,16 @@ def mixtral_attention_forward(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    print("len:" + str(len(past_key_value.key_cache)) + ",idx:" + str(self.layer_idx))
-    enough_kv_room =  past_key_value.key_cache is not None and \
-            len(past_key_value.key_cache) > self.layer_idx and \
-        past_key_value.key_cache[self.layer_idx].stride()[1] > \
-        past_key_value.key_cache[self.layer_idx].size(2) * past_key_value.key_cache[self.layer_idx].size(3)
-    #enough_kv_room = past_key_value.key_cache is not None
-
+    enough_kv_room = is_enough_kv_cache_room(past_key_value, self.layer_idx)
     is_q4_0 = self.q_proj.qtype == SYM_INT4
     decoding_fast_path = (is_q4_0 and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
-    #decoding_fast_path = False
-    #print("path:" + str(decoding_fast_path) + ",enough_kv_room:" + str(enough_kv_room), end='')
-    #print("bsz:" + str(bsz) + ",q_len:" + str(q_len), end='')
-    print("hidden_states1:"+str(hidden_states.shape), end='')
 
     if decoding_fast_path:
-        #hidden_states = hidden_states.contiguous()
         hidden_states = hidden_states.view(1, -1)
-        print("hidden_states2:"+str(hidden_states.shape), end='')
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
-        #print("hidden_states:"+str(hidden_states.shape), end='')
-        #print(",cache_k:"+str(cache_k.shape), end='')
-        #print(",cache_v:"+str(cache_v.shape), end='')
-        #print(",position_ids:"+str(position_ids), end='')
-        #print(",head_dim:"+str(self.head_dim), end='')
         import linear_q4_0
         query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
                                                                          self.q_proj.weight,
@@ -199,12 +177,13 @@ def mixtral_attention_forward(
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
-        #print("query_states:"+str(query_states.shape), end='')
-        #print(",key_states:"+str(key_states.shape), end='')
-        #print(",value_states:"+str(value_states.shape))
+        # update past_key_value and layer_idx
+        if self.layer_idx == 0:
+            past_key_value.seen_tokens = kv_seq_len
+        past_key_value.key_cache[self.layer_idx] = key_states
+        past_key_value.value_cache[self.layer_idx] = value_states
 
     else:
-        #print("hidden_states1:"+str(hidden_states.shape), end='')
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
@@ -233,8 +212,6 @@ def mixtral_attention_forward(
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids, "mixtral")
-        print(",query_states:"+str(query_states.shape), end='')
-        print(",key_states:"+str(key_states.shape), end='')
 
         if past_key_value is not None:
             # update the number of seen tokens
@@ -244,47 +221,13 @@ def mixtral_attention_forward(
             # reuse k, v, self_attention
             # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
             if len(past_key_value.key_cache) <= self.layer_idx:
-                print("append new:" + str(self.layer_idx))
                 past_key_value.key_cache.append(key_states)
                 past_key_value.value_cache.append(value_states)
-                #print("extend:query_states0:"+str(query_states.shape), end='')
-                #print(",key_states0:"+str(key_states.shape), end='')
-                #past_key_value.key_cache.append(key_states)
-                #past_key_value.value_cache.append(value_states)
-                #cache_k = past_key_value.key_cache[self.layer_idx]
-                #cache_v = past_key_value.value_cache[self.layer_idx]
-
-                ##if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-                ## allocate new
-                #new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                #                                           self.num_key_value_heads,  # Support GQA
-                #                                           self.head_dim,
-                #                                           cache_k.size(2),
-                #                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                #                                           dtype=cache_k.dtype,
-                #                                           device=device)
-                #append_kv_cache(cache_k, cache_v, key_states, value_states)
-                #print("new_k:"+str(new_cache_k.shape), end='')
-                #print(",new_v:"+str(new_cache_v.shape), end='')
-
-                #new_cache_k[:] = cache_k
-                #new_cache_v[:] = cache_v
-                #cache_k = new_cache_k
-                #cache_v = new_cache_v
-
-                ##key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
-                #print("query_states:"+str(query_states.shape), end='')
-                #print(",key_states:"+str(key_states.shape))
-
-                ## update past_key_value
-                #past_key_value.key_cache[self.layer_idx] = cache_k
-                #past_key_value.value_cache[self.layer_idx] = cache_v
             else:
                 cache_k = past_key_value.key_cache[self.layer_idx]
                 cache_v = past_key_value.value_cache[self.layer_idx]
 
                 if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-                    print("extend")
                     # allocate new
                     new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                                self.num_key_value_heads,  # Support GQA
@@ -300,19 +243,14 @@ def mixtral_attention_forward(
                     cache_v = new_cache_v
 
                 key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
-                print("append_kv_cache")
 
                 # update past_key_value
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
     # repeat k/v heads if n_kv_heads < n_heads
-    print(",query_states2:"+str(query_states.shape), end='')
-    print(",key_states2:"+str(key_states.shape), end='')
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
-    print(",query_states3:"+str(query_states.shape), end='')
-    print(",key_states3:"+str(key_states.shape))
 
     attn_weights = torch.matmul(
         query_states,
