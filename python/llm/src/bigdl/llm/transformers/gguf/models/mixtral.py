@@ -52,22 +52,19 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     with init_empty_weights():
         model = MixtralForCausalLM(mixtral_config)
-    
-    tensors_iter = loader.tensors_iter
 
-    for name, value in tensors_iter:
-        value = value.to(dtype)
+    def process_mixtral(name, tensor):
         module_name = get_mixtral_module_name(name)
         if 'ffn_gate_inp' in name:
             # gguf weight needs to reshape for ffn_gate_inp
             set_module_tensor_to_device(model, module_name, "cpu", \
-                value.reshape(num_local_experts, hidden_size), dtype=dtype)
+                tensor.reshape(num_local_experts, hidden_size), dtype=dtype)
         else:
             set_module_tensor_to_device(model, module_name, "cpu", \
-                value, dtype=dtype)
-        del value
-
-    model = model.cpu()
+                tensor, dtype=dtype)
+    
+    tensor_loader = loader.tensor_loader
+    tensor_loader.load_while_process(process_mixtral)
 
     from transformers.convert_slow_tokenizer import import_protobuf
     spm_pb2 = import_protobuf("Failed to import protobuf")
@@ -117,4 +114,5 @@ def get_mixtral_module_name(name):
                    f'block_sparse_moe.experts.{local_expert_id}.w2.weight'
         if 'ffn_up' in name:
             return f'model.layers.{layer_id}.' + \
-                   f'block_sparse_moe.experts.{local_expert_id}.w2.weight'
+                   f'block_sparse_moe.experts.{local_expert_id}.w3.weight'
+
