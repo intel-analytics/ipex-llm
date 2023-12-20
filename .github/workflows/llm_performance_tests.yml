@@ -78,6 +78,7 @@ jobs:
         run: |
           source /home/arda/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
+          export BIGDL_IMPORT_IPEX=True
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
