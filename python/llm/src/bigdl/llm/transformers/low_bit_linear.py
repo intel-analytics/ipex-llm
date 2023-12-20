@@ -66,11 +66,11 @@ ASYM_INT4 = ggml_tensor_qtype["asym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
-FP8E4 = ggml_tensor_qtype["fp8e4"]
+FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
 FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
-FP8E5 = ggml_tensor_qtype["fp8e5"]
+FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 
 
 def get_block_size(qtype: str):
