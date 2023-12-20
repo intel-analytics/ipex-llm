@@ -17,7 +17,6 @@
 import os
 import torch
 import time
-import intel_extension_for_pytorch as ipex
 import argparse
 import numpy as np
 import inquirer
