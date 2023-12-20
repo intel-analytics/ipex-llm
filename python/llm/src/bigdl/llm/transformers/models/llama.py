@@ -453,9 +453,9 @@ def llama_attention_selective_batching_forward_4_31(
                     past_k = new_past_k
                     past_v = new_past_v
                 current_key_states, current_value_states = append_kv_cache(past_k, past_v,  # noqa
-                                                                        key_states[batch:batch + 1, :, :, :],  # noqa
-                                                                        value_states[batch:batch + 1, :, :, :]  # noqa
-                                                                        )
+                                                                           key_states[batch:batch + 1, :, :, :],  # noqa
+                                                                           value_states[batch:batch + 1, :, :, :]  # noqa
+                                                                           )
                 # 2. concat key_states, value_states ends
 
                 # 3. Record key_states, and value_states
@@ -745,6 +745,7 @@ def llama_model_selective_batching_forward_4_31(
     # TODO: only generate attention_mask for prefilling
     if attention_mask is None:
         raise ValueError("attention_mask should never be None")
+    print(f"attention_mask before expanding: {attention_mask}")
     if past_key_values is None:
         attention_mask = self._prepare_decoder_attention_mask(
             attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
