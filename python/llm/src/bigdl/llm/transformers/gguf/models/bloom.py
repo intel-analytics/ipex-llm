@@ -85,7 +85,7 @@ def load_gguf_bloom(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         set_module_tensor_to_device(model, name, "cpu", weight, dtype=dtype)
     model = model.cpu()
 
-    pieces = loader.tokenizer_pieces()
+    pieces, merges = loader.tokenizer_pieces()
 
 
     current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -100,6 +100,7 @@ def load_gguf_bloom(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         score = int(pieces[i].score)
         vocab[token] = score
     data['model']['vocab'] = vocab
+    data['model']['merges'] = merges
     with open(token_file, 'w') as file:
         json.dump(data, file)
     tokenizer = BloomTokenizerFast(tokenizer_file=token_file)

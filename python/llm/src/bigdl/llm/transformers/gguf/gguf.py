@@ -382,7 +382,7 @@ class GGUFFileLoader:
         if 'tokenizer.ggml.scores' in self.config:
             scores = self.config['tokenizer.ggml.scores']
         elif self.config['tokenizer.ggml.model'] == "gpt2":
-            # no use ['tokenizer.ggml.merges']
+            merges = self.config['tokenizer.ggml.merges']
             scores = list(range(len(tokens)))
         else:
             raise ValueError("Invalid configuration: 'scores' is not provided.")
@@ -399,4 +399,4 @@ class GGUFFileLoader:
             )
         ]
 
-        return pieces
+        return pieces, merges
