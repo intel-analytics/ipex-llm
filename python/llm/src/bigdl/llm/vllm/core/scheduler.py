@@ -227,7 +227,7 @@ class FixedWindowScheduler:
                 num_curr_seqs += num_new_seqs
                 scheduled.append(seq_group)
                 # TODO: we choose to not batching the prefill requests
-                break
+                # break
 
             if scheduled or ignored_seq_groups:
                 scheduler_outputs = SchedulerOutputs(
