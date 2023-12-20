@@ -374,6 +374,7 @@ def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
+    from bigdl.llm.transformers.models.llama import llama_mlp_forward
     from transformers.modeling_utils import PreTrainedModel
 
     # All huggingface format models are inherited from `PreTrainedModel`
@@ -392,6 +393,9 @@ def _optimize_post(model, lightweight_bmm=False):
             model,
             transformers.models.llama.modeling_llama.LlamaRMSNorm,
             llama_rms_norm_forward,)
+        convert_forward(model,
+                        transformers.models.llama.modeling_llama.LlamaMLP,
+                        llama_mlp_forward)
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
@@ -590,6 +594,7 @@ def _optimize_post(model, lightweight_bmm=False):
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from bigdl.llm.transformers.models.qwen import qwen_attention_forward
+            from bigdl.llm.transformers.models.qwen import qwen_mlp_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             convert_forward(model,
                             module.QWenAttention,
@@ -598,6 +603,9 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.RMSNorm,
                             chatglm_rms_norm_forward)
+            convert_forward(model,
+                            module.QWenMLP,
+                            qwen_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -616,9 +624,20 @@ def _optimize_post(model, lightweight_bmm=False):
                           "to run Mixtral models.")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.mixtral import mixtral_moeblock_forward, \
+            mixtral_attention_forward, mixtral_mlp_forward
+        convert_forward(model,
+                        module.MixtralAttention,
+                        mixtral_attention_forward)
         convert_forward(model,
                         module.MixtralRMSNorm,
                         llama_rms_norm_forward)
+        convert_forward(model,
+                        module.MixtralSparseMoeBlock,
+                        mixtral_moeblock_forward)
+        convert_forward(model,
+                        module.MixtralBLockSparseTop2MLP,
+                        mixtral_mlp_forward)
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
                 model.config.architectures[0] == "MixtralForCausalLM":

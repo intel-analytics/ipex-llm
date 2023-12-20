@@ -9,7 +9,7 @@ cd build
 cmake ..
 make -j install
 mkdir -p /opt/intel/oneccl
-mv ./build/_install/env /opt/intel/oneccl
+mv ./_install/env /opt/intel/oneccl
 # 2. install torch and ipex
 pip install torch==2.1.0
 pip install intel_extension_for_pytorch==2.1.0 -f https://developer.intel.com/ipex-whl-stable-cpu

@@ -17,6 +17,7 @@
 # https://huggingface.co/THUDM/chatglm2-6b/blob/8eb45c842594b8473f291d0f94e7bbe86ffc67d8/modeling_chatglm.py
 #
 
+import math
 import torch
 from typing import Optional, Tuple, List
 import torch.nn.functional as F
@@ -78,27 +79,20 @@ def apply_rotary_pos_emb_chatglm(x: torch.Tensor, rope_cache: torch.Tensor) -> t
 
 def chatglm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        if get_ipex_version() <= "2.0.110+xpu":
-            import linear_q4_0
-            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
-                                                       [self.weight.size(0)],
-                                                       self.weight,
-                                                       None,
-                                                       self.eps)
-        else:
-            # for ipex >= 2.1
-            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
-                                                               [self.weight.size(0)],
-                                                               self.weight,
-                                                               None,  # bias
-                                                               self.eps)
-        return hidden_states
-    else:
-        input_dtype = hidden_states.dtype
-        hidden_states = hidden_states.to(torch.float32)
-        variance = hidden_states.pow(2).mean(-1, keepdim=True)
-        hidden_states = hidden_states * torch.rsqrt(variance + self.eps)
-        return self.weight * hidden_states.to(input_dtype)
+        import linear_q4_0
+        result = linear_q4_0.fused_rms_norm(hidden_states,
+                                            [self.weight.size(0)],
+                                            self.weight,
+                                            None,
+                                            self.eps)
+        # if nelement == 0, means fused norm failed, go back to python implement.
+        if result.nelement != 0:
+            return result
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.eps)
+    return self.weight * hidden_states.to(input_dtype)
 
 
 def chatglm2_model_forward(
@@ -377,9 +371,13 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                                              value_layer,
                                                                              attention_mask,
                                                                              is_causal=True)
+        elif attention_mask is None:
+            scaling_factor = 1 / math.sqrt(query_layer.size(-1))
+            attn = torch.matmul(query_layer * scaling_factor, key_layer.transpose(-2, -1))
+            attn = torch.softmax(attn, -1)
+            context_layer = torch.matmul(attn, value_layer)
         else:
-            if attention_mask is not None:
-                attention_mask = ~attention_mask
+            attention_mask = ~attention_mask
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,

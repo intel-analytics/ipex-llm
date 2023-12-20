@@ -23,7 +23,15 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model
-QWEN_PROMPT_FORMAT = "<human>{prompt} <bot>"
+QWEN_PROMPT_FORMAT = """
+    <|im_start|>system
+    You are a helpful assistant.
+    <|im_end|>
+    <|im_start|>user
+    {prompt}
+    <|im_end|>
+    <|im_start|>assistant
+"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Qwen model')

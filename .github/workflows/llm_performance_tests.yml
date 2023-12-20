@@ -98,6 +98,7 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
+          python ../../../test/benchmark/check_results.py -n 45
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
@@ -232,7 +233,8 @@ jobs:
       - name: Prepare for install bigdl-llm from source
         shell: bash
         run: |
-          sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
 
       - name: Install bigdl-llm and other related packages
         shell: cmd
@@ -250,7 +252,7 @@ jobs:
           if not exist dist\bigdl_llm*.whl (exit /b 1)
           for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
 
-          pip install %whl_name%[xpu] -i %INTERNAL_PYPI_URL% --trusted-host %INTERNAL_PYPI_TRUSTED_HOST% -q
+          pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
           if %ERRORLEVEL% neq 0 (exit /b 1)
           pip list
 
@@ -291,7 +293,6 @@ jobs:
         run: |
           call conda activate igpu-perf
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -317,7 +318,6 @@ jobs:
           pip install transformers==4.34.0
 
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -359,7 +359,6 @@ jobs:
           pip install transformers==4.31.0
 
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -385,7 +384,6 @@ jobs:
           pip install transformers==4.34.0
 
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -427,7 +425,6 @@ jobs:
           pip install transformers==4.31.0
 
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -453,7 +450,6 @@ jobs:
           pip install transformers==4.34.0
 
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -494,7 +490,6 @@ jobs:
           pip install transformers==4.31.0
 
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_ENABLE_DEFAULT_CONTEXTS=1
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava

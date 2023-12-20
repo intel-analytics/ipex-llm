@@ -57,8 +57,16 @@ from kv_cache import StartRecentKVCache
 HUMAN_ID = "<human>"
 BOT_ID = "<bot>"
 
+def get_stop_words_ids(chat_format, tokenizer):
+    # https://github.com/QwenLM/Qwen/blob/main/examples/vllm_wrapper.py#L23
+    if chat_format == "Qwen":
+        stop_words_ids = [[tokenizer.im_end_id], [tokenizer.im_start_id], [tokenizer.eod_id]]
+    else:
+        raise NotImplementedError(f"Unknown chat format {chat_format!r}")
+    return stop_words_ids
+
 @torch.no_grad()
-def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
+def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len, stop_words=[]):
     print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
     outputs = model(
         input_ids=input_ids,
@@ -69,6 +77,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
     pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
     generated_ids = [pred_token_idx.item()]
     pos = 0
+    stop = False
     for _ in range(max_gen_len - 1):
         outputs = model(
             input_ids=pred_token_idx,
@@ -78,6 +87,15 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
         past_key_values = outputs.past_key_values
         pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
         generated_ids.append(pred_token_idx.item())
+
+        if stop_words is not None:
+            for stop_str in stop_words:
+                if generated_ids[-1 * len(stop_str):] == stop_str:
+                    stop = True
+                    break
+            if stop:
+                break
+        
         generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True,
                                           clean_up_tokenization_spaces=True,
                                           spaces_between_special_tokens=False)
@@ -96,11 +114,12 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len):
     return past_key_values
 
 @torch.no_grad()
-def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512):
+def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
-        if user_input == "stop": # let's stop the conversation when user input "stop"
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
             break
         prompt = f"{HUMAN_ID} {user_input}\n{BOT_ID} "
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
@@ -110,23 +129,32 @@ def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512):
             past_key_values = kv_cache.evict_for_space(past_key_values, space_needed)
 
         past_key_values = greedy_generate(
-            model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len
+            model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len, stop_words=stop_words
         )
 
 @torch.no_grad()
-def chatglm2_stream_chat(model, tokenizer):
+def chatglm3_stream_chat(model, tokenizer):
     chat_history = []
     past_key_values = None
     current_length = 0
-    stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(HUMAN_ID, tokenizer)])
+    # https://github.com/THUDM/ChatGLM3/issues/274#issuecomment-1810160305
+    stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(["<|user|>", "<|observation|>"], tokenizer)])
     max_past_length = 2048
 
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
-        if user_input == "stop": # let's stop the conversation when user input "stop"
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
             break
         print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
-        prompt = f"问：{user_input}\n答："
+        # https://github.com/THUDM/ChatGLM3/blob/main/PROMPT_en.md
+        prompt = f"""
+            <|system|>
+            You are an intelligent AI assistant, named ChatGLM3. Follow the user's instructions carefully.
+            <|user|>
+            {user_input}
+            <|assistant|>
+        """
         for response, chat_history, past_key_values in model.stream_chat(tokenizer, prompt,
                                                                          history=chat_history,
                                                                          stopping_criteria=stopping_criteria,
@@ -144,6 +172,59 @@ def chatglm2_stream_chat(model, tokenizer):
                         new_value.append(new_v)
                     new_values_list.append(tuple(new_value))
                 past_key_values = tuple(new_values_list)
+
+@torch.no_grad()
+def qwen_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
+    past_key_values = None
+    while True:
+        user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
+            break
+        # https://huggingface.co/Qwen/Qwen-7B-Chat/blob/main/generation_config.json#L2
+        prompt = f"""
+            <|im_start|>system
+            You are a helpful assistant.
+            <|im_end|>
+            <|im_start|>user
+            {user_input}
+            <|im_end|>
+            <|im_start|>assistant
+        """
+        input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        seq_len = input_ids.shape[1]
+        if kv_cache is not None:
+            space_needed = seq_len + max_gen_len
+            past_key_values = kv_cache.evict_for_space(past_key_values, space_needed)
+
+        past_key_values = greedy_generate(
+            model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len, stop_words=stop_words
+        )
+
+@torch.no_grad()
+def llama_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
+    past_key_values = None
+    while True:
+        user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
+            break
+        # https://huggingface.co/TheBloke/Llama-2-70B-Chat-GGML#prompt-template-llama-2-chat
+        prompt = f"""
+            [INST] <<SYS>>
+            You are a helpful assistant.
+            <</SYS>>
+            {user_input}[/INST]
+        """
+        input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        seq_len = input_ids.shape[1]
+        if kv_cache is not None:
+            space_needed = seq_len + max_gen_len
+            past_key_values = kv_cache.evict_for_space(past_key_values, space_needed)
+
+        past_key_values = greedy_generate(
+            model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len, stop_words=stop_words
+        )
 
 def auto_select_model(model_name):
     try:
@@ -168,19 +249,28 @@ def auto_select_model(model_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-path", type=str, help="path to an llm")
+    parser.add_argument("--start-size", type=int, default=4, help="start_size of kv_cahce")
     args = parser.parse_args()
 
     model_path = args.model_path
+    start_size = args.start_size
 
     model = auto_select_model(model_path)
     model = optimize_model(model)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    if model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
+    if model.config.architectures is not None and model.config.architectures[0] == "QWenLMHeadModel":
+        stop_words = get_stop_words_ids("Qwen", tokenizer=tokenizer)
+        kv_cache = StartRecentKVCache(start_size=start_size)
+        qwen_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache, stop_words=stop_words)
+    elif model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
         chatglm2_stream_chat(model=model, tokenizer=tokenizer)
+    elif model.config.architectures is not None and model.config.architectures[0] == "LlamaForCausalLM":
+        kv_cache = StartRecentKVCache(start_size=start_size)
+        llama_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache)
     else:
-        kv_cache = StartRecentKVCache()
+        kv_cache = StartRecentKVCache(start_size=start_size)
         stream_chat(model=model,
                     tokenizer=tokenizer,
                     kv_cache=kv_cache)

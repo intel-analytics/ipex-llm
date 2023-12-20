@@ -26,6 +26,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
@@ -48,36 +49,31 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        if get_ipex_version() <= "2.0.110+xpu":
-            import linear_q4_0
-            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
-                                                       [self.weight.size(0)],
-                                                       self.weight,
-                                                       None,
-                                                       self.epsilon)
-        else:
-            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
-                                                               [self.weight.size(0)],
-                                                               self.weight,
-                                                               None,
-                                                               self.epsilon)
-        return hidden_states
-    else:
-        input_dtype = hidden_states.dtype
-        hidden_states = hidden_states.to(torch.float32)
-        variance = hidden_states.pow(2).mean(-1, keepdim=True)
-        hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
-        return self.weight * hidden_states.to(input_dtype)
+        import linear_q4_0
+        result = linear_q4_0.fused_rms_norm(hidden_states,
+                                            [self.weight.size(0)],
+                                            self.weight,
+                                            None,
+                                            self.epsilon)
+        # if nelement == 0, means fused norm failed, go back to python implement.
+        if result.nelement != 0:
+            return result
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
+    return self.weight * hidden_states.to(input_dtype)
 
 
 def baichuan_mlp_forward(
     self,
     x: torch.Tensor,
 ) -> torch.Tensor:
-    if x.shape[1] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+    x_2d = x.view(-1, x.shape[-1])
+    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
+            and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
             and not (self.training and x.requires_grad):
         import linear_q4_0
-        x_2d = x.view(-1, x.shape[-1])
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
         return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
@@ -171,10 +167,17 @@ def baichuan_attention_forward_7b(
             query_states, key_states, value_states, attn_bias=xops.LowerTriangularMask()
         )
     else:
-        with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True,
-                                            enable_mem_efficient=True):
-            attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states,
-                                                         attn_mask=attention_mask)
+        if attention_mask is not None:
+            if attention_mask.dtype == torch.bool:
+                attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
+
+        scaling_factor = 1 / math.sqrt(query_states.size(-1))
+        attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
+        if attention_mask is not None:
+            attn_output += attention_mask
+        attn_output = torch.softmax(attn_output, -1)
+        attn_output = torch.matmul(attn_output, value_states)
+
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     attn_output = self.o_proj(attn_output)

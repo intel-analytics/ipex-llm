@@ -17,20 +17,20 @@ on:
   workflow_dispatch:
     inputs:
       model_name:
-        description: 'A list of models added to the job matrix.'
+        description: 'Model names, seperated by comma and must be quoted.'
         required: true
         type: string
       precision:
-        description: 'A list of precisions added to the job matrix'
+        description: 'Precisions, seperated by comma and must be quoted.'
         required: true
         type: string
       task:
-        description: 'A list of precisions added to the job matrix'
+        description: 'Tasks, seperated by comma and must be quoted.'
         required: true
         type: string
       runs-on:
-        description: 'Labels to filter the runners.'
-        default: 'accuracy'
+        description: 'Labels to filter the runners, seperated by comma and must be quoted.'
+        default: "accuracy"
         required: false
         type: string
 
@@ -166,7 +166,7 @@ jobs:
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
-          source /opt/intel/oneapi/setvars.sh
+          source $HOME/intel/oneapi/setvars.sh
           python run_llb.py \
           --model bigdl-llm \
           --pretrained ${MODEL_PATH} \

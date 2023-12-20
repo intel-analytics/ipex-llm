@@ -41,6 +41,8 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -75,26 +77,51 @@ def get_ipex_version():
 
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        if get_ipex_version() <= "2.0.110+xpu":
-            import linear_q4_0
-            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
-                                                       [self.weight.size(0)],
-                                                       self.weight,
-                                                       None,
-                                                       self.variance_epsilon)
-        else:
-            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
-                                                               [self.weight.size(0)],
-                                                               self.weight,
-                                                               None,
-                                                               self.variance_epsilon)
-        return hidden_states
-    else:
-        input_dtype = hidden_states.dtype
-        hidden_states = hidden_states.to(torch.float32)
-        variance = hidden_states.pow(2).mean(-1, keepdim=True)
-        hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
-        return self.weight * hidden_states.to(input_dtype)
+        import linear_q4_0
+        result = linear_q4_0.fused_rms_norm(hidden_states,
+                                            [self.weight.size(0)],
+                                            self.weight,
+                                            None,
+                                            self.variance_epsilon)
+        # if nelement == 0, means fused norm failed, go back to python implement.
+        if result.nelement != 0:
+            return result
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+    return self.weight * hidden_states.to(input_dtype)
+
+
+def llama_mlp_forward(
+    self,
+    x: torch.Tensor,
+) -> torch.Tensor:
+    x_2d = x.view(-1, x.shape[-1])
+    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
+            and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
+            and not (self.training and x.requires_grad):
+        import linear_q4_0
+        if not x_2d.is_contiguous():
+            x_2d = x_2d.contiguous()
+        return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+            x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
+            x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+        ))
+    return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+
+
+def is_enough_kv_cache_room(past_key_value):
+    return past_key_value is not None and \
+        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
+
+
+def should_use_fuse_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+    use_fuse_rope = use_fuse_rope and position_ids is not None
+    return use_fuse_rope
 
 
 def llama_attention_forward_4_31(
@@ -121,88 +148,114 @@ def llama_attention_forward_4_31(
     else:
         attention_dtype = original_dtype
 
-    if self.config.pretraining_tp > 1:
-        key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.config.pretraining_tp
-        query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-                                                // self.config.pretraining_tp, dim=0)
-        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
-        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    enough_kv_room = is_enough_kv_cache_room(past_key_value)
+    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    no_tp = not self.config.pretraining_tp > 1
+    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+                          enough_kv_room and bsz * q_len == 1)
 
-        query_states = [F.linear(hidden_states, query_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        query_states = torch.cat(query_states, dim=-1)
-
-        key_states = [F.linear(hidden_states, key_slices[i])
-                      for i in range(self.config.pretraining_tp)]
-        key_states = torch.cat(key_states, dim=-1)
-
-        value_states = [F.linear(hidden_states, value_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        value_states = torch.cat(value_states, dim=-1)
-
-    else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
-
-    query_states = query_states.view(bsz, q_len,
-                                     self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,
-                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
-
-    kv_seq_len = key_states.shape[-2]
-    if past_key_value is not None:
-        kv_seq_len += past_key_value[0].shape[-2]
-
-    use_fuse_rope = query_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
-    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
-
-    if use_fuse_rope:
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "llama")
-    else:
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids, "llama")
-
-    if past_key_value is not None:
-        # reuse k, v, self_attention
+    # single batch decoding fast path
+    # forward_qkv takes will perform QKV projection, rotary position embedding
+    # and save the key/value states to cache, then return query states and the
+    # extended key/value cache
+    if decoding_fast_path:
+        hidden_states = hidden_states.view(1, -1)
+        kv_seq_len = past_key_value[0].shape[-2]
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
+        import linear_q4_0
+        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
+                                                                         self.q_proj.weight,
+                                                                         self.k_proj.weight,
+                                                                         self.v_proj.weight,
+                                                                         position_ids,
+                                                                         cache_k, cache_v,
+                                                                         self.q_proj.weight.qtype,
+                                                                         kv_seq_len,
+                                                                         self.head_dim)
+        kv_seq_len += 1
 
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+    else:
+        if self.config.pretraining_tp > 1:
+            key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
+                                 self.config.pretraining_tp)
+            query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
+                                                    // self.config.pretraining_tp, dim=0)
+            key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
+            value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
 
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_key_value_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
+            query_states = [F.linear(hidden_states, query_slices[i])
+                            for i in range(self.config.pretraining_tp)]
+            query_states = torch.cat(query_states, dim=-1)
+
+            key_states = [F.linear(hidden_states, key_slices[i])
+                          for i in range(self.config.pretraining_tp)]
+            key_states = torch.cat(key_states, dim=-1)
+
+            value_states = [F.linear(hidden_states, value_slices[i])
+                            for i in range(self.config.pretraining_tp)]
+            value_states = torch.cat(value_states, dim=-1)
+
+        else:
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+
+        query_states = query_states.view(bsz, q_len,
+                                         self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            kv_seq_len += past_key_value[0].shape[-2]
+
+        if use_fuse_rope:
+            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                         key_states,
+                                                                         position_ids,
+                                                                         "llama")
+        else:
+            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, position_ids, "llama")
+
+        if past_key_value is not None:
+            # reuse k, v, self_attention
+            cache_k = past_key_value[0]
+            cache_v = past_key_value[1]
+            if not enough_kv_room:
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
+
+            key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+
+        elif use_cache:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_key_states, new_value_states = init_kv_cache(bsz,
+                                                             self.num_key_value_heads,
+                                                             self.head_dim,
+                                                             kv_seq_len,
+                                                             max_cache_length,
+                                                             dtype=key_states.dtype,
+                                                             device=device)
+            new_key_states[:] = key_states
+            new_value_states[:] = value_states
+            key_states = new_key_states
+            value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
 

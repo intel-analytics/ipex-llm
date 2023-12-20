@@ -15,12 +15,11 @@
 #
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from bigdl.llm import optimize_model
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1#instruction-format
@@ -39,14 +38,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
+    # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 optimize_model=True,
                                                  trust_remote_code=True,
-                                                 use_cache=True)
-    model = model.to('xpu')
+                                                 torch_dtype='auto',
+                                                 low_cpu_mem_usage=True)
+
+    # With only one line to enable BigDL-LLM optimization on model
+    model = optimize_model(model)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -54,20 +53,15 @@ if __name__ == '__main__':
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = MIXTRAL_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('cpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
         # start inference
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
-        torch.xpu.synchronize()
         end = time.time()
         output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
