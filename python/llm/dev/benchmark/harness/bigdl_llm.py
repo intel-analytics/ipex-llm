@@ -49,6 +49,8 @@ class BigDLLM(AutoCausalLM):
                 kwargs.pop(k)   
         AutoModelForCausalLM.from_pretrained = partial(AutoModelForCausalLM.from_pretrained, **self.bigdl_llm_kwargs)
         kwargs['trust_remote_code'] = kwargs.get('trust_remote_code', True)
+                self.bigdl_llm_kwargs['use_cache'] = kwargs.get('use_cache', True)
+        self.bigdl_llm_kwargs['optimize_model'] = kwargs.get('optimize_model', True)
         super().__init__(*args, **kwargs)
 
     @property
