@@ -331,7 +331,8 @@ def _buffered_future_mask(tensor, maxpos, alibi, attn_heads):
     return new_future_mask[: tensor.shape[0] * attn_heads, :maxpos, :maxpos]
 
 
-def _gen_alibi_mask(tensor, n_head, max_pos):
+def baichuan_13b_gen_alibi_mask(tensor, n_head, max_pos):
+    # Use fp16 for alibi mask
     slopes = torch.Tensor(_get_interleave(n_head)).half()
     position_point = torch.arange(max_pos) - max_pos + 1
     position_point = position_point.unsqueeze(0).unsqueeze(0).expand(n_head, -1, -1)
@@ -341,6 +342,8 @@ def _gen_alibi_mask(tensor, n_head, max_pos):
     alibi = alibi.view(n_head, 1, max_pos)
     alibi_mask = torch.triu(_fill_with_neg_inf(torch.zeros([max_pos, max_pos])), 1).half()
     alibi_mask = alibi_mask.unsqueeze(0) + alibi
+    if tensor.device.type == "xpu":
+        alibi_mask = alibi_mask.to(tensor.device)
     return alibi_mask
 
 
@@ -373,9 +376,7 @@ def baichuan_13b_get_alibi_mask(self, tensor, seq_length_with_past):
             self.first_run = False
             self.register_buffer(
                 "future_mask",
-                _gen_alibi_mask(tensor, self.n_head, self.max_cache_pos).to(
-                    tensor
-                ),
+                baichuan_13b_gen_alibi_mask(tensor, self.n_head, self.max_cache_pos),
                 persistent=False,
             )
         if seq_length_with_past > self.max_cache_pos:
@@ -384,9 +385,7 @@ def baichuan_13b_get_alibi_mask(self, tensor, seq_length_with_past):
             self.max_cache_pos = seq_length_with_past + MASK_BLOCK_SIZE
             self.register_buffer(
                 "future_mask",
-                _gen_alibi_mask(tensor, self.n_head, self.max_cache_pos).to(
-                    tensor
-                ),
+                baichuan_13b_gen_alibi_mask(tensor, self.n_head, self.max_cache_pos),
                 persistent=False,
             )
         mask = self.future_mask[
