@@ -60,6 +60,7 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "_pre_quantization_dtype")
 
     self.to('cpu')
+    kwargs['safe_serialization'] = False
     self.save_pretrained(*args, **kwargs)
     import json
     import os
