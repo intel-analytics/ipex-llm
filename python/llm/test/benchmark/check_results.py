@@ -24,12 +24,9 @@ from omegaconf import OmegaConf
 
 def main():
     parser = argparse.ArgumentParser(description="check if the number of lines in html meets expectation")
-    parser.add_argument("-c", "--csv_file", type=str, dest="csv_name",
-                        help="name of csv", default="")
-    parser.add_argument("-y", "--yaml_file", type=str, dest="yaml_name",
-                        help="name of yaml", default="")
-    parser.add_argument("-n", "--expected_lines", type=int, dest="expected_lines",
-                            help="the number of expected csv lines", default=0)
+    parser.add_argument("-c", "--csv_file", type=str, dest="csv_name", help="name of csv")
+    parser.add_argument("-y", "--yaml_file", type=str, dest="yaml_name", help="name of yaml")
+    parser.add_argument("-n", "--expected_lines", type=int, dest="expected_lines", help="the number of expected csv lines")
     args = parser.parse_args()
 
     csv_file  = [file for file in os.listdir() if file.endswith('.csv') and args.csv_name in file][0]
@@ -39,7 +36,7 @@ def main():
     for index, row in csv_dataframe.iterrows():
         actual_test_cases.append(row['model'] + ":" + row['input/output tokens'].split('-')[0])
 
-    if args.yaml_name != "":
+    if args.yaml_name:
         yaml_name = args.yaml_name
         conf = OmegaConf.load(yaml_name)
         all_test_cases = []
@@ -51,20 +48,18 @@ def main():
         if 'exclude' in conf and conf['exclude'] is not None:
             exclude_test_cases = conf['exclude']
         expected_test_num = len(all_test_cases) - len(exclude_test_cases)
-    elif args.expected_lines != 0:
-        expected_test_num = args.expected_lines
-    else:
-        raise ValueError("You should provide the value of either yaml_name or expected_lines!")
-
-    if actual_test_num != expected_test_num:
-        if args.yaml_name != "":
+        if actual_test_num != expected_test_num:
             print("---------------The test cases should be tested!------------")
             for test_case in all_test_cases:
                 if test_case not in actual_test_cases and test_case not in exclude_test_cases:
                     print(test_case)
             raise ValueError("The above tests failed. Please check the errors in the log.")
-        else:
+    elif args.expected_lines:
+        expected_test_num = args.expected_lines
+        if actual_test_num != expected_test_num:
             raise ValueError("Missing some expected test cases! Please check the yaml file and the given expected_lines manually.")
+    else:
+        raise ValueError("You should provide the value of either yaml_name or expected_lines!")
 
 if __name__ == "__main__":
     sys.exit(main())
