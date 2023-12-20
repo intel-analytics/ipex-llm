@@ -385,7 +385,7 @@ class GGUFFileLoader:
             merges = self.config['tokenizer.ggml.merges']
             scores = list(range(len(tokens)))
         else:
-            raise ValueError("Invalid configuration: 'scores' is not provided.")
+            invalidInputError(False, "Invalid configuration: 'scores' is not provided.")
 
         pieces = [
             spm_pb2.ModelProto.SentencePiece(

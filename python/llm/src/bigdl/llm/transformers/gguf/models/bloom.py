@@ -87,14 +87,13 @@ def load_gguf_bloom(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     pieces, merges = loader.tokenizer_pieces()
 
-
     current_directory = os.path.dirname(os.path.abspath(__file__))
     token_file = current_directory + "/model_implement/bloom/tokenizer.json"
     import json
     with open(token_file, 'r') as file:
         data = json.load(file)
     vocab = {}
-    # load and replace vocab
+    # load and replace vocab and merges
     for i in range(len(pieces)):
         token = pieces[i].piece
         score = int(pieces[i].score)
@@ -105,6 +104,7 @@ def load_gguf_bloom(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         json.dump(data, file)
     tokenizer = BloomTokenizerFast(tokenizer_file=token_file)
     return model, tokenizer
+
 
 def restore_bloom_weight(ckpt: dict, n_head: int, n_embed: int):
     # see https://github.com/ggerganov/llama.cpp/
