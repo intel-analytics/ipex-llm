@@ -1,0 +1,156 @@
+name: LLM Performance Test
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run.
+on:
+  # schedule:
+  #   - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm_performance_tests.yml"
+  #     - "python/llm/test/benchmark/**"
+  #     - "python/llm/dev/benchmark/all-in-one/**"
+  workflow_dispatch:
+  workflow_call:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-cpp-build:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
+    uses: ./.github/workflows/llm-binary-build.yml
+
+  llm-performance-test-on-arc:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    runs-on: [self-hosted, llm, perf]
+    env:
+      OMP_NUM_THREADS: 16
+      THREAD_NUM: 16
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash
+        # pip install transformers_stream_generator for model internlm-chat-7b-8k
+        # pip install tiktoken for model Qwen-7B-Chat-10-12
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade omegaconf
+          python -m pip install --upgrade pandas
+          python -m pip install --upgrade einops
+          python -m pip install --upgrade transformers_stream_generator
+          python -m pip install --upgrade tiktoken
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu"
+
+      - name: Test installed xpu version
+        shell: bash
+        run: |
+          source /home/arda/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-install-tests.sh
+
+      - name: Test on xpu
+        shell: bash
+        run: |
+          source /home/arda/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          mv python/llm/test/benchmark/stable-version-arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # change csv name
+          sed -i 's/{today}/{today}_test1/g' run.py
+          python run.py
+          # upgrade transformers for model Mistral-7B-v0.1
+          python -m pip install transformers==4.34.0
+          mv ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
+          # change csv name
+          sed -i 's/test1/test2/g' run.py
+          python run.py
+          python ../../../test/benchmark/concat_csv.py
+          cp ./*.csv $CSV_SAVE_PATH
+          cd ../../../test/benchmark
+          python -m pip install pandas==1.5.3
+          python csv_to_html.py -f $CSV_SAVE_PATH
+          cd ../../dev/benchmark/all-in-one/
+          python ../../../test/benchmark/check_results.py -n 45
+          if [ ${{ github.event.schedule}} ]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          fi
+          
+  llm-performance-test-on-spr:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }}
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    runs-on: [self-hosted, llm, spr01-perf]
+    env:
+      OMP_NUM_THREADS: 16
+      THREAD_NUM: 16
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade omegaconf
+          python -m pip install --upgrade pandas
+          python -m pip install --upgrade einops
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+
+      - name: Test on cpu
+        shell: bash
+        run: |
+          mv python/llm/test/benchmark/stable-version-cpu-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          export http_proxy=${HTTP_PROXY}
+          export https_proxy=${HTTPS_PROXY}
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          python run.py
+          cp ./*.csv /mnt/disk1/nightly_perf_cpu/
+          cd ../../../test/benchmark
+          python -m pip install pandas==1.5.3
+          python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
+
+  
