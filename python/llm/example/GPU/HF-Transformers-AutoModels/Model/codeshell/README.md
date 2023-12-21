@@ -21,7 +21,9 @@ Suppose you have already configured GPU environment, you will need some extra pr
 
 ## 1. How to use this server
 
+```
 python server.py [--option value]
+```
 
 1. `--checkpoint-path <path>`: path to huggingface model checkpoint
 2. `--device xpu`: enable GPU or not
