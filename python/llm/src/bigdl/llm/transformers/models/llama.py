@@ -445,7 +445,7 @@ def llama_attention_forward_4_31_so_sb(
                 )
             batched_attention_output.append(attn_output)
         # For loop ends
-        # TODO: handle attention_weights
+        # TODO: handle attention_weights later
         attn_output = torch.concat(batched_attention_output, dim=0)
         batched_attention_output.clear()
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
@@ -502,23 +502,31 @@ def llama_attention_forward_4_31_so_sb(
                                                                      dtype=attention_dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
-
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-    if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        invalidInputError(False,
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-            f" {attn_weights.size()}"
-        )
-            # Apply attention_mask in four dimensions
-    if attention_mask is not None:
-        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            invalidInputError(False,
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-            )
-        attn_weights = attn_weights + attention_mask
-           # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_output = torch.matmul(attn_weights, value_states) 
+    attn_output, attn_weights = native_sdp(query_states,
+                                           key_states,
+                                           value_states,
+                                           attention_mask,
+                                           bsz,
+                                           q_len,
+                                           kv_seq_len,
+                                           self.head_dim,
+                                           self.num_heads)
+    # attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    # if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+    #     invalidInputError(False,
+    #         f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+    #         f" {attn_weights.size()}"
+    #     )
+    #         # Apply attention_mask in four dimensions
+    # if attention_mask is not None:
+    #     if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+    #         invalidInputError(False,
+    #             f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+    #         )
+    #     attn_weights = attn_weights + attention_mask
+    #        # upcast attention to fp32
+    # attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+    # attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(False,
