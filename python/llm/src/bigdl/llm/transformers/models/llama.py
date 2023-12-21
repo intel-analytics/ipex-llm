@@ -344,7 +344,7 @@ def llama_attention_selective_batching_forward_4_31(
     # is_q4_0 = self.q_proj.qtype == SYM_INT4
     # no_tp = not self.config.pretraining_tp > 1
     # decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
-                        #   enough_kv_room and bsz * q_len == 1)
+    #                       enough_kv_room and bsz * q_len == 1)
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -376,11 +376,11 @@ def llama_attention_selective_batching_forward_4_31(
         value_states = self.v_proj(hidden_states)
 
     query_states = query_states.view(bsz, q_len,
-                                        self.num_heads, self.head_dim).transpose(1, 2)
+                                     self.num_heads, self.head_dim).transpose(1, 2)
     key_states = key_states.view(bsz, q_len,
-                                    self.num_key_value_heads, self.head_dim).transpose(1, 2)
+                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
     value_states = value_states.view(bsz, q_len,
-                                        self.num_key_value_heads, self.head_dim).transpose(1, 2)
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
@@ -389,7 +389,7 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: fuse_rope
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
     query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids, "llama")
+                                                    cos, sin, position_ids, "llama")
 
     updated_past_key_values = []
     if past_key_value is not None:
@@ -399,8 +399,10 @@ def llama_attention_selective_batching_forward_4_31(
             past_k, past_v = past_key_value[batch]
             current_kv_len = past_k.shape[-2] + 1
 
-            current_key_states = torch.cat([past_k, key_states[batch: batch + 1, : , :, :]], dim=2)
-            current_value_states = torch.cat([past_v, value_states[batch: batch + 1, :, :, :]], dim=2)
+            current_key_states = torch.cat([past_k,
+                                            key_states[batch: batch + 1, :, :, :]], dim=2)
+            current_value_states = torch.cat([past_v,
+                                              value_states[batch: batch + 1, :, :, :]], dim=2)
 
             updated_past_key_values.append((current_key_states, current_value_states))
 
@@ -419,9 +421,9 @@ def llama_attention_selective_batching_forward_4_31(
                                                     self.num_heads)
             if attn_output.size() != (1, self.num_heads, 1, self.head_dim):
                 invalidInputError(False,
-                                  f"`attn_output` should be of size {(1, self.num_heads, 1, self.head_dim)}, but is"
-                                  f" {attn_output.size()}"
-                )
+                                  f"`attn_output` should be of size "
+                                  f"{(1, self.num_heads, 1, self.head_dim)}, but is"
+                                  f" {attn_output.size()}")
             batched_attention_output.append(attn_output)
         # For loop ends
         # TODO: handle attention_weights later
@@ -429,9 +431,9 @@ def llama_attention_selective_batching_forward_4_31(
         batched_attention_output.clear()
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
             invalidInputError(False,
-                              f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-                              f" {attn_output.size()}"
-            )
+                              f"`attn_output` should be of size "
+                              f"{(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                              f" {attn_output.size()}")
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
         attn_output = self.o_proj(attn_output)
@@ -440,7 +442,8 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: Assume always use_cache
     print(f"prefill with batch size {bsz}")
     for batch in range(bsz):
-        updated_past_key_values.append((key_states[batch: batch + 1, :, :, :], value_states[batch: batch+1, :, :, :]))
+        updated_past_key_values.append((key_states[batch: batch + 1, :, :, :],
+                                        value_states[batch: batch+1, :, :, :]))
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
@@ -459,9 +462,9 @@ def llama_attention_selective_batching_forward_4_31(
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(False,
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-            f" {attn_output.size()}"
-        )
+                          f"`attn_output` should be of size "
+                          f"{(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                          f" {attn_output.size()}")
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
@@ -637,7 +640,7 @@ def llama_model_selective_batching_forward_4_31(
                 attn_mask, (1, seq_length), inputs_embeds, past_key_value_length
             )
             attention_mask[i] = new_mask
-            i+=1
+            i += 1
 
     hidden_states = inputs_embeds
 
