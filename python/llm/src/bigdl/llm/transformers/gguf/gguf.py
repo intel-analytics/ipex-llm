@@ -379,6 +379,7 @@ class GGUFFileLoader:
 
         tokens = self.config['tokenizer.ggml.tokens']
         token_types = self.config['tokenizer.ggml.token_type']
+        merges = None
         if 'tokenizer.ggml.scores' in self.config:
             scores = self.config['tokenizer.ggml.scores']
         elif self.config['tokenizer.ggml.model'] == "gpt2":
@@ -399,4 +400,7 @@ class GGUFFileLoader:
             )
         ]
 
-        return pieces, merges
+        if merges != None:
+            return pieces, merges
+        else:
+            return pieces
