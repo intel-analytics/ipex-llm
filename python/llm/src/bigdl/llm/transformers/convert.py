@@ -172,7 +172,8 @@ def convert_gptq(module, awq=False):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False):
-    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear, BF16Linear
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
+        FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
 
@@ -261,11 +262,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                     .to(device_type)
                     elif qtype == ggml_tensor_qtype["bf16"]:
                         new_linear = BF16Linear(
-                                in_features,
-                                out_features,
-                                module.bias is not None,
-                                mp_group=mp_group,
-                            )
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                        )
                         device_type = module.weight.data.device.type
                         # convert here
                         new_linear._parameters['weight'] = nn.Parameter(module.weight)
