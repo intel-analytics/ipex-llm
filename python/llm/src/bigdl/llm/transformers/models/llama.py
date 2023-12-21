@@ -98,7 +98,7 @@ def llama_mlp_forward(
     x: torch.Tensor,
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
-    if x_2d.shape[0] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
             and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
             and not (self.training and x.requires_grad):
         import linear_q4_0

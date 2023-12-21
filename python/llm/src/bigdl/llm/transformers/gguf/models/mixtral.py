@@ -17,7 +17,7 @@
 import os
 import torch
 from accelerate import init_empty_weights
-from accelerate.utils import set_module_tensor_to_device
+from accelerate.utils import set_module_tensor_to_device as fill_model
 from tempfile import NamedTemporaryFile
 from transformers import MixtralConfig, MixtralForCausalLM, LlamaTokenizer
 
@@ -50,44 +50,27 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         num_experts_per_tok=num_experts_per_tok,
     )
 
-    ckpt = loader.tensors(dtype)
-    from .llama import restore_llama_weight
-    ckpt = restore_llama_weight(ckpt, n_head, n_head_kv)
-
-    state_dict = {}
-    state_dict['model.embed_tokens.weight'] = ckpt['token_embd.weight']
-    state_dict['model.norm.weight'] = ckpt['output_norm.weight']
-    state_dict['lm_head.weight'] = ckpt['output.weight']
-    for i in range(config['llama.block_count']):
-        state_dict[f'model.layers.{i}.self_attn.q_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_q.weight']
-        state_dict[f'model.layers.{i}.self_attn.k_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_k.weight']
-        state_dict[f'model.layers.{i}.self_attn.v_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_v.weight']
-        state_dict[f'model.layers.{i}.self_attn.o_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_output.weight']
-        state_dict[f'model.layers.{i}.input_layernorm.weight'] = \
-            ckpt[f'blk.{i}.attn_norm.weight']
-        state_dict[f'model.layers.{i}.post_attention_layernorm.weight'] = \
-            ckpt[f'blk.{i}.ffn_norm.weight']
-        state_dict[f'model.layers.{i}.block_sparse_moe.gate.weight'] = \
-            ckpt[f'blk.{i}.ffn_gate_inp.weight'].reshape(num_local_experts, hidden_size)
-        for j in range(num_local_experts):
-            state_dict[f'model.layers.{i}.block_sparse_moe.experts.{j}.w1.weight'] = \
-                (ckpt[f'blk.{i}.ffn_gate.{j}.weight'])
-            state_dict[f'model.layers.{i}.block_sparse_moe.experts.{j}.w2.weight'] = \
-                ckpt[f'blk.{i}.ffn_down.{j}.weight']
-            state_dict[f'model.layers.{i}.block_sparse_moe.experts.{j}.w3.weight'] = \
-                ckpt[f'blk.{i}.ffn_up.{j}.weight']
-
     with init_empty_weights():
         model = MixtralForCausalLM(mixtral_config)
 
-    for name, weight in state_dict.items():
-        set_module_tensor_to_device(model, name, "cpu", weight, dytype=dtype)
+    def process_mixtral(name, tensor):
+        module_name = get_mixtral_module_name(name)
+        if 'ffn_gate_inp' in name:
+            # gguf weight needs to reshape for ffn_gate_inp
+            fill_model(model,
+                       module_name,
+                       "cpu",
+                       tensor.reshape(num_local_experts, hidden_size),
+                       dtype=dtype)
+        else:
+            fill_model(model,
+                       module_name,
+                       "cpu",
+                       tensor,
+                       dtype=dtype)
 
-    model = model.cpu()
+    tensor_loader = loader.tensor_loader
+    tensor_loader.load_while_process(process_mixtral)
 
     from transformers.convert_slow_tokenizer import import_protobuf
     spm_pb2 = import_protobuf("Failed to import protobuf")
@@ -105,3 +88,37 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         os.remove(f.name)
 
     return model, tokenizer
+
+
+def get_mixtral_module_name(name):
+        if name == 'token_embd.weight':
+            return 'model.embed_tokens.weight'
+        if name == 'output_norm.weight':
+            return 'model.norm.weight'
+        if name == 'output.weight':
+            return 'lm_head.weight'
+        layer_id = name.split('.')[1]
+        if 'attn_q' in name:
+            return f'model.layers.{layer_id}.self_attn.q_proj.weight'
+        if 'attn_k' in name:
+            return f'model.layers.{layer_id}.self_attn.k_proj.weight'
+        if 'attn_v' in name:
+            return f'model.layers.{layer_id}.self_attn.v_proj.weight'
+        if 'attn_output' in name:
+            return f'model.layers.{layer_id}.self_attn.o_proj.weight'
+        if 'attn_norm' in name:
+            return f'model.layers.{layer_id}.input_layernorm.weight'
+        if 'ffn_norm' in name:
+            return f'model.layers.{layer_id}.post_attention_layernorm.weight'
+        if 'ffn_gate_inp' in name:
+            return f'model.layers.{layer_id}.block_sparse_moe.gate.weight'
+        local_expert_id = name.split('.')[3]
+        if 'ffn_gate' in name:
+            return f'model.layers.{layer_id}.' + \
+                   f'block_sparse_moe.experts.{local_expert_id}.w1.weight'
+        if 'ffn_down' in name:
+            return f'model.layers.{layer_id}.' + \
+                   f'block_sparse_moe.experts.{local_expert_id}.w2.weight'
+        if 'ffn_up' in name:
+            return f'model.layers.{layer_id}.' + \
+                   f'block_sparse_moe.experts.{local_expert_id}.w3.weight'

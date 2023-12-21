@@ -45,9 +45,12 @@ class BigDLLM(AutoCausalLM):
         keys = list(kwargs.keys())
         for k in keys:
             if k not in self.AutoCausalLM_ARGS:
-                self.bigdl_llm_kwargs[k] = kwargs[k]
-                kwargs.pop(k)   
+                self.bigdl_llm_kwargs[k] = kwargs.pop(k)
+
+        self.bigdl_llm_kwargs['use_cache'] = kwargs.get('use_cache', True)
+        self.bigdl_llm_kwargs['optimize_model'] = kwargs.get('optimize_model', True)
         AutoModelForCausalLM.from_pretrained = partial(AutoModelForCausalLM.from_pretrained, **self.bigdl_llm_kwargs)
+        
         kwargs['trust_remote_code'] = kwargs.get('trust_remote_code', True)
         super().__init__(*args, **kwargs)
 

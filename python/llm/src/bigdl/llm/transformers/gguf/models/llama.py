@@ -77,7 +77,7 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         model = LlamaForCausalLM(llama_config)
 
     for name, weight in state_dict.items():
-        set_module_tensor_to_device(model, name, "cpu", weight)
+        set_module_tensor_to_device(model, name, "cpu", weight, dtype=dtype)
 
     model = model.cpu()
 
