@@ -21,6 +21,7 @@ from bigdl.llm.utils.common import invalidInputError
 
 LOG = logging.getLogger("bigdl.llm.rope_embedding")
 
+
 # Fast RoPE for finetuning, split the q and k
 def apply_fast_rope_embedding(q, k, position_ids, model_family):
     if q.device.type != "xpu":

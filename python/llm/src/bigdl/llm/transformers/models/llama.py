@@ -318,6 +318,7 @@ def llama_attention_forward_4_31(
 
     return attn_output.to(original_dtype), attn_weights, past_key_value
 
+
 # For training
 def llama_attention_fast_forward(
     self,
@@ -370,8 +371,10 @@ def llama_attention_fast_forward(
         value_states = self.v_proj(hidden_states)
 
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(bsz, q_len, self.num_key_value_heads,
+                                 self.head_dim).transpose(1, 2)
+    value_states = value_states.view(bsz, q_len, self.num_key_value_heads,
+                                     self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
@@ -399,9 +402,9 @@ def llama_attention_fast_forward(
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
     attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                               attention_mask,
-                                               bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads)
+                                           attention_mask,
+                                           bsz, q_len, kv_seq_len,
+                                           self.head_dim, self.num_heads)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:

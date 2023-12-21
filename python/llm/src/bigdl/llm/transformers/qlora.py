@@ -58,6 +58,7 @@ import functools
 
 LOG = logging.getLogger("bigdl.llm.qlora")
 
+
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
     # Lora implemented in a dense layer
     def __init__(
