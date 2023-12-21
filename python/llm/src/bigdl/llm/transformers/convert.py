@@ -654,10 +654,10 @@ def _optimize_post(model, lightweight_bmm=False):
         else:
             if version.parse(trans_version) >= version.parse("4.36.0"):
                 module = importlib.import_module(modeling_module_name)
-                from bigdl.llm.transformers.models.mistral import mistral_attention_forward_v4_36
+                from bigdl.llm.transformers.models.mistral import mistral_attention_forward_4_36
                 convert_forward(model,
                                 module.MistralAttention,
-                                mistral_attention_forward_v4_36
+                                mistral_attention_forward_4_36
                                 )
                 convert_forward(model,
                                 module.MistralRMSNorm,
