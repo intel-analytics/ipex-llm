@@ -5,7 +5,7 @@ repo_id:
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
   - 'redpajama/gptneox-7b-redpajama-bf16'
-  # - 'bigcode/starcoder-15.5b'
+  - 'bigcode/starcoder-15.5b'
   - 'databricks/dolly-v1-6b'
   - 'databricks/dolly-v2-7b'
   - 'databricks/dolly-v2-12b'
@@ -30,4 +30,3 @@ cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu w
 exclude:
   - 'fnlp/moss-moon-003-sft:1024'
   - 'fnlp/moss-moon-003-sft:2048'
-  - 'bigscience/bloomz-7b1:2048'
