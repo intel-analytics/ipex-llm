@@ -132,7 +132,8 @@ def mixtral_moeblock_forward(self,
 
 def is_enough_kv_cache_room(past_key_value, idx):
     return past_key_value is not None and len(past_key_value.key_cache) > idx and \
-        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
+        past_key_value.key_cache[idx].stride()[1] > past_key_value.key_cache[idx].size(2) * \
+        past_key_value.key_cache[idx].size(3)
 
 
 def mixtral_attention_forward(
