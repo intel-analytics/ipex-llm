@@ -41,15 +41,19 @@ python ./alpaca_qlora_finetuning.py \
 
 ## 5. Sample Loss Output
 ```log
-{'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
-{'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.9043, 'learning_rate': 2.9999508305687345e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.8967, 'learning_rate': 2.999912588049185e-05, 'epoch': 0.01}                                                                                                                            
-{'loss': 1.9658, 'learning_rate': 2.9998634195730358e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.8386, 'learning_rate': 2.9998033254984483e-05, 'epoch': 0.02}                                                                                                                           
-{'loss': 1.809, 'learning_rate': 2.999732306263172e-05, 'epoch': 0.02}                                                                                                                             
-{'loss': 1.8552, 'learning_rate': 2.9996503623845395e-05, 'epoch': 0.02}                                                                                                                           
-  1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
+{'loss': 1.6294, 'learning_rate': 0.00019999998724475014, 'epoch': 0.0}                                                                               
+{'loss': 1.5134, 'learning_rate': 0.00019999994897900374, 'epoch': 0.0}                                                                               
+{'loss': 1.1062, 'learning_rate': 0.0001999998852027706, 'epoch': 0.0}                                                                                
+{'loss': 0.9595, 'learning_rate': 0.00019999979591606696, 'epoch': 0.0}                                                                               
+{'loss': 1.0657, 'learning_rate': 0.00019999968111891563, 'epoch': 0.0}                                                                               
+{'loss': 1.2788, 'learning_rate': 0.0001999995408113459, 'epoch': 0.0}                                                                                
+{'loss': 1.1196, 'learning_rate': 0.00019999937499339354, 'epoch': 0.0}                                                                               
+{'loss': 0.9707, 'learning_rate': 0.0001999991836651008, 'epoch': 0.0}                                                                                
+{'loss': 0.9065, 'learning_rate': 0.0001999989668265166, 'epoch': 0.0}                                                                                
+{'loss': 0.8428, 'learning_rate': 0.00019999872447769624, 'epoch': 0.0}                                                                               
+{'loss': 0.9477, 'learning_rate': 0.00019999845661870146, 'epoch': 0.0}                                                                               
+{'loss': 0.8384, 'learning_rate': 0.00019999816324960064, 'epoch': 0.0}                                                                               
+  0%|▏                                                                                                           | 12/6220 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
 ## 6. Merge the adapter into the original model

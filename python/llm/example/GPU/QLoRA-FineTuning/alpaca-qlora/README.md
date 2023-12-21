@@ -220,7 +220,57 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
-## 7. Troubleshooting
+
+## 7. Use BigDL-LLM to verify the fine-tuning effect
+After finish finetuning, you can try instruction like `Tell me about alpaca!` to verify finetuning effect.
+For example, [based on tis llama2 example](../../HF-Transformers-AutoModels/Model/llama2/), update `get_prompt` function in `generate.py` into below code:
+```python
+def get_prompt(message: str, chat_history: list[tuple[str, str]],
+               system_prompt: str) -> str:
+    texts = [f'Below is an instruction that describes a task. Write a response that appropriately completes the request.\nInstruction: \n']
+    message = message.strip() if do_strip else message
+    texts.append(f'{message} \nResponse:')
+    return ''.join(texts)
+```
+
+Then run below command:
+```
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt "Tell me about alpaca!"  --n-predict 128
+```
+### Sample Output
+#### Base model (like Llama2-7b-hf) output
+```
+Inference time: xxx s
+-------------------- Output --------------------
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+Instruction:
+Tell me about alpaca!
+Response:
+
+I am not sure about what you mean by alpaca. Do you mean alpaca?
+
+I am not sure about what you mean by alpaca. Do you mean alpaca?
+
+I am not sure about what you mean by alpaca. Do you mean alpaca?
+
+I am not sure about what you mean by alpaca. Do you mean alpaca?
+
+I am not sure about what you mean by alpaca. Do you mean alpaca?
+
+I am not sure about what you mean by alpaca. Do you mean
+```
+#### Merged model output
+```
+Inference time: xxx s
+-------------------- Output --------------------
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+Instruction:
+Tell me about alpaca!
+Response: Alpacas are small, domesticated animals that are related to camels and llamas. They are native to the Andes Mountains in South America, and have been bred by humans for their soft, luxurious wool for centuries. Alpacas are known for their gentle nature, and are often kept as pets or livestock on small farms. They are also used for their wool, which is used for make a wide range of products, including clothing, blankets, and even yarn. Alpacas are also known for their unique markings, which are similar to those
+```
+
+
+## 8. Troubleshooting
 - If you fail to finetune on multi cards because of following error message:
   ```bash
   RuntimeError: oneCCL: comm_selector.cpp:57 create_comm_impl: EXCEPTION: ze_data was not initialized
