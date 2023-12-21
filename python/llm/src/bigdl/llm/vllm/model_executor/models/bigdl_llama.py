@@ -206,7 +206,6 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             position_ids = torch.tensor(decoding_position_ids).long().unsqueeze(-1)
             kwargs = {
                 "input_ids": bigdl_input_ids,
-                # gc(co): we rely on underlying model to generate position_ids
                 "position_ids": position_ids,
                 "attention_mask": attention_mask,
                 "past_key_values": bigdl_kv_cache,
