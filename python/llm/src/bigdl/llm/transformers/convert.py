@@ -390,7 +390,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(
             model,
             transformers.models.llama.modeling_llama.LlamaAttention,
-            llama_attention_forward_4_31_so_sb,)
+            llama_attention_selective_batching_forward_4_31,)
         convert_forward(
             model,
             transformers.models.llama.modeling_llama.LlamaRMSNorm,
