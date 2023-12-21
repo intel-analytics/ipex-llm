@@ -44,6 +44,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xp
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.utils.common import invalidInputError
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -367,25 +368,7 @@ def llama_attention_forward_4_31_so_sb(
 
     # else:
     if self.config.pretraining_tp > 1:
-        raise NotImplementedError("config.pretraining_tp not implemented")
-        # key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
-        #                         self.config.pretraining_tp)
-        # query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-        #                                         // self.config.pretraining_tp, dim=0)
-        # key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
-        # value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
-
-        # query_states = [F.linear(hidden_states, query_slices[i])
-        #                 for i in range(self.config.pretraining_tp)]
-        # query_states = torch.cat(query_states, dim=-1)
-
-        # key_states = [F.linear(hidden_states, key_slices[i])
-        #                 for i in range(self.config.pretraining_tp)]
-        # key_states = torch.cat(key_states, dim=-1)
-
-        # value_states = [F.linear(hidden_states, value_slices[i])
-        #                 for i in range(self.config.pretraining_tp)]
-        # value_states = torch.cat(value_states, dim=-1)
+        invalidInputError(False, f"vLLM: config.pretraining_tp > 1 not supported yet")
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -415,6 +398,7 @@ def llama_attention_forward_4_31_so_sb(
     updated_past_key_values = []
     if past_key_value is not None:
         batched_attention_output = []
+        # print(f"type of attention_mask is {type(attention_mask)}")
         for batch in range(bsz):
             past_k, past_v = past_key_value[batch]
             current_kv_len = past_k.shape[-2] + 1
@@ -427,30 +411,47 @@ def llama_attention_forward_4_31_so_sb(
             current_key_states = repeat_kv(current_key_states, self.num_key_value_groups)
             current_value_states = repeat_kv(current_value_states, self.num_key_value_groups)
 
-            attn_weights = torch.matmul(query_states[batch: batch + 1, :, :, :], current_key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-            if attn_weights.size() != (1, self.num_heads, 1, current_kv_len):
-                raise ValueError(
-                    f"Attention weights should be of size {(1, self.num_heads, 1, current_kv_len)}, but is"
-                    f" {attn_weights.size()}"
-                )
-            # TODO: decide if we need to apply attention mask 
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+            current_query_states = query_states[batch: batch + 1, :, :, :]
+            attn_output, aattn_weights = native_sdp(current_query_states,
+                                                    current_key_states,
+                                                    current_value_states,
+                                                    attention_mask[batch],
+                                                    1,
+                                                    1,
+                                                    current_kv_len,
+                                                    self.head_dim,
+                                                    self.num_heads)
+            # attn_weights = torch.matmul(query_states[batch: batch + 1, :, :, :], current_key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+            # if attn_weights.size() != (1, self.num_heads, 1, current_kv_len):
+            #     invalidInputError(False,
+            #                       f"Attention weights should be of size {(1, self.num_heads, 1, current_kv_len)}, but is"
+            #                       f" {attn_weights.size()}"
+            #     )
+            # if attention_mask is not None:
+            #     if attention_mask[batch].size() != (1, 1, q_len, current_kv_len):
+            #         invalidInputError(False,
+            #                           f"Attention mask should be of size {(1, 1, q_len, current_kv_len)}, but is {attention_mask.size()}"
+            #         )
+            #     # print(f"added attention_mask")
+            #     attn_weights = attn_weights + attention_mask[batch]
+            # attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
             # (1, num_heads, 1, kv_len + 1) x (1, num_heads, kv_len + 1, head_dim)
             # (1, num_heads, 1, head_dim)
-            attn_output = torch.matmul(attn_weights, current_value_states)
+            # attn_output = torch.matmul(attn_weights, current_value_states)
             if attn_output.size() != (1, self.num_heads, 1, self.head_dim):
-                raise ValueError(
-                    f"`attn_output` should be of size {(1, self.num_heads, 1, self.head_dim)}, but is"
-                    f" {attn_output.size()}"
+                invalidInputError(False,
+                                  f"`attn_output` should be of size {(1, self.num_heads, 1, self.head_dim)}, but is"
+                                  f" {attn_output.size()}"
                 )
             batched_attention_output.append(attn_output)
         # For loop ends
+        # TODO: handle attention_weights
         attn_output = torch.concat(batched_attention_output, dim=0)
         batched_attention_output.clear()
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            raise ValueError(
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-                f" {attn_output.size()}"
+            invalidInputError(False,
+                              f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                              f" {attn_output.size()}"
             )
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
@@ -492,6 +493,7 @@ def llama_attention_forward_4_31_so_sb(
     #     value_states = new_value_states
 
     # TODO: Assume always use_cache
+    print(f"prefill with batch size {bsz}")
     for batch in range(bsz):
         updated_past_key_values.append((key_states[batch: batch + 1, :, :, :], value_states[batch: batch+1, :, :, :]))
 
@@ -503,14 +505,14 @@ def llama_attention_forward_4_31_so_sb(
 
     attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        raise ValueError(
+        invalidInputError(False,
             f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
             f" {attn_weights.size()}"
         )
             # Apply attention_mask in four dimensions
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            raise ValueError(
+            invalidInputError(False,
                 f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
             )
         attn_weights = attn_weights + attention_mask
@@ -519,7 +521,7 @@ def llama_attention_forward_4_31_so_sb(
     attn_output = torch.matmul(attn_weights, value_states) 
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
+        invalidInputError(False,
             f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
             f" {attn_output.size()}"
         )
@@ -806,8 +808,8 @@ def llama_attention_selective_batching_forward_4_31(
 
     # repeat k/v heads if n_kv_heads < n_heads
 
-    if not decoding_fast_path:
-        print(f"Prefill with batching size {bsz}")
+    # if not decoding_fast_path:
+        # print(f"Prefill with batching size {bsz}")
 
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
                                                                      dtype=attention_dtype)
@@ -947,15 +949,17 @@ def llama_model_selective_batching_forward_4_31(
 
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError("You cannot specify both decoder_input_ids"  # noqa
-                         " and decoder_inputs_embeds at the same time")
+        invalidInputError(False,
+                          "You cannot specify both decoder_input_ids"
+                          " and decoder_inputs_embeds at the same time")
     elif input_ids is not None:
         batch_size, seq_length = input_ids.shape
     elif inputs_embeds is not None:
         batch_size, seq_length, _ = inputs_embeds.shape
     else:
-        raise ValueError("You have to specify either "  # noqa
-                         "decoder_input_ids or decoder_inputs_embeds")
+        invalidInputError(False,
+                          "You have to specify either "
+                          "decoder_input_ids or decoder_inputs_embeds")
 
     seq_length_with_past = seq_length
     past_key_values_length = 0
@@ -966,13 +970,11 @@ def llama_model_selective_batching_forward_4_31(
     # TODO: validate correctness
     device = input_ids.device if input_ids is not None else inputs_embeds.device
     if position_ids is None:
-        # This should never happened in our case
-        print("position_ids is None!!!")
-        raise ValueError("Position_ids should never be None")
+        invalidInputError("vLLM: position_ids should never be None")
     else:
-        print(f"Original position_ids is {position_ids}")
+        # print(f"Original position_ids is {position_ids}")
         position_ids = position_ids.view(-1, seq_length)
-        print(f"after position_ids is {position_ids}")
+        # print(f"after position_ids is {position_ids}")
     # if past_key_values is None:
     #     # For prefill
     #     position_ids = torch.arange(0, seq_length, dtype=torch.long, device=device)
@@ -1007,7 +1009,7 @@ def llama_model_selective_batching_forward_4_31(
     # embed positions
     # TODO: only generate attention_mask for prefilling
     if attention_mask is None:
-        raise ValueError("attention_mask should never be None")
+        invalidInputError(False, "attention_mask should never be None")
     print(f"attention_mask before expanding: {attention_mask}")
     if past_key_values is None:
         attention_mask = self._prepare_decoder_attention_mask(
