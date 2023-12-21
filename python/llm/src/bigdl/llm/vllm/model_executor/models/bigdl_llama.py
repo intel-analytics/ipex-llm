@@ -63,59 +63,59 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         super().__init__(config, device, max_model_len)
         self.config = config
         # TODO(gc): later change this to a switch?
-        use_bigdl_lowbit = os.getenv("VLLM_USE_BIGDL_LOWBIT", "")
-        if use_bigdl_lowbit.lower() == "true":
-            from bigdl.llm.transformers import AutoModelForCausalLM
-            from bigdl.llm import optimize_model
-            if device == 'cpu':
-                model = AutoModelForCausalLM.from_pretrained(
-                    config._name_or_path,
-                    low_cpu_mem_usage=True,
-                    trust_remote_code=True,
-                    use_cache=True,
-                )
-                self.model = optimize_model(model)
-                self.sampler = BigDLSampler(config.vocab_size, device)
-            elif device == 'xpu':
-                try:
-                    import intel_extension_for_pytorch as ipex
-                except ImportError:
-                    print("Intel Extension for PyTorch is not installed, \
-                        but is required for xpu inference.")
+        # use_bigdl_lowbit = os.getenv("VLLM_USE_BIGDL_LOWBIT", "")
+        # if use_bigdl_lowbit.lower() == "true":
+        from bigdl.llm.transformers import AutoModelForCausalLM
+        from bigdl.llm import optimize_model
+        if device == 'cpu':
+            model = AutoModelForCausalLM.from_pretrained(
+                config._name_or_path,
+                low_cpu_mem_usage=True,
+                trust_remote_code=True,
+                use_cache=True,
+            )
+            self.model = optimize_model(model)
+            self.sampler = BigDLSampler(config.vocab_size, device)
+        elif device == 'xpu':
+            try:
+                import intel_extension_for_pytorch as ipex
+            except ImportError:
+                print("Intel Extension for PyTorch is not installed, \
+                    but is required for xpu inference.")
 
-                low_bit = 'sym_int4'
-                model = AutoModelForCausalLM.from_pretrained(
-                    config._name_or_path,
-                    load_in_low_bit=low_bit,
-                    trust_remote_code=True,
-                    use_cache=True,
-                )
-                self.model = model.to('xpu')
-                self.sampler = BigDLSampler(config.vocab_size, device).to('xpu')
-        else:
-            from transformers import AutoModelForCausalLM
-            if device == 'cpu':
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    config._name_or_path,
-                    low_cpu_mem_usage=True,
-                    trust_remote_code=True,
-                    use_cache=True,
-                )
-                self.sampler = BigDLSampler(config.vocab_size, device)
-            elif device == 'xpu':
-                try:
-                    import intel_extension_for_pytorch as ipex
-                except ImportError:
-                    print("Intel Extension for PyTorch is not installed, \
-                        but is required for xpu inference.")
-                model = AutoModelForCausalLM.from_pretrained(
-                    config._name_or_path,
-                    trust_remote_code=True,
-                    use_cache=True,
-                )
-                self.model = model.to('xpu')
-                self.sampler = BigDLSampler(
-                    config.vocab_size, device).to('xpu')
+            low_bit = 'sym_int4'
+            model = AutoModelForCausalLM.from_pretrained(
+                config._name_or_path,
+                load_in_low_bit=low_bit,
+                trust_remote_code=True,
+                use_cache=True,
+            )
+            self.model = model.to('xpu')
+            self.sampler = BigDLSampler(config.vocab_size, device).to('xpu')
+        # else:
+        #     from transformers import AutoModelForCausalLM
+        #     if device == 'cpu':
+        #         self.model = AutoModelForCausalLM.from_pretrained(
+        #             config._name_or_path,
+        #             low_cpu_mem_usage=True,
+        #             trust_remote_code=True,
+        #             use_cache=True,
+        #         )
+        #         self.sampler = BigDLSampler(config.vocab_size, device)
+        #     elif device == 'xpu':
+        #         try:
+        #             import intel_extension_for_pytorch as ipex
+        #         except ImportError:
+        #             print("Intel Extension for PyTorch is not installed, \
+        #                 but is required for xpu inference.")
+        #         model = AutoModelForCausalLM.from_pretrained(
+        #             config._name_or_path,
+        #             trust_remote_code=True,
+        #             use_cache=True,
+        #         )
+        #         self.model = model.to('xpu')
+        #         self.sampler = BigDLSampler(
+        #             config.vocab_size, device).to('xpu')
 
         self.device = torch.device(device)
         self.dtype = self.model.dtype
