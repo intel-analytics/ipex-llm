@@ -309,7 +309,7 @@ def train(
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            lr_scheduler_type="constant" if qa_lora else "cosine",
+            lr_scheduler_type="constant" if training_mode=="qalora" else "cosine",
             bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
