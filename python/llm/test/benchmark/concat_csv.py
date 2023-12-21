@@ -41,8 +41,6 @@ def main():
 
     merged_csv=csv_files[0].replace("_test1", "")
     merged_df.to_csv(merged_csv)
-    os.remove(csv_files[0])
-    os.remove(csv_files[1])
 
 if __name__ == "__main__":
     sys.exit(main())
