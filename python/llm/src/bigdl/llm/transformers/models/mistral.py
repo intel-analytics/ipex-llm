@@ -75,6 +75,52 @@ def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
     return q_type == SYM_INT4 and use_fuse_rope and enough_kv_room and bs == 1
 
 
+def is_enough_kv_cache_room_mixtral(past_key_value, idx):
+    return past_key_value is not None and len(past_key_value.key_cache) > idx and \
+        past_key_value.key_cache[idx].stride()[1] > past_key_value.key_cache[idx].size(2) * \
+        past_key_value.key_cache[idx].size(3)
+
+
+def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
+                                 num_heads, head_dim, hidden_size, attention_mask):    
+    attn_weights = torch.matmul(
+        query_states,
+        key_states.transpose(2, 3)) / math.sqrt(head_dim)
+
+    if attn_weights.size() != (bsz, num_heads, q_len, kv_seq_len):
+        invalidInputError(
+            False,
+            f"Attention weights should be of size {(bsz, num_heads, q_len, kv_seq_len)},"
+            f" but is {attn_weights.size()}"
+        )
+
+    if attention_mask is not None:
+        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+            invalidInputError(
+                False,
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                f" but is {attention_mask.size()}"
+            )
+
+        attn_weights = attn_weights + attention_mask
+
+    # upcast attention to fp32
+    attn_weights = nn.functional.\
+        softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+    attn_output = torch.matmul(attn_weights, value_states)
+
+    if attn_output.size() != (bsz, num_heads, q_len, head_dim):
+        invalidInputError(
+            f"`attn_output` should be of size {(bsz, num_heads, q_len, head_dim)},"
+            f" but is {attn_output.size()}"
+        )
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.reshape(bsz, q_len, hidden_size)
+
+    return attn_output, attn_weights
+
+
 def mistral_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -177,40 +223,10 @@ def mistral_attention_forward(
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(
-        query_states,
-        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-    if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        invalidInputError(
-            False,
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
-            f" but is {attn_weights.size()}"
-        )
-
-    if attention_mask is not None:
-        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                f" but is {attention_mask.size()}"
-            )
-
-        attn_weights = attn_weights + attention_mask
-
-    # upcast attention to fp32
-    attn_weights = nn.functional.\
-        softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_output = torch.matmul(attn_weights, value_states)
-
-    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        invalidInputError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
-            f" but is {attn_output.size()}"
-        )
-
-    attn_output = attn_output.transpose(1, 2).contiguous()
-    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+    attn_output, attn_weights = compute_attn_outputs_weights(query_states, key_states, value_states,
+                                                             bsz, q_len, kv_seq_len,
+                                                             self.num_heads, self.head_dim,
+                                                             self.hidden_size, attention_mask)
 
     attn_output = self.o_proj(attn_output)
 
@@ -220,7 +236,7 @@ def mistral_attention_forward(
     return attn_output, attn_weights, past_key_value
 
 
-def mistral_attention_forward_v4_36(
+def mistral_attention_forward_4_36(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor]=None,
@@ -234,11 +250,7 @@ def mistral_attention_forward_v4_36(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = past_key_value.key_cache is not None and \
-        len(past_key_value.key_cache) > self.layer_idx and \
-        past_key_value.key_cache[self.layer_idx].stride()[1] > \
-        past_key_value.key_cache[self.layer_idx].size(2) * \
-        past_key_value.key_cache[self.layer_idx].size(3)
+    enough_kv_room = is_enough_kv_cache_room_mixtral(past_key_value, self.layer_idx)
     decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
                                                 use_fuse_rope,
                                                 enough_kv_room,
@@ -341,40 +353,10 @@ def mistral_attention_forward_v4_36(
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(
-        query_states,
-        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-    if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        invalidInputError(
-            False,
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
-            f" but is {attn_weights.size()}"
-        )
-
-    if attention_mask is not None:
-        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                f" but is {attention_mask.size()}"
-            )
-
-        attn_weights = attn_weights + attention_mask
-
-    # upcast attention to fp32
-    attn_weights = nn.functional.\
-        softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_output = torch.matmul(attn_weights, value_states)
-
-    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        invalidInputError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
-            f" but is {attn_output.size()}"
-        )
-
-    attn_output = attn_output.transpose(1, 2).contiguous()
-    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+    attn_output, attn_weights = compute_attn_outputs_weights(query_states, key_states, value_states,
+                                                             bsz, q_len, kv_seq_len,
+                                                             self.num_heads, self.head_dim,
+                                                             self.hidden_size, attention_mask)
 
     attn_output = self.o_proj(attn_output)
 
