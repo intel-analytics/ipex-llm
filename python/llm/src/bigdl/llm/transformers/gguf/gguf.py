@@ -400,7 +400,7 @@ class GGUFFileLoader:
             )
         ]
 
-        if merges != None:
+        if merges is not None:
             return pieces, merges
         else:
             return pieces
