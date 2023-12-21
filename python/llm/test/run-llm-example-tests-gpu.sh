@@ -1,7 +1,6 @@
 #!/bin/bash
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
-export BIGDL_IMPORT_IPEX="True"
 
 set -e
 
