@@ -1,6 +1,6 @@
-# coding=utf-8
-# Copyright 2023 WisdomShell Inc. All Rights Reserved.
-
+#
+# Copyright 2016 The BigDL Authors.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,14 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# This code is based on Qwen's opeai_api Demo. It has been modified from
-# its original forms to accommodate CodeShell.
-
-# coding=utf-8
-# Implements API for CodeShell in OpenAI's format. (https://platform.openai.com/docs/api-reference/chat)
-# Usage: python openai_api.py
-# Visit http://localhost:8000/docs for documents.
+#
 
 import time
 import json
@@ -78,13 +71,6 @@ class StopWordsCriteria(StoppingCriteria):
         """Returns true if all generated sequences contain any of the end-of-function strings."""
         texts =  [ self.tokenizer.decode(ids[self.input_length:]) for ids in input_ids ]
         dones = [ any(stop_word in text for stop_word in self.stop_words) for text in texts ]
-        # print('-'*80)
-        # print(texts)
-        # print(dones)
-        # print('output length:', len(input_ids[0]) - self.input_length)
-        # print('total length:', len(input_ids[0]))
-        # print('dones:', dones)
-        # print('-'*80)
         return all(dones)
 
 

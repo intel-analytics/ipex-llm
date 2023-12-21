@@ -2,7 +2,7 @@
 
 In this directory, you'll find how to use this codeshell server with vscode codeshell extension.
 
-## 0. Extra Environment Preparation
+## 0. Extra Environment Preparations
 
 Suppose you have already configured GPU environment, you will need some extra preparation
 
@@ -17,7 +17,7 @@ Suppose you have already configured GPU environment, you will need some extra pr
     - change `Code Shell: Run Env For LLMs` to `GPU with TGI toolkit`
     - disable `Code Shell: Auto Trigger Completion` (use `Alt + \` to trigger completion manually)
 
-4. download CodeShell-7B-Chat (don't use CodeShell-7B)
+4. download WisdomShell/CodeShell-7B-Chat (don't use CodeShell-7B)
 
 ## 1. How to use this server
 
