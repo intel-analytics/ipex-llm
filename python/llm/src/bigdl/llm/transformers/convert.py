@@ -375,7 +375,7 @@ def _optimize_post(model, lightweight_bmm=False):
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
     from bigdl.llm.transformers.models.llama import llama_mlp_forward
-    from bigdl.llm.transformers.models.llama import llama_attention_selective_batching_forward_4_31, llama_attention_forward_4_31_so_sb
+    from bigdl.llm.transformers.models.llama import llama_attention_selective_batching_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_model_selective_batching_forward_4_31
     from transformers.modeling_utils import PreTrainedModel
 
