@@ -15,8 +15,11 @@
 #
 
 import torch
+import logging
 from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 from bigdl.llm.utils.common import invalidInputError
+
+LOG = logging.getLogger("bigdl.llm.rope_embedding")
 
 # Fast RoPE for finetuning, split the q and k
 def apply_fast_rope_embedding(q, k, position_ids, model_family):
@@ -49,7 +52,7 @@ class Fast_RoPE_Embedding(torch.autograd.Function):
     @custom_bwd
     def backward(ctx, grad_output):
         import linear_q4_0
-        position_ids = ctx.saved_tensors
+        position_ids, = ctx.saved_tensors
         x_embed = torch.empty(grad_output.shape,
                               dtype=grad_output.dtype,
                               device=grad_output.device)

@@ -49,12 +49,14 @@
 # limitations under the License.
 
 import torch
+import logging
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear, get_qk_size
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import get_autocast_dtype
 import functools
 
+LOG = logging.getLogger("bigdl.llm.qlora")
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
     # Lora implemented in a dense layer
@@ -174,6 +176,7 @@ def get_peft_model(*args, **kwargs):
 
     if model.device.type == "xpu":
         cast_lora_weight(model, torch.bfloat16)
+        _optimize_post(model)
         torch.xpu.synchronize()
 
     return model
@@ -402,3 +405,18 @@ def cast_lora_weight(model, dtype=torch.bfloat16):
             if hasattr(module, 'weight'):
                 if module.weight.dtype == torch.float32:
                     module = module.to(dtype)
+
+
+def _optimize_post(model):
+    import transformers
+    from packaging import version
+    from bigdl.llm.transformers.convert import convert_forward
+    from bigdl.llm.transformers.models.llama import llama_attention_fast_forward
+
+    trans_version = transformers.__version__
+    if version.parse(trans_version) >= version.parse("4.31.0"):
+        LOG.info("Replacing fast rope....")
+        convert_forward(
+            model,
+            transformers.models.llama.modeling_llama.LlamaAttention,
+            llama_attention_fast_forward,)
