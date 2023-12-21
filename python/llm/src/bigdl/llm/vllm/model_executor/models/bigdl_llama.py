@@ -196,7 +196,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         if is_decoding_stage:
             if enable_vllm_se_batching:
                 attention_mask = [torch.tensor(x, device=self.device).unsqueeze(0)
-                                 for x in decoding_attention_mask_list]
+                                  for x in decoding_attention_mask_list]
             else:
                 attention_mask = torch.tensor(decoding_attention_mask_list, device=self.device)
             position_ids = torch.tensor(decoding_position_ids).long().unsqueeze(-1)
