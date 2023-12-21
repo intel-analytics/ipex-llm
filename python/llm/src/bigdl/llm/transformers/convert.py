@@ -578,6 +578,7 @@ def _optimize_post(model, lightweight_bmm=False):
             from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             from bigdl.llm.transformers.models.baichuan2 import baichuan_mlp_forward
             from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_get_alibi_mask
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_model_forward
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
@@ -593,6 +594,9 @@ def _optimize_post(model, lightweight_bmm=False):
                          module.BaichuanModel,
                          "get_alibi_mask",
                          baichuan_13b_get_alibi_mask)
+            convert_forward(model,
+                            module.BaichuanModel,
+                            baichuan_13b_model_forward)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:
