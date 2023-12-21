@@ -18,7 +18,8 @@
 python ./alpaca_lora_finetuning.py \
     --micro_batch_size 8 \
     --batch_size 128 \
-    --base_model "/home/wangruonan/zcg/Llama-2-7b-chat-hf" \
+    --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-lora-alpaca" \
-    --gradient_checkpointing True
+    --gradient_checkpointing False \
+    --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj', 'up_proj', 'down_proj', 'gate_proj']"

@@ -23,7 +23,7 @@ mpirun -n 4 \
     python -u ./alpaca_lora_finetuning.py \
     --micro_batch_size 8 \
     --batch_size 128 \
-    --base_model "/home/wangruonan/zcg/Llama-2-7b-chat-hf" \
+    --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-lora-alpaca" \
     --gradient_checkpointing False \
