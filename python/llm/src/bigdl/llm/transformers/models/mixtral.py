@@ -198,7 +198,7 @@ def mixtral_attention_forward(
                                   "to initialize the attention class with a layer index.")
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
-        if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+        if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
@@ -222,7 +222,7 @@ def mixtral_attention_forward(
                 cache_k = past_key_value.key_cache[self.layer_idx]
                 cache_v = past_key_value.value_cache[self.layer_idx]
 
-                if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+                if not enough_kv_room:
                     # allocate new
                     new_c_k, new_c_v = extend_kv_cache(bsz,
                                                        self.num_key_value_heads,  # Support GQA
