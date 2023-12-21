@@ -653,6 +653,7 @@ def _optimize_post(model, lightweight_bmm=False):
                             llama_rms_norm_forward)
         else:
             if version.parse(trans_version) >= version.parse("4.36.0"):
+                modeling_module_name = model.__class__.__module__
                 module = importlib.import_module(modeling_module_name)
                 from bigdl.llm.transformers.models.mistral import mistral_attention_forward_4_36
                 convert_forward(model,
