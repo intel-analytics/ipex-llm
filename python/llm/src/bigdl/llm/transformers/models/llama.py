@@ -440,7 +440,7 @@ def llama_attention_selective_batching_forward_4_31(
         return attn_output, None, updated_past_key_values
 
     # TODO: Assume always use_cache
-    print(f"prefill with batch size {bsz}")
+    # print(f"prefill with batch size {bsz}")
     for batch in range(bsz):
         updated_past_key_values.append((key_states[batch: batch + 1, :, :, :],
                                         value_states[batch: batch+1, :, :, :]))
@@ -627,7 +627,7 @@ def llama_model_selective_batching_forward_4_31(
     # TODO: only generate attention_mask for prefilling
     if attention_mask is None:
         invalidInputError(False, "attention_mask should never be None")
-    print(f"attention_mask before expanding: {attention_mask}")
+    # print(f"attention_mask before expanding: {attention_mask}")
     if past_key_values is None:
         attention_mask = self._prepare_decoder_attention_mask(
             attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
