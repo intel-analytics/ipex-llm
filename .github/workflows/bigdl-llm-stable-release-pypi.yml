@@ -50,9 +50,6 @@ jobs:
         # nb_version=${STABLE_VERSION}b${TIMESTAMP}1
         echo ${STABLE_VERSION}
 
-        ## windows ##
-        bash python/llm/dev/release_default_windows.sh ${STABLE_VERSION} true
-
         ## linux ##
         bash python/llm/dev/release_default_linux.sh ${STABLE_VERSION} true
 
