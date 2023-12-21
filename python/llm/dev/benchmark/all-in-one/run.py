@@ -45,7 +45,7 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, i, num_trials):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
