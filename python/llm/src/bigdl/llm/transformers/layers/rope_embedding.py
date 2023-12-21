@@ -53,12 +53,15 @@ class Fast_RoPE_Embedding(torch.autograd.Function):
     @custom_bwd
     def backward(ctx, grad_output):
         import linear_q4_0
+        # LOG.info(f"backward, grad_output: {grad_output}")
         position_ids, = ctx.saved_tensors
-        x_embed = torch.empty(grad_output.shape,
-                              dtype=grad_output.dtype,
-                              device=grad_output.device)
-        dx = linear_q4_0.apply_rotary_embedding_half_x(grad_output,
-                                                       position_ids,
-                                                       x_embed,
-                                                       True)
+        dx = torch.empty(grad_output.shape,
+                         dtype=grad_output.dtype,
+                         device=grad_output.device)
+        linear_q4_0.apply_rotary_embedding_half_x(grad_output,
+                                                  position_ids,
+                                                  dx,
+                                                  True)
+        # LOG.info(f"backward, dx: {dx}, position_ids: {position_ids},
+        #          requires_grad: {ctx.needs_input_grad}")
         return dx, None
