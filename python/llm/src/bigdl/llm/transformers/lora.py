@@ -32,7 +32,7 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/huggingface/transformers/blob/v4.34.0/src/transformers/training_args.py
+# https://github.com/pytorch/pytorch/blob/main/torch/utils/checkpoint.py
 #
 # Copyright 2020 The HuggingFace Team. All rights reserved.
 #
@@ -56,14 +56,7 @@ os.environ["ACCELERATE_USE_IPEX"] = "false"
 os.environ["ACCELERATE_USE_XPU"] = "true"
 from peft.tuners.lora import LoraLayer
 from torch.nn import Linear
-
-
-def patch_prepare_ipex(self, *args):
-    return tuple(args)
-
-# disable ipex.optimize
-from accelerate import Accelerator
-Accelerator._prepare_ipex = patch_prepare_ipex
+from bigdl.llm.transformers import training_patch
 
 
 # patch checkpoint function of torch
@@ -97,6 +90,7 @@ def _get_autocast_kwargs(device="xpu"):
     }
 
     return device_autocast_kwargs, cpu_autocast_kwargs
+
 
 def _supports_autocast(device):
     device_module = torch.utils.checkpoint._get_device_module(device)
