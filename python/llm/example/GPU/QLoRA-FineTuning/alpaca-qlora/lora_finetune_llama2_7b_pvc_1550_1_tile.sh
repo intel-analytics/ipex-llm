@@ -15,11 +15,12 @@
 #
 
 # You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
-python ./alpaca_lora_finetuning.py \
+python ./alpaca_qlora_finetuning.py \
     --micro_batch_size 8 \
     --batch_size 128 \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-lora-alpaca" \
-    --gradient_checkpointing False \
-    --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj', 'up_proj', 'down_proj', 'gate_proj']"
+    --gradient_checkpointing True \
+    --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj', 'up_proj', 'down_proj', 'gate_proj']" \
+    --lora True

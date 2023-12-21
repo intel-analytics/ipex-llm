@@ -49,7 +49,7 @@
 # limitations under the License.
 
 import torch
-from bigdl.llm.transformers.low_bit_linear import LowBitLinear, get_qk_size
+from bigdl.llm.transformers.low_bit_linear import LowBitLinear, BF16Linear, get_qk_size
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import get_autocast_dtype
@@ -129,22 +129,98 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
         return result
 
 
+class LoraBF16Linear(BF16Linear, LoraLayer):
+    # Lora implemented in a dense layer
+    def __init__(
+        self,
+        adapter_name,
+        in_features,
+        out_features,
+        r: int = 0,
+        lora_alpha: int = 1,
+        lora_dropout: float = 0.0,
+        **kwargs,
+    ):
+        BF16Linear.__init__(
+            self,
+            in_features,
+            out_features,
+            bias=kwargs.get("bias", True),
+            compute_dtype=torch.bfloat16,
+        )
+
+        LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
+
+        # Freezing the pre-trained weight matrix
+        self.weight.requires_grad = False
+
+        init_lora_weights = kwargs.pop("init_lora_weights", True)
+        self.update_layer(adapter_name, r, lora_alpha, lora_dropout, init_lora_weights)
+        self.active_adapter = adapter_name
+
+    def forward(self, x: torch.Tensor):
+        autocast_dtype = get_autocast_dtype(x)
+        if x.device.type == "xpu":
+            # force to use bf16 on gpu
+            x = x.to(torch.bfloat16)
+        elif autocast_dtype is not None:
+            x = x.to(autocast_dtype)
+        result = super().forward(x)
+
+        if self.disable_adapters or self.active_adapter not in self.lora_A.keys():
+            return result
+        elif self.r[self.active_adapter] > 0:
+            result = result.clone()
+            if autocast_dtype is None and x.device.type == "cpu":
+                expected_dtype = result.dtype
+                x = x.to(self.lora_A[self.active_adapter].weight.dtype)
+                output = (
+                    self.lora_B[self.active_adapter](
+                        self.lora_A[self.active_adapter](
+                            self.lora_dropout[self.active_adapter](x))
+                    ).to(expected_dtype)
+                    * self.scaling[self.active_adapter]
+                )
+            else:
+                output = (
+                    self.lora_B[self.active_adapter](
+                        self.lora_A[self.active_adapter](
+                            self.lora_dropout[self.active_adapter](x))
+                    )
+                    * self.scaling[self.active_adapter]
+                )
+            result += output
+        return result
+
+
 def _create_new_module(create_new_module_func, lora_config, adapter_name, target, **kwargs):
 
-    if isinstance(target, LowBitLinear):
+    if isinstance(target, LowBitLinear) or isinstance(target, BF16Linear):
         low_bit_kwargs = kwargs.copy()
         bias = low_bit_kwargs.pop("bias", False)
-        low_bit_kwargs.update(
-            {
-                "qtype": target.qtype,
-                "qa_lora": lora_config.qa_lora if hasattr(lora_config, "qa_lora") else False,
-            }
-        )
-        new_module = LoraLowBitLinear(adapter_name,
-                                      target.in_features,
-                                      target.out_features,
-                                      bias=bias,
-                                      **low_bit_kwargs)
+        if hasattr(lora_config, "lora"):
+            lora = lora_config.lora
+        else:
+            lora = False
+
+        if lora is False:
+            low_bit_kwargs.update(
+                {
+                    "qtype": target.qtype,
+                    "qa_lora": lora_config.qa_lora if hasattr(lora_config, "qa_lora") else False,
+                }
+            )
+            new_module = LoraLowBitLinear(adapter_name,
+                                          target.in_features,
+                                          target.out_features,
+                                          bias=bias,
+                                          **low_bit_kwargs)
+        else:
+            new_module = LoraBF16Linear(adapter_name,
+                                        target.in_features,
+                                        target.out_features,
+                                        bias=bias,
+                                        **low_bit_kwargs)
     else:
         new_module = create_new_module_func(lora_config, adapter_name, target, **kwargs)
 
@@ -158,7 +234,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LoraConfig(LoraConfigBase):
-
+    lora: bool = field(default=False, metadata={"help": "enable lora"})
     qa_lora: bool = field(default=False, metadata={"help": "enable qa-lora"})
 
 
@@ -249,6 +325,9 @@ def cast_lora_weight(model, dtype=torch.bfloat16):
             module.compute_dtype = dtype
         if isinstance(module, LoraLayer):
             module = module.to(dtype)
+        if isinstance(module, BF16Linear):
+            module = module.to(dtype)
+            module.compute_dtype = dtype
         if 'norm' in name:
             module = module.to(torch.float32)
         if 'lm_head' in name or 'embed_tokens' in name:

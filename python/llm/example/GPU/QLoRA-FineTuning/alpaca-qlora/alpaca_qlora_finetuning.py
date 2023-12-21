@@ -48,10 +48,9 @@ from utils.prompter import Prompter
 
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
-
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
-    cast_lora_weight, LoraConfig
+    LoraConfig
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -109,6 +108,7 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
+    lora: bool = False, # if True, use lora
     qa_lora: bool = False, # if True, use qa-lora https://arxiv.org/abs/2309.14717
 ):
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
@@ -137,6 +137,7 @@ def train(
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
             f"qa_lora: {qa_lora}\n"
+            f"lora: {lora}\n"
         )
     assert (
         base_model
@@ -175,7 +176,12 @@ def train(
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
         # Default 4-bit format for qa-lora is sym_int4
-        low_bit_format = "sym_int4" if qa_lora else "nf4" 
+        if qa_lora:
+            low_bit_format = "sym_int4"
+        elif lora:
+            low_bit_format = "bf16"
+        else:
+            low_bit_format = "nf4"
         # Load the base model from a directory or the HF Hub to 4-bit format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
@@ -196,7 +202,7 @@ def train(
         0  # unk. we want this to be different from the eos token
     )
     tokenizer.padding_side = "left"  # Allow batched inference
-    
+
     print(model)
 
     def tokenize(prompt, add_eos_token=True):
@@ -258,6 +264,7 @@ def train(
         bias="none",
         task_type="CAUSAL_LM",
         qa_lora=qa_lora,
+        lora=lora,
     )
     print(f"Lora Config: {config}")
     model = get_peft_model(model, config)
