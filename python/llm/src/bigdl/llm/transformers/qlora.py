@@ -198,16 +198,12 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
     if isinstance(target, LowBitLinear) or isinstance(target, BF16Linear):
         low_bit_kwargs = kwargs.copy()
         bias = low_bit_kwargs.pop("bias", False)
-        if hasattr(lora_config, "lora"):
-            lora = lora_config.lora
-        else:
-            lora = False
 
-        if lora is False:
+        if lora_config.training_mode != "lora":
             low_bit_kwargs.update(
                 {
                     "qtype": target.qtype,
-                    "qa_lora": lora_config.qa_lora if hasattr(lora_config, "qa_lora") else False,
+                    "qa_lora": True if lora_config.training_mode == "qalora" else False,
                 }
             )
             new_module = LoraLowBitLinear(adapter_name,
@@ -234,8 +230,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LoraConfig(LoraConfigBase):
-    lora: bool = field(default=False, metadata={"help": "enable lora"})
-    qa_lora: bool = field(default=False, metadata={"help": "enable qa-lora"})
+    training_mode: str = field(default="qlora", metadata={"help": "determine training mode"})
 
 
 def get_peft_model(*args, **kwargs):

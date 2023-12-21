@@ -26,6 +26,6 @@ mpirun -n 4 \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-lora-alpaca" \
-    --gradient_checkpointing False \
+    --gradient_checkpointing True \
     --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj', 'up_proj', 'down_proj', 'gate_proj']" \
-    --lora True
+    --training_mode "lora"

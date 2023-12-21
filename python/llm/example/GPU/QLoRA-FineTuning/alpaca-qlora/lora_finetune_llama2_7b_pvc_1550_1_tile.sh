@@ -23,4 +23,4 @@ python ./alpaca_qlora_finetuning.py \
     --output_dir "./bigdl-lora-alpaca" \
     --gradient_checkpointing True \
     --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj', 'up_proj', 'down_proj', 'gate_proj']" \
-    --lora True
+    --training_mode "lora"
