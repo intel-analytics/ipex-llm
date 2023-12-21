@@ -343,7 +343,8 @@ def mistral_attention_forward_4_36(
                     cache_k = new_c_k
                     cache_v = new_c_v
 
-                key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
+                key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                           key_states, value_states)
 
                 # update past_key_value
                 past_key_value.key_cache[self.layer_idx] = key_states
