@@ -6,6 +6,7 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 - [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF)
 - [Mixtral-8x7B-v0.1-GGUF](https://huggingface.co/TheBloke/Mixtral-8x7B-v0.1-GGUF)
 - [Baichuan2-7B-Chat-GGUF](https://huggingface.co/second-state/Baichuan2-7B-Chat-GGUF/tree/main)
+- [Qwen-GGUF](https://huggingface.co/Lemmih/Qwen-GGUF)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
@@ -27,6 +28,7 @@ conda activate llm
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0  # upgrade transformers
+pip install tiktoken einops # only for qwen model
 ```
 
 ### 2. Configures OneAPI environment variables
