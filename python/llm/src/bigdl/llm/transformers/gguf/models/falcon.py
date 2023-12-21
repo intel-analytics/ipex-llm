@@ -97,14 +97,6 @@ def load_gguf_falcon(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     return model, tokenizer
 
 
-def string_to_token_bytes(s):
-    # see https://github.com/simonJJJ/llama.cpp/blob/
-    # ad04d174f623711b15bdddd16050b7af9db9ef0b/convert-hf-to-gguf.py#L842
-    from transformers.models.gpt2.tokenization_gpt2 import bytes_to_unicode
-    byte_decoder = {v: k for k, v in bytes_to_unicode().items()}
-    return bytes([byte_decoder[char] for char in s])
-
-
 def restore_falcon_weight(ckpt: dict, n_head: int, n_head_kv: int, head_dim: int):
     # see https://github.com/ggerganov/llama.cpp/blob/
     # master/convert-hf-to-gguf.py#L666
