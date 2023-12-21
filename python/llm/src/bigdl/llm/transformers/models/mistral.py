@@ -82,7 +82,7 @@ def is_enough_kv_cache_room_mixtral(past_key_value, idx):
 
 
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
-                                 num_heads, head_dim, hidden_size, attention_mask):    
+                                 num_heads, head_dim, hidden_size, attention_mask):
     attn_weights = torch.matmul(
         query_states,
         key_states.transpose(2, 3)) / math.sqrt(head_dim)
@@ -261,7 +261,7 @@ def mistral_attention_forward_4_36(
 
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
-        
+
         kv_seq_len = cache_k.shape[-2]
 
         import linear_q4_0
@@ -297,11 +297,11 @@ def mistral_attention_forward_4_36(
 
         if past_key_value is not None:
             if self.layer_idx is None:
-                raise ValueError(
-                    f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
-                    "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
-                    "with a layer index."
-                )
+                invalidInputError(False,
+                                  "The cache structure has changed since version v4.36. "
+                                  f"If you are using {self.__class__.__name__} for "
+                                  "auto-regressive decodingwith k/v caching, please make sure "
+                                  "to initialize the attention class with a layer index.")
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
