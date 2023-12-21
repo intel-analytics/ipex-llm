@@ -57,13 +57,15 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         module_name = get_mixtral_module_name(name)
         if 'ffn_gate_inp' in name:
             # gguf weight needs to reshape for ffn_gate_inp
-            set_module_tensor_to_device(model,
+            set_module_tensor_to_device(
+                    model,
                     module_name,
                     "cpu",
                     tensor.reshape(num_local_experts, hidden_size),
                     dtype=dtype)
         else:
-            set_module_tensor_to_device(model,
+            set_module_tensor_to_device(
+                    model,
                     module_name,
                     "cpu",
                     tensor,
