@@ -404,7 +404,6 @@ def _optimize_post(model, lightweight_bmm=False):
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
         if enable_vllm_se_batching:
-
             convert_forward(
                 model,
                 transformers.models.llama.modeling_llama.LlamaModel,
