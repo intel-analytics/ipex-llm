@@ -231,7 +231,8 @@ from dataclasses import dataclass, field
 @dataclass
 class LoraConfig(LoraConfigBase):
     training_mode: str = field(default="qlora",
-                               metadata={"help": "Determine use which training mode, default to qlora."
+                               metadata={"help": "Determine use which training mode,"
+                                                 "default to qlora."
                                                  "Only qlora/ qalora/ lora are supported now."})
 
 
