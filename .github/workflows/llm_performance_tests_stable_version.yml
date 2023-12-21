@@ -131,6 +131,7 @@ jobs:
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
+          python -m pip install --upgrade transformers_stream_generator
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
