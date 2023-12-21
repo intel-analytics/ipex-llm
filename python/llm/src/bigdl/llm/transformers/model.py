@@ -60,7 +60,20 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "_pre_quantization_dtype")
 
     self.to('cpu')
+
+    architectures = getattr(self.config, "architectures", None)
+    model_type = getattr(self.config, "model_type", None)
     self.save_pretrained(*args, **kwargs)
+
+    if architectures:
+        self.config.update({"architectures": architectures})
+    if model_type:
+        self.config.update({"model_type": model_type})
+
+    self.config.save_pretrained(args[0])
+    if self.can_generate():
+        self.generation_config.save_pretrained(args[0])
+
     import json
     import os
     # We conveniently save all the keys of the model to have them on hand,
