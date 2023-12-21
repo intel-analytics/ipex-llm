@@ -48,7 +48,7 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4
+from bigdl.llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -135,13 +135,6 @@ def is_enough_kv_cache_room(past_key_value, idx):
         past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
 
 
-def should_use_fuse_rope(self, hidden_states, position_ids):
-    use_fuse_rope = hidden_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and hidden_states.requires_grad)
-    use_fuse_rope = use_fuse_rope and position_ids is not None
-    return use_fuse_rope
-
-
 def mixtral_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -157,9 +150,10 @@ def mixtral_attention_forward(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room(past_key_value, self.layer_idx)
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
-    decoding_fast_path = (is_q4_0 and use_fuse_rope and
-                          enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
+                                                use_fuse_rope,
+                                                enough_kv_room,
+                                                bsz * q_len)
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -177,7 +171,7 @@ def mixtral_attention_forward(
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
-        # update past_key_value and layer_idx
+        # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
             past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
