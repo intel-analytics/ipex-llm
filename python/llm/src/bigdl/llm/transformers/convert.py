@@ -406,7 +406,8 @@ def _optimize_post(model, lightweight_bmm=False):
                     nn.LayerNorm,
                     bloom_layer_norm_forward)
 
-    if model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
+    if model.config.architectures is not None \
+       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
         if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
             # chatglm2-6b-32k
             modeling_module_name = model.__class__.__module__
