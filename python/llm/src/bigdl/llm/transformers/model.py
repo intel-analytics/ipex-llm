@@ -61,6 +61,8 @@ def save_low_bit(self, *args, **kwargs):
 
     self.to('cpu')
 
+    kwargs['safe_serialization'] = False
+
     architectures = getattr(self.config, "architectures", None)
     model_type = getattr(self.config, "model_type", None)
     self.save_pretrained(*args, **kwargs)
