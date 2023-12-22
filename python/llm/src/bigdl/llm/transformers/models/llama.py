@@ -394,9 +394,7 @@ def llama_attention_selective_batching_forward_4_31(
         if past_key_value is not None:
             kv_seq_len += max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
 
-        if use_fuse_rope and past_key_value is None:
-            # TODO: recheck this
-            # Only used fuse_rope for prefill
+        if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
