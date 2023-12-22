@@ -24,7 +24,7 @@ basekit_root=/opt/intel/oneapi
 source $basekit_root/setvars.sh --force
 source $basekit_root/ccl/latest/env/vars.sh --force
 
-export OMP_NUM_THREADS=7
+export OMP_NUM_THREADS=$((56/$NUM_GPUS))
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=1
 mpirun -np $NUM_GPUS --prepend-rank \
