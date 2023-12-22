@@ -48,11 +48,10 @@ from utils.prompter import Prompter
 
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
+
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
-    LoraConfig
-from bigdl.llm.utils.common import invalidInputError
-
+    cast_lora_weight, LoraConfig
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -110,10 +109,8 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
-    training_mode: str = "qlora",
+    qa_lora: bool = False, # if True, use qa-lora https://arxiv.org/abs/2309.14717
 ):
-    invalidInputError(training_mode in ["qlora", "qalora", "lora"],
-                      "Only qlora / qalora / lora are supported for training_mode now.")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
@@ -139,7 +136,7 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
-            f"training_mode: {training_mode}\n"
+            f"qa_lora: {qa_lora}\n"
         )
     assert (
         base_model
@@ -178,12 +175,7 @@ def train(
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
         # Default 4-bit format for qa-lora is sym_int4
-        if training_mode == "qalora":
-            low_bit_format = "sym_int4"
-        elif training_mode == "lora":
-            low_bit_format = "bf16"
-        else:
-            low_bit_format = "nf4"
+        low_bit_format = "sym_int4" if qa_lora else "nf4" 
         # Load the base model from a directory or the HF Hub to 4-bit format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
@@ -204,7 +196,7 @@ def train(
         0  # unk. we want this to be different from the eos token
     )
     tokenizer.padding_side = "left"  # Allow batched inference
-
+    
     print(model)
 
     def tokenize(prompt, add_eos_token=True):
@@ -265,7 +257,7 @@ def train(
         lora_dropout=lora_dropout,
         bias="none",
         task_type="CAUSAL_LM",
-        training_mode=training_mode,
+        qa_lora=qa_lora,
     )
     print(f"Lora Config: {config}")
     model = get_peft_model(model, config)
@@ -309,7 +301,7 @@ def train(
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            lr_scheduler_type="constant" if training_mode=="qalora" else "cosine",
+            lr_scheduler_type="constant" if qa_lora else "cosine",
             bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
