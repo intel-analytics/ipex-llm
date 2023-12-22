@@ -491,7 +491,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/32-512/512-64/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test2/{today}/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/512-64.yaml
 
       - name: Test on igpu (512-64)
@@ -557,7 +557,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/512-64/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test2/{today}/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128.yaml
 
       - name: Test on igpu (1024-128)
