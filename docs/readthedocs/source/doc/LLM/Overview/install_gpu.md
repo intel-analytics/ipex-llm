@@ -130,9 +130,9 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 ```
 
 ## Known issues
-### 1. For Linux users, Ubuntu 22.04 and Linux kernel 6.2.0 performance bad(driver version < stable_775_20_20231219).
+### 1. For Linux users, Ubuntu 22.04 and Linux kernel 6.2.0 may cause performance bad (driver version < stable_775_20_20231219).
 
-For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue(need reboot OS).  
+For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need reboot OS).  
 
 Tips: You can use `sudo apt list --installed | grep intel-i915-dkms` to check your intel-i915-dkms's version, the version should be latest and >= `1.23.9.11.231003.15+i19-1`.
 
