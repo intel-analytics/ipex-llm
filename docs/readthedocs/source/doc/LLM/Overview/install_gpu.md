@@ -21,7 +21,7 @@
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here're several prerequisite steps for tools installation and environment preparation:
 
 
-      * Step 1: Install Intel GPU Driver version >= stable_736_25_20231031.
+      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
 
         .. seealso::
 
@@ -97,7 +97,7 @@ BigDL-LLM for GPU supports on Linux with PyTorch 2.0 has been verified on:
 
 To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
-- Step 1: Install Intel GPU Driver version >= stable_647_21_20230714.
+- Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
   ```eval_rst
   .. seealso::
 
@@ -130,11 +130,22 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 ```
 
 ## Known issues
-### 1. For Linux users, Ubuntu 22.04 and Linux kernel 5.19.0 is prefered
+### 1. For Linux users, Ubuntu 22.04 and Linux kernel 6.2.0 may cause performance bad (driver version < stable_775_20_20231219).
 
-Ubuntu 22.04 and Linux kernel 5.19.0-41-generic is mostly used in our test environment. But default linux kernel of ubuntu 22.04.3 is 6.2.0-35-generic, so we recommonded you to downgrade kernel to 5.19.0-41-generic to archive the best performance.
+For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need reboot OS).  
 
-### 2. Best known configurations
+Tips: You can use `sudo apt list --installed | grep intel-i915-dkms` to check your intel-i915-dkms's version, the version should be latest and >= `1.23.9.11.231003.15+i19-1`.
+
+### 2. For Linux users, driver installation meet unmet dependencies: intel-i915-dkms
+The last apt install command of the driver installation may get following error:
+```
+The following packages have unmet dependencies:
+ intel-i915-dkms : Conflicts: intel-platform-cse-dkms
+                   Conflicts: intel-platform-vsec-dkms
+```
+You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
+
+### 3. Best known configurations
 
 For running a LLM model with BigDL-LLM optimizations, several environment variables are recommended:
 
@@ -190,7 +201,7 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 
 ```
 
-### 3. How to install from wheel
+### 4. How to install from wheel
 
 If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to install the target torch/torchvision/ipex versions from downloaded wheels [here](https://developer.intel.com/ipex-whl-stable-xpu) before installing `bigdl-llm`. 
 
