@@ -21,7 +21,7 @@
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here're several prerequisite steps for tools installation and environment preparation:
 
 
-      * Step 1: Install Intel GPU Driver version >= stable_736_25_20231031.
+      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
 
         .. seealso::
 
@@ -97,7 +97,7 @@ BigDL-LLM for GPU supports on Linux with PyTorch 2.0 has been verified on:
 
 To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
-- Step 1: Install Intel GPU Driver version >= stable_647_21_20230714.
+- Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
   ```eval_rst
   .. seealso::
 
@@ -130,9 +130,18 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 ```
 
 ## Known issues
-### 1. For Linux users, Ubuntu 22.04 and Linux kernel 5.19.0 is prefered
+### 1. For Linux users, Ubuntu 22.04 and Linux kernel 6.2.0 performance bad.
 
-Ubuntu 22.04 and Linux kernel 5.19.0-41-generic is mostly used in our test environment. But default linux kernel of ubuntu 22.04.3 is 6.2.0-35-generic, so we recommonded you to downgrade kernel to 5.19.0-41-generic to archive the best performance.
+For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue.
+
+### 2. Driver installation unmet dependencies: intel-i915-dkms
+The last apt install command of the driver installation may get following error:
+```
+The following packages have unmet dependencies:
+ intel-i915-dkms : Conflicts: intel-platform-cse-dkms
+                   Conflicts: intel-platform-vsec-dkms
+```
+You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
 
 ### 2. Best known configurations
 
