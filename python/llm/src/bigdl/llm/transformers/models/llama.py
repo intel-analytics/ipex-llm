@@ -317,6 +317,8 @@ def llama_attention_selective_batching_forward_4_31(
     padding_mask: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    # Minimize this value to reduce memory allocation.
+    KV_CACHE_ALLOC_BLOCK_LENGTH = 64
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
     # for flash attention
