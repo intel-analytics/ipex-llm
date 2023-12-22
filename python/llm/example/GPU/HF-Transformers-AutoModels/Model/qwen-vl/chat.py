@@ -22,6 +22,7 @@ from transformers import AutoTokenizer
 from transformers.generation import GenerationConfig
 
 from bigdl.llm.transformers import AutoModelForCausalLM
+import intel_extension_for_pytorch as ipex
 
 torch.manual_seed(1234)
 
