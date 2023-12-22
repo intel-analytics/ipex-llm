@@ -589,3 +589,37 @@ class FP16Linear(nn.Linear):
             result += self.bias
 
         return result.to(x.dtype)
+
+
+class BF16Linear(nn.Linear):
+    def __init__(self, input_features, output_features, bias=True,
+                 mp_group=None, compute_dtype=None):
+        super().__init__(input_features, output_features, bias)
+        self.in_len = input_features
+        self.out_len = output_features
+        self.weight_shape = (self.out_len, self.in_len)
+        self.weight_length = self.out_len * self.in_len
+        self.mp_group = mp_group
+        self.compute_dtype = compute_dtype
+
+    def forward(self, x: torch.Tensor):
+        # only work for GPU now
+        invalidInputError(x.device.type == "xpu",
+                          "bf16 only works for GPU now")
+        is_training = self.training and not torch.is_inference_mode_enabled()
+        if is_training:
+            # below logic is only for training
+            autocast_dtype = get_autocast_dtype(x)
+            if self.compute_dtype is not None and x.device.type == "xpu":
+                x = x.to(self.compute_dtype)  # solve GC issue for unlora module
+            elif autocast_dtype is not None:
+                x = x.to(autocast_dtype)
+
+        if self.bias is not None and self.bias.dtype != x.dtype:
+            self.bias.data = self.bias.data.to(x.dtype)
+
+        result = F.linear(x, self.weight)
+        if self.bias is not None:
+            result += self.bias
+
+        return result.to(x.dtype)
