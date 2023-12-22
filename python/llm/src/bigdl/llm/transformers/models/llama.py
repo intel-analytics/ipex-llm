@@ -334,7 +334,7 @@ def llama_attention_selective_batching_forward_4_31(
     attention_dtype = original_dtype
 
     # TODO: decoding fast path
-    # use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     # enough_kv_room = is_enough_kv_cache_room(past_key_value[0])
     # is_q4_0 = self.q_proj.qtype == SYM_INT4
     # no_tp = not self.config.pretraining_tp > 1
@@ -382,8 +382,16 @@ def llama_attention_selective_batching_forward_4_31(
         kv_seq_len += max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
 
     # TODO: fuse_rope
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+    if use_fuse_rope and past_key_value is None:
+        # Only used fuse_rope for prefill
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                     "llama")
+    else:
+        # For decoding, an error will occurred, because of the different format for positions_ids
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                     cos, sin, position_ids, "llama")
 
     updated_past_key_values = []
