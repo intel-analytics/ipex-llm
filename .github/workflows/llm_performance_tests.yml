@@ -275,7 +275,7 @@ jobs:
 
           call conda deactivate
 
-      - name: Set directory envs
+      - name: Set directory envs & and fix generated csv date name
         shell: bash
         run: |
           if [ ${{ github.event_name }} == 'schedule' ]; then
@@ -285,6 +285,9 @@ jobs:
           fi
           cur_date=$(date +%Y-%m-%d)
           echo "LOG_FILE=${cur_date}_output.txt" >> "$GITHUB_ENV"
+
+          sed -i "s/date.today()/\"$cur_date\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
 
       - name: Prepare igpu perf test (32-32)
         shell: bash
