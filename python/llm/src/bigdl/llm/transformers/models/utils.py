@@ -106,3 +106,16 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+
+
+def is_enough_kv_cache_room_4_36(past_key_value, idx):
+    # to determinate if is enough kv cache room in transformers==4.36
+    return past_key_value is not None and len(past_key_value.key_cache) > idx and \
+        past_key_value.key_cache[idx].stride()[1] > past_key_value.key_cache[idx].size(2) * \
+        past_key_value.key_cache[idx].size(3)
+
+
+def is_enough_kv_cache_room_4_31(past_key_value):
+    # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
+    return past_key_value is not None and \
+        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
