@@ -108,8 +108,6 @@ def main():
 
         diffs_within_normal_range = is_diffs_within_normal_range(diff1, diff2, highlight_threshold)
 
-        # print(diffs_within_normal_range)
-
         subset=['diff1(%)','diff2(%)']
         columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
                 'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}', 'peak mem (GB)': '{:.2f}'}
@@ -120,7 +118,10 @@ def main():
     else:
         latest_csv.to_html(daily_html)
 
-    return 1 if args.baseline_path and not diffs_within_normal_range else 0
+    if args.baseline_path and not diffs_within_normal_range:
+        print("The diffs are outside the normal range: %" + highlight_threshold)
+        return 1 
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
