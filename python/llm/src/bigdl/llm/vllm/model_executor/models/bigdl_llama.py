@@ -27,6 +27,7 @@ from bigdl.llm.vllm.logger import init_logger
 import math
 import time
 from bigdl.llm.vllm.model_executor.input_metadata import InputMetadata
+import os
 from transformers.generation.logits_process import (
     LogitsProcessorList,
     RepetitionPenaltyLogitsProcessor,
@@ -50,6 +51,10 @@ def _get_attention_mask_for_prompts(
     ]
     return attention_mask
 
+vllm_selective_batching = os.getenv("VLLM_ENABLE_SELECTIVE_BATCHING")
+enable_vllm_se_batching = vllm_selective_batching is not None
+enable_vllm_se_batching = enable_vllm_se_batching and vllm_selective_batching.lower() == "true"
+
 
 class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
 
@@ -61,12 +66,9 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
     ):
         super().__init__(config, device, max_model_len)
         self.config = config
-        # TODO(gc): later change this to a switch?
-        if True:
-            from bigdl.llm.transformers import AutoModelForCausalLM
-            from bigdl.llm import optimize_model
-
-        # low_bit = 'sym_int4'
+        # Always enable bigdl-llm model
+        from bigdl.llm.transformers import AutoModelForCausalLM
+        from bigdl.llm import optimize_model
         if device == 'cpu':
             model = AutoModelForCausalLM.from_pretrained(
                 config._name_or_path,
@@ -81,7 +83,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 import intel_extension_for_pytorch as ipex
             except ImportError:
                 print("Intel Extension for PyTorch is not installed, \
-                       but is required for xpu inference.")
+                    but is required for xpu inference.")
 
             low_bit = 'sym_int4'
             model = AutoModelForCausalLM.from_pretrained(
@@ -93,17 +95,19 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             self.model = model.to('xpu')
             self.sampler = BigDLSampler(config.vocab_size, device).to('xpu')
 
-        if device is None:
-            self.device = torch.device(
-                "cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = torch.device(device)
+        self.device = torch.device(device)
         self.dtype = self.model.dtype
         self.last_seq_ids = []
-        self.tmp_kv_cache = None
+        self.last_kv_cache = None
         self.pad_token_id = config.pad_token_id
         self.max_seq_limit = max_model_len
 
+    # GC: Note for selective batching
+    # KV_CACHE in the format of num_layers x 2 x (seq_id -> torch.Tensor)
+    # past_key_values in the format of num_layers x len(seq_id) x (2 x torch.Tensor)
+    # If we set num_layers to 9, have 10 sequences in total.
+    # then, for the kv_cache, we get 9 x 2 x 10 = 180 tensors
+    # for past_key_values, we get 9 x 10 x 2 = 180 tensors
     def forward(
         self,
         seq_group_meta_data_lists: List[SequenceGroupMetadata],
@@ -116,7 +120,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         decoder_kv_size = 2
 
         bigdl_input_ids = []
-        bigdl_position_ids = []
+        # bigdl_position_ids = []
         bigdl_attention_mask = []
 
         cur_seq_ids = []
@@ -144,8 +148,12 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # 1. Assemble bigdl_input_ids end
 
         if is_decoding_stage:
-            bigdl_kv_cache = self.prepare_kv_cache(cur_seq_ids, seq_group_meta_data_lists,
-                                                   kv_cache, num_layers, decoder_kv_size)
+            construct_kv_cache_func = self.get_construct_kv_cache_func(enable_vllm_se_batching)
+            bigdl_kv_cache = construct_kv_cache_func(cur_seq_ids,
+                                                     seq_group_meta_data_lists,
+                                                     kv_cache,
+                                                     num_layers,
+                                                     2)
         else:
             bigdl_attention_mask = _get_attention_mask_for_prompts(bigdl_input_ids, max_prompt_len)
             bigdl_input_ids = [
@@ -153,41 +161,72 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
                 for input_ids in bigdl_input_ids
             ]
 
+        decoding_attention_mask_list = []
+        decoding_position_ids = []
+        # num_layers x len(seq_id) x (2 x torch.Tensor)
         if is_decoding_stage:
-            cur_seq_len = bigdl_kv_cache[0][0].size(2)
-            for seq_group_meta_data in seq_group_meta_data_lists:
-                seq_ids = list(seq_group_meta_data.seq_data.keys())
-                seq_id = seq_ids[0]
-                seq_data = seq_group_meta_data.seq_data[seq_id]
-                cur_pos = seq_data.get_len()
-                # bigdl_position_ids.append([cur_pos - 1])
-                cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
-                bigdl_attention_mask.append(cur_attention_mask)
+            if enable_vllm_se_batching:
+                batch = 0
+                for seq_group_meta_data in seq_group_meta_data_lists:
+                    # Get current seq_len in kv_cache
+                    current_seq_len = bigdl_kv_cache[0][batch][0].size(2)
+                    batch += 1
+                    seq_ids = list(seq_group_meta_data.seq_data.keys())
+                    seq_data = seq_group_meta_data.seq_data[seq_ids[0]]
+                    cur_pos = seq_data.get_len()
+                    decoding_position_ids.append(cur_pos - 1)
+                    # Total length: current_seq_len + 1
+                    cur_attention_mask = [0] * (current_seq_len - cur_pos + 1) + [1] * (cur_pos)
+                    decoding_attention_mask_list.append(cur_attention_mask)
+            else:
+                cur_seq_len = bigdl_kv_cache[0][0].size(2)
+                for seq_group_meta_data in seq_group_meta_data_lists:
+                    seq_ids = list(seq_group_meta_data.seq_data.keys())
+                    seq_id = seq_ids[0]
+                    seq_data = seq_group_meta_data.seq_data[seq_id]
+                    cur_pos = seq_data.get_len()
+                    # bigdl_position_ids.append([cur_pos - 1])
+                    # decoding_position_ids.append(cur_pos - 1)
+                    cur_attention_mask = [0] * (cur_seq_len - cur_pos + 1) + [1] * (cur_pos)
+                    decoding_attention_mask_list.append(cur_attention_mask)
 
         bigdl_input_ids = torch.tensor(bigdl_input_ids, device=self.device)
 
         if is_decoding_stage:
-            # bigdl_position_ids = torch.tensor(bigdl_position_ids, device=self.device)
-            bigdl_attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
+            if enable_vllm_se_batching:
+                attention_mask = [torch.tensor(x, device=self.device).unsqueeze(0)
+                                  for x in decoding_attention_mask_list]
+                position_ids = torch.tensor(decoding_position_ids).long().unsqueeze(-1)
+            else:
+                attention_mask = torch.tensor(decoding_attention_mask_list, device=self.device)
+                position_ids = None
             kwargs = {
                 "input_ids": bigdl_input_ids,
-                # "position_ids": bigdl_position_ids,
-                "attention_mask": bigdl_attention_mask,
+                "position_ids": position_ids,
+                "attention_mask": attention_mask,
                 "past_key_values": bigdl_kv_cache,
                 "use_cache": True,
                 # "return_dict": True,
             }
         else:
+            # Prefill stage
+            attention_mask = torch.tensor(bigdl_attention_mask, device=self.device)
+            if enable_vllm_se_batching:
+                position_ids = attention_mask.long().cumsum(-1) - 1
+                position_ids.masked_fill_(attention_mask == 0, 1)
+            else:
+                position_ids = None
             kwargs = {
                 "input_ids": bigdl_input_ids,
-                "attention_mask": torch.tensor(bigdl_attention_mask, device=self.device),
-                # "position_ids": bigdl_position_ids,
+                "attention_mask": attention_mask,
+                "position_ids": position_ids,
                 "past_key_values": None,
                 "use_cache": True,
                 # "return_dict": True,
             }
+            # Prefill may need additional space, which forces us to delete the last_kv_cache
             if self.last_kv_cache:
-                del self.last_kv_cache
+                self.last_kv_cache = None
         # pdb.set_trace()
 
         if self.device.type == 'xpu':
@@ -207,8 +246,12 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"before: {tmp['allocated_bytes.all.current']}")
 
-        self.update_kv_cache(cur_seq_ids,
-                             kv_cache, num_layers, decoder_kv_size)
+        if enable_vllm_se_batching:
+            self.update_kv_cache_selective_batching(
+                cur_seq_ids, kv_cache, num_layers, decoder_kv_size)
+            self.last_kv_cache = None
+        else:
+            self.update_kv_cache(cur_seq_ids, kv_cache, num_layers, decoder_kv_size)
 
         # tmp = torch.xpu.memory_stats()
         # logger.info(f"after: {tmp['allocated_bytes.all.current']}")

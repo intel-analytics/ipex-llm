@@ -137,6 +137,34 @@ class BigDLModelForCausalLM(nn.Module):
 
         return bigdl_kv_cache
 
+    def get_construct_kv_cache_func(self, enable_selective_batching):
+        if enable_selective_batching:
+            return self.prepare_kv_cache_selective_batching
+        else:
+            return self.prepare_kv_cache
+
+    # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
+    # sequence_length, embed_size_per_head).
+    def prepare_kv_cache_selective_batching(
+        self,
+        cur_seq_ids: List[int],
+        seq_group_meta_data_lists: List[SequenceGroupMetadata],
+        kv_cache: Dict,
+        num_layers: int,
+        kv_cache_size_1: int,
+    ):
+        # Return bigdl_kv_cache in the format of Tuple(List[Tuple(torch.Tensor)])
+        bigdl_kv_cache = []
+        for i in range(num_layers):
+            # Construct a list of tuple(tensor)
+            temp_cache = []
+            for seq_id in cur_seq_ids:
+                key = kv_cache[i][0][seq_id]
+                value = kv_cache[i][1][seq_id]
+                temp_cache.append((key, value))
+            bigdl_kv_cache.append(temp_cache)
+        return bigdl_kv_cache
+
     # This is an implementation for models that KV Cache shape in (batch_size, num_heads,
     # sequence_length, embed_size_per_head).
     def update_kv_cache(
@@ -152,6 +180,18 @@ class BigDLModelForCausalLM(nn.Module):
                 for seq_id in cur_seq_ids:
                     kv_cache[i][j][seq_id] = self.last_kv_cache[i][j][batch_dim]
                     batch_dim = batch_dim + 1
+
+    def update_kv_cache_selective_batching(
+        self,
+        cur_seq_ids: List[int],
+        kv_cache,
+        layer: int,
+        kv_cache_size_1: int,
+    ) -> None:
+        for i in range(layer):
+            for j in range(len(cur_seq_ids)):
+                kv_cache[i][0][cur_seq_ids[j]] = self.last_kv_cache[i][j][0]
+                kv_cache[i][1][cur_seq_ids[j]] = self.last_kv_cache[i][j][1]
 
     def forward(
         self,
