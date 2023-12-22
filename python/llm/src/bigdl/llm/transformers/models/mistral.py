@@ -44,7 +44,7 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu
-from bigdl.llm.transformers.models.llama import is_enough_kv_cache_room
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -89,7 +89,7 @@ def mistral_attention_forward(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room(past_key_value)
+    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
     decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
                                                 use_fuse_rope,
                                                 enough_kv_room,
