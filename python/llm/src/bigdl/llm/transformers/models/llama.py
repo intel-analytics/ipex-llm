@@ -39,7 +39,7 @@ import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
@@ -111,11 +111,6 @@ def llama_mlp_forward(
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
 
-def is_enough_kv_cache_room(past_key_value):
-    return past_key_value is not None and \
-        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
-
-
 def should_use_fuse_rope(self, query_states, position_ids):
     use_fuse_rope = query_states.device.type == "xpu"
     use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
@@ -149,7 +144,7 @@ def llama_attention_forward_4_31(
         attention_dtype = original_dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room(past_key_value)
+    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
     is_q4_0 = self.q_proj.qtype == SYM_INT4
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
