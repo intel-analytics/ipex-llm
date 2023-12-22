@@ -143,7 +143,7 @@ The following packages have unmet dependencies:
 ```
 You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
 
-### 2. Best known configurations
+### 3. Best known configurations
 
 For running a LLM model with BigDL-LLM optimizations, several environment variables are recommended:
 
@@ -199,7 +199,7 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 
 ```
 
-### 3. How to install from wheel
+### 4. How to install from wheel
 
 If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to install the target torch/torchvision/ipex versions from downloaded wheels [here](https://developer.intel.com/ipex-whl-stable-xpu) before installing `bigdl-llm`. 
 
