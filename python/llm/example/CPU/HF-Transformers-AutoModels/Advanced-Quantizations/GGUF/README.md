@@ -29,6 +29,7 @@ conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
 pip install transformers==4.34.0  # upgrade transformers
+pip install einops
 ```
 
 ### 2. Run
