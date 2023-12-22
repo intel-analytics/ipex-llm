@@ -23,6 +23,7 @@ import time
 import warnings
 from typing import Dict, List, Optional, Union
 
+import intel_extension_for_pytorch as ipex
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights

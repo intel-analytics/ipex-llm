@@ -46,6 +46,7 @@ from peft import (
 )
 from utils.prompter import Prompter
 
+import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
