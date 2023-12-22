@@ -145,7 +145,7 @@ class LoraBF16Linear(BF16Linear, LoraLayer):
             self,
             in_features,
             out_features,
-            qtype=kwargs.get("qtype", True),
+            qtype=kwargs.get("qtype"),
             bias=kwargs.get("bias", True),
             compute_dtype=torch.bfloat16,
         )
