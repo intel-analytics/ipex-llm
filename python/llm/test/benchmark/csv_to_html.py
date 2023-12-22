@@ -120,7 +120,7 @@ def main():
     else:
         latest_csv.to_html(daily_html)
 
-    return 0 if diffs_within_normal_range else 1
+    return 1 if args.baseline_path and not diffs_within_normal_range else 0
 
 if __name__ == "__main__":
     sys.exit(main())
