@@ -18,7 +18,6 @@ import os
 import torch
 from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
-from tempfile import NamedTemporaryFile
 from transformers import FalconConfig, FalconForCausalLM, PreTrainedTokenizerFast
 
 from ..gguf import GGUFFileLoader

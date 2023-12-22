@@ -60,6 +60,9 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
         elif model_family == "falcon":
             from .models.falcon import load_gguf_falcon
             model, tokenizer = load_gguf_falcon(loader, dtype)
+        elif model_family == "mpt":
+            from .models.mpt import load_gguf_mpt
+            model, tokenizer = load_gguf_mpt(loader, dtype)
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
