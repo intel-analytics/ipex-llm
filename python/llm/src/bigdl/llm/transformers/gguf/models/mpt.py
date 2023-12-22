@@ -37,7 +37,7 @@ def load_gguf_mpt(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         bos_token_id=config['tokenizer.ggml.bos_token_id'],
         eos_token_id=config['tokenizer.ggml.eos_token_id'],
         unknown_token_id=config['tokenizer.ggml.unknown_token_id'],
-        # architectures="MptForCausalLM",
+        load_gguf=True,
     )
 
     ckpt = loader.tensors(dtype)

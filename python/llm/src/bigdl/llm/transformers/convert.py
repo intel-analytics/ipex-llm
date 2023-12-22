@@ -448,14 +448,15 @@ def _optimize_post(model, lightweight_bmm=False):
                             chatglm_attention_forward
                             )
     elif "mpt" in model.config.model_type:
-        modeling_module_name = model.__class__.__module__
-        attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
-        module = importlib.import_module(attention_module_name)
-        from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
-        convert_forward(model,
-                        module.MultiheadAttention,
-                        mpt_multihead_attention_forward
-                        )
+        if model.config.load_gguf is None:
+            modeling_module_name = model.__class__.__module__
+            attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
+            module = importlib.import_module(attention_module_name)
+            from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
+            convert_forward(model,
+                            module.MultiheadAttention,
+                            mpt_multihead_attention_forward
+                            )
     elif "gptj" in model.config.model_type:
         # dolly-v1-6b
         modeling_module_name = model.__class__.__module__
