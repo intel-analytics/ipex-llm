@@ -9,23 +9,23 @@ concurrency:
 on:
   schedule:
     - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm_performance_tests.yml"
+      - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
     uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -93,14 +93,18 @@ jobs:
           sed -i 's/test1/test2/g' run.py
           python run.py
           python ../../../test/benchmark/concat_csv.py
-          cd ../../../test/benchmark
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" $CSV_SAVE_PATH
+              fi
+          done
           python -m pip install pandas==1.5.3
+          cd ../../../test/benchmark
+          python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
-          cp ./*.csv $CSV_SAVE_PATH
-          python csv_to_html.py -f $CSV_SAVE_PATH
           if [ ${{ github.event.schedule}} ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
