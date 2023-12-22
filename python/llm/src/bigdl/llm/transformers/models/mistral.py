@@ -44,7 +44,8 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31,\
+    is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -73,12 +74,6 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
     return q_type == SYM_INT4 and use_fuse_rope and enough_kv_room and bs == 1
-
-
-def is_enough_kv_cache_room_mixtral(past_key_value, idx):
-    return past_key_value is not None and len(past_key_value.key_cache) > idx and \
-        past_key_value.key_cache[idx].stride()[1] > past_key_value.key_cache[idx].size(2) * \
-        past_key_value.key_cache[idx].size(3)
 
 
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
@@ -250,7 +245,7 @@ def mistral_attention_forward_4_36(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_mixtral(past_key_value, self.layer_idx)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
     decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
                                                 use_fuse_rope,
                                                 enough_kv_room,
