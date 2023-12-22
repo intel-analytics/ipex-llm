@@ -26,7 +26,6 @@ from ..gguf import GGUFFileLoader
 def load_gguf_mpt(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     config = loader.config
 
-
     mpt_config = MptConfig(
         vocab_size=len(config['tokenizer.ggml.tokens']),
         d_model=config['mpt.embedding_length'],

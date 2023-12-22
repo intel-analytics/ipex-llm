@@ -75,7 +75,6 @@ def load_gguf_falcon(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
 
     pieces, merges = loader.tokenizer_pieces()
 
-
     current_directory = os.path.dirname(os.path.abspath(__file__))
     token_file = current_directory + "/model_implement/falcon/tokenizer.json"
     import json
