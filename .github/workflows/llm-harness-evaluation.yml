@@ -81,8 +81,8 @@ jobs:
           MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.runs-on)}}
         run: |
             echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
-            echo "precision=$MANUAL_MATRIX_TASK" >> $GITHUB_ENV
-            echo "task=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "task=$MANUAL_MATRIX_TASK" >> $GITHUB_ENV
             echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
       - name: set-matrix
         id: set-matrix
