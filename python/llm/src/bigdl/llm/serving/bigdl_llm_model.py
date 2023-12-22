@@ -243,7 +243,7 @@ class BigDLLLMAdapter(BaseModelAdapter):
     def load_model(self, model_path: str, from_pretrained_kwargs: dict):
         revision = from_pretrained_kwargs.get("revision", "main")
         tokenizer = AutoTokenizer.from_pretrained(
-            model_path, use_fast=False, revision=revision
+            model_path, use_fast=False, revision=revision, trust_remote_code=True
         )
         print("Customized bigdl-llm loader")
         from bigdl.llm.transformers import AutoModelForCausalLM
