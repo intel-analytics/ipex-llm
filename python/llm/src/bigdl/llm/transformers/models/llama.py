@@ -410,15 +410,15 @@ def llama_attention_selective_batching_forward_4_31(
             current_value_states = repeat_kv(current_value_states, self.num_key_value_groups)
 
             current_query_states = query_states[batch: batch + 1, :, :, :]
-            attn_output, aattn_weights = native_sdp(current_query_states,
-                                                    current_key_states,
-                                                    current_value_states,
-                                                    attention_mask[batch],
-                                                    1,
-                                                    1,
-                                                    current_kv_len,
-                                                    self.head_dim,
-                                                    self.num_heads)
+            attn_output, attn_weights = native_sdp(current_query_states,
+                                                   current_key_states,
+                                                   current_value_states,
+                                                   attention_mask[batch],
+                                                   1,
+                                                   1,
+                                                   current_kv_len,
+                                                   self.head_dim,
+                                                   self.num_heads)
             if attn_output.size() != (1, self.num_heads, 1, self.head_dim):
                 invalidInputError(False,
                                   f"`attn_output` should be of size "
@@ -578,7 +578,7 @@ def llama_model_selective_batching_forward_4_31(
                           "You have to specify either "
                           "decoder_input_ids or decoder_inputs_embeds")
 
-    seq_length_with_past = seq_length
+    # seq_length_with_past = seq_length
     past_key_values_length = 0
 
     # The original position_ids in the format of [1, 1]
@@ -608,7 +608,7 @@ def llama_model_selective_batching_forward_4_31(
         # past_key_values in the format of num_layers x num_seqs x 2
         # TODO: this may be incorrect
         past_key_values_length = past_key_values[0][0][0].shape[2]
-        seq_length_with_past = seq_length_with_past + past_key_values_length
+        # seq_length_with_past = seq_length_with_past + past_key_values_length
 
     # if position_ids is None:
     #     device = input_ids.device if input_ids is not None else inputs_embeds.device
@@ -624,7 +624,6 @@ def llama_model_selective_batching_forward_4_31(
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
     # embed positions
-    # TODO: only generate attention_mask for prefilling
     if attention_mask is None:
         invalidInputError(False, "attention_mask should never be None")
     # print(f"attention_mask before expanding: {attention_mask}")
@@ -645,8 +644,7 @@ def llama_model_selective_batching_forward_4_31(
     hidden_states = inputs_embeds
 
     if self.gradient_checkpointing and self.training:
-        if use_cache:
-            use_cache = False
+        invalidInputError(False, "gradient_checkpointing is not supported")
 
     # decoder layers
     all_hidden_states = () if output_hidden_states else None
@@ -678,8 +676,6 @@ def llama_model_selective_batching_forward_4_31(
         else:
             layer_outputs = decoder_layer(
                 hidden_states,
-                # TODO: decide if we need this attention_mask,
-                # we are not using the attention mask when decoding
                 attention_mask=attention_mask,
                 position_ids=position_ids,
                 past_key_value=past_key_value,
