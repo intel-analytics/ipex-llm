@@ -199,11 +199,21 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
         low_bit_kwargs = kwargs.copy()
         bias = low_bit_kwargs.pop("bias", False)
 
-        if lora_config.training_mode != "lora":
+        if hasattr(lora_config, "training_mode") and lora_config.training_mode == "lora":
+            new_module = LoraBF16Linear(adapter_name,
+                                        target.in_features,
+                                        target.out_features,
+                                        bias=bias,
+                                        **low_bit_kwargs)
+        else:
+            if hasattr(lora_config, "training_mode"):
+                qa_lora = lora_config.training_mode == "qalora"
+            else:
+                qa_lora = False
             low_bit_kwargs.update(
                 {
                     "qtype": target.qtype,
-                    "qa_lora": True if lora_config.training_mode == "qalora" else False,
+                    "qa_lora": qa_lora
                 }
             )
             new_module = LoraLowBitLinear(adapter_name,
@@ -211,12 +221,6 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
                                           target.out_features,
                                           bias=bias,
                                           **low_bit_kwargs)
-        else:
-            new_module = LoraBF16Linear(adapter_name,
-                                        target.in_features,
-                                        target.out_features,
-                                        bias=bias,
-                                        **low_bit_kwargs)
     else:
         new_module = create_new_module_func(lora_config, adapter_name, target, **kwargs)
 
@@ -230,10 +234,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LoraConfig(LoraConfigBase):
-    training_mode: str = field(default="qlora",
-                               metadata={"help": "Determine use which training mode,"
-                                                 "default to qlora."
-                                                 "Only qlora/ qalora/ lora are supported now."})
+    training_mode: str = field(default="qlora", metadata={"help": "determine training mode"})
 
 
 def get_peft_model(*args, **kwargs):
