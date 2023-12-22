@@ -46,6 +46,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 from typing import Union
 import numpy as np
+import os
 from bigdl.llm.utils.common import invalidInputError
 
 
@@ -386,6 +387,8 @@ def convert_forward(m, target_m, new_forward):
 def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    from bigdl.llm.transformers.models.llama import llama_attention_selective_batching_forward_4_31
+    from bigdl.llm.transformers.models.llama import llama_model_selective_batching_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
     from bigdl.llm.transformers.models.llama import llama_mlp_forward
     from transformers.modeling_utils import PreTrainedModel
@@ -395,6 +398,10 @@ def _optimize_post(model, lightweight_bmm=False):
         logger.info("Only HuggingFace Transformers models are currently "
                     "supported for further optimizations")
         return model
+
+    vllm_selective_batching = os.getenv("VLLM_ENABLE_SELECTIVE_BATCHING")
+    enable_vllm_se_batching = vllm_selective_batching is not None
+    enable_vllm_se_batching = enable_vllm_se_batching and vllm_selective_batching.lower() == "true"
 
     trans_version = transformers.__version__
     if version.parse(trans_version) >= version.parse("4.31.0"):
@@ -409,6 +416,17 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
+        if enable_vllm_se_batching:
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaModel,
+                llama_model_selective_batching_forward_4_31,
+            )
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaAttention,
+                llama_attention_selective_batching_forward_4_31,
+            )
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
