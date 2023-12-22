@@ -448,7 +448,7 @@ def _optimize_post(model, lightweight_bmm=False):
                             chatglm_attention_forward
                             )
     elif "mpt" in model.config.model_type:
-        if model.config.load_gguf is None:
+        if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__
             attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
             module = importlib.import_module(attention_module_name)
