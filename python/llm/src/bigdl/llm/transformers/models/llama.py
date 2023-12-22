@@ -140,7 +140,7 @@ def llama_attention_forward_4_31(
         fsdp_flag = check_flash_attention_available(hidden_states)
     else:
         fsdp_flag = False
-    if fsdp_flag and q_len > 1  and self.q_proj.qtype != ggml_tensor_qtype["bf16"]:
+    if fsdp_flag and q_len > 1 and self.q_proj.qtype != ggml_tensor_qtype["bf16"]:
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype

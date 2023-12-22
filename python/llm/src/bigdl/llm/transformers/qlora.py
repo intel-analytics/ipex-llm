@@ -53,6 +53,7 @@ from bigdl.llm.transformers.low_bit_linear import LowBitLinear, BF16Linear, get_
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import get_autocast_dtype
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 import functools
 from bigdl.llm.transformers import training_patch
 
@@ -145,7 +146,7 @@ class LoraBF16Linear(BF16Linear, LoraLayer):
             self,
             in_features,
             out_features,
-            qtype=kwargs.get("qtype"),
+            qtype=ggml_tensor_qtype["bf16"],
             bias=kwargs.get("bias", True),
             compute_dtype=torch.bfloat16,
         )
@@ -204,7 +205,7 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
             new_module = LoraBF16Linear(adapter_name,
                                         target.in_features,
                                         target.out_features,
-                                        qtype=target.qtype,
+                                        qtype=ggml_tensor_qtype["bf16"],
                                         bias=bias,
                                         **low_bit_kwargs)
         else:
@@ -279,7 +280,9 @@ def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
         # cast all non INT8 parameters to fp32
         for param in model.parameters():
             if (param.dtype == torch.float16) or (param.dtype == torch.bfloat16):
-                param.data = param.data.to(torch.float32)
+                # don't cast linear here to avoid lora OOM on arc
+                if param.dim() == 1:
+                    param.data = param.data.to(torch.float32)
 
     if use_gradient_checkpointing:
         # For backward compatibility
