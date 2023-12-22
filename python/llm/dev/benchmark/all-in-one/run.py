@@ -659,7 +659,7 @@ def run_transformer_int4_gpu_win(repo_id,
                                  cpu_embedding):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    # import intel_extension_for_pytorch as ipex
+    import intel_extension_for_pytorch as ipex
     reserved_mem_list = []
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
