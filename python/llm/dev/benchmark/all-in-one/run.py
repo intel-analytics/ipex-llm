@@ -45,13 +45,15 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, reserved_mem_list=[]):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
                                     num_beams=num_beams)
         torch.xpu.synchronize()
         end = time.perf_counter()
+        reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
+        gpu_peak_mem = max(reserved_mem_list) # always keep the peak gpu mem at current stage
         output_ids = output_ids.cpu()
         print("model generate cost: " + str(end - st))
         output = tokenizer.batch_decode(output_ids)
@@ -59,7 +61,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         actual_out_len = output_ids.shape[1] - actual_in_len
         if i >= warm_up:
             result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                actual_in_len, actual_out_len])
+                                actual_in_len, actual_out_len, gpu_peak_mem])
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
@@ -95,7 +97,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             num_beams,
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
-                            result[in_out_pair][-1][5] if 'win' in test_api else 'N/A']) # currently only peak mem for win gpu is caught here
+                            result[in_out_pair][-1][5] if 'transformer_int4_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
 
 
 def get_model_path(repo_id, local_model_hub):
@@ -354,6 +356,7 @@ def run_transformer_int4_gpu(repo_id,
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
+    reserved_mem_list = []
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -378,6 +381,7 @@ def run_transformer_int4_gpu(repo_id,
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
+    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
 
     model = BenchmarkWrapper(model)
 
@@ -402,7 +406,7 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, reserved_mem_list))
             thread.start()
             thread.join()
     del model
