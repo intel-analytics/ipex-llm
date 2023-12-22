@@ -381,7 +381,6 @@ def llama_attention_selective_batching_forward_4_31(
     if past_key_value is not None:
         kv_seq_len += max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
 
-    # TODO: fuse_rope
     if use_fuse_rope and past_key_value is None:
         # Only used fuse_rope for prefill
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -392,21 +391,37 @@ def llama_attention_selective_batching_forward_4_31(
         # For decoding, an error will occurred, because of the different format for positions_ids
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                    cos, sin, position_ids, "llama")
+                                                        cos, sin, position_ids, "llama")
 
     updated_past_key_values = []
     if past_key_value is not None:
         batched_attention_output = []
         # print(f"type of attention_mask is {type(attention_mask)}")
         for batch in range(bsz):
+            enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value[batch])
             past_k, past_v = past_key_value[batch]
             current_kv_len = past_k.shape[-2] + 1
+            if not enough_kv_room:
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(1,
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           past_k.size(2),
+                                                           current_kv_len +
+                                                           KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=past_k.dtype,
+                                                           device=device)
+                new_cache_k[:] = past_k
+                new_cache_v[:] = past_v
+                past_k = new_cache_k
+                past_v = new_cache_v
 
-            current_key_states = torch.cat([past_k,
-                                            key_states[batch: batch + 1, :, :, :]], dim=2)
-            current_value_states = torch.cat([past_v,
-                                              value_states[batch: batch + 1, :, :, :]], dim=2)
-
+            current_key_states = key_states[batch: batch + 1, :, :, :]
+            current_value_states = value_states[batch: batch + 1, :, :, :]
+            current_key_states, current_value_states = append_kv_cache(past_k,
+                                                                       past_v,
+                                                                       current_key_states,
+                                                                       current_value_states)
             updated_past_key_values.append((current_key_states, current_value_states))
 
             current_key_states = repeat_kv(current_key_states, self.num_key_value_groups)
