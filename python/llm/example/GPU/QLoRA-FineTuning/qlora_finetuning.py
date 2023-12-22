@@ -57,7 +57,8 @@ if __name__ == "__main__":
         target_modules=["q_proj", "k_proj", "v_proj"], 
         lora_dropout=0.05, 
         bias="none", 
-        task_type="CAUSAL_LM"
+        task_type="CAUSAL_LM",
+        training_mode="qlora",
     )
     model = get_peft_model(model, config)
 
