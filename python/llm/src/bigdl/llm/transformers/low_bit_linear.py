@@ -592,13 +592,14 @@ class FP16Linear(nn.Linear):
 
 
 class BF16Linear(nn.Linear):
-    def __init__(self, input_features, output_features, bias=True,
+    def __init__(self, input_features, output_features, qtype, bias=True,
                  mp_group=None, compute_dtype=None):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
         self.weight_length = self.out_len * self.in_len
+        self.qtype = qtype
         self.mp_group = mp_group
         self.compute_dtype = compute_dtype
 
@@ -617,7 +618,6 @@ class BF16Linear(nn.Linear):
 
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
-
         result = F.linear(x, self.weight)
         if self.bias is not None:
             result += self.bias

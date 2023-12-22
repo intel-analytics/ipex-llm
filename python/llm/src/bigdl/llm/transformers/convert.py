@@ -265,6 +265,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         new_linear = BF16Linear(
                             in_features,
                             out_features,
+                            qtype,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
@@ -365,7 +366,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
             "an issue on github if you think this is a bug."
         )
     elif device == "cpu":
-        if not (getattr(model, "quantization_method", None) == "gptq"):
+        if not (getattr(model, "quantization_method", None) == "gptq") and \
+            qtype not in [ggml_tensor_qtype["bf16"],
+                          ggml_tensor_qtype["fp16"]]:
+            # for fp16 / bf16 model, don't convert to fp32
             model.to(torch.float32)
     elif device == "meta":
         # Do nothing here for weights are empty.

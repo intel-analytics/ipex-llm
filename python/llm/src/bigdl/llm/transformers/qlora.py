@@ -145,6 +145,7 @@ class LoraBF16Linear(BF16Linear, LoraLayer):
             self,
             in_features,
             out_features,
+            qtype=kwargs.get("qtype", True),
             bias=kwargs.get("bias", True),
             compute_dtype=torch.bfloat16,
         )
@@ -203,6 +204,7 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
             new_module = LoraBF16Linear(adapter_name,
                                         target.in_features,
                                         target.out_features,
+                                        qtype=target.qtype,
                                         bias=bias,
                                         **low_bit_kwargs)
         else:
