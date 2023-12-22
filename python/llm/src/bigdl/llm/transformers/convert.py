@@ -172,7 +172,8 @@ def convert_gptq(module, awq=False):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False):
-    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
+        FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
 
@@ -212,7 +213,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if has_bias:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)
-                    elif qtype != ggml_tensor_qtype["fp16"]:
+                    elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
@@ -233,7 +234,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)
-                    else:
+                    elif qtype == ggml_tensor_qtype["fp16"]:
                         #  only support two size now
                         #  may generalize to other sizes
                         if module.in_features in [4096, 11008]:
@@ -259,8 +260,20 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             if module.bias is not None:
                                 new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                     .to(device_type)
+                    elif qtype == ggml_tensor_qtype["bf16"]:
+                        new_linear = BF16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                        )
+                        device_type = module.weight.data.device.type
+                        # convert here
+                        new_linear._parameters['weight'] = nn.Parameter(module.weight)
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
 
-                    #  fp16 may generalize to other sizes later
                     if new_linear is not None:
                         if not module.training:
                             new_linear.eval()
