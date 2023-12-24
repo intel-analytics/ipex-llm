@@ -262,6 +262,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                 new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                     .to(device_type)
                     elif qtype == ggml_tensor_qtype["bf16"]:
+                        module.to(torch.bfloat16)
                         new_linear = BF16Linear(
                             in_features,
                             out_features,

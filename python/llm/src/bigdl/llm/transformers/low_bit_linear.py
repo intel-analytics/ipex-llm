@@ -604,22 +604,13 @@ class BF16Linear(nn.Linear):
         self.compute_dtype = compute_dtype
 
     def forward(self, x: torch.Tensor):
-        # only work for GPU now
-        invalidInputError(x.device.type == "xpu",
-                          "bf16 only works for GPU now")
-        is_training = self.training and not torch.is_inference_mode_enabled()
-        if is_training:
-            # below logic is only for training
-            autocast_dtype = get_autocast_dtype(x)
-            if self.compute_dtype is not None and x.device.type == "xpu":
-                x = x.to(self.compute_dtype)  # solve GC issue for unlora module
-            elif autocast_dtype is not None:
-                x = x.to(autocast_dtype)
-
+        x = x.to(torch.bfloat16)
+        if self.weight is not None and self.weight.dtype != x.dtype:
+            self.weight.data = self.weight.data.to(x.dtype)
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
+
         result = F.linear(x, self.weight)
         if self.bias is not None:
             result += self.bias
-
         return result.to(x.dtype)
