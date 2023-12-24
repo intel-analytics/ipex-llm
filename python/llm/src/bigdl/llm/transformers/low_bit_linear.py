@@ -599,7 +599,7 @@ class BF16Linear(nn.Linear):
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
         self.weight_length = self.out_len * self.in_len
-        self.qtype = qtype
+        self.qtype = ggml_tensor_qtype["bf16"]
         self.mp_group = mp_group
         self.compute_dtype = compute_dtype
 
