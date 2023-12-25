@@ -149,7 +149,7 @@ class _BaseAutoModelClass:
                     load_in_low_bit = "sym_int4"
                 else:
                     invalidInputError(False,
-                                      "Only nf4 or int4 is supported")
+                                      "Only nf4 or int4 is supported for bnb_4bit_quant_type")
             else:
                 warnings.warn(
                     "bnb_4bit_quant_type is None, use default int4", FutureWarning)
@@ -166,7 +166,8 @@ class _BaseAutoModelClass:
                     kwargs["torch_dtype"] = bnb_dtype
                 else:
                     invalidInputError(False,
-                                      "Only float32 or bfloat16 is supported")
+                                      "Only float32 or bfloat16"
+                                      " is supported for bnb_4bit_compute_dtype")
             else:
                 warnings.warn(
                     "torch_dtype is None, use default float32", FutureWarning)
