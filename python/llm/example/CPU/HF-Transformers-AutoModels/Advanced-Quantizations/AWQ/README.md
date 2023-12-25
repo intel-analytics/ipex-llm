@@ -33,9 +33,13 @@ conda activate llm
 
 pip install autoawq==0.1.8 --no-deps
 pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
-pip install transformers==4.36.0
+pip install transformers==4.35.0
 pip install accelerate==0.25.0
 pip install einops
+```
+**Note: For Mixtral model, please use transformers 4.36.0:**
+```bash
+pip install transformers==4.36.0
 ```
 
 ### 2. Run
