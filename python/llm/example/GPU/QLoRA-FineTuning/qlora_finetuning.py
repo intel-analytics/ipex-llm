@@ -43,16 +43,16 @@ if __name__ == "__main__":
     data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
 
-    nf4_config = BitsAndBytesConfig(
+    bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=False,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_compute_dtype=torch.bfloat16
     )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 quantization_config=nf4_config, )
+                                                 quantization_config=bnb_config, )
 
-    # also support now
+    # below is also supported
     # model = AutoModelForCausalLM.from_pretrained(model_path,
     #                                             load_in_low_bit="nf4",
     #                                             optimize_model=False,

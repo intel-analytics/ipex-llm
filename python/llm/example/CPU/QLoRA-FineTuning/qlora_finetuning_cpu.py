@@ -47,17 +47,18 @@ if __name__ == "__main__":
     # use the max_length to reduce memory usage, should be adjusted by different datasets
     data = data.map(lambda samples: tokenizer(samples["prediction"], max_length=256), batched=True)
 
-    int4_config = BitsAndBytesConfig(
+    bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=False,
-        bnb_4bit_quant_type="int4",
+        bnb_4bit_quant_type="int4",  # nf4 not supported on cpu yet
         bnb_4bit_compute_dtype=torch.bfloat16
     )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 quantization_config=int4_config, )
+                                                 quantization_config=bnb_config, )
 
-    # also support now
+    # below is also supported
     # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                              # nf4 not supported on cpu yet
     #                                              load_in_low_bit="sym_int4",
     #                                              optimize_model=False,
     #                                              torch_dtype=torch.bfloat16,

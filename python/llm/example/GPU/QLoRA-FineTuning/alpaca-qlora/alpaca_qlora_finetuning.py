@@ -203,14 +203,16 @@ def train(
             low_bit_format = "bf16"
         else:
             low_bit_format = "nf4"
-        nf4_config = BitsAndBytesConfig(
+        bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=False,
             bnb_4bit_quant_type=low_bit_format,
             bnb_4bit_compute_dtype=torch.bfloat16
         )
         model = AutoModelForCausalLM.from_pretrained(base_model,
-                                                     quantization_config=nf4_config, )
+                                                     quantization_config=bnb_config, )
+
+        # below is also supported
         # Load the base model from a directory or the HF Hub to 4-bit format
         # model = AutoModelForCausalLM.from_pretrained(
         #     base_model,
