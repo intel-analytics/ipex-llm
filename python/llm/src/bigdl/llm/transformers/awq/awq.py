@@ -71,6 +71,7 @@ layer_type_dict = {
     "gpt_neox": "GPTNeoXDecoderLayer",
     "aquila": "AquilaDecoderLayer",
     "Yi": "YiDecoderLayer",
+    "mixtral": "MixtralDecoderLayer",
 }
 
 
@@ -135,6 +136,8 @@ def get_blocks(model):
     elif "mistral" in str(model.__class__).lower():
         layers = model.model.layers
     elif "yi" in str(model.__class__).lower():
+        layers = model.model.layers
+    elif "mixtral" in str(model.__class__).lower():
         layers = model.model.layers
     else:
         invalidInputError(False, f"Model type {type(model)} isn't supported.")
@@ -213,6 +216,8 @@ def _replace_with_awq_layers(model, awq_config: AwqConfig):
 
         # Replace nn.Linear with WQLinear
         for name, module in named_linears.items():
+            if any(key in name for key in awq_config.modules_to_not_convert):
+                continue
             if awq_config.version == 'gemm':
                 q_linear_module = WQLinear_GEMM
             elif awq_config.version == 'gemv':
