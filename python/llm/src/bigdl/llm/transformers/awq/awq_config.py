@@ -64,6 +64,8 @@ class AwqConfig(QuantizationConfigMixin):
         `AwqBackendPackingMethod.AUTOAWQ`):
             The quantization backend. Some models might be quantized using `llm-awq` backend.
             This is useful for users that quantize their own models using `llm-awq` library.
+        modules_to_not_convert (`list`, *optional*, defaults to []):
+            The modules in qblock while not quantized.
     """
 
     def __init__(
@@ -73,6 +75,7 @@ class AwqConfig(QuantizationConfigMixin):
         zero_point: bool = True,
         version: AWQLinearVersion = AWQLinearVersion.GEMM,
         backend: AwqBackendPackingMethod = AwqBackendPackingMethod.AUTOAWQ,
+        modules_to_not_convert: list = [],
         **kwargs,
     ):
         self.quant_method = QuantizationMethod.AWQ
@@ -82,6 +85,7 @@ class AwqConfig(QuantizationConfigMixin):
         self.zero_point = zero_point
         self.version = version
         self.backend = backend
+        self.modules_to_not_convert = modules_to_not_convert
 
         self.post_init()
 
