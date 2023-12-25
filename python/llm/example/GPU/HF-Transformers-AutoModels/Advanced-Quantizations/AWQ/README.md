@@ -13,7 +13,7 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [llava-v1.5-13B-AWQ](https://huggingface.co/TheBloke/llava-v1.5-13B-AWQ)
 - [Yi-6B-AWQ](https://huggingface.co/TheBloke/Yi-6B-AWQ)
 - [Yi-34B-AWQ](https://huggingface.co/TheBloke/Yi-34B-AWQ)
-- [mixtral-8x7b-v0.1-AWQ](https://huggingface.co/TheBloke/mixtral-8x7b-v0.1-AWQ)
+- [Mixtral-8x7B-Instruct-v0.1-AWQ](https://huggingface.co/ybelkada/Mixtral-8x7B-Instruct-v0.1-AWQ)
 
 ## Requirements
 
