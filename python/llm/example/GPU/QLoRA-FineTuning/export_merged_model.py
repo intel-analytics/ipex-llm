@@ -54,7 +54,8 @@ if __name__ == "__main__":
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
 
     lora_config = LoraConfig.from_json_file(os.path.join(adapter_path, "adapter_config.json"))
-    qa_lora = lora_config.get("qa_lora", False)
+    training_mode = lora_config.get("training_mode", "qlora")
+    qa_lora = training_mode == "qalora"
 
     temp_dir = None
     if qa_lora:
