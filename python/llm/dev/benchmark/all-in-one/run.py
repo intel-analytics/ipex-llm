@@ -20,6 +20,7 @@ import torch
 import time
 import gc
 import traceback
+import threading
 
 import numpy as np
 from datetime import date
@@ -44,6 +45,21 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
+    for i in range(num_trials + warm_up):
+        st = time.perf_counter()
+        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                    num_beams=num_beams)
+        torch.xpu.synchronize()
+        end = time.perf_counter()
+        output_ids = output_ids.cpu()
+        print("model generate cost: " + str(end - st))
+        output = tokenizer.batch_decode(output_ids)
+        print(output[0])
+        actual_out_len = output_ids.shape[1] - actual_in_len
+        if i >= warm_up:
+            result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                actual_in_len, actual_out_len])
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
@@ -368,42 +384,27 @@ def run_transformer_int4_gpu(repo_id,
     result = {}
     with torch.inference_mode():
         for in_out in in_out_pairs:
-            try:
-                in_out_len = in_out.split("-")
-                in_len = int(in_out_len[0])
-                out_len = int(in_out_len[1])
-                # As different tokenizer has different encodings,
-                # in_len.txt maybe shorter than we need,
-                # use much longer context to make sure input length
-                test_length = min(in_len*2, 8192)
-                while test_length not in [32, 256, 1024, 2048, 8192]:
-                    test_length = test_length * 2
-                input_str = open(f"prompt/{test_length}.txt", 'r').read()
-                # As different tokenizer has different encodings,
-                # slice the input_ids to ensure the prompt length is required length.
-                input_ids = tokenizer.encode(input_str, return_tensors="pt")
-                input_ids = input_ids[:, :in_len]
-                true_str = tokenizer.batch_decode(input_ids)[0]
-                input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
-                actual_in_len = input_ids.shape[1]
-                result[in_out] = []
-                for i in range(num_trials + warm_up):
-                    st = time.perf_counter()
-                    output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                                num_beams=num_beams)
-                    torch.xpu.synchronize()
-                    end = time.perf_counter()
-                    output_ids = output_ids.cpu()
-                    print("model generate cost: " + str(end - st))
-                    output = tokenizer.batch_decode(output_ids)
-                    print(output[0])
-                    actual_out_len = output_ids.shape[1] - actual_in_len
-                    if i >= warm_up:
-                        result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                            actual_in_len, actual_out_len])
-            except RuntimeError:
-                traceback.print_exc()
-                pass
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            # As different tokenizer has different encodings,
+            # in_len.txt maybe shorter than we need,
+            # use much longer context to make sure input length
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
+            actual_in_len = input_ids.shape[1]
+            result[in_out] = []
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
+            thread.start()
+            thread.join()
     del model
     torch.xpu.empty_cache()
     return result

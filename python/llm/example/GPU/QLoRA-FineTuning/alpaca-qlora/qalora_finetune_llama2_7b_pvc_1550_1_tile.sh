@@ -28,4 +28,4 @@ python ./alpaca_qlora_finetuning.py \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
     --val_set_size 2000 \
-    --qa_lora True
+    --training_mode "qalora"

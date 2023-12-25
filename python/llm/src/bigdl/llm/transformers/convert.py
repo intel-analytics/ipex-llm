@@ -46,6 +46,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from .utils import logger
 from typing import Union
 import numpy as np
+import os
 from bigdl.llm.utils.common import invalidInputError
 
 
@@ -172,7 +173,8 @@ def convert_gptq(module, awq=False):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False):
-    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, FP16Linear
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
+        FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
     has_been_replaced = False
 
@@ -212,7 +214,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if has_bias:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)
-                    elif qtype != ggml_tensor_qtype["fp16"]:
+                    elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
@@ -233,7 +235,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)
-                    else:
+                    elif qtype == ggml_tensor_qtype["fp16"]:
                         #  only support two size now
                         #  may generalize to other sizes
                         if module.in_features in [4096, 11008]:
@@ -259,8 +261,20 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             if module.bias is not None:
                                 new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                     .to(device_type)
+                    elif qtype == ggml_tensor_qtype["bf16"]:
+                        new_linear = BF16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                        )
+                        device_type = module.weight.data.device.type
+                        # convert here
+                        new_linear._parameters['weight'] = nn.Parameter(module.weight)
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
 
-                    #  fp16 may generalize to other sizes later
                     if new_linear is not None:
                         if not module.training:
                             new_linear.eval()
@@ -373,6 +387,8 @@ def convert_forward(m, target_m, new_forward):
 def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
+    from bigdl.llm.transformers.models.llama import llama_attention_selective_batching_forward_4_31
+    from bigdl.llm.transformers.models.llama import llama_model_selective_batching_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
     from bigdl.llm.transformers.models.llama import llama_mlp_forward
     from transformers.modeling_utils import PreTrainedModel
@@ -382,6 +398,10 @@ def _optimize_post(model, lightweight_bmm=False):
         logger.info("Only HuggingFace Transformers models are currently "
                     "supported for further optimizations")
         return model
+
+    vllm_selective_batching = os.getenv("VLLM_ENABLE_SELECTIVE_BATCHING")
+    enable_vllm_se_batching = vllm_selective_batching is not None
+    enable_vllm_se_batching = enable_vllm_se_batching and vllm_selective_batching.lower() == "true"
 
     trans_version = transformers.__version__
     if version.parse(trans_version) >= version.parse("4.31.0"):
@@ -396,6 +416,17 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
+        if enable_vllm_se_batching:
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaModel,
+                llama_model_selective_batching_forward_4_31,
+            )
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaAttention,
+                llama_attention_selective_batching_forward_4_31,
+            )
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
@@ -652,16 +683,34 @@ def _optimize_post(model, lightweight_bmm=False):
                             module.MistralRMSNorm,
                             llama_rms_norm_forward)
         else:
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.mistral import mistral_attention_forward
-            convert_forward(model,
-                            module.MistralAttention,
-                            mistral_attention_forward
-                            )
-            convert_forward(model,
-                            module.MistralRMSNorm,
-                            llama_rms_norm_forward)
+            if version.parse(trans_version) >= version.parse("4.36.0"):
+                modeling_module_name = model.__class__.__module__
+                module = importlib.import_module(modeling_module_name)
+                from bigdl.llm.transformers.models.mistral import mistral_attention_forward_4_36
+                convert_forward(model,
+                                module.MistralAttention,
+                                mistral_attention_forward_4_36
+                                )
+                convert_forward(model,
+                                module.MistralRMSNorm,
+                                llama_rms_norm_forward)
+                convert_forward(model,
+                                module.MistralMLP,
+                                llama_mlp_forward)
+            else:
+                modeling_module_name = model.__class__.__module__
+                module = importlib.import_module(modeling_module_name)
+                from bigdl.llm.transformers.models.mistral import mistral_attention_forward
+                convert_forward(model,
+                                module.MistralAttention,
+                                mistral_attention_forward
+                                )
+                convert_forward(model,
+                                module.MistralRMSNorm,
+                                llama_rms_norm_forward)
+                convert_forward(model,
+                                module.MistralMLP,
+                                llama_mlp_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
