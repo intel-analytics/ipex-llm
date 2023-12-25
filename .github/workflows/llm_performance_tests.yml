@@ -236,11 +236,11 @@ jobs:
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Prepare for install bigdl-llm from source
-        shell: bash
-        run: |
-          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
-          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+      # - name: Prepare for install bigdl-llm from source
+      #   shell: bash
+      #   run: |
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
 
       - name: Install bigdl-llm and other related packages
         shell: cmd
@@ -253,13 +253,7 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          cd python\llm
-          python setup.py clean --all bdist_wheel --win
-          if not exist dist\bigdl_llm*.whl (exit /b 1)
-          for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
-
-          pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-          if %ERRORLEVEL% neq 0 (exit /b 1)
+          pip install --pre --upgrade bigdl-llm[xpu]==2.5.0b20231221 -f https://developer.intel.com/ipex-whl-stable-xpu
           pip list
 
           call conda deactivate
@@ -283,7 +277,8 @@ jobs:
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
           fi
-          cur_date=$(date +%Y-%m-%d)
+          # cur_date=$(date +%Y-%m-%d)
+          cur_data="2023-12-21"
           echo "LOG_FILE=${cur_date}_output.txt" >> "$GITHUB_ENV"
 
           sed -i "s/date.today()/\"$cur_date\"/g" python/llm/dev/benchmark/all-in-one/run.py
