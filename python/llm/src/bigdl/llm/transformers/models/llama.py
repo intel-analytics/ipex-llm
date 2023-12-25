@@ -508,6 +508,11 @@ def llama_attention_selective_batching_forward_4_31(
 
 def check_flash_attention_available(query):
     # check whether ipex flash attention can be used
+    if query.shape[0] > 1 or query.size()[0] > 1:
+        # only use flash attention for batch_size = 1 now
+        # as flash attention doesn't support attn_mask in ipex 2.1,
+        # so it will cause output error for padded batch input
+        return False
     if query.device.type != "xpu":
         # ipex flash attention only support for xpu
         return False
@@ -521,11 +526,6 @@ def check_flash_attention_available(query):
         return False
     if query.dtype not in [torch.float32, torch.float16]:
         # only use flash attention for fp32/fp16 input
-        return False
-    if query.shape[0] > 1 or query.size()[0] > 1:
-        # only use flash attention for batch_size = 1 now
-        # as flash attention doesn't support attn_mask in ipex 2.1,
-        # so it will cause output error for padded batch input
         return False
     return True
 
