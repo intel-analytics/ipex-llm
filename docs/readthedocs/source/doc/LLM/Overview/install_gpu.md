@@ -45,7 +45,7 @@ wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchv
 wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-win_amd64.whl
 ```
 
-You may install directly from the wheel archives and then install `bigdl-llm` using following commands:
+You may install dependencies directly from the wheel archives and then install `bigdl-llm` using following commands:
 
 ```
 pip install torch-2.1.0a0+cxx11.abi-cp39-cp39-win_amd64.whl
@@ -96,7 +96,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 ```eval_rst
 .. important::
 
-    We currently support the Ubuntu 20.04 operating system or later.
+    We currently support the Ubuntu 20.04 operating system and later.
 ```
 
 ```eval_rst
@@ -114,7 +114,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
            See `release page <https://dgpu-docs.intel.com/releases/index.html>`_ for latest version.
 
-      * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2024.0. Onednn, OneMKL and DPC++ compiler are needed, others are optional.
+      * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
         .. seealso::
 
@@ -133,7 +133,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
            See `release page <https://dgpu-docs.intel.com/releases/index.html>`_ for latest version.
 
-      * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2. Onednn, OneMKL and DPC++ compiler are needed, others are optional.
+      * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
         .. seealso::
 
