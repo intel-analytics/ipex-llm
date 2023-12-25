@@ -19,8 +19,16 @@ import torch
 import transformers
 import deepspeed
 
-local_rank = int(os.getenv("LOCAL_RANK", "0"))
-world_size = int(os.getenv("WORLD_SIZE", "1"))
+def get_int_from_env(env_keys, default):
+    """Returns the first positive env value found in the `env_keys` list or the default."""
+    for e in env_keys:
+        val = int(os.environ.get(e, -1))
+        if val >= 0:
+            return val
+    return int(default)
+ 
+local_rank = get_int_from_env(["LOCAL_RANK","PMI_RANK"], "0")
+world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
 
 from bigdl.llm import optimize_model
 
@@ -35,7 +43,7 @@ from transformers import LlamaTokenizer, AutoTokenizer
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
+                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
                         help='Prompt to infer')
