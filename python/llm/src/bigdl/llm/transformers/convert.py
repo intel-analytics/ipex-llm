@@ -266,7 +266,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         new_linear = BF16Linear(
                             in_features,
                             out_features,
-                            qtype,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
@@ -367,11 +366,11 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
             "an issue on github if you think this is a bug."
         )
     elif device == "cpu":
-        if not (getattr(model, "quantization_method", None) == "gptq") and torch_dtype == "auto":
-            convert_bigdl_other_module(model, torch.float32)
-        elif not (getattr(model, "quantization_method", None) == "gptq") and torch_dtype != "auto":
-            # if user specify torch dtype, cast module to dtype
-            convert_bigdl_other_module(model, torch_dtype)
+        if not (getattr(model, "quantization_method", None) == "gptq"):
+            if torch_dtype == "auto":
+                convert_bigdl_other_module(model, torch.float32)
+            else:
+                convert_bigdl_other_module(model, torch_dtype)
     elif device == "meta":
         # Do nothing here for weights are empty.
         pass
