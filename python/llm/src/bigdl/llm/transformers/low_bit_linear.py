@@ -592,7 +592,7 @@ class FP16Linear(nn.Linear):
 
 
 class BF16Linear(nn.Linear):
-    def __init__(self, input_features, output_features, qtype, bias=True,
+    def __init__(self, input_features, output_features, bias=True,
                  mp_group=None, compute_dtype=None):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
