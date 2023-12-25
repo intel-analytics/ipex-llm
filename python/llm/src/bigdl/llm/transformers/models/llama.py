@@ -140,7 +140,7 @@ def llama_attention_forward_4_31(
         fsdp_flag = check_flash_attention_available(hidden_states)
     else:
         fsdp_flag = False
-    if fsdp_flag and q_len > 1 and original_dtype in [torch.float32, torch.float16]:
+    if fsdp_flag and q_len > 1:
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype
@@ -518,6 +518,9 @@ def check_flash_attention_available(query):
     if not torch.xpu.has_xetla():
         # ipex flash attention is only supported for xetla
         # may update this later
+        return False
+    if query.dtype not in [torch.float32, torch.float16]:
+        # only use flash attention for fp32/fp16 input
         return False
     return True
 
