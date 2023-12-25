@@ -127,7 +127,7 @@ class LLMEngine:
         # self.parallel_config = parallel_config
         self.scheduler_config = scheduler_config
         self.log_stats = log_stats
-        self.kv_cache = [[dict() for _ in range(2)] for _ in range(32)]
+        self.kv_cache = [[dict() for _ in range(2)] for _ in range(model_config.hf_config.num_hidden_layers)]
         # self._verify_args()
 
         self.tokenizer = get_tokenizer(
