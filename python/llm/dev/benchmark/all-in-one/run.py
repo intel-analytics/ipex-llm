@@ -372,8 +372,12 @@ def run_transformer_int4_gpu(repo_id,
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                     trust_remote_code=True, use_cache=True).eval()
+        if 'starcoder' in repo_id:
+            model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                        trust_remote_code=True, use_cache=True,torch_dtype=torch.bfloat16).eval()
+        else:
+            model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                        trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
