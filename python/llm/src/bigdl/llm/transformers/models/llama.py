@@ -519,6 +519,9 @@ def check_flash_attention_available(query):
         # ipex flash attention is only supported for xetla
         # may update this later
         return False
+    if query.dtype not in [torch.float32, torch.float16]:
+        # only use flash attention for fp32/fp16 input
+        return False
     return True
 
 

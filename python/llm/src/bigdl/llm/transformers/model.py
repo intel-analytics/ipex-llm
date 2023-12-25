@@ -304,7 +304,8 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
+                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
+                                     torch_dtype=kwargs.get("torch_dtype", 'auto'))
         model.config.update({"bigdl_transformers_low_bit": q_k})
         model.config.update({"tie_word_embeddings": False})
 

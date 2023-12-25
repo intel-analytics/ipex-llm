@@ -101,6 +101,12 @@ bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 
 #### LoRA
 
+##### Finetuning LLaMA2-7B on single Arc A770
+
+```bash
+bash lora_finetune_llama2_7b_arc_1_card.sh
+```
+
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
 
 ```bash
