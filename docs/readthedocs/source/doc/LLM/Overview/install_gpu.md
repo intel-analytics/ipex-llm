@@ -8,13 +8,13 @@ BigDL-LLM on Windows supports Intel iGPU and dGPU.
 
 To apply Intel GPU acceleration, there're several prerequisite steps for tools installation and environment preparation:
 
-* Step 1: Install `Visual Studio 2022 <https://visualstudio.microsoft.com/downloads/>`_ Community Edition and select "Desktop development with C++" workload
+* Step 1: Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and select "Desktop development with C++" workload
 
 * Step 2: Install or update to latest GPU driver
 
-* Step 3: Install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ 2024.0
+* Step 3: Install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) 2024.0
 
-### Install BigDL-LLM From PyPi
+### Install BigDL-LLM From PyPI
 
 We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
@@ -79,10 +79,6 @@ set BIGDL_LLM_XMX_DISABLED=1
    For the first time that **each** model runs on **a new machine**, it may take around several minutes to compile.
 ```
 
-### Known Issue
-
-todo
-
 ## Linux
 
 ### Prerequisites
@@ -141,7 +137,7 @@ todo
 
            See `release page <https://dgpu-docs.intel.com/releases/index.html>`_ for latest version.
 
-      * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2.0. Onednn, OneMKL and DPC++ compiler are needed, others are optional.
+      * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2. Onednn, OneMKL and DPC++ compiler are needed, others are optional.
 
         .. seealso::
 
@@ -149,7 +145,7 @@ todo
 
 ```
 
-### Install BigDL-LLM From PyPi
+### Install BigDL-LLM From PyPI
 
 We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
@@ -262,7 +258,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
 
-      Please note that ``libtcmalloc.so`` can installed by ``conda install -c conda-forge -y gperftools=2.10``
+      Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``
 
 ```
 
