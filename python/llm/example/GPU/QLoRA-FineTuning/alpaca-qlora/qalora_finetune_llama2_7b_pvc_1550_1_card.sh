@@ -24,7 +24,7 @@ mpirun -n 2 \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
        --output_dir "./bigdl-qlora-alpaca" \
-       --qa_lora True \
+       --training_mode "qalora" \
        --learning_rate 9e-5 \
        --micro_batch_size 8 \
        --batch_size 128 \
