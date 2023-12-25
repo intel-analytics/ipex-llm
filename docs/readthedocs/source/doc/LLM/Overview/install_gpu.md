@@ -83,19 +83,21 @@ set BIGDL_LLM_XMX_DISABLED=1
 
 ### Prerequisites
 
+BigDL-LLM for GPU supports on Linux has been verified on:
+
+* Intel Arc™ A-Series Graphics
+* Intel Data Center GPU Flex Series
+* Intel Data Center GPU Max Series
+
+```eval_rst
+.. important::
+
+    We currently support the Ubuntu 20.04 operating system or later.
+```
+
 ```eval_rst
 .. tabs::
    .. tab:: PyTorch 2.1
-
-      BigDL-LLM for GPU supports on Linux with PyTorch 2.1 has been verified on:
-
-      * Intel Arc™ A-Series Graphics
-      * Intel Data Center GPU Flex Series
-      * Intel Data Center GPU Max Series
-
-      .. note::
-
-         We currently support the Ubuntu 20.04 operating system or later.
 
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here're several prerequisite steps for tools installation and environment preparation:
 
@@ -115,16 +117,6 @@ set BIGDL_LLM_XMX_DISABLED=1
            We recommend you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh>`_ to install oneapi.
 
    .. tab:: Pytorch 2.0
-
-      BigDL-LLM for GPU supports on Linux with PyTorch 2.0 has been verified on:
-
-      * Intel Arc™ A-Series Graphics
-      * Intel Data Center GPU Flex Series
-      * Intel Data Center GPU Max Series
-
-      .. note::
-
-         We currently support the Ubuntu 20.04 operating system or later.
 
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
