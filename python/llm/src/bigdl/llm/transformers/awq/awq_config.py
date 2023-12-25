@@ -73,6 +73,7 @@ class AwqConfig(QuantizationConfigMixin):
         zero_point: bool = True,
         version: AWQLinearVersion = AWQLinearVersion.GEMM,
         backend: AwqBackendPackingMethod = AwqBackendPackingMethod.AUTOAWQ,
+        modules_to_not_convert: list = [],
         **kwargs,
     ):
         self.quant_method = QuantizationMethod.AWQ
@@ -82,6 +83,7 @@ class AwqConfig(QuantizationConfigMixin):
         self.zero_point = zero_point
         self.version = version
         self.backend = backend
+        self.modules_to_not_convert = modules_to_not_convert
 
         self.post_init()
 

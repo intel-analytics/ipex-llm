@@ -13,6 +13,7 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [llava-v1.5-13B-AWQ](https://huggingface.co/TheBloke/llava-v1.5-13B-AWQ)
 - [Yi-6B-AWQ](https://huggingface.co/TheBloke/Yi-6B-AWQ)
 - [Yi-34B-AWQ](https://huggingface.co/TheBloke/Yi-34B-AWQ)
+- [mixtral-8x7b-v0.1-AWQ](https://huggingface.co/TheBloke/mixtral-8x7b-v0.1-AWQ)
 
 ## Requirements
 
@@ -31,9 +32,9 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install transformers==4.35.0
-pip install autoawq==0.1.6 --no-deps
-pip install accelerate==0.24.1
+pip install transformers==4.36.0
+pip install autoawq==0.1.8 --no-deps
+pip install accelerate==0.25.0
 pip install einops
 ```
 
