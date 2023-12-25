@@ -10,7 +10,7 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 1: Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and select "Desktop development with C++" workload
 
-* Step 2: Install or update to latest GPU driver
+* Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
 * Step 3: Install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) 2024.0
 
@@ -164,7 +164,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
 
    .. tab:: Pytorch 2.0
 
-      .. code-block:: cmd
+      .. code-block:: bash
 
          conda create -n llm python=3.9
          conda activate llm
