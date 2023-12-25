@@ -24,7 +24,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
    ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
 ```
 
-The folloing ways to install `bigdl-llm` is the following commands:
+The easiest ways to install `bigdl-llm` is the following commands:
 
 ```
 conda create -n llm python=3.9 libuv
@@ -45,7 +45,7 @@ wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchv
 wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-win_amd64.whl
 ```
 
-Then you may install directly from the wheel archives then install `bigdl-llm` using following commands:
+You may install directly from the wheel archives and then install `bigdl-llm` using following commands:
 
 ```
 pip install torch-2.1.0a0+cxx11.abi-cp39-cp39-win_amd64.whl
@@ -76,8 +76,12 @@ set BIGDL_LLM_XMX_DISABLED=1
 ```eval_rst
 .. note::
 
-   For the first time that **each** model runs on **a new machine**, it may take around several minutes to compile.
+   For the first time that **each model** runs on **a new machine**, it may take around several minutes to compile.
 ```
+
+### Troubleshooting
+
+todo
 
 ## Linux
 
