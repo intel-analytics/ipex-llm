@@ -116,13 +116,13 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
-    # relora params, if relora_steps should > 0 if the training mode is `relora`,
+    training_mode: str = "qlora",
+    # relora params, relora_steps should > 0 if the training mode is `relora`,
     # Implements the ReLoRA training procedure from https://arxiv.org/abs/2307.05695,
     # minus the initial full fine-tune.
     relora_steps: int = 300,         # Number of steps per ReLoRA restart
     relora_warmup_steps: int = 10,   # Number of per-restart warmup steps
     relora_cpu_offload: bool = True, # True to perform lora weight merges on cpu during restarts, for modest gpu memory savings
-    training_mode: str = "qlora",
 ):
     invalidInputError(training_mode in ["qlora", "qalora", "lora", "relora"],
                       "Only qlora / qalora / lora / relora are supported for training_mode now.")
@@ -151,10 +151,10 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
+            f"training_mode: {training_mode}\n"
             f"relora_steps: {relora_steps}\n"
             f"relora_warmup_steps: {relora_warmup_steps}\n"
             f"relora_cpu_offload: {relora_cpu_offload}\n"
-            f"training_mode: {training_mode}\n"
         )
     assert (
         base_model
