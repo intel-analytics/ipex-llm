@@ -522,9 +522,10 @@ def check_flash_attention_available(query):
     if query.dtype not in [torch.float32, torch.float16]:
         # only use flash attention for fp32/fp16 input
         return False
-    if query.shape[0] > 1:
-        # only use flash attention for batch_size = 1
-        # as we found some precision problem with batch_size > 1
+    if query.shape[0] > 1 or query.size()[0] > 1:
+        # only use flash attention for batch_size = 1 now
+        # as flash attention doesn't support attn_mask in ipex 2.1,
+        # so it will cause output error for padded batch input
         return False
     return True
 
