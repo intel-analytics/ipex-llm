@@ -30,12 +30,17 @@ def highlight_vals(val, max=3.0):
     else:
         return ''
 
+def is_diffs_within_normal_range(diff1, diff2, threshold=5.0):
+    return not any(diff < (-threshold) for diff in diff1 + diff2)
+
 def main():
     parser = argparse.ArgumentParser(description="convert .csv file to .html file")
     parser.add_argument("-f", "--folder_path", type=str, dest="folder_path",
                         help="The directory which stores the .csv file", default="/mnt/disk1/nightly_perf_gpu/")
     parser.add_argument("-t", "--threshold", type=float, dest="threshold",
                         help="the threshold of highlight values", default=3.0)
+    parser.add_argument("-b", "--baseline_path", type=str, dest="baseline_path",
+                        help="the baseline path which stores the baseline.csv file")
     args = parser.parse_args()
 
     csv_files = []
@@ -46,12 +51,17 @@ def main():
     csv_files.sort(reverse=True)
 
     highlight_threshold=args.threshold
-
+    
     latest_csv = pd.read_csv(csv_files[0], index_col=0)
     daily_html=csv_files[0].split(".")[0]+".html"
 
+    diffs_within_normal_range = True
+
     if len(csv_files)>1:
-        previous_csv = pd.read_csv(csv_files[1], index_col=0)
+        if args.baseline_path:
+            previous_csv = pd.read_csv(args.baseline_path, index_col=0)
+        else:
+            previous_csv = pd.read_csv(csv_files[1], index_col=0)
 
         last1=['']*len(latest_csv.index)
         diff1=['']*len(latest_csv.index)
@@ -96,6 +106,8 @@ def main():
         latest_csv.insert(loc=5,column='last2',value=last2)
         latest_csv.insert(loc=6,column='diff2(%)',value=diff2)
 
+        diffs_within_normal_range = is_diffs_within_normal_range(diff1, diff2, highlight_threshold)
+
         subset=['diff1(%)','diff2(%)']
         columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
                 'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}', 'peak mem (GB)': '{:.2f}'}
@@ -105,6 +117,11 @@ def main():
                             .set_table_attributes("border=1").render())
     else:
         latest_csv.to_html(daily_html)
+
+    if args.baseline_path and not diffs_within_normal_range:
+        print("The diffs are outside the normal range: %" + highlight_threshold)
+        return 1 
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
