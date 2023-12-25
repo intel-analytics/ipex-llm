@@ -60,7 +60,22 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "_pre_quantization_dtype")
 
     self.to('cpu')
+
+    kwargs['safe_serialization'] = False
+
+    architectures = getattr(self.config, "architectures", None)
+    model_type = getattr(self.config, "model_type", None)
     self.save_pretrained(*args, **kwargs)
+
+    if architectures:
+        self.config.update({"architectures": architectures})
+    if model_type:
+        self.config.update({"model_type": model_type})
+
+    self.config.save_pretrained(args[0])
+    if self.can_generate():
+        self.generation_config.save_pretrained(args[0])
+
     import json
     import os
     # We conveniently save all the keys of the model to have them on hand,
@@ -91,10 +106,10 @@ class _BaseAutoModelClass:
                                 if the model is GPTQ model.
                              Default to be False.
         :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                , sym_int8, nf3, nf4, fp4, fp8 or fp16. sym_int4 means symmetric
-                                 int 4, asym_int4 means asymmetric int 4, nf4 means 4-bit
-                                 NormalFloat, etc. Relevant low bit optimizations will be applied
-                                 to the model.
+                                , sym_int8, nf3, nf4, fp4, fp8, fp8_e4m3, fp8_e5m2, fp16 or bf16.
+                                sym_int4 means symmetric int 4, asym_int4 means asymmetric int 4,
+                                nf4 means 4-bit NormalFloat, etc. Relevant low bit optimizations
+                                will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be True.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
@@ -216,7 +231,7 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          "fp4, fp8, fp16, mixed_fp4 or mixed_fp8.")
+                          "fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,

@@ -48,10 +48,11 @@ from utils.prompter import Prompter
 
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
-
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
-    cast_lora_weight, LoraConfig
+    LoraConfig
+from bigdl.llm.utils.common import invalidInputError
+
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -61,8 +62,8 @@ def get_int_from_env(env_keys, default):
             return val
     return default
 
-def _get_trainer_cls(relora_steps):
-    if relora_steps > 0:
+def _get_trainer_cls(training_mode):
+    if training_mode == "relora":
         from bigdl.llm.transformers.relora import ReLoRATrainer
         return ReLoRATrainer
     return transformers.Trainer
@@ -115,14 +116,16 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
-    qa_lora: bool = False, # if True, use qa-lora https://arxiv.org/abs/2309.14717
-    # relora params, if relora_steps > 0,
+    # relora params, if relora_steps should > 0 if the training mode is `relora`,
     # Implements the ReLoRA training procedure from https://arxiv.org/abs/2307.05695,
     # minus the initial full fine-tune.
-    relora_steps: int = 0,         # Number of steps per ReLoRA restart
+    relora_steps: int = 300,         # Number of steps per ReLoRA restart
     relora_warmup_steps: int = 10,   # Number of per-restart warmup steps
     relora_cpu_offload: bool = True, # True to perform lora weight merges on cpu during restarts, for modest gpu memory savings
+    training_mode: str = "qlora",
 ):
+    invalidInputError(training_mode in ["qlora", "qalora", "lora", "relora"],
+                      "Only qlora / qalora / lora / relora are supported for training_mode now.")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
@@ -148,15 +151,18 @@ def train(
             f"wandb_log_model: {wandb_log_model}\n"
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
-            f"qa_lora: {qa_lora}\n"
             f"relora_steps: {relora_steps}\n"
             f"relora_warmup_steps: {relora_warmup_steps}\n"
             f"relora_cpu_offload: {relora_cpu_offload}\n"
+            f"training_mode: {training_mode}\n"
         )
     assert (
         base_model
     ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
     gradient_accumulation_steps = batch_size // micro_batch_size
+
+    if training_mode == "relora":
+        assert(relora_steps > 0), "The relora_steps should > 0 if the training_mode is relora."
 
     prompter = Prompter(prompt_template_name)
 
@@ -190,7 +196,12 @@ def train(
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
         # Default 4-bit format for qa-lora is sym_int4
-        low_bit_format = "sym_int4" if qa_lora else "nf4" 
+        if training_mode == "qalora":
+            low_bit_format = "sym_int4"
+        elif training_mode == "lora":
+            low_bit_format = "bf16"
+        else:
+            low_bit_format = "nf4"
         # Load the base model from a directory or the HF Hub to 4-bit format
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
@@ -211,7 +222,7 @@ def train(
         0  # unk. we want this to be different from the eos token
     )
     tokenizer.padding_side = "left"  # Allow batched inference
-    
+
     print(model)
 
     def tokenize(prompt, add_eos_token=True):
@@ -272,7 +283,7 @@ def train(
         lora_dropout=lora_dropout,
         bias="none",
         task_type="CAUSAL_LM",
-        qa_lora=qa_lora,
+        training_mode=training_mode,
     )
     print(f"Lora Config: {config}")
     model = get_peft_model(model, config)
@@ -304,9 +315,9 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer_cls = _get_trainer_cls(relora_steps=relora_steps)
+    trainer_cls = _get_trainer_cls(training_mode=training_mode)
     extra_args = {}
-    if relora_steps > 0:
+    if training_mode == "relora":
         extra_args["base_model"] = base_model
         extra_args["relora_steps"] = relora_steps
         extra_args["relora_warmup_steps"] = relora_warmup_steps
@@ -326,7 +337,7 @@ def train(
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            lr_scheduler_type="constant" if qa_lora else "cosine",
+            lr_scheduler_type="constant" if training_mode=="qalora" else "cosine",
             bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
@@ -335,7 +346,7 @@ def train(
             eval_steps=100 if val_set_size > 0 else None,
             save_steps=100,
             output_dir=output_dir,
-            save_total_limit=100 if relora_steps < 1 else 4,
+            save_total_limit=100 if training_mode != "relora" else 4, # relora will save the whole model, here we use 4 to save the disk space.
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,

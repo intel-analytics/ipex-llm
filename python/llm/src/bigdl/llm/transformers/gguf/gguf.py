@@ -246,6 +246,24 @@ class GGUFTensorLoader:
                 tensor = self.convert_funcs[qtype](tensor, size, ndims, dims)
                 yield name, tensor
 
+    def load_while_process(self, process):
+        with open(self.fpath, 'rb') as f:
+            for name, ndims, dims, qtype, offset in tqdm(self.infos, desc="Loading gguf tensors"):
+                total_ne = functools.reduce(lambda x, y: x * y, dims)
+                invalidInputError(total_ne % self.block_ne[qtype] == 0,
+                                  f"wrong elements num: {dims}")
+
+                size = total_ne // self.block_ne[qtype] * self.block_size[qtype]
+                invalidInputError(size != 0, f"unsupported quantize type: {qtype}")
+
+                offset += self.base_offset
+                f.seek(offset)
+                data = f.read(size)
+                arr = numpy.frombuffer(data, dtype=numpy.uint8)
+                tensor = torch.from_numpy(arr)
+                tensor = self.convert_funcs[qtype](tensor, size, ndims, dims)
+                process(name, tensor)
+
     def convert_f32_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
         return tensor.view(torch.float)
 
@@ -378,8 +396,15 @@ class GGUFFileLoader:
         spm_pb2 = import_protobuf("Failed to import protobuf")
 
         tokens = self.config['tokenizer.ggml.tokens']
-        scores = self.config['tokenizer.ggml.scores']
         token_types = self.config['tokenizer.ggml.token_type']
+        merges = None
+        if 'tokenizer.ggml.scores' in self.config:
+            scores = self.config['tokenizer.ggml.scores']
+        elif self.config['tokenizer.ggml.model'] == "gpt2":
+            merges = self.config['tokenizer.ggml.merges']
+            scores = list(range(len(tokens)))
+        else:
+            invalidInputError(False, "Invalid configuration: 'scores' is not provided.")
 
         pieces = [
             spm_pb2.ModelProto.SentencePiece(
@@ -393,4 +418,7 @@ class GGUFFileLoader:
             )
         ]
 
-        return pieces
+        if merges is not None:
+            return pieces, merges
+        else:
+            return pieces

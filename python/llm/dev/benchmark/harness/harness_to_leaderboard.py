@@ -49,7 +49,7 @@ task_to_metric = dict(
 )
 
 def parse_precision(precision, model="bigdl-llm"):
-    result = match(r"([a-zA-Z_]*)(\d+)", precision)
+    result = match(r"([a-zA-Z_]+)(\d+)([a-zA-Z_\d]*)", precision)
     datatype = result.group(1)
     bit = int(result.group(2))
     if bit >= 16:

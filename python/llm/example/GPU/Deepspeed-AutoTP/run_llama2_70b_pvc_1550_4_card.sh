@@ -14,21 +14,18 @@
 # limitations under the License.
 #
 
+export ZE_AFFINITY_MASK="0,1,2,3,4,5,6,7" # specify the used GPU
+NUM_GPUS=8 # number of used GPU
 export MASTER_ADDR=127.0.0.1
-export OMP_NUM_THREADS=6 # adjust this to 1/4 of total physical cores
 export FI_PROVIDER=tcp
-export CCL_ATL_TRANSPORT=ofi
+export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}
 
-mpirun -n 2 \
-       python -u ./alpaca_qlora_finetuning.py \
-       --base_model "meta-llama/Llama-2-7b-hf" \
-       --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./bigdl-qlora-alpaca" \
-       --learning_rate 9e-5 \
-       --micro_batch_size 2 \
-       --batch_size 128 \
-       --lora_r 8 \
-       --lora_alpha 16 \
-       --lora_dropout 0.05 \
-       --val_set_size 2000 \
-    --training_mode "qalora" > training.log
+basekit_root=/opt/intel/oneapi
+source $basekit_root/setvars.sh --force
+source $basekit_root/ccl/latest/env/vars.sh --force
+
+export OMP_NUM_THREADS=$((56/$NUM_GPUS))
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
+export TORCH_LLM_ALLREDUCE=1
+mpirun -np $NUM_GPUS --prepend-rank \
+    python deepspeed_autotp.py --repo-id-or-model-path 'meta-llama/Llama-2-70b-chat-hf'
