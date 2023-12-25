@@ -27,4 +27,5 @@ mpirun -n 8 \
        --micro_batch_size 8 \
        --relora_steps 300 \
        --relora_warmup_steps 10 \
-       --batch_size 128 > relora_training.log
+       --batch_size 128 \
+       --training_mode "relora" > relora_training.log

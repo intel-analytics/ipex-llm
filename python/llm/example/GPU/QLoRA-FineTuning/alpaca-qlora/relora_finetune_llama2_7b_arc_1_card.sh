@@ -20,4 +20,5 @@ python ./alpaca_qlora_finetuning.py \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-relora-alpaca" \
     --relora_steps 300 \
-    --relora_warmup_steps 10
+    --relora_warmup_steps 10 \
+    --training_mode "relora"
