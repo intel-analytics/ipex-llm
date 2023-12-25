@@ -239,9 +239,11 @@ def yi_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=
         # https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model
         prompt = f"""
             <|im_start|>system
-            You are a helpful assistant.<|im_end|>
+            You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.
+            <|im_end|>
             <|im_start|>user
-            {user_input}<|im_end|>
+            {user_input}
+            <|im_end|>
             <|im_start|>assistant
         """
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
