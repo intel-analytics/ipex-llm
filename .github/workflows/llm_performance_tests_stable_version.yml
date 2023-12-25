@@ -7,8 +7,8 @@ concurrency:
 
 # Controls when the action will run.
 on:
-  # pull_request:
-  #   branches: [main]
+  pull_request:
+    branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -103,7 +103,6 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH/fp8 -b $CSV_SAVE_PATH/fp8/transformer_int4_gpu-results-1baseline.csv -t 5.0
 
-
   llm-performance-test-on-spr:
     needs: llm-cpp-build
     strategy:
@@ -155,6 +154,5 @@ jobs:
           cp ./*.csv /models/nightly_perf_cpu/
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/nightly_perf_cpu/ -b /models/nightly_perf_cpu/transformer_int4-results-1baseline.csv -t 5.0
-
+          python csv_to_html.py -f /models/nightly_perf_cpu/
   
