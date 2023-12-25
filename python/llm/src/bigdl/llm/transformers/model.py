@@ -148,15 +148,28 @@ class _BaseAutoModelClass:
                 elif bnb_4bit_type == "int4":
                     load_in_low_bit = "sym_int4"
                 else:
-                    # for other low bit
-                    load_in_low_bit = bnb_4bit_type
+                    invalidInputError(False,
+                                      "Only nf4 or int4 is supported")
+            else:
+                warnings.warn(
+                    "bnb_4bit_quant_type is None, use default int4", FutureWarning)
+                load_in_low_bit = "sym_int4"
             if user_quantization_config.bnb_4bit_use_double_quant is True:
                 warnings.warn(
                     "BigDL LLM QLoRA does not support double quant now, set to False",
                     FutureWarning)
             if user_quantization_config.bnb_4bit_compute_dtype is not None:
-                kwargs["torch_dtype"] = user_quantization_config.bnb_4bit_compute_dtype
+                bnb_dtype = user_quantization_config.bnb_4bit_compute_dtype
+                if bnb_dtype == torch.float32:
+                    kwargs["torch_dtype"] = bnb_dtype
+                elif bnb_dtype == torch.bfloat16:
+                    kwargs["torch_dtype"] = bnb_dtype
+                else:
+                    invalidInputError(False,
+                                      "Only float32 or bfloat16 is supported")
             else:
+                warnings.warn(
+                    "torch_dtype is None, use default float32", FutureWarning)
                 kwargs["torch_dtype"] = torch.float32
             optimize_model = False
             kwargs["modules_to_not_convert"] = ["lm_head"]
