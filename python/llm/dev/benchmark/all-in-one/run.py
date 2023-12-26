@@ -405,8 +405,11 @@ def run_transformer_int4_gpu(repo_id,
             thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
             thread.start()
             thread.join()
-    del model
+    model.to('cpu')
+    torch.xpu.synchronize()
     torch.xpu.empty_cache()
+    del model
+    gc.collect()
     return result
 
 
