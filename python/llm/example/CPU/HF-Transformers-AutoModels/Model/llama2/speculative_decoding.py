@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     # Load tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    
+
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)

@@ -84,3 +84,27 @@ What is AI?
 
 AI, or artificial intelligence, refers to the ability of machines to perform tasks that would typically require human intelligence, such as learning, problem-solving,
 ```
+
+### 3. Speculative Decoding
+Speculative decoding is a pivotal technique to accelerate the inference of large language models (LLMs) by employing a smaller draft/assistant model to predict the target model's outputs. Please refer [Assisted Generation](https://huggingface.co/blog/assisted-generation) for details. In the following example, we will use int4 assistant model to acclerate FP32 main model, without impacting accuarcy.
+
+```bash
+python speculative_decoding.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --assistant-model-path ASSISTANT_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```
+
+New Arguments info:
+- `--assistant-model-path ASSISTANT_MODEL_PATH`: argument defining the huggingface repo id for the assistant model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. 
+
+#### 3.1 Use additional model as assistant model
+By default, we need to add a second model named draft/assistant model to generate draft proposals. Note that assistant model should be similar to main model. It's recommended to use a small version of main model, e.g., Llama-72B as main model and Llama-7B as assistant model.
+
+```bash
+python speculative_decoding.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --assistant-model-path ASSISTANT_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```
+
+#### 3.2 Use int4 model as assistant model
+In most cases, it's quite difficult to prepare or choose an assistant model. For example, there isn't any smaller version for main model. To resolve this problem, we can use int4 model as assistant model, which is much faster than the main model.
+
+```bash
+python speculative_decoding.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```
