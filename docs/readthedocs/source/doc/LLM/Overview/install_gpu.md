@@ -57,19 +57,18 @@ pip install --pre --upgrade bigdl-llm[xpu]
 
 ### Runtime Configuration
 
-To use GPU acceleration on Windows, several environment variables are required or recommended before running a GPU example.
+To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
 Make sure you are using CMD as PowerShell is not supported:
 
 ```
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-
-set SYCL_CACHE_PERSISTENT=1
 ```
 
 Please also set the following environment variable for iGPU:
 
 ```
+set SYCL_CACHE_PERSISTENT=1
 set BIGDL_LLM_XMX_DISABLED=1
 ```
 
@@ -277,3 +276,7 @@ The following packages have unmet dependencies:
 ```
 
 You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
+
+### Troubleshooting
+
+todo
