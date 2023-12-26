@@ -61,6 +61,7 @@ def get_stop_words_ids(chat_format, tokenizer):
     # https://github.com/QwenLM/Qwen/blob/main/examples/vllm_wrapper.py#L23
     if chat_format == "Qwen":
         stop_words_ids = [[tokenizer.im_end_id], [tokenizer.im_start_id], [tokenizer.eod_id]]
+    # https://huggingface.co/01-ai/Yi-6B-Chat/blob/main/tokenizer_config.json#L38
     elif chat_format == "Yi":
         stop_words_ids = [tokenizer.encode("<|im_end|>")]
     else:
@@ -298,12 +299,11 @@ if __name__ == "__main__":
         chatglm3_stream_chat(model=model, tokenizer=tokenizer)
     elif model.config.architectures is not None and model.config.architectures[0] == "LlamaForCausalLM":
         kv_cache = StartRecentKVCache(start_size=start_size)
-        stop_words=[]
         if "yi" in model_path.lower():
             stop_words = get_stop_words_ids("Yi", tokenizer=tokenizer)
-            yi_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache, stop_words=stop_words)
+            yi_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache, stop_words=stop_words)
         else:
-            llama_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache)
+            llama_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache)
     else:
         kv_cache = StartRecentKVCache(start_size=start_size)
         stream_chat(model=model,
