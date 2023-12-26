@@ -46,7 +46,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
     assistant_model_path = args.assistant_model_path
     if assistant_model_path is None:
-        assistant_model_path = assistant_model_path
+        assistant_model_path = model_path
     # Load assistant model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     assistant_model = autolowbit.from_pretrained(model_path,
