@@ -145,7 +145,7 @@ jobs:
           source bigdl-llm-init -t
           export OMP_NUM_THREADS=48
           # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' run_stress_test.py
+          sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
           python run.py
           cp ./*.csv /models/stable_version_stress_test_cpu/
           cd ../../../test/benchmark
