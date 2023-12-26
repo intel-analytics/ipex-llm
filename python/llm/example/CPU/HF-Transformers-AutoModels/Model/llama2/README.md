@@ -88,6 +88,12 @@ AI, or artificial intelligence, refers to the ability of machines to perform tas
 ### 3. Speculative Decoding
 Speculative decoding is a pivotal technique to accelerate the inference of large language models (LLMs) by employing a smaller draft/assistant model to predict the target model's outputs. Please refer [Assisted Generation](https://huggingface.co/blog/assisted-generation) for details. In the following example, we will use int4 assistant model to acclerate FP32 main model, without impacting accuarcy.
 
+Requirement:
+```bash
+ pip install transformers==4.36.0
+```
+
+Usage:
 ```bash
 python speculative_decoding.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --assistant-model-path ASSISTANT_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
