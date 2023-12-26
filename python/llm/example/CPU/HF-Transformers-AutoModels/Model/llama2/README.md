@@ -96,7 +96,7 @@ New Arguments info:
 - `--assistant-model-path ASSISTANT_MODEL_PATH`: argument defining the huggingface repo id for the assistant model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. 
 
 #### 3.1 Use additional model as assistant model
-By default, we need to add a second model named draft/assistant model to generate draft proposals. Note that assistant model should be similar to main model. It's recommended to use a small version of main model, e.g., Llama-72B as main model and Llama-7B as assistant model.
+By default, we need to add a second model named draft/assistant model to generate draft proposals. Note that assistant model should be similar to main model. It's recommended to use a small version of main model, e.g., Llama-70B as main model and Llama-7B as assistant model.
 
 ```bash
 python speculative_decoding.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --assistant-model-path ASSISTANT_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
