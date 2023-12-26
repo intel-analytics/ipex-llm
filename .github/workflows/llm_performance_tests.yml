@@ -308,6 +308,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -331,6 +332,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_434.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -375,6 +377,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -398,6 +401,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_434.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -442,6 +446,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-256.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-256\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -465,6 +470,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-256_434.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-256\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -509,6 +515,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-512.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -532,6 +539,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-512_434.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -575,6 +583,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\512-64.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\512-64\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
@@ -598,6 +607,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\512-64_434.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\512-64\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
