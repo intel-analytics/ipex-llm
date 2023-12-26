@@ -629,6 +629,16 @@ jobs:
 
           call conda deactivate
 
+      - name: Upload results to ftp
+        if: ${{ always() }}
+        shell: cmd
+        run: |
+          IF ${{ github.event_name }}=="schedule" (
+            for %%f in (*.html) do (
+                curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+            )
+          )
+
       # for test on machine when encountering error
       # - name: Remove conda env
       #   if: ${{ always() }}
