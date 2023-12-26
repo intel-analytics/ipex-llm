@@ -633,6 +633,7 @@ jobs:
         if: ${{ always() }}
         shell: cmd
         run: |
+          cd %CSV_SAVE_PATH%
           IF ${{ github.event_name }}=="schedule" (
             for %%f in (*.html) do (
                 curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
