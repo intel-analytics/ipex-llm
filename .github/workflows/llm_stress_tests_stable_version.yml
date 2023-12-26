@@ -1,4 +1,4 @@
-name: LLM Performance Test for Stable Version
+name: LLM Stress Test for Stable Version
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
