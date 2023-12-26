@@ -90,7 +90,7 @@ Speculative decoding is a pivotal technique to accelerate the inference of large
 
 Requirement:
 ```bash
- pip install transformers==4.36.0
+pip install transformers==4.36.0
 ```
 
 Usage:
