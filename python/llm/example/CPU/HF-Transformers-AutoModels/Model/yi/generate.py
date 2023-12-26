@@ -23,11 +23,11 @@ from transformers import AutoTokenizer
 
 # Refer to https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model
 YI_PROMPT_FORMAT = """
-            <|im_start|>system
-            You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
-            <|im_start|>user
-            {prompt}<|im_end|>
-            <|im_start|>assistant
+<|im_start|>system
+You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
+<|im_start|>user
+{prompt}<|im_end|>
+<|im_start|>assistant
 """
 
 if __name__ == '__main__':
