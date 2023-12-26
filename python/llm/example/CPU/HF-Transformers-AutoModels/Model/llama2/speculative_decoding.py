@@ -34,6 +34,9 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--assistant-model-path', type=str, default=None,
+                        help='The huggingface repo id for the assistant model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
+                             ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
@@ -41,13 +44,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
-
-    # Load model in 4 bit,
+    assistant_model_path = args.assistant_model_path
+    if assistant_model_path is None:
+        assistant_model_path = assistant_model_path
+    # Load assistant model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     assistant_model = autolowbit.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  optimize_model=False,
                                                  trust_remote_code=True)
+    # Load model in FP32,
+    # which convert the relevant layers in the model into INT4 format
     print("Assistant model loaded!")
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True)
