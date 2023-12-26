@@ -113,6 +113,10 @@ GPU Quickstart
 
 You may install ``bigdl-llm`` on Intel GPU as follows as follows:
 
+.. note::
+
+   See the `GPU installation guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html>`_ for more details.
+
 .. code-block:: console
 
    # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
