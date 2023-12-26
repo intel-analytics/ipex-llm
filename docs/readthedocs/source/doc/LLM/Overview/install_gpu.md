@@ -16,12 +16,12 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 ### Install BigDL-LLM From PyPI
 
-We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
+We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
 ```eval_rst
 .. important::
 
-   ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
+   ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
 The easiest ways to install `bigdl-llm` is the following commands:
@@ -35,7 +35,7 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 
 ### Install BigDL-LLM From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed here before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
 
 Download the wheels on Windows system:
 
@@ -143,12 +143,12 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
 ### Install BigDL-LLM From PyPI
 
-We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
+We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
 ```eval_rst
 .. important::
 
-   ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
+   ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
 ```eval_rst
@@ -175,7 +175,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
 
 ### Install BigDL-LLM From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed here before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
 
 ```eval_rst
 .. tabs::
