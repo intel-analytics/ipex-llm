@@ -137,7 +137,7 @@ def llama_attention_forward_4_31(
     # for flash attention
     original_dtype = hidden_states.dtype
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = check_flash_attention_available(hidden_states)
+        fsdp_flag = use_flash_attention(hidden_states)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -324,7 +324,7 @@ def llama_attention_selective_batching_forward_4_31(
     original_dtype = hidden_states.dtype
     # TODO: consider this later - flash attention
     # if not self.training and not hidden_states.requires_grad:
-    #     fsdp_flag = check_flash_attention_available(hidden_states)
+    #     fsdp_flag = use_flash_attention(hidden_states)
     # else:
     #     fsdp_flag = False
     # if fsdp_flag and q_len > 1:
@@ -505,7 +505,7 @@ def llama_attention_selective_batching_forward_4_31(
     return attn_output.to(original_dtype), attn_weights, updated_past_key_values
 
 
-def check_flash_attention_available(query):
+def use_flash_attention(query):
     bsz, q_len, _ = query.size()
     # check whether ipex flash attention can be used
     if bsz > 1:
