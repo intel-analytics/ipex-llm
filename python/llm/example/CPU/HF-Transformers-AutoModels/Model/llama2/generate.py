@@ -22,11 +22,12 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-LLAMA2_PROMPT_FORMAT = """### HUMAN:
-{prompt}
-
-### RESPONSE:
+# Refer to https://huggingface.co/TheBloke/Llama-2-70B-Chat-GGML#prompt-template-llama-2-chat
+LLAMA2_PROMPT_FORMAT = """
+[INST] <<SYS>>
+You are a helpful assistant.
+<</SYS>>
+{prompt}[/INST]
 """
 
 if __name__ == '__main__':
