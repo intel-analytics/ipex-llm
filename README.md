@@ -12,14 +12,14 @@
 > *It is built on the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq](https://github.com/IST-DASLab/gptq), [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ), [awq](https://github.com/mit-han-lab/llm-awq), [AutoAWQ](https://github.com/casper-hansen/AutoAWQ), [vLLM](https://github.com/vllm-project/vllm), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
 ### Latest update :fire: 
+- [2023/12] `bigdl-llm` now supports [ReLoRA](python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#relora) (see *["ReLoRA: High-Rank Training Through Low-Rank Updates"](https://arxiv.org/abs/2307.05695)*)
 - [2023/12] `bigdl-llm` now supports [Mixtra-7x8B](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) on both Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral).
 - [2023/12] `bigdl-llm` now supports [QA-LoRA](python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#qa-lora) (see *["QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"](https://arxiv.org/abs/2309.14717)*)
 - [2023/12] `bigdl-llm` now supports [FP8 and FP4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) on Intel ***GPU***.
-- [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models in to `bigdl-llm` is available.
-- [2023/11] Initial support for [vLLM continuous batching](python/llm/example/CPU/vLLM-Serving) is availabe on Intel ***CPU***.
-- [2023/11] Initial support for [vLLM continuous batching](python/llm/example/GPU/vLLM-Serving) is availabe on Intel ***GPU***.
-- [2023/10] [QLoRA finetuning](python/llm/example/CPU/QLoRA-FineTuning) on Intel ***CPU*** is available.
-- [2023/10] [QLoRA finetuning](python/llm/example/GPU/QLoRA-FineTuning) on Intel ***GPU*** is available.
+- [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models into `bigdl-llm` is available.
+- [2023/11] `bigdl-llm` now supports [vLLM continuous batching](python/llm/example/GPU/vLLM-Serving) on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving).
+- [2023/10] `bigdl-llm` now supports [QLoRA finetuning](python/llm/example/GPU/QLoRA-FineTuning) on both Intel [GPU](python/llm/example/GPU/QLoRA-FineTuning) and [CPU](python/llm/example/CPU/QLoRA-FineTuning).
+- [2023/10] `bigdl-llm` now supports [FastChat serving](python/llm/src/bigdl/llm/serving) on on both Intel CPU and GPU.
 - [2023/09] `bigdl-llm` now supports [Intel GPU](python/llm/example/GPU) (including Arc, Flex and MAX)
 - [2023/09] `bigdl-llm` [tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) is released.
 - [2023/09] Over 30 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS,* and more; see the complete list [here](#verified-models).
