@@ -620,7 +620,7 @@ class FP16Linear(nn.Linear):
         # now esimd kernel can only be used for specific cases (llama2-7b shape)
         if self.in_len == 11008 and self.out_features == 4096:
             return True
-        if self.in_len in 4096 and self.out_features in [4096, 11008]:
+        if self.in_len == 4096 and self.out_features in [4096, 11008]:
             # seems has some issue with Mistral,
             # need a further look to check whether can be used for other out features
             return True
