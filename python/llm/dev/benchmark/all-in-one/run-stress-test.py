@@ -45,22 +45,6 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
-    for i in range(num_trials + warm_up):
-        st = time.perf_counter()
-        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                    num_beams=num_beams)
-        torch.xpu.synchronize()
-        end = time.perf_counter()
-        output_ids = output_ids.cpu()
-        print("model generate cost: " + str(end - st))
-        output = tokenizer.batch_decode(output_ids)
-        print(output[0])
-        actual_out_len = output_ids.shape[1] - actual_in_len
-        if i >= warm_up:
-            result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                actual_in_len, actual_out_len])
-
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
     result= {}
@@ -82,8 +66,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             num_beams,
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
-                            result[in_out_pair][-1][5] if 'win' in test_api else 'N/A']) # currently only peak mem for win gpu is caught here
-
+                            result[in_out_pair][-1][5] if 'int4_gpu' in test_api else 'N/A']) # currently only peak mem for win gpu is caught here
 
 def get_model_path(repo_id, local_model_hub):
     if local_model_hub:
@@ -94,10 +77,6 @@ def get_model_path(repo_id, local_model_hub):
         return local_model_path
     else:
         return repo_id
-
-
-
-
 
 def run_transformer_int4(repo_id,
                          local_model_hub,
@@ -158,9 +137,10 @@ def run_transformer_int4(repo_id,
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                             actual_in_len, actual_out_len])
                     i += 1
+                    if i >= warm_up+num_trials:
+                        break
 
     return result
-
 
 def run_transformer_int4_gpu(repo_id,
                              local_model_hub,
@@ -172,6 +152,7 @@ def run_transformer_int4_gpu(repo_id,
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
+    reserved_mem_list = []
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -196,6 +177,7 @@ def run_transformer_int4_gpu(repo_id,
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
+    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
 
     model = BenchmarkWrapper(model)
 
@@ -205,30 +187,41 @@ def run_transformer_int4_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
-            # As different tokenizer has different encodings,
-            # slice the input_ids to ensure the prompt length is required length.
-            input_ids = tokenizer.encode(input_str, return_tensors="pt")
-            input_ids = input_ids[:, :in_len]
-            true_str = tokenizer.batch_decode(input_ids)[0]
-            input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
-            actual_in_len = input_ids.shape[1]
-            result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
-            thread.start()
-            thread.join()
-    del model
+            i = 0
+            with open("prompt/stress_test.txt", 'r') as file:
+                for input_str in file:
+                    # As different tokenizer has different encodings,
+                    # slice the input_ids to ensure the prompt length is required length.
+                    input_ids = tokenizer.encode(input_str, return_tensors="pt")
+                    input_ids = input_ids[:, :in_len]
+                    true_str = tokenizer.batch_decode(input_ids)[0]
+                    input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
+                    actual_in_len = input_ids.shape[1]
+                    result[in_out] = []
+                    st = time.perf_counter()
+                    output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                                num_beams=num_beams)
+                    torch.xpu.synchronize()
+                    end = time.perf_counter()
+                    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
+                    gpu_peak_mem = max(reserved_mem_list) # always keep the peak gpu mem at current stage
+                    output_ids = output_ids.cpu()
+                    print("model generate cost: " + str(end - st))
+                    output = tokenizer.batch_decode(output_ids)
+                    print(output[0])
+                    actual_out_len = output_ids.shape[1] - actual_in_len
+                    if i >= warm_up:
+                        result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                            actual_in_len, actual_out_len, gpu_peak_mem])
+                    i += 1
+                    if i >= warm_up+num_trials:
+                        break
+    model.to('cpu')
+    torch.xpu.synchronize()
     torch.xpu.empty_cache()
+    del model
+    gc.collect()
     return result
-
-
-
 
 if __name__ == '__main__':
     from omegaconf import OmegaConf
