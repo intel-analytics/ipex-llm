@@ -568,7 +568,7 @@ class FP16Linear(nn.Linear):
         if gpu_type == "pvc":
             return self.inference(x)
         else:
-            if self.in_len in [4096, 11008]:
+            if self.use_esimd_kernel():
                 # use esimd fp16 kernel for inference
                 if self.weight_type != 3:
                     # convert weight first to use esimd fp16 kernel
@@ -616,6 +616,16 @@ class FP16Linear(nn.Linear):
             if self.weight_type == 1:
                 self.weight = self.weight.transpose(0, 1).contiguous()
             return torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
+
+    def use_esimd_kernel(self):
+        # now esimd kernel can only be used for specific cases (llama2-7b shape)
+        if self.in_len == 11008 and self.out_features == 4096:
+            return True
+        if self.in_len in 4096 and self.out_features in [4096, 11008]:
+            # seems has some issue with Mistral,
+            # need a further look to check whether can be used for other out features
+            return True
+        return False
 
     def convert_weight_for_esimd_kernel(self):
         m, n = self.out_len, self.in_len
