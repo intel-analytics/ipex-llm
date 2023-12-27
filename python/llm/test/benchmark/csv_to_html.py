@@ -151,7 +151,7 @@ def main():
         latest_csv.insert(loc=9,column='best 2',value=best_last2)
         latest_csv.insert(loc=10,column='best diff2(%)',value=best_diff2)
 
-        diffs_within_normal_range = is_diffs_within_normal_range(diff1, diff2, highlight_threshold)
+        diffs_within_normal_range = is_diffs_within_normal_range(diff1, diff2, threshold=highlight_threshold)
 
         subset=['diff1(%)','diff2(%)','best diff1(%)','best diff2(%)']
         columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
