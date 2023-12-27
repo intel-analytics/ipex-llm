@@ -1,14 +1,14 @@
 name: LLM Stress Test for Stable Version
 
 # Cancel previous runs in the PR when you push new commits
-concurrency:
-  group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
+#   cancel-in-progress: true
 
 # Controls when the action will run.
 on:
-  pull_request:
-    branches: [main]
+  # pull_request:
+  #   branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
