@@ -24,7 +24,7 @@ from model import MambaLMHeadModel
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mamba model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="state-spaces/mamba-2.8b-slimpj", # 130M?
+    parser.add_argument('--repo-id-or-model-path', type=str, default="state-spaces/mamba-1.4b",
                         help='The huggingface repo id for the Mamba model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--tokenizer-repo-id-or-path', type=str, default="EleutherAI/gpt-neox-20b",

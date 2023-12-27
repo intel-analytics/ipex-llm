@@ -1,5 +1,5 @@
 # Mamba
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Mamba models. For illustration purposes, we utilize the [state-spaces/mamba-2.8b-slimpj](https://huggingface.co/state-spaces/mamba-2.8b-slimpj) as reference Mamba model.
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Mamba models. For illustration purposes, we utilize the [state-spaces/mamba-1.4b](https://huggingface.co/state-spaces/mamba-1.4b) and [state-spaces/mamba-2.8b](https://huggingface.co/state-spaces/mamba-2.8b) as reference Mamba models.
 
 ## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -40,17 +40,26 @@ python ./generate.py
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Mamba model (e.g `'state-spaces/mamba-2.8b-slimpj'`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'state-spaces/mamba-2.8b-slimpj'`.
-- `--tokenizer-repo-id-or-path`: argument defining the huggingface repo id for the tokenizer of Mamba model to be downloaded, or the path to the huggingface checkpoint folder.  It is default to be `'EleutherAI/gpt-neox-20b'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Mamba model (e.g `state-spaces/mamba-1.4b` and `state-spaces/mamba-2.8b`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `state-spaces/mamba-1.4b`.
+- `--tokenizer-repo-id-or-path`: argument defining the huggingface repo id for the tokenizer of Mamba model to be downloaded, or the path to the huggingface checkpoint folder.  It is default to be `EleutherAI/gpt-neox-20b`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.3 Sample Output
-[state-spaces/mamba-2.8b-slimpj](https://huggingface.co/state-spaces/mamba-2.8b-slimpj)
+#### [state-spaces/mamba-1.4b](https://huggingface.co/state-spaces/mamba-1.4b)
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------
 What is AI?
-Artificial Intelligence (AI) is a term used to describe a range of technologies that work to interpret and interpret human behavior and actions.
-AI can be
+
+Artificial Intelligence (AI) is a broad term that describes the use of artificial intelligence (AI) to create artificial intelligence (AI). AI is a
+```
+
+#### [state-spaces/mamba-2.8b](https://huggingface.co/state-spaces/mamba-2.8b)
+```log
+Inference time: xxxx s
+-------------------- Output --------------------
+What is AI?
+
+Artificial Intelligence is a field of study that focuses on creating machines that can perform intelligent functions. These functions are performed by machines that are smarter than humans
 ```

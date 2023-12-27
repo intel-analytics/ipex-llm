@@ -74,7 +74,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Distil-Whisper | [link](example/CPU/HF-Transformers-AutoModels/Model/distil-whisper) | [link](example/GPU/HF-Transformers-AutoModels/Model/distil-whisper) |
 | Yi | [link](example/CPU/HF-Transformers-AutoModels/Model/yi) | [link](example/GPU/HF-Transformers-AutoModels/Model/yi) |
 | BlueLM | [link](example/CPU/HF-Transformers-AutoModels/Model/bluelm) | [link](example/GPU/HF-Transformers-AutoModels/Model/bluelm) |
-| Mamba | [link](example/GPU/PyTorch-Models/Model/mamba) | [link](example/GPU/PyTorch-Models/Model/mamba) |
+| Mamba | [link](example/CPU/PyTorch-Models/Model/mamba) | [link](example/GPU/PyTorch-Models/Model/mamba) |
 
 ### Working with `bigdl-llm`
 
