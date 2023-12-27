@@ -635,6 +635,7 @@ class FP16Linear(nn.Linear):
             trans_weight = trans_weight.data.reshape(m//16, 16, n)
             trans_weight = trans_weight.transpose(1, 2).contiguous()
             self.weight.data = trans_weight
+        self.weight_type = 3
 
 
 class BF16Linear(nn.Linear):
