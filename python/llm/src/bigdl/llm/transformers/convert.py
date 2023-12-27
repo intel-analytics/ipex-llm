@@ -236,31 +236,26 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device_type)
                     elif qtype == ggml_tensor_qtype["fp16"]:
-                        #  only support two size now
-                        #  may generalize to other sizes
-                        if module.in_features in [4096, 11008]:
-                            # esimd fp16 path
-                            new_linear = FP16Linear(
-                                in_features,
-                                out_features,
-                                qtype,
-                                module.bias is not None,
-                                mp_group=mp_group,
-                            )
-                            device_type = module.weight.data.device.type
-
-                            # convert here
-                            m, n = module.weight.data.shape
-                            if module.in_features == 11008:
-                                trans_weight = module.weight.data.reshape(m//8, 8, n)
-                                trans_weight = trans_weight.transpose(1, 2).contiguous()
-                            elif module.in_features == 4096:
-                                trans_weight = module.weight.data.reshape(m//16, 16, n)
-                                trans_weight = trans_weight.transpose(1, 2).contiguous()
-                            new_linear._parameters['weight'] = nn.Parameter(trans_weight)
-                            if module.bias is not None:
-                                new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                    .to(device_type)
+                        module.to(torch.float16)
+                        new_linear = FP16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                        )
+                        device_type = module.weight.data.device.type
+                        from bigdl.llm.transformers.utils import get_ipex_version
+                        if get_ipex_version() < "2.1.10+xpu":
+                            new_linear._parameters['weight'] = nn.Parameter(module.weight)
+                        else:
+                            # only from 2.1, ipex provides matmul_bias_out
+                            # so we need to transpose weight
+                            new_weight = module.weight.transpose(0, 1).contiguous()
+                            new_linear._parameters['weight'] = nn.Parameter(new_weight)
+                            new_linear.weight_type = 2
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device_type)
                     elif qtype == ggml_tensor_qtype["bf16"]:
                         module.to(torch.bfloat16)
                         new_linear = BF16Linear(
