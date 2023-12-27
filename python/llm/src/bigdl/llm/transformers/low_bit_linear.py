@@ -555,7 +555,7 @@ class FP16Linear(nn.Linear):
 
     def forward(self, x: torch.Tensor):
         # only work for GPU
-        invalidInputError(x0.device.type == "xpu",
+        invalidInputError(x.device.type == "xpu",
                           "FP16Linear only works for Intel GPUs")
         x = x.to(torch.float16)
         if self.bias is not None and self.bias.dtype != x.dtype:
@@ -563,14 +563,14 @@ class FP16Linear(nn.Linear):
         if self.weight is not None and self.weight.dtype != x.dtype:
             self.weight.data = self.weight.data.to(x.dtype)
 
-        dtype_type = get_xpu_device_type(x)
+        gpu_type = get_xpu_device_type(x)
 
-        if dtype == "pvc":
-            return inference(x)
+        if gpu_type == "pvc":
+            return self.inference(x)
         else:
             if self.in_len in [4096, 11008]:
                 # use esimd fp16 kernel for inference
-                if self.self.weight_type != 3:
+                if self.weight_type != 3:
                     # convert weight first to use esimd fp16 kernel
                     self.convert_weight_for_esimd_kernel()
                 # esimd fp16 kernel for inference
@@ -607,9 +607,9 @@ class FP16Linear(nn.Linear):
 
                 return result.to(x.dtype)
             else:
-                return inference(x)
+                return self.inference(x)
 
-    def inference(x):
+    def inference(self, x):
         if get_ipex_version() < "2.1.10+xpu":
             return F.linear(x, self.weight, self.bias)
         else:
@@ -617,13 +617,14 @@ class FP16Linear(nn.Linear):
                 self.weight = self.weight.transpose(0, 1).contiguous()
             return torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
 
-    def convert_weight_for_esimd_kernel():
+    def convert_weight_for_esimd_kernel(self):
+        m, n = self.out_len, self.in_len
         if self.in_len == 11008:
             if self.weight_type == 2:
                 trans_weight = self.weight.data.transpose(0, 1)
             else:
                 trans_weight = self.weight.data
-            trans_weight = self.weight.data.reshape(m//8, 8, n)
+            trans_weight = trans_weight.data.reshape(m//8, 8, n)
             trans_weight = trans_weight.transpose(1, 2).contiguous()
             self.weight.data = trans_weight
         elif self.in_len == 4096:
@@ -631,7 +632,7 @@ class FP16Linear(nn.Linear):
                 trans_weight = self.weight.data.transpose(0, 1)
             else:
                 trans_weight = self.weight.data
-            trans_weight = module.weight.data.reshape(m//16, 16, n)
+            trans_weight = trans_weight.data.reshape(m//16, 16, n)
             trans_weight = trans_weight.transpose(1, 2).contiguous()
             self.weight.data = trans_weight
 
