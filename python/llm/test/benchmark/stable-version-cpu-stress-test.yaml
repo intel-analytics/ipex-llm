@@ -7,8 +7,8 @@ repo_id:
   - 'baichuan-inc/Baichuan2-13B-Chat'
   - 'Qwen/Qwen-14B-Chat'
 local_model_hub: '/models'
-warm_up: 1
-num_trials: 4
+warm_up: 10
+num_trials: 100
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 in_out_pairs:
