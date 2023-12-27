@@ -31,7 +31,7 @@ def highlight_vals(val, max=3.0):
         return ''
 
 def is_diffs_within_normal_range(diff1, diff2, threshold=5.0):
-    return not any(diff < (-threshold) for diff in diff1 + diff2)
+    return not any(diff < (-threshold) for diff in diff1 + diff2 if isinstance(diff, float))
 
 def main():
     parser = argparse.ArgumentParser(description="convert .csv file to .html file")
