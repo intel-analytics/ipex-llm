@@ -262,6 +262,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                 new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                     .to(device_type)
                     elif qtype == ggml_tensor_qtype["bf16"]:
+                        module.to(torch.bfloat16)
                         new_linear = BF16Linear(
                             in_features,
                             out_features,
@@ -344,7 +345,7 @@ def _optimize_pre(model):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
-                         lightweight_bmm=False):
+                         lightweight_bmm=False, torch_dtype="auto"):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -366,7 +367,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         )
     elif device == "cpu":
         if not (getattr(model, "quantization_method", None) == "gptq"):
-            model.to(torch.float32)
+            if torch_dtype == "auto":
+                convert_bigdl_other_module(model, torch.float32)
+            else:
+                convert_bigdl_other_module(model, torch_dtype)
     elif device == "meta":
         # Do nothing here for weights are empty.
         pass
@@ -376,12 +380,31 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     return model
 
 
+def convert_bigdl_other_module(model, dtype):
+    # Convert modules outside of bigdl linear to corresponding dtype
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, \
+        FP16Linear, BF16Linear
+    for module in model.modules():
+        if list(module.children()) == []:
+            # leaf module
+            if not isinstance(module, (LowBitLinear, FP16Linear, BF16Linear)):
+                module.to(dtype)
+
+
 def convert_forward(m, target_m, new_forward):
     for _, sub_m in m.named_children():
         if isinstance(sub_m, target_m):
             bound_method = new_forward.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, "forward", bound_method)
         convert_forward(sub_m, target_m, new_forward)
+
+
+def replace_func(m, target_m, func_name, new_func):
+    for _, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            bound_method = new_func.__get__(sub_m, sub_m.__class__)
+            setattr(sub_m, func_name, bound_method)
+        replace_func(sub_m, target_m, func_name, new_func)
 
 
 def _optimize_post(model, lightweight_bmm=False):
@@ -554,6 +577,7 @@ def _optimize_post(model, lightweight_bmm=False):
             from bigdl.llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
             from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
             from bigdl.llm.transformers.models.baichuan2 import baichuan_mlp_forward
+            from bigdl.llm.transformers.models.baichuan2 import baichuan_13b_get_alibi_mask
             convert_forward(model,
                             module.BaichuanAttention,
                             baichuan_attention_forward_13b
@@ -565,6 +589,10 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.MLP,
                             baichuan_mlp_forward)
+            replace_func(model,
+                         module.BaichuanModel,
+                         "get_alibi_mask",
+                         baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:

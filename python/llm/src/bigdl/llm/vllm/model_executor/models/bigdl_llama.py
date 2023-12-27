@@ -196,7 +196,8 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             if enable_vllm_se_batching:
                 attention_mask = [torch.tensor(x, device=self.device).unsqueeze(0)
                                   for x in decoding_attention_mask_list]
-                position_ids = torch.tensor(decoding_position_ids).long().unsqueeze(-1)
+                position_ids = torch.tensor(decoding_position_ids, device=self.device).long()
+                position_ids = position_ids.unsqueeze(-1)
             else:
                 attention_mask = torch.tensor(decoding_attention_mask_list, device=self.device)
                 position_ids = None
@@ -214,6 +215,7 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
             if enable_vllm_se_batching:
                 position_ids = attention_mask.long().cumsum(-1) - 1
                 position_ids.masked_fill_(attention_mask == 0, 1)
+                position_ids.to(self.device)
             else:
                 position_ids = None
             kwargs = {

@@ -50,10 +50,12 @@
 
 import torch
 import logging
+from torch.nn import Linear, Embedding
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear, BF16Linear, get_qk_size
 from peft.tuners.lora import LoraLayer
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import get_autocast_dtype
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 import functools
 from bigdl.llm.transformers import training_patch
 
@@ -279,9 +281,19 @@ def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
 
     if not is_gptq_quantized:
         # cast all non INT8 parameters to fp32
-        for param in model.parameters():
-            if (param.dtype == torch.float16) or (param.dtype == torch.bfloat16):
-                param.data = param.data.to(torch.float32)
+        # for param in model.parameters():
+        #     if (param.dtype == torch.float16) or (param.dtype == torch.bfloat16):
+        #         param.data = param.data.to(torch.float32)
+
+        # change to below way to reduce memory for Linear
+        # otherwise lora finetuning on arc may OOM at this convert
+        for module in model.modules():
+            if list(module.children()) == []:
+                # leaf module
+                if not isinstance(module, (Linear, Embedding)):
+                    for param in module.parameters():
+                        if (param.dtype == torch.float16) or (param.dtype == torch.bfloat16):
+                            param.data = param.data.to(torch.float32)
 
     if use_gradient_checkpointing:
         # For backward compatibility

@@ -1,6 +1,6 @@
 # Alpaca Finetuning with BigDL-LLM
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314) / [QA-LoRA](https://arxiv.org/abs/2309.14717) or [LoRA](https://arxiv.org/abs/2106.09685) algorithm) on [Intel GPU](../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314) / [QA-LoRA](https://arxiv.org/abs/2309.14717) / [LoRA](https://arxiv.org/abs/2106.09685) or [ReLoRA](https://arxiv.org/abs/2307.05695) algorithm) on [Intel GPU](../../README.md).
 
 ### 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
@@ -26,7 +26,7 @@ source /opt/intel/oneapi/setvars.sh
 
 ### 3. Finetune
 
-Now we support three training modes ([QLoRA](https://arxiv.org/abs/2305.14314) / [QA-LoRA](https://arxiv.org/abs/2309.14717) / [LoRA](https://arxiv.org/abs/2106.09685)), to run different mode, just change `training_mode` to `qlora` / `qalora` / `lora` in below script.
+Now we support four training modes ([QLoRA](https://arxiv.org/abs/2305.14314) / [QA-LoRA](https://arxiv.org/abs/2309.14717) / [LoRA](https://arxiv.org/abs/2106.09685) / [ReLoRA](https://arxiv.org/abs/2307.05695)), to run different mode, just change `training_mode` to `qlora` / `qalora` / `lora` / `relora` in below script.
 
 Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device:
 
@@ -101,6 +101,12 @@ bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 
 #### LoRA
 
+##### Finetuning LLaMA2-7B on single Arc A770
+
+```bash
+bash lora_finetune_llama2_7b_arc_1_card.sh
+```
+
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
 
 ```bash
@@ -117,6 +123,31 @@ bash lora_finetune_llama2_7b_pvc_1550_1_tile.sh
 
 ```bash
 bash lora_finetune_llama2_7b_pvc_1550_4_card.sh
+```
+
+#### ReLoRA
+##### Finetuning LLaMA2-7B on single Arc A770
+
+```bash
+bash relora_finetune_llama2_7b_arc_1_card.sh
+```
+
+##### Finetuning LLaMA2-7B on two Arc A770
+
+```bash
+bash relora_finetune_llama2_7b_arc_2_card.sh
+```
+
+##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
+
+```bash
+bash relora_finetune_llama2_7b_pvc_1550_1_card.sh
+```
+
+##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
+
+```bash
+bash relora_finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
 ### 4. (Optional) Resume Training

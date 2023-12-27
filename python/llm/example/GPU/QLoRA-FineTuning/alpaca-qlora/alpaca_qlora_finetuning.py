@@ -60,7 +60,13 @@ def get_int_from_env(env_keys, default):
         val = int(os.environ.get(e, -1))
         if val >= 0:
             return val
-    return default
+    return int(default)
+
+def _get_trainer_cls(training_mode):
+    if training_mode == "relora":
+        from bigdl.llm.transformers.relora import ReLoRATrainer
+        return ReLoRATrainer
+    return transformers.Trainer
  
 local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
@@ -111,9 +117,15 @@ def train(
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
     training_mode: str = "qlora",
+    # relora params, relora_steps should > 0 if the training mode is `relora`,
+    # Implements the ReLoRA training procedure from https://arxiv.org/abs/2307.05695,
+    # minus the initial full fine-tune.
+    relora_steps: int = 300,         # Number of steps per ReLoRA restart
+    relora_warmup_steps: int = 10,   # Number of per-restart warmup steps
+    relora_cpu_offload: bool = True, # True to perform lora weight merges on cpu during restarts, for modest gpu memory savings
 ):
-    invalidInputError(training_mode in ["qlora", "qalora", "lora"],
-                      "Only qlora / qalora / lora are supported for training_mode now.")
+    invalidInputError(training_mode in ["qlora", "qalora", "lora", "relora"],
+                      "Only qlora / qalora / lora / relora are supported for training_mode now.")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
@@ -140,11 +152,17 @@ def train(
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
             f"training_mode: {training_mode}\n"
+            f"relora_steps: {relora_steps}\n"
+            f"relora_warmup_steps: {relora_warmup_steps}\n"
+            f"relora_cpu_offload: {relora_cpu_offload}\n"
         )
     assert (
         base_model
     ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
     gradient_accumulation_steps = batch_size // micro_batch_size
+
+    if training_mode == "relora":
+        assert(relora_steps > 0), "The relora_steps should > 0 if the training_mode is relora."
 
     prompter = Prompter(prompt_template_name)
 
@@ -297,10 +315,20 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer = transformers.Trainer(
+    trainer_cls = _get_trainer_cls(training_mode=training_mode)
+    extra_args = {}
+    if training_mode == "relora":
+        extra_args["base_model"] = base_model
+        extra_args["relora_steps"] = relora_steps
+        extra_args["relora_warmup_steps"] = relora_warmup_steps
+        extra_args["relora_cpu_offload"] = relora_cpu_offload
+        extra_args["resume_from_checkpoint"] = resume_from_checkpoint
+
+    trainer = trainer_cls(
         model=model,
         train_dataset=train_data,
         eval_dataset=val_data,
+        **extra_args,
         args=transformers.TrainingArguments(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
@@ -318,7 +346,7 @@ def train(
             eval_steps=100 if val_set_size > 0 else None,
             save_steps=100,
             output_dir=output_dir,
-            save_total_limit=100,
+            save_total_limit=100 if training_mode != "relora" else 4, # relora will save the whole model, here we use 4 to save the disk space.
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
