@@ -8,7 +8,7 @@ BigDL-LLM on Windows supports Intel iGPU and dGPU.
 
 To apply Intel GPU acceleration, there're several prerequisite steps for tools installation and environment preparation:
 
-* Step 1: Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and select "Desktop development with C++" workload
+* Step 1: Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and select "Desktop development with C++" workload, like [this](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)
 
 * Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
@@ -228,7 +228,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 ```eval_rst
 .. tabs::
-   .. tab:: Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series
+   .. tab:: Intel Arc™ A-Series and Intel Data Center GPU Flex
 
       For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
@@ -240,7 +240,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
-   .. tab:: Intel Data Center GPU Max Series
+   .. tab:: Intel Data Center GPU Max
 
       For Intel Data Center GPU Max Series, we recommend:
 
