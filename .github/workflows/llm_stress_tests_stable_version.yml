@@ -21,7 +21,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
 
-  # llm-performance-test-on-arc:
+  # llm-stress-test-on-arc:
   #   needs: llm-cpp-build
   #   strategy:
   #     fail-fast: false
@@ -99,7 +99,7 @@ jobs:
   #           curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
   #         fi
           
-  llm-performance-test-on-spr:
+  llm-stress-test-on-spr:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -146,7 +146,7 @@ jobs:
           export OMP_NUM_THREADS=48
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
-          python run.py
+          python run-stress-test.py
           cp ./*.csv /models/stable_version_stress_test_cpu/
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
