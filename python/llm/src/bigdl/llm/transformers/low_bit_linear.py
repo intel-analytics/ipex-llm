@@ -585,7 +585,7 @@ class FP16Linear(nn.Linear):
                     import linear_fp16_esimd
                 except ModuleNotFoundError:
                     invalidInputError(False,
-                                    "Please `pip install bigdl_core_xe_esimd` first.")
+                                      "Please `pip install bigdl_core_xe_esimd` first.")
 
                 if x_2d.shape[0] > 1:
                     # first token or batch size > 1, re-convert weight
