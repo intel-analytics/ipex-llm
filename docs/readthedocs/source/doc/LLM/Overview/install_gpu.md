@@ -75,7 +75,7 @@ set BIGDL_LLM_XMX_DISABLED=1
 ```eval_rst
 .. note::
 
-   For the first time that **each model** runs on **a new machine**, it may take around several minutes to compile.
+   For the first time that **each model** runs on **iGPU**, it may take around several minutes to compile.
 ```
 
 ### Troubleshooting
