@@ -100,8 +100,9 @@ def llama_mlp_forward(
     x: torch.Tensor,
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
+    qtype = getattr(self.gate_proj, "qtype", None)
     if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
-            and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
+            and qtype == ggml_tensor_qtype["sym_int4"] \
             and not (self.training and x.requires_grad):
         import linear_q4_0
         if not x_2d.is_contiguous():
@@ -147,7 +148,8 @@ def llama_attention_forward_4_31(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    qtype = getattr(self.q_proj, "qtype", None)
+    is_q4_0 = qtype == SYM_INT4
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
