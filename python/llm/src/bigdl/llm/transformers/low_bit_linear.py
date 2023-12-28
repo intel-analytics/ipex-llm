@@ -584,7 +584,6 @@ class FP16Linear(nn.Linear):
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
 
-            x0 = self.weight.data
             try:
                 import intel_extension_for_pytorch
                 import linear_fp16_esimd

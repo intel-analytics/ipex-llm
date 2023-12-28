@@ -200,8 +200,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             bias=has_bias,
                             mp_group=mp_group,
                         )
-                        device_type = module.qweight.data.device.type
-                        invalidInputError(device_type != "meta",
+                        device = module.qweight.data.device
+                        invalidInputError(device != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
                         paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
@@ -209,11 +209,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device_type)
+                                                 qtype=qtype).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if has_bias:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
                     elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
                         new_linear = LowBitLinear(
                             in_features,
@@ -223,18 +223,18 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             mp_group=mp_group,
                         )
 
-                        device_type = module.weight.data.device.type
+                        device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
                                                  requires_grad=False,
                                                  quantized=False,
                                                  _shape=None,
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device_type)
+                                                 qtype=qtype).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
                     elif qtype == ggml_tensor_qtype["fp16"]:
                         module.to(torch.float16)
                         new_linear = FP16Linear(
@@ -243,7 +243,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-                        device_type = module.weight.data.device.type
+                        device = module.weight.data.device
                         from bigdl.llm.transformers.utils import get_ipex_version
                         if get_ipex_version() < "2.1.10+xpu":
                             new_linear._parameters['weight'] = nn.Parameter(module.weight)
@@ -255,7 +255,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear.weight_type = 2
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
                     elif qtype == ggml_tensor_qtype["bf16"]:
                         module.to(torch.bfloat16)
                         new_linear = BF16Linear(
@@ -264,12 +264,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-                        device_type = module.weight.data.device.type
+                        device = module.weight.data.device
                         # convert here
                         new_linear._parameters['weight'] = nn.Parameter(module.weight)
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
 
                     if new_linear is not None:
                         if not module.training:
