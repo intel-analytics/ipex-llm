@@ -201,7 +201,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             mp_group=mp_group,
                         )
                         device = module.qweight.data.device
-                        invalidInputError(device != "meta",
+                        invalidInputError(device.type != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
                         paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
