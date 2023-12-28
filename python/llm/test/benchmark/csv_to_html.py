@@ -119,7 +119,7 @@ def main():
         latest_csv.to_html(daily_html)
 
     if args.baseline_path and not diffs_within_normal_range:
-        print("The diffs are outside the normal range: %" + highlight_threshold)
+        print("The diffs are outside the normal range: %" + str(highlight_threshold))
         return 1 
     return 0
 
