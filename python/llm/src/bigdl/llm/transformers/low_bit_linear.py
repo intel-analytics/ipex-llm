@@ -50,7 +50,8 @@ from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
 from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
-from bigdl.llm.transformers.utils import get_autocast_dtype
+from bigdl.llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
+    get_ipex_version
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -538,57 +539,111 @@ class LowBitLinear(nn.Linear):
 
 
 class FP16Linear(nn.Linear):
-    def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True, mp_group=None):
+    def __init__(self, input_features, output_features, bias=True,
+                 mp_group=None, weight_type=1):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
         self.weight_length = self.out_len * self.in_len
-        self.qtype = qtype
-        self.conver_to_half = conver_to_half
+        self.qtype = ggml_tensor_qtype["fp16"]
         self.mp_group = mp_group
+        # weigh_type = 1 means original weight
+        # weigh_type = 2 means weight has been transposed
+        # weigh_type = 3 means weight has been transposed by esimd method
+        self.weight_type = 1
 
     def forward(self, x: torch.Tensor):
-        if self.bias is not None and self.bias.dtype != x.dtype:
-            self.bias.data = self.bias.data.to(x.dtype)
-
-        x_shape = x.shape
-        x_2d = x.view(-1, x_shape[-1])
-
-        x0 = self.weight.data
         # only work for GPU
-        invalidInputError(x0.device.type == "xpu",
-                          "FP16 only works for GPU")
-        try:
-            import intel_extension_for_pytorch
-            import linear_fp16_esimd
-        except ModuleNotFoundError:
-            invalidInputError(False,
-                              "Please `pip install bigdl_core_xe` first.")
+        invalidInputError(x.device.type == "xpu",
+                          "FP16Linear only works for Intel GPUs")
+        x = x.to(torch.float16)
+        if self.bias is not None and self.bias.dtype != x.dtype:
+                self.bias.data = self.bias.data.to(x.dtype)
+        if self.weight is not None and self.weight.dtype != x.dtype:
+            self.weight.data = self.weight.data.to(x.dtype)
 
-        if x_2d.is_contiguous() is False:
-            x_2d = x_2d.contiguous()
-
-        if x_2d.shape[0] > 1:
-            # first token or batch size > 1, re-convert weight
-            original_weight = self.weight.data.transpose(1, 2)
-            original_weight = original_weight.reshape(self.out_len, self.in_len)
-            result = F.linear(x_2d, original_weight.contiguous())
-            del original_weight
+        if not self.use_esimd_kernel(x):
+            if get_ipex_version() < "2.1.10+xpu":
+                if self.weight_type == 2:
+                    self.weight = self.weight.transpose(0, 1).contiguous()
+                    self.weight_type = 1
+                return F.linear(x, self.weight, self.bias)
+            else:
+                if self.weight_type == 1:
+                    self.weight = self.weight.transpose(0, 1).contiguous()
+                    self.weight_type = 2
+                return torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
         else:
-            # rest token, use esimd optimization
-            result = linear_fp16_esimd.forward(x_2d, self.weight.data)
+            if self.weight_type != 3:
+                # convert weight first to use esimd fp16 kernel
+                self.convert_weight_for_esimd_kernel()
+            # esimd fp16 kernel for inference
+            x_shape = x.shape
+            x_2d = x.view(-1, x_shape[-1])
+            if x_2d.is_contiguous() is False:
+                x_2d = x_2d.contiguous()
 
-        new_shape = x_shape[:-1] + (self.out_len,)
-        result = result.view(new_shape)
-        if self.mp_group is not None:
-            from deepspeed import comm as dist
-            dist.inference_all_reduce(result, group=self.mp_group)
-        if self.bias is not None:
-            result += self.bias
+            try:
+                import intel_extension_for_pytorch
+                import linear_fp16_esimd
+            except ModuleNotFoundError:
+                invalidInputError(False,
+                                  "Please `pip install bigdl_core_xe_esimd` first.")
 
-        return result.to(x.dtype)
+            if x_2d.shape[0] > 1:
+                # first token or batch size > 1, re-convert weight
+                original_weight = self.weight.data.transpose(1, 2)
+                original_weight = original_weight.reshape(self.out_len, self.in_len)
+                result = F.linear(x_2d, original_weight.contiguous())
+                del original_weight
+            else:
+                # rest token, use esimd optimization
+                result = linear_fp16_esimd.forward(x_2d, self.weight.data)
+
+            new_shape = x_shape[:-1] + (self.out_len,)
+            result = result.view(new_shape)
+            if self.mp_group is not None:
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
+            if self.bias is not None:
+                result += self.bias
+
+            return result.to(x.dtype)
+
+    def use_esimd_kernel(self, x):
+        gpu_type = get_xpu_device_type(x)
+        # esimd kernel can only be used for Arc and Flex
+        if gpu_type not in ["arc", "flex"]:
+            return False
+        # now esimd kernel can only be used for specific cases (llama2-7b shape)
+        if self.in_len == 11008 and self.out_features == 4096:
+            return True
+        if self.in_len == 4096 and self.out_features in [4096, 11008]:
+            # seems has some issue with Mistral,
+            # need a further look to check whether can be used for other out features
+            return True
+        return False
+
+    def convert_weight_for_esimd_kernel(self):
+        m, n = self.out_len, self.in_len
+        if self.in_len == 11008:
+            if self.weight_type == 2:
+                trans_weight = self.weight.data.transpose(0, 1)
+            else:
+                trans_weight = self.weight.data
+            trans_weight = trans_weight.data.reshape(m//8, 8, n)
+            trans_weight = trans_weight.transpose(1, 2).contiguous()
+            self.weight.data = trans_weight
+        elif self.in_len == 4096:
+            if self.weight_type == 2:
+                trans_weight = self.weight.data.transpose(0, 1)
+            else:
+                trans_weight = self.weight.data
+            trans_weight = trans_weight.data.reshape(m//16, 16, n)
+            trans_weight = trans_weight.transpose(1, 2).contiguous()
+            self.weight.data = trans_weight
+        self.weight_type = 3
 
 
 class BF16Linear(nn.Linear):

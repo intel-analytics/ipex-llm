@@ -149,3 +149,29 @@ def get_autocast_dtype(x):
     else:
         invalidInputError(False,
                           f"Device {x.device} is not supported.")
+
+
+_ipex_version = None
+
+
+def get_ipex_version():
+
+    global _ipex_version
+    if _ipex_version is not None:
+        return _ipex_version
+
+    import intel_extension_for_pytorch as ipex
+    _ipex_version = ipex.__version__
+    return _ipex_version
+
+
+def get_xpu_device_type(x):
+    name = torch.xpu.get_device_name(x.device.index)
+    if name.startswith("Intel(R) Arc(TM) A"):
+        return "arc"
+    elif name.startswith("Intel(R) Data Center GPU Flex"):
+        return "flex"
+    elif name.startswith("Intel(R) Data Center GPU Max"):
+        return "pvc"
+    else:
+        return "others"
