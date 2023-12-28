@@ -94,7 +94,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
 
 ```
 
-If you encounter network issues when installing ipex, you can refer to [How to install from wheel](#4-how-to-install-from-wheel) as an alternative method
+If you encounter network issues when installing ipex, you can refer to [How to install from wheel](#4.-how-to-install-from-wheel) as an alternative method
 
 
 ## PyTorch 2.0
