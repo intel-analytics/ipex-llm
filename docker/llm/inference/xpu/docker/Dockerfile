@@ -38,7 +38,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev && \
     # Install related libary of chat.py
     pip install --upgrade colorama && \
     # Install vllm dependencies
