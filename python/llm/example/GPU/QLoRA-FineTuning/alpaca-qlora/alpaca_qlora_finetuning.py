@@ -198,7 +198,7 @@ def train(
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
         # Default 4-bit format for qa-lora is sym_int4
         if training_mode == "qalora":
-            low_bit_format = "sym_int4"
+            low_bit_format = "int4"
         elif training_mode == "lora":
             low_bit_format = "bf16"
         else:
@@ -214,6 +214,12 @@ def train(
 
         # below is also supported
         # Load the base model from a directory or the HF Hub to 4-bit format
+        # if training_mode == "qalora":
+        #     low_bit_format = "sym_int4"
+        # elif training_mode == "lora":
+        #     low_bit_format = "bf16"
+        # else:
+        #     low_bit_format = "nf4"
         # model = AutoModelForCausalLM.from_pretrained(
         #     base_model,
         #     load_in_low_bit=low_bit_format,

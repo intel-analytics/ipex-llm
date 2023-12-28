@@ -147,6 +147,8 @@ class _BaseAutoModelClass:
                     load_in_low_bit = "nf4"
                 elif bnb_4bit_type == "int4":
                     load_in_low_bit = "sym_int4"
+                elif bnb_4bit_type == "bf16":
+                    load_in_low_bit = "bf16"
                 else:
                     invalidInputError(False,
                                       "Only nf4 or int4 is supported for bnb_4bit_quant_type")
