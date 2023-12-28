@@ -103,12 +103,12 @@ jobs:
         #   task: "arc"
         #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
-        model_name: [Mistral-7B-v0.1]
-        task: [mmlu]
-        precision: [sym_int4, fp4, fp8, mixed_fp8]
+        model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
+        task: ${{ fromJson(needs.set-matrix.outputs.task) }}
+        precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         device: [xpu]
-        
-    runs-on: [self-hosted, llm, accuracy]
+
+    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
