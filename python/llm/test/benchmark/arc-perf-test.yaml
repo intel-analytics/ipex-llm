@@ -31,5 +31,4 @@ cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu w
 exclude:
   - 'fnlp/moss-moon-003-sft:1024'
   - 'fnlp/moss-moon-003-sft:2048'
-  - 'baichuan-inc/Baichuan2-13B-Chat:1024'
   - 'baichuan-inc/Baichuan2-13B-Chat:2048'
