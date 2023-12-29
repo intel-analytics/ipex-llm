@@ -37,6 +37,8 @@ except ImportError:
     rearrange = None
 
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
+    append_fp8_kv_cache, restore_fp8_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
@@ -83,8 +85,7 @@ def qwen_attention_forward(
     query = self._split_heads(query, self.num_heads, self.head_dim)
     key = self._split_heads(key, self.num_heads, self.head_dim)
     value = self._split_heads(value, self.num_heads, self.head_dim)
-
-    kv_seq_len = hidden_states.size()[1]
+    # query, key, value's shape: [bs, seq_len, num_heads, head_dim]
 
     if rotary_pos_emb_list is not None:
         cur_len = query.shape[1]
@@ -119,62 +120,62 @@ def qwen_attention_forward(
             query = torch.cat(query_list, dim=0)
             key = torch.cat(key_list, dim=0)
 
-    bsz, _, n_heads, head_dim = key.size()
+    query_size, key_size = query.size(1), key.size(1)
+    kv_seq_len = key_size if layer_past is None else key_size + layer_past[0].size(1)
 
-    if layer_past is not None:
-        cache_k, cache_v = layer_past[0], layer_past[1]
-        cache_k = cache_k.transpose(1, 2)
-        cache_v = cache_v.transpose(1, 2)
-        kv_seq_len += cache_k.shape[2]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_heads,
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=hidden_states.device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
-
-        key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                   key.transpose(1, 2), value.transpose(1, 2))
-        key = key_states
-        value = value_states
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key.dtype,
-                                                         device=hidden_states.device)
-        new_key_states[:] = key.transpose(1, 2)
-        new_value_states[:] = value.transpose(1, 2)
-        key = new_key_states
-        value = new_value_states
-
-    query_size, key_size = query.size(1), key.size(2)
-    if key_size > self.seq_length and self.use_logn_attn and not self.training:
-        seq_start = key_size - query_size
-        seq_end = key_size
+    if kv_seq_len > self.seq_length and self.use_logn_attn and not self.training:
+        seq_start = kv_seq_len - query_size
+        seq_end = kv_seq_len
         logn_tensor = self.logn_tensor[:, seq_start:seq_end, :, :].type_as(query)
         query = query * logn_tensor.expand_as(query)
-    if query_size == key_size:
+    if key_size == kv_seq_len:
         causal_mask = torch.tril(
             torch.ones((key_size, key_size), dtype=torch.bool, device=query.device)
         ).view(1, 1, key_size, key_size)
     else:
         causal_mask = None
-    query = query.transpose(1, 2)
 
-    attn_output, attn_weight = self._attn(
-        query, key, value, causal_mask, attention_mask, head_mask
-    )
+    query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
+    # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
+
+    if layer_past is None:
+        # For first token, use original attn
+        attn_output, attn_weight = self._attn(
+            query, key, value, causal_mask, attention_mask, head_mask
+        )
+        if use_cache:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            k_cache, v_cache = init_fp8_kv_cache(
+                query.size(0), self.num_heads, self.head_dim,
+                0, max_cache_length,
+                dtype=query.dtype,
+                device=query.device,
+            )
+            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+    else:
+        k_cache, v_cache = layer_past[0], layer_past[1]
+        k_cache = k_cache.transpose(1, 2)
+        v_cache = v_cache.transpose(1, 2)
+        # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
+
+        if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
+            # allocate new
+            k_cache, v_cache = extend_fp8_kv_cache(
+                k_cache, v_cache,
+                kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                dtype=v_cache.dtype,
+                device=v_cache.device,
+            )
+            # empty cache to reduce gpu memory
+            if v_cache.device.type == 'xpu':
+                torch.xpu.empty_cache()
+
+        key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+
+        attn_output, attn_weight = core_attn(
+            self, query, key, value, causal_mask, attention_mask, head_mask
+        )
+
     context_layer = self._merge_heads(
         attn_output, self.num_heads, self.head_dim
     )
@@ -189,6 +190,49 @@ def qwen_attention_forward(
         outputs += (attn_weight,)
 
     return outputs
+
+
+def core_attn(self, query, key, value, causal_mask=None, attention_mask=None, head_mask=None):
+    if query.size(2) != 1 or query.device.type != 'xpu':
+        # We have no CPU fp8 matmul implementation for now, so just upscale to fp32
+        key, value = restore_fp8_kv_cache(key, value, query.dtype)
+        attn_weights = torch.matmul(query, key.transpose(-1, -2))
+    else:
+        import linear_q4_0
+        attn_weights = linear_q4_0.query_key_fp8_matmul(query, key)
+
+    if self.scale_attn_weights:
+        if self.use_cache_quantization:
+            size_temp = value[0].size(-1)
+        else:
+            size_temp = value.size(-1)
+        attn_weights = attn_weights / (size_temp ** 0.5)
+
+    mask_value = torch.finfo(attn_weights.dtype).min
+    if causal_mask is not None:
+        attn_weights = torch.where(
+            causal_mask, attn_weights.to(attn_weights.dtype), mask_value
+        )
+
+    if attention_mask is not None:
+        attn_weights = attn_weights + attention_mask
+
+    if self.softmax_in_fp32:
+        attn_weights = torch.nn.functional.softmax(attn_weights.float(), dim=-1)
+    else:
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+
+    attn_weights = attn_weights.type(query.dtype)
+    attn_weights = self.attn_dropout(attn_weights)
+
+    if head_mask is not None:
+        attn_weights = attn_weights * head_mask
+
+    attn_output = torch.matmul(attn_weights, value)
+
+    attn_output = attn_output.transpose(1, 2)
+
+    return attn_output, attn_weights
 
 
 def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
