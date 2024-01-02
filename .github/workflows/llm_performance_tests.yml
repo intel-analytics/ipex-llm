@@ -21,7 +21,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
     uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
@@ -219,7 +219,7 @@ jobs:
 
   llm-performance-test-on-igpu:
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }}
-    needs: llm-cpp-build
+    # needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
@@ -233,47 +233,47 @@ jobs:
       - uses: actions/checkout@v3
 
       # TODO: Put the bigdl-llm related install process for win gpu into a action function
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Prepare for install bigdl-llm from source
-        shell: bash
-        run: |
-          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
-          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+      # - name: Prepare for install bigdl-llm from source
+      #   shell: bash
+      #   run: |
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
 
-      - name: Install bigdl-llm and other related packages
-        shell: cmd
-        run: |
-          call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
-          call conda activate igpu-perf
+      # - name: Install bigdl-llm and other related packages
+      #   shell: cmd
+      #   run: |
+      #     call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
+      #     call conda activate igpu-perf
 
-          pip install --upgrade pip
-          pip install --upgrade wheel
-          pip install --upgrade omegaconf pandas
-          pip install --upgrade tiktoken einops transformers_stream_generator
+      #     pip install --upgrade pip
+      #     pip install --upgrade wheel
+      #     pip install --upgrade omegaconf pandas
+      #     pip install --upgrade tiktoken einops transformers_stream_generator
 
-          cd python\llm
-          python setup.py clean --all bdist_wheel --win
-          if not exist dist\bigdl_llm*.whl (exit /b 1)
-          for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
+      #     cd python\llm
+      #     python setup.py clean --all bdist_wheel --win
+      #     if not exist dist\bigdl_llm*.whl (exit /b 1)
+      #     for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
 
-          pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          pip list
+      #     pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     pip list
 
-          call conda deactivate
+      #     call conda deactivate
 
-      - name: Create env for html generation
-        shell: cmd
-        run: |
-          call conda create -n html-gen python=3.9 -y
-          call conda activate html-gen
+      # - name: Create env for html generation
+      #   shell: cmd
+      #   run: |
+      #     call conda create -n html-gen python=3.9 -y
+      #     call conda activate html-gen
 
-          pip install pandas==1.5.3
-          pip install Jinja2
+      #     pip install pandas==1.5.3
+      #     pip install Jinja2
 
-          call conda deactivate
+      #     call conda deactivate
 
       - name: Set directory envs & and fix generated csv date name
         shell: bash
