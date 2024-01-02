@@ -33,3 +33,17 @@ For better performance, it is recommended to set environment variables on Linux:
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
+
+> **Note**: You can install gperftools to use libtcmalloc.so for PVC to get better performance:
+> ```bash
+> conda install -c conda-forge -y gperftools=2.10
+> ```
+> 
+> Then you can set the following environment variables:  
+> ```bash
+> source /opt/intel/oneapi/setvars.sh
+> export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+> export USE_XETLA=OFF
+> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+> export ENABLE_SDP_FUSION=1
+> ```

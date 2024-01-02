@@ -69,6 +69,13 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
 
          pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
 
+      You need to set OneAPI environment variables for BigDL-LLM on Intel GPUs.
+
+      .. code-block:: bash
+
+         # configure OneAPI environment variables
+         source /opt/intel/oneapi/setvars.sh
+
    .. tab:: Windows
 
       .. code-block:: cmd
@@ -78,7 +85,17 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
 
          pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
+      You need to set OneAPI environment variables for BigDL-LLM on Intel GPUs, and make sure you are using CMD as PowerShell is not supported:
+
+      .. code-block:: cmd
+
+         # configures OneAPI environment variables
+         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+
 ```
+
+If you encounter network issues when installing ipex, you can refer to [How to install from wheel](#4.-how-to-install-from-wheel) as an alternative method
+
 
 ## PyTorch 2.0
 ```eval_rst
@@ -87,7 +104,7 @@ We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to cr
    BigDL-LLM for GPU with PyTorch 2.0 supports Ubuntu 20.04 operating system or later.
 ```
 
-### Prerequisite
+### Prerequisites
 
 BigDL-LLM for GPU supports on Linux with PyTorch 2.0 has been verified on:
 
@@ -129,14 +146,22 @@ conda activate llm
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
-## Known issues
-### 1. For Linux users, Ubuntu 22.04 and Linux kernel 6.2.0 may cause performance bad (driver version < stable_775_20_20231219).
+You need to set OneAPI environment variables for BigDL-LLM on Intel GPUs.
+
+```bash
+# configure OneAPI environment variables
+source /opt/intel/oneapi/setvars.sh
+```
+
+## Notes
+### 1. Recommended Linux Kernel
 
 For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need reboot OS).  
 
 Tips: You can use `sudo apt list --installed | grep intel-i915-dkms` to check your intel-i915-dkms's version, the version should be latest and >= `1.23.9.11.231003.15+i19-1`.
 
-### 2. For Linux users, driver installation meet unmet dependencies: intel-i915-dkms
+### 2. Driver installation
+
 The last apt install command of the driver installation may get following error:
 ```
 The following packages have unmet dependencies:
@@ -157,9 +182,6 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 
       .. code-block:: bash
 
-         # configures OneAPI environment variables
-         source /opt/intel/oneapi/setvars.sh
-
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
       
@@ -167,10 +189,8 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 
       .. code-block:: bash
 
-         # configures OneAPI environment variables
-         source /opt/intel/oneapi/setvars.sh
-
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+         export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
 
@@ -183,9 +203,6 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
       Make sure you are using CMD as PowerShell is not supported:
 
       .. code-block:: cmd
-
-         # configures OneAPI environment variables
-         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
          set SYCL_CACHE_PERSISTENT=1
 
@@ -216,7 +233,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-linux_x86_64.whl
 
-      Then you may install directly from the wheel archives using following commands:
+      Then you may install directly from the wheel achieves using following commands:
 
       .. code-block:: bash
 
@@ -237,7 +254,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp39-cp39-win_amd64.whl
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-win_amd64.whl
 
-      Then you may install directly from the wheel archives using following commands:
+      Then you may install directly from the wheel achieves using following commands:
 
       .. code-block:: cmd
 
@@ -258,7 +275,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.15.2a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.0.110%2Bxpu-cp39-cp39-linux_x86_64.whl
 
-      Then you may install directly from the wheel archives using following commands:
+      Then you may install directly from the wheel achieves using following commands:
 
       .. code-block:: bash
 

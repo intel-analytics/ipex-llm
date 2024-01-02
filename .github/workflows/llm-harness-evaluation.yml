@@ -107,7 +107,7 @@ jobs:
         task: ${{ fromJson(needs.set-matrix.outputs.task) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         device: [xpu]
-        
+
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
