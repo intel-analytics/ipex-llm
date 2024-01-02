@@ -13,6 +13,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install transformers==4.34.1 # CodeLlamaTokenizer is supported in higher version of transformers
 ```
 
 ### 2. Run
