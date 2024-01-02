@@ -173,10 +173,6 @@ class Test_Optimize_Gpu_Model:
                     else:
                         # 'past_key_value'is of type tuple as default.
                         for i, (t3, t4) in enumerate(zip(t1, t2)):
-                            # skip fp8 kv_cache check
-                            if t3.dtype == torch.uint8 or t4.dtype == torch.uint8:
-                                continue
-
                             if model.config.architectures[0] == "ChatGLMModel" and \
                                     hasattr(model.config, 'padded_vocab_size') and \
                                     model.config.padded_vocab_size == 65024:

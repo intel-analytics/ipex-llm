@@ -98,7 +98,7 @@ def append_fp8_kv_cache(k_cache, v_cache, key, value):
 
 
 def restore_fp8_kv_cache(k_cache, v_cache, dtype):
-    new_k_cache = torch.zeros(k_cache.shape, dtype=torch.int16, device=k_cache.device)
+    new_k_cache = torch.full(k_cache.shape, 128, dtype=torch.int16, device=k_cache.device)
     new_k_cache.view(torch.uint8)[:, :, :, 1::2] = k_cache
     new_k_cache = new_k_cache.view(torch.half)
 
