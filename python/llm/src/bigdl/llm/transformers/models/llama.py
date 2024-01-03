@@ -41,8 +41,8 @@ import os
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, apply_rotary_pos_emb, \
-    is_enough_kv_cache_room_4_36
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
+    apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
@@ -545,7 +545,6 @@ def llama_attention_forward_4_36(
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
-
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
