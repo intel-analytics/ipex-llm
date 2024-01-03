@@ -77,7 +77,7 @@ def qwen_attention_forward(
     output_attentions: Optional[bool] = False,
     use_cache: Optional[bool] = False,
 ):
-    if quantize_kv_cache(hidden_states):
+    if quantize_kv_cache(self.c_attn, hidden_states):
         qwen_quantized_attention_forward(
             self=self,
             hidden_states=hidden_states,

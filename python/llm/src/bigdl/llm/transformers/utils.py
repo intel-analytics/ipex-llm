@@ -46,6 +46,7 @@ from typing import Union
 import torch
 from torch import nn
 import logging
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -177,8 +178,9 @@ def get_xpu_device_type(x):
         return "others"
 
 
-def quantize_kv_cache(x: torch.Tensor) -> bool:
+def quantize_kv_cache(linear: nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == 1
     else:
-        return x.device.type == 'xpu' and x.dtype != torch.half and x.dtype != torch.bfloat16
+        return x.device.type == 'xpu' and linear.qtype != ggml_tensor_qtype["fp16"] and \
+            linear.qtype != ggml_tensor_qtype["bf16"]
