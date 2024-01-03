@@ -44,42 +44,16 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
         pretraining_tp=1,
     )
 
-    ckpt = loader.tensors(dtype)
-    n_head = config['llama.attention.head_count']
-    n_head_kv = config['llama.attention.head_count_kv']
-    ckpt = restore_llama_weight(ckpt, n_head, n_head_kv)
-
-    state_dict = {}
-    state_dict['model.embed_tokens.weight'] = ckpt['token_embd.weight']
-    state_dict['model.norm.weight'] = ckpt['output_norm.weight']
-    state_dict['lm_head.weight'] = ckpt['output.weight']
-    for i in range(config['llama.block_count']):
-        state_dict[f'model.layers.{i}.self_attn.q_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_q.weight']
-        state_dict[f'model.layers.{i}.self_attn.k_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_k.weight']
-        state_dict[f'model.layers.{i}.self_attn.v_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_v.weight']
-        state_dict[f'model.layers.{i}.self_attn.o_proj.weight'] = \
-            ckpt[f'blk.{i}.attn_output.weight']
-        state_dict[f'model.layers.{i}.mlp.gate_proj.weight'] = \
-            ckpt[f'blk.{i}.ffn_gate.weight']
-        state_dict[f'model.layers.{i}.mlp.up_proj.weight'] = \
-            ckpt[f'blk.{i}.ffn_up.weight']
-        state_dict[f'model.layers.{i}.mlp.down_proj.weight'] = \
-            ckpt[f'blk.{i}.ffn_down.weight']
-        state_dict[f'model.layers.{i}.input_layernorm.weight'] = \
-            ckpt[f'blk.{i}.attn_norm.weight']
-        state_dict[f'model.layers.{i}.post_attention_layernorm.weight'] = \
-            ckpt[f'blk.{i}.ffn_norm.weight']
 
     with init_empty_weights():
         model = LlamaForCausalLM(llama_config)
 
-    for name, weight in state_dict.items():
-        set_module_tensor_to_device(model, name, "cpu", weight, dtype=dtype)
+    def process_llama(name, tensor):
+        module_name = get_llama_module_name(name)
+        set_module_tensor_to_device(model, module_name, "cpu", tensor, dtype=dtype)
 
-    model = model.cpu()
+    tensor_loader = loader.tensor_loader
+    tensor_loader.load_while_process(process_llama)
 
     # see https://github.com/google/sentencepiece/blob/master/src/sentencepiece_model.proto
     from transformers.convert_slow_tokenizer import import_protobuf
@@ -115,3 +89,31 @@ def restore_llama_weight(ckpt: dict, n_head: int, n_head_kv: int):
                                 .swapaxes(1, 2)
                                 .reshape(weight.shape))
     return ckpt
+
+
+def get_llama_module_name(name):
+    if name == 'token_embd.weight':
+        return 'model.embed_tokens.weight'
+    if name == 'output_norm.weight':
+        return 'model.norm.weight'
+    if name == 'output.weight':
+        return 'lm_head.weight'
+    layer_id = name.split('.')[1]
+    if 'attn_q' in name:
+        return  f'model.layers.{layer_id}.self_attn.q_proj.weight'
+    if 'attn_k' in name:
+        return f'model.layers.{layer_id}.self_attn.k_proj.weight'
+    if 'attn_v' in name:
+        return f'model.layers.{layer_id}.self_attn.v_proj.weight'
+    if 'attn_output' in name:
+        return f'model.layers.{layer_id}.self_attn.o_proj.weight'
+    if 'ffn_gate' in name:
+        return f'model.layers.{layer_id}.mlp.gate_proj.weight'
+    if 'ffn_up' in name:
+        return f'model.layers.{layer_id}.mlp.up_proj.weight'
+    if 'ffn_down' in name:
+        return f'model.layers.{layer_id}.mlp.down_proj.weight'
+    if 'attn_norm' in name:
+        return f'model.layers.{layer_id}.input_layernorm.weight'
+    if 'ffn_norm' in name:
+        return f'model.layers.{layer_id}.post_attention_layernorm.weight'
