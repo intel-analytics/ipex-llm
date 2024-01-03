@@ -536,32 +536,33 @@ def _optimize_post(model, lightweight_bmm=False):
                         bloom_attention_forward
                         )
     elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        if "RWForCausalLM" in model.config.architectures:
-            if model.config.hidden_size == 4544:
-                # falcon-7b need to check performance drop after kv cache support.
-                # from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
-                # convert_forward(model,
-                #                 module.Attention,
-                #                 rw_attention_forward_7b
-                #                 )
-                pass
-            else:
-                # falcon-40b
-                from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b
-                convert_forward(model,
-                                module.Attention,
-                                rw_attention_forward_40b
-                                )
-        elif "FalconForCausalLM" in model.config.architectures:
-            if model.config.hidden_size != 4544:
-                # falcon-180b and new falcon-40b
-                from bigdl.llm.transformers.models.falcon import falcon_attention_forward
-                convert_forward(model,
-                                module.FalconAttention,
-                                falcon_attention_forward
-                                )
+        if model.config.architectures is not None:
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            if "RWForCausalLM" in model.config.architectures:
+                if model.config.hidden_size == 4544:
+                    # falcon-7b need to check performance drop after kv cache support.
+                    # from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
+                    # convert_forward(model,
+                    #                 module.Attention,
+                    #                 rw_attention_forward_7b
+                    #                 )
+                    pass
+                else:
+                    # falcon-40b
+                    from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b
+                    convert_forward(model,
+                                    module.Attention,
+                                    rw_attention_forward_40b
+                                    )
+            elif "FalconForCausalLM" in model.config.architectures:
+                if model.config.hidden_size != 4544:
+                    # falcon-180b and new falcon-40b
+                    from bigdl.llm.transformers.models.falcon import falcon_attention_forward
+                    convert_forward(model,
+                                    module.FalconAttention,
+                                    falcon_attention_forward
+                                    )
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
         if model.config.hidden_size == 4096:

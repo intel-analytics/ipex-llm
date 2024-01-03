@@ -39,11 +39,11 @@ from typing import Optional, Tuple, Union, List
 import math
 import os
 import torch.nn.functional as F
-from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
@@ -711,61 +711,6 @@ def llama_attention_forward_4_36(
         attn_weights = None
 
     return attn_output.to(original_dtype), attn_weights, past_key_value
-
-
-def use_flash_attention(query):
-    bsz, q_len, _ = query.size()
-    # check whether ipex flash attention can be used
-    if bsz > 1:
-        # only use flash attention for batch_size = 1 now
-        # as flash attention doesn't support attn_mask in ipex 2.1,
-        # so it will cause output error for padded batch input
-        return False
-    if q_len == 1:
-        # now only use flash attention for first token
-        # as it seems have no performance benifit for rest token now
-        return False
-    if query.device.type != "xpu":
-        # ipex flash attention only support for xpu
-        return False
-    ipex_version = get_ipex_version()
-    if ipex_version <= "2.0.110+xpu":
-        # ipex flash attention is supported from ipex 2.1
-        return False
-    if not torch.xpu.has_xetla():
-        # ipex flash attention is only supported for xetla
-        # may update this later
-        return False
-    if query.dtype not in [torch.float32, torch.float16]:
-        # only use flash attention for fp32/fp16 input
-        return False
-    return True
-
-
-def use_esimd_sdp(q_len, head_dim, query_states):
-    if head_dim != 128:
-        # esimd_sdp only support head_dim = 128 now
-        return False
-    elif q_len != 1:
-        # esimd_sdp only support rest token now
-        return False
-    elif query_states.device.type != "xpu":
-        # esimd_sdp only support GPU now
-        return False
-    elif query_states.dtype != torch.float16:
-        # esimd_sdp only has optimization for FP16 now
-        return False
-    else:
-        device_name = torch.xpu.get_device_name(query_states.device.index)
-        if device_name.startswith("Intel(R) Arc(TM) A") or \
-                device_name.startswith("Intel(R) Data Center GPU Flex"):
-            import linear_fp16_esimd
-            if hasattr(linear_fp16_esimd, "sdp_forward"):
-                return True
-            else:
-                return False
-        else:
-            return False
 
 
 def native_sdp(query, key, value, attention_mask,
