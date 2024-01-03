@@ -23,6 +23,7 @@ from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import use_flash_attention
 from bigdl.llm.transformers.models.llama import get_ipex_version
 
 
@@ -365,11 +366,10 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
     pytorch_major_version = int(torch.__version__.split('.')[0])
     if pytorch_major_version >= 2 and (query_layer.device.type == 'xpu' or query_layer.size(0) > 1):
         query_layer = query_layer.permute(1, 2, 0, 3)
-        if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
+        if attention_mask is None and use_flash_attention(query_layer):
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
-                                                                             attention_mask,
                                                                              is_causal=True)
         elif attention_mask is None:
             scaling_factor = 1 / math.sqrt(query_layer.size(-1))
