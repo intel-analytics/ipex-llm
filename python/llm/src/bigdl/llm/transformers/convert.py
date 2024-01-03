@@ -425,10 +425,6 @@ def _optimize_post(model, lightweight_bmm=False):
     if version.parse(trans_version) >= version.parse("4.31.0"):
         convert_forward(
             model,
-            transformers.models.llama.modeling_llama.LlamaAttention,
-            llama_attention_forward_4_31,)
-        convert_forward(
-            model,
             transformers.models.llama.modeling_llama.LlamaRMSNorm,
             llama_rms_norm_forward,)
         convert_forward(model,
