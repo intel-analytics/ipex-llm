@@ -57,26 +57,26 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     return new_cache_k, new_cache_v
 
 
-def init_fp8_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
+def init_fp8_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, device):
     k_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
                                   dtype=torch.uint8, device=device)
 
-    v_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
-                                  dtype=dtype, device=device)
+    v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
+                                  dtype=torch.uint8, device=device)
 
     k_cache = k_cache_storage.as_strided((batch_size, num_heads, current_length, head_dim),
                                          k_cache_storage.stride(), storage_offset=0)
 
-    v_cache = v_cache_storage.as_strided((batch_size, num_heads, current_length, head_dim),
+    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, current_length),
                                          v_cache_storage.stride(), storage_offset=0)
 
-    return k_cache, v_cache
+    return k_cache, v_cache.transpose(-1, -2)
 
 
-def extend_fp8_kv_cache(k_cache, v_cache, max_length, dtype, device):
+def extend_fp8_kv_cache(k_cache, v_cache, max_length, device):
     batch_size, num_heads, cur_length, head_dim = k_cache.shape
     new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, head_dim,
-                                                 cur_length, max_length, dtype, device)
+                                                 cur_length, max_length, device)
     new_k_cache[:] = k_cache
     new_v_cache[:] = v_cache
     return new_k_cache, new_v_cache
@@ -92,7 +92,8 @@ def append_fp8_kv_cache(k_cache, v_cache, key, value):
 
     fp8_key = key.half().view(torch.uint8)[:, :, :, 1::2]
     new_k_cache[:, :, cur_length:new_length, :] = fp8_key
-    new_v_cache[:, :, cur_length:new_length, :] = value
+    fp8_value = value.half().view(torch.uint8)[:, :, :, 1::2]
+    new_v_cache[:, :, cur_length:new_length, :] = fp8_value
 
     return new_k_cache, new_v_cache
 
@@ -101,8 +102,11 @@ def restore_fp8_kv_cache(k_cache, v_cache, dtype):
     new_k_cache = torch.full(k_cache.shape, 128, dtype=torch.int16, device=k_cache.device)
     new_k_cache.view(torch.uint8)[:, :, :, 1::2] = k_cache
     new_k_cache = new_k_cache.view(torch.half)
+    new_v_cache = torch.full(v_cache.shape, 128, dtype=torch.int16, device=v_cache.device)
+    new_v_cache.view(torch.uint8)[:, :, :, 1::2] = v_cache
+    new_v_cache = new_v_cache.view(torch.half)
 
-    return new_k_cache.to(dtype=dtype), v_cache.to(dtype=dtype)
+    return new_k_cache.to(dtype=dtype), new_v_cache.to(dtype=dtype)
 
 
 def rotate_half(x):
