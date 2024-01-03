@@ -29,8 +29,8 @@ def apply_fast_rope_embedding(q, k, position_ids, model_family):
                           f"only xpu is supported in this function")
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral"]:
-        q_embed = Fast_RoPE_Embedding.apply(q, position_ids)
-        k_embed = Fast_RoPE_Embedding.apply(k, position_ids)
+        q_embed = FastRopeEmbedding.apply(q, position_ids)
+        k_embed = FastRopeEmbedding.apply(k, position_ids)
         return q_embed, k_embed
     else:
         invalidInputError(False,
@@ -38,7 +38,7 @@ def apply_fast_rope_embedding(q, k, position_ids, model_family):
 
 
 # Fast RoPE for finetuning, split the q and k
-class Fast_RoPE_Embedding(torch.autograd.Function):
+class FastRopeEmbedding(torch.autograd.Function):
     @staticmethod
     @custom_fwd
     def forward(ctx, x, position_ids):
