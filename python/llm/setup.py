@@ -320,8 +320,8 @@ def setup_package():
         },
         extras_require={"all": all_requires,
                         "xpu": xpu_requires,  # default to ipex 2.0 for linux and 2.1 for windows
-                        "xpu_2.0": xpu_20_requires,
-                        "xpu_2.1": xpu_21_requires,
+                        "xpu-2-0": xpu_20_requires,
+                        "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
