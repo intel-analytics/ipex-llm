@@ -54,31 +54,27 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```log
 Inference time: XXXX s
 -------------------- Prompt --------------------
-### User:
-AI是什么？
-
+<s>### User:
+What is AI?
 ### Assistant:
 
 -------------------- Output --------------------
 ### User:
-AI是什么？
-
+What is AI?
 ### Assistant:
-AI, 全称是人工智能(Artificial Intelligence)，
+ AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of
 ```
 
 ```log
 Inference time: XXXX s
 -------------------- Prompt --------------------
-### User:
-What is AI?
-
+<s>### User:
+AI是什么？
 ### Assistant:
 
 -------------------- Output --------------------
 ### User:
-What is AI?
-
+AI是什么？
 ### Assistant:
- AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that
+AI, 全称为人工智能(Artificial Intelligence)，是计算机科学、心理学、语言学、逻
 ```

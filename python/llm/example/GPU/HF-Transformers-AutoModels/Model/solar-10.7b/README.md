@@ -46,31 +46,27 @@ Arguments info:
 ```log
 Inference time: XXXX s
 -------------------- Prompt --------------------
-### User:
-AI是什么？
-
+<s>### User:
+What is AI?
 ### Assistant:
 
 -------------------- Output --------------------
 ### User:
-AI是什么？
-
+What is AI?
 ### Assistant:
-AI, 全称是人工智能(Artificial Intelligence)，是一种由计算机科学、心理学、罗伯特斯学、语义学等多个学科的结合而成的学科，它的目的是模仿
+ AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of
 ```
 
 ```log
 Inference time: XXXX s
 -------------------- Prompt --------------------
-### User:
-What is AI?
-
+<s>### User:
+AI是什么？
 ### Assistant:
 
 -------------------- Output --------------------
 ### User:
-What is AI?
-
+AI是什么？
 ### Assistant:
- AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. This involves the development of computer systems that can perform tasks that would normally require human intelligence, such as visual perception, speech recognition, decision-making, and language translation. AI systems can
+AI, 全称为人工智能(Artificial Intelligence)，是计算机科学、心理学、语言学、逻
 ```

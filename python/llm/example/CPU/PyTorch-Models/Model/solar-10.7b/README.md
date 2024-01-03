@@ -47,7 +47,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the SOLAR-10.7B model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'upstage/SOLAR-10.7B-Instruct-v1.0'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
-- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `64`.
+- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.4 Sample Output
 #### [upstage/SOLAR-10.7B-Instruct-v1.0](https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0)
@@ -55,18 +55,16 @@ In the example, several arguments can be passed to satisfy your requirements:
 Inference time: XXXX s
 -------------------- Output --------------------
 ### User:
-AI是什么？
-
+What is AI?
 ### Assistant:
-AI, 全称是人工智能(Artificial Intelligence)，是一种由计算机科学、心理学、罗伯特斯学、语义学等多个学科的结合而成的学科，主要研究计算机如何
+ AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of
 ```
 
 ```log
 Inference time: XXXX s
 -------------------- Output --------------------
 ### User:
-What is AI?
-
+AI是什么？
 ### Assistant:
- AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. This involves the development of computer systems that can perform tasks that would normally require human intelligence, such as visual perception, speech recognition, decision-making, and language translation. AI systems can
+AI, 全称为人工智能(Artificial Intelligence)，是计算机科学、心理学、语言学、逻
 ```

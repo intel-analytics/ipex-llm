@@ -22,6 +22,11 @@ import numpy as np
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
+# you could tune the prompt based on your own model,
+# prompt format is tuned based on the output example in this link:
+# https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0#usage-instructions
+SOLAR_PROMPT_FORMAT = "<s>### User:\n{prompt}\n### Assistant:\n"
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for SOLAR-10.7B model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="upstage/SOLAR-10.7B-Instruct-v1.0",
@@ -38,10 +43,8 @@ if __name__ == '__main__':
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,                   
-                                                 device_map="cpu",
-                                                 torch_dtype=torch.float16,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True).float()
+                                                 trust_remote_code=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -49,17 +52,16 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        conversation = [ {'role': 'user', 'content': args.prompt} ] 
-        prompt = tokenizer.apply_chat_template(conversation, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+        prompt = SOLAR_PROMPT_FORMAT.format(prompt=args.prompt)
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.device)
+
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
-        output = model.generate(**inputs,
-                                use_cache=True,
-                                max_length=args.n_predict)
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict)
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')

@@ -22,6 +22,11 @@ import argparse
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from bigdl.llm import optimize_model
 
+# you could tune the prompt based on your own model,
+# prompt format is tuned based on the output example in this link:
+# https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0#usage-instructions
+SOLAR_PROMPT_FORMAT = "<s>### User:\n{prompt}\n### Assistant:\n"
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for SOLAR-10.7B model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="upstage/SOLAR-10.7B-Instruct-v1.0",
@@ -29,7 +34,7 @@ if __name__ == '__main__':
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=64,
+    parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
@@ -40,10 +45,9 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  torch_dtype='auto',
                                                  low_cpu_mem_usage=True)
-    model = model.float()
+    
     # With only one line to enable BigDL-LLM optimization on model
     model = optimize_model(model)
-
     model = model.to('xpu')
 
     # Load tokenizer
@@ -51,17 +55,16 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        conversation = [ {'role': 'user', 'content': args.prompt} ] 
-        prompt = tokenizer.apply_chat_template(conversation, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(prompt, return_tensors="pt").to('xpu') 
+        prompt = SOLAR_PROMPT_FORMAT.format(prompt=args.prompt)
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
         # ipex model needs a warmup, then inference time can be accurate
-        output = model.generate(**inputs, use_cache=True,
+        output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
         # start inference
         st = time.time()
-        output = model.generate(**inputs, use_cache=True,
+        output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()
