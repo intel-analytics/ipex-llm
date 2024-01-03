@@ -60,8 +60,3 @@ if __name__ == '__main__':
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Output', '-'*20)
         print(output_str)
-
-
-
-
-
