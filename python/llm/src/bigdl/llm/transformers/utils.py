@@ -175,3 +175,10 @@ def get_xpu_device_type(x):
         return "pvc"
     else:
         return "others"
+
+
+def quantize_kv_cache(x: torch.Tensor) -> bool:
+    if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == 1
+    else:
+        return x.device.type == 'xpu' and x.dtype != torch.half and x.dtype != torch.bfloat16
