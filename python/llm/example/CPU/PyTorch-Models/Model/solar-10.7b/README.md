@@ -47,7 +47,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the SOLAR-10.7B model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'upstage/SOLAR-10.7B-Instruct-v1.0'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
-- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
+- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `64`.
 
 #### 2.4 Sample Output
 #### [upstage/SOLAR-10.7B-Instruct-v1.0](https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0)
