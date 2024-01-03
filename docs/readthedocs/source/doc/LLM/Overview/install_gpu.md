@@ -6,6 +6,12 @@
 
 BigDL-LLM on Windows supports Intel iGPU and dGPU.
 
+```eval_rst
+.. important::
+
+    BigDL-LLM on Windows only supports PyTorch 2.1.
+```
+
 To apply Intel GPU acceleration, there're several prerequisite steps for tools installation and environment preparation:
 
 * Step 1: Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and select "Desktop development with C++" workload, like [this](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)
@@ -91,6 +97,12 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
 * Intel Data Center GPU Max Series
+
+```eval_rst
+.. important::
+
+    BigDL-LLM on Linux only supports PyTorch 2.0 and PyTorch 2.1.
+```
 
 ```eval_rst
 .. important::
