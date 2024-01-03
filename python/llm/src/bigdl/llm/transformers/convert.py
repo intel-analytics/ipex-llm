@@ -756,4 +756,10 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.WhisperAttention,
                             safe_bmm_fwd)
+    elif model.config.model_type == "codeshell":
+        from bigdl.llm.transformers.models.codeshell import InjectAttentionSinksMixin
+        model = InjectAttentionSinksMixin.from_pretrained(model,
+                                                           attention_sink_size=4,
+                                                           attention_sink_window_size=252)
+
     return model
