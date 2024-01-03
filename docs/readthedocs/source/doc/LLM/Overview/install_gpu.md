@@ -114,10 +114,10 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 .. tabs::
    .. tab:: PyTorch 2.1
 
-      To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here're several prerequisite steps for tools installation and environment preparation:
+      To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here are several prerequisite steps for tools installation and environment preparation:
 
 
-      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
+      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
 
         .. seealso::
 
@@ -152,7 +152,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
 ```
 
-### Install BigDL-LLM From PyPI
+### Install BigDL-LLM And Dependencies From PyPI
 
 We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
@@ -193,9 +193,9 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
 ```
 
-### Install BigDL-LLM From Wheel
+### Install BigDL-LLM Dependencies From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
 
 ```eval_rst
 .. tabs::
@@ -255,9 +255,10 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # configures OneAPI environment variables
+         # Required step. Configures OneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
+         # Recommended steps
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
@@ -267,10 +268,12 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # configures OneAPI environment variables
+         # Required step. Configures OneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
+         # Recommended steps
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+         export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
 
@@ -278,17 +281,17 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 ```
 
-### Known issues
+### Notes
 
-#### 1. Ubuntu 22.04 and Linux kernel 6.2.0 may cause performance bad (driver version < stable_775_20_20231219)
+#### 1. Potential suboptimal performance with Linux kernel 6.2.0
 
 For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need reboot OS).
 
 Tips: You can use `sudo apt list --installed | grep intel-i915-dkms` to check your intel-i915-dkms's version, the version should be latest and >= `1.23.9.11.231003.15+i19-1`.
 
-#### 2. Driver installation meet unmet dependencies: intel-i915-dkms
+#### 2. Driver installation unmet dependencies error: intel-i915-dkms
 
-The last apt install command of the driver installation may get following error:
+The last apt install command of the driver installation may produce the following error:
 
 ```
 The following packages have unmet dependencies:
@@ -296,7 +299,7 @@ The following packages have unmet dependencies:
                    Conflicts: intel-platform-vsec-dkms
 ```
 
-You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
+You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to install instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
 
 ### Troubleshooting
 
