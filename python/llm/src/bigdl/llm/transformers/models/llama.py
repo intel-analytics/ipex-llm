@@ -668,7 +668,7 @@ def llama_attention_forward_4_36(
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
 
-    if fsdp_flag and q_len > 1:
+    if fsdp_flag:
         # now only use flash attention for first token
         attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
                                                      key_states,
