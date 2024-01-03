@@ -370,7 +370,6 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
-                                                                             attention_mask,
                                                                              is_causal=True)
         elif attention_mask is None:
             scaling_factor = 1 / math.sqrt(query_layer.size(-1))
