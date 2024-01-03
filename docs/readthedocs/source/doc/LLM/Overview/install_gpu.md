@@ -220,7 +220,7 @@ For running a LLM model with BigDL-LLM optimizations, several environment variab
 
 ### 4. How to install from wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to install the target torch/torchvision/ipex versions from downloaded wheels [here](https://developer.intel.com/ipex-whl-stable-xpu) before installing `bigdl-llm`. 
+If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to install the target torch/torchvision/ipex versions from downloaded wheels [here](https://developer.intel.com/ipex-whl-stable-xpu) before installing `bigdl-llm`. 
 
 ```eval_rst
 .. tabs::
@@ -233,7 +233,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-linux_x86_64.whl
 
-      Then you may install directly from the wheel achieves using following commands:
+      Then you may install directly from the wheel archives using following commands:
 
       .. code-block:: bash
 
@@ -254,7 +254,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp39-cp39-win_amd64.whl
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-win_amd64.whl
 
-      Then you may install directly from the wheel achieves using following commands:
+      Then you may install directly from the wheel archives using following commands:
 
       .. code-block:: cmd
 
@@ -275,7 +275,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.15.2a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
          wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.0.110%2Bxpu-cp39-cp39-linux_x86_64.whl
 
-      Then you may install directly from the wheel achieves using following commands:
+      Then you may install directly from the wheel archives using following commands:
 
       .. code-block:: bash
 
