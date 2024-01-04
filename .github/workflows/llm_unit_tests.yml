@@ -304,5 +304,6 @@ jobs:
         shell: bash
         run: |
           python -m pip install transformers==4.34.0 peft==0.5.0 accelerate==0.23.0
+          python -m pip install bitsandbytes scipy
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-example-tests-gpu.sh
