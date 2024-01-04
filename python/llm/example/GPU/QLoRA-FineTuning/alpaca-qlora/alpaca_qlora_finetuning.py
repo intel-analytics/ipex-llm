@@ -217,7 +217,7 @@ def train(
                 bnb_4bit_compute_dtype=torch.bfloat16
             )
             model = AutoModelForCausalLM.from_pretrained(base_model,
-                                                        quantization_config=bnb_config, )
+                                                         quantization_config=bnb_config, )
 
         # below is also supported
         # Load the base model from a directory or the HF Hub to 4-bit format
