@@ -287,7 +287,7 @@ def baichuan_attention_forward_13b(
             )
 
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-        attn_output = torch.matmul(attn_weights, value_states)
+        attn_output = torch.matmul(attn_weights.to(dtype=value_states.dtype), value_states)
 
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
