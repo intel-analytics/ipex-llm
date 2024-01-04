@@ -374,8 +374,8 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                                              is_causal=True)
         elif attention_mask is None:
             head_dim = query_layer.size(-1)
-            attn_weights = torch.matmul(query_layer,
-                                        key_layer.transpose(2, 3)) / math.sqrt(head_dim)
+            attn = torch.matmul(query_layer,
+                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
             if L == S:
                 # first token, need attention mask
                 attn_bias = torch.zeros(L, S, dtype=query_layer.dtype,
