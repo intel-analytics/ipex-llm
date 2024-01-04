@@ -67,7 +67,7 @@ def calculate_zeros_width(in_features, group_size=128, pack_num=8):
 
 
 class WQLinear_GEMM(nn.Module):
-    def __init__(self, bits, group_size, in_features, out_features, bias, dev):
+    def __init__(self, bits, group_size, in_features, out_features, bias, dev, backend):
         super().__init__()
 
         invalidOperationError(bits == 4, "Only 4-bit are supported for now.")
@@ -77,26 +77,41 @@ class WQLinear_GEMM(nn.Module):
         self.bits = bits
         self.group_size = group_size if group_size != -1 else in_features
 
-        self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
-                                dtype=torch.int32) * self.bits).unsqueeze(0)
 
         # quick sanity check (make sure aligment)
         invalidInputError(self.in_features % self.group_size == 0,
                           f"Invalid in_features number {self.in_features}.")
         invalidInputError(out_features % (32 // self.bits) == 0,
                           f"Invalid out_features number {out_features}.")
-
-        self.register_buffer('qweight',
-                             torch.zeros((in_features,
-                                          out_features // (32 // self.bits)),
-                                         dtype=torch.int32, device=dev))
-        self.register_buffer('qzeros',
-                             torch.zeros((in_features // self.group_size,
-                                          out_features // (32 // self.bits)),
-                                         dtype=torch.int32, device=dev))
-        self.register_buffer('scales',
-                             torch.zeros((in_features // self.group_size, out_features),
-                                         dtype=torch.float16, device=dev))
+        if backend == "llmawq":
+            self.wf = (torch.tensor([0, 1, 2, 3, 4, 5, 6, 7],
+                                dtype=torch.int32) * self.bits).unsqueeze(0)
+            self.register_buffer('qweight', 
+                                torch.zeros((out_features,
+                                            in_features // (32 // self.bits)), 
+                                            dtype=torch.int32, device=dev))
+            self.register_buffer('qzeros',
+                                 torch.zeros((out_features,
+                                              calculate_zeros_width(in_features, self.group_size)),
+                                              dtype=torch.int32, device=dev))
+            self.register_buffer('scales', 
+                                 torch.zeros((out_features,
+                                              calculate_zeros_width(in_features, self.group_size) * (32 // self.bits)),
+                                              dtype=torch.float16, device=dev))
+        elif backend == "autoawq":
+            self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
+                                dtype=torch.int32) * self.bits).unsqueeze(0)
+            self.register_buffer('qweight',
+                                torch.zeros((in_features,
+                                            out_features // (32 // self.bits)),
+                                            dtype=torch.int32, device=dev))
+            self.register_buffer('qzeros',
+                                torch.zeros((in_features // self.group_size,
+                                            out_features // (32 // self.bits)),
+                                            dtype=torch.int32, device=dev))
+            self.register_buffer('scales',
+                                torch.zeros((in_features // self.group_size, out_features),
+                                            dtype=torch.float16, device=dev))
         if bias:
             self.register_buffer('bias', torch.zeros((out_features), dtype=torch.float16,
                                                      device=dev))
@@ -106,8 +121,12 @@ class WQLinear_GEMM(nn.Module):
     @classmethod
     def from_linear(cls, linear, bits, group_size, backend, \
             init_only=False, scales=None, zeros=None):
-        awq_linear = cls(bits, group_size, linear.in_features, linear.out_features,
-                         linear.bias is not None, linear.weight.device)
+        if(backend == "llm-awq"):
+            awq_linear = cls(bits, group_size, linear.in_features, linear.out_features,
+                         linear.bias is not None, linear.weight.device, "llmawq")
+        else:
+            awq_linear = cls(bits, group_size, linear.in_features, linear.out_features,
+                         linear.bias is not None, linear.weight.device, "autoawq")
         if init_only:  # just prepare for loading sd
             return awq_linear
 
