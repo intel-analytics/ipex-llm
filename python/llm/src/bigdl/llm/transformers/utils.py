@@ -180,7 +180,7 @@ def get_xpu_device_type(x):
 
 def quantize_kv_cache(linear: nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
-        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == 1
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     else:
         return x.device.type == 'xpu' and hasattr(linear, "qtype") and \
             linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]

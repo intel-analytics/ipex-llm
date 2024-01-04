@@ -78,7 +78,7 @@ def qwen_attention_forward(
     use_cache: Optional[bool] = False,
 ):
     if quantize_kv_cache(self.c_attn, hidden_states):
-        qwen_quantized_attention_forward(
+        return qwen_quantized_attention_forward(
             self=self,
             hidden_states=hidden_states,
             rotary_pos_emb_list=rotary_pos_emb_list,
@@ -91,7 +91,7 @@ def qwen_attention_forward(
             use_cache=use_cache
         )
     else:
-        qwen_original_attention_forward(
+        return qwen_original_attention_forward(
             self=self,
             hidden_states=hidden_states,
             rotary_pos_emb_list=rotary_pos_emb_list,
