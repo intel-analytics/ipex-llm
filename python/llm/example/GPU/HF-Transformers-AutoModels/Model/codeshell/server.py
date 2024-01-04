@@ -161,21 +161,33 @@ async def generate_stream(request: GenerationRequest):
 
     if multi_turn:
         streamer.put(input_ids)
-        with torch.inference_mode():
-            past_key_values = None
-            outputs = model(input_ids, past_key_values=past_key_values, use_cache=True)
+        stop = False
+        stop_words = [tokenizer.encode("##")]
+
+        outputs = model(input_ids, past_key_values=past_key_values, use_cache=True)
+        past_key_values = outputs.past_key_values
+        pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
+        generated_ids = [pred_token_idx.item()]
+
+        for _ in range(max_new_tokens - 1):
+            outputs = model(pred_token_idx, past_key_values=past_key_values, use_cache=True)
             past_key_values = outputs.past_key_values
             pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
+            generated_ids = [pred_token_idx.item()]
+            streamer.put(pred_token_idx)
+            input_ids = pred_token_idx
 
-            for _ in range(max_new_tokens - 1):
-                outputs = model(pred_token_idx, past_key_values=past_key_values, use_cache=True)
-                past_key_values = outputs.past_key_values
-                pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
-                streamer.put(pred_token_idx)
-                input_id = pred_token_idx
+            if stop_words is not None:
+                for stop_str in stop_words:
+                    if generated_ids[-1 * len(stop_str):] == stop_str:
+                        stop = True
+                        break
+                if stop:
+                    break
 
-                if pred_token_idx == tokenizer.eos_token_id:
-                   break
+            if pred_token_idx == tokenizer.eos_token_id:
+                break
+
     else:
         max_batch = 1024
         if input_length <= max_batch:

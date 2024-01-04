@@ -34,7 +34,7 @@ ATTENTION_NAME_MAPPING = {
     "codeshell": "CodeShellAttention"
 }
 KV_DIM_MAPPING = {
-    "codeshell": (2, 2)
+    "codeshell": (1, 1)
 }
 
 class InjectAttentionSinksMixin:
