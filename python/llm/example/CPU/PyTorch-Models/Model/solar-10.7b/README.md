@@ -24,7 +24,7 @@ After setting up the Python environment, you could run the example by following 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./generate.py --prompt 'AI是什么？'
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
@@ -38,7 +38,7 @@ source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py --prompt 'AI是什么？'
+numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI?'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
@@ -46,7 +46,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the SOLAR-10.7B model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'upstage/SOLAR-10.7B-Instruct-v1.0'`.
-- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
+- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.4 Sample Output
