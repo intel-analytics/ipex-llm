@@ -534,14 +534,15 @@ def llama_attention_forward_4_36(
         fsdp_flag = use_flash_attention(hidden_states)
     else:
         fsdp_flag = False
-    if fsdp_flag and q_len > 1:
+    if fsdp_flag:
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    qtype = getattr(self.q_proj, "qtype", None)
+    is_q4_0 = qtype == SYM_INT4
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
