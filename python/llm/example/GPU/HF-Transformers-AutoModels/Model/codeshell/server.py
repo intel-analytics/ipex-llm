@@ -159,22 +159,25 @@ async def generate_stream(request: GenerationRequest):
         [ StopWordsCriteria(input_length, request.parameters.stop, tokenizer) ]
     )
 
-    streamer.put(input_ids)
-
-    max_batch = 1024
     if multi_turn:
+        streamer.put(input_ids)
         with torch.inference_mode():
-            for _ in range(1024):
-                outputs = model(input_ids, past_key_values=past_key_values, use_cache=True)
+            past_key_values = None
+            outputs = model(input_ids, past_key_values=past_key_values, use_cache=True)
+            past_key_values = outputs.past_key_values
+            pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
+
+            for _ in range(max_new_tokens - 1):
+                outputs = model(pred_token_idx, past_key_values=past_key_values, use_cache=True)
                 past_key_values = outputs.past_key_values
                 pred_token_idx = outputs.logits[:, -1, :].argmax(dim=-1).unsqueeze(1)
                 streamer.put(pred_token_idx)
-                input_ids = pred_token_idx
+                input_id = pred_token_idx
 
                 if pred_token_idx == tokenizer.eos_token_id:
-                    break
-
+                   break
     else:
+        max_batch = 1024
         if input_length <= max_batch:
             past_key_values = None
         else:
@@ -182,9 +185,22 @@ async def generate_stream(request: GenerationRequest):
                 past_key_values = None
                 for start_pos in range(0, input_length - 1, max_batch):
                     end_pos = min(start_pos + max_batch, input_length - 1)
-                    output = model.forward(input_ids['input_ids'][:, start_pos:end_pos],
+                    output = model.forward(input_id['input_ids'][:, start_pos:end_pos],
                                            past_key_values=past_key_values)
                     past_key_values = output.past_key_values
+
+        generation_kwargs = dict(input_id,
+                                 past_key_values=past_key_values,
+                                 streamer=streamer,
+                                 stopping_criteria=stopping_criteria,
+                                 max_new_tokens=request.parameters.max_new_tokens,
+                                 temperature=request.parameters.temperature,
+                                 repetition_penalty=request.parameters.repetition_penalty,
+                                 top_p=request.parameters.top_p,
+                                 do_sample=request.parameters.do_sample)
+
+        thread = Thread(target=model.generate, kwargs=generation_kwargs)
+        thread.start()
 
     print('-'*80)
     print('input prompt:', prompt)
@@ -248,6 +264,12 @@ def _get_args():
         help="Max context length when using code completion",
     )
     parser.add_argument(
+        "--max-new-tokens",
+        type=int,
+        default=1024,
+        help="Max tokens to predict",
+    )
+    parser.add_argument(
         "--attention-sink",
         action="store_true",
         help="Enable attention_sinks for multi-turn chat",
@@ -275,6 +297,7 @@ if __name__ == "__main__":
     multi_turn = args.multi_turn
     max_context = args.max_context
     attention_sink = args.attention_sink
+    max_new_tokens = args.max_new_tokens
 
     if device == 'xpu':
         import intel_extension_for_pytorch as ipex
