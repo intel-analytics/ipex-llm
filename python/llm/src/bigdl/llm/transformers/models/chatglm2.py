@@ -366,7 +366,7 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
     pytorch_major_version = int(torch.__version__.split('.')[0])
     if pytorch_major_version >= 2 and (query_layer.device.type == 'xpu' or query_layer.size(0) > 1):
         query_layer = query_layer.permute(1, 2, 0, 3)
-        L, S = query_layer.size(-2), key_layer.size(-2)
+        L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and use_flash_attention(query_layer):
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
@@ -375,9 +375,8 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         elif attention_mask is None:
             scaling_factor = 1 / math.sqrt(query_layer.size(-1))
             attn = torch.matmul(query_layer * scaling_factor, key_layer.transpose(-2, -1))
-            if L != S:
+            if L == S:
                 # first token, need attention mask
-                L, S = query_layer.size(-2), key_layer.size(-2)
                 attn_bias = torch.zeros(L, S, dtype=query_layer.dtype,
                                         device=query_layer.device)
                 temp_mask = torch.ones(L, S, dtype=torch.bool,
