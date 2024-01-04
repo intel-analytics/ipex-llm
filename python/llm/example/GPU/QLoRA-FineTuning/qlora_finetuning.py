@@ -21,6 +21,7 @@ import transformers
 from transformers import LlamaTokenizer
 import intel_extension_for_pytorch as ipex
 from peft import LoraConfig
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
@@ -41,11 +42,22 @@ if __name__ == "__main__":
 
     data = load_dataset(dataset_path)
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
+
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=False,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                load_in_low_bit="nf4",
-                                                optimize_model=False,
-                                                torch_dtype=torch.float16,
-                                                modules_to_not_convert=["lm_head"],)
+                                                 quantization_config=bnb_config, )
+
+    # below is also supported
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                             load_in_low_bit="nf4",
+    #                                             optimize_model=False,
+    #                                             torch_dtype=torch.bfloat16,
+    #                                             modules_to_not_convert=["lm_head"],)
     model = model.to('xpu')
     # Enable gradient_checkpointing if your memory is not enough,
     # it will slowdown the training speed
