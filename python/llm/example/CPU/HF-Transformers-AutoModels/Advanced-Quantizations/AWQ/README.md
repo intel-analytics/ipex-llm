@@ -37,6 +37,17 @@ pip install accelerate==0.24.1
 pip install einops
 ```
 
+**(Optional) Support for LLM-AWQ Backend**
+
+BigDL-LLM uses `autoawq` as its default awq backend, and also automatically supports `llmawq` if your model is orginally quantized by llmawq. You can directly input an llmawq model in the same way as autoawq, after installing the following dependencies:
+
+```bash
+git clone https://github.com/mit-han-lab/llm-awq
+cd llm-awq
+pip install --upgrade pip  # enable PEP 660 support
+pip install -e .
+```
+
 ### 2. Run
 
 ```
