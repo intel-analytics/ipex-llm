@@ -11,6 +11,7 @@ pip install --pre --upgrade bigdl-llm[all]
 pip install datasets transformers==4.35.0
 pip install fire peft==0.5.0
 pip install accelerate==0.23.0
+pip install bitsandbytes scipy
 ```
 
 ### 2. Configures environment variables
