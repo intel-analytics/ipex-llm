@@ -22,8 +22,9 @@ BigDL-LLM: low-Bit LLM library
    It is built on top of the excellent work of `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, `qlora <https://github.com/artidoro/qlora>`_, etc.
 
 ============================================
-Latest update 
+Latest update 🔥
 ============================================
+- [2024/01] 🔔🔔🔔 **Starting from 2024/01/08, the default** ``bigdl-llm`` **GPU Linux installation will switch from PyTorch 2.0 to PyTorch 2.1, which requires new oneAPI and GPU driver versions. (See the** `GPU installation guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html>`_ **for more details.)**
 - [2023/12] ``bigdl-llm`` now supports `ReLoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#relora>`_ (see `"ReLoRA: High-Rank Training Through Low-Rank Updates" <https://arxiv.org/abs/2307.05695>`_)
 - [2023/12] ``bigdl-llm`` now supports `Mixtra-7x8B <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral>`_ on both Intel `GPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral>`_ and `CPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral>`_.
 - [2023/12] ``bigdl-llm`` now supports `QA-LoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/QLoRA-FineTuning/alpaca-qlora#qa-lora>`_ (see `"QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models" <https://arxiv.org/abs/2309.14717>`_).
