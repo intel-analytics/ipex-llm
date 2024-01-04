@@ -19,7 +19,7 @@ pip install transformers==4.35.2 # required by SOLAR-10.7B
 
 ### 2. Configures OneAPI environment variables
 ```bash
-source /home/arda/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 ```
 
 ### 3. Run
