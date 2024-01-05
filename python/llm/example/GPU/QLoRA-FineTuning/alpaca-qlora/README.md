@@ -17,6 +17,7 @@ pip install datasets transformers==4.34.0
 pip install fire peft==0.5.0
 pip install oneccl_bind_pt==2.0.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
 pip install accelerate==0.23.0
+pip install bitsandbytes scipy
 ```
 
 ### 2. Configures OneAPI environment variables

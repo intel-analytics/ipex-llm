@@ -33,7 +33,6 @@ world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
 from bigdl.llm import optimize_model
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 

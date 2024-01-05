@@ -15,27 +15,24 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# Refer to https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model
-YI_PROMPT_FORMAT = """
-<|im_start|>system
-You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
-<|im_start|>user
-{prompt}<|im_end|>
-<|im_start|>assistant
-"""
+# you could tune the prompt based on your own model,
+# prompt format is tuned based on the output example in this link:
+# https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0#usage-instructions
+SOLAR_PROMPT_FORMAT = "<s>### User:\n{prompt}\n### Assistant:\n"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Yi model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="01-ai/Yi-6B",
-                        help='The huggingface repo id for the Yi model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for SOLAR-10.7B model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="upstage/SOLAR-10.7B-Instruct-v1.0",
+                        help='The huggingface repo id for the SOLAR-10.7B model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="AI是什么？",
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
@@ -47,7 +44,6 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
     model = model.to('xpu')
@@ -55,10 +51,10 @@ if __name__ == '__main__':
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
-
+    
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = YI_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = SOLAR_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
@@ -74,6 +70,7 @@ if __name__ == '__main__':
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()
+        output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
