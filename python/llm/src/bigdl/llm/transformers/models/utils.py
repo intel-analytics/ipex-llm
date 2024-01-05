@@ -116,10 +116,11 @@ def is_enough_kv_cache_room_4_36(past_key_value, idx):
         past_key_value.key_cache[idx].size(3)
 
 
-def is_enough_kv_cache_room_4_31(past_key_value):
+def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
     # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
     return past_key_value is not None and \
-        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
+        past_key_value[0].stride()[1] > \
+        (past_key_value[0].size(2) + seq_len - 1) * past_key_value[0].size(3)
 
 
 def use_flash_attention(query):

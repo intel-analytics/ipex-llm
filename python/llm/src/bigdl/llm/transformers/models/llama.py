@@ -149,7 +149,7 @@ def llama_attention_forward_4_31(
         attention_dtype = original_dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
+    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
     is_q4_0 = qtype == SYM_INT4
     no_tp = not self.config.pretraining_tp > 1
