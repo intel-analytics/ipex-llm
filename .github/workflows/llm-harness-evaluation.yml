@@ -63,10 +63,10 @@ jobs:
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
-          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t"]'
-          PR_MATRIX_TASK: '["truthfulqa"]'
-          PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
-          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
+          PR_MATRIX_MODEL_NAME: '["falcon-7b-instruct-with-patch"]'
+          PR_MATRIX_TASK: '["arc","hellaswag","mmlu","truthfulqa","winogrande"]'
+          PR_MATRIX_PRECISION: '["sym_int4","fp4","mixed_fp4","sym_int8","fp8","fp8_e5m2","mixed_fp8"]'
+          PR_LABELS: '["self-hosted", "llm", "accuracy"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
@@ -149,7 +149,7 @@ jobs:
             mkdir -p $HARNESS_HF_HOME
           fi
           wget -r -nH -nc -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
-          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
+          wget -r -nH -N --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
       - name: Upgrade packages
         shell: bash
