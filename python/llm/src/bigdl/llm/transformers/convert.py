@@ -434,26 +434,35 @@ def _optimize_post(model, lightweight_bmm=False):
     if version.parse(trans_version) >= version.parse("4.31.0"):
         convert_forward(
             model,
-            transformers.models.llama.modeling_llama.LlamaAttention,
-            llama_attention_forward_4_31,)
-        convert_forward(
-            model,
             transformers.models.llama.modeling_llama.LlamaRMSNorm,
             llama_rms_norm_forward,)
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
-        if enable_vllm_se_batching:
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaModel,
-                llama_model_selective_batching_forward_4_31,
-            )
+        if version.parse(trans_version) >= version.parse("4.36.0"):
+            # transformers version >= 4.36.0
+            from bigdl.llm.transformers.models.llama import llama_attention_forward_4_36
             convert_forward(
                 model,
                 transformers.models.llama.modeling_llama.LlamaAttention,
-                llama_attention_selective_batching_forward_4_31,
-            )
+                llama_attention_forward_4_36, )
+        else:
+            # transformers version between 4.31.0 - 4.35.2
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaAttention,
+                llama_attention_forward_4_31, )
+            if enable_vllm_se_batching:
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaModel,
+                    llama_model_selective_batching_forward_4_31,
+                )
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_selective_batching_forward_4_31,
+                )
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
