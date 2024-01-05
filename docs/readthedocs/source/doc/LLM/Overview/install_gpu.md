@@ -84,9 +84,9 @@ set BIGDL_LLM_XMX_DISABLED=1
    For the first time that **each model** runs on **iGPU**, it may take around several minutes to compile.
 ```
 
-### Troubleshooting
+<!-- ### Troubleshooting -->
 
-todo
+<!-- todo -->
 
 ## Linux
 
@@ -281,7 +281,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 ```
 
-### Notes
+### Known issues
 
 #### 1. Potential suboptimal performance with Linux kernel 6.2.0
 
@@ -303,4 +303,18 @@ You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to install instea
 
 ### Troubleshooting
 
-todo
+#### 1. Cannot open shared object file: No such file or directory
+
+Error where libmkl file is not found, for example,
+
+```
+OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory
+```
+```
+Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or directory
+```
+
+The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
+
+* Step 1: Make sure to execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code.
+* Step 2: Make sure to install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with Pytorch 2.1 should be used with oneAPI Base Toolkit version 2024.x.x. BigDL-LLM with Pytorch 2.0 should be used with oneAPI Base Toolkit version 2023.x.x.
