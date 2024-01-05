@@ -39,8 +39,7 @@ except ImportError:
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
     append_fp8_kv_cache, restore_fp8_kv_cache
-from bigdl.llm.transformers.models.utils import rotate_half
-from bigdl.llm.transformers.utils import quantize_kv_cache
+from bigdl.llm.transformers.models.utils import rotate_half, quantize_kv_cache
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
@@ -64,177 +63,7 @@ def apply_rotary_pos_emb(t, freqs):
     t_ = (t_ * cos) + (rotate_half(t_) * sin)
     return torch.cat((t_, t_pass_), dim=-1).type_as(t)
 
-
 def qwen_attention_forward(
-    self,
-    hidden_states: Optional[Tuple[torch.FloatTensor]],
-    rotary_pos_emb_list: Optional[List[torch.Tensor]] = None,
-    layer_past: Optional[Tuple[torch.Tensor]] = None,
-    attention_mask: Optional[torch.FloatTensor] = None,
-    head_mask: Optional[torch.FloatTensor] = None,
-    encoder_hidden_states: Optional[torch.Tensor] = None,
-    encoder_attention_mask: Optional[torch.FloatTensor] = None,
-    output_attentions: Optional[bool] = False,
-    use_cache: Optional[bool] = False,
-):
-    if quantize_kv_cache(self.c_attn, hidden_states):
-        return qwen_quantized_attention_forward(
-            self=self,
-            hidden_states=hidden_states,
-            rotary_pos_emb_list=rotary_pos_emb_list,
-            layer_past=layer_past,
-            attention_mask=attention_mask,
-            head_mask=head_mask,
-            encoder_hidden_states=encoder_hidden_states,
-            encoder_attention_mask=encoder_attention_mask,
-            output_attentions=output_attentions,
-            use_cache=use_cache
-        )
-    else:
-        return qwen_original_attention_forward(
-            self=self,
-            hidden_states=hidden_states,
-            rotary_pos_emb_list=rotary_pos_emb_list,
-            layer_past=layer_past,
-            attention_mask=attention_mask,
-            head_mask=head_mask,
-            encoder_hidden_states=encoder_hidden_states,
-            encoder_attention_mask=encoder_attention_mask,
-            output_attentions=output_attentions,
-            use_cache=use_cache
-        )
-
-
-def qwen_original_attention_forward(
-    self,
-    hidden_states: Optional[Tuple[torch.FloatTensor]],
-    rotary_pos_emb_list: Optional[List[torch.Tensor]] = None,
-    layer_past: Optional[Tuple[torch.Tensor]] = None,
-    attention_mask: Optional[torch.FloatTensor] = None,
-    head_mask: Optional[torch.FloatTensor] = None,
-    encoder_hidden_states: Optional[torch.Tensor] = None,
-    encoder_attention_mask: Optional[torch.FloatTensor] = None,
-    output_attentions: Optional[bool] = False,
-    use_cache: Optional[bool] = False,
-):
-    invalidInputError(not self.use_flash_attn and not self.use_cache_quantization,
-                      "flash attn and kv_cache quantization are not supported")
-
-    mixed_x_layer = self.c_attn(hidden_states)
-    query, key, value = mixed_x_layer.split(self.split_size, dim=2)
-
-    query = self._split_heads(query, self.num_heads, self.head_dim)
-    key = self._split_heads(key, self.num_heads, self.head_dim)
-    value = self._split_heads(value, self.num_heads, self.head_dim)
-
-    kv_seq_len = hidden_states.size()[1]
-
-    if rotary_pos_emb_list is not None:
-        cur_len = query.shape[1]
-        if len(rotary_pos_emb_list) == 1:
-            if query.device.type == 'xpu':
-                cos, sin = rotary_pos_emb_list[0]
-                cos = cos[:, -cur_len:, :, :]
-                sin = sin[:, -cur_len:, :, :]
-                rot_dim = cos.shape[-1]
-                query_cur = query[..., :rot_dim]
-                key_cur = key[..., :rot_dim]
-                torch.ops.torch_ipex.apply_rotary_embedding(query_cur, sin, cos, query_cur)
-                torch.ops.torch_ipex.apply_rotary_embedding(key_cur, sin, cos, key_cur)
-            else:
-                rotary_pos_emb = rotary_pos_emb_list[0]
-                rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
-                rotary_pos_emb = (rotary_pos_emb,) * 2
-                q_pos_emb, k_pos_emb = rotary_pos_emb
-                # Slice the pos emb for current inference
-                query = apply_rotary_pos_emb(query, q_pos_emb)
-                key = apply_rotary_pos_emb(key, k_pos_emb)
-        else:
-            query_list = []
-            key_list = []
-            for i, rotary_pos_emb in enumerate(rotary_pos_emb_list):
-                rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
-                rotary_pos_emb = (rotary_pos_emb,) * 2
-                q_pos_emb, k_pos_emb = rotary_pos_emb
-                # Slice the pos emb for current inference
-                query_list += [apply_rotary_pos_emb(query[i:i+1, :, :], q_pos_emb)]
-                key_list += [apply_rotary_pos_emb(key[i:i+1, :, :], k_pos_emb)]
-            query = torch.cat(query_list, dim=0)
-            key = torch.cat(key_list, dim=0)
-
-    bsz, _, n_heads, head_dim = key.size()
-
-    if layer_past is not None:
-        cache_k, cache_v = layer_past[0], layer_past[1]
-        cache_k = cache_k.transpose(1, 2)
-        cache_v = cache_v.transpose(1, 2)
-        kv_seq_len += cache_k.shape[2]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_heads,
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=hidden_states.device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
-
-        key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                   key.transpose(1, 2), value.transpose(1, 2))
-        key = key_states
-        value = value_states
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key.dtype,
-                                                         device=hidden_states.device)
-        new_key_states[:] = key.transpose(1, 2)
-        new_value_states[:] = value.transpose(1, 2)
-        key = new_key_states
-        value = new_value_states
-
-    query_size, key_size = query.size(1), key.size(2)
-    if key_size > self.seq_length and self.use_logn_attn and not self.training:
-        seq_start = key_size - query_size
-        seq_end = key_size
-        logn_tensor = self.logn_tensor[:, seq_start:seq_end, :, :].type_as(query)
-        query = query * logn_tensor.expand_as(query)
-    if query_size == key_size:
-        causal_mask = torch.tril(
-            torch.ones((key_size, key_size), dtype=torch.bool, device=query.device)
-        ).view(1, 1, key_size, key_size)
-    else:
-        causal_mask = None
-    query = query.transpose(1, 2)
-
-    attn_output, attn_weight = self._attn(
-        query, key, value, causal_mask, attention_mask, head_mask
-    )
-    context_layer = self._merge_heads(
-        attn_output, self.num_heads, self.head_dim
-    )
-
-    attn_output = self.c_proj(context_layer)
-
-    if use_cache:
-        outputs = (attn_output, (key.transpose(1, 2), value.transpose(1, 2)))
-    else:
-        outputs = (attn_output, None)
-    if output_attentions:
-        outputs += (attn_weight,)
-
-    return outputs
-
-
-def qwen_quantized_attention_forward(
     self,
     hidden_states: Optional[Tuple[torch.FloatTensor]],
     rotary_pos_emb_list: Optional[List[torch.Tensor]] = None,
@@ -258,17 +87,27 @@ def qwen_quantized_attention_forward(
     # query, key, value's shape: [bs, seq_len, num_heads, head_dim]
 
     if rotary_pos_emb_list is not None:
-        invalidInputError(len(rotary_pos_emb_list) == 1 and query.device.type == 'xpu',
-                          "quantize kv_cache only supports GPU")
         cur_len = query.shape[1]
-        cos, sin = rotary_pos_emb_list[0]
-        cos = cos[:, -cur_len:, :, :]
-        sin = sin[:, -cur_len:, :, :]
-        rot_dim = cos.shape[-1]
-        query_cur = query[..., :rot_dim]
-        key_cur = key[..., :rot_dim]
-        torch.ops.torch_ipex.apply_rotary_embedding(query_cur, sin, cos, query_cur)
-        torch.ops.torch_ipex.apply_rotary_embedding(key_cur, sin, cos, key_cur)
+        if len(rotary_pos_emb_list) == 1:
+            rotary_pos_emb = rotary_pos_emb_list[0]
+            rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
+            rotary_pos_emb = (rotary_pos_emb,) * 2
+            q_pos_emb, k_pos_emb = rotary_pos_emb
+            # Slice the pos emb for current inference
+            query = apply_rotary_pos_emb(query, q_pos_emb)
+            key = apply_rotary_pos_emb(key, k_pos_emb)
+        else:
+            query_list = []
+            key_list = []
+            for i, rotary_pos_emb in enumerate(rotary_pos_emb_list):
+                rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
+                rotary_pos_emb = (rotary_pos_emb,) * 2
+                q_pos_emb, k_pos_emb = rotary_pos_emb
+                # Slice the pos emb for current inference
+                query_list += [apply_rotary_pos_emb(query[i:i+1, :, :], q_pos_emb)]
+                key_list += [apply_rotary_pos_emb(key[i:i+1, :, :], k_pos_emb)]
+            query = torch.cat(query_list, dim=0)
+            key = torch.cat(key_list, dim=0)
 
     query_size, key_size = query.size(1), key.size(1)
     kv_seq_len = key_size if layer_past is None else key_size + layer_past[0].size(1)
@@ -285,43 +124,89 @@ def qwen_quantized_attention_forward(
     else:
         causal_mask = None
 
-    query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
-    # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
+    if quantize_kv_cache(self.c_attn, hidden_states):
+        query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
+        # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
 
-    if layer_past is None:
-        # For first token, use original attn
+        if layer_past is None:
+            # For first token, use original attn
+            attn_output, attn_weight = self._attn(
+                query, key, value, causal_mask, attention_mask, head_mask
+            )
+            if use_cache:
+                max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+                k_cache, v_cache = init_fp8_kv_cache(
+                    query.size(0), self.num_heads, self.head_dim,
+                    0, max_cache_length,
+                    device=query.device,
+                )
+                key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+        else:
+            k_cache, v_cache = layer_past[0], layer_past[1]
+            k_cache = k_cache.transpose(1, 2)
+            v_cache = v_cache.transpose(1, 2)
+            # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
+
+            if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
+                # allocate new
+                k_cache, v_cache = extend_fp8_kv_cache(
+                    k_cache, v_cache,
+                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                    device=query.device,
+                )
+                # empty cache to reduce gpu memory
+                if v_cache.device.type == 'xpu':
+                    torch.xpu.empty_cache()
+
+            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+
+            attn_output, attn_weight = core_attn(
+                self, query, key, value, causal_mask, attention_mask, head_mask
+            )
+
+    else:
+        bsz = key.size(0)
+        if layer_past is not None:
+            cache_k, cache_v = layer_past[0], layer_past[1]
+            cache_k = cache_k.transpose(1, 2)
+            cache_v = cache_v.transpose(1, 2)
+            kv_seq_len += cache_k.shape[2]
+            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                           self.num_heads,
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=hidden_states.device)
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
+
+            key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                    key.transpose(1, 2), value.transpose(1, 2))
+            key = key_states
+            value = value_states
+        elif use_cache:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_key_states, new_value_states = init_kv_cache(bsz,
+                                                             self.num_heads,
+                                                             self.head_dim,
+                                                             kv_seq_len,
+                                                             max_cache_length,
+                                                             dtype=key.dtype,
+                                                             device=hidden_states.device)
+            new_key_states[:] = key.transpose(1, 2)
+            new_value_states[:] = value.transpose(1, 2)
+            key = new_key_states
+            value = new_value_states
+
+        query = query.transpose(1, 2)
+
         attn_output, attn_weight = self._attn(
             query, key, value, causal_mask, attention_mask, head_mask
-        )
-        if use_cache:
-            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-            k_cache, v_cache = init_fp8_kv_cache(
-                query.size(0), self.num_heads, self.head_dim,
-                0, max_cache_length,
-                device=query.device,
-            )
-            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
-    else:
-        k_cache, v_cache = layer_past[0], layer_past[1]
-        k_cache = k_cache.transpose(1, 2)
-        v_cache = v_cache.transpose(1, 2)
-        # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
-
-        if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
-            # allocate new
-            k_cache, v_cache = extend_fp8_kv_cache(
-                k_cache, v_cache,
-                kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                device=query.device,
-            )
-            # empty cache to reduce gpu memory
-            if v_cache.device.type == 'xpu':
-                torch.xpu.empty_cache()
-
-        key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
-
-        attn_output, attn_weight = core_attn(
-            self, query, key, value, causal_mask, attention_mask, head_mask
         )
 
     context_layer = self._merge_heads(

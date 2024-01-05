@@ -39,14 +39,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
 from transformers.modeling_utils import _add_variant
 from ..utils.common import invalidInputError
 from typing import Union
 import torch
 from torch import nn
 import logging
-from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -176,11 +174,3 @@ def get_xpu_device_type(x):
         return "pvc"
     else:
         return "others"
-
-
-def quantize_kv_cache(linear: nn.Module, x: torch.Tensor) -> bool:
-    if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
-        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
-    else:
-        return x.device.type == 'xpu' and hasattr(linear, "qtype") and \
-            linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]

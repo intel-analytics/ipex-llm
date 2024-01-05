@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 
+import os
 import torch
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.utils import get_ipex_version
 
 
@@ -55,6 +57,14 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
     new_cache_v[:, :, cache_v.size(2):cache_k.size(2) + key_states.size(2), :] = value_states
     return new_cache_k, new_cache_v
+
+
+def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
+    if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
+    else:
+        return x.device.type == 'xpu' and hasattr(linear, "qtype") and \
+            linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
 
 
 def init_fp8_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, device):
