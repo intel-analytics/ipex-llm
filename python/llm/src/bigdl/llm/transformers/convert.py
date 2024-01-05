@@ -63,7 +63,7 @@ def is_deepspeed_available():
 
 if is_auto_gptq_available():
     from auto_gptq.utils.peft_utils import QuantLinearCuda, QuantLinearCudaOld
-
+    from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 if is_auto_awq_available():
     from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
@@ -108,7 +108,7 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-def convert_gptq(module, awq=False, llm_awq=True):
+def convert_gptq(module, awq=False, llm_awq=False):
     from bigdl.llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")
 
@@ -146,10 +146,11 @@ def convert_gptq(module, awq=False, llm_awq=True):
                                       torch.tensor([0, 4], dtype=torch.int8).reshape(1, 1, 1, 2))
     weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
 
-    # todo weight
-
     # convert zeros to ggml format
     if llm_awq:
+        real_scale_num = module.in_features // module.group_size
+        zeros = zeros[:, : real_scale_num]
+        scales = scales[:, : real_scale_num]
         zeros = zeros.t()
         scales = scales.t()
     zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
@@ -196,6 +197,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     new_linear = None
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
                     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+                    is_llm_awq = True if is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ else False
                     if is_gptq or is_awq:
                         has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
@@ -209,7 +211,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         invalidInputError(device_type != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
-                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
+                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq, llm_awq=is_llm_awq),
                                                  requires_grad=False,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),
