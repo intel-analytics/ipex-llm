@@ -249,7 +249,7 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.0"
 
       - name: Test installed xpu version
         shell: bash
@@ -296,7 +296,7 @@ jobs:
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
-          python -m pip install expecttest einops librosa
+          python -m pip install datasets librosa soundfile einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
