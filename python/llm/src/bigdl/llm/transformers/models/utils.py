@@ -125,10 +125,10 @@ def is_enough_kv_cache_room_4_31(past_key_value):
 def use_flash_attention(query, key):
     # here we support query's shape is always [batch_size, head_num, q_len, head_dim],
     # key's shape is always [batch_size, head_num, k_len, head_dim]
-    invalidInputError(query.dim() != 4,
+    invalidInputError(query.dim() == 4,
                       "Here query input of use_flash_attention should be [batch_size, "
                       "head_num, q_len, head_dim]")
-    invalidInputError(key.dim() != 4,
+    invalidInputError(key.dim() == 4,
                       "Here key input of use_flash_attention should be [batch_size, "
                       "head_num, k_len, head_dim]")
     bsz, _, q_len, _ = query.size()
