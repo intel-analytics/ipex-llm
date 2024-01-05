@@ -40,6 +40,7 @@ from typing import Optional, Tuple
 
 import torch
 from torch import nn
+import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
@@ -127,7 +128,7 @@ def mistral_attention_forward(
     use_cache: bool=False,
     padding_mask: Optional[torch.Tensor]=None,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    bsz, q_len, _ = hidden_states.size()
+    bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
@@ -216,7 +217,7 @@ def mistral_attention_forward(
             value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
-    
+
     if not self.training and not hidden_states.requires_grad:
         fsdp_flag = use_flash_attention(query_states, key_states)
     else:
@@ -238,8 +239,12 @@ def mistral_attention_forward(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
+        attn_output = attn_output.transpose(1, 2).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, hidden_size)
     else:
-        attn_output, attn_weights = compute_attn_outputs_weights(query_states, key_states, value_states,
+        attn_output, attn_weights = compute_attn_outputs_weights(query_states,
+                                                                 key_states,
+                                                                 value_states,
                                                                  bsz, q_len, kv_seq_len,
                                                                  self.num_heads, self.head_dim,
                                                                  self.hidden_size, attention_mask)
@@ -262,8 +267,10 @@ def mistral_attention_forward_4_36(
     use_cache: bool=False,
     padding_mask: Optional[torch.Tensor]=None,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    bsz, q_len, _ = hidden_states.size()
+    bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
+    # for flash attention
+    original_dtype = hidden_states.dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
@@ -366,18 +373,42 @@ def mistral_attention_forward_4_36(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = use_flash_attention(query_states, key_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
 
-    attn_output, attn_weights = compute_attn_outputs_weights(query_states, key_states, value_states,
-                                                             bsz, q_len, kv_seq_len,
-                                                             self.num_heads, self.head_dim,
-                                                             self.hidden_size, attention_mask)
+    # repeat k/v heads if n_kv_heads < n_heads
+    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                     dtype=attention_dtype)
+    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                         dtype=attention_dtype)
+
+    if fsdp_flag:
+        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
+                                                     key_states,
+                                                     value_states,
+                                                     is_causal=True)
+        attn_weights = None
+        attn_output = attn_output.transpose(1, 2).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, hidden_size)
+    else:
+        attn_output, attn_weights = compute_attn_outputs_weights(query_states,
+                                                                 key_states,
+                                                                 value_states,
+                                                                 bsz, q_len, kv_seq_len,
+                                                                 self.num_heads,
+                                                                 self.head_dim,
+                                                                 self.hidden_size,
+                                                                 attention_mask)
 
     attn_output = self.o_proj(attn_output)
 
     if not output_attentions:
         attn_weights = None
 
-    return attn_output, attn_weights, past_key_value
+    return attn_output.to(original_dtype), attn_weights, past_key_value
