@@ -368,7 +368,7 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and (use_flash_attention(query_layer) or
-                L == S and query_layer.device.type == "cpu"):
+                                       L == S and query_layer.device.type == "cpu"):
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
                                                                              key_layer,
                                                                              value_layer,
