@@ -63,6 +63,7 @@ def apply_rotary_pos_emb(t, freqs):
     t_ = (t_ * cos) + (rotate_half(t_) * sin)
     return torch.cat((t_, t_pass_), dim=-1).type_as(t)
 
+
 def qwen_attention_forward(
     self,
     hidden_states: Optional[Tuple[torch.FloatTensor]],
@@ -186,7 +187,7 @@ def qwen_attention_forward(
                 cache_v = new_cache_v
 
             key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                    key.transpose(1, 2), value.transpose(1, 2))
+                                                       key.transpose(1, 2), value.transpose(1, 2))
             key = key_states
             value = value_states
         elif use_cache:
