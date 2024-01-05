@@ -265,7 +265,8 @@ def llama_attention_forward_4_31(
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
 
-    if fsdp_flag:
+    if fsdp_flag and query_states.shape[2] == key_states.shape[2]:
+        # by comparing query and key's length, to make sure it's first token
         attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
                                                      key_states,
                                                      value_states,
