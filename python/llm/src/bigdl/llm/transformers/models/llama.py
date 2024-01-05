@@ -139,14 +139,6 @@ def llama_attention_forward_4_31(
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(hidden_states)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
@@ -259,14 +251,22 @@ def llama_attention_forward_4_31(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = use_flash_attention(query_states, key_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
+
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
                                                                      dtype=attention_dtype)
     value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
                                                                          dtype=attention_dtype)
 
-    if fsdp_flag and query_states.shape[2] == key_states.shape[2]:
-        # by comparing query and key's length, to make sure it's first token
+    if fsdp_flag:
         attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
                                                      key_states,
                                                      value_states,
