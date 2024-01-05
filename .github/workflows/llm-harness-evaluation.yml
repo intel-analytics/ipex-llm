@@ -63,9 +63,9 @@ jobs:
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
-          PR_MATRIX_MODEL_NAME: '["falcon-7b-instruct-with-patch"]'
+          PR_MATRIX_MODEL_NAME: '["Llama2-7b-guanaco-dolphin-500","mpt-7b-chat","Baichuan2-7B-Chat-LLaMAfied","Nous-Hermes-Llama2-13b"]'
           PR_MATRIX_TASK: '["arc","hellaswag","mmlu","truthfulqa","winogrande"]'
-          PR_MATRIX_PRECISION: '["sym_int4","fp4","mixed_fp4","sym_int8","fp8","fp8_e5m2","mixed_fp8"]'
+          PR_MATRIX_PRECISION: '["sym_int4","fp4","mixed_fp4","sym_int8","fp8","mixed_fp8"]'
           PR_LABELS: '["self-hosted", "llm", "accuracy"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
