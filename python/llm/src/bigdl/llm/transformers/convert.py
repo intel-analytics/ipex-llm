@@ -108,7 +108,7 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-def convert_gptq(module, awq=False):
+def convert_gptq(module, awq=False, llm_awq=True):
     from bigdl.llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")
 
@@ -129,6 +129,8 @@ def convert_gptq(module, awq=False):
             module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
         weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
         weight = weight.reshape(weight.shape[0], weight.shape[1] * weight.shape[2])
+        if llm_awq:
+            weight = weight.t()
     else:
         weight = torch.bitwise_right_shift(
             torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.bits, -1),
@@ -144,7 +146,12 @@ def convert_gptq(module, awq=False):
                                       torch.tensor([0, 4], dtype=torch.int8).reshape(1, 1, 1, 2))
     weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
 
+    # todo weight
+
     # convert zeros to ggml format
+    if llm_awq:
+        zeros = zeros.t()
+        scales = scales.t()
     zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
         .unsqueeze(2)\
         .expand(-1, -1, module.group_size//Q4_1, -1)\

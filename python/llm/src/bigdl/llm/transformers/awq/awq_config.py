@@ -80,7 +80,7 @@ class AwqConfig(QuantizationConfigMixin):
         self.bits = bits
         self.group_size = group_size
         self.zero_point = zero_point
-        self.version = version
+        self.version = version.lower()
         self.backend = backend
 
         self.post_init()
