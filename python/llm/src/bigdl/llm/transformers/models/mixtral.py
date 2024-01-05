@@ -145,7 +145,7 @@ def mixtral_attention_forward(
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
-    
+
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
     decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
