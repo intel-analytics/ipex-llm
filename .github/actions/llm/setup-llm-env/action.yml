@@ -20,7 +20,7 @@ runs:
         sed -i 's/"bigdl-core-xe-esimd==" + VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
         sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
         sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-esimd-21==" + VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd-21==" + VERSION + "/"bigdl-core-xe-esimd-21/g' python/llm/setup.py
 
         pip install requests
         if [[ ${{ runner.os }} == 'Linux' ]]; then
