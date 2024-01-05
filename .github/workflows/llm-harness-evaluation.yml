@@ -132,7 +132,7 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.0"
 
       - name: Install harness
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
@@ -166,7 +166,7 @@ jobs:
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
-          source /opt/intel/oneapi/setvars.sh
+          source $HOME/intel/oneapi/setvars.sh
           python run_llb.py \
           --model bigdl-llm \
           --pretrained ${MODEL_PATH} \
