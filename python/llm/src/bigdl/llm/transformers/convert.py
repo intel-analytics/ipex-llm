@@ -59,7 +59,16 @@ def is_auto_awq_available():
 
 
 def is_deepspeed_available():
-    return importlib.util.find_spec("deepspeed") is not None
+    spec = importlib.util.find_spec("deepspeed")
+    if spec is not None:
+        deepspeed_path = spec.submodule_search_locations[0]
+        if deepspeed_path != os.path.join(os.getcwd(), "deepspeed"):
+            return True
+        else:
+            # not deepspeed package, just local dir
+            return False
+    else:
+        return False
 
 
 if is_auto_gptq_available():

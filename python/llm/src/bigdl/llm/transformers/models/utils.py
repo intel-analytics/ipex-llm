@@ -116,24 +116,31 @@ def is_enough_kv_cache_room_4_36(past_key_value, idx):
         past_key_value.key_cache[idx].size(3)
 
 
-def is_enough_kv_cache_room_4_31(past_key_value):
+def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
     # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
     return past_key_value is not None and \
-        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
+        past_key_value[0].stride()[1] > \
+        (past_key_value[0].size(2) + seq_len - 1) * past_key_value[0].size(3)
 
 
-def use_flash_attention(query):
-    if query.dim() == 3:
-        bsz, q_len, _ = query.size()
-    elif query.dim() == 4:
-        bsz, _, q_len, _ = query.size()
+def use_flash_attention(query, key):
+    # here we support query's shape is always [batch_size, head_num, q_len, head_dim],
+    # key's shape is always [batch_size, head_num, k_len, head_dim]
+    invalidInputError(query.dim() == 4,
+                      "Here query input of use_flash_attention should be [batch_size, "
+                      "head_num, q_len, head_dim]")
+    invalidInputError(key.dim() == 4,
+                      "Here key input of use_flash_attention should be [batch_size, "
+                      "head_num, k_len, head_dim]")
+    bsz, _, q_len, _ = query.size()
+    k_len = key.size()[2]
     # check whether ipex flash attention can be used
     if bsz > 1:
         # only use flash attention for batch_size = 1 now
         # as flash attention doesn't support attn_mask in ipex 2.1,
         # so it will cause output error for padded batch input
         return False
-    if q_len == 1:
+    if q_len != k_len:
         # now only use flash attention for first token
         # as it seems have no performance benifit for rest token now
         return False

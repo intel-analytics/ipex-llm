@@ -202,7 +202,6 @@ jobs:
           pip install -U langchain==0.0.184
           pip install -U chromadb==0.3.25
           pip install -U pandas==2.0.3
-          pip install -U typing_extensions==4.5.0
           bash python/llm/test/run-llm-langchain-tests.sh
   llm-unit-test-on-arc:
     needs: llm-cpp-build
@@ -250,7 +249,7 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.0"
 
       - name: Test installed xpu version
         shell: bash
@@ -297,7 +296,7 @@ jobs:
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
-          python -m pip install expecttest einops librosa
+          python -m pip install datasets librosa soundfile einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
