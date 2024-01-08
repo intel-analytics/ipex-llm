@@ -1,6 +1,6 @@
 # Langchain examples
 
-The examples here shows how to use langchain with `bigdl-llm`.
+The examples here show how to use langchain with `bigdl-llm`.
 
 ## Install bigdl-llm
 Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
@@ -11,10 +11,7 @@ Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tr
 pip install langchain==0.0.184
 pip install -U chromadb==0.3.25
 pip install -U pandas==2.0.3
-pip install -U typing_extensions==4.5.0
 ```
-
-Note that typing_extensions==4.5.0 is required, or you may encounter error `TypeError: dataclass_transform() got an unexpected keyword argument 'field_specifiers'` when running the examples. 
 
 
 ## Convert Models using bigdl-llm
@@ -71,7 +68,7 @@ arguments info:
 When you see output says
 > listening now...
 
-Please say something through your microphone (e.g. What is AI). The programe will automatically detect when you have completed your speech and recogize them.
+Please say something through your microphone (e.g. What is AI). The program will automatically detect when you have completed your speech and recognize them.
 
 #### Known Issues
 The speech_recognition library may occasionally skip recording due to low volume. An alternative option is to save the recording in WAV format using `PyAudio` and read the file as an input. Here is an example using PyAudio:

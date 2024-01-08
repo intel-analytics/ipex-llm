@@ -33,7 +33,16 @@ from langchain.callbacks.manager import CallbackManager
 from bigdl.llm.langchain.llms import TransformersLLM
 from bigdl.llm.langchain.embeddings import TransformersEmbeddings
 
-
+text_doc = '''
+BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
+LLM: Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
+Orca: Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
+Nano: Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
+DLlib: “Equivalent of Spark MLlib” for Deep Learning
+Chronos: Scalable Time Series Analysis using AutoML
+Friesian: End-to-End Recommendation Systems
+PPML: Secure Big Data and AI (with SGX Hardware Security)
+'''
 
 def main(args):
 
@@ -42,8 +51,12 @@ def main(args):
     query = args.question
 
     # split texts of input doc
-    with open(input_path) as f:
-        input_doc = f.read()
+    if input_path is None:
+        input_doc = text_doc
+    else:
+        with open(input_path) as f:
+            input_doc = f.read()
+            
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
     texts = text_splitter.split_text(input_doc)
 
@@ -73,7 +86,7 @@ if __name__ == '__main__':
                         help='the path to transformers model')
     parser.add_argument('-i', '--input-path', type=str,
                         help='the path to the input doc.')
-    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+    parser.add_argument('-q', '--question', type=str, default='What is BigDL?',
                         help='qustion you want to ask.')
     args = parser.parse_args()
     
