@@ -316,7 +316,7 @@ jobs:
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
           elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            source /home/arda/intel/oneapi/setvars.sh
+            source /opt/intel/oneapi/setvars.sh
           fi
           python -m pip install datasets librosa soundfile einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
@@ -330,6 +330,6 @@ jobs:
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
           elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            source /home/arda/intel/oneapi/setvars.sh
+            source /opt/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
