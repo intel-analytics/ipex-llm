@@ -3,7 +3,9 @@
 This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel CPU.
 
 ## Verified Models
+
 ### Auto-AWQ Backend
+
 - [Llama-2-7B-Chat-AWQ](https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ)
 - [CodeLlama-7B-AWQ](https://huggingface.co/TheBloke/CodeLlama-7B-AWQ)
 - [Mistral-7B-Instruct-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-AWQ)
@@ -39,17 +41,6 @@ pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
 pip install transformers==4.35.0
 pip install accelerate==0.24.1
 pip install einops
-```
-
-**(Optional) Support for LLM-AWQ Backend**
-
-BigDL-LLM uses `autoawq` as its default awq backend, and also automatically supports `llmawq` if your model is orginally quantized by llmawq. You can directly input an llmawq model in the same way as autoawq, after installing the following dependencies:
-
-```bash
-git clone https://github.com/mit-han-lab/llm-awq
-cd llm-awq
-pip install --upgrade pip  # enable PEP 660 support
-pip install -e .
 ```
 
 ### 2. Run
