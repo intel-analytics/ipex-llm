@@ -63,10 +63,10 @@ def is_deepspeed_available():
 
 if is_auto_gptq_available():
     from auto_gptq.utils.peft_utils import QuantLinearCuda, QuantLinearCudaOld
-    from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 if is_auto_awq_available():
     from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
+    from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
 def is_linear_module(module):
