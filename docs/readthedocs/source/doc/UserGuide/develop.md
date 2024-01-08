@@ -28,7 +28,7 @@ bash release_default_linux_spark2.sh default false false false  # build on Spark
 **Arguments:**
 
 - The first argument is the BigDL __version__ to build for. 'default' means the default version (`BigDL/python/version.txt`) for the current branch. You can also specify a different version if you wish, e.g., '0.14.0.dev1'.
-- The second argument is whether to __quick build__ BigDL Scala dependencies. You need to set it to be 'true' for the first build. In later builds, if you don't make any changes in BigDL Scala, you can set it to be 'false' so that the Scala dependencies would not be re-built.
+- The second argument is whether to __quick build__ BigDL Scala dependencies. You need to set it to be 'false' for the first build. In later builds, if you don't make any changes in BigDL Scala, you can set it to be 'true' so that the Scala dependencies would not be re-built.
 - The third argument is whether to __upload__ the packages to pypi. Set it to 'false' if you are simply developing BigDL for your own usage.
 - The fourth argument is whether to add __spark suffix__ (i.e. -spark2 or -spark3) to BigDL package names. Just set this to be 'false' if you are simply developing BigDL for your own usage.
 - You can also add other Maven profiles to build the package (if any) after the fourth argument, for example '-Ddata-store-url=..', etc.
