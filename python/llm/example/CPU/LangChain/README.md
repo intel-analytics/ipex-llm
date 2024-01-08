@@ -1,6 +1,6 @@
 # Langchain examples
 
-The examples here shows how to use langchain with `bigdl-llm`.
+The examples here show how to use langchain with `bigdl-llm`.
 
 ## Install bigdl-llm
 Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
@@ -68,7 +68,7 @@ arguments info:
 When you see output says
 > listening now...
 
-Please say something through your microphone (e.g. What is AI). The programe will automatically detect when you have completed your speech and recogize them.
+Please say something through your microphone (e.g. What is AI). The program will automatically detect when you have completed your speech and recognize them.
 
 #### Known Issues
 The speech_recognition library may occasionally skip recording due to low volume. An alternative option is to save the recording in WAV format using `PyAudio` and read the file as an input. Here is an example using PyAudio:
