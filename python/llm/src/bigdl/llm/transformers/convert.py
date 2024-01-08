@@ -197,9 +197,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     new_linear = None
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
                     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
-                    is_llm_awq = False
-                    if is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ:
-                        is_llm_awq = True
+                    is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                     if is_gptq or is_awq:
                         has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
