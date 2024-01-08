@@ -37,7 +37,6 @@ os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 from bigdl.llm import optimize_model
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
@@ -125,8 +124,7 @@ if __name__ == '__main__':
         end = time.time()
         if local_rank == 0:
             output = output.cpu()
-            # output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
             print(f'Inference time: {end-st} s')
             print('-'*20, 'Prompt', '-'*20)
             print(prompt)

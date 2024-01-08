@@ -47,3 +47,7 @@ bash run_vicuna_33b_arc_2_card.sh
 ```
 
 > **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+
+### Known Issue
+- In our example scripts, tcmalloc is enabled through `export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}` which speed up inference, but this may raise `munmap_chunk(): invalid pointer` error after finishing inference.
