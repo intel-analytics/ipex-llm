@@ -267,9 +267,9 @@ jobs:
         shell: bash
         run: |
           # TODO: differentiate oneapi path after oneapi 2024.0 is installed on test machine
-          if [[ '${{ matrix.pytorch-version }}'' == '2.1' ]]; then
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}'' == '2.0' ]]; then
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
             source /opt/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-install-tests.sh
@@ -313,9 +313,9 @@ jobs:
         shell: bash
         run: |
           # TODO: differentiate oneapi path after oneapi 2024.0 is installed on test machine
-          if [[ '${{ matrix.pytorch-version }}'' == '2.1' ]]; then
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}'' == '2.0' ]]; then
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
             source /home/arda/intel/oneapi/setvars.sh
           fi
           python -m pip install datasets librosa soundfile einops
@@ -327,9 +327,9 @@ jobs:
           python -m pip install transformers==4.34.0 peft==0.5.0 accelerate==0.23.0
           python -m pip install bitsandbytes scipy
           # TODO: differentiate oneapi path after oneapi 2024.0 is installed on test machine
-          if [[ '${{ matrix.pytorch-version }}'' == '2.1' ]]; then
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}'' == '2.0' ]]; then
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
             source /home/arda/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
