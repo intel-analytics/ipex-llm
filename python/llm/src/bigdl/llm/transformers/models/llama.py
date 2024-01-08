@@ -531,17 +531,9 @@ def llama_attention_forward_4_36(
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(hidden_states)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
     is_q4_0 = qtype == SYM_INT4
     no_tp = not self.config.pretraining_tp > 1
@@ -663,6 +655,15 @@ def llama_attention_forward_4_36(
                 # update past_key_value
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
+
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = use_flash_attention(query_states, key_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
