@@ -175,7 +175,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
       .. note::
 
-         The `xpu` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
+         The ``xpu`` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
 
          .. code-block:: bash
 
