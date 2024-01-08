@@ -86,7 +86,7 @@ if __name__ == '__main__':
                         help='the path to transformers model')
     parser.add_argument('-i', '--input-path', type=str,
                         help='the path to the input doc.')
-    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+    parser.add_argument('-q', '--question', type=str, default='What is BigDL?',
                         help='qustion you want to ask.')
     args = parser.parse_args()
     
