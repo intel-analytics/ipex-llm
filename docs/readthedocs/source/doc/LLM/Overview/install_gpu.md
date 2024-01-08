@@ -173,13 +173,13 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
          pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
-         .. note::
+      .. note::
 
-            The `xpu` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
+         The `xpu` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
 
-            .. code-block:: bash
+         .. code-block:: bash
 
-               pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+            pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
             
 
    .. tab:: Pytorch 2.0
