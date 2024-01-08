@@ -197,7 +197,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     new_linear = None
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
                     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
-                    is_llm_awq = False 
+                    is_llm_awq = False
                     if is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ:
                         is_llm_awq = True
                     if is_gptq or is_awq:
@@ -213,7 +213,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         invalidInputError(device_type != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
-                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq, llm_awq=is_llm_awq),
+                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq,
+                                                                   llm_awq=is_llm_awq),
                                                  requires_grad=False,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),

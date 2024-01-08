@@ -87,19 +87,17 @@ class WQLinear_GEMM(nn.Module):
                           f"Invalid out_features number {out_features}.")
         if backend == AwqBackendPackingMethod.LLMAWQ:
             self.wf = (torch.tensor([0, 1, 2, 3, 4, 5, 6, 7],
-                                dtype=torch.int32) * self.bits).unsqueeze(0)
+                                    dtype=torch.int32) * self.bits).unsqueeze(0)
             self.register_buffer('qweight',
                                  torch.zeros((out_features,
                                               in_features // (32 // self.bits)),
-                                              dtype=torch.int32, device=dev))
+                                             dtype=torch.int32, device=dev))
+            zeros_width = calculate_zeros_width(in_features, self.group_size)
             self.register_buffer('qzeros',
-                                 torch.zeros((out_features,
-                                              calculate_zeros_width(in_features, self.group_size)),
-                                              dtype=torch.int32, device=dev))
+                                 torch.zeros((out_features, zeros_width),
+                                             dtype=torch.int32, device=dev))
             self.register_buffer('scales',
-                                 torch.zeros((out_features,
-                                              calculate_zeros_width(in_features,
-                                                                    self.group_size) * (32 // self.bits)),
+                                 torch.zeros((out_features, zeros_width * (32 // self.bits)),
                                              dtype=torch.float16, device=dev))
         elif backend == AwqBackendPackingMethod.AUTOAWQ:
             self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
@@ -107,11 +105,11 @@ class WQLinear_GEMM(nn.Module):
             self.register_buffer('qweight',
                                  torch.zeros((in_features,
                                               out_features // (32 // self.bits)),
-                                              dtype=torch.int32, device=dev))
+                                             dtype=torch.int32, device=dev))
             self.register_buffer('qzeros',
                                  torch.zeros((in_features // self.group_size,
                                               out_features // (32 // self.bits)),
-                                              dtype=torch.int32, device=dev))
+                                             dtype=torch.int32, device=dev))
             self.register_buffer('scales',
                                  torch.zeros((in_features // self.group_size, out_features),
                                              dtype=torch.float16, device=dev))
