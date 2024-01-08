@@ -89,7 +89,7 @@ class AwqConfig(QuantizationConfigMixin):
         r"""
         Safety checker that arguments are correct
         """
-        invalidInputError(self.backend == AwqBackendPackingMethod.AUTOAWQ 
+        invalidInputError(self.backend == AwqBackendPackingMethod.AUTOAWQ
                           or self.backend == AwqBackendPackingMethod.LLMAWQ,
                           "Only supported quantization backends in "
                           f"{AwqBackendPackingMethod.AUTOAWQ} and "
