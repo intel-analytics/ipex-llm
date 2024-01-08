@@ -11,10 +11,7 @@ Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tr
 pip install langchain==0.0.184
 pip install -U chromadb==0.3.25
 pip install -U pandas==2.0.3
-pip install -U typing_extensions==4.5.0
 ```
-
-Note that typing_extensions==4.5.0 is required, or you may encounter error `TypeError: dataclass_transform() got an unexpected keyword argument 'field_specifiers'` when running the examples. 
 
 
 ## Convert Models using bigdl-llm
