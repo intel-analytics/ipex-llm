@@ -40,6 +40,7 @@ from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, 
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
     append_fp8_kv_cache, restore_fp8_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, quantize_kv_cache
+from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
@@ -276,14 +277,14 @@ def core_attn(self, query, key, value, causal_mask=None, attention_mask=None, he
 
 def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
-    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
-            and self.w2.qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    qtype = getattr(self.w1, "qtype", None)
+    if mlp_fusion_check(x_2d, qtype, self.training):
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.c_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+        return self.c_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.w2.weight.data, self.w1.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.w2.out_len,
+            qtype
         ))
     return self.c_proj(F.silu(self.w2(x)) * self.w1(x))

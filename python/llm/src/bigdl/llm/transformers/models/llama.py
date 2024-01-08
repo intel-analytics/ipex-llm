@@ -44,6 +44,7 @@ from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
@@ -104,15 +105,14 @@ def llama_mlp_forward(
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.gate_proj, "qtype", None)
-    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
-            and qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    if mlp_fusion_check(x_2d, qtype, self.training):
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+        return self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+            qtype
         ))
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
