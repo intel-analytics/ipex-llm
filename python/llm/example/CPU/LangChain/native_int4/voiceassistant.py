@@ -35,6 +35,7 @@ import argparse
 def prepare_chain(args):
 
     model_path = args.model_path
+    model_family = args.model_family
     n_threads = args.thread_num
     n_ctx = args.context_size
 
