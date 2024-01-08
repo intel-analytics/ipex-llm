@@ -31,10 +31,10 @@ if device == 'xpu':
     ('What is the capital of France?\n\n', 'Paris')
     ])
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
-    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
-    (AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
+    pytest.param(AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH'), id="llama"),
+    pytest.param(AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH'), id="chatglm"),
+    pytest.param(AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH'), id="falcon"),
+    pytest.param(AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH'), id="mpt"),
     ])
 def test_completion(Model, Tokenizer, model_path, prompt, answer):
     with torch.inference_mode():
@@ -76,8 +76,8 @@ def test_transformers_auto_model_for_speech_seq2seq_int4():
 prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH'))
+    pytest.param(AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH'), id="mpt"),
+    pytest.param(AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH'), id="llama")
     ])
 def test_optimize_model(Model, Tokenizer, model_path):
     with torch.inference_mode():
