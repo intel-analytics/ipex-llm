@@ -101,7 +101,7 @@ class WQLinear_GEMM(nn.Module):
                                              dtype=torch.float16, device=dev))
         elif backend == AwqBackendPackingMethod.AUTOAWQ:
             self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
-                                dtype=torch.int32) * self.bits).unsqueeze(0)
+                                    dtype=torch.int32) * self.bits).unsqueeze(0)
             self.register_buffer('qweight',
                                  torch.zeros((in_features,
                                               out_features // (32 // self.bits)),
