@@ -154,7 +154,7 @@ jobs:
       - name: Upgrade packages
         shell: bash
         run: |
-          pip install --upgrade transformers==4.34.0 datasets=2.14.6
+          pip install --upgrade transformers==4.34.0 datasets==2.14.6
 
       - name: Run harness
         shell: bash
