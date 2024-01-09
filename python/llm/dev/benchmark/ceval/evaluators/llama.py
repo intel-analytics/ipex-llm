@@ -52,7 +52,6 @@ class LlamaEvaluator(Evaluator):
             dev_df=None,
             few_shot=False,
             cot=False,
-            save_result_dir=None,
             with_prompt=False,
             constrained_decoding=False):
         all_answers = {}
@@ -64,9 +63,6 @@ class LlamaEvaluator(Evaluator):
             self.generation_config.top_k = 0
 
         correct_num = 0
-        if save_result_dir:
-            result = []
-            score = []
         if few_shot:
             if with_prompt:
                 history = self.generate_alpaca2_few_shot_prompt(subject_name, dev_df, cot=cot)
@@ -97,7 +93,7 @@ class LlamaEvaluator(Evaluator):
                     generation_config = self.generation_config
                 )
 
-            batch_size, length = inputs.input_ids.shape
+            _ , length = inputs.input_ids.shape
             if constrained_decoding is True:
                 logits = generation_output.scores[0][0]
 
@@ -110,30 +106,13 @@ class LlamaEvaluator(Evaluator):
                 response = self.tokenizer.decode([logits.argmax(-1).item()])
             else:
                 response = self.tokenizer.decode(generation_output[0, length:], skip_special_tokens=True)
-                ans, direct_extract = self.extract_answer(row, response)
+                ans, _ = self.extract_answer(response, row)
             if ans == answers[row_index]:
                 correct_num += 1
-                correct = 1
-            else:
-                correct = 0
-            if self.verbose is True:
-                print(f"\n======={str(row_index)}=======")
-                print(f"question: {question}\n")
-                print(f"response: {response}\n")
-                print(f"extracted answer: {ans}")
-                print(f"ground truth: {answers[row_index]} \n")
-            if save_result_dir:
-                result.append(response)
-                score.append(correct)
 
             all_answers[str(row_index)] = ans
 
         correct_ratio = 100*correct_num/len(answers)
-
-        if save_result_dir:
-            test_df['model_output'] = result
-            test_df['correctness'] = score
-            test_df.to_csv(os.path.join(save_result_dir, f'{subject_name}_test.csv'))
 
         return correct_ratio, all_answers
 
