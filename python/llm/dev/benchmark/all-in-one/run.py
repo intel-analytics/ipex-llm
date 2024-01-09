@@ -402,6 +402,7 @@ def run_transformer_int4_gpu(repo_id,
             prompt_list = [32, 256, 1024, 2048, 8192]
             while test_length not in prompt_list and test_length < max(prompt_list):
                 test_length = test_length * 2
+            test_length = min(test_length, 8192)
             input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
