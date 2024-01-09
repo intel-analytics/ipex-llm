@@ -5,6 +5,7 @@ import torch
 import json
 from tqdm import tqdm
 from evaluators.qwen import QwenEvaluator
+from evaluators.llama import LlamaEvaluator
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
@@ -271,7 +272,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.model_family == "llama":
-        pass
+        evaluator = LlamaEvaluator(
+            choices=choices,
+            model_path=args.model_path,
+            device=args.device,
+        )
     elif args.model_family == "chatglm":
         pass
     elif args.model_family == "qwen":

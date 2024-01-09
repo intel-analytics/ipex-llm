@@ -3,7 +3,7 @@ import string
 class Evaluator:
     def __init__(self, choices, model_path, device, qtype):
         self.choices = choices
-        self.model_name = model_path
+        self.model_path = model_path
         self.device = device
         self.qtype = qtype
 
