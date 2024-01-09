@@ -242,7 +242,7 @@ def main(args, evaluator):
                 args.eval_data_path, "val", f"{subject_name}_val.csv"
             )
             val_df = pd.read_csv(val_file_path)
-            score = evaluator.eval_subject(val_df, args.eval_type)
+            score, _ = evaluator.eval_subject(subject_name, val_df, args.eval_type)
             result[subject_name] = score
         cal_ceval(result)
     elif args.eval_type == "test":
@@ -252,7 +252,7 @@ def main(args, evaluator):
                 args.eval_data_path, "test", f"{subject_name}_test.csv"
             )
             test_df = pd.read_csv(test_file_path)
-            answers = evaluator.eval_subject(test_df, args.eval_type)
+            _, answers = evaluator.eval_subject(subject_name, test_df, args.eval_type)
             all_answers[subject_name] = answers
         json.dump(all_answers, open('submission.json','w'), ensure_ascii=False, indent=4)
     else:
