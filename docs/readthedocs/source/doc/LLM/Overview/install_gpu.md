@@ -218,7 +218,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-linux_x86_64.whl
 
          # install bigdl-llm for Intel GPU
-         pip install --pre --upgrade bigdl-llm[xpu_2.1]
+         pip install --pre --upgrade bigdl-llm[xpu]
 
    .. tab:: PyTorch 2.0
 
@@ -239,7 +239,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          pip install intel_extension_for_pytorch-2.0.110+xpu-cp39-cp39-linux_x86_64.whl
 
          # install bigdl-llm for Intel GPU
-         pip install --pre --upgrade bigdl-llm[xpu]
+         pip install --pre --upgrade bigdl-llm[xpu_2.0]
 
 ```
 
