@@ -255,10 +255,10 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step. Configures OneAPI environment variables
+         # Required step. Configure OneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
-         # Recommended steps
+         # Recommended Environment Variables
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
@@ -268,10 +268,10 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step. Configures OneAPI environment variables
+         # Required step. Configure OneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
-         # Recommended steps
+         # Recommended Environment Variables
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -285,7 +285,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 #### 1. Potential suboptimal performance with Linux kernel 6.2.0
 
-For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need reboot OS).
+For Ubuntu 22.04 and driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need to reboot OS).
 
 Tips: You can use `sudo apt list --installed | grep intel-i915-dkms` to check your intel-i915-dkms's version, the version should be latest and >= `1.23.9.11.231003.15+i19-1`.
 
