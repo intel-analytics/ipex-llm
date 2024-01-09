@@ -30,7 +30,7 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.35.0
 pip install autoawq==0.1.8 --no-deps
