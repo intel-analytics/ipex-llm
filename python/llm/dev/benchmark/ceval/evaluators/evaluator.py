@@ -1,5 +1,3 @@
-import re
-import string
 class Evaluator:
     def __init__(self, choices, model_path, device, qtype):
         self.choices = choices
