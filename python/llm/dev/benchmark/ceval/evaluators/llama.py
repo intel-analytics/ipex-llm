@@ -1,15 +1,16 @@
 import os
 import re
 from typing import List
+import random
 
 import numpy as np
 import torch
 from evaluators.evaluator import Evaluator
 from tqdm import tqdm
-import transformers
+from transformers import LlamaTokenizer, GenerationConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 
-
+DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant. 你是一个乐于助人的助手。"""
 def sample_top_p(probs, p):
     probs_sort, probs_idx = torch.sort(probs, dim=-1, descending=True)
     probs_sum = torch.cumsum(probs_sort, dim=-1)
@@ -21,50 +22,132 @@ def sample_top_p(probs, p):
     return next_token
 
 
-class LLaMA_Evaluator(Evaluator):
+class LlamaEvaluator(Evaluator):
 
-    def __init__(self, choices, device, k=-1) -> None:
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained("/mnt/disk1/models/Qwen-7B-Chat/", trust_remote_code=True)
-        self.model = AutoModelForCausalLM.from_pretrained("/mnt/disk1/models/Qwen-7B-Chat/", trust_remote_code=True, load_in_low_bit="sym_int4").to(device)
-        self.choices = choices
-        self.model_name = "LLaMA"
-        self.k = k
-        self.device = device
-        self.patterns = [
-            "答案是?\s?([ABCD])",
-            "答案是?\s?：([ABCD])",
-            "答案是?\s?:([ABCD])",
-            "答案应该?是\s?([ABCD])",
-            "答案应该?选\s?([ABCD])",
-            "答案为\s?([ABCD])",
-            "选择\s?([ABCD])",
-            "只有选?项?\s?([ABCD])\s?是?对",
-            "只有选?项?\s?([ABCD])\s?是?错",
-            "只有选?项?\s?([ABCD])\s?不?正确",
-            "只有选?项?\s?([ABCD])\s?错误",
-            "说法不?对选?项?的?是\s?([ABCD])",
-            "说法不?正确选?项?的?是\s?([ABCD])",
-            "说法错误选?项?的?是\s?([ABCD])",
-            "([ABCD])\s?是正确的",
-            "([ABCD])\s?是正确答案",
-            "选项\s?([ABCD])\s?正确",
-            "所以答\s?([ABCD])",
-            "1.\s?([ABCD])[.。$]?$",
-            "所以\s?([ABCD][.。$]?$)",
-            "所有\s?([ABCD][.。$]?$)",
-            "[\s，：:,]([ABCD])[。，,\.]?$",
-            "[\s，,：:][故即]([ABCD])[。\.]?$",
-            "[\s，,：:]因此([ABCD])[。\.]?$",
-            "[是为。]\s?([ABCD])[。\.]?$",
-            "因此\s?([ABCD])[。\.]?$",
-            "显然\s?([ABCD])[。\.]?$",
-            "1.\s?(.*?)$",
-            "答案是\s?(\S+)(?:。|$)",
-            "答案应该是\s?(\S+)(?:。|$)",
-            "答案为\s?(\S+)(?:。|$)",
-        ]
+    def __init__(self, choices, model_path="meta-llama/Llama-2-7b-chat-hf", device="xpu", qtype="sym_int4"):
+        super(LlamaEvaluator, self).__init__(choices, model_path, device, qtype)
+        self.tokenizer = LlamaTokenizer.from_pretrained(
+            model_path=self.model_path,
+            trust_remote_code=True
+        )
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_path=self.model_path,
+            load_in_low_bit=self.qtype,
+            optimize_model=True,
+            use_cache=True,
+            trust_remote_code=True
+        ).eval().to(self.device)
+        self.generation_config = GenerationConfig(
+            temperature=0.2,
+            top_k=40,
+            top_p=0.9,
+            do_sample=True,
+            num_beams=1,
+            repetition_penalty=1.1,
+            max_new_tokens=20
+        )
+        self.sA_id = self.tokenizer.encode("A", add_special_tokens=False)[0]
+        self.sB_id = self.tokenizer.encode("B", add_special_tokens=False)[0]
+        self.sC_id = self.tokenizer.encode("C", add_special_tokens=False)[0]
+        self.sD_id = self.tokenizer.encode("D", add_special_tokens=False)[0]
+        self.A_id = self.tokenizer.encode("：A")[-1]
+        self.B_id = self.tokenizer.encode("：B")[-1]
+        self.C_id = self.tokenizer.encode("：C")[-1]
+        self.D_id = self.tokenizer.encode("：D")[-1]
 
-    def format_example(self, line, include_answer=True, cot=False):
+
+    def eval_subject(self, subject_name,
+            test_df,
+            eval_type="validation",
+            dev_df=None,
+            few_shot=False,
+            cot=False,
+            save_result_dir=None,
+            with_prompt=False,
+            constrained_decoding=False):
+        all_answers = {}
+        if constrained_decoding is True:
+            self.generation_config.output_scores = True
+            self.generation_config.return_dict_in_generate = True
+            self.generation_config.max_new_tokens = 1
+            self.generation_config.top_p = 1.0
+            self.generation_config.top_k = 0
+
+        correct_num = 0
+        if save_result_dir:
+            result = []
+            score = []
+        if few_shot:
+            if with_prompt:
+                history = self.generate_alpaca2_few_shot_prompt(subject_name, dev_df, cot=cot)
+            else:
+                history = self.generate_llama2_few_shot_prompt(subject_name, dev_df, cot=cot)
+        else:
+            history = ''
+        answers = ['NA'] * len(test_df) if eval_type=="test" is True else list(test_df['answer'])
+        for row_index, row in tqdm(test_df.iterrows(), total=len(test_df)):
+            question = self.format_example(row, include_answer=False, cot=cot,with_prompt=with_prompt)
+            instruction = question
+            if with_prompt:
+                prompt_template = (
+                                        "[INST] <<SYS>>\n"
+                                        "{system_prompt}\n"
+                                        "<</SYS>>\n\n"
+                                        "{instruction} [/INST]"
+                                    )
+
+                instruction = prompt_template.format_map({'instruction': instruction,'system_prompt':DEFAULT_SYSTEM_PROMPT})
+            instruction = history + instruction
+            inputs = self.tokenizer(instruction, return_tensors="pt")
+            generation_output = self.model.generate(
+                    input_ids = inputs["input_ids"].to(self.device),
+                    attention_mask = inputs['attention_mask'].to(self.device),
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    generation_config = self.generation_config
+                )
+
+            batch_size, length = inputs.input_ids.shape
+            if constrained_decoding is True:
+                logits = generation_output.scores[0][0]
+
+                logits = logits.float().cpu().detach()
+                choices1_logits = logits[[self.sA_id,self.sB_id,self.sC_id,self.sD_id]]
+                choices2_logits = logits[[self.A_id,self.B_id,self.C_id,self.D_id]]
+                choicesAll_logits = (choices1_logits + choices2_logits).numpy()
+                assert not (np.any(np.isinf(choicesAll_logits)) or np.any(np.isnan(choicesAll_logits)))
+                ans = {0: "A", 1: "B", 2: "C", 3: "D"}[np.argmax(choicesAll_logits)]
+                response = self.tokenizer.decode([logits.argmax(-1).item()])
+            else:
+                response = self.tokenizer.decode(generation_output[0, length:], skip_special_tokens=True)
+                ans, direct_extract = self.extract_answer(row, response)
+            if ans == answers[row_index]:
+                correct_num += 1
+                correct = 1
+            else:
+                correct = 0
+            if self.verbose is True:
+                print(f"\n======={str(row_index)}=======")
+                print(f"question: {question}\n")
+                print(f"response: {response}\n")
+                print(f"extracted answer: {ans}")
+                print(f"ground truth: {answers[row_index]} \n")
+            if save_result_dir:
+                result.append(response)
+                score.append(correct)
+
+            all_answers[str(row_index)] = ans
+
+        correct_ratio = 100*correct_num/len(answers)
+
+        if save_result_dir:
+            test_df['model_output'] = result
+            test_df['correctness'] = score
+            test_df.to_csv(os.path.join(save_result_dir, f'{subject_name}_test.csv'))
+
+        return correct_ratio, all_answers
+
+    def format_example(self, line, include_answer=True, cot=False, with_prompt=False):
         example = line['question']
         for choice in self.choices:
             example += f'\n{choice}. {line[f"{choice}"]}'
@@ -75,13 +158,19 @@ class LLaMA_Evaluator(Evaluator):
             else:
                 example += '\n答案：' + line["answer"] + '\n\n'
         else:
-            if cot:
-                example += "\n答案：让我们一步一步思考，\n1."
+            if with_prompt is False:
+                if cot:
+                    example += "\n答案：让我们一步一步思考，\n1."
+                else:
+                    example += '\n答案：'
             else:
-                example += '\n答案：'
+                if cot:
+                    example += "\n答案是什么？让我们一步一步思考，\n1."
+                else:
+                    example += '\n答案：'
         return example
 
-    def generate_few_shot_prompt(self, subject, dev_df, cot=False):
+    def generate_llama2_few_shot_prompt(self, subject, dev_df, cot=False):
         prompt = f"以下是中国关于{subject}考试的单项选择题，请选出其中的正确答案。\n\n"
         k = self.k
         if self.k == -1:
@@ -94,139 +183,64 @@ class LLaMA_Evaluator(Evaluator):
             )
         return prompt
 
-    def generate(
-        self,
-        prompt: str,
-        max_gen_len: int,
-        temperature: float = 0.8,
-        top_p: float = 0.95,
-        return_logits: bool = False
-    ) -> List[str]:
-        params = self.model.params
-        prompt_tokens = self.tokenizer.encode(prompt, bos=True, eos=False).to(self.device)
-        prompt_size = len(prompt_tokens)
-        total_len = min(params.max_seq_len, max_gen_len + prompt_size)
+    def generate_alpaca2_few_shot_prompt(self, subject, dev_df, cot=False):
+        prompt = f"以下是中国关于{subject}考试的单项选择题，请选出其中的正确答案。\n\n"
+        prompt_template = (
+            "[INST] <<SYS>>\n"
+            "{system_prompt}\n"
+            "<</SYS>>\n\n"
+            "{instruction} [/INST]好的，我会结合{subject}相关知识回答"
+        )
 
-        tokens = torch.full(
-            (1, total_len), self.tokenizer.pad_id).long().to(self.device)
-        tokens[0, : prompt_size] = torch.tensor(prompt_tokens).long().to(self.device)
-        input_text_mask = tokens != self.tokenizer.pad_id
-        prev_pos = 0
-        if return_logits:
-            return self.model.forward(tokens[:, :prompt_size], 0)
-        for cur_pos in range(prompt_size, total_len):
-            logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
-            if temperature > 0:
-                probs = torch.softmax(logits / temperature, dim=-1)
-                next_token = sample_top_p(probs, top_p)
-            else:
-                next_token = torch.argmax(logits, dim=-1)
-            next_token = next_token.reshape(-1)
-            next_token = torch.where(
-                input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token
-            )
-            tokens[:, cur_pos] = next_token
-            prev_pos = cur_pos
+        prompt = prompt_template.format_map({'instruction':prompt,'system_prompt':DEFAULT_SYSTEM_PROMPT,'subject':subject})
+        k = self.k
+        if self.k == -1:
+            k = dev_df.shape[0]
+        for i in range(k):
+            line = dev_df.iloc[i, :]
+            q=line['question']
+            for choice in self.choices:
+                q += f'\n{choice}. {line[f"{choice}"]}'
 
-        decoded = []
-        for _, t in enumerate(tokens.tolist()):
-            t = t[: prompt_size + max_gen_len]
-            try:
-                t = t[: t.index(self.tokenizer.eos_id)]
-            except ValueError:
-                pass
-            decoded.append(self.tokenizer.decode(t))
-        return decoded
-    
-    def extract_model_answer(self,text, a,b,c,d):
-        option_str=re.escape('A. '+a+'\nB. '+b+'\nC. '+c+'\nD. '+d)
-        match = re.search(rf'{option_str}([\s\S]*)$', text)
-        if match:
-            return match.group(1)
-        else:
-            return None
-    
-    def extract_answer_option(self,text):
-        match = re.findall(r'(让我们一步一步思考[\s\S]+?)(?:(?=让我们一步一步思考)|$)', text)
-        text=match[0]
-        regexes = [re.compile(pattern) for pattern in self.patterns]
-        for regex in regexes:
-            match = regex.search(text)
-            if match:
-                return match.group(1)
-        return None
-    
-    def answer_str(self,answer,a,b,c,d):
-        if answer=='D':
-            return d
-        elif answer=='C':
-            return c
-        elif answer=='B':
-            return b
-        else:
-            return a
+            a = line['answer']
+            prompt += "[INST] "+q+"\n答案：[/INST]"+a+"\n"
+        return prompt
 
-    def extract_answer(self, row, output):
-        pred = {"A":0, "B":1, "C":2, "D":3}
-        correct_answer_str=self.answer_str(row['answer'], row['A'],row['B'],row['C'],row['D'])
-        generate_answer=self.extract_model_answer(str(output), row['A'],row['B'],row['C'],row['D'])
-        model_answer=self.extract_answer_option(generate_answer)
-        if row['answer']==model_answer or correct_answer_str==model_answer:
-            return pred[model_answer] if model_answer in pred else model_answer, 1
-        else:
-            return pred[model_answer] if model_answer in pred else model_answer, 0
-
-    def eval_subject(
-        self,
-        subject_name,
-        test_df,
-        dev_df=None,
-        few_shot=False,
-        save_result_dir=None,
-        cot=False,
-        **kwargs
-    ):
-        all_answers = {}
-        few_shot_prompt = self.generate_few_shot_prompt(
-            subject_name, dev_df, cot=cot) if few_shot else "" 
-        for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
-            question = self.format_example(row, include_answer=False, cot=cot)
-            full_prompt = few_shot_prompt + question
-            output = self.generate(
-                full_prompt,
-                max_gen_len=kwargs.get("max_gen_len", 512),
-                temperature=kwargs.get("temperature", 0.8),
-                top_p=kwargs.get("top_p", 0.95),
-                return_logits=not cot
-            )
-            if cot:
-                assert isinstance(output[0], str)
-                output = output[0]
-                pred, correct = self.extract_answer(row, output)
-            else:
-                assert output.shape[0] == 1
-                logits = output.flatten()
-                probs = (
-                    torch.nn.functional.softmax(
-                        torch.tensor(
-                            [
-                                logits[self.tokenizer.encode(
-                                    "A", bos=False, eos=False)[0]],
-                                logits[self.tokenizer.encode(
-                                    "B", bos=False, eos=False)[0]],
-                                logits[self.tokenizer.encode(
-                                    "C", bos=False, eos=False)[0]],
-                                logits[self.tokenizer.encode(
-                                    "D", bos=False, eos=False)[0]],
-                            ]
-                        ),
-                        dim=0,
-                    )
-                    .detach()
-                    .cpu()
-                    .numpy()
-                )
-                pred = {0: "A", 1: "B", 2: "C", 3: "D"}[np.argmax(probs)]
-            all_answers[i] = pred
-        
-        return all_answers
+    def extract_answer(self, response, row):
+        m = re.findall(r'所以答案是(.+?)。', response, re.M)
+        if len(m) > 0 and m[-1] in self.choices:
+            return m[-1], True
+        answer_patterns = [
+            r'([ABCD])是正确的',
+            r'选项([ABCD])正确',
+            r'答案为([ABCD])',
+            r'答案是([ABCD])',
+            r'答案([ABCD])',
+            r'选择([ABCD])',
+            r'答案：([ABCD])',
+            r'选择答案([ABCD])'
+        ]
+        # RE extraction
+        for answer_pattern in answer_patterns:
+            m = re.search(answer_pattern, response, re.M)
+            if m:
+                answer = m.group(1)
+                return answer, False
+        # only containing one choice-character
+        m = re.findall(r'[ABCD]', response, re.M)
+        if len(m) >= 1:
+            answer = m[0]
+            return answer, False
+        # only containing one choice-context
+        choices_dict = {}
+        pattern = ""
+        for c in self.choices:
+            choices_dict[str(row[f'{c}'])] = c
+            pattern += re.escape(str(row[f'{c}']))+"|"
+        pattern = pattern[:-1]
+        m = re.findall(pattern, response, re.M)
+        print("w/ escape:",repr(pattern),response,(len(m)>=1))
+        if len(m) >= 1:
+            answer = choices_dict[m[0]]
+            return answer, False
+        return  random.choice('ABCD'), False

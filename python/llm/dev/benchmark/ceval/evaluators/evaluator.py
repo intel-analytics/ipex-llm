@@ -7,11 +7,11 @@ class Evaluator:
         self.device = device
         self.qtype = qtype
 
-    def format_example(self, line):
+    def format_example(self, line, **kwargs):
         pass
     
-    def eval_subject(self, subject_name, test_df, eval_type="validation"):
+    def eval_subject(self, subject_name, test_df, eval_type, **kwargs):
         pass
 
-    def extract_answer(self, response, row):
+    def extract_answer(self, response, row, **kwargs):
         pass
