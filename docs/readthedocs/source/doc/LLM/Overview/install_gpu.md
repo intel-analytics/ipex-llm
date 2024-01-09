@@ -152,7 +152,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
 ```
 
-### Install BigDL-LLM And Dependencies From PyPI
+### Install BigDL-LLM From PyPI
 
 We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
@@ -193,7 +193,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
 ```
 
-### Install BigDL-LLM Dependencies From Wheel
+### Install BigDL-LLM From Wheel
 
 If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
 
