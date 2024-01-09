@@ -248,3 +248,17 @@ def use_esimd_sdp(q_len, head_dim, query_states):
                 return False
         else:
             return False
+
+
+def mlp_fusion_check(x, qtype, training):
+    invalidInputError(x.dim() == 2,
+                      "Here input x's dim should be 2.")
+    if x.shape[0] != 1:
+        return False
+    if x.device.type != 'xpu':
+        return False
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+        return False
+    if training or x.requires_grad:
+        return False
+    return True

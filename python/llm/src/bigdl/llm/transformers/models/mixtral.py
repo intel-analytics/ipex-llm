@@ -314,13 +314,13 @@ def mixtral_mlp_forward(
     x: torch.Tensor,
     routing_weights
 ) -> torch.Tensor:
-    if x.shape[0] == 1 and x.device.type == 'xpu' \
-            and self.w1.qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    qtype = getattr(self.w1, "qtype", None)
+    if mlp_fusion_check(x, qtype, self.training):
         import linear_q4_0
-        return self.w2(linear_q4_0.mlp_forward_q4_0_xpu(
+        return self.w2(linear_q4_0.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,
             x.shape[0], x.shape[1], self.w1.out_len,
+            qtype,
         )) * routing_weights
     else:
         current_hidden_states = self.act_fn(self.w1(x)) * self.w3(x)
