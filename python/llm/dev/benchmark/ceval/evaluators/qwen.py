@@ -1,11 +1,7 @@
-import os
-import argparse
 import re
 import torch
-import pandas as pd
 from thefuzz import process
 from tqdm import tqdm
-from transformers.trainer_utils import set_seed
 from transformers import AutoTokenizer
 from transformers.generation import GenerationConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -66,13 +62,13 @@ class QwenEvaluator(Evaluator):
             res = re.search(r"(?<![a-zA-Z])(A|B|C|D)(?![a-zA-Z=])", gen)
 
         if res is None:
-            return choices[choice_list.index(process.extractOne(gen, choice_list)[0])]
+            return self.choices[choice_list.index(process.extractOne(gen, choice_list)[0])]
         return res.group(1)
 
 
     def format_example(self, line):
         example = line["question"] + "\n\n"
-        for choice in choices:
+        for choice in self.choices:
             example += f'{choice}. {line[f"{choice}"]}\n'
         return example
 
@@ -80,11 +76,11 @@ class QwenEvaluator(Evaluator):
     def extract_answer(self, response, row):
         prompt = row["question"]
         gen = self.process_before_extraction(
-            response, prompt, {choice: row[choice] for choice in choices}
+            response, prompt, {choice: row[choice] for choice in self.choices}
         )
         if not isinstance(prompt, str):
             prompt = prompt[0]
-        pred = self.extract_choice(gen, prompt, [row[choice] for choice in choices])
+        pred = self.extract_choice(gen, prompt, [row[choice] for choice in self.choices])
         return pred
 
 

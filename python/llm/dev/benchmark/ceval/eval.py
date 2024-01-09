@@ -1,13 +1,9 @@
-# This code is modified from C-Eval Project: https://github.com/SJTU-LIT/ceval
-
 import os
 import argparse
 import pandas as pd
 import torch
 import json
-import tqdm
-from evaluators.chatglm import ChatGLM_Evaluator
-from evaluators.llama import LLaMA_Evaluator
+from tqdm import tqdm
 from evaluators.qwen import QwenEvaluator
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.utils.common.log4Error import invalidInputError
@@ -194,6 +190,7 @@ TASK_NAME_MAPPING = {
     "tax_accountant": ["Tax Accountant", "\u7a0e\u52a1\u5e08", "Other"],
     "physician": ["Physician", "\u533b\u5e08\u8d44\u683c", "Other"],
 }
+
 hard_list = [
     "advanced_mathematics",
     "discrete_mathematics",
@@ -204,6 +201,7 @@ hard_list = [
     "high_school_physics",
     "high_school_chemistry",
 ]
+
 choices = ["A", "B", "C", "D"]
 
 def cal_ceval(res):
@@ -244,7 +242,7 @@ def main(args, evaluator):
                 args.eval_data_path, "val", f"{subject_name}_val.csv"
             )
             val_df = pd.read_csv(val_file_path)
-            score = evaluator.eval_subject(val_df, eval_type)
+            score = evaluator.eval_subject(val_df, args.eval_type)
             result[subject_name] = score
         cal_ceval(result)
     elif args.eval_type == "test":
@@ -265,26 +263,21 @@ def main(args, evaluator):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_family", type=str, default="llama")
+    parser.add_argument("--model_path", type=str, default="meta-llama/Llama-2-7b-chat-hf")
     parser.add_argument("--eval_type", type=str, default="validation")
     parser.add_argument("--device", type=str, default="xpu")
-    parser.add_argument("--eval_data_path", type=str, default="data/ceval")
+    parser.add_argument("--eval_data_path", type=str, default="data")
 
     args = parser.parse_args()
 
     if args.model_family == "llama":
-        evaluator = LLaMA_Evaluator(
-            choices=choices,
-            k=args.ntrain,
-            device=args.device,
-        )
+        pass
     elif args.model_family == "chatglm":
-        evaluator = ChatGLM_Evaluator(
-            choices=choices,
-            device=args.device,
-        )
+        pass
     elif args.model_family == "qwen":
         evaluator = QwenEvaluator(
             choices=choices,
+            model_path=args.model_path,
             device=args.device,
         )
-    main(args, evaluator=evaluator, eval_type=args.eval_type, eval_data_path=args.eval_data_path)
+    main(args, evaluator=evaluator)
