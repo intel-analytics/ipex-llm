@@ -250,6 +250,8 @@ def use_esimd_sdp(q_len, head_dim, query_states):
 
 
 def mlp_fusion_check(x, qtype, training):
+    invalidInputError(x.dim() == 2,
+                      "Here input x's dim should be 2.")
     if x.shape[0] != 1:
         return False
     if x.device.type != 'xpu':
