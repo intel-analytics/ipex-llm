@@ -212,8 +212,6 @@ class _BaseAutoModelClass:
                                       "Only 4-bit awq is supported in bigdl-llm.")
                     invalidInputError(awq_config.version == "gemm",
                                       "Only gemm version is supported in bigdl-llm.")
-                    invalidInputError(awq_config.backend == "autoawq",
-                                      "Only autoawq backend is supported in bigdl-llm.")
                     invalidInputError(awq_config.zero_point,
                                       "Only awq zero_point = True is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
