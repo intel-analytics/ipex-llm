@@ -14,10 +14,15 @@ class QwenEvaluator(Evaluator):
     def __init__(self, choices, model_path="Qwen/Qwen-7B-Chat", device="xpu", qtype="sym_int4"):
         super(QwenEvaluator, self).__init__(choices, model_path, device, qtype)
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_path, trust_remote_code=True
+            self.model_path,
+            trust_remote_code=True
         )
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_path, load_in_low_bit=self.qtype, optimize_model=True, use_cache=True, trust_remote_code=True
+            self.model_path,
+            load_in_low_bit=self.qtype,
+            optimize_model=True,
+            use_cache=True,
+            trust_remote_code=True
         ).eval().to(self.device)
         self.model.generation_config = GenerationConfig.from_pretrained(
             self.model_path, trust_remote_code=True
