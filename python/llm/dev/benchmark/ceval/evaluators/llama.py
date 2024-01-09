@@ -70,7 +70,7 @@ class LlamaEvaluator(Evaluator):
                 history = self.generate_llama2_few_shot_prompt(subject_name, dev_df, cot=cot)
         else:
             history = ''
-        answers = ['NA'] * len(test_df) if eval_type=="test" is True else list(test_df['answer'])
+        answers = ['NA'] * len(test_df) if (eval_type=="test") is True else list(test_df['answer'])
         for row_index, row in tqdm(test_df.iterrows(), total=len(test_df)):
             question = self.format_example(row, include_answer=False, cot=cot,with_prompt=with_prompt)
             instruction = question
