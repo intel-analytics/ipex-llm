@@ -1,19 +1,20 @@
-import os
+# refer to https://github.com/ymcui/Chinese-LLaMA-Alpaca-2/blob/main/scripts/ceval/llama_evaluator.py
 import re
-from typing import List
 import random
+from tqdm import tqdm
 
 import numpy as np
 import torch
-from evaluators.evaluator import Evaluator
-from tqdm import tqdm
 from transformers import LlamaTokenizer, GenerationConfig
+
 from bigdl.llm.transformers import AutoModelForCausalLM
+from evaluators.evaluator import Evaluator
+
 
 DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant. 你是一个乐于助人的助手。"""
 
-class LlamaEvaluator(Evaluator):
 
+class LlamaEvaluator(Evaluator):
     def __init__(self, choices, model_path="meta-llama/Llama-2-7b-chat-hf", device="xpu", qtype="sym_int4"):
         super(LlamaEvaluator, self).__init__(choices, model_path, device, qtype)
         self.tokenizer = LlamaTokenizer.from_pretrained(
@@ -46,6 +47,7 @@ class LlamaEvaluator(Evaluator):
         self.D_id = self.tokenizer.encode("：D")[-1]
 
 
+    @torch.no_grad()
     def eval_subject(self, subject_name,
             test_df,
             eval_type="validation",
@@ -116,6 +118,7 @@ class LlamaEvaluator(Evaluator):
 
         return correct_ratio, all_answers
 
+
     def format_example(self, line, include_answer=True, cot=False, with_prompt=False):
         example = line['question']
         for choice in self.choices:
@@ -139,6 +142,7 @@ class LlamaEvaluator(Evaluator):
                     example += '\n答案：'
         return example
 
+
     def generate_llama2_few_shot_prompt(self, subject, dev_df, cot=False):
         prompt = f"以下是中国关于{subject}考试的单项选择题，请选出其中的正确答案。\n\n"
         k = self.k
@@ -151,6 +155,7 @@ class LlamaEvaluator(Evaluator):
                 cot=cot
             )
         return prompt
+
 
     def generate_alpaca2_few_shot_prompt(self, subject, dev_df, cot=False):
         prompt = f"以下是中国关于{subject}考试的单项选择题，请选出其中的正确答案。\n\n"
@@ -174,6 +179,7 @@ class LlamaEvaluator(Evaluator):
             a = line['answer']
             prompt += "[INST] "+q+"\n答案：[/INST]"+a+"\n"
         return prompt
+
 
     def extract_answer(self, response, row):
         m = re.findall(r'所以答案是(.+?)。', response, re.M)

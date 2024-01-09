@@ -1,13 +1,14 @@
+# refer to https://github.com/QwenLM/Qwen/blob/main/eval/evaluate_chat_ceval.py
 import re
+from tqdm import tqdm
+
 import torch
 from thefuzz import process
-from tqdm import tqdm
+
 from transformers import AutoTokenizer
 from transformers.generation import GenerationConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 from evaluators.evaluator import Evaluator
-import intel_extension_for_pytorch as ipex
-
 
 
 class QwenEvaluator(Evaluator):
@@ -25,10 +26,12 @@ class QwenEvaluator(Evaluator):
             trust_remote_code=True
         ).eval().to(self.device)
         self.model.generation_config = GenerationConfig.from_pretrained(
-            self.model_path, trust_remote_code=True
+            self.model_path,
+            trust_remote_code=True
         )
         self.model.generation_config.do_sample = False  # use greedy decoding
         self.model.generation_config.repetition_penalty = 1.0  # disable repetition penalty
+
 
     def process_before_extraction(self, gen, question, choice_dict):
 

@@ -1,13 +1,16 @@
 import os
+
 import argparse
 import pandas as pd
 import torch
 import json
 from tqdm import tqdm
-from evaluators.qwen import QwenEvaluator
-from evaluators.llama import LlamaEvaluator
+
 import intel_extension_for_pytorch as ipex
 from bigdl.llm.utils.common.log4Error import invalidInputError
+from evaluators.qwen import QwenEvaluator
+from evaluators.llama import LlamaEvaluator
+
 
 TASK_NAME_MAPPING = {
     "computer_network": ["Computer Network", "\u8ba1\u7b97\u673a\u7f51\u7edc", "STEM"],
@@ -191,7 +194,6 @@ TASK_NAME_MAPPING = {
     "tax_accountant": ["Tax Accountant", "\u7a0e\u52a1\u5e08", "Other"],
     "physician": ["Physician", "\u533b\u5e08\u8d44\u683c", "Other"],
 }
-
 hard_list = [
     "advanced_mathematics",
     "discrete_mathematics",
@@ -202,8 +204,8 @@ hard_list = [
     "high_school_physics",
     "high_school_chemistry",
 ]
-
 choices = ["A", "B", "C", "D"]
+
 
 def cal_ceval(res):
     acc_sum_dict = dict()
@@ -234,6 +236,7 @@ def cal_ceval(res):
     if hard_cnt > 0:
         print("Hard acc:%.2f " % (hard_acc_sum / hard_cnt))
     print("AVERAGE acc:%.2f " % (acc_sum / cnt))
+
 
 def main(args, evaluator):
     if args.eval_type == "validation":
@@ -268,6 +271,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval_type", type=str, default="validation")
     parser.add_argument("--device", type=str, default="xpu")
     parser.add_argument("--eval_data_path", type=str, default="data")
+    parser.add_argument("--qtype", type=str, default="sym_int4")
 
     args = parser.parse_args()
 
@@ -276,13 +280,14 @@ if __name__ == "__main__":
             choices=choices,
             model_path=args.model_path,
             device=args.device,
+            qtype=args.qtype
         )
-    elif args.model_family == "chatglm":
-        pass
     elif args.model_family == "qwen":
         evaluator = QwenEvaluator(
             choices=choices,
             model_path=args.model_path,
             device=args.device,
+            qtype=args.qtype
         )
+
     main(args, evaluator=evaluator)
