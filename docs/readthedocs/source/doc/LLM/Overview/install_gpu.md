@@ -169,9 +169,49 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
       * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
-        .. seealso::
+      Intel® oneAPI Base Toolkit 2024.0 install methods:
 
-           We recommend you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh>`_ to install oneapi.
+      .. tabs::
+         .. tab:: Offline installer
+         
+            We recommend you to use the offline package installer. You can specify the install path during the install process.
+
+            .. code-block:: bash
+            
+               wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh
+               sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
+
+            .. note::
+
+                  You can also modify the installation or uninstall the package by re-running the installer
+
+                  .. code-block:: bash
+                  
+                     sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
+
+         .. tab:: APT installer
+
+            Step 1: Set up repository
+
+            .. code-block:: bash
+
+               wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+               echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+               sudo apt update
+
+            Step 2: Install package
+
+            .. code-block:: bash
+
+               sudo apt install -y intel-basekit
+
+            .. note::
+
+               You can uninstall the package by running
+
+               .. code-block:: bash
+               
+                  sudo apt autoremove intel-basekit
 
    .. tab:: PyTorch 2.0
 
@@ -188,9 +228,57 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
       * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
-        .. seealso::
+      Intel® oneAPI Base Toolkit 2023.2 install methods:
 
-           We recommend you to use `this offline package <https://registrationcenter-download.intel. com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline. sh>`_ to install oneapi.
+      .. tabs::
+         .. tab:: Offline installer
+         
+            We recommend you to use the offline package installer. You can specify the install path during the install process.
+
+            .. code-block:: bash
+            
+               wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh
+               sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
+
+            .. note::
+
+               You can also modify the installation or uninstall the package by re-running the installer
+
+               .. code-block:: bash
+               
+                  sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
+
+         .. tab:: APT installer
+
+            Step 1: Set up repository
+
+            .. code-block:: bash
+
+               wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+               echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+               sudo apt update
+
+            Step 2: Install packages
+
+            .. code-block:: bash
+
+               sudo apt install -y intel-oneapi-common-vars=2023.2.0-49462 \
+                  intel-oneapi-compiler-cpp-eclipse-cfg=2023.2.0-49495 intel-oneapi-compiler-dpcpp-eclipse-cfg=2023.2.0-49495 \
+                  intel-oneapi-diagnostics-utility=2022.4.0-49091 \
+                  intel-oneapi-compiler-dpcpp-cpp=2023.2.0-49495 \
+                  intel-oneapi-mkl=2023.2.0-49495 intel-oneapi-mkl-devel=2023.2.0-49495 \
+                  intel-oneapi-mpi=2021.10.0-49371 intel-oneapi-mpi-devel=2021.10.0-49371 \
+                  intel-oneapi-tbb=2021.10.0-49541 intel-oneapi-tbb-devel=2021.10.0-49541\
+                  intel-oneapi-ccl=2021.10.0-49084 intel-oneapi-ccl-devel=2021.10.0-49084\
+                  intel-oneapi-dnnl-devel=2023.2.0-49516 intel-oneapi-dnnl=2023.2.0-49516
+
+            .. note::
+
+               You can uninstall the packages by running
+
+               .. code-block:: bash
+               
+                  sudo apt autoremove intel-oneapi-common-vars
 
 ```
 
