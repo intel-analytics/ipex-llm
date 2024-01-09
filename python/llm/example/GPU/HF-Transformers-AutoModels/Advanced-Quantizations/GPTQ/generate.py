@@ -17,7 +17,6 @@
 import torch
 import time
 import argparse
-import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer, GPTQConfig
 

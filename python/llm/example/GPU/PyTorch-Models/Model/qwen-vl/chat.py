@@ -22,7 +22,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 
 from bigdl.llm import optimize_model
-import intel_extension_for_pytorch as ipex
 
 torch.manual_seed(1234)
 

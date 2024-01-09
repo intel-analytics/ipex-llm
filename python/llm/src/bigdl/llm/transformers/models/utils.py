@@ -14,8 +14,11 @@
 # limitations under the License.
 #
 
+import os
 import torch
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.utils import get_ipex_version, get_xpu_device_type
 
 
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
@@ -54,6 +57,67 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
     new_cache_v[:, :, cache_v.size(2):cache_k.size(2) + key_states.size(2), :] = value_states
     return new_cache_k, new_cache_v
+
+
+def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
+    if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
+    else:
+        return x.device.type == 'xpu' and get_xpu_device_type(x) == "mtl" \
+            and hasattr(linear, "qtype") and \
+            linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
+
+
+def init_fp8_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, device):
+    k_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
+                                  dtype=torch.uint8, device=device)
+
+    v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
+                                  dtype=torch.uint8, device=device)
+
+    k_cache = k_cache_storage.as_strided((batch_size, num_heads, current_length, head_dim),
+                                         k_cache_storage.stride(), storage_offset=0)
+
+    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, current_length),
+                                         v_cache_storage.stride(), storage_offset=0)
+
+    return k_cache, v_cache.transpose(-1, -2)
+
+
+def extend_fp8_kv_cache(k_cache, v_cache, max_length, device):
+    batch_size, num_heads, cur_length, head_dim = k_cache.shape
+    new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, head_dim,
+                                                 cur_length, max_length, device)
+    new_k_cache[:] = k_cache
+    new_v_cache[:] = v_cache
+    return new_k_cache, new_v_cache
+
+
+def append_fp8_kv_cache(k_cache, v_cache, key, value):
+    batch_size, num_heads, cur_length, head_dim = k_cache.shape
+    new_length = cur_length + key.size(2)
+    new_size = (batch_size, num_heads, new_length, head_dim)
+
+    new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
+    new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
+
+    fp8_key = key.half().view(torch.uint8)[:, :, :, 1::2]
+    new_k_cache[:, :, cur_length:new_length, :] = fp8_key
+    fp8_value = value.half().view(torch.uint8)[:, :, :, 1::2]
+    new_v_cache[:, :, cur_length:new_length, :] = fp8_value
+
+    return new_k_cache, new_v_cache
+
+
+def restore_fp8_kv_cache(k_cache, v_cache, dtype):
+    new_k_cache = torch.full(k_cache.shape, 128, dtype=torch.int16, device=k_cache.device)
+    new_k_cache.view(torch.uint8)[:, :, :, 1::2] = k_cache
+    new_k_cache = new_k_cache.view(torch.half)
+    new_v_cache = torch.full(v_cache.shape, 128, dtype=torch.int16, device=v_cache.device)
+    new_v_cache.view(torch.uint8)[:, :, :, 1::2] = v_cache
+    new_v_cache = new_v_cache.view(torch.half)
+
+    return new_k_cache.to(dtype=dtype), new_v_cache.to(dtype=dtype)
 
 
 def rotate_half(x):
@@ -108,14 +172,94 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
                           f"{model_family} is not supported.")
 
 
-def is_enough_kv_cache_room_4_36(past_key_value, idx):
+def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
     # to determinate if is enough kv cache room in transformers==4.36
     return past_key_value is not None and len(past_key_value.key_cache) > idx and \
-        past_key_value.key_cache[idx].stride()[1] > past_key_value.key_cache[idx].size(2) * \
+        past_key_value.key_cache[idx].stride()[1] > \
+        (past_key_value.key_cache[idx].size(2) + seq_len - 1) * \
         past_key_value.key_cache[idx].size(3)
 
 
-def is_enough_kv_cache_room_4_31(past_key_value):
+def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
     # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
     return past_key_value is not None and \
-        past_key_value[0].stride()[1] > past_key_value[0].size(2) * past_key_value[0].size(3)
+        past_key_value[0].stride()[1] > \
+        (past_key_value[0].size(2) + seq_len - 1) * past_key_value[0].size(3)
+
+
+def use_flash_attention(query, key):
+    # here we support query's shape is always [batch_size, head_num, q_len, head_dim],
+    # key's shape is always [batch_size, head_num, k_len, head_dim]
+    invalidInputError(query.dim() == 4,
+                      "Here query input of use_flash_attention should be [batch_size, "
+                      "head_num, q_len, head_dim]")
+    invalidInputError(key.dim() == 4,
+                      "Here key input of use_flash_attention should be [batch_size, "
+                      "head_num, k_len, head_dim]")
+    bsz, _, q_len, _ = query.size()
+    k_len = key.size()[2]
+    # check whether ipex flash attention can be used
+    if bsz > 1:
+        # only use flash attention for batch_size = 1 now
+        # as flash attention doesn't support attn_mask in ipex 2.1,
+        # so it will cause output error for padded batch input
+        return False
+    if q_len != k_len:
+        # now only use flash attention for first token
+        # as it seems have no performance benifit for rest token now
+        return False
+    if query.device.type != "xpu":
+        # ipex flash attention only support for xpu
+        return False
+    ipex_version = get_ipex_version()
+    if ipex_version <= "2.0.110+xpu":
+        # ipex flash attention is supported from ipex 2.1
+        return False
+    if not torch.xpu.has_xetla():
+        # ipex flash attention is only supported for xetla
+        # may update this later
+        return False
+    if query.dtype not in [torch.float32, torch.float16]:
+        # only use flash attention for fp32/fp16 input
+        return False
+    return True
+
+
+def use_esimd_sdp(q_len, head_dim, query_states):
+    if head_dim != 128:
+        # esimd_sdp only support head_dim = 128 now
+        return False
+    elif q_len != 1:
+        # esimd_sdp only support rest token now
+        return False
+    elif query_states.device.type != "xpu":
+        # esimd_sdp only support GPU now
+        return False
+    elif query_states.dtype != torch.float16:
+        # esimd_sdp only has optimization for FP16 now
+        return False
+    else:
+        device_name = torch.xpu.get_device_name(query_states.device.index)
+        if device_name.startswith("Intel(R) Arc(TM) A") or \
+                device_name.startswith("Intel(R) Data Center GPU Flex"):
+            import linear_fp16_esimd
+            if hasattr(linear_fp16_esimd, "sdp_forward"):
+                return True
+            else:
+                return False
+        else:
+            return False
+
+
+def mlp_fusion_check(x, qtype, training):
+    invalidInputError(x.dim() == 2,
+                      "Here input x's dim should be 2.")
+    if x.shape[0] != 1:
+        return False
+    if x.device.type != 'xpu':
+        return False
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+        return False
+    if training or x.requires_grad:
+        return False
+    return True

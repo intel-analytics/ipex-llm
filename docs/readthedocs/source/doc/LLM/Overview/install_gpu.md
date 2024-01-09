@@ -101,7 +101,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 ```eval_rst
 .. important::
 
-    BigDL-LLM on Linux only supports PyTorch 2.0 and PyTorch 2.1.
+    BigDL-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
 ```
 
 ```eval_rst
@@ -171,7 +171,16 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
          conda create -n llm python=3.9
          conda activate llm
 
-         pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+
+      .. note::
+
+         The ``xpu`` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
+
+         .. code-block:: bash
+
+            pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+            
 
    .. tab:: Pytorch 2.0
 
@@ -180,7 +189,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
          conda create -n llm python=3.9
          conda activate llm
 
-         pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade bigdl-llm[xpu_2.0] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 ```
 

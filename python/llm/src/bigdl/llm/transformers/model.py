@@ -88,7 +88,6 @@ def save_low_bit(self, *args, **kwargs):
 
 
 class _BaseAutoModelClass:
-
     HF_MODEL = None
 
     @classmethod
@@ -136,6 +135,48 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
 
+        if user_quantization_config is not None and \
+                "BitsAndBytesConfig" in str(user_quantization_config.__class__):
+            if user_quantization_config.bnb_4bit_quant_type is not None:
+                bnb_4bit_type = user_quantization_config.bnb_4bit_quant_type
+                if bnb_4bit_type == "nf4":
+                    load_in_low_bit = "nf4"
+                elif bnb_4bit_type == "fp4":
+                    warnings.warn(
+                        "BigDL LLM QLoRA does not support fp4 now, use default nf4", FutureWarning)
+                    load_in_low_bit = "nf4"
+                elif bnb_4bit_type == "int4":
+                    load_in_low_bit = "sym_int4"
+                elif bnb_4bit_type == "bf16":
+                    load_in_low_bit = "bf16"
+                else:
+                    invalidInputError(False,
+                                      "Only nf4 or int4 is supported for bnb_4bit_quant_type")
+            else:
+                warnings.warn(
+                    "bnb_4bit_quant_type is None, use default int4", FutureWarning)
+                load_in_low_bit = "sym_int4"
+            if user_quantization_config.bnb_4bit_use_double_quant is True:
+                warnings.warn(
+                    "BigDL LLM QLoRA does not support double quant now, set to False",
+                    FutureWarning)
+            if user_quantization_config.bnb_4bit_compute_dtype is not None:
+                bnb_dtype = user_quantization_config.bnb_4bit_compute_dtype
+                if bnb_dtype == torch.float32:
+                    kwargs["torch_dtype"] = bnb_dtype
+                elif bnb_dtype == torch.bfloat16:
+                    kwargs["torch_dtype"] = bnb_dtype
+                else:
+                    invalidInputError(False,
+                                      "Only float32 or bfloat16"
+                                      " is supported for bnb_4bit_compute_dtype")
+            else:
+                warnings.warn(
+                    "torch_dtype is None, use default float32", FutureWarning)
+                kwargs["torch_dtype"] = torch.float32
+            optimize_model = False
+            kwargs["modules_to_not_convert"] = ["lm_head"]
+
         if load_in_4bit or load_in_low_bit:
 
             if config_dict.get("quantization_config", None) is not None:
@@ -171,8 +212,6 @@ class _BaseAutoModelClass:
                                       "Only 4-bit awq is supported in bigdl-llm.")
                     invalidInputError(awq_config.version == "gemm",
                                       "Only gemm version is supported in bigdl-llm.")
-                    invalidInputError(awq_config.backend == "autoawq",
-                                      "Only autoawq backend is supported in bigdl-llm.")
                     invalidInputError(awq_config.zero_point,
                                       "Only awq zero_point = True is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
@@ -253,9 +292,9 @@ class _BaseAutoModelClass:
             # The latest transformers only support cuda version
             # This load awq ckpt logic is copied from
             # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
-            from accelerate import init_empty_weights, infer_auto_device_map,\
+            from accelerate import init_empty_weights, infer_auto_device_map, \
                 load_checkpoint_in_model
-            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\
+            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers, \
                 get_layer_type, _load_config
             awq_config = quant_config
             model_weights_path, config = _load_config(args[0], '', max_new_tokens=None,
@@ -397,7 +436,7 @@ class _BaseAutoModelClass:
         if has_remote_code and trust_remote_code:
             class_ref = config.auto_map[cls.HF_Model.__name__]
             model_class = get_class_from_dynamic_module(
-                class_ref, pretrained_model_name_or_path,  **kwargs
+                class_ref, pretrained_model_name_or_path, **kwargs
             )
             if os.path.isdir(pretrained_model_name_or_path):
                 model_class.register_for_auto_class(cls.HF_Model.__name__)

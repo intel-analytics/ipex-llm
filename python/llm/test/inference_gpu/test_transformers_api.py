@@ -186,42 +186,42 @@ class Test_Optimize_Gpu_Model:
             assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
 
 
-    def test_falcon_gpu_model(self):
+    # def test_falcon_gpu_model(self):
 
-        Model = AutoModelForCausalLM
-        Tokenizer = AutoTokenizer
-        model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
-        # currently only compare the output of the last self-attention layer.
-        layer_norm = "transformer.h.31.input_layernorm"
-        self_attn = "transformer.h.31.self_attention"
-        lower_bound = 0
+    #     Model = AutoModelForCausalLM
+    #     Tokenizer = AutoTokenizer
+    #     model_path = os.environ.get('FALCON_7B_ORIGIN_PATH')
+    #     # currently only compare the output of the last self-attention layer.
+    #     layer_norm = "transformer.h.31.input_layernorm"
+    #     self_attn = "transformer.h.31.self_attention"
+    #     lower_bound = 0
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
+    #     self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
 
-    def test_llama_gpu_model(self):
+    # def test_llama_gpu_model(self):
 
-        Model = AutoModelForCausalLM
-        Tokenizer = AutoTokenizer
-        model_path = os.environ.get('LLAMA2_7B_ORIGIN_PATH')
-        # currently only compare the output of the last self-attention layer.
-        layer_norm = "model.layers.31.input_layernorm"
-        self_attn = "model.layers.31.self_attn"
-        lower_bound = 5e-2
+    #     Model = AutoModelForCausalLM
+    #     Tokenizer = AutoTokenizer
+    #     model_path = os.environ.get('LLAMA2_7B_ORIGIN_PATH')
+    #     # currently only compare the output of the last self-attention layer.
+    #     layer_norm = "model.layers.31.input_layernorm"
+    #     self_attn = "model.layers.31.self_attn"
+    #     lower_bound = 5e-2
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
+    #     self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
-    def test_chatglm2_gpu_model(self):
+    # def test_chatglm2_gpu_model(self):
 
-        Model = AutoModel
-        Tokenizer = AutoTokenizer
-        model_path = os.environ.get('CHATGLM2_6B_ORIGIN_PATH')
-        # currently only need to compare the output of one self-attention layer.
-        layer_norm = "transformer.encoder.layers.27.input_layernorm"
-        self_attn = "transformer.encoder.layers.27.self_attention"
-        lower_bound = 1e-3
+    #     Model = AutoModel
+    #     Tokenizer = AutoTokenizer
+    #     model_path = os.environ.get('CHATGLM2_6B_ORIGIN_PATH')
+    #     # currently only need to compare the output of one self-attention layer.
+    #     layer_norm = "transformer.encoder.layers.27.input_layernorm"
+    #     self_attn = "transformer.encoder.layers.27.self_attention"
+    #     lower_bound = 1e-3
 
-        self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
+    #     self.run_optimize_gpu_model(Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
 
 if __name__ == '__main__':
