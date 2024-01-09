@@ -13,8 +13,7 @@ To run this example with BigDL-LLM on Intel GPUs, we have some recommended requi
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-# you can install specific ipex/torch version for your need
-pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install oneccl_bind_pt==2.1.100 -f https://developer.intel.com/ipex-whl-stable-xpu
 # configures OneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
