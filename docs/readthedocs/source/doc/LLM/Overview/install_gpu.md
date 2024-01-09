@@ -273,7 +273,6 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
          # Recommended Environment Variables
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-         export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
 
