@@ -92,6 +92,7 @@ class QwenEvaluator(Evaluator):
     @torch.no_grad()
     def eval_subject(
         self,
+        subject_name,
         test_df,
         eval_type="validation" # "test","validation"
     ):
@@ -120,7 +121,7 @@ class QwenEvaluator(Evaluator):
             else:
                 correct_ratio = 0
 
-            return correct_ratio
+            return correct_ratio, None
         elif eval_type == "test":
             answers = {}
             for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
@@ -132,4 +133,4 @@ class QwenEvaluator(Evaluator):
                 )
                 pred = self.extract_answer(response, row)
                 answers[str(i)] = pred
-            return answers
+            return None, answers
