@@ -74,9 +74,9 @@ def is_deepspeed_available():
 if is_auto_gptq_available():
     from auto_gptq.utils.peft_utils import QuantLinearCuda, QuantLinearCudaOld
 
-
 if is_auto_awq_available():
     from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
+    from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
 def is_linear_module(module):
@@ -118,7 +118,7 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-def convert_gptq(module, awq=False):
+def convert_gptq(module, awq=False, llm_awq=False):
     from bigdl.llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")
 
@@ -139,6 +139,8 @@ def convert_gptq(module, awq=False):
             module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
         weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
         weight = weight.reshape(weight.shape[0], weight.shape[1] * weight.shape[2])
+        if llm_awq:
+            weight = weight.t()
     else:
         weight = torch.bitwise_right_shift(
             torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.bits, -1),
@@ -155,6 +157,12 @@ def convert_gptq(module, awq=False):
     weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
 
     # convert zeros to ggml format
+    if llm_awq:
+        real_scale_num = module.in_features // module.group_size
+        zeros = zeros[:, : real_scale_num]
+        scales = scales[:, : real_scale_num]
+        zeros = zeros.t()
+        scales = scales.t()
     zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
         .unsqueeze(2)\
         .expand(-1, -1, module.group_size//Q4_1, -1)\
@@ -200,6 +208,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     new_linear = None
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
                     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+                    is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                     if is_gptq or is_awq:
                         has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
@@ -213,7 +222,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         invalidInputError(device.type != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
-                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
+                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq,
+                                                                   llm_awq=is_llm_awq),
                                                  requires_grad=False,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),
