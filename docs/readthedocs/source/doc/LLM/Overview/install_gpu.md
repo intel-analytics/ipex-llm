@@ -67,21 +67,36 @@ To use GPU acceleration on Windows, several environment variables are required b
 
 Make sure you are using CMD as PowerShell is not supported:
 
-```
+```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 ```
 
-Please also set the following environment variable for iGPU:
+Please also set the following environment variable if you would like to run LLMs on:
 
-```
-set SYCL_CACHE_PERSISTENT=1
-set BIGDL_LLM_XMX_DISABLED=1
+```eval_rst
+.. tabs::
+   .. tab:: Intel iGPU
+
+      .. code-block:: cmd
+
+         set SYCL_CACHE_PERSISTENT=1
+         set BIGDL_LLM_XMX_DISABLED=1
+
+   .. tab:: Intel Arc™ A300-Series or Pro A60
+
+      .. code-block:: cmd
+
+         set SYCL_CACHE_PERSISTENT=1
+
+   .. tab:: Other Intel dGPU Series
+
+      There is no need to set further environment variables.
 ```
 
 ```eval_rst
 .. note::
 
-   For the first time that **each model** runs on **iGPU**, it may take around several minutes to compile.
+   For **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ```
 
 <!-- ### Troubleshooting -->
