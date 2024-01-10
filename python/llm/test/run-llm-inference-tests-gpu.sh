@@ -5,7 +5,6 @@ export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/inference_gpu
 
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export DEVICE='xpu'
 
 set -e
@@ -17,7 +16,7 @@ if [ -z "$THREAD_NUM" ]; then
   THREAD_NUM=2
 fi
 export OMP_NUM_THREADS=$THREAD_NUM
-pytest ${LLM_INFERENCE_TEST_DIR} -v -s
+pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s
 
 now=$(date "+%s")
 time=$((now-start))

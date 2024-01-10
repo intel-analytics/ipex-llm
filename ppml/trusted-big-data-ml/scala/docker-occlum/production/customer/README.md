@@ -11,7 +11,7 @@ the final image is called `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-o
 
 ### Pull customer image from dockerhub
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:2.4.0-SNAPSHOT-build
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:2.5.0-SNAPSHOT-build
 ```
 ### Build customer image from production-build image
 ```bash

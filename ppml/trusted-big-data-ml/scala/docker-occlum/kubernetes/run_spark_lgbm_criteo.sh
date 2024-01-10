@@ -6,7 +6,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --name spark-lgbm-criteo \
     --class com.intel.analytics.bigdl.dllib.example.nnframes.lightGBM.lgbmClassifierTrainingExampleOnCriteoClickLogsDataset \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT \
     --conf spark.kubernetes.container.image.pullPolicy="IfNotPresent" \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.executor.deleteOnTermination=false \

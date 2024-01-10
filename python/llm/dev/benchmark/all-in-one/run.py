@@ -18,6 +18,8 @@
 # this code is copied from llama2 example test, and added performance test
 import torch
 import time
+import gc
+import traceback
 
 import numpy as np
 from datetime import date
@@ -35,10 +37,15 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
              'lmsys/vicuna-13b-v1.3','project-baize/merged-baize-30b']
 
+CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
+
+LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
+
 results = []
+excludes = []
 
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4'):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -57,6 +64,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'deepspeed_transformer_int4_cpu':
         result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
+    elif test_api == 'transformer_int4_gpu_win':
+        result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding)
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -68,7 +77,9 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
                             f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
                             num_beams,
-                            low_bit])
+                            low_bit,
+                            cpu_embedding if 'win' in test_api else 'N/A',
+                            result[in_out_pair][-1][5] if 'win' in test_api else 'N/A']) # currently only peak mem for win gpu is caught here
 
 
 def get_model_path(repo_id, local_model_hub):
@@ -135,16 +146,16 @@ def run_transformer_int4(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto')
+    if repo_id in CHATGLM_IDS:
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto').eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True)
+                                                     use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True)
+                                                     use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
@@ -196,7 +207,7 @@ def run_pytorch_autocast_bf16(repo_id,
 
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         # TODO: need verify chatglm family run bf16.
         print("Currently pytorch do not support bfloat16 on cpu for chatglm models. Will skip it")
         return
@@ -263,17 +274,17 @@ def run_optimize_model(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
-        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+    if repo_id in CHATGLM_IDS:
+        model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                     use_cache=True, low_cpu_mem_usage=True)
+                                                     use_cache=True, low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path)
     end = time.perf_counter()
@@ -331,19 +342,19 @@ def run_transformer_int4_gpu(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                          trust_remote_code=True, use_cache=True)
+                                          trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True)
+                                                     use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                     trust_remote_code=True, use_cache=True)
+                                                     trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
@@ -391,7 +402,9 @@ def run_transformer_int4_gpu(repo_id,
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                             actual_in_len, actual_out_len])
             except RuntimeError:
+                traceback.print_exc()
                 pass
+    del model
     torch.xpu.empty_cache()
     return result
 
@@ -410,21 +423,21 @@ def run_optimize_model_gpu(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
-                                          trust_remote_code=True, use_cache=True)
+                                          trust_remote_code=True, use_cache=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True,
-                                                     use_cache=True, low_cpu_mem_usage=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
+                                                     use_cache=True, low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
-                                                     trust_remote_code=True, use_cache=True)
+                                                     trust_remote_code=True, use_cache=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
@@ -471,6 +484,7 @@ def run_optimize_model_gpu(repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                            actual_in_len, actual_out_len])
+    del model
     torch.xpu.empty_cache()
     return result
 
@@ -486,7 +500,7 @@ def run_ipex_fp16_gpu(repo_id,
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half().to('xpu')
@@ -542,6 +556,7 @@ def run_ipex_fp16_gpu(repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                            actual_in_len, actual_out_len])
+    del model
     torch.xpu.empty_cache()
     return result
 
@@ -569,7 +584,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
     st = time.perf_counter()
     # Note: only tested cpu Llama2-7b
     # Native Huggingface transformers loading to enable deepspeed init
-    if repo_id in ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b']:
+    if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
@@ -632,17 +647,125 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
                                            actual_in_len, actual_out_len])
     return result
 
+
+def run_transformer_int4_gpu_win(repo_id,
+                                 local_model_hub,
+                                 in_out_pairs,
+                                 warm_up,
+                                 num_trials,
+                                 num_beams,
+                                 low_bit,
+                                 cpu_embedding):
+    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
+    import intel_extension_for_pytorch as ipex
+    reserved_mem_list = []
+    model_path = get_model_path(repo_id, local_model_hub)
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
+    st = time.perf_counter()
+    if repo_id in CHATGLM_IDS:
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif repo_id in LLAMA_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                                     use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif repo_id in LLAVA_IDS:
+        llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
+        sys.path.append(rf"{llava_repo_dir}")
+        from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        if isinstance(model, GPTJForCausalLM):
+            # For gpt-j model family, this optimization can provide a better performance.
+            model = ipex.optimize(model.eval(), inplace=True)
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            try:
+                in_out_len = in_out.split("-")
+                in_len = int(in_out_len[0])
+                out_len = int(in_out_len[1])
+                # As different tokenizer has different encodings,
+                # in_len.txt maybe shorter than we need,
+                # use much longer context to make sure input length
+                test_length = min(in_len*2, 8192)
+                while test_length not in [32, 256, 1024, 2048, 8192]:
+                    test_length = test_length * 2
+                input_str = open(f"prompt/{test_length}.txt", 'r').read()
+                # As different tokenizer has different encodings,
+                # slice the input_ids to ensure the prompt length is required length.
+                input_ids = tokenizer.encode(input_str, return_tensors="pt")
+                input_ids = input_ids[:, :in_len]
+                true_str = tokenizer.batch_decode(input_ids)[0]
+                input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
+                actual_in_len = input_ids.shape[1]
+                result[in_out] = []
+                for i in range(num_trials + warm_up):
+                    st = time.perf_counter()
+                    output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                                num_beams=num_beams)
+                    torch.xpu.synchronize()
+                    end = time.perf_counter()
+                    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
+                    gpu_peak_mem = max(reserved_mem_list) # always keep the peak gpu mem at current stage
+                    output_ids = output_ids.cpu()
+                    print("model generate cost: " + str(end - st))
+                    output = tokenizer.batch_decode(output_ids)
+                    print(output[0])
+                    actual_out_len = output_ids.shape[1] - actual_in_len
+                    if i >= warm_up:
+                        result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                            actual_in_len, actual_out_len, gpu_peak_mem])
+                    # torch.xpu.empty_cache() # this may make first token slower
+            except RuntimeError:
+                traceback.print_exc()
+                pass
+    model.to('cpu')
+    torch.xpu.synchronize()
+    torch.xpu.empty_cache()
+    del model
+    gc.collect()
+    return result
+
 if __name__ == '__main__':
     from omegaconf import OmegaConf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
     today = date.today()
+    if 'exclude' in conf:
+        excludes = conf['exclude']
     
     import pandas as pd
     for api in conf.test_api:
         for model in conf.repo_id:
-            run_model(model, api, conf['in_out_pairs'], conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'], conf['low_bit'])
+            in_out_pairs = conf['in_out_pairs'].copy()
+            if excludes:
+                for in_out in conf['in_out_pairs']:
+                    model_id_input = model + ':' + in_out.split('-')[0]
+                    if model_id_input in excludes:
+                        in_out_pairs.remove(in_out)
+            run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+                      conf['low_bit'], conf['cpu_embedding'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
-                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit'])
+                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
+                                            'peak mem (GB)'])
 
         df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
         results = []

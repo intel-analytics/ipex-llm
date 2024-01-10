@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT .
 ```
 
 
@@ -17,7 +17,7 @@ To map the `xpu` into the container, you need to specify `--device=/dev/dri` whe
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -42,4 +42,4 @@ root@arda-arc12:/# sycl-ls
 ```
 
 
-To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/gpu).
+To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU).

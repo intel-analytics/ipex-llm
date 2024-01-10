@@ -17,6 +17,7 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         # install requires
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray[default]==1.9.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r python/requirements/orca/requirements_ray.txt
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1

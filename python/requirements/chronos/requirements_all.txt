@@ -12,6 +12,6 @@ grpcio==1.53.0
 pmdarima==1.8.5
 prophet==1.1.0
 tsfresh==0.17.0
-pyarrow==6.0.1
+pyarrow==14.0.1
 matplotlib
 inotify_simple

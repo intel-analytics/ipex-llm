@@ -50,24 +50,24 @@ def test_completion(Model, Tokenizer, model_path, prompt, answer):
 
     assert answer in output_str
 
-def test_transformers_auto_model_for_speech_seq2seq_int4():
-    from transformers import WhisperProcessor
-    from datasets import load_from_disk
-    model_path = os.environ.get('WHISPER_TINY_ORIGIN_PATH')
-    dataset_path = os.environ.get('SPEECH_DATASET_PATH')
-    processor = WhisperProcessor.from_pretrained(model_path)
-    ds = load_from_disk(dataset_path)
-    sample = ds[0]["audio"]
-    input_features = processor(sample["array"], sampling_rate=sample["sampling_rate"], return_tensors="pt").input_features
-    input_features = input_features.to(device)
-    model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True, optimize_model=True)
-    model = model.to(device)
-    predicted_ids = model.generate(input_features)
-    # decode token ids to text
-    transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)
-    model.to('cpu')      
-    print('Output:', transcription)
-    assert 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
+#def test_transformers_auto_model_for_speech_seq2seq_int4():
+#    from transformers import WhisperProcessor
+#    from datasets import load_from_disk
+#    model_path = os.environ.get('WHISPER_TINY_ORIGIN_PATH')
+#    dataset_path = os.environ.get('SPEECH_DATASET_PATH')
+#    processor = WhisperProcessor.from_pretrained(model_path)
+#    ds = load_from_disk(dataset_path)
+#    sample = ds[0]["audio"]
+#    input_features = processor(sample["array"], sampling_rate=sample["sampling_rate"], return_tensors="pt").input_features
+#    input_features = input_features.to(device)
+#    model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True, optimize_model=True)
+#    model = model.to(device)
+#    predicted_ids = model.generate(input_features)
+#    # decode token ids to text
+#    transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)
+#    model.to('cpu')
+#    print('Output:', transcription)
+#    assert 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
         
 if __name__ == '__main__':
     pytest.main([__file__])

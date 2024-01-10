@@ -25,7 +25,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install --upgrade requests argparse urllib3 && \
     pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip install --pre --upgrade bigdl-llm[all] && \
-    pip install --pre --upgrade bigdl-nano && \
 # Download bigdl-llm-tutorial
     cd /llm && \
     pip install --upgrade jupyterlab && \
@@ -33,6 +32,19 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /llm/start-notebook.sh && \
 # Download chat.py script
     pip install --upgrade colorama && \
-    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py
+    wget -P /llm https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/portable-zip/chat.py && \
+# Download all-in-one benchmark
+    git clone https://github.com/intel-analytics/BigDL && \
+    cp -r ./BigDL/python/llm/dev/benchmark/ ./benchmark && \
+# Install all-in-one dependencies
+    apt-get install -y numactl && \
+    pip install --upgrade omegaconf && \
+    pip install --upgrade pandas && \
+# Install vllm dependencies
+    pip install --upgrade fastapi && \
+    pip install --upgrade "uvicorn[standard]" && \
+# Copy vLLM-Serving
+    cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./BigDL
 
 ENTRYPOINT ["/bin/bash"]

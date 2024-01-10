@@ -20,7 +20,7 @@ ARG PY4J_VERSION=0.10.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.9
 
@@ -62,7 +62,7 @@ RUN apt-get update --fix-missing && \
 COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 COPY ./spark-defaults.conf ${SPARK_HOME}/conf/spark-defaults.conf
 SHELL ["/bin/bash", "-c"]
-RUN if [ $SPARK_VERSION = "3.4.1" ]; then \
+RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
         wget --no-check-certificate -qP $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
     elif [ $SPARK_VERSION = "2.4.6" ]; then \

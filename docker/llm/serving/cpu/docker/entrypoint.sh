@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 [-m --mode <controller|worker>] [-h --help]"
+  echo "Usage: $0 [-m --mode <controller|worker>] [-h --help] [-w --worker <model_worker|vllm_worker>]"
   echo "-h: Print help message."
   echo "Controller mode reads the following env:"
   echo "CONTROLLER_HOST (default: localhost)."
@@ -14,6 +14,7 @@ usage() {
   echo "WORKER_HOST (default: localhost)."
   echo "WORKER_PORT (default: 21002)."
   echo "MODEL_PATH (default: empty)."
+  echo "STREAM_INTERVAL (default: 1)."
   exit 1
 }
 
@@ -83,6 +84,8 @@ model_path=""
 mode=""
 omp_num_threads=""
 dispatch_method="shortest_queue" # shortest_queue or lottery
+stream_interval=1
+worker_type="model_worker"
 
 # Update rootCA config if needed
 update-ca-certificates
@@ -99,7 +102,7 @@ if [ "$#" == 0 ]; then
   exec /usr/bin/tini -s -- "bash"
 else
   # Parse command-line options
-  options=$(getopt -o "m:h" --long "mode:,help" -n "$0" -- "$@")
+  options=$(getopt -o "m:hw:" --long "mode:,help,worker:" -n "$0" -- "$@")
   if [ $? != 0 ]; then
     usage
   fi
@@ -110,6 +113,11 @@ else
       -m|--mode)
         mode="$2"
         [[ $mode == "controller" || $mode == "worker" ]] || usage
+        shift 2
+        ;;
+      -w|--worker)
+        worker_type="$2"
+        [[ $worker_type == "model_worker" || $worker_type == "vllm_worker" ]] || usage
         shift 2
         ;;
       -h|--help)
@@ -124,6 +132,12 @@ else
         ;;
     esac
   done
+
+  if [ "$worker_type" == "model_worker" ]; then
+      worker_type="fastchat.serve.model_worker"
+  elif [ "$worker_type" == "vllm_worker" ]; then
+      worker_type="fastchat.serve.vllm_worker"
+  fi
 
   if [[ -n $CONTROLLER_HOST ]]; then
     controller_host=$CONTROLLER_HOST
@@ -157,6 +171,10 @@ else
     dispatch_method=$DISPATCH_METHOD
   fi
 
+  if [[ -n $STREAM_INTERVAL ]]; then
+    stream_interval=$STREAM_INTERVAL
+  fi
+
   controller_address="http://$controller_host:$controller_port"
   # Execute logic based on options
   if [[ $mode == "controller" ]]; then
@@ -171,8 +189,8 @@ else
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
-    # Apply optimizations from bigdl-nano
-    source bigdl-nano-init -t
+    # Apply optimizations from bigdl-llm
+    source bigdl-llm-init -t
     # First check if user have set OMP_NUM_THREADS by themselves
     if [[ -n "${omp_num_threads}" ]]; then
       echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
@@ -192,9 +210,16 @@ else
           echo "Please set env MODEL_PATH used for worker"
           usage
     fi
+    echo "Worker type: $worker_type"
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    python3 -m fastchat.serve.model_worker --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
+    if [ "$worker_type" == "fastchat.serve.model_worker" ]; then
+      python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address --stream-interval $stream_interval
+    elif [ "$worker_type" == "fastchat.serve.vllm_worker" ]; then
+      python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
+    fi
   fi
 fi
+
+exec /usr/bin/bash -s -- "bash"
 

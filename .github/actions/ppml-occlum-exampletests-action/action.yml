@@ -8,7 +8,7 @@ inputs:
   image-tag:
     description: 'image tag'
     required: true
-    default: '2.4.0-SNAPSHOT'
+    default: '2.5.0-SNAPSHOT'
 runs:
   using: "composite"
   steps:
@@ -31,7 +31,7 @@ runs:
         export IMAGE=${{ env.DEFAULT_IMAGE }}
 
         docker pull $IMAGE
-        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT
 
         docker stop $CONTAINER_NAME
         docker rm -f $CONTAINER_NAME

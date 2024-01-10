@@ -74,6 +74,7 @@ def llama_pos_shift_attention_forward(
     attention_mask: Optional[torch.Tensor] = None,
     padding_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
+    padding_mask: Optional[torch.Tensor] = None,
     past_key_value: Optional[Tuple[torch.Tensor]] = None,
     output_attentions: bool = False,
     use_cache: bool = False,

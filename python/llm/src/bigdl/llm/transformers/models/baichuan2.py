@@ -26,10 +26,12 @@ from torch import nn
 from torch.nn import functional as F
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from transformers.utils import logging, ContextManagers
+from bigdl.llm.transformers.models.llama import get_ipex_version
 logger = logging.get_logger(__name__)
 
 try:
@@ -47,15 +49,44 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        hidden_states, _ = torch.ops.torch_ipex.rms_norm(hidden_states,
-                                                         [self.weight.size(0)], self.weight)
+        if get_ipex_version() <= "2.0.110+xpu":
+            import linear_q4_0
+            hidden_states = linear_q4_0.fused_rms_norm(hidden_states,
+                                                       [self.weight.size(0)],
+                                                       self.weight,
+                                                       None,
+                                                       self.epsilon)
+        else:
+            hidden_states = torch.ops.torch_ipex.fast_rms_norm(hidden_states,
+                                                               [self.weight.size(0)],
+                                                               self.weight,
+                                                               None,
+                                                               self.epsilon)
+        return hidden_states
     else:
         input_dtype = hidden_states.dtype
         hidden_states = hidden_states.to(torch.float32)
         variance = hidden_states.pow(2).mean(-1, keepdim=True)
         hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
         return self.weight * hidden_states.to(input_dtype)
-    return hidden_states
+
+
+def baichuan_mlp_forward(
+    self,
+    x: torch.Tensor,
+) -> torch.Tensor:
+    if x.shape[1] == 1 and x.dtype == torch.float32 and x.device.type == 'xpu' \
+            and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
+            and not (self.training and x.requires_grad):
+        import linear_q4_0
+        x_2d = x.view(-1, x.shape[-1])
+        if not x_2d.is_contiguous():
+            x_2d = x_2d.contiguous()
+        return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+            x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
+            x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+        ))
+    return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
 
 def baichuan_attention_forward_7b(

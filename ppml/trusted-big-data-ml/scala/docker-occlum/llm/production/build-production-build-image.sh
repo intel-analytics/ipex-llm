@@ -1,7 +1,7 @@
 # default
-export container_name=2.4.0-SNAPSHOT-EDMM-build-container
-export image_name=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum-production:2.4.0-SNAPSHOT
-export final_name=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum-production:2.4.0-SNAPSHOT-build
+export container_name=2.5.0-SNAPSHOT-EDMM-build-container
+export image_name=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum-production:2.5.0-SNAPSHOT
+export final_name=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum-production:2.5.0-SNAPSHOT-build
 while getopts ":c:i:f:" opt
 do
     case $opt in

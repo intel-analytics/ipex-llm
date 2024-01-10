@@ -8,7 +8,7 @@ You can use `optimize_model` API to accelerate general PyTorch models on Intel G
 - Intel Data Center GPU Max Series
 
 ## Recommended Requirements
-To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation.
+To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
 
 Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
 
@@ -16,7 +16,7 @@ Step 2, please refer to our [driver installation](https://dgpu-docs.intel.com/dr
 > **Note**: IPEX 2.0.110+xpu requires Intel GPU Driver version is [Stable 647.21](https://dgpu-docs.intel.com/releases/stable_647_21_20230714.html).
 
 Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html). OneMKL and DPC++ compiler are needed, others are optional.
-> **Note**: IPEX 2.0.110+xpu requires Intel® oneAPI Base Toolkit's version >= 2023.2.0.
+> **Note**: IPEX 2.0.110+xpu requires Intel® oneAPI Base Toolkit's version == 2023.2.0.
 
 ## Best Known Configuration on Linux
 For better performance, it is recommended to set environment variables on Linux:
