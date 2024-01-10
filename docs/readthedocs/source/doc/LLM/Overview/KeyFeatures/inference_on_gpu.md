@@ -4,10 +4,12 @@ Apart from the significant acceleration capabilites on Intel CPUs, BigDL-LLM als
 
 Compared with running on Intel CPUs, some additional operations are required on Intel GPUs. To help you better understand the process, here we use a popular model [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as an example.
 
-**Make sure you have prepared environment following instructions [here](../install_gpu.html). First of all, you need to import `intel_extension_for_pytorch` to run on Intel GPUs**:
+**Make sure you have prepared environment following instructions [here](../install_gpu.html).
 
-```python
-import intel_extension_for_pytorch as ipex
+```eval_rst
+.. note::
+
+   If you are using an older version of ``bigdl-llm`` (specifically, older than 2.5.0b20240104), you need to manually add ``import intel_extension_for_pytorch as ipex`` at the beginning of your code.
 ```
 
 ## Load and Optimize Model
