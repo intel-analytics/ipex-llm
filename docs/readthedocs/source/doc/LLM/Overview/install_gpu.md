@@ -61,6 +61,12 @@ pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-win_amd64.whl
 pip install --pre --upgrade bigdl-llm[xpu]
 ```
 
+```eval_rst
+.. note::
+
+   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, ``and intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
+```
+
 ### Runtime Configuration
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
@@ -256,6 +262,12 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          # install bigdl-llm for Intel GPU
          pip install --pre --upgrade bigdl-llm[xpu_2.0]
 
+```
+
+```eval_rst
+.. note::
+
+   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, ``and intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
 ```
 
 ### Runtime Configuration
