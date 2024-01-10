@@ -20,7 +20,8 @@ import urllib
 
 autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo", "sigfig", "prophet",
                         "accelerate", "langchain", "pydantic", "transformers", "ray", "sklearn", "torchmetrics",
-                        "pandas", "pmdarima", "scipy", "optuna", "cloudpickle", "xgboost", "filelock"]
+                        "pandas", "pmdarima", "scipy", "optuna", "cloudpickle", "xgboost", "filelock",
+                        "importlib.metadata", "intel_extension_for_pytorch"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
