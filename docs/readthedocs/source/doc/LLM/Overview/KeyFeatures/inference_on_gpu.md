@@ -39,7 +39,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. tip::
 
-         For running LLMs on Intel iGPUs, we recommend setting ``cpu_embedding=True`` in the ``optimize_model`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+         When running LLMs on Intel iGPUs for Windows users, we recommend setting ``cpu_embedding=True`` in the ``optimize_model`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
          
          See the `API doc <../../../PythonAPI/LLM/optimize.html#bigdl.llm.optimize_model>`_ for ``optimize_model`` to find more information.
 
@@ -62,7 +62,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. tip::
 
-         TODO for loading from optimized model on iGPU, needs more verification.
+         TODO When loading from optimized model on iGPU for Windows users, needs more verification.
 
    .. tab:: ``transformers``-style API
 
@@ -81,7 +81,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. tip::
 
-         For running LLMs on Intel iGPUs, we recommend setting ``cpu_embedding=True``` in the ``from_pretrained`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+         When running LLMs on Intel iGPUs for Windows users, we recommend setting ``cpu_embedding=True``` in the ``from_pretrained`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
          
          See the `API doc <../../../PythonAPI/LLM/transformers.html#hugging-face-transformers-automodel>`_ to find more information.
 
@@ -99,7 +99,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. tip::
 
-         For running saved optimized models on Intel iGPUs, we also recommend setting ``cpu_embedding=True`` in the ``load_low_bit`` function.
+         When running saved optimized models on Intel iGPUs for Windows users, we also recommend setting ``cpu_embedding=True`` in the ``load_low_bit`` function.
 ```
 
 ## Run Optimized Model
@@ -123,6 +123,11 @@ with torch.inference_mode():
    The initial generation of optimized LLMs on Intel GPUs could be slow. Therefore, it's recommended to perform a **warm-up** run before the actual generation.
 ```
 
+```eval_rst
+.. note::
+
+   If you are a Windows user, please also note that for **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
+```
 
 ```eval_rst
 .. seealso::
