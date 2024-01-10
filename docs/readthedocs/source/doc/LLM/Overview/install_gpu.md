@@ -71,7 +71,7 @@ pip install --pre --upgrade bigdl-llm[xpu]
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
-Make sure you are using CMD as PowerShell is not supported:
+Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported:
 
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -105,9 +105,30 @@ Please also set the following environment variable if you would like to run LLMs
    For **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ```
 
-<!-- ### Troubleshooting -->
+### Troubleshooting
 
-<!-- todo -->
+#### 1. Error loading xxx.dll or one of its dependencies when importing IPEX
+
+If you met error: `Error loading "...\intel_extension_for_pytorch\bin\xxx.dll" or one of its dependencies` when importing `intel_extension_for_pytorch`, please ensure that you have completed the following steps:
+
+* Ensure that you have installed Visual Studio with "Desktop development with C++" workload.
+
+* Make sure that the correct version of oneAPI, specifically 2024.0, is installed.
+
+* Ensure that `libuv`` is installed in your conda environment. This can be done during the creation of the environment with the command:
+  ```cmd
+  conda create -n llm python=3.9 libuv
+  ```
+  If you missed `libuv`, you can add it to your existing environment through
+  ```cmd
+  conda install libuv
+  ```
+
+* Make sure you have configured oneAPI environment variables in your command prompt through
+  ```cmd
+  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+  ```
+  Please note that you need to set these environment again once you have a new command prompt window.
 
 ## Linux
 
@@ -282,7 +303,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step. Configure OneAPI environment variables
+         # Required step. Configure oneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
          # Recommended Environment Variables
@@ -295,7 +316,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step. Configure OneAPI environment variables
+         # Required step. Configure oneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
          # Recommended Environment Variables
