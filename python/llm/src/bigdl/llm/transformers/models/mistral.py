@@ -47,7 +47,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31,\
     is_enough_kv_cache_room_4_36
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from bigdl.llm.transformers.models.utils import use_flash_attention
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -75,7 +75,8 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 
 def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
-    return q_type == SYM_INT4 and use_fuse_rope and enough_kv_room and bs == 1
+    return q_type in [SYM_INT4, FP8E5] and \
+        use_fuse_rope and enough_kv_room and bs == 1
 
 
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
