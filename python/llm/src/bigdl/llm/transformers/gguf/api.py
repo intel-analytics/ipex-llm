@@ -50,7 +50,7 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
                 model, tokenizer = load_gguf_mistral(loader, dtype)
             else:
                 from .models.llama import load_gguf_llama
-                model, tokenizer = load_gguf_llama(loader, dtype)
+                model, tokenizer = load_gguf_llama(loader, dtype, low_bit=low_bit)
         elif model_family == "baichuan":
             from .models.baichuan import load_gguf_baichuan
             model, tokenizer = load_gguf_baichuan(loader, dtype)

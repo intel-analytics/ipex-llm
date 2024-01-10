@@ -185,7 +185,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         is_linear, linear_args = is_linear_module(module)
         if is_linear and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
-            if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
+            if not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear):
                 in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
                     new_linear = None
