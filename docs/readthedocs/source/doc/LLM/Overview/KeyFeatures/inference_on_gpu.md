@@ -4,7 +4,7 @@ Apart from the significant acceleration capabilites on Intel CPUs, BigDL-LLM als
 
 Compared with running on Intel CPUs, some additional operations are required on Intel GPUs. To help you better understand the process, here we use a popular model [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as an example.
 
-**Make sure you have prepared environment following instructions [here](../install_gpu.html).
+**Make sure you have prepared environment following instructions [here](../install_gpu.html).**
 
 ```eval_rst
 .. note::
@@ -37,6 +37,12 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
+      .. tip::
+
+         For running LLMs on Intel iGPUs, we recommend setting ``cpu_embedding=True`` in the ``optimize_model`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+         
+         See the `API doc <../../../PythonAPI/LLM/optimize.html#bigdl.llm.optimize_model>`_ for ``optimize_model`` to find more information.
+
       Especially, if you have saved the optimized model following setps `here <./optimize_model.html#save>`_, the loading process on Intel GPUs maybe as follows:
 
       .. code-block:: python
@@ -54,6 +60,10 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
+      .. tip::
+
+         TODO for loading from optimized model on iGPU, needs more verification.
+
    .. tab:: ``transformers``-style API
 
       You could run any Hugging Face Transformers model with ``transformers``-style API, and the loading and optimizing process on Intel GPUs maybe as follows:
@@ -69,6 +79,12 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
+      .. tip::
+
+         For running LLMs on Intel iGPUs, we recommend setting ``cpu_embedding=True``` in the ``from_pretrained`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+         
+         See the `API doc <../../../PythonAPI/LLM/transformers.html#hugging-face-transformers-automodel>`_ to find more information.
+
       Especially, if you have saved the optimized model following setps `here <./hugging_face_format.html#save-load>`_, the loading process on Intel GPUs maybe as follows:
 
       .. code-block:: python
@@ -80,6 +96,10 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
          model = AutoModelForCausalLM.load_low_bit(saved_dir) # Load the optimized model
 
          model = model.to('xpu') # Important after obtaining the optimized model
+
+      .. tip::
+
+         For running saved optimized models on Intel iGPUs, we also recommend setting ``cpu_embedding=True`` in the ``load_low_bit`` function.
 ```
 
 ## Run Optimized Model

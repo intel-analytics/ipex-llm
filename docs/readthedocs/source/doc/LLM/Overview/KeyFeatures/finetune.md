@@ -10,7 +10,7 @@ We also support finetuning LLMs (large language models) using QLoRA with BigDL-L
 
 To help you better understand the finetuning process, here we use model [Llama-2-7b-hf](https://huggingface.co/meta-llama/Llama-2-7b-hf) as an example.
 
-**Make sure you have prepared environment following instructions [here](../install_gpu.html).
+**Make sure you have prepared environment following instructions [here](../install_gpu.html).**
 
 ```eval_rst
 .. note::
