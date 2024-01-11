@@ -60,10 +60,6 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
-      .. tip::
-
-         TODO When loading from optimized model on iGPU for Windows users, needs more verification.
-
    .. tab:: ``transformers``-style API
 
       You could run any Hugging Face Transformers model with ``transformers``-style API, and the loading and optimizing process on Intel GPUs maybe as follows:
