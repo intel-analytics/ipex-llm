@@ -40,7 +40,7 @@ test_api:
   - "native_int4"
   - "optimize_model"
   - "pytorch_autocast_bf16"
-  # - "transformer_bf16"
+  # - "transformer_autocast_bf16"
   # - "ipex_fp16_gpu" # on Intel GPU
   # - "transformer_int4_gpu"  # on Intel GPU
   # - "optimize_model_gpu"  # on Intel GPU

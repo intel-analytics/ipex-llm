@@ -84,8 +84,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'transformer_int4_gpu_win':
         result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding)
-    elif test_api == 'transformer_bf16':
-        result = run_transformer_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+    elif test_api == 'transformer_autocast_bf16':
+        result = run_transformer_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -761,7 +761,7 @@ def run_transformer_int4_gpu_win(repo_id,
     gc.collect()
     return result
 
-def run_transformer_bf16( repo_id,
+def run_transformer_autocast_bf16( repo_id,
                     local_model_hub,
                     in_out_pairs,
                     warm_up,
@@ -792,7 +792,7 @@ def run_transformer_bf16( repo_id,
     model = BenchmarkWrapper(model)
 
     result = {}
-    with torch.inference_mode():
+    with torch.inference_mode(), torch.autocast("cpu"):
         for in_out in in_out_pairs:
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
