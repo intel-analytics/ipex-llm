@@ -315,10 +315,12 @@ def create_model_worker():
         "--debug", type=bool, default=False, help="Print debugging messages"
     )
     parser.add_argument("--bigdl_load", default=False, action="store_true")
+    parser.add_argument("--load_in_4bit", default=False, action="store_true")
     args = parser.parse_args()
     logger.info(f"args: {args}")
 
     os.environ["bigdl_load"] = str(args.bigdl_load)
+    os.environ["load_4bit"] = str(args.load_in_4bit)
 
     if args.gpus:
         if len(args.gpus.split(",")) < args.num_gpus:

@@ -574,9 +574,10 @@ class BigDLLLMAdapter(BaseModelAdapter):
         )
         from bigdl.llm.transformers import AutoModelForCausalLM
 
+        load_4bit =  os.environ["load_4bit"] == 'True'
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
-            load_in_4bit=True,
+            load_in_4bit=load_4bit,
             low_cpu_mem_usage=True,
             **from_pretrained_kwargs,
         )
