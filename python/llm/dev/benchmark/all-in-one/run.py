@@ -84,8 +84,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'transformer_int4_gpu_win':
         result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding)
-    elif test_api == 'bigdl_bf16':
-        result = run_bigdl_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+    elif test_api == 'transformer_bf16':
+        result = run_transformer_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -761,7 +761,7 @@ def run_transformer_int4_gpu_win(repo_id,
     gc.collect()
     return result
 
-def run_bigdl_bf16( repo_id,
+def run_transformer_bf16( repo_id,
                     local_model_hub,
                     in_out_pairs,
                     warm_up,
@@ -771,17 +771,11 @@ def run_bigdl_bf16( repo_id,
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
+    # Load model in bf16,
+    # which convert the relevant layers in the model into BF16 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit='bf16', trust_remote_code=True, torch_dtype=torch.bfloat16, use_cache=True).eval()
-        """
-        for module_name, module in model.named_modules():
-            print(f"module: {module_name}")
-            for param_name, param in module.named_parameters(recurse=False):
-                print(f"parameter - {param_name}, datatype - {param.dtype}")
-        """
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='bf16', trust_remote_code=True, torch_dtype=torch.bfloat16,
