@@ -199,15 +199,19 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     A method to optimize any pytorch model.
 
     :param model: The original PyTorch model (nn.module)
-    :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
-        "asym_int5" or "sym_int8".
-    :param optimize_llm: Whether to further optimize llm model.
+    :param low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``, ``'sym_int5'``,
+                    ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``, ``'nf4'``, ``'fp4'``,
+                    ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``, ``'fp16'`` or ``'bf16'``,
+                    ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
+                    asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
+                    Relevant low bit optimizations will be applied to the model.
+    :param optimize_llm: Whether to further optimize llm model. Default to be ``True``.
     :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
-        when conducting model optimizations. Default to be None.
+        when conducting model optimizations. Default to be ``None``.
     :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
-        to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+        to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
     :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
-        to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+        to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
 
     :return: The optimized model.
 

@@ -101,22 +101,24 @@ class _BaseAutoModelClass:
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means loading linear's weight to symmetric int 4 if
-                                the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
-                                if the model is GPTQ model.
-                             Default to be False.
-        :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                , sym_int8, nf3, nf4, fp4, fp8, fp8_e4m3, fp8_e5m2, fp16 or bf16.
-                                sym_int4 means symmetric int 4, asym_int4 means asymmetric int 4,
-                                nf4 means 4-bit NormalFloat, etc. Relevant low bit optimizations
-                                will be applied to the model.
+                             the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
+                             if the model is GPTQ model.
+                             Default to be ``False``.
+        :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
+                                ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
+                                ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
+                                ``'fp16'`` or ``'bf16'``, ``'sym_int4'`` means symmetric int 4,
+                                ``'asym_int4'`` means asymmetric int 4, ``'nf4'`` means 4-bit
+                                NormalFloat, etc. Relevant low bit optimizations will be applied
+                                to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
-                               Default to be True.
+                               Default to be ``True``.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
-                                       conducting model optimizations. Default to be None.
+                                       conducting model optimizations. Default to be ``None``.
         :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
-            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
-            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
