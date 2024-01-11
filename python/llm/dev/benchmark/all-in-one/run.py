@@ -375,6 +375,7 @@ def run_transformer_int4_gpu(repo_id,
         if 'starcoder' in repo_id:
             model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                         trust_remote_code=True, use_cache=True, torch_dtype=torch.bfloat16).eval()
+            model = model.float()
         else:
             model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                         trust_remote_code=True, use_cache=True).eval()
