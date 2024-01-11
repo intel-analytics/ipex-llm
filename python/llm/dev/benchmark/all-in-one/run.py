@@ -706,27 +706,27 @@ def run_transformer_int4_gpu_win(repo_id,
     #         model = ipex.optimize(model.eval(), inplace=True)
 
     if repo_id in CHATGLM_IDS:
-        model = AutoModel.load_low_bit(model_path+'int4', optimize_model=True,
+        model = AutoModel.load_low_bit(model_path+'-int4', optimize_model=True,
                                        trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        tokenizer = AutoTokenizer.from_pretrained(model_path+'int4', trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-int4', trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.load_low_bit(model_path+'int4', trust_remote_code=True,
-                                                     use_cache=True, cpu_embedding=cpu_embedding).eval()
-        tokenizer = LlamaTokenizer.from_pretrained(model_path+'int4', trust_remote_code=True)
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-int4', trust_remote_code=True,
+                                                  use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = LlamaTokenizer.from_pretrained(model_path+'-int4', trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAVA_IDS:
         llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
         sys.path.append(rf"{llava_repo_dir}")
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
-        model = AutoModelForCausalLM.load_low_bit(model_path+'int4', optimize_model=True,
-                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        tokenizer = AutoTokenizer.from_pretrained(model_path+'int4', trust_remote_code=True)
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-int4', optimize_model=True,
+                                                 trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-int4', trust_remote_code=True)
         model = model.to('xpu')
     else:
-        model = AutoModelForCausalLM.load_low_bit(model_path+'int4', optimize_model=True,
-                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        tokenizer = AutoTokenizer.from_pretrained(model_path+'int4', trust_remote_code=True)
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-int4', optimize_model=True,
+                                                 trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-int4', trust_remote_code=True)
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
             # For gpt-j model family, this optimization can provide a better performance.
