@@ -28,7 +28,6 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
       .. code-block:: python
 
          # Take Llama-2-7b-chat-hf as an example
-         import intel_extension_for_pytorch as ipex
          from transformers import LlamaForCausalLM
          from bigdl.llm import optimize_model
 
@@ -47,7 +46,6 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. code-block:: python
 
-         import intel_extension_for_pytorch as ipex
          from transformers import LlamaForCausalLM
          from bigdl.llm.optimize import low_memory_init, load_low_bit
 
@@ -67,7 +65,6 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
       .. code-block:: python
 
          # Take Llama-2-7b-chat-hf as an example
-         import intel_extension_for_pytorch as ipex
          from bigdl.llm.transformers import AutoModelForCausalLM
 
          # Load model in 4 bit, which convert the relevant layers in the model into INT4 format
@@ -85,7 +82,6 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. code-block:: python
 
-         import intel_extension_for_pytorch as ipex
          from bigdl.llm.transformers import AutoModelForCausalLM
 
          saved_dir='./llama-2-bigdl-llm-4-bit'

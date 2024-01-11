@@ -64,7 +64,7 @@ pip install --pre --upgrade bigdl-llm[xpu]
 ```eval_rst
 .. note::
 
-   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, ``and intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
+   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
 ```
 
 ### Runtime Configuration
@@ -107,15 +107,15 @@ Please also set the following environment variable if you would like to run LLMs
 
 ### Troubleshooting
 
-#### 1. Error loading xxx.dll or one of its dependencies when importing IPEX
+#### 1. Error loading `intel_extension_for_pytorch`
 
-If you met error: `Error loading "...\intel_extension_for_pytorch\bin\xxx.dll" or one of its dependencies` when importing `intel_extension_for_pytorch`, please ensure that you have completed the following steps:
+If you met error when importing `intel_extension_for_pytorch`, please ensure that you have completed the following steps:
 
 * Ensure that you have installed Visual Studio with "Desktop development with C++" workload.
 
 * Make sure that the correct version of oneAPI, specifically 2024.0, is installed.
 
-* Ensure that `libuv`` is installed in your conda environment. This can be done during the creation of the environment with the command:
+* Ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
   ```cmd
   conda create -n llm python=3.9 libuv
   ```
@@ -128,7 +128,7 @@ If you met error: `Error loading "...\intel_extension_for_pytorch\bin\xxx.dll" o
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  Please note that you need to set these environment again once you have a new command prompt window.
+  Please note that you need to set these environment variables again once you have a new command prompt window.
 
 ## Linux
 
@@ -173,7 +173,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
            We recommend you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh>`_ to install oneapi.
 
-   .. tab:: Pytorch 2.0
+   .. tab:: PyTorch 2.0
 
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
@@ -206,7 +206,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
 ```eval_rst
 .. tabs::
-   .. tab:: Pytorch 2.1
+   .. tab:: PyTorch 2.1
 
       .. code-block:: bash
 
@@ -224,7 +224,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
             pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
             
 
-   .. tab:: Pytorch 2.0
+   .. tab:: PyTorch 2.0
 
       .. code-block:: bash
 
@@ -288,7 +288,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
 ```eval_rst
 .. note::
 
-   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, ``and intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
+   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
 ```
 
 ### Runtime Configuration
@@ -364,4 +364,4 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
 * Step 1: Make sure you execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code.
-* Step 2: Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with Pytorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with Pytorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
+* Step 2: Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
