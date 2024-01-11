@@ -308,6 +308,150 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
+def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert=None,
+                                 current_key_name=None, convert_shape_only=False,
+                                 cpu_embedding=False, module_name=None):
+    from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
+        FP16Linear, BF16Linear
+    from bigdl.llm.transformers.embedding import LLMEmbedding
+    has_been_replaced = False
+
+    if "." in module_name:
+        splits = module_name.split(".")
+        
+    upper_module = getattr(model, splits[0])
+    
+    if "lm_head" not in module_name:
+        for split in splits[1:-2]:
+            new_module = getattr(upper_module, split)
+            if new_module is None:
+                raise ValueError(f"{upper_module} has no attribute {split}.")
+            upper_module = new_module
+        module = getattr(upper_module, splits[-2])
+        module_name = splits[-2]
+    else:
+        module = upper_module
+        upper_module = model
+        module_name = splits[0]
+    
+    if current_key_name is None:
+        current_key_name = []
+
+    is_linear, linear_args = is_linear_module(module)
+    if is_linear and module_name not in modules_to_not_convert:
+        # Check if the current key is not in the `modules_to_not_convert`
+        if not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear):
+            in_features, out_features, mp_group = linear_args
+            with init_empty_weights():
+                new_linear = None
+                is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
+                is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+                if is_gptq or is_awq:
+                    has_bias = module.bias is not None and module.bias.abs().sum() != 0
+                    new_linear = LowBitLinear(
+                        in_features,
+                        out_features,
+                        qtype=qtype,
+                        bias=has_bias,
+                        mp_group=mp_group,
+                    )
+                    device = module.qweight.data.device
+                    invalidInputError(device.type != "meta",
+                                        "converting from meta device is not supported")
+                    # Copy the weights
+                    paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
+                                                requires_grad=False,
+                                                quantized=True,
+                                                _shape=(out_features, in_features),
+                                                convert_shape_only=convert_shape_only,
+                                                qtype=qtype).to(device)
+                    new_linear._parameters['weight'] = paramsLowBit
+                    if has_bias:
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            .to(device)
+                elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
+                    new_linear = LowBitLinear(
+                        in_features,
+                        out_features,
+                        qtype,
+                        module.bias is not None,
+                        mp_group=mp_group,
+                    )
+
+                    device = module.weight.data.device
+                    # Copy the weights
+                    paramsLowBit = FP4Params(data=module.weight.data,
+                                                requires_grad=False,
+                                                quantized=False,
+                                                _shape=None,
+                                                convert_shape_only=convert_shape_only,
+                                                qtype=qtype).to(device)
+                    new_linear._parameters['weight'] = paramsLowBit
+                    if module.bias is not None:
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            .to(device)
+                elif qtype == ggml_tensor_qtype["fp16"]:
+                    module.to(torch.float16)
+                    new_linear = FP16Linear(
+                        in_features,
+                        out_features,
+                        module.bias is not None,
+                        mp_group=mp_group,
+                    )
+                    device = module.weight.data.device
+                    from bigdl.llm.transformers.utils import get_ipex_version
+                    if get_ipex_version() < "2.1.10+xpu":
+                        new_linear._parameters['weight'] = nn.Parameter(module.weight)
+                    else:
+                        # only from 2.1, ipex provides matmul_bias_out
+                        # so we need to transpose weight
+                        new_weight = module.weight.transpose(0, 1).contiguous()
+                        new_linear._parameters['weight'] = nn.Parameter(new_weight)
+                        new_linear.weight_type = 2
+                    if module.bias is not None:
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            .to(device)
+                elif qtype == ggml_tensor_qtype["bf16"]:
+                    module.to(torch.bfloat16)
+                    new_linear = BF16Linear(
+                        in_features,
+                        out_features,
+                        module.bias is not None,
+                        mp_group=mp_group,
+                    )
+                    device = module.weight.data.device
+                    # convert here
+                    new_linear._parameters['weight'] = nn.Parameter(module.weight)
+                    if module.bias is not None:
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            .to(device)
+
+                if new_linear is not None:
+                    if not module.training:
+                        new_linear.eval()
+                    upper_module._modules[module_name] = new_linear
+                    has_been_replaced = True
+                    # Force requires grad to False to avoid unexpected errors
+                    upper_module._modules[module_name].requires_grad_(False)
+
+                    module.weight = None
+    elif cpu_embedding and type(module) == nn.Embedding:
+        # skip user-defined Embedding layer
+        if platform.system().lower() == 'windows':
+            model._modules[module_name] = LLMEmbedding(
+                num_embeddings=module.num_embeddings,
+                embedding_dim=module.embedding_dim,
+                padding_idx=module.padding_idx,
+                max_norm=module.max_norm,
+                norm_type=module.norm_type,
+                scale_grad_by_freq=module.scale_grad_by_freq,
+                sparse=module.sparse,
+                _weight=module.weight.data,
+            )
+
+    return model, has_been_replaced
+
+
 def _optimize_pre(model):
     from transformers.modeling_utils import PreTrainedModel
     # All huggingface format models are inherited from `PreTrainedModel`

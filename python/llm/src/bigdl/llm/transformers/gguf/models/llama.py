@@ -205,7 +205,7 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float, op
         # print(model)
         # show_memory_info("4")
         model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=False,
-                                    cpu_embedding=False)
+                                    cpu_embedding=cpu_embedding, module_name=module_name, optimize_module=True)
         # show_memory_info("5")
 
     tensor_loader = loader.tensor_loader
