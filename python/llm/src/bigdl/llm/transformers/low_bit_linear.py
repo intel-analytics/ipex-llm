@@ -665,7 +665,5 @@ class BF16Linear(nn.Linear):
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
-        result = F.linear(x, self.weight)
-        if self.bias is not None:
-            result += self.bias
+        result = F.linear(x, self.weight, self.bias)
         return result.to(x.dtype)
