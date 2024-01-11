@@ -47,8 +47,7 @@ input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 To select the desired devices, there are two ways: one is changing the code, another is adding an environment variable. See:  
 
 ### 1. Select device in python
-To specify a xpu, you can change the `to('xpu')` to `to('xpu:[device_id]')`, this device_id is counted from zero.  
-If you you want to use the second device, you can change the code like this: 
+To specify a xpu, you can change the `to('xpu')` to `to('xpu:[device_id]')`, this device_id is counted from zero. If you you want to use the second device, you can change the code like this: 
 ```
 model = model.to('xpu:1')
 input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:1')
@@ -75,7 +74,7 @@ For example, you want to use the second A770 GPU, you can run the python like th
 
          ONEAPI_DEVICE_SELECTOR=level_zero:1 python generate.py
 
-      ``ONEAPI_DEVICE_SELECTOR=level_zero:1`` in upon command only affect in current python program. Also, you can export the environment, then run your python:
+      ``ONEAPI_DEVICE_SELECTOR=level_zero:1`` in upon command only affect in current python program. Also, you can export the environment variable, then run your python:
 
       .. code-block:: bash
 
