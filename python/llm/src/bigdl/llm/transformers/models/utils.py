@@ -21,6 +21,11 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.utils import get_ipex_version, get_xpu_device_type
 
 
+SYM_INT4 = ggml_tensor_qtype["sym_int4"]
+SYM_INT8 = ggml_tensor_qtype["sym_int8"]
+FP8 = ggml_tensor_qtype["fp8"]
+
+
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size, num_heads,
                                     max_length, head_dim,
@@ -263,3 +268,15 @@ def mlp_fusion_check(x, qtype, training):
     if training or x.requires_grad:
         return False
     return True
+
+
+def use_xmx(x: torch.Tensor, qtype: int):
+    device = get_xpu_device_type(x)
+    return (
+        device in ["arc", "flex", "pvc"]
+        and qtype in [SYM_INT4, SYM_INT8, FP8]
+        and (
+            (device != "pvc" and x.dtype == torch.float32 and 1 < x.size(0) <= 64)
+            or 1 < x.size(0) <= 8
+        )
+    )
