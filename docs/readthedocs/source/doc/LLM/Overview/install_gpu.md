@@ -294,6 +294,10 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
    ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
+.. important::
+   Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with Pytorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with Pytorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
+```
+
 ```eval_rst
 .. tabs::
    .. tab:: PyTorch 2.1
