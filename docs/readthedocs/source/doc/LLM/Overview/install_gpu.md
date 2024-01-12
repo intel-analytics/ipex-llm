@@ -172,23 +172,6 @@ BigDL-LLM for GPU supports on Linux has been verified on:
       Intel® oneAPI Base Toolkit 2024.0 install methods:
 
       .. tabs::
-         .. tab:: Offline installer
-         
-            We recommend you to use the offline package installer. You can specify the install path during the install process.
-
-            .. code-block:: bash
-            
-               wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh
-               sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
-
-            .. note::
-
-                  You can also modify the installation or uninstall the package by re-running the installer
-
-                  .. code-block:: bash
-                  
-                     sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
-
          .. tab:: APT installer
 
             Step 1: Set up repository
@@ -207,11 +190,29 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can uninstall the package by running
+               You can uninstall the package by running the following command
 
                .. code-block:: bash
                
                   sudo apt autoremove intel-basekit
+
+         .. tab:: Command Line installer
+         
+            You can also use the command line installer. This allows you to customize the install path.
+
+            .. code-block:: bash
+            
+               wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh
+               sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
+
+            .. note::
+
+                  You can also modify the installation or uninstall the package by running the following commands
+
+                  .. code-block:: bash
+
+                     cd /opt/intel/oneapi/installer
+                     sudo ./installer
 
    .. tab:: PyTorch 2.0
 
@@ -231,23 +232,6 @@ BigDL-LLM for GPU supports on Linux has been verified on:
       Intel® oneAPI Base Toolkit 2023.2 install methods:
 
       .. tabs::
-         .. tab:: Offline installer
-         
-            We recommend you to use the offline package installer. You can specify the install path during the install process.
-
-            .. code-block:: bash
-            
-               wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh
-               sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
-
-            .. note::
-
-               You can also modify the installation or uninstall the package by re-running the installer
-
-               .. code-block:: bash
-               
-                  sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
-
          .. tab:: APT installer
 
             Step 1: Set up repository
@@ -274,11 +258,29 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can uninstall the packages by running
+               You can uninstall the package by running the following command
 
                .. code-block:: bash
                
                   sudo apt autoremove intel-oneapi-common-vars
+
+         .. tab:: Command Line installer
+         
+            You can also use the command line installer. This allows you to customize the install path.
+
+            .. code-block:: bash
+            
+               wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh
+               sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
+
+            .. note::
+
+               You can also modify the installation or uninstall the package by running the following commands
+
+                  .. code-block:: bash
+
+                     cd /opt/intel/oneapi/installer
+                     sudo ./installer
 
 ```
 
