@@ -470,7 +470,7 @@ class LowBitLinear(nn.Linear):
             try:
                 import intel_extension_for_pytorch
                 import linear_q4_0
-                from bigdl.llm.utils.xmx_checker import use_xmx
+                from bigdl.llm.transformers.models.utils import use_xmx
             except ModuleNotFoundError:
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe` first.")
