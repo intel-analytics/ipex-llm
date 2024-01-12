@@ -19,4 +19,4 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 - Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
 
 ## Requirements
-To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
+To apply Intel GPU acceleration, you should install GPU driver and oneAPI Base Toolkit beforehand. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.

@@ -90,9 +90,9 @@ output = tokenizer.batch_decode(output_ids)
 #### GPU INT4
 ##### Install
 You may install **`bigdl-llm`** on Intel GPU as follows:
-> Note: See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.
+> Note: You should install GPU driver and oneAPI Base Toolkit beforehand. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.
 ```bash
-# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 # you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
