@@ -275,5 +275,8 @@ def use_xmx(x: torch.Tensor, qtype: int):
     return (
         device in ["arc", "flex", "pvc"]
         and qtype in [SYM_INT4, SYM_INT8, FP8]
-        and ((x.dtype == torch.float32 and 1 < x.size(0) <= 64) or 1 < x.size(0) <= 8)
+        and (
+            (device != "pvc" and x.dtype == torch.float32 and 1 < x.size(0) <= 64)
+            or 1 < x.size(0) <= 8
+        )
     )
