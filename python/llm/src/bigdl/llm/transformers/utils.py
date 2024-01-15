@@ -169,6 +169,8 @@ def get_xpu_device_type(x):
     name = torch.xpu.get_device_name(x.device.index)
     if name.startswith("Intel(R) Arc(TM) A"):
         return "arc"
+    elif name.startswith("Intel(R) Arc(TM)"):
+        return "mtl"
     elif name.startswith("Intel(R) Data Center GPU Flex"):
         return "flex"
     elif name.startswith("Intel(R) Data Center GPU Max"):

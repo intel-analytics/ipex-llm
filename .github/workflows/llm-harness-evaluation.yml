@@ -132,7 +132,7 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.0"
 
       - name: Install harness
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
@@ -154,7 +154,7 @@ jobs:
       - name: Upgrade packages
         shell: bash
         run: |
-          pip install --upgrade transformers==4.34.0
+          pip install --upgrade transformers==4.34.0 datasets==2.14.6
 
       - name: Run harness
         shell: bash

@@ -470,7 +470,7 @@ class LowBitLinear(nn.Linear):
             try:
                 import intel_extension_for_pytorch
                 import linear_q4_0
-                from bigdl.llm.utils.xmx_checker import use_xmx
+                from bigdl.llm.transformers.models.utils import use_xmx
             except ModuleNotFoundError:
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe` first.")
@@ -665,7 +665,5 @@ class BF16Linear(nn.Linear):
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
-        result = F.linear(x, self.weight)
-        if self.bias is not None:
-            result += self.bias
+        result = F.linear(x, self.weight, self.bias)
         return result.to(x.dtype)

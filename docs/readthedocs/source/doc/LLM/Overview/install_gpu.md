@@ -61,32 +61,74 @@ pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-win_amd64.whl
 pip install --pre --upgrade bigdl-llm[xpu]
 ```
 
+```eval_rst
+.. note::
+
+   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
+```
+
 ### Runtime Configuration
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
-Make sure you are using CMD as PowerShell is not supported:
+Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported:
 
-```
+```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 ```
 
-Please also set the following environment variable for iGPU:
+Please also set the following environment variable if you would like to run LLMs on:
 
-```
-set SYCL_CACHE_PERSISTENT=1
-set BIGDL_LLM_XMX_DISABLED=1
+```eval_rst
+.. tabs::
+   .. tab:: Intel iGPU
+
+      .. code-block:: cmd
+
+         set SYCL_CACHE_PERSISTENT=1
+         set BIGDL_LLM_XMX_DISABLED=1
+
+   .. tab:: Intel Arc™ A300-Series or Pro A60
+
+      .. code-block:: cmd
+
+         set SYCL_CACHE_PERSISTENT=1
+
+   .. tab:: Other Intel dGPU Series
+
+      There is no need to set further environment variables.
 ```
 
 ```eval_rst
 .. note::
 
-   For the first time that **each model** runs on **iGPU**, it may take around several minutes to compile.
+   For **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ```
 
 ### Troubleshooting
 
-todo
+#### 1. Error loading `intel_extension_for_pytorch`
+
+If you met error when importing `intel_extension_for_pytorch`, please ensure that you have completed the following steps:
+
+* Ensure that you have installed Visual Studio with "Desktop development with C++" workload.
+
+* Make sure that the correct version of oneAPI, specifically 2024.0, is installed.
+
+* Ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
+  ```cmd
+  conda create -n llm python=3.9 libuv
+  ```
+  If you missed `libuv`, you can add it to your existing environment through
+  ```cmd
+  conda install libuv
+  ```
+
+* Make sure you have configured oneAPI environment variables in your command prompt through
+  ```cmd
+  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+  ```
+  Please note that you need to set these environment variables again once you have a new command prompt window.
 
 ## Linux
 
@@ -101,7 +143,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 ```eval_rst
 .. important::
 
-    BigDL-LLM on Linux only supports PyTorch 2.0 and PyTorch 2.1.
+    BigDL-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
 ```
 
 ```eval_rst
@@ -114,10 +156,10 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 .. tabs::
    .. tab:: PyTorch 2.1
 
-      To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here're several prerequisite steps for tools installation and environment preparation:
+      To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here are several prerequisite steps for tools installation and environment preparation:
 
 
-      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
+      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
 
         .. seealso::
 
@@ -131,7 +173,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
            We recommend you to use `this offline package <https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh>`_ to install oneapi.
 
-   .. tab:: Pytorch 2.0
+   .. tab:: PyTorch 2.0
 
       To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
@@ -164,16 +206,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
 ```eval_rst
 .. tabs::
-   .. tab:: Pytorch 2.1
-
-      .. code-block:: bash
-
-         conda create -n llm python=3.9
-         conda activate llm
-
-         pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
-
-   .. tab:: Pytorch 2.0
+   .. tab:: PyTorch 2.1
 
       .. code-block:: bash
 
@@ -182,11 +215,29 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
          pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
+      .. note::
+
+         The ``xpu`` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
+
+         .. code-block:: bash
+
+            pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+            
+
+   .. tab:: PyTorch 2.0
+
+      .. code-block:: bash
+
+         conda create -n llm python=3.9
+         conda activate llm
+
+         pip install --pre --upgrade bigdl-llm[xpu_2.0] -f https://developer.intel.com/ipex-whl-stable-xpu
+
 ```
 
 ### Install BigDL-LLM From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
 
 ```eval_rst
 .. tabs::
@@ -209,7 +260,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-linux_x86_64.whl
 
          # install bigdl-llm for Intel GPU
-         pip install --pre --upgrade bigdl-llm[xpu_2.1]
+         pip install --pre --upgrade bigdl-llm[xpu]
 
    .. tab:: PyTorch 2.0
 
@@ -230,8 +281,14 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          pip install intel_extension_for_pytorch-2.0.110+xpu-cp39-cp39-linux_x86_64.whl
 
          # install bigdl-llm for Intel GPU
-         pip install --pre --upgrade bigdl-llm[xpu]
+         pip install --pre --upgrade bigdl-llm[xpu_2.0]
 
+```
+
+```eval_rst
+.. note::
+
+   All the wheel packages mentioned here are for Python 3.9. If you would like to use Python 3.10 or 3.11, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
 ```
 
 ### Runtime Configuration
@@ -246,9 +303,10 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # configures OneAPI environment variables
+         # Required step. Configure oneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
+         # Recommended Environment Variables
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
@@ -258,9 +316,10 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # configures OneAPI environment variables
+         # Required step. Configure oneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
+         # Recommended Environment Variables
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
@@ -271,15 +330,15 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 ### Known issues
 
-#### 1. Ubuntu 22.04 and Linux kernel 6.2.0 may cause performance bad (driver version < stable_775_20_20231219)
+#### 1. Potential suboptimal performance with Linux kernel 6.2.0
 
-For driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need reboot OS).
+For Ubuntu 22.04 and driver version < stable_775_20_20231219, the performance on Linux kernel 6.2.0 is worse than Linux kernel 5.19.0. You can use `sudo apt update && sudo apt install -y intel-i915-dkms intel-fw-gpu` to install the latest driver to solve this issue (need to reboot OS).
 
 Tips: You can use `sudo apt list --installed | grep intel-i915-dkms` to check your intel-i915-dkms's version, the version should be latest and >= `1.23.9.11.231003.15+i19-1`.
 
-#### 2. Driver installation meet unmet dependencies: intel-i915-dkms
+#### 2. Driver installation unmet dependencies error: intel-i915-dkms
 
-The last apt install command of the driver installation may get following error:
+The last apt install command of the driver installation may produce the following error:
 
 ```
 The following packages have unmet dependencies:
@@ -287,8 +346,22 @@ The following packages have unmet dependencies:
                    Conflicts: intel-platform-vsec-dkms
 ```
 
-You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
+You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to install instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
 
 ### Troubleshooting
 
-todo
+#### 1. Cannot open shared object file: No such file or directory
+
+Error where libmkl file is not found, for example,
+
+```
+OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory
+```
+```
+Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or directory
+```
+
+The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
+
+* Step 1: Make sure you execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code.
+* Step 2: Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
