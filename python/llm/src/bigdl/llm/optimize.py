@@ -239,7 +239,9 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
                                  optimize_model=optimize_llm,
                                  modules_to_not_convert=modules_to_not_convert,
                                  cpu_embedding=cpu_embedding,
-                                 lightweight_bmm=lightweight_bmm)
+                                 lightweight_bmm=lightweight_bmm,                                 
+                                 module_name=module_name,
+                                 optimize_module=optimize_module)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()
