@@ -390,10 +390,17 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
             context_layer = torch.matmul(attn, value_layer)
         else:
             attention_mask = ~attention_mask
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             attention_mask)
+            # flash attention don't support attention mask, change to native sdp for now
+            # context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+            #                                                                  key_layer,
+            #                                                                  value_layer,
+            #                                                                  attention_mask)
+            head_dim = query_layer.size(-1)
+            attn = torch.matmul(query_layer,
+                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
+            attn = attn + attention_mask
+            attn = torch.softmax(attn, -1)
+            context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
         context_layer = context_layer.reshape(*new_context_layer_shape)
