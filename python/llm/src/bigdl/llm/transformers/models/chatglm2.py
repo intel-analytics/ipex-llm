@@ -395,17 +395,12 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
             #                                                                  key_layer,
             #                                                                  value_layer,
             #                                                                  attention_mask)
-            attn_bias = torch.zeros(1, 1, L, S,
-                                    dtype=query_layer.dtype,
-                                    device=query_layer.device)
-            attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-            attn_bias.to(query_layer.dtype)
+            attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
             head_dim = query_layer.size(-1)
             attn = torch.matmul(query_layer,
                                 key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-            attn += attn_bias
+            attn += attention_mask
             attn = torch.softmax(attn, -1)
-            context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
         context_layer = context_layer.reshape(*new_context_layer_shape)
