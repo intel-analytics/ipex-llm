@@ -196,9 +196,9 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                
                   sudo apt autoremove intel-basekit
 
-         .. tab:: Command Line installer
+         .. tab:: Offline installer
          
-            You can also use the command line installer. This allows you to customize the install path.
+            You can also use the offline installer. This allows you to customize the install path.
 
             .. code-block:: bash
             
@@ -264,9 +264,9 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                
                   sudo apt autoremove intel-oneapi-common-vars
 
-         .. tab:: Command Line installer
+         .. tab:: Offline installer
          
-            You can also use the command line installer. This allows you to customize the install path.
+            You can also use the offline installer. This allows you to customize the install path.
 
             .. code-block:: bash
             
