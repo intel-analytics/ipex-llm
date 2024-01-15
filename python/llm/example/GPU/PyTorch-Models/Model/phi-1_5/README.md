@@ -2,7 +2,7 @@
 In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate phi-1_5 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [microsoft/phi-1_5](https://huggingface.co/microsoft/phi-1_5) as a reference phi-1_5 model.
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a phi-1_5 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.

@@ -17,6 +17,7 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 
 **Operating System**:
 - Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
+- Windows 10/11, with or without WSL (Verified for HF-Transformers-AutoModels and PyTorch-Models on Intel iGPU and dGPU)
 
 ## Requirements
 To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
