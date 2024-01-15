@@ -318,20 +318,19 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
 
     if "." in module_name:
         splits = module_name.split(".")
-        
-    upper_module = getattr(model, splits[0])
+    parent_module = getattr(model, splits[0])
     
     if "lm_head" not in module_name:
         for split in splits[1:-2]:
-            new_module = getattr(upper_module, split)
+            new_module = getattr(parent_module, split)
             if new_module is None:
-                raise ValueError(f"{upper_module} has no attribute {split}.")
-            upper_module = new_module
-        module = getattr(upper_module, splits[-2])
+                raise ValueError(f"{parent_module} has no attribute {split}.")
+            parent_module = new_module
+        module = getattr(parent_module, splits[-2])
         module_name = splits[-2]
     else:
-        module = upper_module
-        upper_module = model
+        module = parent_module
+        parent_module = model
         module_name = splits[0]
     
     if current_key_name is None:
@@ -429,10 +428,10 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
                 if new_linear is not None:
                     if not module.training:
                         new_linear.eval()
-                    upper_module._modules[module_name] = new_linear
+                    parent_module._modules[module_name] = new_linear
                     has_been_replaced = True
                     # Force requires grad to False to avoid unexpected errors
-                    upper_module._modules[module_name].requires_grad_(False)
+                    parent_module._modules[module_name].requires_grad_(False)
 
                     module.weight = None
     elif cpu_embedding and type(module) == nn.Embedding:

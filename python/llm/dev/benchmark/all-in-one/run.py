@@ -168,10 +168,9 @@ def run_transformer_int4(repo_id,
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto').eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
-        # model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-        #                                              use_cache=True).eval()
-        # tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model, tokenizer = AutoModelForCausalLM.from_gguf(model_path)
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                                     use_cache=True).eval()
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True).eval()

@@ -24,19 +24,8 @@ from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 from ..gguf import GGUFFileLoader
 from bigdl.llm.optimize import optimize_model as optimize_model_fn
 
-import os
-import psutil
 
-# 计算占用内存
-def show_memory_info(hint):
-    pid = os.getpid()
-    p = psutil.Process(pid)
-
-    info = p.memory_full_info()
-    memory = info.uss / 1024. / 1024
-    print('{} memory used: {} MB'.format(hint, memory))
-
-def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float, optimize_llm=True,
+def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
                     cpu_embedding=False, low_bit='sym_int4'):
     config = loader.config
 
@@ -66,15 +55,15 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float, op
     def process_llama(name, tensor):
         nonlocal model
         module_name = get_llama_module_name(name)
-        # show_memory_info("3")
         if 'q_proj' in module_name:
-            # gguf weight needs to reshape for ffn_gate_inp
+            # gguf weight needs to reshape for q_proj
             head, hd_size = tensor.shape[0], tensor.shape[1:]
             set_module_tensor_to_device(model, module_name, "cpu", \
                 tensor.reshape(n_head, head // n_head // 2, 2, *hd_size)
                                 .swapaxes(1, 2)
                                 .reshape(tensor.shape), dtype=dtype)
         elif 'k_proj' in module_name:
+            # gguf weight needs to reshape for k_proj
             head, hd_size = tensor.shape[0], tensor.shape[1:]
             set_module_tensor_to_device(model, module_name, "cpu", \
                 tensor.reshape(n_head_kv, head // n_head_kv // 2, 2, *hd_size)
@@ -82,11 +71,8 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float, op
                                 .reshape(tensor.shape), dtype=dtype)
         else:
             set_module_tensor_to_device(model, module_name, "cpu", tensor, dtype=dtype)
-        # print(model)
-        # show_memory_info("4")
         model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=False,
                                     cpu_embedding=cpu_embedding, module_name=module_name, optimize_module=True)
-        # show_memory_info("5")
 
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_llama)
