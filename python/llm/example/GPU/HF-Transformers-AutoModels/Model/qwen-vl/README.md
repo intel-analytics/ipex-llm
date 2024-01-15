@@ -13,8 +13,7 @@ After installing conda, create a Python environment for BigDL-LLM:
 ```bash
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
-# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
-# you can install specific ipex/torch version for your need
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
 ```

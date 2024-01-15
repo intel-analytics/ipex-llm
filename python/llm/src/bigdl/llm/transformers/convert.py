@@ -59,15 +59,24 @@ def is_auto_awq_available():
 
 
 def is_deepspeed_available():
-    return importlib.util.find_spec("deepspeed") is not None
+    spec = importlib.util.find_spec("deepspeed")
+    if spec is not None:
+        deepspeed_path = spec.submodule_search_locations[0]
+        if deepspeed_path != os.path.join(os.getcwd(), "deepspeed"):
+            return True
+        else:
+            # not deepspeed package, just local dir
+            return False
+    else:
+        return False
 
 
 if is_auto_gptq_available():
     from auto_gptq.utils.peft_utils import QuantLinearCuda, QuantLinearCudaOld
 
-
 if is_auto_awq_available():
     from bigdl.llm.transformers.awq.linear import WQLinear_GEMM
+    from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
 def is_linear_module(module):
@@ -109,7 +118,7 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-def convert_gptq(module, awq=False):
+def convert_gptq(module, awq=False, llm_awq=False):
     from bigdl.llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")
 
@@ -130,6 +139,8 @@ def convert_gptq(module, awq=False):
             module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
         weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
         weight = weight.reshape(weight.shape[0], weight.shape[1] * weight.shape[2])
+        if llm_awq:
+            weight = weight.t()
     else:
         weight = torch.bitwise_right_shift(
             torch.unsqueeze(module.qweight, 1).expand(-1, 32 // module.bits, -1),
@@ -146,6 +157,12 @@ def convert_gptq(module, awq=False):
     weight = torch.bitwise_or(weight[:, :, :, 0], weight[:, :, :, 1]).contiguous()
 
     # convert zeros to ggml format
+    if llm_awq:
+        real_scale_num = module.in_features // module.group_size
+        zeros = zeros[:, : real_scale_num]
+        scales = scales[:, : real_scale_num]
+        zeros = zeros.t()
+        scales = scales.t()
     zeros = zeros.reshape(-1, 1, zeros.shape[1]).permute(2, 0, 1)\
         .unsqueeze(2)\
         .expand(-1, -1, module.group_size//Q4_1, -1)\
@@ -191,6 +208,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     new_linear = None
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
                     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+                    is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                     if is_gptq or is_awq:
                         has_bias = module.bias is not None and module.bias.abs().sum() != 0
                         new_linear = LowBitLinear(
@@ -200,20 +218,21 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             bias=has_bias,
                             mp_group=mp_group,
                         )
-                        device_type = module.qweight.data.device.type
-                        invalidInputError(device_type != "meta",
+                        device = module.qweight.data.device
+                        invalidInputError(device.type != "meta",
                                           "converting from meta device is not supported")
                         # Copy the weights
-                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
+                        paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq,
+                                                                   llm_awq=is_llm_awq),
                                                  requires_grad=False,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device_type)
+                                                 qtype=qtype).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if has_bias:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
                     elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
                         new_linear = LowBitLinear(
                             in_features,
@@ -223,44 +242,39 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             mp_group=mp_group,
                         )
 
-                        device_type = module.weight.data.device.type
+                        device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
                                                  requires_grad=False,
                                                  quantized=False,
                                                  _shape=None,
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device_type)
+                                                 qtype=qtype).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
                     elif qtype == ggml_tensor_qtype["fp16"]:
-                        #  only support two size now
-                        #  may generalize to other sizes
-                        if module.in_features in [4096, 11008]:
-                            # esimd fp16 path
-                            new_linear = FP16Linear(
-                                in_features,
-                                out_features,
-                                qtype,
-                                module.bias is not None,
-                                mp_group=mp_group,
-                            )
-                            device_type = module.weight.data.device.type
-
-                            # convert here
-                            m, n = module.weight.data.shape
-                            if module.in_features == 11008:
-                                trans_weight = module.weight.data.reshape(m//8, 8, n)
-                                trans_weight = trans_weight.transpose(1, 2).contiguous()
-                            elif module.in_features == 4096:
-                                trans_weight = module.weight.data.reshape(m//16, 16, n)
-                                trans_weight = trans_weight.transpose(1, 2).contiguous()
-                            new_linear._parameters['weight'] = nn.Parameter(trans_weight)
-                            if module.bias is not None:
-                                new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                    .to(device_type)
+                        module.to(torch.float16)
+                        new_linear = FP16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                        )
+                        device = module.weight.data.device
+                        from bigdl.llm.transformers.utils import get_ipex_version
+                        if get_ipex_version() < "2.1.10+xpu":
+                            new_linear._parameters['weight'] = nn.Parameter(module.weight)
+                        else:
+                            # only from 2.1, ipex provides matmul_bias_out
+                            # so we need to transpose weight
+                            new_weight = module.weight.transpose(0, 1).contiguous()
+                            new_linear._parameters['weight'] = nn.Parameter(new_weight)
+                            new_linear.weight_type = 2
+                        if module.bias is not None:
+                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                                .to(device)
                     elif qtype == ggml_tensor_qtype["bf16"]:
                         module.to(torch.bfloat16)
                         new_linear = BF16Linear(
@@ -269,12 +283,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-                        device_type = module.weight.data.device.type
+                        device = module.weight.data.device
                         # convert here
                         new_linear._parameters['weight'] = nn.Parameter(module.weight)
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                                .to(device_type)
+                                .to(device)
 
                     if new_linear is not None:
                         if not module.training:
@@ -430,26 +444,35 @@ def _optimize_post(model, lightweight_bmm=False):
     if version.parse(trans_version) >= version.parse("4.31.0"):
         convert_forward(
             model,
-            transformers.models.llama.modeling_llama.LlamaAttention,
-            llama_attention_forward_4_31,)
-        convert_forward(
-            model,
             transformers.models.llama.modeling_llama.LlamaRMSNorm,
             llama_rms_norm_forward,)
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
-        if enable_vllm_se_batching:
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaModel,
-                llama_model_selective_batching_forward_4_31,
-            )
+        if version.parse(trans_version) >= version.parse("4.36.0"):
+            # transformers version >= 4.36.0
+            from bigdl.llm.transformers.models.llama import llama_attention_forward_4_36
             convert_forward(
                 model,
                 transformers.models.llama.modeling_llama.LlamaAttention,
-                llama_attention_selective_batching_forward_4_31,
-            )
+                llama_attention_forward_4_36, )
+        else:
+            # transformers version between 4.31.0 - 4.35.2
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaAttention,
+                llama_attention_forward_4_31, )
+            if enable_vllm_se_batching:
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaModel,
+                    llama_model_selective_batching_forward_4_31,
+                )
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_selective_batching_forward_4_31,
+                )
     else:
         # todo implement 4.28.0 ~ 4.30.2
         pass
@@ -502,14 +525,15 @@ def _optimize_post(model, lightweight_bmm=False):
                             chatglm_attention_forward
                             )
     elif "mpt" in model.config.model_type:
-        modeling_module_name = model.__class__.__module__
-        attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
-        module = importlib.import_module(attention_module_name)
-        from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
-        convert_forward(model,
-                        module.MultiheadAttention,
-                        mpt_multihead_attention_forward
-                        )
+        if model.config.architectures is not None:
+            modeling_module_name = model.__class__.__module__
+            attention_module_name = '.'.join(modeling_module_name.split('.')[:-1]) + ".attention"
+            module = importlib.import_module(attention_module_name)
+            from bigdl.llm.transformers.models.mpt import mpt_multihead_attention_forward
+            convert_forward(model,
+                            module.MultiheadAttention,
+                            mpt_multihead_attention_forward
+                            )
     elif "gptj" in model.config.model_type:
         # dolly-v1-6b
         modeling_module_name = model.__class__.__module__
@@ -527,31 +551,33 @@ def _optimize_post(model, lightweight_bmm=False):
                         bloom_attention_forward
                         )
     elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        if "RWForCausalLM" in model.config.architectures:
-            if hasattr(model.config, "multi_query"):
-                # falcon-7b need to check performance drop after kv cache support.
-                # from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
-                # convert_forward(model,
-                #                 module.Attention,
-                #                 rw_attention_forward_7b
-                #                 )
-                pass
-            else:
-                # falcon-40b
-                from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b
-                convert_forward(model,
-                                module.Attention,
-                                rw_attention_forward_40b
-                                )
-        elif "FalconForCausalLM" in model.config.architectures:
-            # falcon-180b
-            from bigdl.llm.transformers.models.falcon import falcon_attention_forward
-            convert_forward(model,
-                            module.FalconAttention,
-                            falcon_attention_forward
-                            )
+        if model.config.architectures is not None:
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            if "RWForCausalLM" in model.config.architectures:
+                if model.config.hidden_size == 4544:
+                    # falcon-7b need to check performance drop after kv cache support.
+                    # from bigdl.llm.transformers.models.falcon import rw_attention_forward_7b
+                    # convert_forward(model,
+                    #                 module.Attention,
+                    #                 rw_attention_forward_7b
+                    #                 )
+                    pass
+                else:
+                    # falcon-40b
+                    from bigdl.llm.transformers.models.falcon import rw_attention_forward_40b
+                    convert_forward(model,
+                                    module.Attention,
+                                    rw_attention_forward_40b
+                                    )
+            elif "FalconForCausalLM" in model.config.architectures:
+                if model.config.hidden_size != 4544:
+                    # falcon-180b and new falcon-40b
+                    from bigdl.llm.transformers.models.falcon import falcon_attention_forward
+                    convert_forward(model,
+                                    module.FalconAttention,
+                                    falcon_attention_forward
+                                    )
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
         if model.config.hidden_size == 4096:

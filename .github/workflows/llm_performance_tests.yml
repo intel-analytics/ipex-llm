@@ -65,18 +65,18 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.1"
 
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -634,7 +634,7 @@ jobs:
         shell: cmd
         run: |
           cd %CSV_SAVE_PATH%
-          IF ${{ github.event_name }}=="schedule" (
+          IF "${{ github.event_name }}"=="schedule" (
             for %%f in (*.html) do (
                 curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
             )

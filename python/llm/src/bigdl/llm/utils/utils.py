@@ -16,23 +16,7 @@
 
 import sys
 import pathlib
-from bigdl.llm.utils.isa_checker import check_avx_vnni, check_avx2, check_avx512_vnni
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
-
-
-def get_cpu_flags():
-    flags = ""
-    if sys.platform != "win32":
-        if check_avx512_vnni():
-            flags = "_avx512"
-        elif check_avx_vnni():
-            flags = "_avx2"
-        else:
-            invalidOperationError(False, "Unsupported CPUFLAGS.")
-    else:
-        # flags = "_vnni" if check_avx_vnni() else ""
-        flags = "-api"
-    return flags
 
 
 def get_shared_lib_info(lib_base_name: str):
