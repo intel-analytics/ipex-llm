@@ -58,21 +58,27 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
         if 'q_proj' in module_name:
             # gguf weight needs to reshape for q_proj
             head, hd_size = tensor.shape[0], tensor.shape[1:]
-            set_module_tensor_to_device(model, module_name, "cpu", \
-                tensor.reshape(n_head, head // n_head // 2, 2, *hd_size)
-                                .swapaxes(1, 2)
-                                .reshape(tensor.shape), dtype=dtype)
+            set_module_tensor_to_device(model, module_name, "cpu",
+                                        tensor.reshape(n_head, head // n_head // 2, 2, *hd_size)
+                                              .swapaxes(1, 2)
+                                              .reshape(tensor.shape),
+                                        dtype=dtype)
         elif 'k_proj' in module_name:
             # gguf weight needs to reshape for k_proj
             head, hd_size = tensor.shape[0], tensor.shape[1:]
-            set_module_tensor_to_device(model, module_name, "cpu", \
-                tensor.reshape(n_head_kv, head // n_head_kv // 2, 2, *hd_size)
-                                .swapaxes(1, 2)
-                                .reshape(tensor.shape), dtype=dtype)
+            set_module_tensor_to_device(model, module_name, "cpu",
+                                        tensor.reshape(n_head_kv,
+                                                       head // n_head_kv // 2,
+                                                       2,
+                                                       *hd_size)
+                                              .swapaxes(1, 2)
+                                              .reshape(tensor.shape),
+                                        dtype=dtype)
         else:
             set_module_tensor_to_device(model, module_name, "cpu", tensor, dtype=dtype)
-        model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=False,
-                                    cpu_embedding=cpu_embedding, module_name=module_name, optimize_module=True)
+        model = optimize_model_fn(model, low_bit=low_bit,
+                                  optimize_llm=False, cpu_embedding=cpu_embedding,
+                                  module_name=module_name, optimize_module=True)
 
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_llama)
@@ -105,7 +111,7 @@ def get_llama_module_name(name):
         return 'lm_head.weight'
     layer_id = name.split('.')[1]
     if 'attn_q' in name:
-        return  f'model.layers.{layer_id}.self_attn.q_proj.weight'
+        return f'model.layers.{layer_id}.self_attn.q_proj.weight'
     if 'attn_k' in name:
         return f'model.layers.{layer_id}.self_attn.k_proj.weight'
     if 'attn_v' in name:

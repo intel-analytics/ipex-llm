@@ -185,7 +185,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         is_linear, linear_args = is_linear_module(module)
         if is_linear and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
-            if not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear):
+            if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
                     new_linear = None
@@ -309,8 +309,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
 
 
 def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert=None,
-                                 current_key_name=None, convert_shape_only=False,
-                                 cpu_embedding=False, module_name=None):
+                                            current_key_name=None, convert_shape_only=False,
+                                            cpu_embedding=False, module_name=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
@@ -319,12 +319,12 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
     if "." in module_name:
         splits = module_name.split(".")
     parent_module = getattr(model, splits[0])
-    
+
     if "lm_head" not in module_name:
         for split in splits[1:-2]:
             new_module = getattr(parent_module, split)
-            if new_module is None:
-                raise ValueError(f"{parent_module} has no attribute {split}.")
+            invalidInputError(new_module is None,
+                              f"{parent_module} has no attribute {split}.")
             parent_module = new_module
         module = getattr(parent_module, splits[-2])
         module_name = splits[-2]
@@ -332,14 +332,15 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
         module = parent_module
         parent_module = model
         module_name = splits[0]
-    
+
     if current_key_name is None:
         current_key_name = []
 
     is_linear, linear_args = is_linear_module(module)
     if is_linear and module_name not in modules_to_not_convert:
         # Check if the current key is not in the `modules_to_not_convert`
-        if not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear):
+        if (not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and
+                module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear)):
             in_features, out_features, mp_group = linear_args
             with init_empty_weights():
                 new_linear = None
@@ -356,14 +357,16 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
                     )
                     device = module.qweight.data.device
                     invalidInputError(device.type != "meta",
-                                        "converting from meta device is not supported")
+                                      "converting from meta device is not supported")
                     # Copy the weights
-                    paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq),
-                                                requires_grad=False,
-                                                quantized=True,
-                                                _shape=(out_features, in_features),
-                                                convert_shape_only=convert_shape_only,
-                                                qtype=qtype).to(device)
+                    paramsLowBit = FP4Params(
+                        data=convert_gptq(module, awq=is_awq),
+                        requires_grad=False,
+                        quantized=True,
+                        _shape=(out_features, in_features),
+                        convert_shape_only=convert_shape_only,
+                        qtype=qtype
+                    ).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if has_bias:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -379,12 +382,14 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
 
                     device = module.weight.data.device
                     # Copy the weights
-                    paramsLowBit = FP4Params(data=module.weight.data,
-                                                requires_grad=False,
-                                                quantized=False,
-                                                _shape=None,
-                                                convert_shape_only=convert_shape_only,
-                                                qtype=qtype).to(device)
+                    paramsLowBit = FP4Params(
+                        data=module.weight.data,
+                        requires_grad=False,
+                        quantized=False,
+                        _shape=None,
+                        convert_shape_only=convert_shape_only,
+                        qtype=qtype
+                    ).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -483,7 +488,8 @@ def _optimize_pre(model):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
-                         lightweight_bmm=False, torch_dtype="auto", module_name=None, optimize_module=False):
+                         lightweight_bmm=False, torch_dtype="auto",
+                         module_name=None, optimize_module=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
