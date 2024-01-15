@@ -368,7 +368,7 @@ def run_transformer_int4_gpu(repo_id,
     origin_repo_id = repo_id.replace("-4bit", "")
     if origin_repo_id in CHATGLM_IDS:
         if "4bit" in repo_id:
-            model = AutoModel.load_low_bit(model_path, load_in_low_bit=low_bit, optimize_model=True,
+            model = AutoModel.load_low_bit(model_path, optimize_model=True,
                                             trust_remote_code=True, use_cache=True).eval()  
         else:
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
