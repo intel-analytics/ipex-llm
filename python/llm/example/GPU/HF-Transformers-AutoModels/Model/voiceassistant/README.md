@@ -1,5 +1,5 @@
 # Voice Assistant
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper and Llama2 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the following models: 
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper and Llama2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the following models: 
 - [openai/whisper-small](https://huggingface.co/openai/whisper-small) and [openai/whisper-medium](https://huggingface.co/openai/whisper-medium) as reference whisper models.
 - [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
 

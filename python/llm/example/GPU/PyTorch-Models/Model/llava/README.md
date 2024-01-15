@@ -1,5 +1,5 @@
 # LLaVA
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on LLaVA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [liuhaotian/llava-v1.5-7b](https://huggingface.co/liuhaotian/llava-v1.5-7b) as a reference LLaVA model.
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API on LLaVA models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [liuhaotian/llava-v1.5-7b](https://huggingface.co/liuhaotian/llava-v1.5-7b) as a reference LLaVA model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

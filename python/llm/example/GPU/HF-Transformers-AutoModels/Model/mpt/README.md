@@ -1,5 +1,5 @@
 # MPT
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Llama2 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [mosaicml/mpt-7b-chat](https://huggingface.co/mosaicml/mpt-7b-chat) as a reference MPT model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Llama2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [mosaicml/mpt-7b-chat](https://huggingface.co/mosaicml/mpt-7b-chat) as a reference MPT model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

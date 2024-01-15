@@ -1,5 +1,5 @@
 # Replit
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Replit models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [replit/replit-code-v1-3b](https://huggingface.co/replit/replit-code-v1-3b) as a reference Replit model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Replit models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [replit/replit-code-v1-3b](https://huggingface.co/replit/replit-code-v1-3b) as a reference Replit model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

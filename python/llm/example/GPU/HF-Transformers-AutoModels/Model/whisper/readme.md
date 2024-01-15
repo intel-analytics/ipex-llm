@@ -1,6 +1,6 @@
 # Whisper
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny) as a reference Whisper model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny) as a reference Whisper model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

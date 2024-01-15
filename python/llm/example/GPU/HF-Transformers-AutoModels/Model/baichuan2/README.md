@@ -1,5 +1,5 @@
 # Baichuan
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Baichuan2 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) as a reference Baichuan model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Baichuan2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) as a reference Baichuan model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

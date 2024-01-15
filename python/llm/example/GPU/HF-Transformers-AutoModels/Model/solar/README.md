@@ -1,5 +1,5 @@
 # SOLAR-10.7B
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on SOLAR-10.7B models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [upstage/SOLAR-10.7B-Instruct-v1.0](https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0) as a reference SOLAR-10.7B model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on SOLAR-10.7B models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [upstage/SOLAR-10.7B-Instruct-v1.0](https://huggingface.co/upstage/SOLAR-10.7B-Instruct-v1.0) as a reference SOLAR-10.7B model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

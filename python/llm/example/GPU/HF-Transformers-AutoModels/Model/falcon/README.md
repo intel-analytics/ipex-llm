@@ -1,6 +1,6 @@
 # Falcon
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Falcon models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) as a reference Falcon model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Falcon models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) as a reference Falcon model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

@@ -1,5 +1,5 @@
 # InternLM
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on InternLM models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b-8k) as a reference InternLM model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on InternLM models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b-8k) as a reference InternLM model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

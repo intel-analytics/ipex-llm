@@ -1,5 +1,5 @@
 # CodeLlama
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on CodeLlama models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [codellama/CodeLlama-7b-hf](https://huggingface.co/codellama/CodeLlama-7b-hf) as a reference CodeLlama model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on CodeLlama models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [codellama/CodeLlama-7b-hf](https://huggingface.co/codellama/CodeLlama-7b-hf) as a reference CodeLlama model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

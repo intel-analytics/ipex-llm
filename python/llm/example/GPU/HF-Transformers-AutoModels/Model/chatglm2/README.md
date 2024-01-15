@@ -1,6 +1,6 @@
 # ChatGLM2
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on ChatGLM2 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) as a reference ChatGLM2 model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on ChatGLM2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) as a reference ChatGLM2 model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

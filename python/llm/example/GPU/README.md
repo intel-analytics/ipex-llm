@@ -14,6 +14,9 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 - Intel Arc™ A-Series Graphics
 - Intel Data Center GPU Flex Series
 - Intel Data Center GPU Max Series
+- Intel iGPU
+- Intel Arc™ A300-Series or Pro A60
+- Intel dGPU Series
 
 **Operating System**:
 - Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)

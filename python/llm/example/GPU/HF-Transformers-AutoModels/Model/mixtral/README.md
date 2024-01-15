@@ -1,5 +1,5 @@
 # Mixtral
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Mixtral models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) as a reference Mixtral model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Mixtral models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) as a reference Mixtral model.
 
 ## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

@@ -1,5 +1,5 @@
 # GPT-J
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on GPT-J models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [EleutherAI/gpt-j-6b](https://huggingface.co/EleutherAI/gpt-j-6b) as reference GPT-J models.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on GPT-J models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [EleutherAI/gpt-j-6b](https://huggingface.co/EleutherAI/gpt-j-6b) as reference GPT-J models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

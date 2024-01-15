@@ -1,5 +1,5 @@
 # Qwen-VL
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Qwen-VL models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat) as a reference Qwen-VL model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Qwen-VL models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat) as a reference Qwen-VL model.
 
 ## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
