@@ -5,7 +5,6 @@ from modules import shared
 
 import accelerate  # This early import makes Intel GPUs happy
 
-import modules.one_click_installer_check
 from modules.block_requests import OpenMonkeyPatch, RequestBlocker
 from modules.logging_colors import logger
 
@@ -36,9 +35,8 @@ from threading import Lock
 import yaml
 
 import modules.extensions as extensions_module
+from modules import chat, utils
 from modules import (
-    chat,
-    training,
     ui,
     ui_chat,
     ui_default,
@@ -47,7 +45,6 @@ from modules import (
     ui_notebook,
     ui_parameters,
     ui_session,
-    utils
 )
 from modules.extensions import apply_extensions
 from modules.models import load_model
@@ -64,9 +61,7 @@ def signal_handler(sig, frame):
     logger.info("Received Ctrl+C. Shutting down Text generation web UI gracefully.")
     sys.exit(0)
 
-
 signal.signal(signal.SIGINT, signal_handler)
-
 
 def create_interface():
 
@@ -87,7 +82,7 @@ def create_interface():
 
     # Force some events to be triggered on page load
     shared.persistent_interface_state.update({
-        'loader': shared.args.loader or 'Transformers',
+        'loader': shared.args.loader or 'BigDL-LLM',
         'mode': shared.settings['mode'],
         'character_menu': shared.args.character or shared.settings['character'],
         'instruction_template_str': shared.settings['instruction_template_str'],
@@ -130,7 +125,6 @@ def create_interface():
 
         ui_parameters.create_ui(shared.settings['preset'])  # Parameters tab
         ui_model_menu.create_ui()  # Model tab
-        training.create_ui()  # Training tab
         ui_session.create_ui()  # Session tab
 
         # Generation events
@@ -160,7 +154,7 @@ def create_interface():
     with OpenMonkeyPatch():
         shared.gradio['interface'].launch(
             prevent_thread_lock=True,
-            share=True,#shared.args.share,
+            share=True,
             server_name=None if not shared.args.listen else (shared.args.listen_host or '0.0.0.0'),
             server_port=shared.args.listen_port,
             inbrowser=shared.args.auto_launch,

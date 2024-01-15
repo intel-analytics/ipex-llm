@@ -55,10 +55,6 @@ def load_model(model_name, loader=None):
             tokenizer = load_tokenizer(model_name, model)
 
     shared.settings.update({k: v for k, v in metadata.items() if k in shared.settings})
-    if loader.lower().startswith('exllama'):
-        shared.settings['truncation_length'] = shared.args.max_seq_len
-    elif loader in ['llama.cpp', 'llamacpp_HF', 'ctransformers']:
-        shared.settings['truncation_length'] = shared.args.n_ctx
 
     logger.info(f"LOADER: {loader}")
     logger.info(f"TRUNCATION LENGTH: {shared.settings['truncation_length']}")
@@ -155,17 +151,14 @@ def get_max_memory_dict():
 
 def clear_torch_cache():
     gc.collect()
-    if not shared.args.cpu:
+    if not shared.args.cpu or shared.args.device == "GPU":
         if is_xpu_available():
             torch.xpu.empty_cache()
-        else:
-            torch.cuda.empty_cache()
 
 
 def unload_model():
     shared.model = shared.tokenizer = None
     shared.model_name = 'None'
-    shared.lora_names = []
     shared.model_dirty_from_training = False
     clear_torch_cache()
 
