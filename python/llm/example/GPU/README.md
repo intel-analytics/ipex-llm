@@ -20,7 +20,7 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 - Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
 
 ### 2. Windows
-For Windows, BigDL-LLM is verified for [HF-Transformers-AutoModels](./HF-Transformers-AutoModels/) and [PyTorch-Models](./PyTorch-Models/) on Intel iGPU and dGPU
+For Windows, BigDL-LLM is verified for [HF-Transformers-AutoModels](./HF-Transformers-AutoModels/) and [PyTorch-Models](./PyTorch-Models/) on Intel iGPU and dGPU.
 
 **Hardware**:
 - Intel iGPU and dGPU
