@@ -169,7 +169,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
       * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
-      Intel® oneAPI Base Toolkit 2024.0 install methods:
+      Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
       .. tabs::
          .. tab:: APT installer
@@ -182,7 +182,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
                sudo apt update
 
-            Step 2: Install package
+            Step 2: Install the package
 
             .. code-block:: bash
 
@@ -198,7 +198,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
          .. tab:: Offline installer
          
-            You can also use the offline installer. This allows you to customize the install path.
+            Using the offline installer allows you to customize the installation path.
 
             .. code-block:: bash
             
@@ -229,7 +229,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
       * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
-      Intel® oneAPI Base Toolkit 2023.2 install methods:
+      Intel® oneAPI Base Toolkit 2023.2 installation methods:
 
       .. tabs::
          .. tab:: APT installer
@@ -242,7 +242,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
                sudo apt update
 
-            Step 2: Install packages
+            Step 2: Install the packages
 
             .. code-block:: bash
 
@@ -266,7 +266,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
          .. tab:: Offline installer
          
-            You can also use the offline installer. This allows you to customize the install path.
+            Using the offline installer allows you to customize the installation path.
 
             .. code-block:: bash
             
@@ -281,7 +281,6 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
                      cd /opt/intel/oneapi/installer
                      sudo ./installer
-
 ```
 
 ### Install BigDL-LLM From PyPI
@@ -294,6 +293,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
    ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
+```eval_rst
 .. important::
    Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with Pytorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with Pytorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
 ```
