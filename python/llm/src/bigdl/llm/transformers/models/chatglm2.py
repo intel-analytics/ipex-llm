@@ -373,12 +373,6 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                                              key_layer,
                                                                              value_layer,
                                                                              is_causal=True)
-        if attention_mask is None and (use_flash_attention(query_layer, key_layer) or
-                                       L == S and query_layer.device.type == "cpu"):
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             is_causal=True)
         else:
             head_dim = query_layer.size(-1)
             attn = torch.matmul(query_layer,
