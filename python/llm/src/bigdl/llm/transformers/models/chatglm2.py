@@ -373,11 +373,21 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                                              key_layer,
                                                                              value_layer,
                                                                              is_causal=True)
-        elif attention_mask is None:
+        if attention_mask is None and (use_flash_attention(query_layer, key_layer) or
+                                       L == S and query_layer.device.type == "cpu"):
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             is_causal=True)
+        else:
             head_dim = query_layer.size(-1)
             attn = torch.matmul(query_layer,
                                 key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-            if L == S:
+            if attention_mask is not None:
+                attention_mask = ~attention_mask
+                attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
+                attn += attention_mask
+            elif L == S:
                 # first token, need attention mask
                 attn_bias = torch.zeros(L, S, dtype=query_layer.dtype,
                                         device=query_layer.device)
@@ -388,19 +398,6 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                 attn += attn_bias
             attn = torch.softmax(attn, -1)
             context_layer = torch.matmul(attn, value_layer)
-        else:
-            attention_mask = ~attention_mask
-            # flash attention don't support attention mask, change to native sdp for now
-            # context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-            #                                                                  key_layer,
-            #                                                                  value_layer,
-            #                                                                  attention_mask)
-            attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
-            head_dim = query_layer.size(-1)
-            attn = torch.matmul(query_layer,
-                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-            attn += attention_mask
-            attn = torch.softmax(attn, -1)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
         context_layer = context_layer.reshape(*new_context_layer_shape)
