@@ -27,7 +27,7 @@ from bigdl.llm.transformers.convert import replace_with_low_bit_linear_for_modul
 
 
 def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
-                    cpu_embedding=False, low_bit='sym_int4'):
+                    low_bit='sym_int4'):
     config = loader.config
 
     llama_config = LlamaConfig(
