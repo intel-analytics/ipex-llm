@@ -14,7 +14,7 @@ This example is ported from [bnb-4bit-training](https://colab.research.google.co
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-# below command will install BigDL-LLM with PyTorch 2.1
+# below command will install BigDL-LLM with PyTorch 2.1 as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0 datasets
 pip install peft==0.5.0
@@ -24,7 +24,7 @@ pip install bitsandbytes scipy
 
 ### 2. Runtime Configuration
 ```bash
-# Configure OneAPI environment variables
+# Configure oneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
 ```
 

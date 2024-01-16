@@ -24,7 +24,7 @@ pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install numpy
 pip3 install "transformers>=4.33.1"  # Required for Code Llama.
-# below command will install BigDL-LLM with PyTorch 2.1
+# below command will install BigDL-LLM with PyTorch 2.1 as default
 pip install --pre --upgrade "bigdl-llm[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
@@ -34,7 +34,7 @@ pip3 install "pydantic<2"  # Required for OpenAI server.
 ### 2. Runtime Configuration
 
 ```bash
-# Configure OneAPI environment variables
+# Configure oneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
 ```
 

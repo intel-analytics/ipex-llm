@@ -3,7 +3,7 @@
 This example demonstrates how to run BigDL-LLM optimized low-bit model on multiple [Intel GPUs](../README.md) by leveraging DeepSpeed AutoTP.
 
 ## Requirements
-To use Intel GPUs for deep-learning tasks, you should install GPU driver and oneAPI Base Toolkit beforehand. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.
+To run this example with BigDL-LLM on Intel GPUs, you should install GPU driver and oneAPI Base Toolkit beforehand. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.
 
 For this particular example, you will need at least two GPUs on your machine.
 
@@ -14,7 +14,7 @@ For this particular example, you will need at least two GPUs on your machine.
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-# below command will install BigDL-LLM with PyTorch 2.1
+# below command will install BigDL-LLM with PyTorch 2.1 as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install oneccl_bind_pt==2.1.100 -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install git+https://github.com/microsoft/DeepSpeed.git@4fc181b0
@@ -25,7 +25,7 @@ conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
 ### 2. Runtime Configuration
 ```bash
-# Configure OneAPI environment variables
+# Configure oneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
 ```
 
