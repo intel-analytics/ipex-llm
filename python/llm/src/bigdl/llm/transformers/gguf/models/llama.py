@@ -81,7 +81,7 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
         model = replace_with_low_bit_linear_for_module(
             model, qtype=qtype, modules_to_not_convert=None,
             current_key_name=None, convert_shape_only=False,
-            cpu_embedding=cpu_embedding, module_name=module_name
+            module_name=module_name
         )
 
     tensor_loader = loader.tensor_loader
