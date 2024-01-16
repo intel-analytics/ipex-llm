@@ -25,14 +25,16 @@ def parse_args():
     parser.add_argument("--model_kwargs", required=False, type=str, default={}, nargs='+')
     parser.add_argument("--torch_dtype", type=str, default=None)
     parser.add_argument("--device", type=str, default=None)
-    parser.add_argument("--dataset", type=str, default=None)
+    parser.add_argument("--dataset", type=str, default='path=wikitext,name=wikitext-2-raw-v1')
 
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    text = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")["text"]
+    dataset = [item.split('=') for item in args.dataset.split(',')]
+    dataset = {k:v for k, v in dataset}
+    text = load_dataset(**dataset, split="test")["text"]
     for low_bit in args.low_bit:
         ppl_evaluator = BigDLPPL(model_path=args.model_path, device=args.device, **args.model_kwargs)
         ppl = ppl_evaluator.perplexity_hf(text)
