@@ -23,6 +23,7 @@ from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
 from ..gguf import GGUFFileLoader
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.convert import replace_with_low_bit_linear_for_module
 
 
 def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
@@ -77,7 +78,7 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
                                         dtype=dtype)
         else:
             set_module_tensor_to_device(model, module_name, "cpu", tensor, dtype=dtype)
-
+        model = replace_with_low_bit_linear_for_module(model, qtype=qtype, module_name=module_name)
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_llama)
 

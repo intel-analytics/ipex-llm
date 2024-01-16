@@ -162,8 +162,7 @@ def run_transformer_int4(repo_id,
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
-    # model_path = get_model_path(repo_id, local_model_hub)
-    model_path = "/home/llm/models/gguf/llama-2-7b-chat.Q4_0.gguf"
+    model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
@@ -171,10 +170,9 @@ def run_transformer_int4(repo_id,
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto').eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
-        # model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-        #                                              use_cache=True).eval()
-        # tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model, tokenizer = AutoModelForCausalLM.from_gguf(model_path)
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                                     use_cache=True).eval()
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True).eval()
