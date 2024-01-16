@@ -193,9 +193,8 @@ def load_low_bit(model, model_path):
     return model
 
 
-def optimize_model(model, low_bit='sym_int4', optimize_llm=True,
-                   modules_to_not_convert=None, cpu_embedding=False,
-                   lightweight_bmm=False, **kwargs):
+def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None, 
+                   cpu_embedding=False, lightweight_bmm=False, **kwargs):
     """
     A method to optimize any pytorch model.
 
