@@ -88,6 +88,8 @@ def chatglm_rms_norm_forward(self, hidden_states):
                                             self.eps)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
+            # We should copy this result to avoid <unk> by unknown reason on Arc GPUs.
+            result = result.clone()
             return result
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
