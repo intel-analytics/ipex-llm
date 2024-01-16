@@ -5,8 +5,7 @@ from pathlib import Path
 import gradio as gr
 from PIL import Image
 
-from modules import chat, shared, utils
-from modules import ui
+from modules import chat, shared, ui, utils
 from modules.html_generator import chat_html_wrapper
 from modules.text_generation import stop_everything_event
 from modules.utils import gradio

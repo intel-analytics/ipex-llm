@@ -10,10 +10,8 @@ import psutil
 import torch
 from transformers import is_torch_xpu_available
 
-from modules import loaders, shared, utils
-from modules import ui
+from modules import loaders, shared, ui, utils
 from modules.logging_colors import logger
-#from modules.LoRA import add_lora_to_model
 from modules.models import load_model, unload_model
 from modules.models_settings import (
     apply_model_settings_to_state,

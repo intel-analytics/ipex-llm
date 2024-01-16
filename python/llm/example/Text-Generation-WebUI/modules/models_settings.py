@@ -4,8 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from modules import chat, loaders, shared
-from modules import ui
+from modules import chat, loaders, metadata_gguf, shared, ui
 
 
 def get_fallback_settings():
@@ -48,27 +47,54 @@ def get_model_metadata(model):
 
         model_settings['loader'] = loader
 
-    # Transformers metadata
-    if hf_metadata is not None:
-        metadata = json.loads(open(path, 'r', encoding='utf-8').read())
-        if 'max_position_embeddings' in metadata:
-            model_settings['truncation_length'] = metadata['max_position_embeddings']
-            model_settings['max_seq_len'] = metadata['max_position_embeddings']
+    # GGUF metadata
+    if model_settings['loader'] in ['llama.cpp', 'llamacpp_HF', 'ctransformers']:
+        path = Path(f'{shared.args.model_dir}/{model}')
+        if path.is_file():
+            model_file = path
+        else:
+            model_file = list(path.glob('*.gguf'))[0]
 
-        if 'rope_theta' in metadata:
-            model_settings['rope_freq_base'] = metadata['rope_theta']
+        metadata = metadata_gguf.load_metadata(model_file)
+        if 'llama.context_length' in metadata:
+            model_settings['n_ctx'] = metadata['llama.context_length']
+        if 'llama.rope.scale_linear' in metadata:
+            model_settings['compress_pos_emb'] = metadata['llama.rope.scale_linear']
+        if 'llama.rope.freq_base' in metadata:
+            model_settings['rope_freq_base'] = metadata['llama.rope.freq_base']
+        if 'tokenizer.chat_template' in metadata:
+            template = metadata['tokenizer.chat_template']
+            eos_token = metadata['tokenizer.ggml.tokens'][metadata['tokenizer.ggml.eos_token_id']]
+            bos_token = metadata['tokenizer.ggml.tokens'][metadata['tokenizer.ggml.bos_token_id']]
+            template = template.replace('eos_token', "'{}'".format(eos_token))
+            template = template.replace('bos_token', "'{}'".format(bos_token))
 
-        if 'rope_scaling' in metadata and type(metadata['rope_scaling']) is dict and all(key in metadata['rope_scaling'] for key in ('type', 'factor')):
-            if metadata['rope_scaling']['type'] == 'linear':
-                model_settings['compress_pos_emb'] = metadata['rope_scaling']['factor']
+            template = re.sub(r'raise_exception\([^)]*\)', "''", template)
+            model_settings['instruction_template'] = 'Custom (obtained from model metadata)'
+            model_settings['instruction_template_str'] = template
 
-        if 'quantization_config' in metadata:
-            if 'bits' in metadata['quantization_config']:
-                model_settings['wbits'] = metadata['quantization_config']['bits']
-            if 'group_size' in metadata['quantization_config']:
-                model_settings['groupsize'] = metadata['quantization_config']['group_size']
-            if 'desc_act' in metadata['quantization_config']:
-                model_settings['desc_act'] = metadata['quantization_config']['desc_act']
+    else:
+        # Transformers metadata
+        if hf_metadata is not None:
+            metadata = json.loads(open(path, 'r', encoding='utf-8').read())
+            if 'max_position_embeddings' in metadata:
+                model_settings['truncation_length'] = metadata['max_position_embeddings']
+                model_settings['max_seq_len'] = metadata['max_position_embeddings']
+
+            if 'rope_theta' in metadata:
+                model_settings['rope_freq_base'] = metadata['rope_theta']
+
+            if 'rope_scaling' in metadata and type(metadata['rope_scaling']) is dict and all(key in metadata['rope_scaling'] for key in ('type', 'factor')):
+                if metadata['rope_scaling']['type'] == 'linear':
+                    model_settings['compress_pos_emb'] = metadata['rope_scaling']['factor']
+
+            if 'quantization_config' in metadata:
+                if 'bits' in metadata['quantization_config']:
+                    model_settings['wbits'] = metadata['quantization_config']['bits']
+                if 'group_size' in metadata['quantization_config']:
+                    model_settings['groupsize'] = metadata['quantization_config']['group_size']
+                if 'desc_act' in metadata['quantization_config']:
+                    model_settings['desc_act'] = metadata['quantization_config']['desc_act']
 
         # Read AutoGPTQ metadata
         path = Path(f'{shared.args.model_dir}/{model}/quantize_config.json')
@@ -123,8 +149,20 @@ def infer_loader(model_name, model_settings):
     path_to_model = Path(f'{shared.args.model_dir}/{model_name}')
     if not path_to_model.exists():
         loader = None
+    elif (path_to_model / 'quantize_config.json').exists() or ('wbits' in model_settings and type(model_settings['wbits']) is int and model_settings['wbits'] > 0):
+        loader = 'ExLlamav2_HF'
+    elif (path_to_model / 'quant_config.json').exists() or re.match(r'.*-awq', model_name.lower()):
+        loader = 'AutoAWQ'
+    elif len(list(path_to_model.glob('*.gguf'))) > 0:
+        loader = 'llama.cpp'
+    elif re.match(r'.*\.gguf', model_name.lower()):
+        loader = 'llama.cpp'
+    elif re.match(r'.*exl2', model_name.lower()):
+        loader = 'ExLlamav2_HF'
+    elif re.match(r'.*-hqq', model_name.lower()):
+        return 'HQQ'
     else:
-        loader = 'BigDL-LLM'
+        loader = 'Transformers'
 
     return loader
 
@@ -185,6 +223,10 @@ def apply_model_settings_to_state(model, state):
     model_settings = get_model_metadata(model)
     if 'loader' in model_settings:
         loader = model_settings.pop('loader')
+
+        # If the user is using an alternative loader for the same model type, let them keep using it
+        if not (loader == 'ExLlamav2_HF' and state['loader'] in ['GPTQ-for-LLaMa', 'ExLlamav2', 'AutoGPTQ']) and not (loader == 'llama.cpp' and state['loader'] in ['llamacpp_HF', 'ctransformers']):
+            state['loader'] = loader
 
     for k in model_settings:
         if k in state:

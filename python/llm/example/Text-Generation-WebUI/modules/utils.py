@@ -3,8 +3,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from modules import shared
-from modules import github
+from modules import github, shared
 from modules.logging_colors import logger
 
 

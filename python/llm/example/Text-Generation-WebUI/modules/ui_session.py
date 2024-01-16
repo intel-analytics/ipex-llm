@@ -1,7 +1,6 @@
 import gradio as gr
 
-from modules import shared, utils
-from modules import ui
+from modules import shared, ui, utils
 from modules.github import clone_or_pull_repository
 from modules.utils import gradio
 

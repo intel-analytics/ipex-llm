@@ -1,7 +1,6 @@
 import gradio as gr
 
-from modules import logits, shared, utils
-from modules import ui
+from modules import logits, shared, ui, utils
 from modules.prompts import count_tokens, load_prompt
 from modules.text_generation import (
     generate_reply_wrapper,

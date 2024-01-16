@@ -23,7 +23,7 @@ from modules.grammar.grammar_utils import initialize_grammar
 from modules.grammar.logits_process import GrammarConstrainedLogitsProcessor
 from modules.html_generator import generate_4chan_html, generate_basic_html
 from modules.logging_colors import logger
-from modules.models import clear_torch_cache
+from modules.models import clear_torch_cache, local_rank
 
 
 def generate_reply(*args, **kwargs):
@@ -120,19 +120,33 @@ def encode(prompt, add_special_tokens=True, add_bos_token=True, truncation_lengt
     if shared.tokenizer is None:
         raise ValueError('No tokenizer is loaded')
 
-    input_ids = shared.tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=add_special_tokens)
-    if not add_bos_token:
-        while len(input_ids[0]) > 0 and input_ids[0][0] == shared.tokenizer.bos_token_id:
-            input_ids = input_ids[:, 1:]
+    if shared.model.__class__.__name__ in ['LlamaCppModel', 'CtransformersModel', 'Exllamav2Model']:
+        input_ids = shared.tokenizer.encode(str(prompt))
+        if shared.model.__class__.__name__ not in ['Exllamav2Model']:
+            input_ids = np.array(input_ids).reshape(1, len(input_ids))
+    else:
+        input_ids = shared.tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=add_special_tokens)
+        if not add_bos_token:
+            while len(input_ids[0]) > 0 and input_ids[0][0] == shared.tokenizer.bos_token_id:
+                input_ids = input_ids[:, 1:]
 
     # Handling truncation
     if truncation_length is not None:
         input_ids = input_ids[:, -truncation_length:]
 
-    if shared.args.device == "CPU":
+    if shared.model.__class__.__name__ in ['LlamaCppModel', 'Exllamav2Model', 'CtransformersModel'] or shared.args.cpu:
+        return input_ids
+    elif shared.args.deepspeed:
+        return input_ids.to(device=local_rank)
+    elif torch.backends.mps.is_available():
+        device = torch.device('mps')
+        return input_ids.to(device)
+    elif shared.args.device == "CPU":
         return input_ids
     elif is_torch_xpu_available() or shared.args.device == "GPU":
         return input_ids.to("xpu")
+    else:
+        return input_ids.cuda()
 
 
 def decode(output_ids, skip_special_tokens=True):

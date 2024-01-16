@@ -2,9 +2,7 @@ from pathlib import Path
 
 import gradio as gr
 
-from modules import loaders, presets, shared, utils
-from modules import ui, ui_chat
-
+from modules import loaders, presets, shared, ui, ui_chat, utils
 from modules.utils import gradio
 
 
