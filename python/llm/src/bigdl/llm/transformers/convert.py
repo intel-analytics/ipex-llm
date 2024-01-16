@@ -327,9 +327,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def replace_with_low_bit_linear_for_module(model, qtype, module_name=None, modules_to_not_convert=None,
-                                            current_key_name=None, convert_shape_only=False,
-                                            torch_dtype="auto"):
+def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
+                                           modules_to_not_convert=None, current_key_name=None,
+                                           convert_shape_only=False, torch_dtype="auto"):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     has_been_replaced = False
@@ -351,14 +351,15 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None, modul
 
     if current_key_name is None:
         current_key_name = []
-        
+
     if modules_to_not_convert is None:
         modules_to_not_convert = []
 
     is_linear, linear_args = is_linear_module(module)
     if is_linear and module_name not in modules_to_not_convert:
         # Check if the current key is not in the `modules_to_not_convert`
-        if not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear):
+        if (not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and
+                module.weight.data.device.type != 'meta' and not isinstance(module, LowBitLinear)):
             in_features, out_features, mp_group = linear_args
             with init_empty_weights():
                 new_linear = None
@@ -376,15 +377,15 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None, modul
                     )
                     device = module.qweight.data.device
                     invalidInputError(device.type != "meta",
-                                        "converting from meta device is not supported")
+                                      "converting from meta device is not supported")
                     # Copy the weights
                     paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq,
-                                                                llm_awq=is_llm_awq),
-                                                requires_grad=False,
-                                                quantized=True,
-                                                _shape=(out_features, in_features),
-                                                convert_shape_only=convert_shape_only,
-                                                qtype=qtype).to(device)
+                                                               llm_awq=is_llm_awq),
+                                             requires_grad=False,
+                                             quantized=True,
+                                             _shape=(out_features, in_features),
+                                             convert_shape_only=convert_shape_only,
+                                             qtype=qtype).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if has_bias:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -401,11 +402,11 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None, modul
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
-                                                requires_grad=False,
-                                                quantized=False,
-                                                _shape=None,
-                                                convert_shape_only=convert_shape_only,
-                                                qtype=qtype).to(device)
+                                             requires_grad=False,
+                                             quantized=False,
+                                             _shape=None,
+                                             convert_shape_only=convert_shape_only,
+                                             qtype=qtype).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
