@@ -195,7 +195,7 @@ def load_low_bit(model, model_path):
 
 def optimize_model(model, low_bit='sym_int4', optimize_llm=True,
                    modules_to_not_convert=None, cpu_embedding=False,
-                   lightweight_bmm=False, module_name=None, optimize_module=False, **kwargs):
+                   lightweight_bmm=False, **kwargs):
     """
     A method to optimize any pytorch model.
 
@@ -213,9 +213,6 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True,
         to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
     :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
         to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
-    :param module_name: The module name. Default to be ``None``.
-    :param optimize_module: Whether to optimize module rather than the whole model.
-        Default to be ``False``.
 
     :return: The optimized model.
 
@@ -247,9 +244,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True,
                                  optimize_model=optimize_llm,
                                  modules_to_not_convert=modules_to_not_convert,
                                  cpu_embedding=cpu_embedding,
-                                 lightweight_bmm=lightweight_bmm,
-                                 module_name=module_name,
-                                 optimize_module=optimize_module)
+                                 lightweight_bmm=lightweight_bmm)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()

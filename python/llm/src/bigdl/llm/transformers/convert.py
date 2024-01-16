@@ -327,13 +327,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
     return model, has_been_replaced
 
 
-def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert=None,
-                                            current_key_name=None, convert_shape_only=False,
-                                            cpu_embedding=False, module_name=None):
+def replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert=None,
+                                           current_key_name=None, convert_shape_only=False,
+                                           cpu_embedding=False, module_name=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
-    has_been_replaced = False
 
     if "." in module_name:
         splits = module_name.split(".")
@@ -453,7 +452,6 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
                     if not module.training:
                         new_linear.eval()
                     parent_module._modules[module_name] = new_linear
-                    has_been_replaced = True
                     # Force requires grad to False to avoid unexpected errors
                     parent_module._modules[module_name].requires_grad_(False)
 
@@ -472,7 +470,7 @@ def _replace_with_low_bit_linear_for_module(model, qtype, modules_to_not_convert
                 _weight=module.weight.data,
             )
 
-    return model, has_been_replaced
+    return model
 
 
 def _optimize_pre(model):
@@ -507,8 +505,7 @@ def _optimize_pre(model):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
-                         lightweight_bmm=False, torch_dtype="auto",
-                         module_name=None, optimize_module=False):
+                         lightweight_bmm=False, torch_dtype="auto"):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -517,16 +514,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
-    if optimize_module:
-        model, has_been_replaced = _replace_with_low_bit_linear_for_module(
-            model, qtype, modules_to_not_convert,
-            None, convert_shape_only, cpu_embedding, module_name
-        )
-    else:
-        model, has_been_replaced = _replace_with_low_bit_linear(
-            model, qtype, modules_to_not_convert,
-            None, convert_shape_only, cpu_embedding
-        )
+    model, has_been_replaced = _replace_with_low_bit_linear(
+        model, qtype, modules_to_not_convert,
+        None, convert_shape_only, cpu_embedding
+    )
     if not has_been_replaced:
         warnings.warn(
             "No linear modules were found in "

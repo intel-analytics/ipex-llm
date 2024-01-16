@@ -22,7 +22,8 @@ from tempfile import NamedTemporaryFile
 from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
 from ..gguf import GGUFFileLoader
-from bigdl.llm.optimize import optimize_model as optimize_model_fn
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.convert import replace_with_low_bit_linear_for_module
 
 
 def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
@@ -46,6 +47,7 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
         pretraining_tp=1,
     )
 
+    qtype = ggml_tensor_qtype[low_bit]
     n_head = config['llama.attention.head_count']
     n_head_kv = config['llama.attention.head_count_kv']
 
@@ -76,9 +78,11 @@ def load_gguf_llama(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
                                         dtype=dtype)
         else:
             set_module_tensor_to_device(model, module_name, "cpu", tensor, dtype=dtype)
-        model = optimize_model_fn(model, low_bit=low_bit,
-                                  optimize_llm=False, cpu_embedding=cpu_embedding,
-                                  module_name=module_name, optimize_module=True)
+        model = replace_with_low_bit_linear_for_module(
+            model, qtype=qtype, modules_to_not_convert=None,
+            current_key_name=None, convert_shape_only=False,
+            cpu_embedding=cpu_embedding, module_name=module_name
+        )
 
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_llama)
