@@ -21,7 +21,6 @@ import torch
 import json
 from tqdm import tqdm
 
-import intel_extension_for_pytorch as ipex
 from bigdl.llm.utils.common.log4Error import invalidInputError
 from evaluators.qwen import QwenEvaluator
 from evaluators.llama import LlamaEvaluator
@@ -304,5 +303,8 @@ if __name__ == "__main__":
             device=args.device,
             qtype=args.qtype
         )
-
+    else:
+        invalidInputError(
+            False,
+            "Invalid model_family, currently support llama and qwen only.")
     main(args, evaluator=evaluator)
