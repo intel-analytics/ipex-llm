@@ -35,6 +35,27 @@ The entrypoint of the image will try to set `OMP_NUM_THREADS` to the correct num
 
 If you want to use the vllm AsyncLLMEngine for serving, you should set the args -w vllm_worker in worker part of deployment.yaml.
 
+### PersistentVolume
+We use the following yaml file for PersistentVolume deployment:
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: models-pv
+  labels:
+    app: models
+spec:
+  capacity:
+    storage: 10Gi #Modify according to model size
+  accessModes:
+    - ReadWriteMany
+  storageClassName: models
+  nfs:
+    path: YOUR_NFS_PATH
+    server: YOUR_NFS_SERVER
+
+```
+Then you should upload model to `YOUR_NFS_PATH`
 
 ### Controller
 
@@ -154,8 +175,8 @@ spec:
       restartPolicy: "Always"
       volumes:
       - name: llm-models
-        hostPath:
-          path: /home/llm/models # change this in other envs
+        persistentVolumeClaim:
+          claimName: models-pvc
 ```
 
 You may want to change the `MODEL_PATH` variable in the yaml.  Also, please remember to change the volume path accordingly.
@@ -199,6 +220,12 @@ print(completion.choices[0].message.content)
 
 #### cURL
 cURL is another good tool for observing the output of the api.
+
+Before using cURL, you should set your `http_proxy` and `https_proxy` to empty
+```bash
+export http_proxy=
+export https_proxy=
+```
 
 For the following examples, you may also change the service deployment address.
 
