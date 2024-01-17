@@ -190,7 +190,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can uninstall the package by running the following command
+               You can uninstall the package by running the following command:
 
                .. code-block:: bash
                
@@ -207,7 +207,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-                  You can also modify the installation or uninstall the package by running the following commands
+                  You can also modify the installation or uninstall the package by running the following commands:
 
                   .. code-block:: bash
 
@@ -258,7 +258,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can uninstall the package by running the following command
+               You can uninstall the package by running the following command:
 
                .. code-block:: bash
                
@@ -275,7 +275,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can also modify the installation or uninstall the package by running the following commands
+               You can also modify the installation or uninstall the package by running the following commands:
 
                   .. code-block:: bash
 
