@@ -36,6 +36,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
     pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
