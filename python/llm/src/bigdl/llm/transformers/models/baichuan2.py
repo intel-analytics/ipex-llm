@@ -289,7 +289,8 @@ def baichuan_attention_forward_13b(
             else:
                 # support for Baichuan/Baichuan2 13B Chat running speculative decoding
                 # split attention mask on dim -2
-                split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2], attn_weights.shape[-2]]
+                split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2],
+                               attn_weights.shape[-2]]
                 # the last chunk of splited is the new attention mask
                 attention_mask = attention_mask.split(split_sizes, dim=-2)[-1]
                 attn_weights = attn_weights + attention_mask
