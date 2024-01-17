@@ -277,10 +277,10 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
                You can also modify the installation or uninstall the package by running the following commands:
 
-                  .. code-block:: bash
+               .. code-block:: bash
 
-                     cd /opt/intel/oneapi/installer
-                     sudo ./installer
+                  cd /opt/intel/oneapi/installer
+                  sudo ./installer
 ```
 
 ### Install BigDL-LLM From PyPI
