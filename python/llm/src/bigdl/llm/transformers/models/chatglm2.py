@@ -381,10 +381,10 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
             if attention_mask is not None:
                 attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype, device=query_layer.device)
                 attention_mask = ~attention_mask
-                if attn_mask.dtype == torch.bool:
+                if attention_mask.dtype == torch.bool:
                     attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
                 else:
-                    attn_bias += attn_mask
+                    attn_bias += attention_mask
                 attn += attn_bias
             attn = nn.functional.softmax(attn, dim=-1,
                                          dtype=torch.float32).to(value_layer.dtype)
