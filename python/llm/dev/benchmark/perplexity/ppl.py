@@ -47,7 +47,7 @@ class PPL:
         return np.exp(self.nll / self.cnt)
 
     def __str__(self):
-        return f"PPL: {np.exp(self.nll / self.cnt):.2f}"
+        return f"PPL: {np.exp(self.nll / self.cnt):.3f}"
 
 
 class BigDLPPL:
