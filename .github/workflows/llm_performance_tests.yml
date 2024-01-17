@@ -345,6 +345,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\32-32\
           cd ..\..\..\test\benchmark
@@ -414,6 +415,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\1024-128\
           cd ..\..\..\test\benchmark
@@ -482,6 +484,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\2048-256\
           cd ..\..\..\test\benchmark
@@ -551,6 +554,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\32-512\
           cd ..\..\..\test\benchmark
