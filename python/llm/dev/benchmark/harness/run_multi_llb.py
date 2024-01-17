@@ -36,6 +36,7 @@ def parse_device(device):
     return list(map(lambda i: f"{device[0]}:{i}", device_indices))
 
 def run_job(device, prec, task, args, device_pool, result_pool):
+    print(f"Current Job: device={device}, precision={prec}, task={task}")
     device_type = device.split(':')[0]
     description_dict = {}
     if args.description_dict_path:
