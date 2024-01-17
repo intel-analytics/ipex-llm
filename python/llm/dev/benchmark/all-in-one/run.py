@@ -81,7 +81,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'ipex_fp16_gpu':
         result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == "bigdl_fp16_gpu":
-        result = result = run_ipex_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+        result = result = run_bigdl_fp16_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
     elif test_api == 'deepspeed_transformer_int4_cpu':
         result = run_deepspeed_transformer_int4_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit)
     elif test_api == 'transformer_int4_gpu_win':
