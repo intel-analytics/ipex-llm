@@ -379,15 +379,16 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
             attn = torch.matmul(query_layer,
                                 key_layer.transpose(2, 3)) / math.sqrt(head_dim)
             if attention_mask is not None:
-                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype, device=query_layer.device)
+                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
+                                        device=query_layer.device)
                 attention_mask = ~attention_mask
                 if attention_mask.dtype == torch.bool:
                     attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
                 else:
                     attn_bias += attention_mask
                 attn += attn_bias
-            attn = nn.functional.softmax(attn, dim=-1,
-                                         dtype=torch.float32).to(value_layer.dtype)
+            attn = F.softmax(attn, dim=-1,
+                             dtype=torch.float32).to(value_layer.dtype)
             context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
