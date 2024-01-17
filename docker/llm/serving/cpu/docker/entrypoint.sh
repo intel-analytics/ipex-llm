@@ -76,6 +76,7 @@ calculate_total_cores() {
 # Default values
 controller_host="localhost"
 controller_port="21001"
+gradio_port="8002"
 api_host="localhost"
 api_port="8000"
 worker_host="localhost"
@@ -155,6 +156,10 @@ else
     api_port=$API_PORT
   fi
 
+  if [[ -n $GRADIO_PORT ]]; then
+    gradio_port=$GRADIO_PORT
+  fi
+
   if [[ -n $WORKER_HOST ]]; then
     worker_host=$WORKER_HOST
   fi
@@ -185,7 +190,9 @@ else
     echo "OpenAI API address: $api_address"
     python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method &
     # Boot openai api server
-    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address
+    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address &
+    # Boot gradio_web_server
+    python3 -m fastchat.serve.gradio_web_server --host $controller_host --port $gradio_port --controller-url $controller_address --model-list-mode reload
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"

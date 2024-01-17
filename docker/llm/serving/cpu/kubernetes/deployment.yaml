@@ -35,6 +35,8 @@ spec:
       value: "0.0.0.0"
     - name: API_PORT # fixed
       value: "8000"
+    - name: "GRADIO_PORT" # You can change this port
+      value: "8002"
     ports:
       - containerPort: 21005
         name: con-port

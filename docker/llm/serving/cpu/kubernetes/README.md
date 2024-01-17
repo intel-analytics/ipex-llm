@@ -1,6 +1,5 @@
 ## Deployment bigdl-llm serving service in K8S environment
 
-
 ## Image
 
 To deploy BigDL-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT`
@@ -15,7 +14,7 @@ After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna
 
 You can download the model from [here](https://huggingface.co/lmsys/vicuna-7b-v1.5).
 
-For ChatGLM models, users do not need to add `bigdl` into model path.  We have already used the `BigDL-LLM` backend for this model. 
+For ChatGLM models, users do not need to add `bigdl` into model path.  We have already used the `BigDL-LLM` backend for this model.
 
 ### Kubernetes config
 
@@ -36,7 +35,9 @@ The entrypoint of the image will try to set `OMP_NUM_THREADS` to the correct num
 If you want to use the vllm AsyncLLMEngine for serving, you should set the args -w vllm_worker in worker part of deployment.yaml.
 
 ### PersistentVolume
+
 We use the following yaml file for PersistentVolume deployment:
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -55,6 +56,7 @@ spec:
     server: YOUR_NFS_SERVER
 
 ```
+
 Then you should upload model to `YOUR_NFS_PATH`
 
 ### Controller
@@ -84,6 +86,8 @@ spec:
       value: "0.0.0.0"
     - name: API_PORT # fixed
       value: "8000"
+    - name: "GRADIO_PORT" # You can change this port
+      value: "8002"
     ports:
       - containerPort: 21005
         name: con-port
@@ -181,21 +185,32 @@ spec:
 
 You may want to change the `MODEL_PATH` variable in the yaml.  Also, please remember to change the volume path accordingly.
 
+### Use gradio_web_ui
+
+We have set port using `GRADIO_PORT` envrionment variable in `deployment.yaml`, you can use this command
+
+```bash
+k port-forward bigdl-fschat-a1234bd-controller --address 0.0.0.0 8002:8002
+```
+
+Then visit http://YOUR_HOST_IP:8002 to access ui.
 
 ### Testing
 
 #### Check pod ip and port mappings
 
-If you need to access the serving on host , you can use `kubectl get nodes -o wide` to get internal ip and `kubectl get service` to get port mappings. 
+If you need to access the serving on host , you can use `kubectl get nodes -o wide` to get internal ip and `kubectl get service` to get port mappings.
 
 #### Using openai-python
 
 First, install openai-python:
+
 ```bash
 pip install --upgrade openai
 ```
 
 Then, interact with model vicuna-7b-v1.5-bigdl:
+
 ```python
 import openai
 openai.api_key = "EMPTY"
@@ -219,9 +234,11 @@ print(completion.choices[0].message.content)
 ```
 
 #### cURL
+
 cURL is another good tool for observing the output of the api.
 
 Before using cURL, you should set your `http_proxy` and `https_proxy` to empty
+
 ```bash
 export http_proxy=
 export https_proxy=
@@ -230,16 +247,19 @@ export https_proxy=
 For the following examples, you may also change the service deployment address.
 
 List Models:
+
 ```bash
 curl http://localhost:8000/v1/models
 ```
 
 If you have `jq` installed, you can use it to format the output like this:
+
 ```bash
 curl http://localhost:8000/v1/models | jq
 ```
 
 Chat Completions:
+
 ```bash
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -250,6 +270,7 @@ curl http://localhost:8000/v1/chat/completions \
 ```
 
 Text Completions:
+
 ```bash
 curl http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
@@ -262,6 +283,7 @@ curl http://localhost:8000/v1/completions \
 ```
 
 Embeddings:
+
 ```bash
 curl http://localhost:8000/v1/embeddings \
   -H "Content-Type: application/json" \
