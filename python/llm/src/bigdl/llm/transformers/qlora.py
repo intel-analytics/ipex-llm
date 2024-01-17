@@ -359,7 +359,7 @@ def _optimize_post(model):
 
     trans_version = transformers.__version__
     if version.parse(trans_version) >= version.parse("4.31.0"):
-        LOG.info("Replacing fast rope....")
+        LOG.info("Optimizing Llama finetuning....")
         convert_forward(
             model,
             transformers.models.llama.modeling_llama.LlamaAttention,
