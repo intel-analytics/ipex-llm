@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+import torch
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from ppl import BigDLPPL
 from datasets import load_dataset
 import argparse
@@ -21,7 +23,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", required=True, type=str)
-    parser.add_argument("--low_bit", required=False, type=str, default=None, nargs='+')
+    parser.add_argument("--precisions", required=False, type=str, default=None, nargs='+')
     parser.add_argument("--model_kwargs", required=False, type=str, default={}, nargs='+')
     parser.add_argument("--torch_dtype", type=str, default=None)
     parser.add_argument("--device", type=str, default=None)
@@ -36,11 +38,17 @@ def main():
     dataset = {k:v for k, v in dataset}
     text = load_dataset(**dataset, split="test")["text"]
     summary = {}
-    for low_bit in args.low_bit:
-        print(low_bit)
-        ppl_evaluator = BigDLPPL(model_path=args.model_path, load_in_low_bit=low_bit, device=args.device, **args.model_kwargs)
+    for precision in args.precisions:
+        print(precision)
+        model_kwargs = {}
+        if precision in ggml_tensor_qtype.keys():
+            model_kwargs['load_in_low_bit'] = precision
+        else:
+            model_kwargs['torch_dtype'] = getattr(torch, precision)
+        
+        ppl_evaluator = BigDLPPL(model_path=args.model_path, device=args.device, **args.model_kwargs)
         ppl = ppl_evaluator.perplexity_hf(text)
-        summary[low_bit] = ppl
+        summary[precision] = ppl
     print(summary)
 
 main()
