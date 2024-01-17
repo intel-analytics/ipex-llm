@@ -742,7 +742,6 @@ def run_transformer_int4_gpu_win(repo_id,
                     print("model generate cost: " + str(end - st))
                     output = tokenizer.batch_decode(output_ids)
                     print(output[0])
-                    torch.xpu.empty_cache()
                     actual_out_len = output_ids.shape[1] - actual_in_len
                     if i >= warm_up:
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
