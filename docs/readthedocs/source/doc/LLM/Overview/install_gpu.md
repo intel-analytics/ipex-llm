@@ -41,7 +41,7 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 
 ### Install BigDL-LLM From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source achieves. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
 
 Download the wheels on Windows system:
 
