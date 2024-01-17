@@ -37,10 +37,10 @@ def main():
     text = load_dataset(**dataset, split="test")["text"]
     summary = {}
     for low_bit in args.low_bit:
+        print(low_bit)
         ppl_evaluator = BigDLPPL(model_path=args.model_path, load_in_low_bit=low_bit, device=args.device, **args.model_kwargs)
         ppl = ppl_evaluator.perplexity_hf(text)
         summary[low_bit] = ppl
-        print(f'{low_bit}:{ppl}')
     print(summary)
 
 main()
