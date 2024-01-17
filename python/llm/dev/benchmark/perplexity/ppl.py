@@ -23,28 +23,31 @@ from transformers import AutoTokenizer
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 class PPL:
-   def __init__(self):
-       self.nll = 0
-       self.cnt = 0
-   def __call__(self, all_logits, labels):
-       '''
-           all_logits [seq_length, vocab_size]
-           labels [seq_length]
-       '''
-       seq_length = all_logits.shape[0]
-       for i in range(0, seq_length - 1):
-           logits = all_logits[i, :]
-           max_logit = np.amax(logits)
-           sum_exp = np.sum(np.exp(logits - max_logit))
-           # logits at time-step i is for predicting token at time-step (i+1)
-           next_tok = labels[i + 1]
-           log_softmax_of_tok = (logits[next_tok] - max_logit) - np.log(sum_exp)
-           self.nll += -log_softmax_of_tok
-           self.cnt += 1
-       return np.exp(self.nll / self.cnt)
+    def __init__(self):
+        self.nll = 0
+        self.cnt = 0
+    def __call__(self, all_logits, labels):
+        '''
+            all_logits [seq_length, vocab_size]
+            labels [seq_length]
+        '''
+        seq_length = all_logits.shape[0]
+        for i in range(0, seq_length - 1):
+            logits = all_logits[i, :]
+            max_logit = np.amax(logits)
+            sum_exp = np.sum(np.exp(logits - max_logit))
+            # logits at time-step i is for predicting token at time-step (i+1)
+            next_tok = labels[i + 1]
+            log_softmax_of_tok = (logits[next_tok] - max_logit) - np.log(sum_exp)
+            self.nll += -log_softmax_of_tok
+            self.cnt += 1
+        return np.exp(self.nll / self.cnt)
    
-   def __str__(self):
-       return f"PPL: {np.exp(self.nll / self.cnt):.2f}"
+    def result(self):
+        return np.exp(self.nll / self.cnt)
+
+    def __str__(self):
+        return f"PPL: {np.exp(self.nll / self.cnt):.2f}"
 
 
 class BigDLPPL:
@@ -65,7 +68,6 @@ class BigDLPPL:
         #    attention_mask = inputs['attention_mask']
         progress_bar = tqdm(range(0, input_ids.shape[1], 512))
         
-        ppls = []
         for i0 in progress_bar:
             input_ids_chunks = input_ids[:, i0:(i0+512)]
             input_ids_chunks[:, 0] = 1
@@ -76,8 +78,7 @@ class BigDLPPL:
                 data = result.logits
                 data = data.to('cpu')
                 input_ids_chunks = input_ids_chunks.to('cpu')
-                ppls.append(self.ppl_evaluator(data.numpy()[0, seq_len//2:, :], input_ids_chunks.numpy()[0, seq_len//2:]))
 
             progress_bar.set_description(f"{self.ppl_evaluator}")
 
-        return sum(ppls)/len(ppls)
+        return self.ppl_evaluator.result()
