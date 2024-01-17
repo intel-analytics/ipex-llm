@@ -941,8 +941,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.LlamaMLP,
                         llama_mlp_forward)
-        convert_forward(
-            model,
-            module.DeciLMAttention,
-            llama_attention_forward_4_31, )
+        convert_forward(model,
+                        module.DeciLMAttention,
+                        llama_attention_forward_4_31, )
     return model
