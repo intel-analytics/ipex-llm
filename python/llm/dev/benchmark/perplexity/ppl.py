@@ -78,7 +78,7 @@ class BigDLPPL:
                 data = result.logits
                 data = data.to('cpu')
                 input_ids_chunks = input_ids_chunks.to('cpu')
-
+                self.ppl_evaluator(data.numpy()[0, seq_len//2:, :], input_ids_chunks.numpy()[0, seq_len//2:])
             progress_bar.set_description(f"{self.ppl_evaluator}")
 
         return self.ppl_evaluator.result()
