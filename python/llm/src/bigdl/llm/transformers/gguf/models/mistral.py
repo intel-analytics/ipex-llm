@@ -54,30 +54,29 @@ def load_gguf_mistral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
         model = MistralForCausalLM(mistral_config)
 
     def process_mistral(name, tensor):
-        nonlocal model
         module_name = get_mistral_module_name(name)
-        if 'q_proj' in module_name:
-            # gguf weight needs to reshape for q_proj
+        if name.endswith("attn_q.weight"):
             head, hd_size = tensor.shape[0], tensor.shape[1:]
-            set_module_tensor_to_device(model, module_name, "cpu",
-                                        tensor.reshape(n_head, head // n_head // 2, 2, *hd_size)
-                                              .swapaxes(1, 2)
-                                              .reshape(tensor.shape),
-                                        dtype=dtype)
-        elif 'k_proj' in module_name:
-            # gguf weight needs to reshape for k_proj
+            tensor = (tensor.reshape(n_head,
+                                     head // n_head // 2,
+                                     2,
+                                     *hd_size)
+                            .swapaxes(1, 2)
+                            .reshape(tensor.shape))
+        elif name.endswith("attn_k.weight"):
             head, hd_size = tensor.shape[0], tensor.shape[1:]
-            set_module_tensor_to_device(model, module_name, "cpu",
-                                        tensor.reshape(n_head_kv,
-                                                       head // n_head_kv // 2,
-                                                       2,
-                                                       *hd_size)
-                                              .swapaxes(1, 2)
-                                              .reshape(tensor.shape),
-                                        dtype=dtype)
-        else:
-            set_module_tensor_to_device(model, module_name, "cpu", tensor, dtype=dtype)
-        model = replace_with_low_bit_linear_for_module(model, qtype=qtype, module_name=module_name)
+            tensor = (tensor.reshape(n_head_kv,
+                                     head // n_head_kv // 2,
+                                     2,
+                                     *hd_size)
+                            .swapaxes(1, 2)
+                            .reshape(tensor.shape))
+        set_module_tensor_to_device(model,
+                                    module_name,
+                                    "cpu",
+                                    tensor,
+                                    dtype=dtype)
+        
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_mistral)
 
