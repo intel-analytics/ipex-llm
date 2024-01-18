@@ -23,6 +23,7 @@ from transformers import MixtralConfig, MixtralForCausalLM, LlamaTokenizer
 
 from ..gguf import GGUFFileLoader
 
+
 def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     # mixtral enjoys a general architecture of llma
     # e.g. it applies llama tokenizer
@@ -63,16 +64,20 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
             head, hd_size = tensor.shape[0], tensor.shape[1:]
             tensor = (tensor.reshape(n_head,
                                      head // n_head // 2,
-                                     2, *hd_size)
-                                    .swapaxes(1, 2)
-                                    .reshape(tensor.shape))
+                                     2,
+                                     *hd_size)
+                            .swapaxes(1, 2)
+                            .reshape(tensor.shape)
+                     )
         elif name.endswith("attn_k.weight"):
             head, hd_size = tensor.shape[0], tensor.shape[1:]
             tensor = (tensor.reshape(n_head_kv,
                                      head // n_head_kv // 2,
-                                     2, *hd_size)
-                                    .swapaxes(1, 2)
-                                    .reshape(tensor.shape))
+                                     2,
+                                     *hd_size)
+                            .swapaxes(1, 2)
+                            .reshape(tensor.shape)
+                     )
         set_module_tensor_to_device(model,
                                     module_name,
                                     "cpu",
