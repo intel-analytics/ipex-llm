@@ -116,6 +116,17 @@ def llama_mlp_forward(
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
             qtype
         ))
+    elif qtype == ggml_tensor_qtype["fp16"] and self.gate_proj.weight_type == 2:
+        hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.gate_proj.weight)
+        hidden_states = torch.ops.torch_ipex.mm_resmul(
+            x, self.up_proj.weight, hidden_states1
+        )
+        # TODO: below can be used when residual is not None
+        # hidden_states = matmul_add_add(
+        #     hidden_states, self.down_proj.weight, 1, self.down_proj.bias, residual
+        # )
+        hidden_states = torch.matmul(hidden_states, self.down_proj.weight)
+        return hidden_states
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
 
