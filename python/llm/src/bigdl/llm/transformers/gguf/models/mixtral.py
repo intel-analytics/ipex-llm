@@ -67,8 +67,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
                                      2,
                                      *hd_size)
                             .swapaxes(1, 2)
-                            .reshape(tensor.shape)
-                     )
+                            .reshape(tensor.shape))
         elif name.endswith("attn_k.weight"):
             head, hd_size = tensor.shape[0], tensor.shape[1:]
             tensor = (tensor.reshape(n_head_kv,
@@ -76,8 +75,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
                                      2,
                                      *hd_size)
                             .swapaxes(1, 2)
-                            .reshape(tensor.shape)
-                     )
+                            .reshape(tensor.shape))
         set_module_tensor_to_device(model,
                                     module_name,
                                     "cpu",
