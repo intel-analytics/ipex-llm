@@ -104,6 +104,7 @@ def llama_rms_norm_forward(self, hidden_states):
 def llama_mlp_forward(
     self,
     x: torch.Tensor,
+    residual=None
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.gate_proj, "qtype", None)
@@ -111,23 +112,37 @@ def llama_mlp_forward(
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.down_proj(linear_q4_0.mlp_forward_xpu(
+        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
             qtype
         ))
+        if residual is not None:
+            return out + residual
+        else:
+            return out
     elif qtype == ggml_tensor_qtype["fp16"] and self.gate_proj.weight_type == 2:
         hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.gate_proj.weight)
         hidden_states = torch.ops.torch_ipex.mm_resmul(
             x, self.up_proj.weight, hidden_states1
         )
-        # TODO: below can be used when residual is not None
-        # hidden_states = matmul_add_add(
-        #     hidden_states, self.down_proj.weight, 1, self.down_proj.bias, residual
-        # )
-        hidden_states = torch.matmul(hidden_states, self.down_proj.weight)
+        if residual is None:
+            hidden_states = torch.matmul(hidden_states, self.down_proj.weight)
+        else:
+            attn_output = torch.addmm(
+                residual.flatten(0, -2),
+                hidden_states.flatten(0, -2),
+                self.down_proj.weight,
+                beta=1,
+            )
+            hidden_states = attn_output.view(x.shape)
         return hidden_states
-    return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+    else:
+        out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        if residual is not None:
+            return out + residual
+        else:
+            return out
 
 
 def should_use_fuse_rope(self, query_states, position_ids):
@@ -145,6 +160,55 @@ def should_use_fast_rope(self, query_states, position_ids):
     use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
+
+
+def llama_decoder_forward(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: Optional[bool] = False,
+    use_cache: Optional[bool] = False,
+    **kwargs,
+) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
+    if "padding_mask" in kwargs:
+            warnings.warn(
+                "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+            )
+
+    residual = hidden_states
+
+    hidden_states = self.input_layernorm(hidden_states)
+
+    # Self Attention
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+        hidden_states=hidden_states,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_value=past_key_value,
+        output_attentions=output_attentions,
+        use_cache=use_cache,
+        **kwargs,
+    )
+    hidden_states = residual + hidden_states
+
+    # Fully Connected
+    residual = hidden_states
+    hidden_states = self.post_attention_layernorm(hidden_states)
+
+    # add residual into mlp
+    hidden_states = self.mlp(hidden_states, residual)
+
+    outputs = (hidden_states,)
+
+    if output_attentions:
+        outputs += (self_attn_weights,)
+
+    if use_cache:
+        outputs += (present_key_value,)
+
+    return outputs
 
 
 def llama_attention_forward_4_31(
