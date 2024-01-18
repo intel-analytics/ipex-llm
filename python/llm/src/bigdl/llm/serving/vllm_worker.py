@@ -59,7 +59,7 @@ class VLLMWorker(BaseModelWorker):
         )
 
         logger.info(
-            f"Loading the model {self.model_names} on worker {worker_id}, worker type: vLLM worker..."
+            f"Loading the model {self.model_names} on worker {worker_id}, worker type: vLLM worker."
         )
         self.tokenizer = llm_engine.engine.tokenizer
         self.context_len = get_context_length(llm_engine.engine.model_config.hf_config)
@@ -126,7 +126,9 @@ class VLLMWorker(BaseModelWorker):
             else:
                 rest_token_time = None
             # Note: usage is not supported yet
-            ret = {"text": text_outputs, "error_code": 0, "usage": {}, "finish_reason": finish_reason, "first_token_time": first_token_latency, "rest_token_time": rest_token_time}
+            ret = {"text": text_outputs, "error_code": 0, "usage": {},
+                   "finish_reason": finish_reason, "first_token_time": first_token_latency,
+                   "rest_token_time": rest_token_time}
             yield (json.dumps(ret) + "\0").encode()
 
     async def generate(self, params):
