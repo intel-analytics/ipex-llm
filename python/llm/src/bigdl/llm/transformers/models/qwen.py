@@ -127,7 +127,6 @@ def qwen_attention_forward(
         :, :, key.size(-2) - query.size(-2): key.size(-2), :key.size(-2)
     ]
 
-
     if quantize_kv_cache(self.c_attn, hidden_states):
         query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
         # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
