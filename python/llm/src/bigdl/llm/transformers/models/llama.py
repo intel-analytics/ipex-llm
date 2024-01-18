@@ -121,7 +121,9 @@ def llama_mlp_forward(
             return out + residual
         else:
             return out
-    elif qtype == ggml_tensor_qtype["fp16"] and self.gate_proj.weight_type == 2:
+    elif qtype == ggml_tensor_qtype["fp16"] and self.gate_proj.weight_type == 2 \
+            and x.device.type == 'xpu' and not self.training and \
+            not x.requires_grad and x_2d.shape[0] == 1:
         hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.gate_proj.weight)
         hidden_states = torch.ops.torch_ipex.mm_resmul(
             x, self.up_proj.weight, hidden_states1
@@ -174,7 +176,8 @@ def llama_decoder_forward(
 ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
     if "padding_mask" in kwargs:
             warnings.warn(
-                "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+                "Passing `padding_mask` is deprecated and will be removed in v4.37. "
+                "Please make sure use `attention_mask` instead.`"
             )
 
     residual = hidden_states
