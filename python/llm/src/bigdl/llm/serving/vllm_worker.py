@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Modified from vllm_worker
+# https://github.com/lm-sys/FastChat/blob/v0.2.28/fastchat/serve/vllm_worker.py
 
 """
 A model worker that executes the model based on vLLM.
@@ -133,7 +135,6 @@ class VLLMWorker(BaseModelWorker):
             else:
                 text_outputs = [output.text for output in request_output.outputs]
             text_outputs = " ".join(text_outputs)
-            # TODO: fix this when using beam_search
             finish_reason = request_output.outputs[0].finish_reason
             output_token_latency = request_output.outputs[0].output_token_latency
             first_token_latency = output_token_latency[0]
@@ -246,7 +247,6 @@ if __name__ == "__main__":
     #     args.tensor_parallel_size = args.num_gpus
 
     # By default, we are creating a CPU asyncEngineArgs.
-    # TODO: We need to specify --device cpu option, we should use it as default
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = AsyncLLMEngine.from_engine_args(engine_args)
     worker = VLLMWorker(
