@@ -371,10 +371,10 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and L == S:
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             is_causal=True)
+            context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
+                                                           key_layer,
+                                                           value_layer,
+                                                           is_causal=True)
         else:
             head_dim = query_layer.size(-1)
             attn = torch.matmul(query_layer,
