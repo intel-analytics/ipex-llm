@@ -124,7 +124,7 @@ def qwen_attention_forward(
     ).view(1, 1, key_size, key_size)
 
     causal_mask = causal_mask[
-        :, :, key.size(-2) - query.size(-2): key.size(-2), :key.size(-2)
+        :, :, key.size(1) - query.size(1): key.size(1), :key.size(1)
     ]
 
     if quantize_kv_cache(self.c_attn, hidden_states):
