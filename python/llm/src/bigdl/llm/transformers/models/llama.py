@@ -176,8 +176,7 @@ def llama_decoder_forward(
 ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
     if "padding_mask" in kwargs:
             warnings.warn(
-                "Passing `padding_mask` is deprecated and will be removed in v4.37. "
-                "Please make sure use `attention_mask` instead.`"
+                "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
             )
 
     residual = hidden_states
@@ -225,7 +224,7 @@ def llama_attention_forward_4_31(
     padding_mask: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    bsz, q_len, _ = hidden_states.size()
+    bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
@@ -280,9 +279,33 @@ def llama_attention_forward_4_31(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            query_states = self.q_proj(hidden_states)
-            key_states = self.k_proj(hidden_states)
-            value_states = self.v_proj(hidden_states)
+            if self.q_proj.qtype == ggml_tensor_qtype["fp16"] and self.q_proj.weight_type == 2 \
+                    and hidden_states.device.type == 'xpu' and not self.training \
+                    and not hidden_states.requires_grad:
+                # use mm_qkv_out
+                # TODO: may limit to 7b model
+                if not hasattr(self, "qkv_proj_weight"):
+                    self.qkv_proj_weight = torch.stack([self.q_proj.weight,
+                                                        self.k_proj.weight,
+                                                        self.v_proj.weight]).contiguous()
+                    self.q_proj.weight.data = self.qkv_proj_weight[0, :, :]
+                    self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
+                    self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
+                    torch.xpu.empty_cache()
+                query_states = torch.empty(bsz, q_len, hidden_size, dtype = hidden_states.dtype,
+                                            device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, hidden_size, dtype = hidden_states.dtype,
+                                            device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, hidden_size, dtype = hidden_states.dtype,
+                                            device=hidden_states.device)
+                torch.ops.torch_ipex.mm_qkv_out(
+                    hidden_states, self.qkv_proj_weight, None,
+                    query_states, key_states, value_states
+                )
+            else:
+                query_states = self.q_proj(hidden_states)
+                key_states = self.k_proj(hidden_states)
+                value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
