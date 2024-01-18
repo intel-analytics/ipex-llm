@@ -56,8 +56,8 @@ audiobooks from the LibriVox project, and has been carefully segmented and align
 """
 
 _URL = "http://www.openslr.org/12"
-#_DL_URL = "http://www.openslr.org/resources/12/"
-_DL_URL = "./librispeech/"
+# _DL_URL = "http://www.openslr.org/resources/12/"
+_DL_URL = "/mnt/disk1/datasets/librispeech/"
 
 
 _DL_URLS = {
