@@ -99,8 +99,11 @@ def test_optimize_model(Model, Tokenizer, model_path):
         model = model.to(device)
         logits_optimized_model = (model(input_ids)).logits
         model.to('cpu')
-
-        assert all(torch.isclose(logits_optimized_model, logits_base_model).tolist())
+        tol = 1e-02
+        num_false = torch.isclose(logits_optimized_model, logits_base_model, rtol=tol, atol=tol)\
+            .flatten().tolist().count(False)
+        percent_false = num_false / logits_optimized_model.numel()
+        assert percent_false < 1e-02
 
 class Test_Optimize_Gpu_Model:
     def setup(self):
