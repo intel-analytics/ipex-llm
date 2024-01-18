@@ -66,6 +66,13 @@ Wait until the process finishes loading the model and you see "Uvicorn running o
 
 > To run model worker using Intel GPU, simple change the --device cpu option to --device xpu
 
+We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
+
+To run using the `vllm_worker`, just simply uses the following command:
+```bash
+python3 -m bigdl.llm.serving.vllm_worker --model-path meta-llama/Llama-2-7b-chat-hf --device cpu/xpu # based on your device
+```
+
 ###### Launch the Gradio web server
 
 ```bash
