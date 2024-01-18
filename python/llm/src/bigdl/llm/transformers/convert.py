@@ -589,7 +589,6 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
-        # TODO: add convert for model
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaDecoderLayer,
                         llama_decoder_forward)
