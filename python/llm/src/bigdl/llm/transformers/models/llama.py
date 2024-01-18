@@ -176,7 +176,8 @@ def llama_decoder_forward(
 ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
     if "padding_mask" in kwargs:
             warnings.warn(
-                "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+                "Passing `padding_mask` is deprecated and will be removed in v4.37."
+                "Please make sure use `attention_mask` instead.`"
             )
 
     residual = hidden_states
@@ -292,12 +293,12 @@ def llama_attention_forward_4_31(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype = hidden_states.dtype,
-                                            device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype = hidden_states.dtype,
-                                            device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype = hidden_states.dtype,
-                                            device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                         device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
