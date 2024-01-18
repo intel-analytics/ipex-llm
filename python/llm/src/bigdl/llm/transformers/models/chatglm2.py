@@ -377,7 +377,7 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                                                            is_causal=True)
         else:
             head_dim = query_layer.size(-1)
-            attn = torch.matmul(query_layer,
+            attn = torch.matmul(query_layer.to(key_layer.dtype),
                                 key_layer.transpose(2, 3)) / math.sqrt(head_dim)
             if attention_mask is not None:
                 attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
