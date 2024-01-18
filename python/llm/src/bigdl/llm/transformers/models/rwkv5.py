@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/huggingface/transformers/blob/v4.36.0/src/transformers/models/rwkv/modeling_rwkv.py
+# https://huggingface.co/RWKV/rwkv-5-world-3b/blob/main/modeling_rwkv5.py
 # which is licensed under Apache License 2.0:
 #
 # Copyright 2023 Bo Peng and HuggingFace Inc. team.
@@ -33,49 +33,57 @@
 # limitations under the License.
 
 import torch
+import torch.nn.functional as F
 
 from typing import List
 
 
 def rwkv_linear_attention_xpu(
+    B: int,
+    H: int,
+    S: int,
+    T: int,
+    hidden: torch.Tensor,
     time_decay: torch.Tensor,
     time_first: torch.Tensor,
+    receptance: torch.Tensor,
     key: torch.Tensor,
     value: torch.Tensor,
-    state: List[torch.Tensor]=None,
-    return_state: bool=False
+    gate: torch.Tensor,
+    lxw: torch.Tensor,
+    lxb: torch.Tensor,
+    ow: torch.nn.Linear,
+    state: torch.Tensor,
 ):
-    if state is None:
-        num_state = torch.zeros(key.size(0), key.size(-1),
-                                dtype=key.dtype, device=key.device)
-        den_state = torch.zeros(key.size(0), key.size(-1),
-                                dtype=key.dtype, device=key.device)
-        max_state = torch.zeros(key.size(0), key.size(-1),
-                                dtype=key.dtype, device=key.device) - 1e38
-    else:
-        num_state, den_state, max_state = state
-        num_state = num_state.contiguous()
-        den_state = den_state.contiguous()
-        max_state = max_state.contiguous()
+    key = key.float().view(B, T, H, S).transpose(1, 2)
+    value = value.float().view(B, T, H, S).transpose(1, 2)
+    receptance = receptance.float().view(B, T, H, S).transpose(1, 2)
 
-    time_decay = -torch.exp(time_decay)
+    time_decay = torch.exp(-torch.exp(time_decay.float()))
+    time_first = time_first.float()
 
-    # `num_state`, `den_state`, `max_state` will be modified during this call
+    state = state.contiguous().float()
+
+    # `state` will be modified during this call
     import linear_q4_0
-    output = linear_q4_0.rwkv_linear_attention_v4(
+    out = linear_q4_0.rwkv_linear_attention_v5(
         time_decay,
         time_first,
+        receptance,
         key,
         value,
-        num_state,
-        den_state,
-        max_state,
+        state,
     )
 
-    if return_state or state is not None:
-        state = [num_state, den_state, max_state]
+    lxw = lxw.float()
+    lxb = lxb.float()
 
-    return output, state
+    out = out.reshape(B * T, H * S)
+    out = F.group_norm(out, num_groups=H, weight=lxw, bias=lxb).reshape(B, T, H * S)
+    out = out.to(dtype=hidden.dtype) * gate
+    # out = out @ ow
+    out = ow(out)
+    return out, state
 
 
 def rwkv_attention_forward(
@@ -83,33 +91,56 @@ def rwkv_attention_forward(
     hidden: torch.Tensor,
     state: List[torch.Tensor]=None,
     use_cache: bool=False,
+    seq_mode: bool=True,
 ):
-    receptance, key, value, state = self.extract_key_value(hidden, state=state)
-    layer_state = tuple(s[:, :, self.layer_id] for s in state[2:]) if state is not None else None
+    B = hidden.shape[0]
+    H = self.time_decay.shape[0]
+    S = hidden.shape[-1] // H
+    T = hidden.shape[1]
+
+    receptance, key, value, gate, state = self.extract_key_value(B, H, S, T, hidden, state=state)
+    layer_state = state[1][:, :, :, :, self.layer_id] if state is not None else None
 
     if hidden.device.type == "xpu":
         rwkv, layer_state = rwkv_linear_attention_xpu(
+            B,
+            H,
+            S,
+            T,
+            hidden,
             self.time_decay,
-            self.time_first,
+            self.time_faaaa,
+            receptance,
             key,
             value,
+            gate,
+            self.ln_x.weight,
+            self.ln_x.bias,
+            self.output,
             state=layer_state,
-            return_state=use_cache,
         )
     else:
         from transformers.models.rwkv.modeling_rwkv import rwkv_linear_attention_cpu
         rwkv, layer_state = rwkv_linear_attention_cpu(
+            B,
+            H,
+            S,
+            T,
+            self.num_attention_heads,
+            hidden,
             self.time_decay,
-            self.time_first,
+            self.time_faaaa,
+            receptance,
             key,
             value,
+            gate,
+            self.ln_x.weight,
+            self.ln_x.bias,
+            self.output.weight.t(),
             state=layer_state,
-            return_state=use_cache,
         )
 
     if layer_state is not None:
-        state[2][:, :, self.layer_id] = layer_state[0]
-        state[3][:, :, self.layer_id] = layer_state[1]
-        state[4][:, :, self.layer_id] = layer_state[2]
+        state[1][:, :, :, :, self.layer_id] = layer_state
 
-    return self.output(receptance * rwkv), state
+    return rwkv, state
