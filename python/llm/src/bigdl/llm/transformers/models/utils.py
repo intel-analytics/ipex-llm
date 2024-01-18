@@ -283,3 +283,15 @@ def use_xmx(x: torch.Tensor, qtype: int):
             1 < x.size(0) <= 8
         )
     )
+
+
+def use_fused_layer_norm(x: torch.Tensor, training: bool):
+    return (
+        not training
+        and not x.requires_grad
+        and x.device.type == 'xpu'
+        and (
+            get_xpu_device_type(x) not in ["arc", "flex"]
+            or x.reshape(-1, x.size(-1)).size(0) == 1
+        )
+    )
