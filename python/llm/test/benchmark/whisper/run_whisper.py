@@ -70,7 +70,7 @@ if __name__ == '__main__':
         return batch
    
     result = speech_dataset.map(map_to_pred, keep_in_memory=True)
-    wer = load("wer")
+    wer = load("./wer")
     speech_length = sum(result["length"][1:])
     prc_time = sum(result["time"][1:])
     print("Realtime Factor(RTF) is : %.4f" % (prc_time/speech_length))
