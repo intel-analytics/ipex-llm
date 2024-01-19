@@ -1,13 +1,11 @@
-# Whisper Evaluation
-The Whisper Evaluation allows users to evaluate the accuracy of Whisper speech-to-text models.
-Specifically, the model is tested on the LibriSpeech dataset using Word Error Rate (WER) metric.
+# Whisper Test
+The Whisper Test allows users to evaluate the performance and accuracy of Whisper speech-to-text models.
+For accuracy, the model is tested on the [LibriSpeech] (https://huggingface.co/datasets/librispeech_asr) dataset using [Word Error Rate (WER)](https://github.com/huggingface/evaluate/tree/main/metrics/wer) metric.
 Before running, make sure to have [bigdl-llm](../../../README.md) installed.
 
 ## Install Dependencies
 ```bash
-pip install datasets
-pip install evaluate
-pip install soundfile
+pip install datasets evaluate soundfile librosa jiwer
 ```
 
 ## Run

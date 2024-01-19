@@ -57,6 +57,7 @@ audiobooks from the LibriVox project, and has been carefully segmented and align
 
 _URL = "http://www.openslr.org/12"
 _DL_URL = os.getenv("LIBRISPEECH_DATASET_PATH", default = "http://www.openslr.org/resources/12/")
+_DL_URL = os.path.join(_DL_URL, '')
 print(f'LibriSpeech dataset path: {_DL_URL}')
 
 _DL_URLS = {
