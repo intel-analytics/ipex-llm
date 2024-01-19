@@ -31,7 +31,7 @@ python run_whisper.py --model_path /path/to/model --data_type other --device xpu
 By default, the LibriSpeech dataset is downloaded at runtime with Huggingface Hub. If you prefer to source from a local dataset instead, please set the following environment variable before running the evaluation script
 
 ```bash
-export LIRBISPEECH_DATASET_PATH=/path/to/dataset_folder
+export LIBRISPEECH_DATASET_PATH=/path/to/dataset_folder
 ```
 
 Make sure the local dataset folder contains 'dev-other.tar.gz','test-other.tar.gz', and 'train-other-500.tar.gz'. The files can be downloaded from http://www.openslr.org/resources/12/
