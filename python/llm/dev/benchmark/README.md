@@ -29,6 +29,7 @@ Output will be like:
 ```
 
 ## GPU Usage
+### Inference on single GPU
 Just put this file into your benchmark directory, and then wrap your transformer int4 model with `BenchmarkWrapper` (`model = BenchmarkWrapper(model)`).
 Take `chatglm-6b` as an example:
 ```python
@@ -57,6 +58,29 @@ with torch.inference_mode():
         output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 ```
+
+### Inference on multi GPUs
+Similarly, put this file into your benchmark directory, and then wrap your optimized model with `BenchmarkWrapper` (`model = BenchmarkWrapper(model)`).
+For example, just need to apply following code patch on [Deepspeed Autotp example code](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/Deepspeed-AutoTP/deepspeed_autotp.py) to calculate 1st and the rest token performance:
+```python
+ import torch
+ import transformers
+ import deepspeed
++from benchmark_util import BenchmarkWrapper
+ 
+ def get_int_from_env(env_keys, default):
+     """Returns the first positive env value found in the `env_keys` list or the default."""
+@@ -98,6 +99,7 @@ if __name__ == '__main__':
+     init_distributed()
+ 
+     print(model)
++    model = BenchmarkWrapper(model, do_print=True)
+ 
+     # Load tokenizer
+     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+```
+
+### Sample Output
 Output will be like:
 ```bash
 =========First token cost xx.xxxxs=========

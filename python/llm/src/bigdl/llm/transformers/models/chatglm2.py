@@ -218,7 +218,8 @@ def chatglm2_attention_forward_8eb45c(
 
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
-        if len(rotary_pos_emb) == 2:  # use_fuse_rope, see chatglm2_model_forward
+        if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
+            # use_fuse_rope, see chatglm2_model_forward
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
             query_layer = query_layer.transpose(0, 1)
@@ -366,17 +367,17 @@ def chatglm2_attention_forward_8eb45c(
 
 def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
     pytorch_major_version = int(torch.__version__.split('.')[0])
-    if pytorch_major_version >= 2 and (query_layer.device.type == 'xpu' or query_layer.size(0) > 1):
+    if pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and L == S:
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             is_causal=True)
+            context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
+                                                           key_layer,
+                                                           value_layer,
+                                                           is_causal=True)
         else:
             head_dim = query_layer.size(-1)
-            attn = torch.matmul(query_layer,
+            attn = torch.matmul(query_layer.to(key_layer.dtype),
                                 key_layer.transpose(2, 3)) / math.sqrt(head_dim)
             if attention_mask is not None:
                 attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,

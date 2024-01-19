@@ -170,7 +170,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral"]:
-        linear_q4_0.apply_rotary_embedding_half_qk(q, k, position_ids, q_embed, k_embed)
+        linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids, q_embed, k_embed)
         return q_embed, k_embed
     else:
         invalidInputError(False,
@@ -281,5 +281,17 @@ def use_xmx(x: torch.Tensor, qtype: int):
             (device != "pvc" and x.dtype == torch.float32 and 1 < x.size(0) <= 64)
             or
             1 < x.size(0) <= 8
+        )
+    )
+
+
+def use_fused_layer_norm(x: torch.Tensor, training: bool):
+    return (
+        not training
+        and not x.requires_grad
+        and x.device.type == 'xpu'
+        and (
+            get_xpu_device_type(x) not in ["arc", "flex"]
+            or x.reshape(-1, x.size(-1)).size(0) == 1
         )
     )

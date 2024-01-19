@@ -45,23 +45,22 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, reserved_mem_list=[]):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
                                     num_beams=num_beams)
         torch.xpu.synchronize()
         end = time.perf_counter()
-        reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
-        gpu_peak_mem = max(reserved_mem_list) # always keep the peak gpu mem at current stage
         output_ids = output_ids.cpu()
         print("model generate cost: " + str(end - st))
         output = tokenizer.batch_decode(output_ids)
         print(output[0])
+        torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
         if i >= warm_up:
             result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                actual_in_len, actual_out_len, gpu_peak_mem])
+                                   actual_in_len, actual_out_len, model.peak_memory])
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False):
     # TODO: make a parameter
@@ -360,17 +359,21 @@ def run_transformer_int4_gpu(repo_id,
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
-    reserved_mem_list = []
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in CHATGLM_IDS:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                          trust_remote_code=True, use_cache=True).eval()
+    origin_repo_id = repo_id.replace("-4bit", "")
+    if origin_repo_id in CHATGLM_IDS:
+        if "4bit" in repo_id:
+            model = AutoModel.load_low_bit(model_path, optimize_model=True,
+                                            trust_remote_code=True, use_cache=True).eval()  
+        else:
+            model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                            trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-    elif repo_id in LLAMA_IDS:
+    elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -391,8 +394,7 @@ def run_transformer_int4_gpu(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
-    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
+    print(">> loading of model costs {}s and {}GB".format(end - st, torch.xpu.memory.memory_reserved()/(1024**3)))
 
     model = BenchmarkWrapper(model)
 
@@ -419,7 +421,7 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer.encode(true_str, return_tensors="pt").to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, reserved_mem_list))
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
             thread.start()
             thread.join()
     model.to('cpu')
@@ -755,7 +757,6 @@ def run_transformer_int4_gpu_win(repo_id,
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
-    reserved_mem_list = []
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -787,8 +788,7 @@ def run_transformer_int4_gpu_win(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
-    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
+    print(">> loading of model costs {}s and {}GB".format(end - st, torch.xpu.memory.memory_reserved()/(1024**3)))
 
     model = BenchmarkWrapper(model)
 
@@ -820,8 +820,6 @@ def run_transformer_int4_gpu_win(repo_id,
                                                 num_beams=num_beams)
                     torch.xpu.synchronize()
                     end = time.perf_counter()
-                    reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
-                    gpu_peak_mem = max(reserved_mem_list) # always keep the peak gpu mem at current stage
                     output_ids = output_ids.cpu()
                     print("model generate cost: " + str(end - st))
                     output = tokenizer.batch_decode(output_ids)
@@ -829,7 +827,7 @@ def run_transformer_int4_gpu_win(repo_id,
                     actual_out_len = output_ids.shape[1] - actual_in_len
                     if i >= warm_up:
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                            actual_in_len, actual_out_len, gpu_peak_mem])
+                                               actual_in_len, actual_out_len, model.peak_memory])
                     # torch.xpu.empty_cache() # this may make first token slower
             except RuntimeError:
                 traceback.print_exc()

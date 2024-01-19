@@ -127,6 +127,15 @@ def should_use_fuse_rope(self, query_states, position_ids):
     return use_fuse_rope
 
 
+# Only for xpu and training
+def should_use_fast_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and (self.training or query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+    use_fuse_rope = use_fuse_rope and position_ids is not None
+    return use_fuse_rope
+
+
 def llama_attention_forward_4_31(
     self,
     hidden_states: torch.Tensor,
@@ -911,3 +920,115 @@ def llama_model_selective_batching_forward_4_31(
         hidden_states=all_hidden_states,
         attentions=all_self_attns,
     )
+
+
+# For training
+def llama_attention_fast_forward(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    padding_mask: Optional[torch.LongTensor] = None,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    bsz, q_len, _ = hidden_states.size()
+    device = hidden_states.device
+    use_fast_rope = should_use_fast_rope(self, hidden_states, position_ids)
+
+    # Check for inference
+    if use_cache and past_key_value is not None and q_len == 1:
+        A, past_key_value = llama_attention_forward_4_31(
+            self,
+            hidden_states,
+            past_key_value,
+            position_ids,
+        )
+        return A, None, past_key_value
+
+    if self.config.pretraining_tp > 1:
+        key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
+                             self.config.pretraining_tp)
+        query_slices = self.q_proj.weight.split(
+            (self.num_heads * self.head_dim) // self.config.pretraining_tp, dim=0
+        )
+        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
+        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
+
+        query_states = [F.linear(hidden_states, query_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+        query_states = torch.cat(query_states, dim=-1)
+
+        key_states = [F.linear(hidden_states, key_slices[i])
+                      for i in range(self.config.pretraining_tp)]
+        key_states = torch.cat(key_states, dim=-1)
+
+        value_states = [F.linear(hidden_states, value_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+        value_states = torch.cat(value_states, dim=-1)
+
+    else:
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
+        value_states = self.v_proj(hidden_states)
+
+    query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(bsz, q_len, self.num_key_value_heads,
+                                 self.head_dim).transpose(1, 2)
+    value_states = value_states.view(bsz, q_len, self.num_key_value_heads,
+                                     self.head_dim).transpose(1, 2)
+
+    kv_seq_len = key_states.shape[-2]
+    if past_key_value is not None:
+        kv_seq_len += past_key_value[0].shape[-2]
+
+    if use_fast_rope:
+        from bigdl.llm.transformers.layers.rope_embedding import apply_fast_rope_embedding
+        query_states, key_states = apply_fast_rope_embedding(query_states,
+                                                             key_states,
+                                                             position_ids,
+                                                             "llama")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "llama")
+
+    if past_key_value is not None:
+        # reuse k, v, self_attention
+        key_states = torch.cat([past_key_value[0], key_states], dim=2)
+        value_states = torch.cat([past_key_value[1], value_states], dim=2)
+
+    past_key_value = (key_states, value_states) if use_cache else None
+
+    key_states = repeat_kv(key_states, self.num_key_value_groups)
+    value_states = repeat_kv(value_states, self.num_key_value_groups)
+
+    attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                           attention_mask,
+                                           bsz, q_len, kv_seq_len,
+                                           self.head_dim, self.num_heads)
+
+    attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
+    if attn_output.size() != attn_output_size:
+        invalidInputError(False,
+                          f"`attn_output` should be of size {attn_output_size},"
+                          f" but is {attn_output.size()}")
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+
+    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+
+    if self.config.pretraining_tp > 1:
+        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
+                                                 dim=1)
+        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
+                           for i in range(self.config.pretraining_tp)])
+    else:
+        attn_output = self.o_proj(attn_output)
+
+    if not output_attentions:
+        attn_weights = None
+
+    return attn_output, attn_weights, past_key_value
