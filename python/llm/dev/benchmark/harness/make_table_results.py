@@ -68,8 +68,7 @@ def make_table(result_dict):
     return md_writer.dumps()
 
 
-if __name__ == "__main__":
-
+def merge_results(path):
     # loop dirs and subdirs in results dir
     # for each dir, load json files
     merged_results = dict()
@@ -87,4 +86,15 @@ if __name__ == "__main__":
             if precision not in merged_results[model]:
                 merged_results[model][precision] = dict()
             merged_results[model][precision][task] = result_dict
+    return merged_results
+
+
+def main(*args):
+    
+    merged_results = merge_results(args[0])
     print(make_table(merged_results))
+
+
+if __name__ == "__main__":
+
+    main(*sys.argv)
