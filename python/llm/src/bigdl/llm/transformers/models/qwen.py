@@ -119,13 +119,12 @@ def qwen_attention_forward(
         seq_end = kv_seq_len
         logn_tensor = self.logn_tensor[:, seq_start:seq_end, :, :].type_as(query)
         query = query * logn_tensor.expand_as(query)
-    causal_mask = torch.tril(
-        torch.ones((key_size, key_size), dtype=torch.bool, device=query.device)
-    ).view(1, 1, key_size, key_size)
-
-    causal_mask = causal_mask[
-        :, :, key.size(1) - query.size(1): key.size(1), :key.size(1)
-    ]
+    if key_size == kv_seq_len:
+        causal_mask = torch.tril(
+            torch.ones((key_size, key_size), dtype=torch.bool, device=query.device)
+        ).view(1, 1, key_size, key_size)
+    else:
+        causal_mask = None
 
     if quantize_kv_cache(self.c_attn, hidden_states):
         query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
@@ -207,7 +206,16 @@ def qwen_attention_forward(
             value = new_value_states
 
         query = query.transpose(1, 2)
-
+        if causal_mask is not None:
+            # first init
+            pass
+        elif query.size(2) > 1:
+            causal_mask = torch.tril(
+                torch.ones((key.size(2), key.size(2)), dtype=torch.bool, device=query.device)
+            ).view(1, 1, key.size(2), key.size(2))
+            causal_mask = causal_mask[
+                :, :, key.size(2) - query.size(2): key.size(2), :key.size(2)
+            ]
         attn_output, attn_weight = self._attn(
             query, key, value, causal_mask, attention_mask, head_mask
         )
