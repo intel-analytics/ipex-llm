@@ -217,7 +217,7 @@ def qwen_attention_forward(
                 :, :, key.size(2) - query.size(2): key.size(2), :key.size(2)
             ]
         attn_output, attn_weight = self._attn(
-            query, key, value, causal_mask, attention_mask, head_mask
+            query.to(key.dtype), key, value, causal_mask, attention_mask, head_mask
         )
 
     context_layer = self._merge_heads(
