@@ -206,10 +206,8 @@ def qwen_attention_forward(
             value = new_value_states
 
         query = query.transpose(1, 2)
-        if causal_mask is not None:
-            # first init
-            pass
-        elif query.size(2) > 1:
+        # skip first init and only works for n tokens input
+        if causal_mask is None and query.size(2) > 1:
             causal_mask = torch.tril(
                 torch.ones((key.size(2), key.size(2)), dtype=torch.bool, device=query.device)
             ).view(1, 1, key.size(2), key.size(2))
