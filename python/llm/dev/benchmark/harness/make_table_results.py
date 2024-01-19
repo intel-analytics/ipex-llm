@@ -34,25 +34,30 @@ def make_table(result_dict):
     """Generate table of results."""
     md_writer = MarkdownTableWriter()
     latex_writer = LatexTableWriter()
-    md_writer.headers = ["Model", "Precision", "Task", "Metric", "Value"]
-    latex_writer.headers = ["Model", "Precision", "Task", "Metric", "Value"]
+    md_writer.headers = ["Model", "Precision", "Arc", "Hellaswag", "MMLU", "TruthfulQA","Winogrande", "GSM8K"]
+    latex_writer.headers = ["Model", "Precision", "Arc", "Hellaswag", "MMLU", "TruthfulQA","Winogrande", "GSM8K"]
 
+    tasks = ["arc", "hellaswag", "mmlu", "truthfulqa", "winogrande", "gsm8k"]
     values = []
     for model, model_results in result_dict.items():
         for precision, prec_results in model_results.items():
-            for task, task_results in prec_results.items():
+            value = [model, precision]
+            for task in tasks:
 
-                results = task_results["results"]
-                m = task_to_metric[task]
-                if len(results) > 1:
-                    result = results[task]
+                task_results = prec_results.get(task, None)
+                if task_results is None:
+                    value.append("")
                 else:
-                    result = list(results.values())[0]
-
-                values.append([model, precision, task, m, "%.2f" % (result[m] * 100)])
-
-                model = ""    
-                precision = ""
+                    m = task_to_metric[task]
+                    results = task_results["results"]
+                    if len(results) > 1:
+                        result = results[task]
+                    else:
+                        result = list(results.values())[0]
+                    value.append("%.2f" % (result[m] * 100))
+            values.append(value)
+            model = ""    
+            precision = ""
         
     md_writer.value_matrix = values
     latex_writer.value_matrix = values
