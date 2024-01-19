@@ -934,6 +934,19 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+    elif model.config.model_type == "deci":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.decilm import decilm_attention_forward_4_35_2
+        convert_forward(model,
+                        module.LlamaRMSNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.LlamaMLP,
+                        llama_mlp_forward)
+        convert_forward(model,
+                        module.DeciLMAttention,
+                        decilm_attention_forward_4_35_2, )
     elif model.config.model_type == "rwkv5":
         # rwkv v5
         modeling_module_name = model.__class__.__module__
