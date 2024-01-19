@@ -22,9 +22,12 @@ from tempfile import NamedTemporaryFile
 from transformers import MixtralConfig, MixtralForCausalLM, LlamaTokenizer
 
 from ..gguf import GGUFFileLoader
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.convert import replace_with_low_bit_linear_for_module
 
 
-def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
+def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
+                      low_bit='sym_int4'):
     # mixtral enjoys a general architecture of llma
     # e.g. it applies llama tokenizer
     config = loader.config
@@ -33,6 +36,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     n_head = config['llama.attention.head_count']
     n_head_kv = config['llama.attention.head_count_kv']
     hidden_size = config['llama.embedding_length']
+    qtype = ggml_tensor_qtype[low_bit]
 
     mixtral_config = MixtralConfig(
         vocab_size=len(config['tokenizer.ggml.tokens']),
@@ -81,6 +85,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
                                     "cpu",
                                     tensor,
                                     dtype=dtype)
+        model = replace_with_low_bit_linear_for_module(model, qtype=qtype, module_name=module_name)
 
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_mixtral)
