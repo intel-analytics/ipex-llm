@@ -44,7 +44,7 @@ from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
-from bigdl.llm.transformers.models.utils import mlp_fusion_check
+from bigdl.llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
@@ -107,6 +107,7 @@ def llama_mlp_forward(
     residual=None
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
+    bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training):
         import linear_q4_0
@@ -121,9 +122,8 @@ def llama_mlp_forward(
             return out + residual
         else:
             return out
-    elif qtype == ggml_tensor_qtype["fp16"] and self.gate_proj.weight_type == 2 \
-            and x.device.type == 'xpu' and not self.training and \
-            not x.requires_grad and x_2d.shape[0] == 1:
+    elif fp16_fusion_check(self.gate_proj, x, self.training) and \
+            hidden_size == 4096 and bsz == 1:
         hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.gate_proj.weight)
         hidden_states = torch.ops.torch_ipex.mm_resmul(
             x, self.up_proj.weight, hidden_states1
@@ -280,11 +280,9 @@ def llama_attention_forward_4_31(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            if self.q_proj.qtype == ggml_tensor_qtype["fp16"] and self.q_proj.weight_type == 2 \
-                    and hidden_states.device.type == 'xpu' and not self.training \
-                    and not hidden_states.requires_grad:
-                # use mm_qkv_out
-                # TODO: may limit to 7b model
+            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+                    hidden_size == 4096:
+                # only use mm_qkv_out on pvc for llama-7b
                 if not hasattr(self, "qkv_proj_weight"):
                     self.qkv_proj_weight = torch.stack([self.q_proj.weight,
                                                         self.k_proj.weight,
