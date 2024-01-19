@@ -47,6 +47,19 @@ bash run_vicuna_33b_arc_2_card.sh
 
 > **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
+### 3. Sample Output
+
+```bash
+[0] Inference time of generating 32 tokens: xxx s, average token latency is xxx ms/token.
+[0] -------------------- Prompt --------------------
+[0] Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun
+[0] -------------------- Output --------------------
+[0] Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun. She was a curious girl, and she loved to learn new things.
+[0] 
+[0] One day, she decided to go on a journey to find the legendary
+```
+
+**Important**: The first token latency is much larger than rest token latency, you could use [our benchmark tool](https://github.com/intel-analytics/BigDL/blob/main/python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
 
 ### Known Issue
 - In our example scripts, tcmalloc is enabled through `export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}` which speed up inference, but this may raise `munmap_chunk(): invalid pointer` error after finishing inference.
