@@ -124,8 +124,10 @@ if __name__ == '__main__':
         end = time.time()
         if local_rank == 0:
             output = output.cpu()
+            actual_output_len = output.shape[1] - input_ids.shape[1]
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            print(f'Inference time: {end-st} s')
+            avg_time = (end - st) / actual_output_len * 1000
+            print(f'Inference time of generating {actual_output_len} tokens: {end-st} s, average token latency is {avg_time} ms/token.')
             print('-'*20, 'Prompt', '-'*20)
             print(prompt)
             print('-'*20, 'Output', '-'*20)
