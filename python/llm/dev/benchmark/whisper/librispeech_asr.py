@@ -56,9 +56,9 @@ audiobooks from the LibriVox project, and has been carefully segmented and align
 """
 
 _URL = "http://www.openslr.org/12"
-#_DL_URL = "http://www.openslr.org/resources/12/"
-_DL_URL = "./librispeech/"
-
+_DL_URL = os.getenv("LIBRISPEECH_DATASET_PATH", default = "http://www.openslr.org/resources/12/")
+_DL_URL = os.path.join(_DL_URL, '')
+print(f'LibriSpeech dataset path: {_DL_URL}')
 
 _DL_URLS = {
     "clean": {
@@ -77,9 +77,9 @@ _DL_URLS = {
         "dev.other": _DL_URL + "dev-other.tar.gz",
         "test.clean": _DL_URL + "test-clean.tar.gz",
         "test.other": _DL_URL + "test-other.tar.gz",
-        #"train.clean.100": _DL_URL + "train-clean-100.tar.gz",
-        #"train.clean.360": _DL_URL + "train-clean-360.tar.gz",
-        #"train.other.500": _DL_URL + "train-other-500.tar.gz",
+        "train.clean.100": _DL_URL + "train-clean-100.tar.gz",
+        "train.clean.360": _DL_URL + "train-clean-360.tar.gz",
+        "train.other.500": _DL_URL + "train-other-500.tar.gz",
     },
 }
 
@@ -198,29 +198,29 @@ class LibrispeechASR(datasets.GeneratorBasedBuilder):
                 )
             ]
         elif self.config.name == "all":
-            #train_splits = [
-            #    datasets.SplitGenerator(
-            #        name="train.clean.100",
-            #        gen_kwargs={
-            #            "local_extracted_archive": local_extracted_archive.get("train.clean.100"),
-            #            "files": dl_manager.iter_archive(archive_path["train.clean.100"]),
-            #        },
-            #    ),
-            #    datasets.SplitGenerator(
-            #        name="train.clean.360",
-            #        gen_kwargs={
-            #            "local_extracted_archive": local_extracted_archive.get("train.clean.360"),
-            #            "files": dl_manager.iter_archive(archive_path["train.clean.360"]),
-            #        },
-            #    ),
-            #    datasets.SplitGenerator(
-            #        name="train.other.500",
-            #        gen_kwargs={
-            #            "local_extracted_archive": local_extracted_archive.get("train.other.500"),
-            #            "files": dl_manager.iter_archive(archive_path["train.other.500"]),
-            #        },
-            #    ),
-            #]
+            train_splits = [
+               datasets.SplitGenerator(
+                   name="train.clean.100",
+                   gen_kwargs={
+                       "local_extracted_archive": local_extracted_archive.get("train.clean.100"),
+                       "files": dl_manager.iter_archive(archive_path["train.clean.100"]),
+                   },
+               ),
+               datasets.SplitGenerator(
+                   name="train.clean.360",
+                   gen_kwargs={
+                       "local_extracted_archive": local_extracted_archive.get("train.clean.360"),
+                       "files": dl_manager.iter_archive(archive_path["train.clean.360"]),
+                   },
+               ),
+               datasets.SplitGenerator(
+                   name="train.other.500",
+                   gen_kwargs={
+                       "local_extracted_archive": local_extracted_archive.get("train.other.500"),
+                       "files": dl_manager.iter_archive(archive_path["train.other.500"]),
+                   },
+               ),
+            ]
             dev_splits = [
                 datasets.SplitGenerator(
                     name="validation.clean",
