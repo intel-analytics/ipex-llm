@@ -1,5 +1,5 @@
 # Whisper Test
-The Whisper Test allows users to evaluate the performance and accuracy of [Whisper] (https://huggingface.co/openai/whisper-base) speech-to-text models.
+The Whisper Test allows users to evaluate the performance and accuracy of [Whisper](https://huggingface.co/openai/whisper-base) speech-to-text models.
 For accuracy, the model is tested on the [LibriSpeech](https://huggingface.co/datasets/librispeech_asr) dataset using [Word Error Rate (WER)](https://github.com/huggingface/evaluate/tree/main/metrics/wer) metric.
 Before running, make sure to have [bigdl-llm](../../../README.md) installed.
 
@@ -14,10 +14,10 @@ python run_whisper.py --model_path /path/to/model --data_type other --device cpu
 ```
 
 The LibriSpeech dataset contains 'clean' and 'other' splits. 
-You can specify the split to evaluate on with ```--data_type```.
+You can specify the split to evaluate with ```--data_type```.
 By default, we set it to ```other```.
 You can specify the device to run the test on with  ```--device```.
-If you want to set it to ```xpu```, please refer to [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for details on installation and optimal configuration.
+To run on Intel GPU, set it to ```xpu```, and refer to [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for details on installation and optimal configuration.
 
 
 > **Note**
