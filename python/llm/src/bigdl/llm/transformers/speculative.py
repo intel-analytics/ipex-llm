@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+# Some parts of this file is adapted from
+# https://github.com/dilab-zju/self-speculative-decoding/blob/main/decoding.py
+#
 
 import torch
 import time
@@ -254,8 +256,8 @@ def speculative_generate(self,
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
                                             draft_generate_ids[:, 1:step_draft + 2]), dim=-1)
                 for i in range(logits.size(1)):
-                    logits[:, i, :] = logit_processor(temp_input_ids
-                        [:, : input_ids.size(1) + step + i], output['logits'][:, i, :])
+                    logits[:, i, :] = logit_processor(temp_input_ids[:, :input_ids.size(1)+step+i],
+                                                      output['logits'][:, i, :])
             output_ids = sample(logits, do_sample=do_sample, top_k=top_k,
                                 top_p=top_p, temperature=temperature)
             if self.device.type == 'xpu':
@@ -281,18 +283,21 @@ def speculative_generate(self,
                 if self.config.model_type == "qwen":
                     past_key_values = [
                         (k[:, :-(max_of_max_matched - max_matched), :],
-                         v[:, :-(max_of_max_matched - max_matched), :]) for k, v in past_key_values
+                         v[:, :-(max_of_max_matched - max_matched), :])
+                        for k, v in past_key_values
                     ]
                 elif self.config.model_type == "chatglm":
                     # for chatglm, cache shape is [sl, bs, nh, hn]
                     past_key_values = [
-                        (k[ :-(max_of_max_matched - max_matched), :, :, :],
-                         v[ :-(max_of_max_matched - max_matched), :, :, :]) for k, v in past_key_values
+                        (k[:-(max_of_max_matched - max_matched), :, :, :],
+                         v[:-(max_of_max_matched - max_matched), :, :, :])
+                        for k, v in past_key_values
                     ]
                 elif self.config.model_type == "baichuan":
                     past_key_values = [
-                        (k[ :, :, :-(max_of_max_matched - max_matched), :],
-                         v[ :, :, :-(max_of_max_matched - max_matched), :]) for k, v in past_key_values
+                        (k[:, :, :-(max_of_max_matched - max_matched), :],
+                         v[:, :, :-(max_of_max_matched - max_matched), :])
+                        for k, v in past_key_values
                     ]
                 else:
                     past_key_values = [
@@ -312,14 +317,14 @@ def speculative_generate(self,
 
             if auto_th_stop_draft and step_verify % auto_parameters[0] == 0:
                 tmp_matchness = auto_parameters[1]*(tmp_matchness) + \
-                        (1-auto_parameters[1])*((max_matched - 1)/drafted_n_tokens)
-                if tmp_matchness<auto_parameters[2]:
+                    (1-auto_parameters[1])*((max_matched - 1)/drafted_n_tokens)
+                if tmp_matchness < auto_parameters[2]:
                     new_th_stop_draft = th_stop_draft+auto_parameters[3]
                 else:
-                    if drafted_n_tokens==max_step_draft:
+                    if drafted_n_tokens == max_step_draft:
                         new_th_stop_draft = th_stop_draft
                     else:
-                        new_th_stop_draft = th_stop_draft-auto_parameters[3]
+                        new_th_stop_draft = th_stop_draft - auto_parameters[3]
                 th_stop_draft = auto_parameters[4] * th_stop_draft + \
                         (1-auto_parameters[4]) * new_th_stop_draft
 
