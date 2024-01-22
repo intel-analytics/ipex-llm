@@ -49,7 +49,7 @@ import torch
 import warnings
 import copy
 from .utils import logger
-from .specelative_decoding import speculative_generate, clear_benchmarks
+from .speculative import speculative_generate, clear_benchmarks
 
 
 def save_low_bit(self, *args, **kwargs):
