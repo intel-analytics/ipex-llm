@@ -100,5 +100,5 @@ if __name__ == '__main__':
 
         print(output_str)
         print(f"Tokens generated {model.n_token_generated}")
-        print(f"E2E Generation time {end - st:.4f}s")
+        print(f"E2E Generation time {(end - st):.4f}s")
         print(f"First token latency {model.first_token_time:.4f}s")

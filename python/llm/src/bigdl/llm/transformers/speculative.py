@@ -181,6 +181,8 @@ def speculative_generate(self,
             current_input_ids = output_ids
             past_key_values = output['past_key_values']
             step += 1
+            if self.device.type == 'xpu':
+                torch.xpu.synchronize()
             toc = time.time()
             self.first_token_time = toc - tic
             e2e_tic = time.time()
