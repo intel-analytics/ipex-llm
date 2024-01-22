@@ -39,7 +39,7 @@ def generate(
     generation_config: Optional[GenerationConfig] = None,
     logits_processor: Optional[LogitsProcessorList] = None,
     stopping_criteria: Optional[StoppingCriteriaList] = None,
-    prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]] = None,
+    prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]]=None,
     synced_gpus: Optional[bool] = None,
     assistant_model: Optional["PreTrainedModel"] = None,
     streamer: Optional["BaseStreamer"] = None,
@@ -112,7 +112,7 @@ def clear_benchmarks(self):
 @torch.no_grad()
 def speculative_generate(self,
                          input_ids: Optional[torch.Tensor] = None,
-                         draft_model = None,
+                         draft_model=None,
                          max_new_tokens=10,
                          max_step_draft=8,
                          th_stop_draft=0.8,
@@ -144,7 +144,8 @@ def speculative_generate(self,
 
     if self.config.model_type == "qwen":
         from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
-        logit_processor = RepetitionPenaltyLogitsProcessor(penalty=self.generation_config.repetition_penalty)
+        logit_processor = RepetitionPenaltyLogitsProcessor(
+            penalty=self.generation_config.repetition_penalty)
     # Example:
     # Target model forward for the first token
     # Step 1. target_model(prompt) -> a
@@ -168,7 +169,7 @@ def speculative_generate(self,
                           return_dict=True,
                           use_cache=True)
             logits = output['logits']
-            logits = logits[:,-1:]
+            logits = logits[:, -1:]
             if self.config.model_type == "qwen":
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step]), dim=-1)
                 logits[:, -1, :] = logit_processor(temp_input_ids, logits[:, -1, :])
@@ -206,8 +207,9 @@ def speculative_generate(self,
                 if self.config.model_type == "qwen":
                     temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
                                                 draft_generate_ids[:, 1:step_draft+1]), dim=-1)
-                    draft_output['logits'][ :, -1, : ] = logit_processor(temp_input_ids,
-                                                                         draft_output['logits'][:, -1, :])
+                    draft_output['logits'][:, -1, :] = logit_processor(
+                        temp_input_ids,
+                        draft_output['logits'][:, -1, :])
                 draft_output_ids, draft_output_probs = sample(
                     draft_output['logits'], return_probs=True, do_sample=do_sample,
                     top_k=top_k, top_p=top_p, temperature=temperature)
@@ -216,14 +218,16 @@ def speculative_generate(self,
                 draft_past_key_values = draft_output['past_key_values']
                 # check if draft prob is less then th_stop_draft
                 # Draft number + step >= max output token number
-                if draft_output_probs.item() < th_stop_draft or step + step_draft + 2 >= max_new_tokens:
+                if draft_output_probs.item() < th_stop_draft or \
+                        step + step_draft + 2 >= max_new_tokens:
                     break
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
             toc = time.time()
             self.draft_time.append(toc - tic)
             drafted_n_tokens = step_draft + 1
-            drafted_input_ids = draft_generate_ids[:, :drafted_n_tokens+1] # raft input + raft completion
+            # raft input + raft completion
+            drafted_input_ids = draft_generate_ids[:, :drafted_n_tokens+1]
             self.draft_num.append(drafted_n_tokens)
             tic = time.time()
             # Target model verify drafts
@@ -233,17 +237,18 @@ def speculative_generate(self,
             if self.config.model_type == "chatglm":
                 past_key_value_len = past_key_values[0][0].shape[0]
                 position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
-                                            device=drafted_input_ids.device).unsqueeze(0).repeat(1, 1) + past_key_value_len
+                                            device=drafted_input_ids.device)
+                position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
                 output = self(input_ids=drafted_input_ids,
-                                past_key_values=past_key_values,
-                                return_dict=True,
-                                use_cache=True,
-                                position_ids=position_ids)
+                              past_key_values=past_key_values,
+                              return_dict=True,
+                              use_cache=True,
+                              position_ids=position_ids)
             else:
                 output = self(input_ids=drafted_input_ids,
-                            past_key_values=past_key_values,
-                            return_dict=True,
-                            use_cache=True)
+                              past_key_values=past_key_values,
+                              return_dict=True,
+                              use_cache=True)
             logits = output['logits']
             if self.config.model_type == "qwen":
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
@@ -251,7 +256,8 @@ def speculative_generate(self,
                 for i in range(logits.size(1)):
                     logits[:, i, :] = logit_processor(temp_input_ids
                         [:, : input_ids.size(1) + step + i], output['logits'][:, i, :])
-            output_ids = sample(logits, do_sample=do_sample, top_k=top_k, top_p=top_p, temperature=temperature)
+            output_ids = sample(logits, do_sample=do_sample, top_k=top_k,
+                                top_p=top_p, temperature=temperature)
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
             toc = time.time()
@@ -263,7 +269,8 @@ def speculative_generate(self,
             # Drafts start from [1, k]
             # Verified output start from [0, k - 1]
             # including the one generated by the base model
-            max_matched = ((output_ids[:, :-1] != drafted_input_ids[:, 1:]).cumsum(-1) == 0).sum(-1).item() + 1
+            max_matched = ((output_ids[:, :-1] != drafted_input_ids[:, 1:]).cumsum(-1) == 0)
+            max_matched = max_matched.sum(-1).item() + 1
             max_of_max_matched = output_ids.size(1)
             # Accept number is max_matched, min is 1
             self.accept_num.append(max_matched)
@@ -273,20 +280,24 @@ def speculative_generate(self,
                 # For Qwen
                 if self.config.model_type == "qwen":
                     past_key_values = [
-                        (k[:, :-(max_of_max_matched - max_matched), :], v[:, :-(max_of_max_matched - max_matched), :]) for k, v in past_key_values
+                        (k[:, :-(max_of_max_matched - max_matched), :],
+                         v[:, :-(max_of_max_matched - max_matched), :]) for k, v in past_key_values
                     ]
                 elif self.config.model_type == "chatglm":
                     # for chatglm, cache shape is [sl, bs, nh, hn]
                     past_key_values = [
-                        (k[ :-(max_of_max_matched - max_matched), :, :, :], v[ :-(max_of_max_matched - max_matched), :, :, :]) for k, v in past_key_values
+                        (k[ :-(max_of_max_matched - max_matched), :, :, :],
+                         v[ :-(max_of_max_matched - max_matched), :, :, :]) for k, v in past_key_values
                     ]
                 elif self.config.model_type == "baichuan":
                     past_key_values = [
-                        (k[ :, :, :-(max_of_max_matched - max_matched), :], v[ :, :, :-(max_of_max_matched - max_matched), :]) for k, v in past_key_values
+                        (k[ :, :, :-(max_of_max_matched - max_matched), :],
+                         v[ :, :, :-(max_of_max_matched - max_matched), :]) for k, v in past_key_values
                     ]
                 else:
                     past_key_values = [
-                        (k[:, :, :-(max_of_max_matched - max_matched)], v[:, :, :-(max_of_max_matched - max_matched)]) for k, v in past_key_values
+                        (k[:, :, :-(max_of_max_matched - max_matched)],
+                         v[:, :, :-(max_of_max_matched - max_matched)]) for k, v in past_key_values
                     ]
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
@@ -300,7 +311,8 @@ def speculative_generate(self,
             step_verify += 1
 
             if auto_th_stop_draft and step_verify % auto_parameters[0] == 0:
-                tmp_matchness = auto_parameters[1]*(tmp_matchness) + (1-auto_parameters[1])*((max_matched - 1)/drafted_n_tokens)
+                tmp_matchness = auto_parameters[1]*(tmp_matchness) + \
+                        (1-auto_parameters[1])*((max_matched - 1)/drafted_n_tokens)
                 if tmp_matchness<auto_parameters[2]:
                     new_th_stop_draft = th_stop_draft+auto_parameters[3]
                 else:
@@ -308,10 +320,9 @@ def speculative_generate(self,
                         new_th_stop_draft = th_stop_draft
                     else:
                         new_th_stop_draft = th_stop_draft-auto_parameters[3]
-                th_stop_draft = auto_parameters[4] * th_stop_draft + (1-auto_parameters[4]) * new_th_stop_draft
-                # print('draft_output_probs: {:.4f}, th_stop_draft: {:.4f}, tmp_matchness: {:.2f}, drafted_n_tokens: {:d}'.format(
-                #     draft_output_probs.item(), th_stop_draft, tmp_matchness, drafted_n_tokens))
-            
+                th_stop_draft = auto_parameters[4] * th_stop_draft + \
+                        (1-auto_parameters[4]) * new_th_stop_draft
+
             if hf_adjust:
                 if (max_matched - 1) == max_step_draft:
                     max_step_draft = min(draft_gen_length - 1, max_step_draft + 1)

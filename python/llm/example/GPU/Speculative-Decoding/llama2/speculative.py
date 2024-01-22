@@ -66,9 +66,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     # Load model in optimized fp16 here.
-    # Note if you want to use speculative decoding, make sure to set `speculative=True` here.
-    # By setting `speculative=True`, it will generate a sym_int4 darft model and 
-    # replace original generate method with speculative decoding generation.
+    # Set `speculative=True`` to enable speculative decoding,
+    # it only works when load_in_low_bit="fp16" on Intel GPU or load_in_low_bit="bf16" on latest Intel Xeon CPU
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
                                                  torch_dtype=torch.float16,
@@ -100,6 +99,6 @@ if __name__ == '__main__':
         end = time.perf_counter()
 
         print(output_str)
-        print(f"Final token number {model.n_token_generated}")
+        print(f"Tokens generated {model.n_token_generated}")
         print(f"E2E Generation time {end - st:.4f}s")
         print(f"First token latency {model.first_token_time:.4f}s")
