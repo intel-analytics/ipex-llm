@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 [--service-model-path <service model path>] [--help]"
+  echo "Usage: $0 [--service-model-path <service model path>] [-w --worker <model_worker|vllm_worker>] [--help]"
   echo "--help: Print help message."
   echo "--service-model-path: set model path for model worker"
   echo "The following environment variables can be set."
@@ -22,6 +22,7 @@ worker_port="21002"
 api_host="localhost"
 api_port="8000"
 service_model_path=""
+worker_type="model_worker"
 
 # We do not have any arguments, just run bash
 if [ "$#" == 0 ]; then
@@ -30,7 +31,7 @@ if [ "$#" == 0 ]; then
   exec /usr/bin/bash -s -- "bash"
 else
   # Parse command-line options
-  options=$(getopt -o "" --long "service-model-path:,help" -n "$0" -- "$@")
+  options=$(getopt -o "s:hw:" --long "service-model-path:,help,worker:" -n "$0" -- "$@")
   if [ $? != 0 ]; then
     usage
   fi
@@ -38,11 +39,16 @@ else
 
   while true; do
     case "$1" in
-    --service-model-path)
+    -s|--service-model-path)
         service_model_path="$2"
         shift 2
         ;;
-    --help)
+    -w|--worker)
+        worker_type="$2"
+        [[ $worker_type == "model_worker" || $worker_type == "vllm_worker" ]] || usage
+        shift 2
+        ;;
+    -h|--help)
       usage
       ;;
     --)
@@ -55,6 +61,11 @@ else
     esac
   done
 
+  if [ "$worker_type" == "model_worker" ]; then
+      worker_type="bigdl.llm.serving.model_worker"
+  elif [ "$worker_type" == "vllm_worker" ]; then
+      worker_type="bigdl.llm.serving.vllm_worker"
+  fi
   if [[ -n $CONTROLLER_HOST ]]; then
     controller_host=$CONTROLLER_HOST
   fi
@@ -87,7 +98,7 @@ else
   unset https_proxy
 
   python3 -m fastchat.serve.controller --host $controller_host --port $controller_port &
-  python3 -m bigdl.llm.serving.model_worker --model-path $service_model_path --device xpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address &
+  python3 -m $worker_type --model-path $service_model_path --device xpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address &
   python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address &
 
   echo "Controller address: $controller_address"
