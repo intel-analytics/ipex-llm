@@ -45,7 +45,9 @@ class Prompter(object):
         if not template_name:
             # Enforce the default here, so the constructor can be called with '' and will not break.
             template_name = "alpaca"
-        file_name = osp.join("templates", f"{template_name}.json")
+        current_dir = osp.dirname(osp.realpath(__file__))
+        common_util_path = osp.join(current_dir, '..')
+        file_name = osp.join(common_util_path, "templates", f"{template_name}.json")
         if not osp.exists(file_name):
             invalidInputError(False, f"Can't read {file_name}")
         with open(file_name) as fp:
