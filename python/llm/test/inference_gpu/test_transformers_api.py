@@ -24,8 +24,6 @@ from transformers import LlamaTokenizer, AutoTokenizer
 
 device = os.environ['DEVICE']
 print(f'Running on {device}')
-if device == 'xpu':
-    import intel_extension_for_pytorch as ipex
 
 @pytest.mark.parametrize('prompt, answer', [
     ('What is the capital of France?\n\n', 'Paris')
@@ -80,7 +78,6 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
 #     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH'))
 #     ])
 # def test_optimize_model(Model, Tokenizer, model_path):
-#     os.environ['BIGDL_LLM_XMX_DISABLED'] = "1"
 #     with torch.inference_mode():
 #         tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
 #         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
@@ -106,7 +103,6 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
 #             .flatten().tolist().count(False)
 #         percent_false = num_false / logits_optimized_model.numel()
 #         assert percent_false < 1e-02
-#     del os.environ['BIGDL_LLM_XMX_DISABLED']
 
 class Test_Optimize_Gpu_Model:
     def setup(self):
