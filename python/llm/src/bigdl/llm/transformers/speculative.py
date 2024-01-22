@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import Optional
+
 import torch
 import time
 import os
@@ -22,7 +22,42 @@ import copy
 import logging
 import warnings
 import inspect
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 from transformers import top_k_top_p_filtering, GenerationConfig, LogitsProcessorList, StoppingCriteriaList
+
+from transformers import GenerationMixin
+original_generate = GenerationMixin.generate
+
+
+@torch.no_grad()
+def generate(
+    self,
+    inputs: Optional[torch.Tensor] = None,
+    speculative: Optional[bool] = False,
+    generation_config: Optional[GenerationConfig] = None,
+    logits_processor: Optional[LogitsProcessorList] = None,
+    stopping_criteria: Optional[StoppingCriteriaList] = None,
+    prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]] = None,
+    synced_gpus: Optional[bool] = None,
+    assistant_model: Optional["PreTrainedModel"] = None,
+    streamer: Optional["BaseStreamer"] = None,
+    negative_prompt_ids: Optional[torch.Tensor] = None,
+    negative_prompt_attention_mask: Optional[torch.Tensor] = None,
+    **kwargs,
+):
+    if speculative:
+        return self.speculative_generate(input_ids=inputs,
+                                         draft_model=kwargs['draft_model'],
+                                         max_new_tokens=kwargs['max_new_tokens'],
+                                         max_step_draft=kwargs['max_step_draft'])
+    else:
+        return original_generate(inputs,
+                                 generation_config=generation_config,
+                                 logits_processor=logits_processor,
+                                 stopping_criteria=stopping_criteria,
+                                 **kwargs)
+
+GenerationMixin.generate = generate
 
 
 def sample(logits, return_probs: bool=False, do_sample: bool=False, top_k: int=50, top_p: float=0.7, temperature: float=0.7):
@@ -107,7 +142,7 @@ def speculative_generate(self,
     while True:
         if step >= max_new_tokens:
             break
-        
+
         if step == 0:
             # first token use full model
             output = self(input_ids=current_input_ids,
@@ -165,8 +200,6 @@ def speculative_generate(self,
                 torch.xpu.synchronize()
             toc = time.time()
             self.draft_time.append(toc - tic)
-            # if self.do_print:
-            #     print(f"Step {step} Draft time {self.draft_time[-1]}")
             drafted_n_tokens = step_draft + 1
             drafted_input_ids = draft_generate_ids[:, :drafted_n_tokens+1] # raft input + raft completion
             self.draft_num.append(drafted_n_tokens)
@@ -201,11 +234,7 @@ def speculative_generate(self,
                 torch.xpu.synchronize()
             toc = time.time()
             self.verify_time.append(toc - tic)
-            # if self.do_print:
-            #     print(f"Step {step} Verify time {self.verify_time[-1]}")
             self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
-            # if self.do_print:
-            #     print(f"Step {step} Generation time {self.generate_time[-1]}")
 
             past_key_values = output['past_key_values']
             # Compare drafts with target verified outputs
@@ -216,12 +245,6 @@ def speculative_generate(self,
             max_of_max_matched = output_ids.size(1)
             # Accept number is max_matched, min is 1
             self.accept_num.append(max_matched)
-            # if max_matched != 1:
-            #     if self.do_print:
-            #         print(f"Step {step} Matched {max_matched}")
-            # else:
-            #     if self.do_print:
-            #         print(f"Step {step} Rejected")
             # Clean up target model KV cache
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
@@ -284,20 +307,6 @@ def speculative_generate(self,
     e2e_toc = time.time()
     self.n_token_generated = step
     self.e2e_time_without_first = e2e_toc - e2e_tic
-
-    # if self.do_print:
-    #     print(f"Final token number {self.n_token_generated}")
-    #     print(f"Average Draft time {sum(self.draft_time)/self.n_drafted}")
-    #     print(f"Average Verify time {sum(self.verify_time)/len(self.verify_time)}")
-    #     print(f"Average Generation time {sum(self.generate_time)/len(self.generate_time)}")
-    #     print(f"Generation throughput {1.0 * (step - 1) / sum(self.generate_time)}")
-    #     print(f"E2E Generation throughput without first token {1.0 * (step - 1) / self.e2e_time_without_first }")
-    #     print(f"Draft num {self.n_drafted}")
-    #     print(f"Accept num {self.n_matched}")
-    #     print(f"Draft len: {self.n_drafted/len(self.draft_num)}, accept len: {self.n_matched/len(self.accept_num)}")
-    #     print(f"Draft {self.draft_num}")
-    #     print(f"Accept {self.accept_num}")
-    #     print(f"Generation time {self.generate_time}")
 
     generate_ids = torch.cat([input_ids, generate_ids[:, :step]], dim=-1)
 

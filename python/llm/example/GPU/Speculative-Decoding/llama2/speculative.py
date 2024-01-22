@@ -78,19 +78,19 @@ if __name__ == '__main__':
     max_step_draft = args.max_draft
 
     draft_model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                        load_in_4bit=True,
-                                                        optimize_model=True,
-                                                        trust_remote_code=True)
+                                                       load_in_4bit=True,
+                                                       optimize_model=True,
+                                                       trust_remote_code=True)
     draft_model = draft_model.half().to(device)
 
     print("Assistant model loaded!")
 
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                    optimize_model=True,
-                                                    torch_dtype=torch.float16,
-                                                    load_in_low_bit="fp16",
-                                                    trust_remote_code=True,
-                                                    use_cache=True)
+                                                 optimize_model=True,
+                                                 torch_dtype=torch.float16,
+                                                 load_in_low_bit="fp16",
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
     model = model.to(device)
     print("Target model loaded!")
 
@@ -104,22 +104,24 @@ if __name__ == '__main__':
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(model.device)
 
-        output = model.speculative_generate(input_ids=input_ids,
-                                            draft_model=draft_model,
-                                            max_new_tokens=args.n_predict,
-                                            max_step_draft=max_step_draft,
-                                            do_sample=False,
-                                            th_stop_draft=args.th_stop_draft)
+        output = model.generate(input_ids,
+                                speculative=True,
+                                draft_model=draft_model,
+                                max_new_tokens=args.n_predict,
+                                max_step_draft=max_step_draft,
+                                do_sample=False,
+                                th_stop_draft=args.th_stop_draft)
         output_str = tokenizer.decode(output[0])
         print(output_str)
         for i in range(2):
             st = time.perf_counter()
-            output = model.speculative_generate(input_ids=input_ids,
-                                                draft_model=draft_model,
-                                                max_new_tokens=args.n_predict,
-                                                max_step_draft=max_step_draft,
-                                                do_sample=False,
-                                                th_stop_draft=args.th_stop_draft)
+            output = model.generate(input_ids,
+                                    speculative=True,
+                                    draft_model=draft_model,
+                                    max_new_tokens=args.n_predict,
+                                    max_step_draft=max_step_draft,
+                                    do_sample=False,
+                                    th_stop_draft=args.th_stop_draft)
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
             if args.xpu:
                 torch.xpu.synchronize()
