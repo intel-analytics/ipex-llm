@@ -165,8 +165,8 @@ def speculative_generate(self,
                 torch.xpu.synchronize()
             toc = time.time()
             self.draft_time.append(toc - tic)
-            if self.do_print:
-                print(f"Step {step} Draft time {self.draft_time[-1]}")
+            # if self.do_print:
+            #     print(f"Step {step} Draft time {self.draft_time[-1]}")
             drafted_n_tokens = step_draft + 1
             drafted_input_ids = draft_generate_ids[:, :drafted_n_tokens+1] # raft input + raft completion
             self.draft_num.append(drafted_n_tokens)
@@ -201,11 +201,11 @@ def speculative_generate(self,
                 torch.xpu.synchronize()
             toc = time.time()
             self.verify_time.append(toc - tic)
-            if self.do_print:
-                print(f"Step {step} Verify time {self.verify_time[-1]}")
+            # if self.do_print:
+            #     print(f"Step {step} Verify time {self.verify_time[-1]}")
             self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
-            if self.do_print:
-                print(f"Step {step} Generation time {self.generate_time[-1]}")
+            # if self.do_print:
+            #     print(f"Step {step} Generation time {self.generate_time[-1]}")
 
             past_key_values = output['past_key_values']
             # Compare drafts with target verified outputs
@@ -216,12 +216,12 @@ def speculative_generate(self,
             max_of_max_matched = output_ids.size(1)
             # Accept number is max_matched, min is 1
             self.accept_num.append(max_matched)
-            if max_matched != 1:
-                if self.do_print:
-                    print(f"Step {step} Matched {max_matched}")
-            else:
-                if self.do_print:
-                    print(f"Step {step} Rejected")
+            # if max_matched != 1:
+            #     if self.do_print:
+            #         print(f"Step {step} Matched {max_matched}")
+            # else:
+            #     if self.do_print:
+            #         print(f"Step {step} Rejected")
             # Clean up target model KV cache
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
@@ -285,19 +285,19 @@ def speculative_generate(self,
     self.n_token_generated = step
     self.e2e_time_without_first = e2e_toc - e2e_tic
 
-    if self.do_print:
-        print(f"Final token number {self.n_token_generated}")
-        print(f"Average Draft time {sum(self.draft_time)/self.n_drafted}")
-        print(f"Average Verify time {sum(self.verify_time)/len(self.verify_time)}")
-        print(f"Average Generation time {sum(self.generate_time)/len(self.generate_time)}")
-        print(f"Generation throughput {1.0 * (step - 1) / sum(self.generate_time)}")
-        print(f"E2E Generation throughput without first token {1.0 * (step - 1) / self.e2e_time_without_first }")
-        print(f"Draft num {self.n_drafted}")
-        print(f"Accept num {self.n_matched}")
-        print(f"Draft len: {self.n_drafted/len(self.draft_num)}, accept len: {self.n_matched/len(self.accept_num)}")
-        print(f"Draft {self.draft_num}")
-        print(f"Accept {self.accept_num}")
-        print(f"Generation time {self.generate_time}")
+    # if self.do_print:
+    #     print(f"Final token number {self.n_token_generated}")
+    #     print(f"Average Draft time {sum(self.draft_time)/self.n_drafted}")
+    #     print(f"Average Verify time {sum(self.verify_time)/len(self.verify_time)}")
+    #     print(f"Average Generation time {sum(self.generate_time)/len(self.generate_time)}")
+    #     print(f"Generation throughput {1.0 * (step - 1) / sum(self.generate_time)}")
+    #     print(f"E2E Generation throughput without first token {1.0 * (step - 1) / self.e2e_time_without_first }")
+    #     print(f"Draft num {self.n_drafted}")
+    #     print(f"Accept num {self.n_matched}")
+    #     print(f"Draft len: {self.n_drafted/len(self.draft_num)}, accept len: {self.n_matched/len(self.accept_num)}")
+    #     print(f"Draft {self.draft_num}")
+    #     print(f"Accept {self.accept_num}")
+    #     print(f"Generation time {self.generate_time}")
 
     generate_ids = torch.cat([input_ids, generate_ids[:, :step]], dim=-1)
 
