@@ -43,17 +43,17 @@ First, place your local model in `Text-Generation-WebUI/models` directory, or yo
 
 Next, please choose the model you want to use.
 
-![Alt text](image.png)
+![Image text](https://github.com/intel-analytics/BigDL/blob/1df67d7927ebea0af570b09f36ce76efbf9b8bad/python/llm/example/Text-Generation-WebUI/readme_folder/image.png)
 
 
 ### 3.2. Select the Backend
 Text-Generation-WebUI supports multiple backends, including `Transformers`, `llama.cpp`, `BigDL-LLM`, etc. Please select the BigDL-LLM backend as below to enable low-bit optimization for the models.
 
-![Alt text](image-1.png)
+![Image text](https://github.com/intel-analytics/BigDL/blob/1df67d7927ebea0af570b09f36ce76efbf9b8bad/python/llm/example/Text-Generation-WebUI/readme_folder/image-1.png)
 
 Then you could select the device.
 
-![Alt text](image-2.png)
+![Image text](https://github.com/intel-analytics/BigDL/blob/1df67d7927ebea0af570b09f36ce76efbf9b8bad/python/llm/example/Text-Generation-WebUI/readme_folder/image-2.png)
 
 Notes:
 
@@ -67,9 +67,9 @@ Notes:
 ### 3.3. Load Model
 Then you may click the `Load` button to load the model with BigDL-LLM optimizations.
 
-![Alt text](image-3.png)
+![Image text](https://github.com/intel-analytics/BigDL/blob/1df67d7927ebea0af570b09f36ce76efbf9b8bad/python/llm/example/Text-Generation-WebUI/readme_folder/image-3.png)
 
-### 3.4. Multi-turn Chat
+### 3.4. Start Multi-turn Chat
 Now you can use your model for multi-turn generates.
 
-![Alt text](image-4.png)
+![Image text](https://github.com/intel-analytics/BigDL/blob/1df67d7927ebea0af570b09f36ce76efbf9b8bad/python/llm/example/Text-Generation-WebUI/readme_folder/image-4.png)
