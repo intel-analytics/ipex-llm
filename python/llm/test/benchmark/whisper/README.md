@@ -32,3 +32,9 @@ export LIBRISPEECH_DATASET_PATH=/path/to/dataset_folder
 ```
 
 Make sure the local dataset folder contains 'dev-other.tar.gz','test-other.tar.gz', and 'train-other-500.tar.gz'. The files can be downloaded from http://www.openslr.org/resources/12/
+
+## Printed metrics
+Three metrics are printed:
+- Realtime Factor(RTF): RTF indicates total prediction time over the total duration of speech samples.
+- Realtime X(RTX): RTX is the inverse of RTF
+- Word Error Rate (WER): WER indicates the average number of errors per reference word.

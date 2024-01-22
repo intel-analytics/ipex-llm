@@ -69,4 +69,4 @@ if __name__ == '__main__':
     prc_time = sum(result["time"][1:])
     print("Realtime Factor(RTF) is : %.4f" % (prc_time/speech_length))
     print("Realtime X(RTX) is : %.2f" % (speech_length/prc_time))
-    print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
+    print(f'WER is {100 * wer.compute(references=result["reference"], predictions=result["prediction"])}')
