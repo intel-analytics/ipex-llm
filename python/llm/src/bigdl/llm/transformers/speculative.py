@@ -326,7 +326,7 @@ def speculative_generate(self,
                     else:
                         new_th_stop_draft = th_stop_draft - auto_parameters[3]
                 th_stop_draft = auto_parameters[4] * th_stop_draft + \
-                        (1-auto_parameters[4]) * new_th_stop_draft
+                    (1-auto_parameters[4]) * new_th_stop_draft
 
             if hf_adjust:
                 if (max_matched - 1) == max_step_draft:
