@@ -65,6 +65,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    # Load model in optimized fp16 here.
+    # Note if you want to use speculative decoding, make sure to set `speculative=True` here.
+    # By setting `speculative=True`, it will generate a sym_int4 darft model and 
+    # replace original generate method with speculative decoding generation.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
                                                  torch_dtype=torch.float16,
@@ -94,19 +98,8 @@ if __name__ == '__main__':
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         torch.xpu.synchronize()
         end = time.perf_counter()
-        print("=======================================")
+
         print(output_str)
         print(f"Final token number {model.n_token_generated}")
-        print(f"Average Draft time {sum(model.draft_time)/model.n_drafted}")
-        print(f"Average Verify time {sum(model.verify_time)/len(model.verify_time)}")
-        print(f"Average Generation time {sum(model.generate_time)/len(model.generate_time)}")
-        print(f"Generation throughput {1.0 * (model.n_token_generated - 1) / sum(model.generate_time)}")
-        print(f"E2E Generation throughput without first token {1.0 * (model.n_token_generated - 1) / model.e2e_time_without_first }")
-        print(f"E2E Generation throughput {1.0 * (model.n_token_generated - 1) / (end - st) }")
-        print(f"Draft num {model.n_drafted}")
-        print(f"Accept num {model.n_matched}")
-        print(f"Draft {model.draft_num}")
-        print(f"Accept {model.accept_num}")
-        print(f"Iters: {len(model.draft_num)}")
-        print(f"Draft len: {model.n_drafted/len(model.draft_num)}, accept len: {model.n_matched/len(model.accept_num)}")
-        print(f"Accept rate: {model.n_matched/model.n_drafted}")
+        print(f"E2E Generation time {end - st:.4f}s")
+        print(f"First token latency {model.first_token_time:.4f}s")

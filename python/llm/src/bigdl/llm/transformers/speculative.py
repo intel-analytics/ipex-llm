@@ -23,8 +23,11 @@ import logging
 import warnings
 import inspect
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
-from transformers import top_k_top_p_filtering, GenerationConfig, LogitsProcessorList, StoppingCriteriaList
+from transformers import top_k_top_p_filtering, GenerationConfig, \
+    LogitsProcessorList, StoppingCriteriaList
+from bigdl.llm.utils.common import invalidInputError
 
+# patch GenerationMixin.generate
 from transformers import GenerationMixin
 original_generate = GenerationMixin.generate
 
@@ -70,32 +73,33 @@ def generate(
 GenerationMixin.generate = generate
 
 
-def sample(logits, return_probs: bool=False, do_sample: bool=False, top_k: int=50, top_p: float=0.7, temperature: float=0.7):
+def sample(logits, return_probs: bool=False, do_sample: bool=False, top_k: int=50,
+           top_p: float=0.7, temperature: float=0.7):
 
     if return_probs:
-
         all_probs = logits.softmax(-1)
         if do_sample and top_k != 1 and top_p != 0.0 and temperature != 0.0:
-            _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature, top_k=top_k, top_p=top_p)
-            output_ids = torch.multinomial(_logits.softmax(-1), num_samples=1).view(logits.shape[:-1])
+            _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature,
+                                            top_k=top_k, top_p=top_p)
+            output_ids = torch.multinomial(_logits.softmax(-1),
+                                           num_samples=1).view(logits.shape[:-1])
             probs = torch.gather(all_probs, -1, output_ids.unsqueeze(-1)).squeeze(-1)
         else:
             probs, output_ids = torch.max(all_probs, dim=-1)
-            
         return output_ids, probs
-
     else:
-
         if do_sample and top_k != 1 and top_p != 0.0 and temperature != 0.0:
-            _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature, top_k=top_k, top_p=top_p)
-            output_ids = torch.multinomial(_logits.softmax(-1), num_samples=1).view(logits.shape[:-1])
+            _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature,
+                                            top_k=top_k, top_p=top_p)
+            output_ids = torch.multinomial(_logits.softmax(-1),
+                                           num_samples=1).view(logits.shape[:-1])
         else:
             output_ids = torch.argmax(logits, dim=-1)
-            
         return output_ids
 
 
 def clear_benchmarks(self):
+    self.first_token_time = 0
     self.generate_time = []
     self.draft_time = []
     self.verify_time = []
@@ -113,21 +117,24 @@ def speculative_generate(self,
                          max_step_draft=8,
                          th_stop_draft=0.8,
                          auto_th_stop_draft=True,
-                         auto_parameters=[1,0.5,0.9,1e-2,0.9],
+                         auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
                          do_sample=False,
                          top_k=0,
                          top_p=0.85,
                          temperature=0.2,
                          hf_adjust=False):
-    assert draft_model is not None, "Draft model should be provided."
+    invalidInputError(draft_model is not None,
+                      "Draft model should be provided.")
     step = 0
     step_draft = 0
     step_verify = 0
 
-    draft_gen_length = max_step_draft+6 if hf_adjust else max_step_draft+1
+    draft_gen_length = max_step_draft + 6 if hf_adjust else max_step_draft + 1
     current_input_ids = input_ids
-    generate_ids = torch.empty([input_ids.size(0), max_new_tokens+max_step_draft], dtype=torch.long, device=self.device)
-    draft_generate_ids = torch.empty([input_ids.size(0), draft_gen_length], dtype=torch.long, device=self.device)
+    generate_ids = torch.empty([input_ids.size(0), max_new_tokens+max_step_draft],
+                               dtype=torch.long, device=self.device)
+    draft_generate_ids = torch.empty([input_ids.size(0), draft_gen_length],
+                                     dtype=torch.long, device=self.device)
     past_key_values = None
 
     tmp_matchness = 0
@@ -155,20 +162,24 @@ def speculative_generate(self,
 
         if step == 0:
             # first token use full model
+            tic = time.time()
             output = self(input_ids=current_input_ids,
-                            past_key_values=past_key_values,
-                            return_dict=True,
-                            use_cache=True)
+                          past_key_values=past_key_values,
+                          return_dict=True,
+                          use_cache=True)
             logits = output['logits']
             logits = logits[:,-1:]
             if self.config.model_type == "qwen":
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step]), dim=-1)
                 logits[:, -1, :] = logit_processor(temp_input_ids, logits[:, -1, :])
-            output_ids = sample(logits, do_sample=do_sample, top_k=top_k, top_p=top_p, temperature=temperature)
+            output_ids = sample(logits, do_sample=do_sample, top_k=top_k,
+                                top_p=top_p, temperature=temperature)
             generate_ids[:, step] = output_ids
             current_input_ids = output_ids
             past_key_values = output['past_key_values']
             step += 1
+            toc = time.time()
+            self.first_token_time = toc - tic
             e2e_tic = time.time()
         else:
             draft_current_input_ids = current_input_ids
@@ -183,22 +194,23 @@ def speculative_generate(self,
                     past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                     draft_output = draft_model(input_ids=draft_current_input_ids,
-                                                past_key_values=draft_past_key_values,
-                                                return_dict=True,
-                                                use_cache=True,
-                                                position_ids=position_ids)
+                                               past_key_values=draft_past_key_values,
+                                               return_dict=True,
+                                               use_cache=True,
+                                               position_ids=position_ids)
                 else:
                     draft_output = draft_model(input_ids=draft_current_input_ids,
-                                            past_key_values=draft_past_key_values,
-                                            return_dict=True,
-                                            use_cache=True)
+                                               past_key_values=draft_past_key_values,
+                                               return_dict=True,
+                                               use_cache=True)
                 if self.config.model_type == "qwen":
                     temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
                                                 draft_generate_ids[:, 1:step_draft+1]), dim=-1)
                     draft_output['logits'][ :, -1, : ] = logit_processor(temp_input_ids,
                                                                          draft_output['logits'][:, -1, :])
                 draft_output_ids, draft_output_probs = sample(
-                    draft_output['logits'], return_probs=True, do_sample=do_sample, top_k=top_k, top_p=top_p, temperature=temperature)
+                    draft_output['logits'], return_probs=True, do_sample=do_sample,
+                    top_k=top_k, top_p=top_p, temperature=temperature)
                 draft_generate_ids[:, step_draft+1] = draft_output_ids
                 draft_current_input_ids = draft_output_ids
                 draft_past_key_values = draft_output['past_key_values']
