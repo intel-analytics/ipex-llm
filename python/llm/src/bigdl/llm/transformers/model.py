@@ -49,6 +49,7 @@ import torch
 import warnings
 import copy
 from .utils import logger
+from .specelative_decoding import speculative_generate, clear_benchmarks
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -353,7 +354,9 @@ class _BaseAutoModelClass:
         # add save_low_bit to pretrained model dynamically
         import types
         model.save_low_bit = types.MethodType(save_low_bit, model)
-
+        # add speculative_generate to pretrained model dynamically
+        model.clear_benchmarks = types.MethodType(clear_benchmarks, model)
+        model.speculative_generate = types.MethodType(speculative_generate, model)
         return model
 
     @classmethod
