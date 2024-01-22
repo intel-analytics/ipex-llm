@@ -53,7 +53,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
-          python -m pip install --pre --upgrade bigdl-llm -f https://developer.intel.com/ipex-whl-stable-xpu
+          python -m pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
@@ -63,10 +63,6 @@ jobs:
       # - name: Download llm binary
       #   uses: ./.github/actions/llm/download-llm-binary
 
-      # - name: Run LLM install (all) test
-      #   uses: ./.github/actions/llm/setup-llm-env
-      #   with:
-      #     extra-dependency: "xpu_2.1"
 
       - name: Test installed xpu version
         shell: bash
