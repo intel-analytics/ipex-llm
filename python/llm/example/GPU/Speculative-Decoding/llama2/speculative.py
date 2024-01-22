@@ -60,71 +60,39 @@ if __name__ == '__main__':
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
                         help='Prompt to infer')
-    parser.add_argument('--precision', type=str, default='bf16',
-                        help='Main model Precision')
     parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
-    parser.add_argument('--max-draft', type=int, default=8,
-                        help='Max draft')
-    parser.add_argument('--xpu', action='store_true')
-    parser.add_argument('--temperature', type=float, default=0.2,
-                        help='Model temperature')
-    parser.add_argument('--th_stop_draft', type=float, default=0.8,
-                        help='draft stop probility')
 
     args = parser.parse_args()
-    device = 'xpu'
     model_path = args.repo_id_or_model_path
-    max_step_draft = args.max_draft
-
-    draft_model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                       load_in_4bit=True,
-                                                       optimize_model=True,
-                                                       trust_remote_code=True)
-    draft_model = draft_model.half().to(device)
-
-    print("Assistant model loaded!")
-
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
                                                  torch_dtype=torch.float16,
                                                  load_in_low_bit="fp16",
+                                                 speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = model.to(device)
+    model = model.to('xpu')
     print("Target model loaded!")
 
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
-
-    print(f"Model is {model.dtype}")
-    print(f"Max Draft number {max_step_draft}")
-    print(f"Max token number {args.n_predict}")
 
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(model.device)
 
         output = model.generate(input_ids,
-                                speculative=True,
-                                draft_model=draft_model,
                                 max_new_tokens=args.n_predict,
-                                max_step_draft=max_step_draft,
-                                do_sample=False,
-                                th_stop_draft=args.th_stop_draft)
+                                do_sample=False)
         output_str = tokenizer.decode(output[0])
         print(output_str)
         for i in range(2):
             st = time.perf_counter()
             output = model.generate(input_ids,
-                                    speculative=True,
-                                    draft_model=draft_model,
                                     max_new_tokens=args.n_predict,
-                                    max_step_draft=max_step_draft,
-                                    do_sample=False,
-                                    th_stop_draft=args.th_stop_draft)
+                                    do_sample=False)
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            if args.xpu:
-                torch.xpu.synchronize()
+            torch.xpu.synchronize()
             end = time.perf_counter()
             print("=======================================")
             print(output_str)

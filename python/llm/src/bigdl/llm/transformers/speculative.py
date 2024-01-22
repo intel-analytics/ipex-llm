@@ -33,7 +33,6 @@ original_generate = GenerationMixin.generate
 def generate(
     self,
     inputs: Optional[torch.Tensor] = None,
-    speculative: Optional[bool] = False,
     generation_config: Optional[GenerationConfig] = None,
     logits_processor: Optional[LogitsProcessorList] = None,
     stopping_criteria: Optional[StoppingCriteriaList] = None,
@@ -45,11 +44,12 @@ def generate(
     negative_prompt_attention_mask: Optional[torch.Tensor] = None,
     **kwargs,
 ):
-    if speculative:
+    if hasattr(self, "draft_model"):
+        # Do speculative decoding if there is attached draft model
+        # TODO: maybe add other check later
         return self.speculative_generate(input_ids=inputs,
-                                         draft_model=kwargs['draft_model'],
-                                         max_new_tokens=kwargs['max_new_tokens'],
-                                         max_step_draft=kwargs['max_step_draft'])
+                                         draft_model=self.draft_model,
+                                         max_new_tokens=kwargs['max_new_tokens'])
     else:
         return original_generate(inputs,
                                  generation_config=generation_config,

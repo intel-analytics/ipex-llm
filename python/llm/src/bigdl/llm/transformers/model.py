@@ -116,6 +116,7 @@ class _BaseAutoModelClass:
                                Default to be ``True``.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
                                        conducting model optimizations. Default to be ``None``.
+        :param speculative: 
         :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
@@ -137,6 +138,7 @@ class _BaseAutoModelClass:
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
+        speculative = kwargs.pop("speculative", False)
 
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
@@ -242,6 +244,15 @@ class _BaseAutoModelClass:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+            
+            if speculative:
+                # load a sym_int4 model as draft model
+                draft_model = cls.load_convert('sym_int4', optimize_model, *args, **kwargs)
+                model.draft_model = draft_model
+                import types
+                # add speculative_generate to pretrained model dynamically
+                model.clear_benchmarks = types.MethodType(clear_benchmarks, model)
+                model.speculative_generate = types.MethodType(speculative_generate, model)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -354,9 +365,7 @@ class _BaseAutoModelClass:
         # add save_low_bit to pretrained model dynamically
         import types
         model.save_low_bit = types.MethodType(save_low_bit, model)
-        # add speculative_generate to pretrained model dynamically
-        model.clear_benchmarks = types.MethodType(clear_benchmarks, model)
-        model.speculative_generate = types.MethodType(speculative_generate, model)
+
         return model
 
     @classmethod
