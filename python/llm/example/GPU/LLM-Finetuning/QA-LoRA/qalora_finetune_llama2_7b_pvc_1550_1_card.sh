@@ -15,20 +15,19 @@
 #
 
 export MASTER_ADDR=127.0.0.1
-export OMP_NUM_THREADS=6 # adjust this to 1/4 of total physical cores
+export OMP_NUM_THREADS=28 # adjust this to 1/4 of total physical cores
 export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
 
 mpirun -n 2 \
-       python -u ./alpaca_qlora_finetuning.py \
+       python -u ./qalora_finetuning.py \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
        --output_dir "./bigdl-qlora-alpaca" \
        --learning_rate 9e-5 \
-       --micro_batch_size 2 \
+       --micro_batch_size 8 \
        --batch_size 128 \
        --lora_r 8 \
        --lora_alpha 16 \
        --lora_dropout 0.05 \
-       --val_set_size 2000 \
-    --training_mode "qalora" > training.log
+       --val_set_size 2000 > training.log

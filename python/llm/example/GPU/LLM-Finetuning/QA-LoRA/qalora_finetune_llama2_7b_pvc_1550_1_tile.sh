@@ -14,18 +14,17 @@
 # limitations under the License.
 #
 
-export MASTER_ADDR=127.0.0.1
-export OMP_NUM_THREADS=28 # adjust this to 1/4 of total physical cores
-export FI_PROVIDER=tcp
-export CCL_ATL_TRANSPORT=ofi
+# You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
 
-mpirun -n 8 \
-       python -u ./alpaca_qlora_finetuning.py \
-       --base_model "meta-llama/Llama-2-7b-hf" \
-       --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./bigdl-relora-alpaca" \
-       --micro_batch_size 8 \
-       --relora_steps 300 \
-       --relora_warmup_steps 10 \
-       --batch_size 128 \
-       --training_mode "relora" > relora_training.log
+python ./qalora_finetuning.py \
+    --base_model "meta-llama/Llama-2-7b-hf" \
+    --data_path "yahma/alpaca-cleaned" \
+    --output_dir "./bigdl-qlora-alpaca" \
+    --learning_rate 9e-5 \
+    --micro_batch_size 8 \
+    --batch_size 128 \
+    --gradient_checkpointing False \
+    --lora_r 8 \
+    --lora_alpha 16 \
+    --lora_dropout 0.05 \
+    --val_set_size 2000

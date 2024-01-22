@@ -1,6 +1,6 @@
-# Alpaca Finetuning with BigDL-LLM
+# ReLoRA Finetuning with BigDL-LLM
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using either [QLoRA](https://arxiv.org/abs/2305.14314) / [QA-LoRA](https://arxiv.org/abs/2309.14717) / [LoRA](https://arxiv.org/abs/2106.09685) or [ReLoRA](https://arxiv.org/abs/2307.05695) algorithm) on [Intel GPU](../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using [ReLoRA](https://arxiv.org/abs/2307.05695) algorithm) on [Intel GPU](../../README.md).
 
 ### 0. Requirements
 To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
@@ -24,108 +24,10 @@ pip install bitsandbytes scipy
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Finetune
-
-Now we support four training modes ([QLoRA](https://arxiv.org/abs/2305.14314) / [QA-LoRA](https://arxiv.org/abs/2309.14717) / [LoRA](https://arxiv.org/abs/2106.09685) / [ReLoRA](https://arxiv.org/abs/2307.05695)), to run different mode, just change `training_mode` to `qlora` / `qalora` / `lora` / `relora` in below script.
+### 3. ReLoRA Finetune
 
 Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device:
 
-#### QLoRA
-
-##### Finetuning LLaMA2-7B on single Arc A770
-
-```bash
-bash finetune_llama2_7b_arc_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on two Arc A770
-
-```bash
-bash finetune_llama2_7b_arc_2_card.sh
-```
-
-##### Finetuning LLaMA2-7B on single Data Center GPU Flex 170
-
-```bash
-bash finetune_llama2_7b_flex_170_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on three Data Center GPU Flex 170
-
-```bash
-bash finetune_llama2_7b_flex_170_3_card.sh
-```
-
-##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1100
-
-```bash
-bash finetune_llama2_7b_pvc_1100_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
-
-```bash
-bash finetune_llama2_7b_pvc_1100_4_card.sh
-```
-
-##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
-
-```bash
-bash finetune_llama2_7b_pvc_1550_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
-
-```bash
-bash finetune_llama2_7b_pvc_1550_4_card.sh
-```
-
-#### QA-LoRA
-##### Finetuning LLaMA2-7B on single Arc A770
-
-```bash
-bash qalora_finetune_llama2_7b_arc_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on two Arc A770
-
-```bash
-bash qalora_finetune_llama2_7b_arc_2_card.sh
-```
-
-##### Finetuning LLaMA2-7B on single Tile Intel Data Center GPU Max 1550
-
-```bash
-bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
-```
-
-#### LoRA
-
-##### Finetuning LLaMA2-7B on single Arc A770
-
-```bash
-bash lora_finetune_llama2_7b_arc_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
-
-```bash
-bash lora_finetune_llama2_7b_pvc_1100_1_card.sh
-```
-
-##### Finetuning LLaMA2-7B on single Tile Intel Data Center GPU Max 1550
-
-```bash
-bash lora_finetune_llama2_7b_pvc_1550_1_tile.sh
-```
-
-##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
-
-```bash
-bash lora_finetune_llama2_7b_pvc_1550_4_card.sh
-```
-
-#### ReLoRA
 ##### Finetuning LLaMA2-7B on single Arc A770
 
 ```bash
@@ -151,9 +53,9 @@ bash relora_finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
 ### 4. (Optional) Resume Training
-If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+**If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
 ```bash
-python ./alpaca_qlora_finetuning.py \
+python ./relora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-qlora-alpaca" \
@@ -173,14 +75,14 @@ python ./alpaca_qlora_finetuning.py \
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
-### 4. Merge the adapter into the original model
+### 6. Merge the adapter into the original model
 ```
 python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
-### 5. Troubleshooting
+### 7. Troubleshooting
 - If you fail to finetune on multi cards because of following error message:
   ```bash
   RuntimeError: oneCCL: comm_selector.cpp:57 create_comm_impl: EXCEPTION: ze_data was not initialized

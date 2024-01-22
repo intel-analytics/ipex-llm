@@ -1,9 +1,10 @@
-# Finetuning LLAMA Using Q-Lora (experimental support)
+# Simple Example of QLoRA Finetuning with BigDL-LLM
 
-This example demonstrates how to finetune a llama2-7b model use Big-LLM 4bit optimizations using [Intel GPUs](../README.md).
+This simple example demonstrates how to finetune a llama2-7b model use Big-LLM 4bit optimizations using [Intel GPUs](../../../README.md).
+Note, this example is just used for illustrating related usage and don't guarantee convergence of training.
 
 ## 0. Requirements
-To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Finetune llama2-7b using qlora
 
@@ -14,12 +15,12 @@ This example is ported from [bnb-4bit-training](https://colab.research.google.co
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
+# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
+# you can install specific ipex/torch version for your need
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install transformers==4.34.0 datasets
+pip install datasets transformers==4.34.0
 pip install peft==0.5.0
 pip install accelerate==0.23.0
-pip install bitsandbytes scipy
 ```
 
 ### 2. Configures OneAPI environment variables

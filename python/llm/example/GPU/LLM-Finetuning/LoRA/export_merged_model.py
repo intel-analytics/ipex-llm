@@ -41,7 +41,7 @@ import shutil
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
+    parser = argparse.ArgumentParser(description='Merge the adapter into the original model for Llama2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')

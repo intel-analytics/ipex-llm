@@ -44,7 +44,12 @@ from peft import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
 )
-from utils.prompter import Prompter
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+common_util_path = os.path.join(current_dir, '..')
+import sys
+sys.path.append(common_util_path)
+from common.utils.prompter import Prompter
 
 from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -124,8 +129,8 @@ def train(
     relora_warmup_steps: int = 10,   # Number of per-restart warmup steps
     relora_cpu_offload: bool = True, # True to perform lora weight merges on cpu during restarts, for modest gpu memory savings
 ):
-    invalidInputError(training_mode in ["qlora", "qalora", "lora", "relora"],
-                      "Only qlora / qalora / lora / relora are supported for training_mode now.")
+    invalidInputError(training_mode == "qlora",
+                      f"This example is for qlora training mode, but got training_mode={training_mode}.")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
