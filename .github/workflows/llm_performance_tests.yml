@@ -9,12 +9,12 @@ concurrency:
 on:
   schedule:
     - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm_performance_tests.yml"
+      - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
@@ -25,7 +25,7 @@ jobs:
     uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
     # needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -51,22 +51,22 @@ jobs:
         # pip install transformers_stream_generator for model internlm-chat-7b-8k
         # pip install tiktoken for model Qwen-7B-Chat-10-12
         run: |
-          python -m pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
+          python -m pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
 
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
-        with:
-          extra-dependency: "xpu_2.1"
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
+      #   with:
+      #     extra-dependency: "xpu_2.1"
 
       - name: Test installed xpu version
         shell: bash
