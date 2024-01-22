@@ -73,7 +73,6 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  use_cache=True)
     model = model.to('xpu')
-    print("Target model loaded!")
 
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
@@ -81,32 +80,33 @@ if __name__ == '__main__':
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(model.device)
 
+        # warmup
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0])
+
+        # speculative decoding
+        st = time.perf_counter()
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict,
+                                do_sample=False)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+        torch.xpu.synchronize()
+        end = time.perf_counter()
+        print("=======================================")
         print(output_str)
-        for i in range(2):
-            st = time.perf_counter()
-            output = model.generate(input_ids,
-                                    max_new_tokens=args.n_predict,
-                                    do_sample=False)
-            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            torch.xpu.synchronize()
-            end = time.perf_counter()
-            print("=======================================")
-            print(output_str)
-            print(f"Final token number {model.n_token_generated}")
-            print(f"Average Draft time {sum(model.draft_time)/model.n_drafted}")
-            print(f"Average Verify time {sum(model.verify_time)/len(model.verify_time)}")
-            print(f"Average Generation time {sum(model.generate_time)/len(model.generate_time)}")
-            print(f"Generation throughput {1.0 * (model.n_token_generated - 1) / sum(model.generate_time)}")
-            print(f"E2E Generation throughput without first token {1.0 * (model.n_token_generated - 1) / model.e2e_time_without_first }")
-            print(f"E2E Generation throughput {1.0 * (model.n_token_generated - 1) / (end - st) }")
-            print(f"Draft num {model.n_drafted}")
-            print(f"Accept num {model.n_matched}")
-            print(f"Draft {model.draft_num}")
-            print(f"Accept {model.accept_num}")
-            print(f"Iters: {len(model.draft_num)}")
-            print(f"Draft len: {model.n_drafted/len(model.draft_num)}, accept len: {model.n_matched/len(model.accept_num)}")
-            print(f"Accept rate: {model.n_matched/model.n_drafted}")
+        print(f"Final token number {model.n_token_generated}")
+        print(f"Average Draft time {sum(model.draft_time)/model.n_drafted}")
+        print(f"Average Verify time {sum(model.verify_time)/len(model.verify_time)}")
+        print(f"Average Generation time {sum(model.generate_time)/len(model.generate_time)}")
+        print(f"Generation throughput {1.0 * (model.n_token_generated - 1) / sum(model.generate_time)}")
+        print(f"E2E Generation throughput without first token {1.0 * (model.n_token_generated - 1) / model.e2e_time_without_first }")
+        print(f"E2E Generation throughput {1.0 * (model.n_token_generated - 1) / (end - st) }")
+        print(f"Draft num {model.n_drafted}")
+        print(f"Accept num {model.n_matched}")
+        print(f"Draft {model.draft_num}")
+        print(f"Accept {model.accept_num}")
+        print(f"Iters: {len(model.draft_num)}")
+        print(f"Draft len: {model.n_drafted/len(model.draft_num)}, accept len: {model.n_matched/len(model.accept_num)}")
+        print(f"Accept rate: {model.n_matched/model.n_drafted}")

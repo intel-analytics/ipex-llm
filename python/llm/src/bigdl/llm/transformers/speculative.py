@@ -40,21 +40,31 @@ def generate(
     synced_gpus: Optional[bool] = None,
     assistant_model: Optional["PreTrainedModel"] = None,
     streamer: Optional["BaseStreamer"] = None,
-    negative_prompt_ids: Optional[torch.Tensor] = None,
-    negative_prompt_attention_mask: Optional[torch.Tensor] = None,
     **kwargs,
 ):
     if hasattr(self, "draft_model"):
-        # Do speculative decoding if there is attached draft model
-        # TODO: maybe add other check later
+        # do speculative decoding
+        # TODO: maybe add other way to double check
+        new_speculative_kwargs = {}
+        for var in ['max_new_tokens', 'max_step_draft', 'th_stop_draft', 'do_sample',
+                    'top_k', 'top_p', 'temperature', 'hf_adjust',
+                    'auto_th_stop_draft', 'auto_parameters']:
+            value = kwargs.pop(var, None)
+            if value is not None:
+                new_speculative_kwargs[var] = value
         return self.speculative_generate(input_ids=inputs,
                                          draft_model=self.draft_model,
-                                         max_new_tokens=kwargs['max_new_tokens'])
+                                         **new_speculative_kwargs)
     else:
-        return original_generate(inputs,
+        return original_generate(self,
+                                 inputs=inputs,
                                  generation_config=generation_config,
                                  logits_processor=logits_processor,
                                  stopping_criteria=stopping_criteria,
+                                 prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                 synced_gpus=synced_gpus,
+                                 assistant_model=assistant_model,
+                                 streamer=streamer,
                                  **kwargs)
 
 GenerationMixin.generate = generate
