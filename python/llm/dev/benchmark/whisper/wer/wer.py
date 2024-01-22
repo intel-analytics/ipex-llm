@@ -126,7 +126,7 @@ class WER(evaluate.Metric):
                 incorrect += measures["substitutions"] + measures["deletions"] + measures["insertions"]
                 total += measures["substitutions"] + measures["deletions"] + measures["hits"]
                 id += 1
-            print(id_max, max)
-            print(predictions[id_max])
-            print(references[id_max])
+            # print(id_max, max)
+            # print(predictions[id_max])
+            # print(references[id_max])
             return incorrect / total
