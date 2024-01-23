@@ -15,8 +15,8 @@
 #
 
 import torch
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
-from transformers import LlamaTokenizer, AutoTokenizer
+from bigdl.llm.transformers import AutoModelForCausalLM
+from transformers import LlamaTokenizer
 import argparse
 import time
 import numpy as np
