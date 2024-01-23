@@ -39,7 +39,7 @@ python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt P
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the ChatGLM3 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/chatglm3-6b'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). A default prompt is provided.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
 
