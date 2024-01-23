@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="IEITYuan/Yuan2-2B-hf",
                         help='The huggingface repo id for the Yuan2 to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="请问目前最先进的机器学习算法有哪些？",
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt for the model')
     parser.add_argument('--n-predict', type=int, default=100,
                         help='Number of tokens to generate')
