@@ -46,10 +46,10 @@ from peft import (
 )
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-common_util_path = os.path.join(current_dir, '..')
+common_util_path = os.path.join(current_dir, '..', '..')
 import sys
 sys.path.append(common_util_path)
-from common.utils import Prompter, get_int_from_env, get_trainer_cls, wandb_check, get_train_val_data
+from common.utils import Prompter, get_int_from_env, wandb_check, get_train_val_data
 
 from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -92,7 +92,7 @@ def train(
         "up_proj",
         "down_proj",
         "gate_proj"
-    ],
+    ],  # according to the QLoRA paper (https://arxiv.org/pdf/2305.14314.pdf), it's suggested to fine tune all linear layers
     # llm hyperparams
     train_on_inputs: bool = True,  # if False, masks out inputs in loss
     add_eos_token: bool = False,
@@ -106,10 +106,10 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
-    training_mode: str = "qalora",
+    training_mode: str = "qlora",
 ):
-    invalidInputError(training_mode == "qalora",
-                      f"This example is for qalora training mode, but got training_mode={training_mode}.")
+    invalidInputError(training_mode == "qlora",
+                      f"This example is for qlora training mode, but got training_mode={training_mode}.")
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
@@ -163,12 +163,12 @@ def train(
             modules_to_not_convert=["lm_head"],
         )
     else:
-        # Default 4-bit format for qa-lora is sym_int4
-        # use bnb_config for qalora, which use 4bit for base model
+        # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
+        # use bnb_config for qlora/qalora/relora, which use 4bit for base model
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=False,
-            bnb_4bit_quant_type="int4",
+            bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16
         )
         model = AutoModelForCausalLM.from_pretrained(base_model,
@@ -177,7 +177,7 @@ def train(
         # Load the base model from a directory or the HF Hub to 4-bit format
         # model = AutoModelForCausalLM.from_pretrained(
         #     base_model,
-        #     load_in_low_bit="sym_int4",
+        #     load_in_low_bit="nf4",
         #     optimize_model=False,
         #     torch_dtype=torch.bfloat16,
         #     # device_map=device_map,
@@ -228,9 +228,7 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer_cls = get_trainer_cls(training_mode=training_mode)
-
-    trainer = trainer_cls(
+    trainer = transformers.Trainer(
         model=model,
         train_dataset=train_data,
         eval_dataset=val_data,
@@ -242,7 +240,7 @@ def train(
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            lr_scheduler_type="constant",
+            lr_scheduler_type="cosine",
             bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",

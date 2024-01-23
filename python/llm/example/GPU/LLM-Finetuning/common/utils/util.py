@@ -60,14 +60,6 @@ def get_int_from_env(env_keys, default):
     return int(default)
 
 
-def get_trainer_cls(training_mode):
-    """Returns the trainer class according to different training mode."""
-    if training_mode == "relora":
-        from bigdl.llm.transformers.relora import ReLoRATrainer
-        return ReLoRATrainer
-    return transformers.Trainer
-
-
 def wandb_check(wandb_project, wandb_watch, wandb_log_model):
     """Check if wandb related parameter passed or if set within environ"""
     use_wandb = len(wandb_project) > 0 or (

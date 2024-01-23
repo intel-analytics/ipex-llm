@@ -49,7 +49,7 @@ bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 ### 4. (Optional) Resume Training
 **If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
 ```bash
-python ./alpaca_qlora_finetuning.py \
+python ./alpaca_qalora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-qlora-alpaca" \

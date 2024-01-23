@@ -49,7 +49,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 common_util_path = os.path.join(current_dir, '..')
 import sys
 sys.path.append(common_util_path)
-from common.utils import Prompter, get_int_from_env, get_trainer_cls, wandb_check, get_train_val_data
+from common.utils import Prompter, get_int_from_env, wandb_check, get_train_val_data
 
 from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -216,9 +216,7 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer_cls = get_trainer_cls(training_mode=training_mode)
-
-    trainer = trainer_cls(
+    trainer = transformers.Trainer(
         model=model,
         train_dataset=train_data,
         eval_dataset=val_data,

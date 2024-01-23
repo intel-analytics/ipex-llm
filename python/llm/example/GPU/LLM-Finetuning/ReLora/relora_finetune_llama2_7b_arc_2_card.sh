@@ -20,7 +20,7 @@ export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
 
 mpirun -n 2 \
-       python -u ./relora_finetuning.py \
+       python -u ./alpaca_relora_finetuning.py \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
        --output_dir "./bigdl-relora-alpaca" \

@@ -15,7 +15,7 @@
 #
 
 # You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
-python ./relora_finetuning.py \
+python ./alpaca_relora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-relora-alpaca" \

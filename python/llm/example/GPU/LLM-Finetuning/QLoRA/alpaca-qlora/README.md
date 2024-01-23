@@ -1,9 +1,11 @@
-# ReLoRA Finetuning with BigDL-LLM
+# QLoRA Finetuning with BigDL-LLM
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using [ReLoRA](https://arxiv.org/abs/2307.05695) algorithm) on [Intel GPU](../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using [QLoRA](https://arxiv.org/abs/2305.14314) algorithm) on [Intel GPU](../../../README.md).
+
+> Note: You could also refer to [simple QLoRA example](../simple-example/) to try related usage.
 
 ### 0. Requirements
-To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
+To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ### 1. Install
 
@@ -24,38 +26,62 @@ pip install bitsandbytes scipy
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. ReLoRA Finetune
+### 3. QLoRA Finetune
 
 Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device:
 
 ##### Finetuning LLaMA2-7B on single Arc A770
 
 ```bash
-bash relora_finetune_llama2_7b_arc_1_card.sh
+bash qlora_finetune_llama2_7b_arc_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on two Arc A770
 
 ```bash
-bash relora_finetune_llama2_7b_arc_2_card.sh
+bash qlora_finetune_llama2_7b_arc_2_card.sh
+```
+
+##### Finetuning LLaMA2-7B on single Data Center GPU Flex 170
+
+```bash
+bash qlora_finetune_llama2_7b_flex_170_1_card.sh
+```
+
+##### Finetuning LLaMA2-7B on three Data Center GPU Flex 170
+
+```bash
+bash qlora_finetune_llama2_7b_flex_170_3_card.sh
+```
+
+##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1100
+
+```bash
+bash qlora_finetune_llama2_7b_pvc_1100_1_card.sh
+```
+
+##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
+
+```bash
+bash qlora_finetune_llama2_7b_pvc_1100_4_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on single Intel Data Center GPU Max 1550
 
 ```bash
-bash relora_finetune_llama2_7b_pvc_1550_1_card.sh
+bash qlora_finetune_llama2_7b_pvc_1550_1_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1550
 
 ```bash
-bash relora_finetune_llama2_7b_pvc_1550_4_card.sh
+bash qlora_finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
 ### 4. (Optional) Resume Training
-**If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
 ```bash
-python ./alpaca_relora_finetuning.py \
+python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./bigdl-qlora-alpaca" \

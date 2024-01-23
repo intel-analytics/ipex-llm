@@ -20,7 +20,7 @@ from transformers import LlamaTokenizer  # noqa: F402
 import argparse
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-common_util_path = os.path.join(current_dir, '..')
+common_util_path = os.path.join(current_dir, '..', '..')
 import sys
 sys.path.append(common_util_path)
 from common.utils import merge_adapter

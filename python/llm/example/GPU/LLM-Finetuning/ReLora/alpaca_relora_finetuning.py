@@ -49,10 +49,11 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 common_util_path = os.path.join(current_dir, '..')
 import sys
 sys.path.append(common_util_path)
-from common.utils import Prompter, get_int_from_env, get_trainer_cls, wandb_check, get_train_val_data
+from common.utils import Prompter, get_int_from_env, wandb_check, get_train_val_data
 
 from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers.relora import ReLoRATrainer
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
     LoraConfig
@@ -239,7 +240,6 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer_cls = get_trainer_cls(training_mode=training_mode)
     extra_args = {}
     if training_mode == "relora":
         extra_args["base_model"] = base_model
@@ -248,7 +248,7 @@ def train(
         extra_args["relora_cpu_offload"] = relora_cpu_offload
         extra_args["resume_from_checkpoint"] = resume_from_checkpoint
 
-    trainer = trainer_cls(
+    trainer = ReLoRATrainer(
         model=model,
         train_dataset=train_data,
         eval_dataset=val_data,

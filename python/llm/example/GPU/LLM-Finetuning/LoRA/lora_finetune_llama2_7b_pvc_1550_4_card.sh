@@ -20,7 +20,7 @@ export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
 
 mpirun -n 8 \
-    python -u ./lora_finetuning.py \
+    python -u ./alpaca_lora_finetuning.py \
     --micro_batch_size 8 \
     --batch_size 128 \
     --base_model "meta-llama/Llama-2-7b-hf" \
