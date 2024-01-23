@@ -330,14 +330,14 @@ def speculative_generate(self,
                                             draft_generate_ids[:, 1:step_draft+1]), dim=-1)
                 logits = draft_output['logits']
                 logits[:, -1, :] = logits_processor(temp_input_ids,
-                                                      draft_output['logits'][:, -1, :])
-                draft_output_ids, draft_output_probs = sample(logits,
-                                                              return_probs=True,
-                                                              do_sample=generation_config.do_sample,
-                                                              top_k=generation_config.top_k,
-                                                              top_p=generation_config.top_p,
-                                                              temperature=\
-                                                              generation_config.temperature)
+                                                    draft_output['logits'][:, -1, :])
+                draft_output_ids, draft_output_probs = sample(
+                    logits,
+                    return_probs=True,
+                    do_sample=generation_config.do_sample,
+                    top_k=generation_config.top_k,
+                    top_p=generation_config.top_p,
+                    temperature=generation_config.temperature)
                 draft_generate_ids[:, step_draft+1] = draft_output_ids
                 draft_current_input_ids = draft_output_ids
                 draft_past_key_values = draft_output['past_key_values']
