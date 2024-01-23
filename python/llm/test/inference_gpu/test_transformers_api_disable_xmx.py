@@ -50,7 +50,7 @@ def test_optimize_model(Model, Tokenizer, model_path):
         logits_optimized_model = (model(input_ids)).logits
         model.to('cpu')
 
-        tol = 1e-02
+        tol = 1e-03
         num_false = torch.isclose(logits_optimized_model, logits_base_model, rtol=tol, atol=tol)\
             .flatten().tolist().count(False)
         percent_false = num_false / logits_optimized_model.numel()
