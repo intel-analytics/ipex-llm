@@ -222,8 +222,8 @@ def speculative_generate(self,
         if not has_default_max_length and generation_config.max_length is not None:
             logger.warning(
                 f"Both `max_new_tokens` (={generation_config.max_new_tokens}) and `max_length`(="
-                f"{generation_config.max_length}) seem to have been set. `max_new_tokens`
-                will take precedence. "
+                f"{generation_config.max_length}) seem to have been set. `max_new_tokens`"
+                "will take precedence. "
                 "Please refer to the documentation for more information. "
                 "(https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)"
             )
@@ -268,10 +268,6 @@ def speculative_generate(self,
 
     self.clear_benchmarks()
 
-    if self.config.model_type == "qwen":
-        from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
-        logit_processor = RepetitionPenaltyLogitsProcessor(
-            penalty=self.generation_config.repetition_penalty)
     # Example:
     # Target model forward for the first token
     # Step 1. target_model(prompt) -> a
