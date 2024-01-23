@@ -35,6 +35,7 @@ class CPUPinnedParam(Parameter):
             return self._device
         except AttributeError:
             return super().device
+
     @device.setter
     def device(self, to_device):
         self._device = to_device
