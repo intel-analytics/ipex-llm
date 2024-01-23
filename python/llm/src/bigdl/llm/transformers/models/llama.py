@@ -284,7 +284,7 @@ def llama_attention_forward_4_31(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, self.head_dim, query_states):
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
@@ -689,11 +689,11 @@ def llama_attention_forward_4_36(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, self.head_dim, query_states):
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states.contiguous(),
-                                                    value_states.contiguous())
+                                                    key_states,
+                                                    value_states)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
