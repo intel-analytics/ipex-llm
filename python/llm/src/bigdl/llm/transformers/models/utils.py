@@ -230,12 +230,15 @@ def use_flash_attention(query, key):
     return True
 
 
-def use_esimd_sdp(q_len, head_dim, query_states):
+def use_esimd_sdp(q_len, k_len, head_dim, query_states):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
     elif q_len != 1:
         # esimd_sdp only support rest token now
+        return False
+    elif k_len < 8:
+        # esimd_sdp will cause wrong output when k_len < 8
         return False
     elif query_states.device.type != "xpu":
         # esimd_sdp only support GPU now
