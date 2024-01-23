@@ -49,7 +49,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 common_util_path = os.path.join(current_dir, '..')
 import sys
 sys.path.append(common_util_path)
-from common.utils.prompter import Prompter
+from common.utils import Prompter, get_int_from_env, get_trainer_cls, wandb_check, get_train_val_data
 
 from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -58,21 +58,6 @@ from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_
     LoraConfig
 from bigdl.llm.utils.common import invalidInputError
 
-
-def get_int_from_env(env_keys, default):
-    """Returns the first positive env value found in the `env_keys` list or the default."""
-    for e in env_keys:
-        val = int(os.environ.get(e, -1))
-        if val >= 0:
-            return val
-    return int(default)
-
-def _get_trainer_cls(training_mode):
-    if training_mode == "relora":
-        from bigdl.llm.transformers.relora import ReLoRATrainer
-        return ReLoRATrainer
-    return transformers.Trainer
- 
 local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
 port = get_int_from_env(["MASTER_PORT"], 29500)
@@ -107,7 +92,7 @@ def train(
         "up_proj",
         "down_proj",
         "gate_proj"
-    ],  # according to the QLoRA paper (https://arxiv.org/pdf/2305.14314.pdf), it's suggested to fine tune all linear layers
+    ],
     # llm hyperparams
     train_on_inputs: bool = True,  # if False, masks out inputs in loss
     add_eos_token: bool = False,
@@ -122,12 +107,6 @@ def train(
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
     training_mode: str = "lora",
-    # relora params, relora_steps should > 0 if the training mode is `relora`,
-    # Implements the ReLoRA training procedure from https://arxiv.org/abs/2307.05695,
-    # minus the initial full fine-tune.
-    relora_steps: int = 300,         # Number of steps per ReLoRA restart
-    relora_warmup_steps: int = 10,   # Number of per-restart warmup steps
-    relora_cpu_offload: bool = True, # True to perform lora weight merges on cpu during restarts, for modest gpu memory savings
 ):
     invalidInputError(training_mode == "lora",
                       f"This example is for lora training mode, but got training_mode={training_mode}.")
@@ -157,17 +136,11 @@ def train(
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
             f"training_mode: {training_mode}\n"
-            f"relora_steps: {relora_steps}\n"
-            f"relora_warmup_steps: {relora_warmup_steps}\n"
-            f"relora_cpu_offload: {relora_cpu_offload}\n"
         )
     assert (
         base_model
     ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
     gradient_accumulation_steps = batch_size // micro_batch_size
-
-    if training_mode == "relora":
-        assert(relora_steps > 0), "The relora_steps should > 0 if the training_mode is relora."
 
     prompter = Prompter(prompt_template_name)
 
@@ -179,16 +152,7 @@ def train(
         gradient_accumulation_steps = gradient_accumulation_steps // world_size
 
     # Check if parameter passed or if set within environ
-    use_wandb = len(wandb_project) > 0 or (
-        "WANDB_PROJECT" in os.environ and len(os.environ["WANDB_PROJECT"]) > 0
-    )
-    # Only overwrite environ if wandb param passed
-    if len(wandb_project) > 0:
-        os.environ["WANDB_PROJECT"] = wandb_project
-    if len(wandb_watch) > 0:
-        os.environ["WANDB_WATCH"] = wandb_watch
-    if len(wandb_log_model) > 0:
-        os.environ["WANDB_LOG_MODEL"] = wandb_log_model
+    use_wandb = wandb_check(wandb_project, wandb_watch, wandb_log_model)
 
     if saved_low_bit_model is not None:
         # Load the low bit optimized model if provide the saved path
@@ -199,47 +163,14 @@ def train(
             modules_to_not_convert=["lm_head"],
         )
     else:
-        # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
-        # Default 4-bit format for qa-lora is sym_int4
-        if training_mode == "lora":
-            model = AutoModelForCausalLM.from_pretrained(
-                base_model,
-                load_in_low_bit="bf16",
-                optimize_model=False,
-                torch_dtype=torch.bfloat16,
-                modules_to_not_convert=["lm_head"],
-            )
-        else:
-            # use bnb_config for qlora/qalora/relora, which use 4bit for base model
-            if training_mode == "qalora":
-                low_bit_format = "int4"
-            else:
-                low_bit_format = "nf4"
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_use_double_quant=False,
-                bnb_4bit_quant_type=low_bit_format,
-                bnb_4bit_compute_dtype=torch.bfloat16
-            )
-            model = AutoModelForCausalLM.from_pretrained(base_model,
-                                                         quantization_config=bnb_config, )
+        model = AutoModelForCausalLM.from_pretrained(
+            base_model,
+            load_in_low_bit="bf16",
+            optimize_model=False,
+            torch_dtype=torch.bfloat16,
+            modules_to_not_convert=["lm_head"],
+        )
 
-        # below is also supported
-        # Load the base model from a directory or the HF Hub to 4-bit format
-        # if training_mode == "qalora":
-        #     low_bit_format = "sym_int4"
-        # elif training_mode == "lora":
-        #     low_bit_format = "bf16"
-        # else:
-        #     low_bit_format = "nf4"
-        # model = AutoModelForCausalLM.from_pretrained(
-        #     base_model,
-        #     load_in_low_bit=low_bit_format,
-        #     optimize_model=False,
-        #     torch_dtype=torch.bfloat16,
-        #     # device_map=device_map,
-        #     modules_to_not_convert=["lm_head"],
-        # )
     print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
     model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
@@ -253,54 +184,6 @@ def train(
     tokenizer.padding_side = "left"  # Allow batched inference
 
     print(model)
-
-    def tokenize(prompt, add_eos_token=True):
-        # there's probably a way to do this with the tokenizer settings
-        # but again, gotta move fast
-        result = tokenizer(
-            prompt,
-            truncation=True,
-            max_length=cutoff_len,
-            padding=False,
-            return_tensors=None,
-        )
-        if (
-            result["input_ids"][-1] != tokenizer.eos_token_id
-            and len(result["input_ids"]) < cutoff_len
-            and add_eos_token
-        ):
-            result["input_ids"].append(tokenizer.eos_token_id)
-            result["attention_mask"].append(1)
-
-        result["labels"] = result["input_ids"].copy()
-
-        return result
-
-    def generate_and_tokenize_prompt(data_point):
-        full_prompt = prompter.generate_prompt(
-            data_point["instruction"],
-            data_point["input"],
-            data_point["output"],
-        )
-        tokenized_full_prompt = tokenize(full_prompt)
-        if not train_on_inputs:
-            user_prompt = prompter.generate_prompt(
-                data_point["instruction"], data_point["input"]
-            )
-            tokenized_user_prompt = tokenize(
-                user_prompt, add_eos_token=add_eos_token
-            )
-            user_prompt_len = len(tokenized_user_prompt["input_ids"])
-
-            if add_eos_token:
-                user_prompt_len -= 1
-
-            tokenized_full_prompt["labels"] = [
-                -100
-            ] * user_prompt_len + tokenized_full_prompt["labels"][
-                user_prompt_len:
-            ]  # could be sped up, probably
-        return tokenized_full_prompt
 
     # Prepare a BigDL-LLM compatible Peft model
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=gradient_checkpointing)
@@ -324,19 +207,8 @@ def train(
 
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
-    if val_set_size > 0:
-        train_val = data["train"].train_test_split(
-            test_size=val_set_size, shuffle=True, seed=42
-        )
-        train_data = (
-            train_val["train"].shuffle().map(generate_and_tokenize_prompt)
-        )
-        val_data = (
-            train_val["test"].shuffle().map(generate_and_tokenize_prompt)
-        )
-    else:
-        train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
-        val_data = None
+    train_data, val_data = get_train_val_data(data, tokenizer, prompter, train_on_inputs,
+                                              add_eos_token, cutoff_len, val_set_size, seed=42)
 
     # Unused
     # if not ddp and torch.cuda.device_count() > 1:
@@ -344,20 +216,12 @@ def train(
     #     model.is_parallelizable = True
     #     model.model_parallel = True
 
-    trainer_cls = _get_trainer_cls(training_mode=training_mode)
-    extra_args = {}
-    if training_mode == "relora":
-        extra_args["base_model"] = base_model
-        extra_args["relora_steps"] = relora_steps
-        extra_args["relora_warmup_steps"] = relora_warmup_steps
-        extra_args["relora_cpu_offload"] = relora_cpu_offload
-        extra_args["resume_from_checkpoint"] = resume_from_checkpoint
+    trainer_cls = get_trainer_cls(training_mode=training_mode)
 
     trainer = trainer_cls(
         model=model,
         train_dataset=train_data,
         eval_dataset=val_data,
-        **extra_args,
         args=transformers.TrainingArguments(
             per_device_train_batch_size=micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
@@ -366,7 +230,7 @@ def train(
             max_grad_norm=0.3,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            lr_scheduler_type="constant" if training_mode=="qalora" else "cosine",
+            lr_scheduler_type="cosine",
             bf16=True,  # ensure training more stable
             logging_steps=1,
             optim="adamw_torch",
@@ -375,7 +239,7 @@ def train(
             eval_steps=100 if val_set_size > 0 else None,
             save_steps=100,
             output_dir=output_dir,
-            save_total_limit=100 if training_mode != "relora" else 4, # relora will save the whole model, here we use 4 to save the disk space.
+            save_total_limit=100,
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
