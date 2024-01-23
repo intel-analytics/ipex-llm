@@ -35,6 +35,7 @@ original_generate = GenerationMixin.generate
 
 logger = logging.getLogger("bigdl.llm.speculative")
 
+
 @torch.no_grad()
 def generate(
     self,
@@ -58,7 +59,7 @@ def generate(
             value = kwargs.pop(var, None)
             if value is not None:
                 new_speculative_kwargs[var] = value
-        return self.speculative_generate(input_ids=inputs,
+        return self.speculative_generate(inputs=inputs,
                                          draft_model=self.draft_model,
                                          **new_speculative_kwargs)
     else:
@@ -115,52 +116,60 @@ def clear_benchmarks(self):
 @torch.no_grad()
 def speculative_generate(self,
                          inputs: Optional[torch.Tensor] = None,
-                         draft_model = None,
+                         draft_model=None,
                          max_new_tokens=10,
                          max_step_draft=8,
                          th_stop_draft=0.8,
                          auto_th_stop_draft=True,
-                         auto_parameters=[1,0.5,0.9,1e-2,0.9],
+                         auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
                          hf_adjust=False,
                          generation_config: Optional[GenerationConfig] = None,
                          **sampling_kwargs):
     invalidInputError(draft_model is not None,
                       "Draft model should be provided.")
-    
+
     if generation_config is None:
-        # legacy: users may modify the model configuration to control generation. To trigger this legacy behavior,
-        # two conditions must be met
-        # 1) the generation config must have been created from the model config (`_from_model_config` field);
-        # 2) the generation config must have seen no modification since its creation (the hash is the same).
-        if self.generation_config._from_model_config and self.generation_config._original_object_hash == hash(
+        # legacy: users may modify the model configuration to control generation.
+        # To trigger this legacy behavior, two conditions must be met
+        # 1) the generation config must have been created from the
+        # model config (`_from_model_config` field);
+        # 2) the generation config must have seen no modification
+        # since its creation (the hash is the same).
+        if self.generation_config._from_model_config \
+           and self.generation_config._original_object_hash == hash(
             self.generation_config
         ):
             new_generation_config = GenerationConfig.from_model_config(self.config)
             if new_generation_config != self.generation_config:
                 warnings.warn(
-                    "You have modified the pretrained model configuration to control generation. This is a"
-                    " deprecated strategy to control generation and will be removed soon, in a future version."
-                    " Please use and modify the model generation configuration (see"
-                    " https://huggingface.co/docs/transformers/generation_strategies#default-text-generation-configuration )"
+                    "You have modified the pretrained model configuration to control "
+                    "generation. This is a deprecated strategy to control generation "
+                    "and will be removed soon, in a future version. Please use and "
+                    "modify the model generation configuration (see"
+                    " https://huggingface.co/docs/transformers/generation_strategies"
+                    "#default-text-generation-configuration )"
                 )
                 self.generation_config = new_generation_config
         generation_config = self.generation_config
 
     generation_config = copy.deepcopy(generation_config)
-    model_kwargs = generation_config.update(**sampling_kwargs)  # All unused kwargs must be model kwargs
+    # All unused kwargs must be model kwargs
+    model_kwargs = generation_config.update(**sampling_kwargs)
     generation_config.validate()
     self._validate_model_kwargs(model_kwargs.copy())
 
     if generation_config.pad_token_id is None and generation_config.eos_token_id is not None:
             if model_kwargs.get("attention_mask", None) is None:
                 logger.warning(
-                    "The attention mask and the pad token id were not set. As a consequence, you may observe "
-                    "unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results."
+                    "The attention mask and the pad token id were not set. As a consequence, "
+                    "you may observe unexpected behavior. Please pass your input's "
+                    "`attention_mask` to obtain reliable results."
                 )
             eos_token_id = generation_config.eos_token_id
             if isinstance(eos_token_id, list):
                 eos_token_id = eos_token_id[0]
-            logger.warning(f"Setting `pad_token_id` to `eos_token_id`:{eos_token_id} for open-end generation.")
+            logger.warning(f"Setting `pad_token_id` to `eos_token_id`:"
+                           f"{eos_token_id} for open-end generation.")
             generation_config.pad_token_id = eos_token_id
 
     # 2. Set generation parameters if not already defined
@@ -173,7 +182,7 @@ def speculative_generate(self,
     # otherwise model_input_name is None
     # all model-specific keyword inputs are removed from `model_kwargs`
     inputs_tensor, model_input_name, model_kwargs = self._prepare_model_inputs(
-            inputs, generation_config.bos_token_id, model_kwargs
+        inputs, generation_config.bos_token_id, model_kwargs
     )
     batch_size = inputs_tensor.shape[0]
 
@@ -183,53 +192,55 @@ def speculative_generate(self,
     # decoder-only models should use left-padding for generation
     if not self.config.is_encoder_decoder:
         # If `input_ids` was given, check if the last id in any sequence is `pad_token_id`
-        # Note: If using, `inputs_embeds` this check does not work, because we want to be more hands-off.
+        # Note: If using, `inputs_embeds` this check does not work,
+        # because we want to be more hands-off.
         if (
             generation_config.pad_token_id is not None
             and len(inputs_tensor.shape) == 2
             and torch.sum(inputs_tensor[:, -1] == generation_config.pad_token_id) > 0
         ):
             logger.warning(
-                "A decoder-only architecture is being used, but right-padding was detected! For correct "
-                "generation results, please set `padding_side='left'` when initializing the tokenizer."
+                "A decoder-only architecture is being used, but right-padding "
+                "was detected! For correct generation results, please set "
+                "`padding_side='left'` when initializing the tokenizer."
             )
     else:
-        logger.error("encoder-decoder models are not supported now.")
-        raise TypeError("encoder-decoder models are not supported now.")
+        invalidInputError(False, "encoder-decoder models are not supported now.")
 
     # yina: remove encoder_decoder part in the following code
     # 5. Prepare `input_ids` which will be used for auto-regressive generation
     input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop("input_ids")
-    
+
     # if streamer is not None:
     #     streamer.put(input_ids.cpu())
 
     # 6. Prepare `max_length` depending on other stopping criteria.
     input_ids_length = input_ids.shape[-1]
-    has_default_max_length = sampling_kwargs.get("max_length") is None and generation_config.max_length is not None
+    has_default_max_length = sampling_kwargs.get("max_length") is None \
+                             and generation_config.max_length is not None
     if generation_config.max_new_tokens is not None:
         if not has_default_max_length and generation_config.max_length is not None:
             logger.warning(
                 f"Both `max_new_tokens` (={generation_config.max_new_tokens}) and `max_length`(="
-                f"{generation_config.max_length}) seem to have been set. `max_new_tokens` will take precedence. "
+                f"{generation_config.max_length}) seem to have been set. `max_new_tokens`
+                will take precedence. "
                 "Please refer to the documentation for more information. "
                 "(https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)"
             )
         generation_config.max_length = generation_config.max_new_tokens + input_ids_length
-    # generation_config.max_length = generation_config.max_length + speculate_k + 1 if is_speculative else generation_config.max_length
     self._validate_generated_length(generation_config, input_ids_length, has_default_max_length)
 
     # Here we use sample generation mode
     # 8. prepare distribution pre_processing samplers
     logits_processor = self._get_logits_processor(
         generation_config=generation_config,
-            input_ids_seq_length=input_ids_length,
-            encoder_input_ids=inputs_tensor,
-            prefix_allowed_tokens_fn=None,
-            logits_processor=logits_processor,
-            model_kwargs=model_kwargs,
-            negative_prompt_ids=None,
-            negative_prompt_attention_mask=None,
+        input_ids_seq_length=input_ids_length,
+        encoder_input_ids=inputs_tensor,
+        prefix_allowed_tokens_fn=None,
+        logits_processor=logits_processor,
+        model_kwargs=model_kwargs,
+        negative_prompt_ids=None,
+        negative_prompt_attention_mask=None,
     )
 
     # 12. expand input_ids with `num_return_sequences` additional sequences per batch
@@ -322,14 +333,16 @@ def speculative_generate(self,
                                                use_cache=True)
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
                                             draft_generate_ids[:, 1:step_draft+1]), dim=-1)
-                draft_output['logits'][ :, -1, : ] = logits_processor(temp_input_ids,
-                                                                      draft_output['logits'][:, -1, :])
-                draft_output_ids, draft_output_probs = sample(draft_output['logits'],
+                logits = draft_output['logits']
+                logits[ :, -1, : ] = logits_processor(temp_input_ids,
+                                                      draft_output['logits'][:, -1, :])
+                draft_output_ids, draft_output_probs = sample(logits,
                                                               return_probs=True,
                                                               do_sample=generation_config.do_sample,
                                                               top_k=generation_config.top_k,
                                                               top_p=generation_config.top_p,
-                                                              temperature=generation_config.temperature)
+                                                              temperature=
+                                                              generation_config.temperature)
                 draft_generate_ids[:, step_draft+1] = draft_output_ids
                 draft_current_input_ids = draft_output_ids
                 draft_past_key_values = draft_output['past_key_values']
