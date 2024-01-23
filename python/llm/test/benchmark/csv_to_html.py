@@ -30,8 +30,8 @@ def highlight_vals(val, max=3.0, color1='red', color2='green'):
     else:
         return ''
 
-def first_nonzero_min(lst):
-    non_zero_lst = [num for num in lst if num != 0.0]
+def nonzero_min(lst):
+    non_zero_lst = [num for num in lst if num >= 0.0]
     return min(non_zero_lst) if non_zero_lst else None
 
 def is_diffs_within_normal_range(diff1, diff2, threshold=5.0):
@@ -44,8 +44,8 @@ def add_to_dict(dict, key, value):
 
 def best_in_dict(dict, key, value):
     if key in dict:
-        best_value = first_nonzero_min(dict[key])
-        if best_value < value or value == 0.0:
+        best_value = nonzero_min(dict[key])
+        if best_value < value or value <= 0.0:
             return best_value
         return value
     return value
