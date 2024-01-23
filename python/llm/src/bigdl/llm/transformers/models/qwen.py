@@ -134,7 +134,7 @@ def qwen_attention_forward(
 
     if query_size > 1:
         causal_mask = torch.tril(
-            torch.ones((kv_seq_len, kv_seq_len), dtype=torch.bool, device=query.device)
+            torch.ones((1, 1, kv_seq_len, kv_seq_len), dtype=torch.bool, device=query.device)
         )
         causal_mask = causal_mask[
             :, :, kv_seq_len - query_size:kv_seq_len, :kv_seq_len
