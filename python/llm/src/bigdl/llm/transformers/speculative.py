@@ -136,9 +136,8 @@ def speculative_generate(self,
         # 2) the generation config must have seen no modification
         # since its creation (the hash is the same).
         if self.generation_config._from_model_config \
-           and self.generation_config._original_object_hash == hash(
-            self.generation_config
-        ):
+            and self.generation_config._original_object_hash == hash(
+                self.generation_config):
             new_generation_config = GenerationConfig.from_model_config(self.config)
             if new_generation_config != self.generation_config:
                 warnings.warn(
@@ -217,7 +216,7 @@ def speculative_generate(self,
     # 6. Prepare `max_length` depending on other stopping criteria.
     input_ids_length = input_ids.shape[-1]
     has_default_max_length = sampling_kwargs.get("max_length") is None \
-                             and generation_config.max_length is not None
+        and generation_config.max_length is not None
     if generation_config.max_new_tokens is not None:
         if not has_default_max_length and generation_config.max_length is not None:
             logger.warning(
@@ -330,14 +329,14 @@ def speculative_generate(self,
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
                                             draft_generate_ids[:, 1:step_draft+1]), dim=-1)
                 logits = draft_output['logits']
-                logits[ :, -1, : ] = logits_processor(temp_input_ids,
+                logits[:, -1, :] = logits_processor(temp_input_ids,
                                                       draft_output['logits'][:, -1, :])
                 draft_output_ids, draft_output_probs = sample(logits,
                                                               return_probs=True,
                                                               do_sample=generation_config.do_sample,
                                                               top_k=generation_config.top_k,
                                                               top_p=generation_config.top_p,
-                                                              temperature=
+                                                              temperature=\
                                                               generation_config.temperature)
                 draft_generate_ids[:, step_draft+1] = draft_output_ids
                 draft_current_input_ids = draft_output_ids
