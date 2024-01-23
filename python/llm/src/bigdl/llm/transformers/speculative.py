@@ -195,6 +195,10 @@ def speculative_generate(self,
             # Draft model auto-regressively generate k tokens
             # Early stop when prob less then th_stop_draft
             for step_draft in range(max_step_draft):
+                if self.device.type == 'cpu':
+                    past_key_values = [
+                        (k.to(torch.float32), v.to(torch.float32)) for k, v in past_key_values
+                    ]
                 if self.config.model_type == "chatglm":
                     past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
