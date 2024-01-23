@@ -213,21 +213,7 @@ def speculative_generate(self,
     # if streamer is not None:
     #     streamer.put(input_ids.cpu())
 
-    # 6. Prepare `max_length` depending on other stopping criteria.
     input_ids_length = input_ids.shape[-1]
-    has_default_max_length = sampling_kwargs.get("max_length") is None \
-        and generation_config.max_length is not None
-    if generation_config.max_new_tokens is not None:
-        if not has_default_max_length and generation_config.max_length is not None:
-            logger.warning(
-                f"Both `max_new_tokens` (={generation_config.max_new_tokens}) and `max_length`(="
-                f"{generation_config.max_length}) seem to have been set. `max_new_tokens`"
-                "will take precedence. "
-                "Please refer to the documentation for more information. "
-                "(https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)"
-            )
-        generation_config.max_length = generation_config.max_new_tokens + input_ids_length
-    self._validate_generated_length(generation_config, input_ids_length, has_default_max_length)
 
     # Here we use sample generation mode
     # 8. prepare distribution pre_processing samplers
@@ -237,9 +223,6 @@ def speculative_generate(self,
         encoder_input_ids=inputs_tensor,
         prefix_allowed_tokens_fn=None,
         logits_processor=logits_processor,
-        model_kwargs=model_kwargs,
-        negative_prompt_ids=None,
-        negative_prompt_attention_mask=None,
     )
 
     # 12. expand input_ids with `num_return_sequences` additional sequences per batch
