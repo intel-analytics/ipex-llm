@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/dilab-zju/self-speculative-decoding/blob/main/decoding.py
+# https://github.com/dilab-zju/self-speculative-decoding/blob/main/decoding.py and
+# https://github.com/huggingface/transformers/blob/main/src/transformers/generation
+# /utils.py
 #
 
 import torch
@@ -158,18 +160,18 @@ def speculative_generate(self,
     self._validate_model_kwargs(model_kwargs.copy())
 
     if generation_config.pad_token_id is None and generation_config.eos_token_id is not None:
-            if model_kwargs.get("attention_mask", None) is None:
-                logger.warning(
-                    "The attention mask and the pad token id were not set. As a consequence, "
-                    "you may observe unexpected behavior. Please pass your input's "
-                    "`attention_mask` to obtain reliable results."
-                )
-            eos_token_id = generation_config.eos_token_id
-            if isinstance(eos_token_id, list):
-                eos_token_id = eos_token_id[0]
-            logger.warning(f"Setting `pad_token_id` to `eos_token_id`:"
-                           f"{eos_token_id} for open-end generation.")
-            generation_config.pad_token_id = eos_token_id
+        if model_kwargs.get("attention_mask", None) is None:
+            logger.warning(
+                "The attention mask and the pad token id were not set. As a consequence, "
+                "you may observe unexpected behavior. Please pass your input's "
+                "`attention_mask` to obtain reliable results."
+            )
+        eos_token_id = generation_config.eos_token_id
+        if isinstance(eos_token_id, list):
+            eos_token_id = eos_token_id[0]
+        logger.warning(f"Setting `pad_token_id` to `eos_token_id`:"
+                        f"{eos_token_id} for open-end generation.")
+        generation_config.pad_token_id = eos_token_id
 
     # 2. Set generation parameters if not already defined
     logits_processor = LogitsProcessorList()
@@ -206,7 +208,6 @@ def speculative_generate(self,
     else:
         invalidInputError(False, "encoder-decoder models are not supported now.")
 
-    # yina: remove encoder_decoder part in the following code
     # 5. Prepare `input_ids` which will be used for auto-regressive generation
     input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop("input_ids")
 
