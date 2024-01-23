@@ -2,7 +2,7 @@
 In this example, we use BigDL adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) agent chat with 
 local large language models.
 
-#### 1. Prepare Environment
+### 1. Prepare Environment
 ```bash
 conda create -n autogen python=3.9
 conda activate autogen
@@ -18,7 +18,7 @@ pip install chromadb==0.4.22
 ```
 
 
-#### 2. Setup FastChat and AutoGen Environment
+### 2. Setup FastChat and AutoGen Environment
 ```bash
 # create autogen running directory
 mkdir autogen
@@ -38,7 +38,7 @@ pip install pyautogen==0.2.7
 git clone https://github.com/intel-analytics/BigDL.git
 ```
 
-#### 3. Build FastChat OpenAI-Compatible RESTful API
+### 3. Build FastChat OpenAI-Compatible RESTful API
 Open 3 terminals
 
 **Terminal 1: Launch the controller**
@@ -75,7 +75,7 @@ cd FastChat  # go to the cloned FastChat folder in autogen folder
 python -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
-#### 4. Run Example
+### 4. Run Example
 Open another terminal
 
 ```bash
@@ -92,7 +92,7 @@ python teachability_new_knowledge.py
 
 ## Notices
 
-#### Change the model name
+### Change the model name
 When you download the model, please change the model folder to `bigdl` for the usage of bigdl adapted FastChat. For example, after download the `Mistral-7B-Instruct-v0.2`
 model and the path is `MODEL_PATH/Mistral-7B-Instruct-v0.2`, please change it to `MODEL_PATH/bigdl`.
 
