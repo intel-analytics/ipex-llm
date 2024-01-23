@@ -30,6 +30,10 @@ def highlight_vals(val, max=3.0, color1='red', color2='green'):
     else:
         return ''
 
+def nonzero_min(lst):
+    non_zero_lst = [num for num in lst if num >= 0.0]
+    return min(non_zero_lst) if non_zero_lst else None
+
 def is_diffs_within_normal_range(diff1, diff2, threshold=5.0):
     return not any(diff < (-threshold) for diff in diff1 + diff2 if isinstance(diff, float))
 
@@ -40,8 +44,8 @@ def add_to_dict(dict, key, value):
 
 def best_in_dict(dict, key, value):
     if key in dict:
-        best_value=min(dict[key])
-        if best_value < value:
+        best_value = nonzero_min(dict[key])
+        if best_value < value or value <= 0.0:
             return best_value
         return value
     return value
@@ -129,11 +133,12 @@ def main():
 
                     previous_1st_token_latency=previous_csv_row[latency_1st_token]
                     previous_2_avg_latency=previous_csv_row[latency_2_avg]
-                    last1[latest_csv_ind]=previous_1st_token_latency
-                    diff1[latest_csv_ind]=round((previous_1st_token_latency-latest_1st_token_latency)*100/previous_1st_token_latency,2)
-                    last2[latest_csv_ind]=previous_2_avg_latency
-                    diff2[latest_csv_ind]=round((previous_2_avg_latency-latest_2_avg_latency)*100/previous_2_avg_latency,2)
-                    in_previous_flag=True
+                    if previous_1st_token_latency > 0.0 and previous_2_avg_latency > 0.0:
+                        last1[latest_csv_ind]=previous_1st_token_latency
+                        diff1[latest_csv_ind]=round((previous_1st_token_latency-latest_1st_token_latency)*100/previous_1st_token_latency,2)
+                        last2[latest_csv_ind]=previous_2_avg_latency
+                        diff2[latest_csv_ind]=round((previous_2_avg_latency-latest_2_avg_latency)*100/previous_2_avg_latency,2)
+                        in_previous_flag=True
 
             if not in_previous_flag:
                 last1[latest_csv_ind]=pd.NA
