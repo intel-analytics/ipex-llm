@@ -112,8 +112,8 @@ def qwen_attention_forward(
                 if use_fuse_rope:
                     cos, sin = rotary_pos_emb
                     query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
-                    query_list += query
-                    key_list += key
+                    query_list += [query]
+                    key_list += [key]
                 else:
                     rotary_pos_emb = (rotary_pos_emb,) * 2
                     q_pos_emb, k_pos_emb = rotary_pos_emb
