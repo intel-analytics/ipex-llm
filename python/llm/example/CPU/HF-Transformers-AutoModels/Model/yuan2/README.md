@@ -69,6 +69,6 @@ numactl -C 0-47 -m 0 python ./generate.py
 Inference time: xxxx seconds
 -------------------- Output --------------------
  
-请问目前最先进的机器学习算法有哪些？
-<sep> 目前最先进的机器学习算法有：卷积神经网络（Convolutional Neural Networks，简称CNN）、循环神经网络（Recurrent Neural Networks，简称RNN）和生成对抗网络（Generative Adversarial Networks，简称GAN）。<eod>
+What is AI?
+AI is what we call "Artificial Intelligence."<eod>
 ```
