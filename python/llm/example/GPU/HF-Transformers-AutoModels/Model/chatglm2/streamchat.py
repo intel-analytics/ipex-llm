@@ -43,7 +43,7 @@ if __name__ == '__main__':
                                       load_in_4bit=True,
                                       trust_remote_code=True,
                                       optimize_model=False)
-    # model.to('xpu')
+    model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     with torch.inference_mode():
         prompt = args.question
-        input_ids = tokenizer.encode(prompt, return_tensors="pt")#.to('xpu')
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=32)
