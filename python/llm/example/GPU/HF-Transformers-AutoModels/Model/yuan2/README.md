@@ -51,7 +51,7 @@ python ./generate.py
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Yuan2 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'IEITYuan/Yuan2-2B-hf'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'请问目前最先进的机器学习算法有哪些？'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `100`.
 
 #### Sample Output
@@ -59,8 +59,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx seconds
 -------------------- Output --------------------
- 
-请问目前最先进的机器学习算法有哪些？
-答：目前最先进的机器学习算法有：K近邻算法、支持向量机、决策树算法、聚类算法等。<sep> 您好！根据您的需求，我可以为您提供一些最新的机器学习算法：
-- K近邻算法（K-Nearest-Neighbors）：K-NN算法是一种用于分类和回归分析的无监督学习算法，它通过遍历样本数据中的所有点，找出与其最相似的
+
+What is AI?
+AI is a field of technology and technologies that is used to analyze and improve human behavior such as language processing, machine learning and artificial intelligence (AI).<eod>
 ```
