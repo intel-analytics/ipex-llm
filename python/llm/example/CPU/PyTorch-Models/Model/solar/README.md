@@ -15,7 +15,7 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
-pip install transformers==4.35.2 # required by SOLAR-10.7B
+pip install transformers==4.35.2 # required by SOLAR
 ```
 
 ### 2. Run
@@ -45,7 +45,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the SOLAR-10.7B model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'upstage/SOLAR-10.7B-Instruct-v1.0'`.
+- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the SOLAR model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'upstage/SOLAR-10.7B-Instruct-v1.0'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
