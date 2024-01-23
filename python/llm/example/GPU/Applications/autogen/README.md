@@ -90,9 +90,7 @@ export no_proxy='localhost'
 python teachability_new_knowledge.py
 ```
 
-## Notices
-
-### Change the model name
+## [Important] Change the model name
 When you download the model, please change the model folder to `bigdl` for the usage of bigdl adapted FastChat. For example, after download the `Mistral-7B-Instruct-v0.2`
 model and the path is `MODEL_PATH/Mistral-7B-Instruct-v0.2`, please change it to `MODEL_PATH/bigdl`.
 
