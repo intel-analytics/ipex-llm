@@ -142,13 +142,6 @@ def qwen_attention_forward(
     else:
         causal_mask = None
 
-    if key_size == kv_seq_len:
-        causal_mask = torch.tril(
-            torch.ones((key_size, key_size), dtype=torch.bool, device=query.device)
-        ).view(1, 1, key_size, key_size)
-    else:
-        causal_mask = None
-
     if quantize_kv_cache(self.c_attn, hidden_states):
         query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
         # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
