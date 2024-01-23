@@ -4,26 +4,12 @@ This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous b
 
 The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
 
+## Requirements
+To use Intel GPUs for deep-learning tasks, you should install GPU driver and oneAPI Base Toolkit beforehand. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.
+
 ## Example: Serving LLaMA2-7B using Intel GPU
 
 In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-compatible` interface for users.
-
-### 0. Environment
-
-To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit. Please check the requirements at [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU#requirements).
-
-After install the toolkit, run the following commands in your environment before starting vLLM GPU:
-```bash
-source /opt/intel/oneapi/setvars.sh
-# sycl-ls will list all the compatible Intel GPUs in your environment
-sycl-ls
-
-# Example output with one Arc A770:
-[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
-[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
-[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
-[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
-```
 
 ### 1. Install
 
@@ -38,18 +24,29 @@ pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install numpy
 pip3 install "transformers>=4.33.1"  # Required for Code Llama.
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
+# below command will install BigDL-LLM with PyTorch 2.1 as default
 pip install --pre --upgrade "bigdl-llm[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
 ```
 
-### 2. Configure recommended environment variables
+### 2. Runtime Configuration
 
 ```bash
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+# Configure oneAPI environment variables
+source /opt/intel/oneapi/setvars.sh
+```
+
+```bash
+# Use sycl-ls to list all the compatible Intel GPUs in your environment
+sycl-ls
+
+# Example output with one Arc A770:
+[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
+[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
+[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
+[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
 ### 3. Offline inference/Service
