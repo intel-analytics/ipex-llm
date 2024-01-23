@@ -376,12 +376,11 @@ def speculative_generate(self,
                               return_dict=True,
                               use_cache=True)
             logits = output['logits']
-            if self.config.model_type == "qwen":
-                temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
-                                            draft_generate_ids[:, 1:step_draft + 2]), dim=-1)
-                for i in range(logits.size(1)):
-                    logits[:, i, :] = logit_processor(temp_input_ids[:, :input_ids.size(1)+step+i],
-                                                      output['logits'][:, i, :])
+            temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
+                                        draft_generate_ids[:, 1:step_draft + 2]), dim=-1)
+            for i in range(logits.size(1)):
+                logits[:, i, :] = logits_processor(temp_input_ids[:, :input_ids.size(1)+step+i],
+                                                   output['logits'][:, i, :])
             output_ids = sample(logits, do_sample=generation_config.do_sample,
                                 top_k=generation_config.top_k, top_p=generation_config.top_p,
                                 temperature=generation_config.temperature)
