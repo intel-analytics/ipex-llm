@@ -170,7 +170,7 @@ def speculative_generate(self,
         if isinstance(eos_token_id, list):
             eos_token_id = eos_token_id[0]
         logger.warning(f"Setting `pad_token_id` to `eos_token_id`:"
-                        f"{eos_token_id} for open-end generation.")
+                       f"{eos_token_id} for open-end generation.")
         generation_config.pad_token_id = eos_token_id
 
     # 2. Set generation parameters if not already defined
