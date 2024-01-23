@@ -955,4 +955,14 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+    elif model.config.model_type == "gpt_bigcode":
+        # starcoder
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.gptbigcode import _attn_wrapper
+        _attn = _attn_wrapper(module.GPTBigCodeAttention._attn)
+        replace_func(model,
+                     module.GPTBigCodeAttention,
+                     "_attn",
+                     _attn)
     return model
