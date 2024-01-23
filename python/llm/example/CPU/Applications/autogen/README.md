@@ -4,10 +4,19 @@ local large language models.
 
 ### 1. Prepare Environment
 ```bash
+# create autogen running directory
+mkdir autogen
+cd autogen
+
+# create respective conda environment
 conda create -n autogen python=3.9
 conda activate autogen
 
+# install fastchat-adapted bigdl-llm
 pip install --pre --upgrade bigdl-llm[serving]==2.5.0b20240110
+
+# clone the BigDL in the autogen folder
+git clone https://github.com/intel-analytics/BigDL.git
 
 # install recommend transformers version
 pip install transformers==4.36.2
@@ -19,12 +28,7 @@ pip install chromadb==0.4.22
 
 ### 2. Setup FastChat and AutoGen Environment
 ```bash
-# create autogen running directory
-mkdir autogen
-cd autogen
-
-# operations are in the autogen folder
-# setup FastChat environment
+# clone the FastChat in the autogen folder
 git clone https://github.com/lm-sys/FastChat.git FastChat # clone the FastChat
 cd FastChat
 pip3 install --upgrade pip  # enable PEP 660 support
@@ -32,9 +36,6 @@ pip3 install -e ".[model_worker,webui]"
 
 # setup AutoGen environment
 pip install pyautogen==0.2.7
-
-# clone the BigDL library
-git clone https://github.com/intel-analytics/BigDL.git
 ```
 
 ### 3. Build FastChat OpenAI-Compatible RESTful API
@@ -46,8 +47,9 @@ Open 3 terminals
 # activate conda environment
 conda activate autogen
 
-cd autogen
-cd FastChat  # go to the cloned FastChat folder in autogen folder
+# go to the cloned FastChat folder in autogen folder
+cd autogen/FastChat
+
 python -m fastchat.serve.controller
 ```
 
@@ -57,8 +59,12 @@ python -m fastchat.serve.controller
 # activate conda environment
 conda activate autogen
 
+# go to the created autogen folder
 cd autogen
+
+# ensure the connection between controller and worker
 export no_proxy='localhost'
+
 # load the local model with cpu with your downloaded model
 python -m bigdl.llm.serving.model_worker --model-path YOUR_MODEL_PATH --device cpu
 ```
@@ -69,8 +75,9 @@ python -m bigdl.llm.serving.model_worker --model-path YOUR_MODEL_PATH --device c
 # activate conda environment
 conda activate autogen
 
-cd autogen
-cd FastChat  # go to the cloned FastChat folder in autogen folder
+# go to the cloned FastChat folder in autogen folder
+cd autogen/FastChat
+
 python -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
@@ -81,8 +88,10 @@ Open another terminal
 # activate conda environment
 conda activate autogen
 
+# go to the cloned BigDL example folder in autogen folder
 cd autogen/BigDL/python/llm/example/CPU/Applications/autogen
 
+# ensure the connection between controller and worker
 export no_proxy='localhost'
 
 # run the autogen example
