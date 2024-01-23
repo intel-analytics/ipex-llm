@@ -4,7 +4,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
-In addition, you need to modify some files in Yuan2-2B-hf folder, since Flash attention dependency is for CUDA usage and cannot be installed on Intel GPUs. To manually turn it off, please refer to [this issue](https://github.com/IEIT-Yuan/Yuan-2.0/issues/92).
+In addition, you need to modify some files in Yuan2-2B-hf folder, since Flash attention dependency is for CUDA usage and currently cannot be installed on Intel CPUs. To manually turn it off, please refer to [this issue](https://github.com/IEIT-Yuan/Yuan-2.0/issues/92). We also provide two modified files([config_mode.json](yuan2-2B-instruct/config_mode.json) and [yuan_hf_mode.py](yuan2-2B-instruct/yuan_hf_mode.py)), which can be used to replace the original content in config.json and yuan_model_hf.py. Here are the changes:
 
 1. Modify 'use_flash_attention' to false in config.json; Comment out lines 35 and 36 in yuan_hf_model.py; 
 
