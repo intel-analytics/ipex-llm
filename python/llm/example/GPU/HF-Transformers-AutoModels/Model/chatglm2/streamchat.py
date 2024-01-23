@@ -43,7 +43,7 @@ if __name__ == '__main__':
                                       load_in_4bit=True,
                                       trust_remote_code=True,
                                       optimize_model=False)
-    model.to('xpu')
+    # model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     with torch.inference_mode():
         prompt = args.question
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        input_ids = tokenizer.encode(prompt, return_tensors="pt")#.to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=32)
@@ -64,8 +64,18 @@ if __name__ == '__main__':
             print(response)
         else:
             # Stream chat
+            print('-' * 20, 'Stream chatting with the model', '-' * 20)
             response_ = ""
-            print('-'*20, 'Stream Chat Output', '-'*20)
-            for response, history in model.stream_chat(tokenizer, args.question, history=[]):
-                print(response.replace(response_, ""), end="")
-                response_ = response
+            chat_history = []
+            while True:
+                user_input = input("Input: ")
+                if user_input != "stop":
+                    print("Response: ", end="")
+                    for response, history in model.stream_chat(tokenizer, user_input, history=chat_history):
+                        print(response.replace(response_, ""), end="")
+                        response_ = response
+                    chat_history = history
+                    print("\n")
+                else:
+                    print("Stream chat stopped.")
+                    break
