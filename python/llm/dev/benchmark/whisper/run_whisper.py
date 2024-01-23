@@ -21,10 +21,7 @@ import torch
 from evaluate import load
 import time
 import argparse
-from bigdl.llm import optimize_model
-import intel_extension_for_pytorch as ipex
  
-# python whisper_bigdl.py --model_path ./whisper-pretrained-model/whisper-base --data_type other --device xpu
 def get_args():
     parser = argparse.ArgumentParser(description="Evaluate Whisper performance and accuracy")
     parser.add_argument('--model_path', required=True, help='pretrained model path')
@@ -42,11 +39,8 @@ if __name__ == '__main__':
     speech_dataset = load_dataset('./librispeech_asr.py', name=args.data_type, split='test').select(range(500))
     processor = WhisperProcessor.from_pretrained(args.model_path)
     forced_decoder_ids = processor.get_decoder_prompt_ids(language='en', task='transcribe')
-    # model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path)
-    # model = optimize_model(model, low_bit="sym_int4", optimize_llm=False, modules_to_not_convert=[]).to(args.device)
    
     model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path, load_in_low_bit="sym_int4", optimize_model=True).eval().to(args.device)
-    # model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path, load_in_low_bit="fp8_e5m2", optimize_model=True).eval().to(args.device)
     model.config.forced_decoder_ids = None
    
     def map_to_pred(batch):
@@ -70,9 +64,9 @@ if __name__ == '__main__':
         return batch
    
     result = speech_dataset.map(map_to_pred, keep_in_memory=True)
-    wer = load("wer")
+    wer = load("./wer")
     speech_length = sum(result["length"][1:])
     prc_time = sum(result["time"][1:])
     print("Realtime Factor(RTF) is : %.4f" % (prc_time/speech_length))
     print("Realtime X(RTX) is : %.2f" % (speech_length/prc_time))
-    print(100 * wer.compute(references=result["reference"], predictions=result["prediction"]))
+    print(f'WER is {100 * wer.compute(references=result["reference"], predictions=result["prediction"])}')

@@ -177,6 +177,21 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
                           f"{model_family} is not supported.")
 
 
+def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
+    if q.device.type != "xpu":
+        invalidInputError(False,
+                          f"only xpu is supported in this function")
+    import linear_q4_0
+    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
+    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
+    if model_family in ["qwen"]:
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        return q_embed, k_embed
+    else:
+        invalidInputError(False,
+                          f"{model_family} is not supported.")
+
+
 def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
     # to determinate if is enough kv cache room in transformers==4.36
     return past_key_value is not None and len(past_key_value.key_cache) > idx and \
@@ -230,12 +245,15 @@ def use_flash_attention(query, key):
     return True
 
 
-def use_esimd_sdp(q_len, head_dim, query_states):
+def use_esimd_sdp(q_len, k_len, head_dim, query_states):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
     elif q_len != 1:
         # esimd_sdp only support rest token now
+        return False
+    elif k_len < 8:
+        # esimd_sdp will cause wrong output when k_len < 8
         return False
     elif query_states.device.type != "xpu":
         # esimd_sdp only support GPU now
