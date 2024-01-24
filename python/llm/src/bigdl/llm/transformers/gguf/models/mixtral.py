@@ -17,14 +17,17 @@
 import os
 import torch
 from accelerate import init_empty_weights
-from accelerate.utils import set_module_tensor_to_device as fill_model
+from accelerate.utils import set_module_tensor_to_device
 from tempfile import NamedTemporaryFile
 from transformers import MixtralConfig, MixtralForCausalLM, LlamaTokenizer
 
 from ..gguf import GGUFFileLoader
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.convert import replace_with_low_bit_linear_for_module
 
 
-def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
+def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
+                      low_bit='sym_int4'):
     # mixtral enjoys a general architecture of llma
     # e.g. it applies llama tokenizer
     config = loader.config
@@ -33,6 +36,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     n_head = config['llama.attention.head_count']
     n_head_kv = config['llama.attention.head_count_kv']
     hidden_size = config['llama.embedding_length']
+    qtype = ggml_tensor_qtype[low_bit]
 
     mixtral_config = MixtralConfig(
         vocab_size=len(config['tokenizer.ggml.tokens']),
@@ -53,21 +57,35 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float):
     with init_empty_weights():
         model = MixtralForCausalLM(mixtral_config)
 
+    # define an operator function that passed to low-level gguf API
     def process_mixtral(name, tensor):
+        # prepare module's name in transformers
         module_name = get_mixtral_module_name(name)
+        # prepare module's weight in transformers
         if 'ffn_gate_inp' in name:
-            # gguf weight needs to reshape for ffn_gate_inp
-            fill_model(model,
-                       module_name,
-                       "cpu",
-                       tensor.reshape(num_local_experts, hidden_size),
-                       dtype=dtype)
-        else:
-            fill_model(model,
-                       module_name,
-                       "cpu",
-                       tensor,
-                       dtype=dtype)
+            tensor = tensor.reshape(num_local_experts, hidden_size)
+        elif name.endswith("attn_q.weight"):
+            head, hd_size = tensor.shape[0], tensor.shape[1:]
+            tensor = (tensor.reshape(n_head,
+                                     head // n_head // 2,
+                                     2,
+                                     *hd_size)
+                            .swapaxes(1, 2)
+                            .reshape(tensor.shape))
+        elif name.endswith("attn_k.weight"):
+            head, hd_size = tensor.shape[0], tensor.shape[1:]
+            tensor = (tensor.reshape(n_head_kv,
+                                     head // n_head_kv // 2,
+                                     2,
+                                     *hd_size)
+                            .swapaxes(1, 2)
+                            .reshape(tensor.shape))
+        set_module_tensor_to_device(model,
+                                    module_name,
+                                    "cpu",
+                                    tensor,
+                                    dtype=dtype)
+        model = replace_with_low_bit_linear_for_module(model, qtype=qtype, module_name=module_name)
 
     tensor_loader = loader.tensor_loader
     tensor_loader.load_while_process(process_mixtral)

@@ -101,22 +101,26 @@ class _BaseAutoModelClass:
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means loading linear's weight to symmetric int 4 if
-                                the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
-                                if the model is GPTQ model.
-                             Default to be False.
-        :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                , sym_int8, nf3, nf4, fp4, fp8, fp8_e4m3, fp8_e5m2, fp16 or bf16.
-                                sym_int4 means symmetric int 4, asym_int4 means asymmetric int 4,
-                                nf4 means 4-bit NormalFloat, etc. Relevant low bit optimizations
-                                will be applied to the model.
+                             the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
+                             if the model is GPTQ model.
+                             Default to be ``False``.
+        :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
+                                ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
+                                ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
+                                ``'fp16'`` or ``'bf16'``, ``'sym_int4'`` means symmetric int 4,
+                                ``'asym_int4'`` means asymmetric int 4, ``'nf4'`` means 4-bit
+                                NormalFloat, etc. Relevant low bit optimizations will be applied
+                                to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
-                               Default to be True.
+                               Default to be ``True``.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
-                                       conducting model optimizations. Default to be None.
+                                       conducting model optimizations. Default to be ``None``.
+        :param speculative: boolean value, Whether to use speculative decoding.
+                            Default to be ``False``.
         :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
-            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
-            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -134,6 +138,7 @@ class _BaseAutoModelClass:
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
+        speculative = kwargs.pop("speculative", False)
 
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
@@ -212,8 +217,6 @@ class _BaseAutoModelClass:
                                       "Only 4-bit awq is supported in bigdl-llm.")
                     invalidInputError(awq_config.version == "gemm",
                                       "Only gemm version is supported in bigdl-llm.")
-                    invalidInputError(awq_config.backend == "autoawq",
-                                      "Only autoawq backend is supported in bigdl-llm.")
                     invalidInputError(awq_config.zero_point,
                                       "Only awq zero_point = True is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
@@ -241,6 +244,16 @@ class _BaseAutoModelClass:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+
+            if speculative:
+                from .speculative import speculative_generate, clear_benchmarks
+                # load a sym_int4 model as draft model
+                draft_model = cls.load_convert('sym_int4', optimize_model, *args, **kwargs)
+                model.draft_model = draft_model
+                import types
+                # add speculative_generate to pretrained model dynamically
+                model.clear_benchmarks = types.MethodType(clear_benchmarks, model)
+                model.speculative_generate = types.MethodType(speculative_generate, model)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -492,6 +505,7 @@ class _BaseAutoModelClass:
 
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
+                kwargs["device"] = "meta"
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)

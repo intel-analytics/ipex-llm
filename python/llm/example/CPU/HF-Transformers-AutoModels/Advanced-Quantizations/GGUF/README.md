@@ -28,9 +28,8 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
-pip install transformers==4.34.0  # upgrade transformers
+pip install transformers==4.36.0  # upgrade transformers
 ```
-
 ### 2. Run
 After setting up the Python environment, you could run the example by following steps.
 

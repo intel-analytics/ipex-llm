@@ -27,6 +27,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
 
@@ -53,6 +54,8 @@ def baichuan_13b_rms_norm_forward(self, hidden_states):
                                             self.epsilon)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
+            # We should copy this result to avoid <unk> by unknown reason on Arc GPUs.
+            result = result.clone()
             return result
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
@@ -66,15 +69,15 @@ def baichuan_mlp_forward(
     x: torch.Tensor,
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
-    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
-            and self.gate_proj.qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    qtype = getattr(self.gate_proj, "qtype", None)
+    if mlp_fusion_check(x_2d, qtype, self.training):
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+        return self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+            qtype
         ))
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
@@ -281,7 +284,16 @@ def baichuan_attention_forward_13b(
                     attention_mask = attention_mask[:, :, -1:, :]
                 else:
                     attention_mask = attention_mask[:, -1:, :]
-            attn_weights = attn_weights + attention_mask
+            if attention_mask.shape[-2] == attn_weights.shape[-2]:
+                attn_weights = attn_weights + attention_mask
+            else:
+                # support for Baichuan/Baichuan2 13B Chat running speculative decoding
+                # split attention mask on dim -2
+                split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2],
+                               attn_weights.shape[-2]]
+                # the last chunk of splited is the new attention mask
+                attention_mask = attention_mask.split(split_sizes, dim=-2)[-1]
+                attn_weights = attn_weights + attention_mask
             attn_weights = torch.max(
                 attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min)
             )

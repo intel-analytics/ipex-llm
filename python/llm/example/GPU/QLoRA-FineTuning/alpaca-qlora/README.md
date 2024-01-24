@@ -10,12 +10,11 @@ To run this example with BigDL-LLM on Intel GPUs, we have some recommended requi
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
-# you can install specific ipex/torch version for your need
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install datasets transformers==4.34.0
+pip install transformers==4.34.0 datasets
 pip install fire peft==0.5.0
-pip install oneccl_bind_pt==2.0.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
+pip install oneccl_bind_pt==2.1.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
 pip install accelerate==0.23.0
 pip install bitsandbytes scipy
 ```

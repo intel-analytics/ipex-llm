@@ -1,4 +1,19 @@
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: models
+  resources:
+    requests:
+      storage: 10Gi
+  # selector: # Optional
+  #   matchLabels:
+  #     app: kubecon-models
+---
+apiVersion: v1
 kind: Pod
 metadata:
   name: bigdl-fschat-a1234bd-controller
@@ -105,5 +120,5 @@ spec:
       restartPolicy: "Always"
       volumes:
       - name: llm-models
-        hostPath:
-          path: /home/llm/models # change this in other envs
+        persistentVolumeClaim:
+          claimName: models-pvc

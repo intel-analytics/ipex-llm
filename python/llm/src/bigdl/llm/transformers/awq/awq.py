@@ -226,6 +226,7 @@ def _replace_with_awq_layers(model, awq_config: AwqConfig):
             q_linear = q_linear_module.from_linear(module,
                                                    awq_config.bits,
                                                    awq_config.group_size,
+                                                   awq_config.backend,
                                                    True)
             q_linear.to(next(layer.parameters()).device)
             set_op_by_name(layer, name, q_linear)

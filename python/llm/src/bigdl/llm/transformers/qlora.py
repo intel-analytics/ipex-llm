@@ -49,6 +49,7 @@
 # limitations under the License.
 
 import torch
+import logging
 from torch.nn import Linear, Embedding
 from bigdl.llm.transformers.low_bit_linear import LowBitLinear, BF16Linear, get_qk_size
 from peft.tuners.lora import LoraLayer
@@ -57,6 +58,8 @@ from bigdl.llm.transformers.utils import get_autocast_dtype
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 import functools
 from bigdl.llm.transformers import training_patch
+
+LOG = logging.getLogger("bigdl.llm.qlora")
 
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
@@ -252,6 +255,7 @@ def get_peft_model(*args, **kwargs):
 
     if model.device.type == "xpu":
         cast_lora_weight(model, torch.bfloat16)
+        _optimize_post(model)
         torch.xpu.synchronize()
 
     return model
@@ -345,3 +349,18 @@ def cast_lora_weight(model, dtype=torch.bfloat16):
             if hasattr(module, 'weight'):
                 if module.weight.dtype == torch.float32:
                     module = module.to(dtype)
+
+
+def _optimize_post(model):
+    import transformers
+    from packaging import version
+    from bigdl.llm.transformers.convert import convert_forward
+    from bigdl.llm.transformers.models.llama import llama_attention_fast_forward
+
+    trans_version = transformers.__version__
+    if version.parse(trans_version) >= version.parse("4.31.0"):
+        LOG.info("Optimizing Llama finetuning....")
+        convert_forward(
+            model,
+            transformers.models.llama.modeling_llama.LlamaAttention,
+            llama_attention_fast_forward,)

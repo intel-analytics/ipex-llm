@@ -18,7 +18,12 @@ import os
 import torch
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from bigdl.llm.transformers.utils import get_ipex_version
+from bigdl.llm.transformers.utils import get_ipex_version, get_xpu_device_type
+
+
+SYM_INT4 = ggml_tensor_qtype["sym_int4"]
+SYM_INT8 = ggml_tensor_qtype["sym_int8"]
+FP8 = ggml_tensor_qtype["fp8"]
 
 
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
@@ -63,7 +68,8 @@ def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     else:
-        return x.device.type == 'xpu' and hasattr(linear, "qtype") and \
+        return x.device.type == 'xpu' and get_xpu_device_type(x) == "mtl" \
+            and hasattr(linear, "qtype") and \
             linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
 
 
@@ -164,7 +170,22 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral"]:
-        linear_q4_0.apply_rotary_embedding_half_qk(q, k, position_ids, q_embed, k_embed)
+        linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids, q_embed, k_embed)
+        return q_embed, k_embed
+    else:
+        invalidInputError(False,
+                          f"{model_family} is not supported.")
+
+
+def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
+    if q.device.type != "xpu":
+        invalidInputError(False,
+                          f"only xpu is supported in this function")
+    import linear_q4_0
+    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
+    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
+    if model_family in ["qwen"]:
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
         return q_embed, k_embed
     else:
         invalidInputError(False,
@@ -224,12 +245,15 @@ def use_flash_attention(query, key):
     return True
 
 
-def use_esimd_sdp(q_len, head_dim, query_states):
+def use_esimd_sdp(q_len, k_len, head_dim, query_states):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
     elif q_len != 1:
         # esimd_sdp only support rest token now
+        return False
+    elif k_len < 8:
+        # esimd_sdp will cause wrong output when k_len < 8
         return False
     elif query_states.device.type != "xpu":
         # esimd_sdp only support GPU now
@@ -248,3 +272,44 @@ def use_esimd_sdp(q_len, head_dim, query_states):
                 return False
         else:
             return False
+
+
+def mlp_fusion_check(x, qtype, training):
+    invalidInputError(x.dim() == 2,
+                      "Here input x's dim should be 2.")
+    if x.shape[0] != 1:
+        return False
+    if x.device.type != 'xpu':
+        return False
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+        return False
+    if training or x.requires_grad:
+        return False
+    return True
+
+
+def use_xmx(x: torch.Tensor, qtype: int):
+    device = get_xpu_device_type(x)
+    return (
+        device in ["arc", "flex", "pvc"]
+        and qtype in [SYM_INT4, SYM_INT8, FP8]
+        and (
+            (device == "pvc" and 1 < x.size(0) <= 16)
+            or
+            (device != "pvc" and x.dtype == torch.float32 and 1 < x.size(0) <= 64)
+            or
+            1 < x.size(0) <= 8
+        )
+    )
+
+
+def use_fused_layer_norm(x: torch.Tensor, training: bool):
+    return (
+        not training
+        and not x.requires_grad
+        and x.device.type == 'xpu'
+        and (
+            get_xpu_device_type(x) not in ["arc", "flex"]
+            or x.numel() // x.size(-1) == 1
+        )
+    )

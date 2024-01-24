@@ -11,11 +11,7 @@ COPY ./entrypoint.sh /opt/entrypoint.sh
 ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 # Install Serving Dependencies
 RUN cd /llm && \
-    git clone https://github.com/analytics-zoo/FastChat.git && \
-    cd FastChat && \
-    git checkout dev-2023-09-22 && \
-    pip3 install -e ".[model_worker,webui]" && \
-    cd /llm && \
+    pip install --pre --upgrade bigdl-llm[serving] && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini

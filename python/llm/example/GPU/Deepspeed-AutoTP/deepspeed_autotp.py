@@ -29,6 +29,10 @@ def get_int_from_env(env_keys, default):
  
 local_rank = get_int_from_env(["LOCAL_RANK","PMI_RANK"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+os.environ["RANK"] = str(local_rank)
+os.environ["WORLD_SIZE"] = str(world_size)
+os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
+
 
 from bigdl.llm import optimize_model
 
@@ -38,6 +42,9 @@ import argparse
 
 from transformers import AutoModelForCausalLM  # export AutoModelForCausalLM from transformers so that deepspeed use it
 from transformers import LlamaTokenizer, AutoTokenizer
+from deepspeed.accelerator.cpu_accelerator import CPU_Accelerator
+from deepspeed.accelerator import set_accelerator, get_accelerator
+from intel_extension_for_deepspeed import XPU_Accelerator
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
@@ -52,7 +59,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
+    # First use CPU as accelerator
+    # Convert to deepspeed model and apply bigdl-llm optimization on CPU to decrease GPU memory usage
+    current_accel = CPU_Accelerator()
+    set_accelerator(current_accel)
     model = AutoModelForCausalLM.from_pretrained(args.repo_id_or_model_path,
+                                                 device_map={"": "cpu"},
                                                  low_cpu_mem_usage=True,
                                                  torch_dtype=torch.float16,
                                                  trust_remote_code=True,
@@ -65,13 +77,25 @@ if __name__ == '__main__':
         replace_method="auto",
     )
 
-    # move model to cpu and use bigdl-llm `optimize_model` to convert the
-    # model into optimized low bit format
-    # convert the rest of the model into float16 to reduce allreduce traffic
+    # Use bigdl-llm `optimize_model` to convert the model into optimized low bit format
+    # Convert the rest of the model into float16 to reduce allreduce traffic
     model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4').to(torch.float16)
 
-    # move model back to xpu
+    # Next, use XPU as accelerator to speed up inference
+    current_accel = XPU_Accelerator()
+    set_accelerator(current_accel)
+
+    # Move model back to xpu
     model = model.to(f'xpu:{local_rank}')
+
+    # Modify backend related settings 
+    if world_size > 1:
+        get_accelerator().set_device(local_rank)
+    dist_backend = get_accelerator().communication_backend_name()
+    import deepspeed.comm.comm
+    deepspeed.comm.comm.cdb = None
+    from deepspeed.comm.comm import init_distributed
+    init_distributed()
 
     print(model)
 
@@ -80,9 +104,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        # prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
         prompt = args.prompt
-        # input_str = f"Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{prompt}\n\n### Response:\n"
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(f'xpu:{local_rank}')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
@@ -102,9 +124,13 @@ if __name__ == '__main__':
         end = time.time()
         if local_rank == 0:
             output = output.cpu()
+            actual_output_len = output.shape[1] - input_ids.shape[1]
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            print(f'Inference time: {end-st} s')
+            avg_time = (end - st) / actual_output_len * 1000
+            print(f'Inference time of generating {actual_output_len} tokens: {end-st} s, average token latency is {avg_time} ms/token.')
             print('-'*20, 'Prompt', '-'*20)
             print(prompt)
             print('-'*20, 'Output', '-'*20)
             print(output_str)
+    deepspeed.comm.destroy_process_group()
+    print("process group destroyed, exiting...")

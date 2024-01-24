@@ -7,6 +7,7 @@ repo_id:
   - 'BAAI/AquilaChat2-7B'
   - '01-ai/Yi-6B'
   - 'meta-llama/Llama-2-7b-chat-hf'
+  - 'meta-llama/Llama-2-13b-chat-hf'
   - 'WisdomShell/CodeShell-7B-Chat'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
@@ -18,7 +19,7 @@ num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 in_out_pairs:
-  - '32-256'
+  - '2048-256'
 test_api:
   - "transformer_int4_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
 cpu_embedding: True # whether put embedding to CPU (only avaiable now for gpu win related test_api)

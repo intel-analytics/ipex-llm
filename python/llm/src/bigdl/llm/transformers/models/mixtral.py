@@ -50,6 +50,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
 from bigdl.llm.transformers.models.utils import use_flash_attention
+from bigdl.llm.transformers.models.utils import mlp_fusion_check
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -314,13 +315,13 @@ def mixtral_mlp_forward(
     x: torch.Tensor,
     routing_weights
 ) -> torch.Tensor:
-    if x.shape[0] == 1 and x.device.type == 'xpu' \
-            and self.w1.qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    qtype = getattr(self.w1, "qtype", None)
+    if mlp_fusion_check(x, qtype, self.training):
         import linear_q4_0
-        return self.w2(linear_q4_0.mlp_forward_q4_0_xpu(
+        return self.w2(linear_q4_0.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,
             x.shape[0], x.shape[1], self.w1.out_len,
+            qtype,
         )) * routing_weights
     else:
         current_hidden_states = self.act_fn(self.w1(x)) * self.w3(x)

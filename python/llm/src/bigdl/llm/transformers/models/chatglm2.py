@@ -88,6 +88,8 @@ def chatglm_rms_norm_forward(self, hidden_states):
                                             self.eps)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
+            # We should copy this result to avoid <unk> by unknown reason on Arc GPUs.
+            result = result.clone()
             return result
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
@@ -216,7 +218,8 @@ def chatglm2_attention_forward_8eb45c(
 
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
-        if len(rotary_pos_emb) == 2:  # use_fuse_rope, see chatglm2_model_forward
+        if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
+            # use_fuse_rope, see chatglm2_model_forward
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
             query_layer = query_layer.transpose(0, 1)
@@ -364,36 +367,30 @@ def chatglm2_attention_forward_8eb45c(
 
 def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
     pytorch_major_version = int(torch.__version__.split('.')[0])
-    if pytorch_major_version >= 2 and (query_layer.device.type == 'xpu' or query_layer.size(0) > 1):
+    if pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
-        if attention_mask is None and (use_flash_attention(query_layer, key_layer) or
-                                       L == S and query_layer.device.type == "cpu"):
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             is_causal=True)
-        elif attention_mask is None:
-            head_dim = query_layer.size(-1)
-            attn = torch.matmul(query_layer,
-                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-            if L == S:
-                # first token, need attention mask
-                attn_bias = torch.zeros(L, S, dtype=query_layer.dtype,
-                                        device=query_layer.device)
-                temp_mask = torch.ones(L, S, dtype=torch.bool,
-                                       device=query_layer.device).tril(diagonal=0)
-                attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
-                attn_bias.to(query_layer.dtype)
-                attn += attn_bias
-            attn = torch.softmax(attn, -1)
-            context_layer = torch.matmul(attn, value_layer)
+        if attention_mask is None and L == S:
+            context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
+                                                           key_layer,
+                                                           value_layer,
+                                                           is_causal=True)
         else:
-            attention_mask = ~attention_mask
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             attention_mask)
+            head_dim = query_layer.size(-1)
+            attn = torch.matmul(query_layer.to(key_layer.dtype),
+                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
+            if attention_mask is not None:
+                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
+                                        device=query_layer.device)
+                attention_mask = ~attention_mask
+                if attention_mask.dtype == torch.bool:
+                    attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
+                else:
+                    attn_bias += attention_mask
+                attn += attn_bias
+            attn = F.softmax(attn, dim=-1,
+                             dtype=torch.float32).to(value_layer.dtype)
+            context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
         context_layer = context_layer.reshape(*new_context_layer_shape)

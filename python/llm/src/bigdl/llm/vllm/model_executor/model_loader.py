@@ -41,6 +41,8 @@ from transformers import PretrainedConfig
 from bigdl.llm.vllm.config import ModelConfig
 from bigdl.llm.vllm.model_executor.models.bigdl_llama import BigDLLlamaForCausalLM
 from bigdl.llm.vllm.model_executor.models.bigdl_mixtral import BigDLMixtralForCausalLM
+from bigdl.llm.vllm.model_executor.models.bigdl_mistral import BigDLMistralForCausalLM
+from bigdl.llm.vllm.model_executor.models.bigdl_chatglm import BigDLChatGLMForCausalLM
 
 from bigdl.llm.utils.common import invalidInputError
 
@@ -61,8 +63,9 @@ _MODEL_REGISTRY = {
     # "GPTNeoXForCausalLM": GPTNeoXForCausalLM,
     # "InternLMForCausalLM": InternLMForCausalLM,
     "LlamaForCausalLM": BigDLLlamaForCausalLM,
+    "ChatGLMModel": BigDLChatGLMForCausalLM,
     # "LLaMAForCausalLM": LlamaForCausalLM,  # For decapoda-research/llama-*
-    # "MistralForCausalLM": MistralForCausalLM,
+    "MistralForCausalLM": BigDLMistralForCausalLM,
     "MixtralForCausalLM": BigDLMixtralForCausalLM,
     # "MPTForCausalLM": MPTForCausalLM,
     # "OPTForCausalLM": OPTForCausalLM,

@@ -44,6 +44,8 @@
 import torch
 import torch.nn as nn
 from bigdl.llm.utils.common import invalidOperationError, invalidInputError
+from transformers import AwqConfig
+from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
 def make_divisible(c, divisor):
@@ -67,7 +69,7 @@ def calculate_zeros_width(in_features, group_size=128, pack_num=8):
 
 
 class WQLinear_GEMM(nn.Module):
-    def __init__(self, bits, group_size, in_features, out_features, bias, dev):
+    def __init__(self, bits, group_size, in_features, out_features, bias, dev, backend):
         super().__init__()
 
         invalidOperationError(bits == 4, "Only 4-bit are supported for now.")
@@ -76,27 +78,41 @@ class WQLinear_GEMM(nn.Module):
         self.out_features = out_features
         self.bits = bits
         self.group_size = group_size if group_size != -1 else in_features
-
-        self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
-                                dtype=torch.int32) * self.bits).unsqueeze(0)
+        self.backend = backend
 
         # quick sanity check (make sure aligment)
         invalidInputError(self.in_features % self.group_size == 0,
                           f"Invalid in_features number {self.in_features}.")
         invalidInputError(out_features % (32 // self.bits) == 0,
                           f"Invalid out_features number {out_features}.")
-
-        self.register_buffer('qweight',
-                             torch.zeros((in_features,
-                                          out_features // (32 // self.bits)),
-                                         dtype=torch.int32, device=dev))
-        self.register_buffer('qzeros',
-                             torch.zeros((in_features // self.group_size,
-                                          out_features // (32 // self.bits)),
-                                         dtype=torch.int32, device=dev))
-        self.register_buffer('scales',
-                             torch.zeros((in_features // self.group_size, out_features),
-                                         dtype=torch.float16, device=dev))
+        if backend == AwqBackendPackingMethod.LLMAWQ:
+            self.wf = (torch.tensor([0, 1, 2, 3, 4, 5, 6, 7],
+                                    dtype=torch.int32) * self.bits).unsqueeze(0)
+            self.register_buffer('qweight',
+                                 torch.zeros((out_features,
+                                              in_features // (32 // self.bits)),
+                                             dtype=torch.int32, device=dev))
+            zeros_width = calculate_zeros_width(in_features, self.group_size)
+            self.register_buffer('qzeros',
+                                 torch.zeros((out_features, zeros_width),
+                                             dtype=torch.int32, device=dev))
+            self.register_buffer('scales',
+                                 torch.zeros((out_features, zeros_width * (32 // self.bits)),
+                                             dtype=torch.float16, device=dev))
+        elif backend == AwqBackendPackingMethod.AUTOAWQ:
+            self.wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
+                                    dtype=torch.int32) * self.bits).unsqueeze(0)
+            self.register_buffer('qweight',
+                                 torch.zeros((in_features,
+                                              out_features // (32 // self.bits)),
+                                             dtype=torch.int32, device=dev))
+            self.register_buffer('qzeros',
+                                 torch.zeros((in_features // self.group_size,
+                                              out_features // (32 // self.bits)),
+                                             dtype=torch.int32, device=dev))
+            self.register_buffer('scales',
+                                 torch.zeros((in_features // self.group_size, out_features),
+                                             dtype=torch.float16, device=dev))
         if bias:
             self.register_buffer('bias', torch.zeros((out_features), dtype=torch.float16,
                                                      device=dev))
@@ -104,9 +120,10 @@ class WQLinear_GEMM(nn.Module):
             self.bias = None
 
     @classmethod
-    def from_linear(cls, linear, bits, group_size, init_only=False, scales=None, zeros=None):
+    def from_linear(cls, linear, bits, group_size, backend,
+                    init_only=False, scales=None, zeros=None):
         awq_linear = cls(bits, group_size, linear.in_features, linear.out_features,
-                         linear.bias is not None, linear.weight.device)
+                         linear.bias is not None, linear.weight.device, backend)
         if init_only:  # just prepare for loading sd
             return awq_linear
 
@@ -139,7 +156,10 @@ class WQLinear_GEMM(nn.Module):
 
         for col in range(intweight.shape[1] // pack_num):
             if awq_linear.bits == 4:
-                order_map = [0, 2, 4, 6, 1, 3, 5, 7]
+                if backend == AwqBackendPackingMethod.AUTOAWQ:
+                    order_map = [0, 2, 4, 6, 1, 3, 5, 7]
+                elif backend == AwqBackendPackingMethod.LLMAWQ:
+                    order_map = [0, 1, 2, 3, 4, 5, 6, 7]
             else:
                 invalidOperationError(False, "Only 4-bit are supported for now.")
             for i in range(pack_num):
@@ -153,7 +173,10 @@ class WQLinear_GEMM(nn.Module):
 
         for col in range(zeros.shape[1] // pack_num):
             if awq_linear.bits == 4:
-                order_map = [0, 2, 4, 6, 1, 3, 5, 7]
+                if backend == AwqBackendPackingMethod.AUTOAWQ:
+                    order_map = [0, 2, 4, 6, 1, 3, 5, 7]
+                elif backend == AwqBackendPackingMethod.LLMAWQ:
+                    order_map = [0, 1, 2, 3, 4, 5, 6, 7]
             else:
                 invalidOperationError(False, "Only 4-bit are supported for now.")
             for i in range(pack_num):
@@ -211,7 +234,8 @@ class WQLinear_GEMV(nn.Module):
             self.bias = None
 
     @classmethod
-    def from_linear(cls, linear, bits, group_size, init_only=False, scales=None, zeros=None):
+    def from_linear(cls, linear, bits, group_size, backend,
+                    init_only=False, scales=None, zeros=None):
         awq_linear = cls(bits, group_size, linear.in_features, linear.out_features,
                          linear.bias is not None, linear.weight.device)
         if init_only:  # just prepare for loading sd
@@ -246,7 +270,10 @@ class WQLinear_GEMV(nn.Module):
 
         for col in range(intweight.shape[1] // pack_num):
             if awq_linear.bits == 4:
-                order_map = [0, 1, 2, 3, 4, 5, 6, 7]
+                if backend == AwqBackendPackingMethod.AUTOAWQ:
+                    order_map = [0, 2, 4, 6, 1, 3, 5, 7]
+                elif backend == AwqBackendPackingMethod.LLMAWQ:
+                    order_map = [0, 1, 2, 3, 4, 5, 6, 7]
             else:
                 invalidOperationError(False, "Only 4-bit are supported for now.")
             for i in range(pack_num):
@@ -263,7 +290,10 @@ class WQLinear_GEMV(nn.Module):
 
         for col in range((zeros.shape[1] + pack_num - 1) // pack_num):
             if awq_linear.bits == 4:
-                order_map = [0, 1, 2, 3, 4, 5, 6, 7]
+                if backend == AwqBackendPackingMethod.AUTOAWQ:
+                    order_map = [0, 2, 4, 6, 1, 3, 5, 7]
+                elif backend == AwqBackendPackingMethod.LLMAWQ:
+                    order_map = [0, 1, 2, 3, 4, 5, 6, 7]
             else:
                 invalidOperationError(False, "Only 4-bit are supported for now.")
             for i in range(pack_num):
