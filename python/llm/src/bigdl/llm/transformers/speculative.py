@@ -384,7 +384,7 @@ def speculative_generate(self,
                             size = tmp_past_key_values[i][0].size(0)
                             size1 = past_key_values[i][0].size(0)
                             past_key_values1[i][0][size:size1, :, :, :] = (
-                                past_key_values[i][0][ size:size1, :, :].to(torch.float32))
+                                past_key_values[i][0][size:size1, :, :].to(torch.float32))
                             past_key_values1[i][1][size:size1, :, :, :] = (
                                 past_key_values[i][1][size:size1, :, :].to(torch.float32))
                         else:
