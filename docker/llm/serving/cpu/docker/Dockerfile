@@ -8,7 +8,7 @@ ARG TINI_VERSION=v0.18.0
 ARG PIP_NO_CACHE_DIR=false
 
 COPY ./entrypoint.sh /opt/entrypoint.sh
-COPY ./model_adapter.py/patch /llm/model_adapter.py.patch
+COPY ./model_adapter.py.patch /llm/model_adapter.py.patch
 ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 # Install Serving Dependencies
 RUN cd /llm && \
