@@ -1,5 +1,5 @@
 # Qwen
-In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding optimizations on Qwen models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) and [Qwen/Qwen-14B-Chat](https://huggingface.co/Qwen/Qwen-14B-Chat) as reference Qwen models.
+In this directory, you will find examples on how you could run Qwen FP16 infernece with self-speculative decoding using BigDL-LLM on [Intel GPUs](../README.md). For illustration purposes, we utilize the [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) and [Qwen/Qwen-14B-Chat](https://huggingface.co/Qwen/Qwen-14B-Chat) as reference Qwen models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
