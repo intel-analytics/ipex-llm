@@ -14,7 +14,6 @@ ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbi
 RUN cd /llm && \
     pip install --pre --upgrade bigdl-llm[serving] && \
 # Fix Qwen model adpater in fastchat
-    rm -f /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py && \
     patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py < /llm/model_adapter.py.patch && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
