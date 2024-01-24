@@ -22,12 +22,6 @@ source /opt/intel/oneapi/setvars.sh
 
 ### 3. Run
 
-For optimal performance on Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, it is recommended to set several environment variables.
-```bash
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-```
-
 For optimal performance on Intel Data Center GPU Max Series, it is recommended to set several environment variables.
 ```bash
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
