@@ -131,26 +131,6 @@ def speculative_generate(self,
                       "Draft model should be provided.")
 
     if generation_config is None:
-        # legacy: users may modify the model configuration to control generation.
-        # To trigger this legacy behavior, two conditions must be met
-        # 1) the generation config must have been created from the
-        # model config (`_from_model_config` field);
-        # 2) the generation config must have seen no modification
-        # since its creation (the hash is the same).
-        if self.generation_config._from_model_config \
-            and self.generation_config._original_object_hash == hash(
-                self.generation_config):
-            new_generation_config = GenerationConfig.from_model_config(self.config)
-            if new_generation_config != self.generation_config:
-                warnings.warn(
-                    "You have modified the pretrained model configuration to control "
-                    "generation. This is a deprecated strategy to control generation "
-                    "and will be removed soon, in a future version. Please use and "
-                    "modify the model generation configuration (see"
-                    " https://huggingface.co/docs/transformers/generation_strategies"
-                    "#default-text-generation-configuration )"
-                )
-                self.generation_config = new_generation_config
         generation_config = self.generation_config
 
     generation_config = copy.deepcopy(generation_config)
@@ -444,6 +424,7 @@ def speculative_generate(self,
         # Stop on eos and remove content after eos
         output_ids_list = output_ids[0].tolist()
         if generation_config.eos_token_id in output_ids_list:
+            print(f"eos: {step}, {output_ids_list}")
             idx = output_ids_list.index(generation_config.eos_token_id)
             step -= (len(output_ids_list) - idx - 1)
             break

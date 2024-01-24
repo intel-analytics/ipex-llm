@@ -15,7 +15,7 @@
 #
 
 import torch
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 import argparse
 import time
@@ -35,8 +35,8 @@ long_input = """折纸的过程看似简单，其实想要做好，还是需要�
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Qwen model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen-7B-Chat",
-                        help='The huggingface repo id for the Qwen (e.g. `Qwen/Qwen-7B-Chat` and `Qwen/Qwen-14B-Chat`) to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="baichuan-inc/Baichuan2-7B-Chat",
+                        help='The huggingface repo id for the Baichuan2 (e.g. `baichuan-inc/Baichuan2-7B-Chat` and `baichuan-inc/Baichuan2-13B-Chat`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
                         help='Prompt to infer')
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     with torch.inference_mode():
-        prompt = BAICHUAN2_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = args.prompt
         input_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(model.device)
 
         # warmup
