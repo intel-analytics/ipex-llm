@@ -10,9 +10,8 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-pip install bigdl-llm[all]
+pip install --pre --upgrade bigdl-llm[all]
 pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen-7B-Chat to conduct generation
-pip install transformers==4.34.0
 ```
 ### 2. Configures environment variables
 ```bash
