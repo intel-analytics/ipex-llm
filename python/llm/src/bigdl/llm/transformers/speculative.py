@@ -370,30 +370,30 @@ def speculative_generate(self,
                          v[:, :, :-(max_of_max_matched - max_matched)]) for k, v in past_key_values
                     ]
 
-                # Each iter assign new_matched kv_cache to past_key_values1
-                if self.device.type == 'cpu':
-                    for i in range(len(past_key_values)):
-                        if self.config.model_type == "qwen":
-                            size = tmp_past_key_values[i][0].size(1)
-                            size1 = past_key_values[i][0].size(1)
-                            past_key_values1[i][0][:, size:size1, :, :] = (
-                                past_key_values[i][0][:, size:size1, :, :].to(torch.float32))
-                            past_key_values1[i][1][:, size:size1, :, :] = (
-                                past_key_values[i][1][:, size:size1, :, :].to(torch.float32))
-                        elif self.config.model_type == "chatglm":
-                            size = tmp_past_key_values[i][0].size(0)
-                            size1 = past_key_values[i][0].size(0)
-                            past_key_values1[i][0][size:size1, :, :, :] = (
-                                past_key_values[i][0][size:size1, :, :].to(torch.float32))
-                            past_key_values1[i][1][size:size1, :, :, :] = (
-                                past_key_values[i][1][size:size1, :, :].to(torch.float32))
-                        else:
-                            size = tmp_past_key_values[i][0].size(2)
-                            size1 = past_key_values[i][0].size(2)
-                            past_key_values1[i][0][:, :, size:size1, :] = (
-                                past_key_values[i][0][:, :, size:size1, :].to(torch.float32))
-                            past_key_values1[i][1][:, :, size:size1, :] = (
-                                past_key_values[i][1][:, :, size:size1, :].to(torch.float32))
+            # Each iter assign new_matched kv_cache to past_key_values1
+            if self.device.type == 'cpu':
+                for i in range(len(past_key_values)):
+                    if self.config.model_type == "qwen":
+                        size = tmp_past_key_values[i][0].size(1)
+                        size1 = past_key_values[i][0].size(1)
+                        past_key_values1[i][0][:, size:size1, :, :] = \
+                            past_key_values[i][0][:, size:size1, :, :].to(torch.float32)
+                        past_key_values1[i][1][:, size:size1, :, :] = \
+                            past_key_values[i][1][:, size:size1, :, :].to(torch.float32)
+                    elif self.config.model_type == "chatglm":
+                        size = tmp_past_key_values[i][0].size(0)
+                        size1 = past_key_values[i][0].size(0)
+                        past_key_values1[i][0][size:size1, :, :, :] = \
+                            past_key_values[i][0][size:size1, :, :, :].to(torch.float32)
+                        past_key_values1[i][1][size:size1, :, :, :] = \
+                            past_key_values[i][1][size:size1, :, :, :].to(torch.float32)
+                    else:
+                        size = tmp_past_key_values[i][0].size(2)
+                        size1 = past_key_values[i][0].size(2)
+                        past_key_values1[i][0][:, :, size:size1, :] = \
+                            past_key_values[i][0][:, :, size:size1, :].to(torch.float32)
+                        past_key_values1[i][1][:, :, size:size1, :] = \
+                            past_key_values[i][1][:, :, size:size1, :].to(torch.float32)
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
             current_input_ids = output_ids[:, -1:]
