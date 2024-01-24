@@ -505,7 +505,9 @@ class _BaseAutoModelClass:
 
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
-                kwargs["device"] = "meta"
+                if config.architectures is not None \
+                    and config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+                    kwargs["device"] = "meta"
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)
