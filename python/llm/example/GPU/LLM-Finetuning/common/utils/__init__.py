@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-from prompter import Prompter
-from util import *
+from .prompter import Prompter
+from .util import *
