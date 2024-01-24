@@ -1,5 +1,5 @@
 # Chatglm3
-In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding optimizations on ChatGLM3 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model.
+In this directory, you will find examples on how you could run Baichuan2 FP16 infernece with self-speculative decoding using BigDL-LLM on [Intel GPUs](../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
