@@ -190,11 +190,6 @@ def speculative_generate(self,
         else:
             draft_current_input_ids = current_input_ids
             # Target model KV cache to draft model
-            # if self.device.type == 'cpu' and step == 1:
-            #     past_key_values = [
-            #         (k.to(torch.float32), v.to(torch.float32)) for k, v in past_key_values
-            #     ]
-            # draft_past_key_values = past_key_values
 
             # init draft_self_past_key_values:past_key_values1 and assign initial fp32 value
             if self.device.type == 'cpu' and step == 1:
@@ -381,18 +376,24 @@ def speculative_generate(self,
                         if self.config.model_type == "qwen":
                             size = tmp_past_key_values[i][0].size(1)
                             size1 = past_key_values[i][0].size(1)
-                            past_key_values1[i][0][:, size:size1, :, :] = past_key_values[i][0][:, size:size1, :, :].to(torch.float32)
-                            past_key_values1[i][1][:, size:size1, :, :] = past_key_values[i][1][:, size:size1, :, :].to(torch.float32)
+                            past_key_values1[i][0][:, size:size1, :, :] = (
+                                past_key_values[i][0][:, size:size1, :, :].to(torch.float32))
+                            past_key_values1[i][1][:, size:size1, :, :] = (
+                                past_key_values[i][1][:, size:size1, :, :].to(torch.float32))
                         elif self.config.model_type == "chatglm":
                             size = tmp_past_key_values[i][0].size(0)
                             size1 = past_key_values[i][0].size(0)
-                            past_key_values1[i][0][size:size1, :, :, :] = past_key_values[i][0][size:size1,:, :].to(torch.float32)
-                            past_key_values1[i][1][size:size1, :, :, :] = past_key_values[i][1][size:size1,:, :].to(torch.float32)
+                            past_key_values1[i][0][size:size1, :, :, :] = (
+                                past_key_values[i][0][ size:size1, :, :].to(torch.float32))
+                            past_key_values1[i][1][size:size1, :, :, :] = (
+                                past_key_values[i][1][size:size1, :, :].to(torch.float32))
                         else:
                             size = tmp_past_key_values[i][0].size(2)
                             size1 = past_key_values[i][0].size(2)
-                            past_key_values1[i][0][:,:, size:size1, :] = past_key_values[i][0][:,:,size:size1,:].to(torch.float32)
-                            past_key_values1[i][1][:,:, size:size1, :] = past_key_values[i][1][:,:,size:size1,:].to(torch.float32)
+                            past_key_values1[i][0][:, :, size:size1, :] = (
+                                past_key_values[i][0][:, :, size:size1, :].to(torch.float32))
+                            past_key_values1[i][1][:, :, size:size1, :] = (
+                                past_key_values[i][1][:, :, size:size1, :].to(torch.float32))
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
             current_input_ids = output_ids[:, -1:]
