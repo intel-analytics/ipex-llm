@@ -1,5 +1,5 @@
-# BigDL-LLM Speculative Decoding Optimization for Large Language Model on Intel GPUs
-You can use BigDL-LLM to run almost every Huggingface Transformer models with speculative decoding optimizations on Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
+# Self-Speculative Decoding for Large Language Model Inference using BigDL-LLM on Intel GPUs
+You can use BigDL-LLM to run any Huggingface Transformer model with self-speculative decoding on Intel GPUs. This directory contains example scripts to help you quickly get started to run some popular open-source models using self-speculative decoding. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
 ## Verified Hardware Platforms
 
