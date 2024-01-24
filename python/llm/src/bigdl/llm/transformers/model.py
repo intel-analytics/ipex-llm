@@ -49,7 +49,6 @@ import torch
 import warnings
 import copy
 from .utils import logger
-from .speculative import speculative_generate, clear_benchmarks
 
 
 def save_low_bit(self, *args, **kwargs):
@@ -247,6 +246,7 @@ class _BaseAutoModelClass:
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
+                from .speculative import speculative_generate, clear_benchmarks
                 # load a sym_int4 model as draft model
                 draft_model = cls.load_convert('sym_int4', optimize_model, *args, **kwargs)
                 model.draft_model = draft_model
@@ -505,6 +505,7 @@ class _BaseAutoModelClass:
 
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
+                kwargs["device"] = "meta"
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)

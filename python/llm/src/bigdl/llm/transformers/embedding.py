@@ -25,11 +25,27 @@ from typing import Optional
 # To prevent insufficient available memory when moving embedding from XPU back to CPU,
 # we can pin the embedding to CPU if `cpu_embedding==True`.
 class CPUPinnedParam(Parameter):
+    # Overwrite the device attribute for CPUPinnedParam so that its device will be same as
+    # the device for model.to(device);
+    # With this device attribute, model.device will be same as the
+    # the device for model.to(device) even with cpu_embedding==True
+    @property
+    def device(self):
+        try:
+            return self._device
+        except AttributeError:
+            return super().device
+
+    @device.setter
+    def device(self, to_device):
+        self._device = to_device
+
     def to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
         if device is None:
             return super().to(*args, **kwargs)
         elif device.type == 'xpu':
+            self.device = device
             if convert_to_format is not None and self.dim() in (4, 5):
                 return super().to('cpu', dtype,
                                   non_blocking, memory_format=convert_to_format)
