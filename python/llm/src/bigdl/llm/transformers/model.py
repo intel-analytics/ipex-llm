@@ -506,7 +506,7 @@ class _BaseAutoModelClass:
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
                 if config.architectures is not None and config.architectures[0] in \
-                  ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+                   ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
 
                     """
                     ChatGLMModel uses skip_init by default, which will force modules placed on cpu
