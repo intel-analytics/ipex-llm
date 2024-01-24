@@ -424,7 +424,6 @@ def speculative_generate(self,
         # Stop on eos and remove content after eos
         output_ids_list = output_ids[0].tolist()
         if generation_config.eos_token_id in output_ids_list:
-            print(f"eos: {step}, {output_ids_list}")
             idx = output_ids_list.index(generation_config.eos_token_id)
             step -= (len(output_ids_list) - idx - 1)
             break
