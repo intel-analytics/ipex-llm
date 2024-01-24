@@ -1,36 +1,30 @@
 # Qwen
-In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding optimizations on Qwen models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) and [Qwen/Qwen-14B-Chat](https://huggingface.co/Qwen/Qwen-14B-Chat) as reference Qwen models.
-
-## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding 
+optimizations on Qwen models on Intel CPUs. For illustration purposes, we utilize the [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) and [Qwen/Qwen-14B-Chat](https://huggingface.co/Qwen/Qwen-14B-Chat) as reference Qwen models.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [speculative.py](./speculative.py), we show a basic use case for a Qwen model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel GPUs.
+In the example [speculative.py](./speculative.py), we show a basic use case for a Qwen model to 
+predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel CPUs.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install bigdl-llm[all]
+pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen-7B-Chat to conduct generation
 pip install transformers==4.34.0
 ```
-### 2. Configures OneAPI environment variables
+### 2. Configures environment variables
 ```bash
-source /opt/intel/oneapi/setvars.sh
+source bigdl-llm-init -t
+export OMP_NUM_THREADS=your_socket_num
 ```
 
 ### 3. Run
 
-For optimal performance on Intel Data Center GPU Max Series, it is recommended to set several environment variables.
-```bash
-export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-export ENABLE_SDP_FUSION=1
 ```
-
-```
-python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+(numactl -m 0 -C 0-47) python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH 
+--prompt PROMPT --n-predict N_PREDICT
 ```
 
 Arguments info:

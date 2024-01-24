@@ -60,12 +60,12 @@ if __name__ == '__main__':
     # it only works when load_in_low_bit="fp16" on Intel GPU or load_in_low_bit="bf16" on latest Intel Xeon CPU
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
-                                                 torch_dtype=torch.float16,
-                                                 load_in_low_bit="fp16",
+                                                 torch_dtype=torch.bfloat16,
+                                                 load_in_low_bit="bf16",
                                                  speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = model.to('xpu')
+    model = model.to('cpu')
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
@@ -87,7 +87,6 @@ if __name__ == '__main__':
                                 th_stop_draft=args.th_stop_draft,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        torch.xpu.synchronize()
         end = time.perf_counter()
 
         print(output_str)
