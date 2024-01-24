@@ -15,7 +15,7 @@
 #
 
 export MASTER_ADDR=127.0.0.1
-export OMP_NUM_THREADS=12 # adjust this to 1/4 of total physical cores
+export OMP_NUM_THREADS=12
 export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
 

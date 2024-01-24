@@ -19,6 +19,10 @@ pip install fire peft==0.5.0
 pip install oneccl_bind_pt==2.1.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
 pip install accelerate==0.23.0
 pip install bitsandbytes scipy
+# configures OneAPI environment variables
+source /opt/intel/oneapi/setvars.sh # necessary to run before installing deepspeed
+pip install git+https://github.com/microsoft/DeepSpeed.git@78c518e
+pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@ec33277
 ```
 
 ### 2. Configures OneAPI environment variables
@@ -28,7 +32,10 @@ source /opt/intel/oneapi/setvars.sh
 
 ### 3. QLoRA Finetune
 
-Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device:
+Here, we provide example usages on different hardware. Please refer to the appropriate script based on your device and model:
+
+<details>
+  <summary> Show LLaMA2-7B examples </summary>
 
 ##### Finetuning LLaMA2-7B on single Arc A770
 
@@ -77,6 +84,44 @@ bash qlora_finetune_llama2_7b_pvc_1550_1_card.sh
 ```bash
 bash qlora_finetune_llama2_7b_pvc_1550_4_card.sh
 ```
+
+</details>
+
+<details>
+  <summary> Show LLaMA2-13B examples </summary>
+
+##### Finetuning LLaMA2-13B on single tile of Intel Data Center GPU Max 1550
+
+```bash
+bash qlora_finetune_llama2_13b_pvc_1550_1_tile.sh
+```
+
+##### Finetuning LLaMA2-13B on single Intel Data Center GPU Max 1550
+
+```bash
+bash qlora_finetune_llama2_13b_pvc_1550_1_card.sh
+```
+
+##### Finetuning LLaMA2-13B on four Intel Data Center GPU Max 1550
+
+```bash
+bash qlora_finetune_llama2_13b_pvc_1550_4_card.sh
+```
+
+</details>
+
+<details>
+  <summary> Show LLaMA2-70B examples </summary>
+
+Different from `LLaMA2-7B` and `LLaMA2-13B`, it is recommonded to save the model with bigdl-llm low-bit optimization first to avoid large amount of CPU memory usage. And DeepSpeed ZeRO2 technology is used during finetuning.
+
+##### Finetuning LLaMA2-13B on four Intel Data Center GPU Max 1550
+
+```bash
+bash qlora_finetune_llama2_70b_pvc_1550_4_card.sh
+```
+
+</details>
 
 ### 4. (Optional) Resume Training
 If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**

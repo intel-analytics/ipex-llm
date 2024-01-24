@@ -14,17 +14,23 @@
 # limitations under the License.
 #
 
+# save Llama-2-70b-hf model with bigdl-llm low-bit optimization first
+python save_low_bit_70b_model.py
+
 export MASTER_ADDR=127.0.0.1
 export OMP_NUM_THREADS=56
 export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
+export CCL_ZE_IPC_EXCHANGE=sockets
 
 mpirun -n 8 \
-    python -u ./alpaca_lora_finetuning.py \
-    --micro_batch_size 8 \
-    --batch_size 128 \
-    --base_model "meta-llama/Llama-2-7b-hf" \
-    --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./bigdl-lora-alpaca" \
-    --gradient_checkpointing False \
-    --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj', 'up_proj', 'down_proj', 'gate_proj']"
+       python -u ./alpaca_qlora_finetuning.py \
+       --base_model "meta-llama/Llama-2-70b-hf" \
+       --data_path "yahma/alpaca-cleaned" \
+       --output_dir "./bigdl-qlora-alpaca" \
+       --gradient_checkpointing True \
+       --micro_batch_size 8 \
+       --batch_size 128 \
+       --deepspeed ./deepspeed_zero2.json \
+       --saved_low_bit_model  ./llama-2-70b-hf-nf4  > training.log
+
