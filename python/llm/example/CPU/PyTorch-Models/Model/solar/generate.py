@@ -27,9 +27,9 @@ from bigdl.llm import optimize_model
 SOLAR_PROMPT_FORMAT = "<s>### User:\n{prompt}\n### Assistant:\n"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for SOLAR-10.7B model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for SOLAR model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="upstage/SOLAR-10.7B-Instruct-v1.0",
-                        help='The huggingface repo id for the SOLAR-10.7B model to be downloaded'
+                        help='The huggingface repo id for the SOLAR model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
