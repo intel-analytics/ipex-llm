@@ -505,7 +505,15 @@ class _BaseAutoModelClass:
 
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
-                kwargs["device"] = "meta"
+                if config.architectures is not None and config.architectures[0] in \
+                   ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+
+                    """
+                    ChatGLMModel uses skip_init by default, which will force modules placed on cpu
+                    if the device is not specified. This will further cause replaced linear
+                    allocating memory on cpu.
+                    """
+                    kwargs["device"] = "meta"
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)
