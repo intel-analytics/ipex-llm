@@ -10,6 +10,7 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 
 
 ## System Support
+### 1. Linux: 
 **Hardware**:
 - Intel Arc™ A-Series Graphics
 - Intel Data Center GPU Flex Series
@@ -17,6 +18,13 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 
 **Operating System**:
 - Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
+
+### 2. Windows
+**Hardware**:
+- Intel iGPU and dGPU
+
+**Operating System**:
+- Windows 10/11, with or without WSL 
 
 ## Requirements
 To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
