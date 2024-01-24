@@ -34,7 +34,7 @@ long_input = """折纸的过程看似简单，其实想要做好，还是需要�
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Qwen model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="baichuan-inc/Baichuan2-7B-Chat",
                         help='The huggingface repo id for the Baichuan2 (e.g. `baichuan-inc/Baichuan2-7B-Chat` and `baichuan-inc/Baichuan2-13B-Chat`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
