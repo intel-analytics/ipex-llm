@@ -74,7 +74,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. tip::
 
-         When running LLMs on Intel iGPUs for Windows users, we recommend setting ``cpu_embedding=True``` in the ``from_pretrained`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+         When running LLMs on Intel iGPUs for Windows users, we recommend setting ``cpu_embedding=True`` in the ``from_pretrained`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
          
          See the `API doc <../../../PythonAPI/LLM/transformers.html#hugging-face-transformers-automodel>`_ to find more information.
 
