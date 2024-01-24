@@ -204,20 +204,24 @@ def speculative_generate(self,
                     len2 = past_key_values[i][0].size(2)
                     len3 = past_key_values[i][0].size(3)
                     if self.config.model_type == "qwen":
-                        k0 = torch.ones(len0, len1 + max_new_tokens, len2, len3,
+                        k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
                                         dtype=torch.float32)
-                        v0 = torch.ones(len0, len1 + max_new_tokens, len2, len3,
+                        v0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
                                         dtype=torch.float32)
+                        k0 = k0.transpose(1, 2)
+                        v0 = v0.transpose(1, 2)
                         past_key_values1.append((k0, v0))
                         past_key_values1[i][0][:, :len1, :, :] = past_key_values[i][0].to(
                             torch.float32)
                         past_key_values1[i][1][:, :len1, :, :] = past_key_values[i][1].to(
                             torch.float32)
                     elif self.config.model_type == "chatglm":
-                        k0 = torch.ones(len0 + max_new_tokens, len1, len2, len3,
+                        k0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
                                         dtype=torch.float32)
-                        v0 = torch.ones(len0 + max_new_tokens, len1, len2, len3,
+                        v0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
                                         dtype=torch.float32)
+                        k0 = k0.permute(2, 0, 1, 3)
+                        v0 = v0.permute(2, 0, 1, 3)
                         past_key_values1.append((k0, v0))
                         past_key_values1[i][0][:len0, :, :, :] = past_key_values[i][0].to(
                             torch.float32)
