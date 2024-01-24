@@ -41,6 +41,7 @@ from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv
     append_fp8_kv_cache, restore_fp8_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, quantize_kv_cache
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
@@ -89,25 +90,40 @@ def qwen_attention_forward(
     # query, key, value's shape: [bs, seq_len, num_heads, head_dim]
 
     if rotary_pos_emb_list is not None:
+        use_fuse_rope = query.device.type == "xpu" and not (self.training and query.requires_grad)
         cur_len = query.shape[1]
         if len(rotary_pos_emb_list) == 1:
             rotary_pos_emb = rotary_pos_emb_list[0]
             rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
-            rotary_pos_emb = (rotary_pos_emb,) * 2
-            q_pos_emb, k_pos_emb = rotary_pos_emb
-            # Slice the pos emb for current inference
-            query = apply_rotary_pos_emb(query, q_pos_emb)
-            key = apply_rotary_pos_emb(key, k_pos_emb)
+            if use_fuse_rope:
+                cos, sin = rotary_pos_emb
+                cos = cos.to(query.dtype)
+                sin = sin.to(query.dtype)
+                query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
+            else:
+                rotary_pos_emb = (rotary_pos_emb,) * 2
+                q_pos_emb, k_pos_emb = rotary_pos_emb
+                # Slice the pos emb for current inference
+                query = apply_rotary_pos_emb(query, q_pos_emb)
+                key = apply_rotary_pos_emb(key, k_pos_emb)
         else:
             query_list = []
             key_list = []
             for i, rotary_pos_emb in enumerate(rotary_pos_emb_list):
                 rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
-                rotary_pos_emb = (rotary_pos_emb,) * 2
-                q_pos_emb, k_pos_emb = rotary_pos_emb
-                # Slice the pos emb for current inference
-                query_list += [apply_rotary_pos_emb(query[i:i+1, :, :], q_pos_emb)]
-                key_list += [apply_rotary_pos_emb(key[i:i+1, :, :], k_pos_emb)]
+                if use_fuse_rope:
+                    cos, sin = rotary_pos_emb
+                    cos = cos.to(query.dtype)
+                    sin = sin.to(query.dtype)
+                    query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
+                    query_list += [query]
+                    key_list += [key]
+                else:
+                    rotary_pos_emb = (rotary_pos_emb,) * 2
+                    q_pos_emb, k_pos_emb = rotary_pos_emb
+                    # Slice the pos emb for current inference
+                    query_list += [apply_rotary_pos_emb(query[i:i+1, :, :], q_pos_emb)]
+                    key_list += [apply_rotary_pos_emb(key[i:i+1, :, :], k_pos_emb)]
             query = torch.cat(query_list, dim=0)
             key = torch.cat(key_list, dim=0)
 
@@ -119,10 +135,14 @@ def qwen_attention_forward(
         seq_end = kv_seq_len
         logn_tensor = self.logn_tensor[:, seq_start:seq_end, :, :].type_as(query)
         query = query * logn_tensor.expand_as(query)
-    if key_size == kv_seq_len:
+
+    if query_size > 1:
         causal_mask = torch.tril(
-            torch.ones((key_size, key_size), dtype=torch.bool, device=query.device)
-        ).view(1, 1, key_size, key_size)
+            torch.ones((kv_seq_len, kv_seq_len), dtype=torch.bool, device=query.device)
+        ).view(1, 1, kv_seq_len, kv_seq_len)
+        causal_mask = causal_mask[
+            :, :, kv_seq_len - query_size:kv_seq_len, :kv_seq_len
+        ]
     else:
         causal_mask = None
 
@@ -206,14 +226,7 @@ def qwen_attention_forward(
             value = new_value_states
 
         query = query.transpose(1, 2)
-        # skip first init and only works for n tokens input
-        if causal_mask is None and query.size(2) > 1:
-            causal_mask = torch.tril(
-                torch.ones((key.size(2), key.size(2)), dtype=torch.bool, device=query.device)
-            ).view(1, 1, key.size(2), key.size(2))
-            causal_mask = causal_mask[
-                :, :, key.size(2) - query.size(2): key.size(2), :key.size(2)
-            ]
+
         attn_output, attn_weight = self._attn(
             query.to(key.dtype), key, value, causal_mask, attention_mask, head_mask
         )

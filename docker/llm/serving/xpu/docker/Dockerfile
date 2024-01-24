@@ -10,11 +10,7 @@ COPY ./entrypoint.sh /opt/entrypoint.sh
 
 # Install Serving Dependencies
 RUN cd /llm && \
-    git clone https://github.com/analytics-zoo/FastChat.git && \
-    cd FastChat && \
-    git checkout dev-2023-09-22 && \
-    pip3 install -e ".[model_worker,webui]" && \
-    cd /llm && \
+    pip install --pre --upgrade bigdl-llm[serving] && \
     chmod +x /opt/entrypoint.sh
 
 

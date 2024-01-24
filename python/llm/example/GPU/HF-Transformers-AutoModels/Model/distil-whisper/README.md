@@ -1,9 +1,9 @@
 # Distil-Whisper
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Distil-Whisper models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [distil-whisper/distil-large-v2](https://huggingface.co/distil-whisper/distil-large-v2) as a reference Distil-Whisper model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Distil-Whisper models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [distil-whisper/distil-large-v2](https://huggingface.co/distil-whisper/distil-large-v2) as a reference Distil-Whisper model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Recognize Tokens using `generate()` API
 In the example [recognize.py](./recognize.py), we show a basic use case for a Distil-Whisper model to conduct transcription using `pipeline()` API for long audio input, with BigDL-LLM INT4 optimizations.
