@@ -6,7 +6,7 @@ You can use BigDL-LLM to run BF16 inference for any Huggingface Transformer mode
 - Intel Xeon SPR server
 
 ## Recommended Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here]([here](../README.md#system-support) for more information. Make sure you have installed `bigdl-llm` before:
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#system-support) for more information. Make sure you have installed `bigdl-llm` before:
 
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
