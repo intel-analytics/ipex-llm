@@ -252,7 +252,9 @@ def speculative_generate(self,
                         k0 = past_key_values1[i][0][:, :, :len2, :]
                         v0 = past_key_values1[i][1][:, :, :len2, :]
                         tmp_past_key_values.append((k0, v0))
-            draft_past_key_values = tmp_past_key_values
+                draft_past_key_values = tmp_past_key_values
+            else:
+                draft_past_key_values = past_key_values
             draft_generate_ids[:, 0] = current_input_ids
             tic = time.time()
             # Draft model auto-regressively generate k tokens
