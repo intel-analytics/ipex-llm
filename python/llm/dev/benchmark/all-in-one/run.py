@@ -87,8 +87,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding)
     elif test_api == 'transformer_autocast_bf16':
         result = run_transformer_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
-    elif test_api == 'ipex_bf16':
-        result = run_ipex_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+    elif test_api == 'ipex_bf16_cpu':
+        result = run_ipex_bf16_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -906,7 +906,7 @@ def run_transformer_autocast_bf16( repo_id,
                                           actual_in_len, actual_out_len])
     return result
 
-def run_ipex_bf16(    repo_id,
+def run_ipex_bf16_cpu(    repo_id,
                       local_model_hub,
                       in_out_pairs,
                       warm_up,
