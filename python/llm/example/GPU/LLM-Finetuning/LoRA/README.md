@@ -40,7 +40,7 @@ bash lora_finetune_llama2_7b_arc_1_card.sh
 bash lora_finetune_llama2_7b_pvc_1100_1_card.sh
 ```
 
-##### Finetuning LLaMA2-7B on single tile Intel Data Center GPU Max 1550
+##### Finetuning LLaMA2-7B on single tile of Intel Data Center GPU Max 1550
 
 ```bash
 bash lora_finetune_llama2_7b_pvc_1550_1_tile.sh

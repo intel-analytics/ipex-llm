@@ -15,7 +15,7 @@
 #
 
 # save Llama-2-70b-hf model with bigdl-llm low-bit optimization first
-python save_low_bit_70b_model.py
+python save_low_bit_70b_model.py --output_path "./llama-2-70b-hf-nf4"
 
 export MASTER_ADDR=127.0.0.1
 export OMP_NUM_THREADS=56
@@ -32,5 +32,5 @@ mpirun -n 8 \
        --micro_batch_size 8 \
        --batch_size 128 \
        --deepspeed ./deepspeed_zero2.json \
-       --saved_low_bit_model  ./llama-2-70b-hf-nf4  > training.log
+       --saved_low_bit_model ./llama-2-70b-hf-nf4 > training.log
 

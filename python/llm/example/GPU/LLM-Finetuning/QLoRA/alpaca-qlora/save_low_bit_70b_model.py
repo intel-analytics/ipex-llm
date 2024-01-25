@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument('--base_model', type=str, default="meta-llama/Llama-2-70b-hf",
                         help='The huggingface repo id for the Llama2-70B model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--output_path', type=str, default="./llama-2-70b-chat-hf-nf4",
+    parser.add_argument('--output_path', type=str, default="./llama-2-70b-hf-nf4",
                         help='The path to the saved model.')
 
     args = parser.parse_args()
