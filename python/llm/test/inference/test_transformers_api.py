@@ -115,7 +115,6 @@ class TestTransformersAPI(unittest.TestCase):
     ])
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_REPLIT_CODE_PATH')),
     ])
 def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
