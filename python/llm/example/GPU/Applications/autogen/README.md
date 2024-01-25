@@ -2,7 +2,7 @@
 In this example, we use BigDL adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) agent chat with 
 local large language models.
 
-### 1. Setup BIgDL-LLM Environment
+### 1. Setup BigDL-LLM Environment
 ```bash
 # create autogen running directory
 mkdir autogen
@@ -13,10 +13,8 @@ conda create -n autogen python=3.9
 conda activate autogen
 
 # install xpu-supported and fastchat-adapted bigdl-llm
-pip install --pre --upgrade bigdl-llm[xpu,serving]==2.5.0b20240110 -f https://developer.intel.com/ipex-whl-stable-xpu
-
-# clone the BigDL in the autogen folder
-git clone https://github.com/intel-analytics/BigDL.git
+# we recommend using bigdl-llm version >= 2.5.0b20240110
+pip install --pre --upgrade bigdl-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 # install recommend transformers version
 pip install transformers==4.36.2
@@ -39,6 +37,11 @@ pip3 install -e ".[model_worker,webui]"
 pip install pyautogen==0.2.7
 ```
 
+**After setting up the environment, the folder structure should be:**
+> -- autogen
+> | -- FastChat
+
+
 ### 3. Build FastChat OpenAI-Compatible RESTful API
 Open 3 terminals
 
@@ -56,6 +59,9 @@ python -m fastchat.serve.controller
 
 **Terminal 2: Launch the workers**
 
+**Model Name Note:**
+> Assume you are using the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device xpu`. This ensures the proper usage of the BigDL adapted FastChat.
+
 ```bash
 # activate conda environment
 conda activate autogen
@@ -63,12 +69,18 @@ conda activate autogen
 # go to the created autogen folder
 cd autogen
 
-# ensure the connection between controller and worker
-export no_proxy='localhost'
-
 # load the local model with xpu with your downloaded model
-python -m bigdl.llm.serving.model_worker --model-path YOUR_MODEL_PATH --device xpu
+python -m bigdl.llm.serving.model_worker --model-path ... --device xpu
 ```
+
+**Device Note:**
+> Please set `--device` to `xpu` to enable the Intel GPU usage.
+
+**Potential Error Note:**
+> If you get `RuntimeError: Error register to Controller` in the worker terminal, please set `export no_proxy='localhost'` to ensure the registration
+
+
+**Potential Error Note:**
 
 **Terminal 3: Launch the server**
 
@@ -89,19 +101,17 @@ Open another terminal
 # activate conda environment
 conda activate autogen
 
-# go to the cloned BigDL example folder in autogen folder
-cd autogen/BigDL/python/llm/example/CPU/Applications/autogen
-
-# ensure the connection between controller and worker
-export no_proxy='localhost'
+# go to the autogen folder
+cd autogen
 
 # run the autogen example
 python teachability_new_knowledge.py
 ```
 
-## [Important] Change the model name
-When you download the model, please change the model folder to `bigdl` for the usage of bigdl adapted FastChat. For example, after download the `Mistral-7B-Instruct-v0.2`
-model and the path is `MODEL_PATH/Mistral-7B-Instruct-v0.2`, please change it to `MODEL_PATH/bigdl`.
+**Potential Error Note:**
+> If you get `?bu=http://localhost:8000/v1/chat/completions&bc=Failed+to+retrieve+requested+URL.&ip=10.239.44.101&er=ERR_CONNECT_FAIL` in the running terminal, please set `export no_proxy='localhost'` to ensure the registration.
+
+
 
 ## Sample Output
 
