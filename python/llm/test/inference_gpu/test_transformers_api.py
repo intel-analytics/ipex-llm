@@ -17,6 +17,7 @@
 
 import os, time
 import pytest
+import tempfile
 
 import torch
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel, AutoModelForSpeechSeq2Seq
@@ -49,6 +50,37 @@ def test_completion(Model, Tokenizer, model_path, prompt, answer):
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 
         assert answer in output_str
+
+
+@pytest.mark.parametrize('prompt, answer', [
+    ('What is the capital of France?\n\n', 'Paris')
+    ])
+@pytest.mark.parametrize('Model, Tokenizer, model_path',[
+    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
+    (AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
+    ])
+def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
+    tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
+    model = Model.from_pretrained(model_path,
+                                  load_in_4bit=True,
+                                  optimize_model=True,
+                                  trust_remote_code=True)
+    
+    with tempfile.TemporaryDirectory() as tempdir:
+        model.save_low_bit(tempdir)
+        loaded_model = Model.load_low_bit(tempdir,
+                                          optimize_model=True,
+                                          trust_remote_code=True)
+
+        with torch.inference_mode():
+            loaded_model = loaded_model.to(device)
+
+            input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
+            output = loaded_model.generate(input_ids, max_new_tokens=32)
+            loaded_model.to('cpu')   # deallocate gpu memory
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+
+            assert answer in output_str
 
 def test_transformers_auto_model_for_speech_seq2seq_int4():
     with torch.inference_mode():

@@ -17,6 +17,7 @@
 
 import unittest
 import os
+import tempfile
 import pytest
 import time
 import torch
@@ -108,6 +109,33 @@ class TestTransformersAPI(unittest.TestCase):
         print(f'Inference time: {end-st} s')
         res = 'Paris' in output_str        
         self.assertTrue(res)
+
+@pytest.mark.parametrize('prompt, answer', [
+    ('What is the capital of France?\n\n', 'Paris')
+    ])
+@pytest.mark.parametrize('Model, Tokenizer, model_path',[
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_REPLIT_CODE_PATH')),
+    (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')),
+    ])
+def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
+    tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
+    model = Model.from_pretrained(model_path,
+                                  load_in_4bit=True,
+                                  optimize_model=True,
+                                  trust_remote_code=True)
+    
+    with tempfile.TemporaryDirectory() as tempdir:
+        model.save_low_bit(tempdir)
+        loaded_model = Model.load_low_bit(tempdir,
+                                          optimize_model=True,
+                                          trust_remote_code=True)
+
+        with torch.inference_mode():
+            input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            output = loaded_model.generate(input_ids, max_new_tokens=32)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+
+            assert answer in output_str
 
 if __name__ == '__main__':
     pytest.main([__file__])
