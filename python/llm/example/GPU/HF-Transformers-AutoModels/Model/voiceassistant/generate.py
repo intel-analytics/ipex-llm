@@ -88,14 +88,10 @@ if __name__ == '__main__':
     processor = WhisperProcessor.from_pretrained(whisper_model_path)
 
     # generate token ids
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     whisper =  AutoModelForSpeechSeq2Seq.from_pretrained(whisper_model_path, load_in_4bit=True, optimize_model=False, use_cache=True)
     whisper.config.forced_decoder_ids = None
     whisper = whisper.to('xpu')
     
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     llama_model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True, trust_remote_code=True, optimize_model=False, use_cache=True)
     llama_model = llama_model.to('xpu')
     tokenizer = LlamaTokenizer.from_pretrained(llama_model_path)
