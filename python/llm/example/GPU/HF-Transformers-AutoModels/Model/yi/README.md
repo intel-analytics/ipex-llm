@@ -1,8 +1,8 @@
 # Yi
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Yi models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B) as a reference Yi model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Yi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B) as a reference Yi model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Yi model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.

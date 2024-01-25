@@ -1,8 +1,8 @@
 # Chinese Llama2
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Chinese LLaMA models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [LinkSoul/Chinese-Llama-2-7b](https://huggingface.co/LinkSoul/Chinese-Llama-2-7b) as reference Chinese LLaMA models.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Chinese LLaMA models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [LinkSoul/Chinese-Llama-2-7b](https://huggingface.co/LinkSoul/Chinese-Llama-2-7b) as reference Chinese LLaMA models.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.

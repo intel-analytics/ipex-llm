@@ -76,6 +76,7 @@ calculate_total_cores() {
 # Default values
 controller_host="localhost"
 controller_port="21001"
+gradio_port="8002"
 api_host="localhost"
 api_port="8000"
 worker_host="localhost"
@@ -134,9 +135,9 @@ else
   done
 
   if [ "$worker_type" == "model_worker" ]; then
-      worker_type="fastchat.serve.model_worker"
+      worker_type="bigdl.llm.serving.model_worker"
   elif [ "$worker_type" == "vllm_worker" ]; then
-      worker_type="fastchat.serve.vllm_worker"
+      worker_type="bigdl.llm.serving.vllm_worker"
   fi
 
   if [[ -n $CONTROLLER_HOST ]]; then
@@ -153,6 +154,10 @@ else
 
   if [[ -n $API_PORT ]]; then
     api_port=$API_PORT
+  fi
+
+  if [[ -n $GRADIO_PORT ]]; then
+    gradio_port=$GRADIO_PORT
   fi
 
   if [[ -n $WORKER_HOST ]]; then
@@ -185,7 +190,9 @@ else
     echo "OpenAI API address: $api_address"
     python3 -m fastchat.serve.controller --host $controller_host --port $controller_port --dispatch-method $dispatch_method &
     # Boot openai api server
-    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address
+    python3 -m fastchat.serve.openai_api_server --host $api_host --port $api_port --controller-address $controller_address &
+    # Boot gradio_web_server
+    python3 -m fastchat.serve.gradio_web_server --host $controller_host --port $gradio_port --controller-url $controller_address --model-list-mode reload
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
@@ -213,9 +220,9 @@ else
     echo "Worker type: $worker_type"
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    if [ "$worker_type" == "fastchat.serve.model_worker" ]; then
+    if [ "$worker_type" == "bigdl.llm.serving.model_worker" ]; then
       python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address --stream-interval $stream_interval
-    elif [ "$worker_type" == "fastchat.serve.vllm_worker" ]; then
+    elif [ "$worker_type" == "bigdl.llm.serving.vllm_worker" ]; then
       python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
     fi
   fi

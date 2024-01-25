@@ -1,10 +1,8 @@
-# BigDL-LLM Transformers INT4 Optimization for Large Language Model on Intel GPUs
-You can use BigDL-LLM to run almost every Huggingface Transformer models with speculative decoding optimizations on Intel GPUs. This directory contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
+# Self-Speculative Decoding for Large Language Model FP16 Inference using BigDL-LLM on Intel GPUs
+You can use BigDL-LLM to run FP16 inference for any Huggingface Transformer model with ***self-speculative decoding*** on Intel GPUs. This directory contains example scripts to help you quickly get started to run some popular open-source models using self-speculative decoding. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
 ## Verified Hardware Platforms
 
-- Intel Arc™ A-Series Graphics
-- Intel Data Center GPU Flex Series
 - Intel Data Center GPU Max Series
 
 ## Recommended Requirements
@@ -19,11 +17,6 @@ Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](http
 > **Note**: IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0.
 
 ## Best Known Configuration on Linux
-For optimal performance on Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, it is recommended to set several environment variables.
-```bash
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-```
 
 For optimal performance on Intel Data Center GPU Max Series, it is recommended to set several environment variables.
 ```bash

@@ -310,6 +310,6 @@ def use_fused_layer_norm(x: torch.Tensor, training: bool):
         and x.device.type == 'xpu'
         and (
             get_xpu_device_type(x) not in ["arc", "flex"]
-            or x.reshape(-1, x.size(-1)).size(0) == 1
+            or x.numel() // x.size(-1) == 1
         )
     )

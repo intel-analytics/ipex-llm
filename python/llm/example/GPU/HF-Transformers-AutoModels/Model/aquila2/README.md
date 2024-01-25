@@ -7,7 +7,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 > BigDL-LLM optimizes the *Transformers* model in INT4 precision at runtime, and thus no explicit conversion is needed.
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Aquila2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.

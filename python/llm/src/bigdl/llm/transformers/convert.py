@@ -203,7 +203,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if is_linear and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
             if (not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and
-                    module.weight.data.device.type != 'meta' and
                     not isinstance(module, LowBitLinear)):
                 in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
@@ -303,17 +302,16 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         module.weight = None
         elif cpu_embedding and type(module) == nn.Embedding:
             # skip user-defined Embedding layer
-            if platform.system().lower() == 'windows':
-                model._modules[name] = LLMEmbedding(
-                    num_embeddings=module.num_embeddings,
-                    embedding_dim=module.embedding_dim,
-                    padding_idx=module.padding_idx,
-                    max_norm=module.max_norm,
-                    norm_type=module.norm_type,
-                    scale_grad_by_freq=module.scale_grad_by_freq,
-                    sparse=module.sparse,
-                    _weight=module.weight.data,
-                )
+            model._modules[name] = LLMEmbedding(
+                num_embeddings=module.num_embeddings,
+                embedding_dim=module.embedding_dim,
+                padding_idx=module.padding_idx,
+                max_norm=module.max_norm,
+                norm_type=module.norm_type,
+                scale_grad_by_freq=module.scale_grad_by_freq,
+                sparse=module.sparse,
+                _weight=module.weight.data,
+            )
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
@@ -955,4 +953,14 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+    elif model.config.model_type == "gpt_bigcode":
+        # starcoder
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.gptbigcode import _attn_wrapper
+        _attn = _attn_wrapper(module.GPTBigCodeAttention._attn)
+        replace_func(model,
+                     module.GPTBigCodeAttention,
+                     "_attn",
+                     _attn)
     return model

@@ -74,7 +74,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Distil-Whisper | [link](example/CPU/HF-Transformers-AutoModels/Model/distil-whisper) | [link](example/GPU/HF-Transformers-AutoModels/Model/distil-whisper) |
 | Yi | [link](example/CPU/HF-Transformers-AutoModels/Model/yi) | [link](example/GPU/HF-Transformers-AutoModels/Model/yi) |
 | BlueLM | [link](example/CPU/HF-Transformers-AutoModels/Model/bluelm) | [link](example/GPU/HF-Transformers-AutoModels/Model/bluelm) |
-| Solar-10.7B | [link](example/CPU/HF-Transformers-AutoModels/Model/solar-10.7b) | [link](example/GPU/HF-Transformers-AutoModels/Model/solar-10.7b) |
+| SOLAR | [link](example/CPU/HF-Transformers-AutoModels/Model/solar) | [link](example/GPU/HF-Transformers-AutoModels/Model/solar) |
 | Yuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
 
 ### Working with `bigdl-llm`
