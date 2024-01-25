@@ -62,6 +62,7 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
+        
         # start inference
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
