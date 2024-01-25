@@ -528,6 +528,13 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         # Do nothing here for weights are empty.
         pass
 
+    _enable_ipex = os.getenv("ENABLE_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    logger.info(f"ENABLE_IPEX: {_enable_ipex}")
+    if _enable_ipex:
+        model = _optimize_ipex(model)
+        return model
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
     return model
@@ -558,6 +565,129 @@ def replace_func(m, target_m, func_name, new_func):
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
+
+
+# for ipex convert
+def lowering_class_cpu(m, target_m, new_class, config, tpp=False, woq=False):
+    for name, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            new_m = new_class(sub_m, config, tpp, woq)
+            setattr(m, name, new_m)
+        lowering_class_cpu(sub_m, target_m, new_class, config, tpp, woq)
+
+
+def convert_class(m, target_m, new_class, config, distributed=False):
+    for name, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            new_m = new_class(sub_m, config, distributed)
+            setattr(m, name, new_m)
+        convert_class(sub_m, target_m, new_class, config, distributed)
+
+
+def _set_optimized_model_for_generation(
+    model,
+    optimized_model,
+    first_token_optimized_model=None,
+):
+    from intel_extension_for_pytorch.transformers.models.reference.models import (
+        IPEX_LLM_Model_Return
+    )
+    if first_token_optimized_model is not None:
+        model.trace_graph_first = IPEX_LLM_Model_Return(
+            model, first_token_optimized_model
+        ).forward
+
+    model.trace_graph = IPEX_LLM_Model_Return(model, optimized_model).forward
+    print(
+        "ipex.llm.optimize has set the optimized or quantization model for model.generate()"
+    )
+    return model
+
+
+def _ipex_optimize_decoder(model, decoder_layer):
+    from intel_extension_for_pytorch.transformers.models.reference.modules.decoder import (
+        _IPEXDecoderLayerRef
+    )
+    from intel_extension_for_pytorch.transformers.models.cpu.modules.decoder import (
+        _IPEXDecoderLayerCPU
+    )
+    for supported_mlp_class in [_IPEXDecoderLayerRef]:
+        lowering_class_cpu(
+            model,
+            supported_mlp_class,
+            _IPEXDecoderLayerCPU,
+            model.config,
+            tpp=False,
+            woq=False,
+        )
+    convert_class(
+        model,
+        decoder_layer,
+        _IPEXDecoderLayerRef,
+        model.config,
+        distributed=True,
+    )
+
+
+def _ipex_optimize_attention(model, attention_layer):
+    from intel_extension_for_pytorch.transformers.models.reference.modules.attentions import (
+        _IPEXAttentionRef
+    )
+    from intel_extension_for_pytorch.transformers.models.cpu.modules.attentions import (
+        _IPEXAttentionCPU
+    )
+    for supported_mha_class in [_IPEXAttentionRef]:
+        lowering_class_cpu(
+            model,
+            supported_mha_class,
+            _IPEXAttentionCPU,
+            model.config,
+            tpp=False,
+            woq=False,
+        )
+    convert_class(
+        model,
+        attention_layer,
+        _IPEXAttentionRef,
+        model.config,
+        distributed=True,
+    )
+
+
+def _ipex_jit(model):
+    from intel_extension_for_pytorch.transformers.optimize import get_dummy_input
+    sample_inputs = (
+        get_dummy_input(model, return_dict=True)
+    )
+    with torch.no_grad(), torch.cpu.amp.autocast(
+        enabled=True
+    ):
+        trace_model = torch.jit.trace(
+            model,
+            example_kwarg_inputs=sample_inputs,
+            strict=False,
+            check_trace=False,
+        )
+        trace_model = torch.jit.freeze(trace_model)
+        model = _set_optimized_model_for_generation(
+            model, optimized_model=trace_model
+        )
+
+    return model.eval()
+
+
+def _optimize_ipex(model):
+    import intel_extension_for_pytorch as ipex
+    from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    model = model_convert_reference(model)
+
+    _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
+    _ipex_optimize_decoder(model, transformers.models.llama.modeling_llama.LlamaDecoderLayer)
+
+    model.register_forward_hook(output_hook, with_kwargs=True)
+
+    return _ipex_jit(model)
 
 
 def _optimize_post(model, lightweight_bmm=False):
