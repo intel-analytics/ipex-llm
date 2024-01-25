@@ -17,11 +17,10 @@
 import torch
 import time
 import argparse
-import numpy as np
 
 from bigdl.llm.transformers import AutoModelForCausalLM
-from bigdl.llm import optimize_model
 from transformers import AutoTokenizer
+from bigdl.llm import optimize_model
 import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model,
@@ -33,9 +32,9 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="internlm/internlm-chat-7b-8k",
                         help='The huggingface repo id for the InternLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="AI是什么？",
-                        help='Prompt to infer') 
-    parser.add_argument('--n-predict', type=int, default=32,
+    parser.add_argument('--prompt', type=str, default="解释一种机器学习算法",
+                        help='Prompt to infer')
+    parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
@@ -43,14 +42,13 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
-    # check load_in_4bit
-    # model = AutoModelForCausalLM.from_pretrained(model_path,
-    #                                              load_in_4bit=True,
-    #                                              trust_remote_code=True)
-    # check optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 trust_remote_code=True)
+                                                 load_in_4bit=False,
+                                                 optimize_model=False,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
     model = optimize_model(model)
+    model = model.to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -59,7 +57,12 @@ if __name__ == '__main__':
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = INTERNLM_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict)
+
+        # start inference
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
@@ -67,7 +70,9 @@ if __name__ == '__main__':
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
+        torch.xpu.synchronize()
         end = time.time()
+        output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         output_str = output_str.split("<eoa>")[0]
         print(f'Inference time: {end-st} s')
