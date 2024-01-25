@@ -87,6 +87,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding)
     elif test_api == 'transformer_autocast_bf16':
         result = run_transformer_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
+    elif test_api == 'ipex_bf16_cpu':
+        result = run_ipex_bf16_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams)
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -902,6 +904,69 @@ def run_transformer_autocast_bf16( repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                           actual_in_len, actual_out_len])
+    return result
+
+def run_ipex_bf16_cpu(    repo_id,
+                      local_model_hub,
+                      in_out_pairs,
+                      warm_up,
+                      num_trials,
+                      num_beams):
+    from transformers import AutoModel, AutoModelForCausalLM
+    from transformers import AutoTokenizer, LlamaTokenizer
+    import intel_extension_for_pytorch as ipex
+    model_path = get_model_path(repo_id, local_model_hub)
+    st = time.perf_counter()
+    if repo_id in CHATGLM_IDS:
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16, use_cache=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif repo_id in LLAMA_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16,
+                                                     use_cache=True)
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16, use_cache=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    model = ipex.optimize(model, dtype=torch.bfloat16, inplace=True)
+    end = time.perf_counter()
+    print(">> loading of model costs {}s".format(end - st))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            # As different tokenizer has different encodings,
+            # in_len.txt maybe shorter than we need,
+            # use much longer context to make sure input length
+            test_length = min(in_len*2, 8192)
+            while test_length not in [32, 256, 1024, 2048, 8192]:
+                test_length = test_length * 2
+            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_ids = tokenizer.encode(true_str, return_tensors="pt")
+            actual_in_len = input_ids.shape[1]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                            num_beams=num_beams)
+                end = time.perf_counter()
+                output_ids = output_ids.cpu()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                actual_out_len = output_ids.shape[1] - actual_in_len
+                print(output[0])
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                           actual_in_len, actual_out_len])
     return result
 
 if __name__ == '__main__':
