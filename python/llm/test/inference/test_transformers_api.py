@@ -18,9 +18,10 @@
 import unittest
 import os
 import tempfile
-import pytest
 import time
 import torch
+import pytest
+
 from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq
 from transformers import AutoTokenizer
 
