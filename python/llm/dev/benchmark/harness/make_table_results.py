@@ -76,7 +76,7 @@ def merge_results(path):
         # skip dirs without files
         if not filenames:
             continue
-        for filename in sorted([f for f in filenames if f.endswith(".json")]):
+        for filename in sorted([f for f in filenames if f.endswith("result.json")]):
             path = os.path.join(dirpath, filename)
             model, device, precision, task = dirpath.split('/')[-4:]
             with open(path, "r") as f:
