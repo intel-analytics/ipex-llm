@@ -32,9 +32,9 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="internlm/internlm-chat-7b-8k",
                         help='The huggingface repo id for the InternLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="AI是什么？",
+    parser.add_argument('--prompt', type=str, default="解释一种机器学习算法",
                         help='Prompt to infer') 
-    parser.add_argument('--n-predict', type=int, default=32,
+    parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
@@ -43,13 +43,13 @@ if __name__ == '__main__':
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     # check load_in_4bit
-    # model = AutoModelForCausalLM.from_pretrained(model_path,
-    #                                              load_in_4bit=True,
-    #                                              trust_remote_code=True)
-    # check optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 load_in_4bit=True,
                                                  trust_remote_code=True)
-    model = optimize_model(model)
+    # check optimize_model
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                              trust_remote_code=True)
+    # model = optimize_model(model)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
