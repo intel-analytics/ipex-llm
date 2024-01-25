@@ -73,7 +73,7 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  torch_dtype=torch.bfloat16,
                                                  load_in_low_bit="bf16",
-                                                 #speculative=True,
+                                                 speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
 
@@ -98,6 +98,6 @@ if __name__ == '__main__':
         end = time.perf_counter()
 
         print(output_str)
-        #print(f"Tokens generated {model.n_token_generated}")
+        print(f"Tokens generated {model.n_token_generated}")
         print(f"E2E Generation time {(end - st):.4f}s")
         print(f"First token latency {model.first_token_time:.4f}s")
