@@ -115,7 +115,7 @@ bash qlora_finetune_llama2_13b_pvc_1550_4_card.sh
 
 Different from `LLaMA2-7B` and `LLaMA2-13B`, it is recommonded to save the model with bigdl-llm low-bit optimization first to avoid large amount of CPU memory usage. And DeepSpeed ZeRO2 technology is used during finetuning.
 
-##### Finetuning LLaMA2-70B on four Intel Data Center GPU Max 1550
+##### Finetuning LLaMA2-70B on one Intel Data Center GPU Max 1550
 
 ```bash
 bash qlora_finetune_llama2_70b_pvc_1550_1_card.sh
