@@ -14,6 +14,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0
+pip install transformers_stream_generator
 ```
 ### 2. Configures OneAPI environment variables
 ```bash
