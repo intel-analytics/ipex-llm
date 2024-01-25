@@ -11,7 +11,7 @@ from modules.logging_colors import logger
 # Model variables
 model = None
 tokenizer = None
-model_name = 'None' #"/mnt/disk1/models/llama2-7b-half"
+model_name = 'None'
 is_seq2seq = False
 model_dirty_from_training = False
 lora_names = []
@@ -272,9 +272,9 @@ def fix_loader_name(name):
         return 'AutoAWQ'
     elif name in ['quip#', 'quip-sharp', 'quipsharp', 'quip_sharp']:
         return 'QuIP#'
-    # elif name in ['hqq']:
-    #     return 'HQQ'
-    elif name in ['BigDL-LLM']:
+    elif name in ['hqq']:
+        return 'HQQ'
+    elif name in ['BigDL-LLM', 'bigdl-llm', 'bigdl']:
         return 'BigDL-LLM'
 
 
