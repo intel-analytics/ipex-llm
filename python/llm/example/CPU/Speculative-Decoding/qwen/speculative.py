@@ -45,7 +45,7 @@ long_input = """多年以后，奥雷连诺上校站在行刑队面前，准会�
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Qwen model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen-7B-Chat",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen-14B-Chat",
                         help='The huggingface repo id for the Qwen (e.g. `Qwen/Qwen-7B-Chat` and `Qwen/Qwen-14B-Chat`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
