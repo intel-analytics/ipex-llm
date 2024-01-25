@@ -33,7 +33,6 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 pip install librosa soundfile datasets
 pip install accelerate
 pip install SpeechRecognition sentencepiece colorama
-# If you failed to install PyAudio, try to run sudo apt install portaudio19-dev on ubuntu
 pip install PyAudio inquirer sounddevice
 ```
 
