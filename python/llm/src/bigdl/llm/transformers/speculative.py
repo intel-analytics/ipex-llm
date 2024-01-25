@@ -57,7 +57,7 @@ def generate(
         new_speculative_kwargs = {}
         for var in ['max_new_tokens', 'max_step_draft', 'th_stop_draft', 'do_sample',
                     'top_k', 'top_p', 'temperature', 'hf_adjust',
-                    'auto_th_stop_draft', 'auto_parameters']:
+                    'auto_th_stop_draft', 'auto_parameters', 'attention_mask']:
             value = kwargs.pop(var, None)
             if value is not None:
                 new_speculative_kwargs[var] = value
