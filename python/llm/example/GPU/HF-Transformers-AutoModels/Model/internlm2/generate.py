@@ -43,11 +43,11 @@ if __name__ == '__main__':
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=False,
+                                                 load_in_4bit=True,
                                                  optimize_model=False,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = optimize_model(model)
+    # model = optimize_model(model)
     model = model.to('xpu')
 
     # Load tokenizer
