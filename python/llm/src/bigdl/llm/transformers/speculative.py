@@ -234,8 +234,8 @@ def speculative_generate(self,
                             torch.float32)
 
             # each iter cut off cur_len kv_cache from past_key_values1
-            tmp_past_key_values = []
             if self.device.type == 'cpu':
+                tmp_past_key_values = []
                 for i in range(len(past_key_values)):
                     if self.config.model_type == "qwen":
                         len1 = past_key_values[0][0].size(1)
