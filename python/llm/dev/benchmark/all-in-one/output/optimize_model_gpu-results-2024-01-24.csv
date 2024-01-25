@@ -1,2 +1,0 @@
-,model,1st token avg latency (ms),2+ avg latency (ms/token),encoder time (ms),input/output tokens,actual input/output tokens,num_beams,low_bit,cpu_embedding,peak mem (GB)
-0,deepseek-ai/deepseek-coder-6.7b-instruct,73.97,14.82,0.0,32-32,33-32,1,sym_int4,N/A,N/A
