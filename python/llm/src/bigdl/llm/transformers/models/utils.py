@@ -291,14 +291,13 @@ def mlp_fusion_check(x, qtype, training):
 def use_xmx(x: torch.Tensor, qtype: int):
     device = get_xpu_device_type(x)
     return (
-        device in ["arc", "flex", "pvc"]
+        os.environ.get("BIGDL_LLM_XMX_DISABLED", "0") != "1"
+        and device in ["arc", "flex", "pvc"]
         and qtype in [SYM_INT4, SYM_INT8, FP8]
         and (
             (device == "pvc" and 1 < x.size(0) <= 16)
             or
-            (device != "pvc" and x.dtype == torch.float32 and 1 < x.size(0) <= 64)
-            or
-            1 < x.size(0) <= 8
+            (device != "pvc" and 1 < x.size(0) <= 64)
         )
     )
 
