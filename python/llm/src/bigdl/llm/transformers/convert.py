@@ -203,7 +203,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if is_linear and name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
             if (not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and
-                    module.weight.data.device.type != 'meta' and
                     not isinstance(module, LowBitLinear)):
                 in_features, out_features, mp_group = linear_args
                 with init_empty_weights():
@@ -638,17 +637,12 @@ def _optimize_post(model, lightweight_bmm=False):
             # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-            from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm2_model_forward
             convert_forward(model,
                             module.SelfAttention,
-                            chatglm2_attention_forward_8eb45c
-                            )
-            convert_forward(model,
-                            module.CoreAttention,
-                            core_attn_forward_8eb45c)
+                            chatglm2_attention_forward)
             convert_forward(model,
                             module.ChatGLMModel,
                             chatglm2_model_forward)

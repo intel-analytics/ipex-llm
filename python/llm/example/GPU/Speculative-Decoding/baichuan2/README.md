@@ -1,5 +1,5 @@
 # Baichuan2
-In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding optimizations on Baichuan2 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) and [baichuan-inc/Baichuan2-13B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-13B-Chat) as reference Baichuan2 models.
+In this directory, you will find examples on how you could run Baichuan2 FP16 infernece with self-speculative decoding using BigDL-LLM on [Intel GPUs](../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) and [baichuan-inc/Baichuan2-13B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-13B-Chat) as reference Baichuan2 models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -13,7 +13,7 @@ conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install transformers==4.34.0
+pip install transformers_stream_generator  # additional package required for Baichuan-7B-Chat to conduct generation
 ```
 ### 2. Configures OneAPI environment variables
 ```bash
