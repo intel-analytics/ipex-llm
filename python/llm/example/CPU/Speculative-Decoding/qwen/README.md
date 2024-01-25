@@ -27,9 +27,9 @@ export OMP_NUM_THREADS=one_socket_num
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Qwen model (e.g. `Qwen/Qwen-7B-Chat` and `Qwen/Qwen-14B-Chat` and `Qwen/Qwen-72B-Chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen-14B-Chat'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Qwen model (e.g. `Qwen/Qwen-7B-Chat` and `Qwen/Qwen-14B-Chat` and `Qwen/Qwen-72B-Chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is set to `'Qwen/Qwen-14B-Chat'` by default.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). A default prompt is provided.
-- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is set to `128` by default.
 
 #### Sample Output
 #### [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat)
