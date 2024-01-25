@@ -4,16 +4,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM `opti
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
-In addition, you need to modify some files in Yuan2-2B-hf folder, since Flash attention dependency is for CUDA usage and currently cannot be installed on Intel CPUs. To manually turn it off, please refer to [this issue](https://github.com/IEIT-Yuan/Yuan-2.0/issues/92). We also provide two modified files([config_mode.json](yuan2-2B-instruct/config_mode.json) and [yuan_hf_mode.py](yuan2-2B-instruct/yuan_hf_mode.py)), which can be used to replace the original content in config.json and yuan_model_hf.py. Here are the changes:
-
-1. Modify 'use_flash_attention' to false in config.json; Comment out lines 35 and 36 in yuan_hf_model.py; 
-
-   ```python
-   from flash_attn import flash_attn_varlen_func as flash_attn_unpadded_func
-   from flash_attn import flash_attn_func
-   ```
-
-2. Change line 271 in yuan_hf_model.py to `inference_hidden_states_memory = torch.empty(bsz, 2, hidden_states.shape[2], dtype=hidden_states.dtype)`.
+In addition, you need to modify some files in Yuan2-2B-hf folder, since Flash attention dependency is for CUDA usage and currently cannot be installed on Intel CPUs. To manually turn it off, please refer to [this issue](https://github.com/IEIT-Yuan/Yuan-2.0/issues/92). We also provide two modified files([config.json](yuan2-2B-instruct/config.json) and [yuan_hf_model.py](yuan2-2B-instruct/yuan_hf_model.py)), which can be used to replace the original content in config.json and yuan_hf_model.py.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for an Yuan2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
