@@ -48,6 +48,7 @@ from typing import Union
 import numpy as np
 import os
 from bigdl.llm.utils.common import invalidInputError
+from typing import List, Optional, Tuple, Union
 
 
 def is_auto_gptq_available():
@@ -676,10 +677,43 @@ def _ipex_jit(model):
     return model.eval()
 
 
+@staticmethod
+def _make_causal_mask(
+    input_ids_shape: torch.Size,
+    dtype: torch.dtype,
+    device: torch.device,
+    past_key_values_length: int = 0,
+    sliding_window: Optional[int] = None,
+):
+    """
+    Make causal mask used for bi-directional self-attention.
+    """
+    bsz, tgt_len = input_ids_shape
+    mask = torch.full((tgt_len, tgt_len), torch.finfo(dtype).min, device=device)
+    mask_cond = torch.arange(mask.size(-1), device=device)
+    mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
+
+    import os
+    _enable_ipex = os.getenv("ENABLE_IPEX")
+    if _enable_ipex or past_key_values_length > 0:
+        mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)  # noqa
+
+    # add lower triangular sliding window mask if necessary
+    if sliding_window is not None:
+        diagonal = past_key_values_length - sliding_window + 1
+
+        context_mask = 1 - torch.triu(torch.ones_like(mask, dtype=torch.int), diagonal=diagonal)
+        mask.masked_fill_(context_mask.bool(), torch.finfo(dtype).min)
+
+    return mask[None, None, :, :].expand(bsz, 1, tgt_len, tgt_len + past_key_values_length)
+
+
 def _optimize_ipex(model):
     import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+    AttentionMaskConverter._make_causal_mask = _make_causal_mask
     model = model_convert_reference(model)
 
     _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
