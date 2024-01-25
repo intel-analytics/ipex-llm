@@ -72,6 +72,7 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
+        
         end = time.time()
         output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
