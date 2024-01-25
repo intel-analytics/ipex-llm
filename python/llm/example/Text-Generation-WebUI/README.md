@@ -53,7 +53,10 @@ For optimal performance on Intel GPUs, it is recommended to set several environm
 ```bash
 # configure oneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
+```
 
+The several environment variables below are also recommended to set.
+```bash
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
@@ -81,7 +84,7 @@ After the successful startup of the WebUI server, it will provide links to acces
 
 ```bash
 Running on local URL:  http://127.0.0.1:7860
-Running on public URL: https://644acd77d9cd7c5909.gradio.live
+Running on public URL: https://your_tokens_here.gradio.live
 
 This share link expires in 72 hours. For free permanent hosting and GPU upgrades, run `gradio deploy` from Terminal to deploy to Spaces (https://huggingface.co/spaces)
 ```
