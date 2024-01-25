@@ -507,8 +507,7 @@ def chatglm2_attention_forward_8eb45c(
                                                          save_length,
                                                          self.hidden_size_per_attention_head))
 
-    context_layer = core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer,
-                                             attention_mask)
+    context_layer = core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
     # Output. [sq, b, h]
@@ -519,7 +518,7 @@ def chatglm2_attention_forward_8eb45c(
     return output, (cache_key_layer.permute(2, 0, 1, 3), cache_value_layer.permute(2, 0, 1, 3))
 
 
-def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attention_mask):
+def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask):
     pytorch_major_version = int(torch.__version__.split('.')[0])
     if pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)
@@ -546,7 +545,7 @@ def core_attn_forward_8eb45c(self, query_layer, key_layer, value_layer, attentio
                              dtype=torch.float32).to(value_layer.dtype)
             context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
-        new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
+        new_context_layer_shape = context_layer.size()[:-2] + (-1,)
         context_layer = context_layer.reshape(*new_context_layer_shape)
     else:
         # Raw attention scores
