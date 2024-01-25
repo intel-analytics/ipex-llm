@@ -637,17 +637,12 @@ def _optimize_post(model, lightweight_bmm=False):
             # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-            from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm2_model_forward
             convert_forward(model,
                             module.SelfAttention,
-                            chatglm2_attention_forward_8eb45c
-                            )
-            convert_forward(model,
-                            module.CoreAttention,
-                            core_attn_forward_8eb45c)
+                            chatglm2_attention_forward)
             convert_forward(model,
                             module.ChatGLMModel,
                             chatglm2_model_forward)
