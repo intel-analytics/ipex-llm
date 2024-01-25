@@ -87,7 +87,7 @@ This share link expires in 72 hours. For free permanent hosting and GPU upgrades
 ```
 
 
-## 3. Multi-turn chat
+## 3. Run Models
 
 ### 3.1 Select the Model
 First, place your local model in `Text-Generation-WebUI/models` directory, you may also choose to download a model from Hugging Face.
@@ -123,7 +123,6 @@ Notes:
 Now you may click the `Load` button to load the model with BigDL-LLM optimizations.
 
 ![Image text](https://github.com/intel-analytics/BigDL/blob/1df67d7927ebea0af570b09f36ce76efbf9b8bad/python/llm/example/Text-Generation-WebUI/readme_folder/image-3.png)
-
 
 
 ### 3.4 Run the Model on WebUI
