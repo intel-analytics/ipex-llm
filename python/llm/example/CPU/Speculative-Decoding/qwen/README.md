@@ -1,6 +1,6 @@
 # Qwen
-In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding 
-optimizations on Qwen models on Intel CPUs. For illustration purposes, we utilize the [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) and [Qwen/Qwen-14B-Chat](https://huggingface.co/Qwen/Qwen-14B-Chat) as reference Qwen models.
+In this directory, you will find examples on how you could run Qwen BF16 infernece with 
+self-speculative decoding using BigDL-LLM on Intel CPUs. For illustration purposes, we utilize the [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) and [Qwen/Qwen-14B-Chat](https://huggingface.co/Qwen/Qwen-14B-Chat) as reference Qwen models.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [speculative.py](./speculative.py), we show a basic use case for a Qwen model to 
