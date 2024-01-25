@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
-    # Load model in optimized fp16 here.
+    # Load model in optimized bf16 here.
     # Set `speculative=True`` to enable speculative decoding,
     # it only works when load_in_low_bit="fp16" on Intel GPU or load_in_low_bit="bf16" on latest Intel Xeon CPU
     model = AutoModelForCausalLM.from_pretrained(model_path,
