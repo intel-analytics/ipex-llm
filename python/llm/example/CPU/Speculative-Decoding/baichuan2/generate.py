@@ -60,61 +60,40 @@ if __name__ == '__main__':
 
     
     args = parser.parse_args()
-    device = 'xpu' if args.xpu else 'cpu'
-    if device == 'cpu':
-        if args.precision == 'bf16':
-            amp_dtype = torch.bfloat16
-        elif args.precision == 'fp16':
-            amp_dtype = torch.float16
-        else:
-            amp_dtype = torch.float32
     model_path = args.repo_id_or_model_path
-    max_step_draft = args.max_draft
 
-    draft_model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                      load_in_4bit=True,
-                                                      optimize_model=True,
-                                                      trust_remote_code=True)
-    print("INT4 Assistant model loaded!")
-    if device == "xpu":
-        draft_model = draft_model.half()
-        print("Loading BigDL-FP16 target model ...")
-        model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                     optimize_model=True,
-                                                     torch_dtype=torch.float16,
-                                                     load_in_low_bit="fp16",
-                                                     trust_remote_code=True,
-                                                     use_cache=True)
-    else:
-        print("Loading BigDL-BF16 target model ...")
-        model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                     optimize_model=True,
-                                                     torch_dtype=torch.bfloat16,
-                                                     load_in_low_bit="bf16",
-                                                     trust_remote_code=True,
-                                                     use_cache=True)
-    print("Target model loaded!")
-    draft_model = draft_model.to(device)
-    model = model.to(device)
-    model = SpeculativeWrapper(model, do_print=False)
+    # Load model in optimized bf16 here.
+    # Set `speculative=True`` to enable speculative decoding,
+    # it only works when load_in_low_bit="fp16" on Intel GPU or load_in_low_bit="bf16" on latest Intel Xeon CPU
+    model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 optimize_model=True,
+                                                 torch_dtype=torch.bfloat16,
+                                                 load_in_low_bit="bf16",
+                                                 speculative=True,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    print(f"Model is {model.dtype}")
-    print(f"Max Draft number {max_step_draft}")
-    print(f"Max token number {args.n_predict}")
     
     with torch.inference_mode(), torch.autocast(device, dtype=amp_dtype if device == "cpu" else torch.float16):
         prompt = BAICHUAN_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(model.device)
+        input_ids = tokenizer(prompt, return_tensors='pt').input_ids
+
+        # warmup
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict,
+                                do_sample=False)
+        output_str = tokenizer.decode(output[0])
+
+        # speculative decoding
+        st = time.perf_counter()
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict,
+                                do_sample=False)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+        end = time.perf_counter()
         
-        output = model.speculative_generate(input_ids=input_ids,
-                                            draft_model=draft_model,
-                                            max_new_tokens=args.n_predict,
-                                            max_step_draft=max_step_draft,
-                                            do_sample=True)
-        print("token lists:")
-        print(output)
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)[len(long_input):]
-        print("model ouputs answer string:")
         print(output_str)
+        print(f"Tokens generated {model.n_token_generated}")
+        print(f"E2E Generation time {(end - st):.4f}s")
+        print(f"First token latency {model.first_token_time:.4f}s")
