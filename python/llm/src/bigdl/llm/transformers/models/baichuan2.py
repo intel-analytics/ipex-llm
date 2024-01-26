@@ -128,7 +128,6 @@ def baichuan_attention_forward_7b(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-
         if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
@@ -233,7 +232,6 @@ def baichuan_attention_forward_13b(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-
         if not enough_kv_room:
             if device.type == 'xpu':
                 torch.xpu.empty_cache()

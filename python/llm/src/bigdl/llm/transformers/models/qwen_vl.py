@@ -93,7 +93,6 @@ def qwen_attention_forward_vl(
         # value = torch.cat((past_value, value), dim=1)
         cache_k = layer_past[0].transpose(1, 2)
         cache_v = layer_past[1].transpose(1, 2)
-
         if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,

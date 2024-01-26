@@ -124,7 +124,6 @@ def bloom_attention_forward(
         # reuse k, v, self_attention
         cache_k = layer_past[0].transpose(1, 2).view(batch_size, self.num_heads, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
-
         if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
