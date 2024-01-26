@@ -166,6 +166,8 @@ def get_ipex_version():
 
 
 def get_xpu_device_type(x):
+    if x.device.type == "cpu":
+        return "cpu"
     name = torch.xpu.get_device_name(x.device.index)
     if name.startswith("Intel(R) Arc(TM) A"):
         return "arc"

@@ -698,9 +698,31 @@ def llama_attention_forward_4_36(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            query_states = self.q_proj(hidden_states)
-            key_states = self.k_proj(hidden_states)
-            value_states = self.v_proj(hidden_states)
+            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+                    hidden_size == 4096:
+                # only use mm_qkv_out on pvc for llama-7b
+                if not hasattr(self, "qkv_proj_weight"):
+                    self.qkv_proj_weight = torch.stack([self.q_proj.weight,
+                                                        self.k_proj.weight,
+                                                        self.v_proj.weight]).contiguous()
+                    self.q_proj.weight.data = self.qkv_proj_weight[0, :, :]
+                    self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
+                    self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
+                    torch.xpu.empty_cache()
+                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                         device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                torch.ops.torch_ipex.mm_qkv_out(
+                    hidden_states, self.qkv_proj_weight, None,
+                    query_states, key_states, value_states
+                )
+            else:
+                query_states = self.q_proj(hidden_states)
+                key_states = self.k_proj(hidden_states)
+                value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
