@@ -51,7 +51,6 @@ def test_completion(Model, Tokenizer, model_path, prompt, answer):
 
         assert answer in output_str
 
-
 @pytest.mark.parametrize('prompt, answer', [
     ('What is the capital of France?\n\n', 'Paris')
     ])
