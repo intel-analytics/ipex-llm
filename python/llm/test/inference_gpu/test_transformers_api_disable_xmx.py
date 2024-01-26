@@ -27,7 +27,8 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
 
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH'))
+    # (AutoModelForCausalLM, AutoTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
     ])
 def test_optimize_model(Model, Tokenizer, model_path):
     with torch.inference_mode():
