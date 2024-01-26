@@ -60,7 +60,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
     new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
     new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-    new_cache_v[:, :, cache_v.size(2):cache_k.size(2) + key_states.size(2), :] = value_states
+    new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
     return new_cache_k, new_cache_v
 
 
@@ -194,17 +194,21 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
 
 def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
     # to determinate if is enough kv cache room in transformers==4.36
+    # seq_len for current seq len
+    # For llama like kv cache, i.e., [bs, n_head, seq_len, head_dim]
     return past_key_value is not None and len(past_key_value.key_cache) > idx and \
-        past_key_value.key_cache[idx].stride()[1] > \
-        (past_key_value.key_cache[idx].size(2) + seq_len - 1) * \
+        past_key_value.key_cache[idx].stride()[1] >= \
+        (past_key_value.key_cache[idx].size(2) + seq_len) * \
         past_key_value.key_cache[idx].size(3)
 
 
 def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
     # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
+    # seq_len for current seq len
+    # For llama like kv cache, i.e., [bs, n_head, seq_len, head_dim]
     return past_key_value is not None and \
-        past_key_value[0].stride()[1] > \
-        (past_key_value[0].size(2) + seq_len - 1) * past_key_value[0].size(3)
+        past_key_value[0].stride()[1] >= \
+        (past_key_value[0].size(2) + seq_len) * past_key_value[0].size(3)
 
 
 def use_flash_attention(query, key):
