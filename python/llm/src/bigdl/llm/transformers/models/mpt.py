@@ -23,8 +23,7 @@ from einops import rearrange
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, \
-    append_kv_cache, is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -77,10 +76,8 @@ def mpt_scaled_multihead_dot_product_attention(query, key, value, n_heads,
             # v = torch.cat([past_key_value[1], v], dim=2)
             cache_k = past_key_value[0].transpose(2, 3)
             cache_v = past_key_value[1]
-            enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value,
-                                                          seq_dim=-1, seq_len=kv_seq_len)
             kv_seq_len += cache_k.shape[-2]
-            if not enough_kv_room:
+            if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
                 # allocate new
                 new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                            kv_n_heads,  # Support GQA
