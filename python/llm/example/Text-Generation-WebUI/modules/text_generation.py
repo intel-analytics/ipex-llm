@@ -399,6 +399,11 @@ def generate_reply_HF(question, original_question, seed, state, stopping_strings
             def generate_with_streaming(**kwargs):
                 return Iteratorize(generate_with_callback, [], kwargs, callback=None)
 
+            # warm-up
+            with torch.no_grad():
+                shared.model.generate(**generate_params)
+                torch.xpu.synchronize()
+
             with generate_with_streaming(**generate_params) as generator:
                 cumulative_reply = ''
                 starting_from = 0 if shared.is_seq2seq else len(input_ids[0])
