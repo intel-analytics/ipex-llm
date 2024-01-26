@@ -133,7 +133,9 @@ def gptj_attention_forward(
     kv_seq_len = key.size(-2)
     device = hidden_states.device
 
+    enough_kv_room = True
     if layer_past is not None:
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=1, seq_len=kv_seq_len)
         kv_seq_len += layer_past[0].size(1)
 
     if layer_past is not None:
@@ -142,7 +144,6 @@ def gptj_attention_forward(
         cache_k = cache_k.permute(0, 2, 1, 3)
         cache_v = cache_v.permute(0, 2, 1, 3)
         past_length = cache_k.size(2)
-        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=1, seq_len=key.size(-2))
         if not enough_kv_room:
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads,

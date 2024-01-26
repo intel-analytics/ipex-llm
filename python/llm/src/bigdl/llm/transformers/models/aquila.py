@@ -73,7 +73,9 @@ def aquila_attention_forward(
         .transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
+    enough_kv_room = True
     if past_key_value is not None:
+        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=kv_seq_len)
         kv_seq_len += past_key_value[0].shape[-2]
     if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -90,7 +92,6 @@ def aquila_attention_forward(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=key_states.shape[-2])
         if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
