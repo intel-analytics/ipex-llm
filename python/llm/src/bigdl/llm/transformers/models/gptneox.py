@@ -34,7 +34,8 @@
 import torch
 from typing import Optional, Tuple
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
+    append_kv_cache, is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
 
@@ -101,7 +102,8 @@ def gptneox_attention_forward(
     if has_layer_past:
         past_key = layer_past[0]
         past_value = layer_past[1]
-        if past_key.stride()[1] < seq_len * past_key.size(3):
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_len=key.shape[-2])
+        if not enough_kv_room:
             # allocate new
             new_past_key, new_past_value = extend_kv_cache(bsz,
                                                            self.num_attention_heads,

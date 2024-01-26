@@ -151,7 +151,7 @@ def chatglm2_32k_attention_forward(
         cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
 
-        enough_kv_room = is_enough_kv_cache_room_4_31(cache_k, seq_dim=0, seq_len=cur_length)
+        enough_kv_room = is_enough_kv_cache_room_4_31(kv_cache, seq_dim=0, seq_len=cur_length)
         if not enough_kv_room:
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
