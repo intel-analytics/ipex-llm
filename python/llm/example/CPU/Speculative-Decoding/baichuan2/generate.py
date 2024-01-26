@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     
-    with torch.inference_mode(), torch.autocast(device, dtype=amp_dtype if device == "cpu" else torch.float16):
+    with torch.inference_mode():
         prompt = BAICHUAN_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer(prompt, return_tensors='pt').input_ids
 
