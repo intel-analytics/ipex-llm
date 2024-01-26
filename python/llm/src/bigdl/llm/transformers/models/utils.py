@@ -192,12 +192,12 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
                           f"{model_family} is not supported.")
 
 
-def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
+def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_dim=2, seq_len=1):
     # to determinate if is enough kv cache room in transformers==4.36
     # seq_len for current seq
     return past_key_value is not None and len(past_key_value.key_cache) > idx and \
         past_key_value.key_cache[idx].stride()[1] > \
-        (past_key_value.key_cache[idx].size(2) + seq_len - 1) * \
+        (past_key_value.key_cache[idx].size(seq_dim) + seq_len - 1) * \
         past_key_value.key_cache[idx].size(3)
 
 
