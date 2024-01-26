@@ -24,7 +24,7 @@ export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor so
 
 We recommend to use `numactl` to bind the program to a specified processor socket:
 ```bash
-numactl -C 0-47 -m 0 python python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+numactl -C 0-47 -m 0 python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
 
 For example, 0-47 means bind the python program to core list 0-47 for a 48-core socket.
