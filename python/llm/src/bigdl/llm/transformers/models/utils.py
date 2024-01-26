@@ -312,3 +312,19 @@ def use_fused_layer_norm(x: torch.Tensor, training: bool):
             or x.numel() // x.size(-1) == 1
         )
     )
+
+
+def fp16_fusion_check(proj, x, training):
+    # only use fp16 fusion on PVC inference
+    if proj.qtype != ggml_tensor_qtype["fp16"]:
+        return False
+    if proj.weight_type != 2:
+        return False
+    if training:
+        return False
+    if x.requires_grad:
+        return False
+    device_type = get_xpu_device_type(x)
+    if device_type != "pvc":
+        return False
+    return True
