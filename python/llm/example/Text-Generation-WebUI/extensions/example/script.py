@@ -1,11 +1,21 @@
-"""
-An example of extension. It does nothing, but you can add transformations
-before the return statements to customize the webui behavior.
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-Starting from history_modifier and ending in output_modifier, the
-functions are declared in the same order that they are called at
-generation time.
-"""
+# This file is adapted from
+# https://github.com/oobabooga/text-generation-webui/blob/main/extensions/example/script.py
+
 
 import gradio as gr
 import torch
