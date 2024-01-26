@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
-    with torch.inference_mode(), torch.autocast("cpu", dtype=torch.bfloat16):
+    with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer(prompt, return_tensors='pt').input_ids
 
