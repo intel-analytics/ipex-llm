@@ -84,7 +84,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Test on xpu
+      - name: Test on xpu(transformers==4.31.0)
         shell: bash
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -100,6 +100,10 @@ jobs:
           # change csv name
           sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
+
+      - name: Test on xpu(transformers==4.34.0)
+        shell: bash
+        run: |
           # upgrade transformers for model Mistral-7B-v0.1
           python -m pip install transformers==4.34.0
           cp ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml

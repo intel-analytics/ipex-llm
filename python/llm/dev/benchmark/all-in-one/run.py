@@ -21,6 +21,7 @@ import time
 import gc
 import traceback
 import threading
+import csv
 
 import numpy as np
 from datetime import date
@@ -72,7 +73,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'optimize_model':
         result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'transformer_int4_gpu':
-        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
+        run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, test_api, cpu_embedding)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'pytorch_autocast_bf16':
@@ -362,7 +363,9 @@ def run_transformer_int4_gpu(repo_id,
                              num_trials,
                              num_beams,
                              low_bit,
-                             batch_size):
+                             batch_size,
+                             test_api,
+                             cpu_embedding):
     from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
@@ -405,6 +408,13 @@ def run_transformer_int4_gpu(repo_id,
 
     model = BenchmarkWrapper(model)
 
+    with open(csv_name, 'r') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            csv_data = [row for row in csv_reader]
+    is_empty = not bool(csv_data)
+    if is_empty:
+        csv_data.append(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"]) 
+
     result = {}
     with torch.inference_mode():
         for in_out in in_out_pairs:
@@ -432,12 +442,39 @@ def run_transformer_int4_gpu(repo_id,
             thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
             thread.start()
             thread.join()
+
+            if result[in_out]:
+                new_row = []
+                first_token_latency = round(np.mean(result[in_out], axis=0)[0]*1000.0, 2)
+                rest_token_latency = round(np.mean(result[in_out], axis=0)[1]*1000.0, 2)
+                encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
+                input_output_tokens = in_out
+                actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
+                cpu_embedding = cpu_embedding if 'win' in test_api else 'N/A'
+                peak_mem = result[in_out][-1][5] if 'int4_gpu' in test_api else 'N/A'
+                global arc_perf_test_counter
+                new_row.append(arc_perf_test_counter)
+                arc_perf_test_counter += 1
+                new_row.append(repo_id)
+                new_row.append(first_token_latency)
+                new_row.append(rest_token_latency)
+                new_row.append(encoder_time)
+                new_row.append(input_output_tokens)
+                new_row.append(actual_input_output_tokens)
+                new_row.append(num_beams)
+                new_row.append(low_bit)
+                new_row.append(cpu_embedding)
+                new_row.append(peak_mem)
+                csv_data.append(new_row)
+            with open(csv_name, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerows(csv_data)
+
     model.to('cpu')
     torch.xpu.synchronize()
     torch.xpu.empty_cache()
     del model
     gc.collect()
-    return result
 
 
 def run_optimize_model_gpu(repo_id,
@@ -933,6 +970,10 @@ if __name__ == '__main__':
     
     import pandas as pd
     for api in conf.test_api:
+        global arc_perf_test_counter
+        arc_perf_test_counter = 0
+        global csv_name
+        csv_name = f'{current_dir}/{api}-results-{today}.csv'
         for model in conf.repo_id:
             in_out_pairs = conf['in_out_pairs'].copy()
             if excludes:
@@ -942,9 +983,10 @@ if __name__ == '__main__':
                         in_out_pairs.remove(in_out)
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
-        df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
-                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
-                                            'peak mem (GB)'])
+        if api!="transformer_int4_gpu":
+            df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
+                                                'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
+                                                'peak mem (GB)'])
 
-        df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
+            df.to_csv(csv_name)
         results = []
