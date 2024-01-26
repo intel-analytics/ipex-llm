@@ -76,7 +76,9 @@ def baichuan_attention_forward_7b(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        if cache_k.stride()[1] < (cache_k.size(2) + kv_seq_len) * cache_k.size(3):
+        # If cache storage is less than required (kv_seq_len)
+        # extend cache storage or re-init cache.
+        if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
@@ -174,7 +176,9 @@ def baichuan_attention_forward_13b(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        if cache_k.stride()[1] < (cache_k.size(2) + kv_seq_len) * cache_k.size(3):
+        # If cache storage is less than required (kv_seq_len)
+        # extend cache storage or re-init cache.
+        if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
