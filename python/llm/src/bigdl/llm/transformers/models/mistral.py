@@ -43,9 +43,9 @@ from torch import nn
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
     apply_rotary_pos_emb_no_cache_xpu
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31,\
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from bigdl.llm.transformers.models.utils import use_flash_attention

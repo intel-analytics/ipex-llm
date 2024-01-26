@@ -34,7 +34,8 @@
 import torch
 from typing import Optional, Tuple
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
+    append_kv_cache, is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
 
@@ -79,7 +80,9 @@ def gptneox_attention_forward(
 
     # Compute token offset for rotary embeddings (when decoding)
     seq_len = key.shape[-2]
+    enough_kv_room = True
     if has_layer_past:
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_len=seq_len)
         seq_len += layer_past[0].shape[-2]
 
     use_fuse_rope = query.device.type == "xpu"
@@ -101,7 +104,7 @@ def gptneox_attention_forward(
     if has_layer_past:
         past_key = layer_past[0]
         past_value = layer_past[1]
-        if past_key.stride()[1] <= past_key.size(2) * past_key.size(3):
+        if not enough_kv_room:
             # allocate new
             new_past_key, new_past_value = extend_kv_cache(bsz,
                                                            self.num_attention_heads,
