@@ -1,65 +1,22 @@
 
 This tutorial provides a step-by-step guide on how to use Text-Generation-WebUI to run Hugging Face transformers-based applications on BigDL-LLM.
 
-## 1. Prepare the environment
+The WebUI is ported from [Text-Generation-WebUI](https://github.com/oobabooga/text-generation-webui).
+
+## 1. Prepare the environment on Windows
 
 Please use a python environment management tool (we recommend using Conda) to create a python enviroment and install necessary libs.
 
-### 1.1 Install Conda
+### 1.1 Install BigDL-LLM
 
-For Linux users, please open a terminal and run below commands:
+Please see [BigDL-LLm Installation on Windows](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#windows) for more details to install BigDL-LLM on your Client.
 
-```
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash ./Miniconda3-latest-Linux-x86_64.sh
-conda init
-```
-
-### 1.2 Create Environment
-
-Create a Python 3.9 environment with the name you choose
-
-```
-conda create -n bigdl-llm python=3.9
-```
-
-Then activate the environment
-```
-conda activate bigdl-llm
-```
-
-
-### 1.3 Install BigDL-LLM
-
-BigDL-LLM Backend WebUI has already support running applications on both CPU and GPU device, please prepare the environment according to your device and requirements.
-
-```bash
-# on cpu device
-pip install --pre --upgrade bigdl-llm[all]
-
-# on gpu device
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-```
-
-### 1.4 Install other required dependencies
+### 1.2 Install other required dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 Note: Text-Generation-WebUI requires transformers version >= 4.36.0
-
-### 1.5 Best Known Configuration on Linux
-For optimal performance on Intel GPUs, it is recommended to set several environment variables:
-```bash
-# configure oneAPI environment variables
-source /opt/intel/oneapi/setvars.sh
-```
-
-The several environment variables below are also recommended to set.
-```bash
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-```
 
 
 ## 2. Start the WebUI Server
