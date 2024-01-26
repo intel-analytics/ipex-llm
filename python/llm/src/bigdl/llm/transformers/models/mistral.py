@@ -172,7 +172,7 @@ def mistral_attention_forward(
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
 
-        if use_fuse_rope:
+        if False:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
