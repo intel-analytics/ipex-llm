@@ -20,7 +20,7 @@
 import torch
 from typing import Optional, Tuple, Union
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
-    apply_rotary_pos_emb, append_kv_cache
+    apply_rotary_pos_emb, append_kv_cache, is_enough_kv_cache_room_4_31
 from transformers.utils.import_utils import is_torch_fx_proxy
 
 
@@ -142,9 +142,8 @@ def gptj_attention_forward(
         cache_k = cache_k.permute(0, 2, 1, 3)
         cache_v = cache_v.permute(0, 2, 1, 3)
         past_length = cache_k.size(2)
-        # If cache storage is less than required (kv_seq_len)
-        # extend cache storage or re-init cache.
-        if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=1, seq_len=key.size(-2))
+        if not enough_kv_room:
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads,
                                                        self.head_dim,

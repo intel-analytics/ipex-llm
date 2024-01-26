@@ -38,7 +38,8 @@ from typing import Optional, Tuple
 import torch
 from torch.nn import functional as F
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
+    append_kv_cache, is_enough_kv_cache_room_4_31
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -97,9 +98,8 @@ def rw_attention_forward_7b(
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, self.num_kv, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_kv, -1, self.head_dim)
-        # If cache storage is less than required (past_length + cur_length)
-        # extend cache storage or re-init cache.
-        if cache_k.stride()[1] < kv_length * cache_k.size(3):
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=-2, seq_len=key_layer.shape[-2])
+        if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
@@ -278,9 +278,8 @@ def rw_attention_forward_40b(
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, self.num_heads, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
-        # If cache storage is less than required (past_length + cur_length)
-        # extend cache storage or re-init cache.
-        if cache_k.stride()[1] < kv_length * cache_k.size(3):
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=-2, seq_len=key_layer.shape[-2])
+        if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
@@ -454,9 +453,8 @@ def falcon_attention_forward(
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, num_kv_heads, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, num_kv_heads, -1, self.head_dim)
-        # If cache storage is less than required (cur_length)
-        # extend cache storage or re-init cache.
-        if cache_k.stride()[1] < kv_length * cache_k.size(3):
+        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=-2, seq_len=key_layer.shape[-2])
+        if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,

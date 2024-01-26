@@ -22,7 +22,8 @@ import torch
 import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
+    append_kv_cache, is_enough_kv_cache_room_4_31
 
 
 def rotate_half(x):
@@ -66,9 +67,8 @@ def attention_fn(
         cache_k = cache_k.permute(1, 2, 0, 3)
         cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
-        # If cache storage is less than required (past_length + cur_length)
-        # extend cache storage or re-init cache.
-        if cache_k.stride()[1] < (past_length + cur_length) * cache_k.size(3):
+        enough_kv_room = is_enough_kv_cache_room_4_31(cache_k, seq_dim=0, seq_len=cur_length)
+        if not enough_kv_room:
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads_per_partition,
