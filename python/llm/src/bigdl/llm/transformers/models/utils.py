@@ -197,8 +197,8 @@ def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
     # seq_len for current seq len
     # For llama like kv cache, i.e., [bs, n_head, seq_len, head_dim]
     return past_key_value is not None and len(past_key_value.key_cache) > idx and \
-        past_key_value.key_cache[idx].stride()[1] > \
-        (past_key_value.key_cache[idx].size(2) + seq_len - 1) * \
+        past_key_value.key_cache[idx].stride()[1] >= \
+        (past_key_value.key_cache[idx].size(2) + seq_len) * \
         past_key_value.key_cache[idx].size(3)
 
 
@@ -207,8 +207,8 @@ def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
     # seq_len for current seq len
     # For llama like kv cache, i.e., [bs, n_head, seq_len, head_dim]
     return past_key_value is not None and \
-        past_key_value[0].stride()[1] > \
-        (past_key_value[0].size(2) + seq_len - 1) * past_key_value[0].size(3)
+        past_key_value[0].stride()[1] >= \
+        (past_key_value[0].size(2) + seq_len) * past_key_value[0].size(3)
 
 
 def use_flash_attention(query, key):
