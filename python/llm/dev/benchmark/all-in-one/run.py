@@ -941,7 +941,7 @@ if __name__ == '__main__':
                     if model_id_input in excludes:
                         in_out_pairs.remove(in_out)
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'])
+                      conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
                                             'peak mem (GB)'])
