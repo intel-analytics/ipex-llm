@@ -101,7 +101,7 @@ def gptneox_attention_forward(
     if has_layer_past:
         past_key = layer_past[0]
         past_value = layer_past[1]
-        if past_key.stride()[1] <= past_key.size(2) * past_key.size(3):
+        if past_key.stride()[1] < seq_len * past_key.size(3):
             # allocate new
             new_past_key, new_past_value = extend_kv_cache(bsz,
                                                            self.num_attention_heads,
