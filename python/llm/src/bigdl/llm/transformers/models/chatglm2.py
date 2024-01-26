@@ -22,8 +22,7 @@ import torch
 from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
-    append_kv_cache, is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
     append_fp8_kv_cache, restore_fp8_kv_cache, quantize_kv_cache
 from bigdl.llm.transformers.models.utils import use_flash_attention
@@ -416,12 +415,11 @@ def chatglm2_attention_forward_8eb45c(
     # adjust key and value for inference
     if kv_cache is not None:
         cache_k, cache_v = kv_cache
-        enough_kv_room = is_enough_kv_cache_room_4_31(kv_cache, seq_dim=0, seq_len=cur_length)
         cache_k = cache_k.permute(1, 2, 0, 3)
         cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
 
-        if not enough_kv_room:
+        if cache_k.stride()[1] < (past_length + cur_length) * cache_k.size(3):
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             if device.type == "xpu" and batch_size > 1:  # use beam_search for generation.
                 # If batch_size > 1 on gpu, use init_kv_cache to avoid empty cache for ensuring

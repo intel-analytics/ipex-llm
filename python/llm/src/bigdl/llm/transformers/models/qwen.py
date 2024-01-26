@@ -36,8 +36,7 @@ try:
 except ImportError:
     rearrange = None
 
-from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, \
-    append_kv_cache, is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
     append_fp8_kv_cache, restore_fp8_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half, quantize_kv_cache
@@ -170,8 +169,7 @@ def qwen_attention_forward(
             v_cache = v_cache.transpose(1, 2)
             # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
 
-            enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=1, seq_len=key_size)
-            if not enough_kv_room:
+            if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
                 # allocate new
                 k_cache, v_cache = extend_fp8_kv_cache(
                     k_cache, v_cache,
@@ -194,8 +192,7 @@ def qwen_attention_forward(
             cache_k, cache_v = layer_past[0], layer_past[1]
             cache_k = cache_k.transpose(1, 2)
             cache_v = cache_v.transpose(1, 2)
-            enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=1, seq_len=key_size)
-            if not enough_kv_room:
+            if cache_k.stride(1) < kv_seq_len * cache_k.size(3):
                 # allocate new
                 new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                            self.num_heads,

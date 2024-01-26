@@ -38,8 +38,7 @@ from typing import Optional, Tuple
 import torch
 from torch.nn import functional as F
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
-    append_kv_cache, is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -87,9 +86,7 @@ def rw_attention_forward_7b(
     query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
 
     _, kv_length, _ = key_layer.shape
-    enough_kv_room = True
     if layer_past is not None:
-        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=-2, seq_len=kv_length)
         kv_length += layer_past[0].shape[-2]
     query_layer = query_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
     key_layer = key_layer.view(batch_size, self.num_kv, q_length, self.head_dim)
@@ -100,7 +97,7 @@ def rw_attention_forward_7b(
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, self.num_kv, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_kv, -1, self.head_dim)
-        if not enough_kv_room:
+        if cache_k.stride()[1] < kv_length * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
@@ -268,9 +265,7 @@ def rw_attention_forward_40b(
     query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, seq_len)
 
     _, kv_length, _ = key_layer.shape
-    enough_kv_room = True
     if layer_past is not None:
-        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=-2, seq_len=kv_length)
         kv_length += layer_past[0].shape[-2]
     query_layer = query_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
     key_layer = key_layer.view(batch_size, self.num_heads, q_length, self.head_dim)
@@ -281,7 +276,7 @@ def rw_attention_forward_40b(
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, self.num_heads, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
-        if not enough_kv_room:
+        if cache_k.stride()[1] < kv_length * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,
@@ -445,9 +440,7 @@ def falcon_attention_forward(
     query_layer, key_layer = self.maybe_rotary(query_layer, key_layer, past_kv_length)
 
     _, kv_length, _ = key_layer.shape
-    enough_kv_room = True
     if layer_past is not None:
-        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past, seq_dim=-2, seq_len=kv_length)
         kv_length += layer_past[0].shape[-2]
     query_layer = query_layer.view(batch_size, self.num_heads, query_length, self.head_dim)
     key_layer = key_layer.view(batch_size, num_kv_heads, query_length, self.head_dim)
@@ -457,7 +450,7 @@ def falcon_attention_forward(
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, num_kv_heads, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, num_kv_heads, -1, self.head_dim)
-        if not enough_kv_room:
+        if cache_k.stride()[1] < kv_length * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,

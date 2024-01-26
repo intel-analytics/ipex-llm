@@ -30,8 +30,7 @@ import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
 from transformers.utils import logging
-from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, \
-    append_kv_cache, is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import rotate_half
 
 
@@ -84,16 +83,13 @@ def qwen_attention_forward_vl(
     bsz, _, n_heads, head_dim = key.size()
 
     if layer_past is not None:
-        enough_kv_room = is_enough_kv_cache_room_4_31(layer_past,
-                                                      seq_dim=1,
-                                                      seq_len=kv_seq_len)
         kv_seq_len += layer_past[0].shape[1]
         # past_key, past_value = layer_past[0], layer_past[1]
         # key = torch.cat((past_key, key), dim=1)
         # value = torch.cat((past_value, value), dim=1)
         cache_k = layer_past[0].transpose(1, 2)
         cache_v = layer_past[1].transpose(1, 2)
-        if not enough_kv_room:
+        if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
