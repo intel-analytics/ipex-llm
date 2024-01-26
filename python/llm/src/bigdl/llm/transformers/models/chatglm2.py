@@ -23,7 +23,7 @@ from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
-    append_kv_cache,is_enough_kv_cache_room_4_31
+    append_kv_cache, is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
     append_fp8_kv_cache, restore_fp8_kv_cache, quantize_kv_cache
 from bigdl.llm.transformers.models.utils import use_flash_attention
