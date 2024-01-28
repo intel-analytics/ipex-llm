@@ -39,8 +39,8 @@ long_input = """æŠ˜çº¸çš„è¿‡ç¨‹çœ‹ä¼¼ç®€å•ï¼
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="baichuan-inc/Baichuan2-13B-Chat",
+                        help='The huggingface repo id for the Baichuan model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
                         help='Prompt to infer')
