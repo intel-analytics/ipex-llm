@@ -106,7 +106,9 @@ jobs:
         run: |
           # upgrade transformers for model Mistral-7B-v0.1
           python -m pip install transformers==4.34.0
-          cp ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
+          pip install fsspec==2023.1.0
+          cp python/llm/test/benchmark/arc-perf-transformers-434.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
           # change csv name
           sed -i 's/test1/test2/g' run.py
           python run.py
