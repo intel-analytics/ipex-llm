@@ -51,7 +51,6 @@ if __name__ == '__main__':
     audio = dataset[0]["audio"]
 
     model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path)
-
     model = optimize_model(model)
     model.to('xpu')
     model.config.forced_decoder_ids = None
