@@ -13,6 +13,7 @@ conda create -n llm python=3.9
 conda activate llm
 pip install --pre --upgrade bigdl-llm[all]
 pip install intel_extension_for_pytorch==2.1.0
+pip install transformers==4.31.0
 ```
 ### 2. Configures high-performing processor environment variables
 ```bash
