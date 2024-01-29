@@ -41,6 +41,8 @@ if __name__ == '__main__':
 
     # With only one line to enable BigDL-LLM optimization on model
     # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model, 
                            low_bit='sym_int4', 
                            modules_to_not_convert=['c_fc', 'out_proj'])
