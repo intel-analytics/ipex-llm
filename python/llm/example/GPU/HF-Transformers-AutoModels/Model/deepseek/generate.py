@@ -42,15 +42,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
-    # Load model
+
+    # Load model in 4 bit
+    # which convert the relevant layers in the model into INT4 format
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
         load_in_4bit=True,
         trust_remote_code=True,
     )
     
-    # With only one line to enable BigDL-LLM optimization on model
     model = model.to('xpu')
+
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     tokenizer.pad_token = tokenizer.eos_token
