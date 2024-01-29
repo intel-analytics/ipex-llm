@@ -408,12 +408,15 @@ def run_transformer_int4_gpu(repo_id,
 
     model = BenchmarkWrapper(model)
 
-    with open(csv_name, 'r') as csvfile:
+    try:
+        with open(csv_name, 'r') as csvfile:
             csv_reader = csv.reader(csvfile)
             csv_data = [row for row in csv_reader]
-    is_empty = not bool(csv_data)
-    if is_empty:
-        csv_data.append(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"]) 
+    except FileNotFoundError:
+        with open(csv_name, 'w', newline='') as csvfile:
+            header = ["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"]
+            csv_writer = csv.writer(csvfile)
+            csv_writer.writerow(header)
 
     result = {}
     with torch.inference_mode():
