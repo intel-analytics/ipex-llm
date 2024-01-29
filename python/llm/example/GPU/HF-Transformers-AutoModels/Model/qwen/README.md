@@ -43,8 +43,10 @@ Arguments info:
 #### [Qwen/Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat)
 ```log
 Inference time: xxxx s
+-------------------- Prompt --------------------
+<human>AI是什么？ <bot>
 -------------------- Output --------------------
- AI是什么？ AI是人工智能的缩写，是指计算机科学家和工程师通过模拟人类思维和行为的方式来创造出能够自主地解决问题、学习和适应的计算机系统。
+<human>AI是什么？ <bot>AI，即人工智能，是指计算机科学的一个分支，它企图创造能够完成任务的智能机器，这些任务通常需要人类智能才能完成。
 ```
 
 ```log
