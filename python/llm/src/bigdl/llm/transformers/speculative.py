@@ -533,7 +533,7 @@ def speculative_generate(self,
                         ]
 
             # Each iter assign new_matched kv_cache to past_key_values1
-            if self.device.type == 'cpu':
+            if self.device.type == 'cpu' and (not _enable_ipex):
                 for i in range(len(past_key_values)):
                     if self.config.model_type == "qwen":
                         size = tmp_past_key_values[i][0].size(1)
