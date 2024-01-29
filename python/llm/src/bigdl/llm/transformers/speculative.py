@@ -118,6 +118,7 @@ def clear_benchmarks(self):
 
 def _prepare_past_key_values_storage_cpu(self, past_key_values,
                                          max_new_tokens, _enable_ipex=False):
+    past_key_values_storage = []
     if _enable_ipex:
         ipex_past_key_values = []
         cur_len = past_key_values[0][0].size(1)
@@ -187,18 +188,18 @@ def _prepare_draft_past_key_values_cpu(self, past_key_values, past_key_values_st
     for i in range(len(past_key_values)):
         if self.config.model_type == "qwen":
             len1 = past_key_values[0][0].size(1)
-            k0 = past_key_values1[i][0][:, :len1, :, :]
-            v0 = past_key_values1[i][1][:, :len1, :, :]
+            k0 = past_key_values_storage[i][0][:, :len1, :, :]
+            v0 = past_key_values_storage[i][1][:, :len1, :, :]
             tmp_past_key_values.append((k0, v0))
         elif self.config.model_type == "chatglm":
             len0 = past_key_values[0][0].size(0)
-            k0 = past_key_values1[i][0][:len0, :, :, :]
-            v0 = past_key_values1[i][1][:len0, :, :, :]
+            k0 = past_key_values_storage[i][0][:len0, :, :, :]
+            v0 = past_key_values_storage[i][1][:len0, :, :, :]
             tmp_past_key_values.append((k0, v0))
         else:
             len2 = past_key_values[0][0].size(2)
-            k0 = past_key_values1[i][0][:, :, :len2, :]
-            v0 = past_key_values1[i][1][:, :, :len2, :]
+            k0 = past_key_values_storage[i][0][:, :, :len2, :]
+            v0 = past_key_values_storage[i][1][:, :, :len2, :]
             tmp_past_key_values.append((k0, v0))
     return tmp_past_key_values
 
