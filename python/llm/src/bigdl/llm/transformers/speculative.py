@@ -232,6 +232,8 @@ def speculative_generate(self,
         **model_kwargs,
     )
 
+    print(f"top_k: {generation_config.top_k}, top_p={generation_config.top_p}, temperature={generation_config.temperature}")
+
     step = 0
     step_draft = 0
     step_verify = 0
@@ -362,7 +364,9 @@ def speculative_generate(self,
             draft_generate_ids[:, 0] = current_input_ids
             draft_prob_list = []
             tic = time.time()
-            random_probs = torch.rand(max_step_draft, device=self.device, dtype=self.dtype)
+            random_probs = None
+            if generation_config.do_sample:
+                random_probs = torch.rand(max_step_draft, device=self.device, dtype=self.dtype)
             # Draft model auto-regressively generate k tokens
             # Early stop when prob less then th_stop_draft
             for step_draft in range(max_step_draft):
@@ -401,9 +405,10 @@ def speculative_generate(self,
                 draft_past_key_values = draft_output['past_key_values']
                 # check if draft prob is less then th_stop_draft
                 # Draft number + step >= max output token number
-                if draft_output_probs.item() < th_stop_draft or \
+                th_random = 1 if random_probs is None else random_probs[step_draft]
+                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3) or \
                         step + step_draft + 2 >= max_new_tokens:
-                    print(f"stop, {draft_output_probs}, th_stop_draft {th_stop_draft}")
+                    # print(f"stop, {draft_output_probs}, th_stop_draft {th_stop_draft}, th_random {th_random}")
                     break
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
@@ -464,8 +469,8 @@ def speculative_generate(self,
                 p = draft_probs[torch.arange(0, drafted_n_tokens), draft_tokens]
                 q = target_probs[torch.arange(0, drafted_n_tokens), draft_tokens]
                 accept_draft_prob = torch.minimum(torch.ones(()), q[:drafted_n_tokens]/ p)
-                rand_probs = torch.rand_like(accept_draft_prob)
-                rejected_locations = (rand_probs > accept_draft_prob).nonzero()
+                # random_probs = torch.rand_like(accept_draft_prob)
+                rejected_locations = (random_probs[:drafted_n_tokens] > accept_draft_prob).nonzero()
 
                 if rejected_locations.shape[0] == 0: # All draft tokens have been accepted
                     max_matched = drafted_n_tokens + 1
@@ -473,9 +478,9 @@ def speculative_generate(self,
                     output_ids = torch.cat([draft_tokens, last_token])
                 else:
                     max_matched = rejected_locations[0].item()
-                    if True:
-                        print(f"{accept_draft_prob.shape}")
-                        print(f"===== accept_length: {max_matched}\np: {p}, \nq: {q}, \naccept_draft_prob: {accept_draft_prob}\n rand_probs: {rand_probs}")
+                    # if True:
+                    #     print(f"{accept_draft_prob.shape}")
+                    #     print(f"===== accept_length: {max_matched}\np: {p}, \nq: {q}, \naccept_draft_prob: {accept_draft_prob}\nrand_probs: {random_probs}")
                     p = draft_probs[max_matched]
                     q = target_probs[max_matched]
                     new = q - p
