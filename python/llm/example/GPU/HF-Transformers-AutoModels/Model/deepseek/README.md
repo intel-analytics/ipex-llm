@@ -1,7 +1,7 @@
 # Deepseek
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Deepseek models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [deepseek-ai/deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) as a reference Deepseek model.
 
-## 0. Requirements
+## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
