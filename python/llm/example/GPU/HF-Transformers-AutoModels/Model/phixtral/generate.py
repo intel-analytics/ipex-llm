@@ -65,6 +65,7 @@ if __name__ == '__main__':
                                               trust_remote_code=True)
     
     # Generate predicted tokens
+    # for phi-moe
     with torch.inference_mode():
         prompt = PHI1_5_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
