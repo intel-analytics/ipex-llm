@@ -281,13 +281,14 @@ def speculative_generate(self,
             if _enable_ipex:
                 cur_len = past_key_values[0][0].size(1)
                 tmp_draft_past_key_values = [
-                    [pkv[1].permute(1, 2, 0, 3)[:,:,:cur_len,:], pkv[2].permute(1, 2, 0, 3)[:,:,:cur_len,:]]
+                    [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
+                     pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
                     for pkv in past_key_values
                 ]
 
                 def _expand(tmp_draft_past_key_values):
                     s0, s1, s2, s3 = tmp_draft_past_key_values.size()
-                    draft_past_key_values_storage = torch.zeros(s0, s1, s2 + 256, s3, dtype=tmp_draft_past_key_values.dtype, device=tmp_draft_past_key_values.device)
+                    draft_past_key_values_storage = torch.zeros(s0, s1, s2 + 256, s3, dtype=tmp_draft_past_key_values.dtype, device=tmp_draft_past_key_values.device)  # noqa
                     draft_past_key_values_storage[:, :, :s2, :] = tmp_draft_past_key_values
                     draft_past_key_values = draft_past_key_values_storage[:, :, :s2, :]
                     return draft_past_key_values
@@ -369,9 +370,9 @@ def speculative_generate(self,
             # Early stop when prob less then th_stop_draft
             for step_draft in range(max_step_draft):
                 if attention_mask is None:
-                    draft_attention_mask = None 
+                    draft_attention_mask = None
                 else:
-                    appended_len = step_draft + step 
+                    appended_len = step_draft + step
                     ones_to_append = torch.ones(attention_mask.size(0), appended_len)
                     draft_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
                 if self.config.model_type == "chatglm":
@@ -394,7 +395,7 @@ def speculative_generate(self,
                 logits = draft_output['logits']
                 if self.config.model_type == "qwen":
                     logits[:, -1, :] = logits_processor(temp_input_ids,
-                                                    draft_output['logits'][:, -1, :])
+                                                        draft_output['logits'][:, -1, :])
                 draft_output_ids, draft_output_probs = sample(
                     logits,
                     return_probs=True,
@@ -432,18 +433,19 @@ def speculative_generate(self,
             if hasattr(self, "trace_graph"):
                 if self.config.model_type == "baichuan":
                     output = self.trace_graph(input_ids=drafted_input_ids,
-                                            attention_mask=cur_attention_mask,
-                                            past_key_values=past_key_values,
-                                            )
+                                              attention_mask=cur_attention_mask,
+                                              past_key_values=past_key_values,
+                                              )
                 elif "llama" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
                     position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
-                                                device=drafted_input_ids.device).unsqueeze(0).repeat(1, 1) + past_key_value_len
+                                                device=drafted_input_ids.device).unsqueeze(0)
+                    position_ids = position_ids.repeat(1, 1) + past_key_value_len
                     output = self.trace_graph(input_ids=drafted_input_ids,
-                                attention_mask=cur_attention_mask,
-                                position_ids=position_ids,
-                                past_key_values=past_key_values,
-                                )
+                                              attention_mask=cur_attention_mask,
+                                              position_ids=position_ids,
+                                              past_key_values=past_key_values,
+                                              )
                 logits = output[0]
                 past_key_values = output[1]
             else:
@@ -453,17 +455,17 @@ def speculative_generate(self,
                                                 device=drafted_input_ids.device)
                     position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
                     output = self(input_ids=drafted_input_ids,
-                                past_key_values=past_key_values,
-                                attention_mask=cur_attention_mask,
-                                return_dict=True,
-                                use_cache=True,
-                                position_ids=position_ids)
+                                  past_key_values=past_key_values,
+                                  attention_mask=cur_attention_mask,
+                                  return_dict=True,
+                                  use_cache=True,
+                                  position_ids=position_ids)
                 else:
                     output = self(input_ids=drafted_input_ids,
-                                past_key_values=past_key_values,
-                                attention_mask=cur_attention_mask,
-                                return_dict=True,
-                                use_cache=True)
+                                  past_key_values=past_key_values,
+                                  attention_mask=cur_attention_mask,
+                                  return_dict=True,
+                                  use_cache=True)
             if isinstance(output, dict):
                 logits = output['logits']
                 past_key_values = output['past_key_values']
@@ -472,7 +474,7 @@ def speculative_generate(self,
             if self.config.model_type == "qwen":
                 for i in range(logits.size(1)):
                     logits[:, i, :] = logits_processor(temp_input_ids[:, :input_ids.size(1)+step+i],
-                                                    output['logits'][:, i, :])
+                                                       output['logits'][:, i, :])
             output_ids = sample(logits, do_sample=generation_config.do_sample,
                                 top_k=generation_config.top_k, top_p=generation_config.top_p,
                                 temperature=generation_config.temperature)
@@ -499,33 +501,35 @@ def speculative_generate(self,
                     cur_len = past_key_values[0][0].size(1)
                     delta = max_of_max_matched - max_matched
                     tmp = torch.empty(1, (cur_len - delta), (cur_len - delta), 1,
-                        dtype=torch.long,
-                    ).contiguous()
-                    past_key_values = [[tmp, key_cache, value_cache, beam_idx] for _, key_cache, value_cache, beam_idx in past_key_values]
+                                      dtype=torch.long,
+                                      ).contiguous()
+                    past_key_values = [[tmp, key_cache, value_cache, beam_idx]
+                                       for _, key_cache, value_cache, beam_idx in past_key_values]
                 else:
                     if self.config.model_type == "qwen":
                         past_key_values = [
                             (k[:, :-(max_of_max_matched - max_matched), :],
-                            v[:, :-(max_of_max_matched - max_matched), :])
+                             v[:, :-(max_of_max_matched - max_matched), :])
                             for k, v in past_key_values
                         ]
                     elif self.config.model_type == "chatglm":
                         # for chatglm, cache shape is [sl, bs, nh, hn]
                         past_key_values = [
                             (k[:-(max_of_max_matched - max_matched), :, :, :],
-                            v[:-(max_of_max_matched - max_matched), :, :, :])
+                             v[:-(max_of_max_matched - max_matched), :, :, :])
                             for k, v in past_key_values
                         ]
                     elif self.config.model_type == "baichuan":
                         past_key_values = [
                             (k[:, :, :-(max_of_max_matched - max_matched), :],
-                            v[:, :, :-(max_of_max_matched - max_matched), :])
+                             v[:, :, :-(max_of_max_matched - max_matched), :])
                             for k, v in past_key_values
                         ]
                     else:
                         past_key_values = [
                             (k[:, :, :-(max_of_max_matched - max_matched)],
-                            v[:, :, :-(max_of_max_matched - max_matched)]) for k, v in past_key_values
+                             v[:, :, :-(max_of_max_matched - max_matched)])
+                            for k, v in past_key_values
                         ]
 
             # Each iter assign new_matched kv_cache to past_key_values1
