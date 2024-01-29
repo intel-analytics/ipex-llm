@@ -408,6 +408,7 @@ def run_transformer_int4_gpu(repo_id,
 
     model = BenchmarkWrapper(model)
 
+    csv_data = []
     try:
         with open(csv_name, 'r') as csvfile:
             csv_reader = csv.reader(csvfile)
