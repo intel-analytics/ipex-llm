@@ -278,92 +278,102 @@ def speculative_generate(self,
         else:
             draft_current_input_ids = current_input_ids
             # Target model KV cache to draft model
-            if _enable_ipex:
-                cur_len = past_key_values[0][0].size(1)
-                tmp_draft_past_key_values = [
-                    [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
-                     pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
-                    for pkv in past_key_values
-                ]
 
-                def _expand(tmp_draft_past_key_values):
-                    s0, s1, s2, s3 = tmp_draft_past_key_values.size()
-                    draft_past_key_values_storage = torch.zeros(s0, s1, s2 + 256, s3, dtype=tmp_draft_past_key_values.dtype, device=tmp_draft_past_key_values.device)  # noqa
-                    draft_past_key_values_storage[:, :, :s2, :] = tmp_draft_past_key_values
-                    draft_past_key_values = draft_past_key_values_storage[:, :, :s2, :]
-                    return draft_past_key_values
+            # init draft_self_past_key_values:past_key_values1 and assign initial fp32 value
+            if self.device.type == 'cpu' and step == 1:
+                tmp_ipex_past_key_values = []
+                if _enable_ipex:
+                    cur_len = past_key_values[0][0].size(1)
+                    if self.config.model_type == "qwen":
+                        invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
+                    elif self.config.model_type == "chatglm":
+                        invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
+                    else:
+                        tmp_ipex_past_key_values = [
+                            [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
+                            pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
+                            for pkv in past_key_values
+                        ]
 
-                tmp_draft_past_key_values = [
-                    (k.to(torch.float32), v.to(torch.float32)) for k, v in tmp_draft_past_key_values
-                ]
-                draft_past_key_values = [
-                    [_expand(pkv[0]), _expand(pkv[1])] for pkv in tmp_draft_past_key_values
-                ]
-            else:
-                # init draft_self_past_key_values:past_key_values1 and assign initial fp32 value
-                if self.device.type == 'cpu' and step == 1:
-                    for i in range(len(past_key_values)):
+                for i in range(len(past_key_values)):
+                    if not _enable_ipex:
                         len0 = past_key_values[i][0].size(0)
                         len1 = past_key_values[i][0].size(1)
                         len2 = past_key_values[i][0].size(2)
                         len3 = past_key_values[i][0].size(3)
+                    else:
                         if self.config.model_type == "qwen":
-                            k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
-                                            dtype=torch.float32)
-                            v0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
-                                            dtype=torch.float32)
-                            k0 = k0.transpose(1, 2)
-                            v0 = v0.transpose(1, 2)
-                            past_key_values1.append((k0, v0))
-                            past_key_values1[i][0][:, :len1, :, :] = past_key_values[i][0].to(
-                                torch.float32)
-                            past_key_values1[i][1][:, :len1, :, :] = past_key_values[i][1].to(
-                                torch.float32)
+                            invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
                         elif self.config.model_type == "chatglm":
-                            k0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
-                                            dtype=torch.float32)
-                            v0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
-                                            dtype=torch.float32)
-                            k0 = k0.permute(2, 0, 1, 3)
-                            v0 = v0.permute(2, 0, 1, 3)
-                            past_key_values1.append((k0, v0))
-                            past_key_values1[i][0][:len0, :, :, :] = past_key_values[i][0].to(
-                                torch.float32)
-                            past_key_values1[i][1][:len0, :, :, :] = past_key_values[i][1].to(
-                                torch.float32)
+                            invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
                         else:
-                            k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
-                                            dtype=torch.float32)
-                            v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
-                                            dtype=torch.float32)
-                            past_key_values1.append((k0, v0))
+                            len0 = past_key_values[i][1].size(1)
+                            len1 = past_key_values[i][1].size(2)
+                            len2 = past_key_values[i][0].size(2) # seq length
+                            len3 = past_key_values[i][1].size(3)
+                    if self.config.model_type == "qwen":
+                        k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
+                                        dtype=torch.float32)
+                        v0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
+                                        dtype=torch.float32)
+                        k0 = k0.transpose(1, 2)
+                        v0 = v0.transpose(1, 2)
+                        past_key_values1.append((k0, v0))
+                        past_key_values1[i][0][:, :len1, :, :] = past_key_values[i][0].to(
+                            torch.float32)
+                        past_key_values1[i][1][:, :len1, :, :] = past_key_values[i][1].to(
+                            torch.float32)
+                    elif self.config.model_type == "chatglm":
+                        k0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
+                                        dtype=torch.float32)
+                        v0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
+                                        dtype=torch.float32)
+                        k0 = k0.permute(2, 0, 1, 3)
+                        v0 = v0.permute(2, 0, 1, 3)
+                        past_key_values1.append((k0, v0))
+                        past_key_values1[i][0][:len0, :, :, :] = past_key_values[i][0].to(
+                            torch.float32)
+                        past_key_values1[i][1][:len0, :, :, :] = past_key_values[i][1].to(
+                            torch.float32)
+                    else:
+                        k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                        dtype=torch.float32)
+                        v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                        dtype=torch.float32)
+                        past_key_values1.append((k0, v0))
+                        if not _enable_ipex:
                             past_key_values1[i][0][:, :, :len2, :] = past_key_values[i][0].to(
                                 torch.float32)
                             past_key_values1[i][1][:, :, :len2, :] = past_key_values[i][1].to(
                                 torch.float32)
-
-                # each iter cut off cur_len kv_cache from past_key_values1
-                if self.device.type == 'cpu':
-                    tmp_past_key_values = []
-                    for i in range(len(past_key_values)):
-                        if self.config.model_type == "qwen":
-                            len1 = past_key_values[0][0].size(1)
-                            k0 = past_key_values1[i][0][:, :len1, :, :]
-                            v0 = past_key_values1[i][1][:, :len1, :, :]
-                            tmp_past_key_values.append((k0, v0))
-                        elif self.config.model_type == "chatglm":
-                            len0 = past_key_values[0][0].size(0)
-                            k0 = past_key_values1[i][0][:len0, :, :, :]
-                            v0 = past_key_values1[i][1][:len0, :, :, :]
-                            tmp_past_key_values.append((k0, v0))
                         else:
-                            len2 = past_key_values[0][0].size(2)
-                            k0 = past_key_values1[i][0][:, :, :len2, :]
-                            v0 = past_key_values1[i][1][:, :, :len2, :]
-                            tmp_past_key_values.append((k0, v0))
-                    draft_past_key_values = tmp_past_key_values
-                else:
-                    draft_past_key_values = past_key_values
+                            past_key_values1[i][0][:, :, :len2, :] = tmp_ipex_past_key_values[i][0].to(
+                                torch.float32)
+                            past_key_values1[i][1][:, :, :len2, :] = tmp_ipex_past_key_values[i][1].to(
+                                torch.float32)
+
+            # each iter cut off cur_len kv_cache from past_key_values1
+            if self.device.type == 'cpu':
+                tmp_past_key_values = []
+                for i in range(len(past_key_values)):
+                    if self.config.model_type == "qwen":
+                        len1 = past_key_values[0][0].size(1)
+                        k0 = past_key_values1[i][0][:, :len1, :, :]
+                        v0 = past_key_values1[i][1][:, :len1, :, :]
+                        tmp_past_key_values.append((k0, v0))
+                    elif self.config.model_type == "chatglm":
+                        len0 = past_key_values[0][0].size(0)
+                        k0 = past_key_values1[i][0][:len0, :, :, :]
+                        v0 = past_key_values1[i][1][:len0, :, :, :]
+                        tmp_past_key_values.append((k0, v0))
+                    else:
+                        len2 = past_key_values[0][0].size(2)
+                        k0 = past_key_values1[i][0][:, :, :len2, :]
+                        v0 = past_key_values1[i][1][:, :, :len2, :]
+                        tmp_past_key_values.append((k0, v0))
+                draft_past_key_values = tmp_past_key_values
+            else:
+                draft_past_key_values = past_key_values
             draft_generate_ids[:, 0] = current_input_ids
             tic = time.time()
             # Draft model auto-regressively generate k tokens
@@ -533,29 +543,45 @@ def speculative_generate(self,
                         ]
 
             # Each iter assign new_matched kv_cache to past_key_values1
-            if self.device.type == 'cpu' and (not _enable_ipex):
+            if self.device.type == 'cpu':
                 for i in range(len(past_key_values)):
-                    if self.config.model_type == "qwen":
-                        size = tmp_past_key_values[i][0].size(1)
-                        size1 = past_key_values[i][0].size(1)
-                        past_key_values1[i][0][:, size:size1, :, :] = \
-                            past_key_values[i][0][:, size:size1, :, :].to(torch.float32)
-                        past_key_values1[i][1][:, size:size1, :, :] = \
-                            past_key_values[i][1][:, size:size1, :, :].to(torch.float32)
-                    elif self.config.model_type == "chatglm":
-                        size = tmp_past_key_values[i][0].size(0)
-                        size1 = past_key_values[i][0].size(0)
-                        past_key_values1[i][0][size:size1, :, :, :] = \
-                            past_key_values[i][0][size:size1, :, :, :].to(torch.float32)
-                        past_key_values1[i][1][size:size1, :, :, :] = \
-                            past_key_values[i][1][size:size1, :, :, :].to(torch.float32)
+                    if not _enable_ipex:
+                        if self.config.model_type == "qwen":
+                            size = tmp_past_key_values[i][0].size(1)
+                            size1 = past_key_values[i][0].size(1)
+                            past_key_values1[i][0][:, size:size1, :, :] = \
+                                past_key_values[i][0][:, size:size1, :, :].to(torch.float32)
+                            past_key_values1[i][1][:, size:size1, :, :] = \
+                                past_key_values[i][1][:, size:size1, :, :].to(torch.float32)
+                        elif self.config.model_type == "chatglm":
+                            size = tmp_past_key_values[i][0].size(0)
+                            size1 = past_key_values[i][0].size(0)
+                            past_key_values1[i][0][size:size1, :, :, :] = \
+                                past_key_values[i][0][size:size1, :, :, :].to(torch.float32)
+                            past_key_values1[i][1][size:size1, :, :, :] = \
+                                past_key_values[i][1][size:size1, :, :, :].to(torch.float32)
+                        else:
+                            size = tmp_past_key_values[i][0].size(2)
+                            size1 = past_key_values[i][0].size(2)
+                            past_key_values1[i][0][:, :, size:size1, :] = \
+                                past_key_values[i][0][:, :, size:size1, :].to(torch.float32)
+                            past_key_values1[i][1][:, :, size:size1, :] = \
+                                past_key_values[i][1][:, :, size:size1, :].to(torch.float32)
                     else:
-                        size = tmp_past_key_values[i][0].size(2)
-                        size1 = past_key_values[i][0].size(2)
-                        past_key_values1[i][0][:, :, size:size1, :] = \
-                            past_key_values[i][0][:, :, size:size1, :].to(torch.float32)
-                        past_key_values1[i][1][:, :, size:size1, :] = \
-                            past_key_values[i][1][:, :, size:size1, :].to(torch.float32)
+                        if self.config.model_type == "qwen":
+                            invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
+                        elif self.config.model_type == "chatglm":
+                            invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
+                        else:
+                            size = tmp_past_key_values[i][0].size(2)
+                            size1 = past_key_values[i][0].size(1)
+                            delta_past_key = past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
+                            delta_past_value = past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
+
+                            past_key_values1[i][0][:, :, size:size1, :] = \
+                                delta_past_key.to(torch.float32)
+                            past_key_values1[i][1][:, :, size:size1, :] = \
+                                delta_past_value.to(torch.float32)
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
             current_input_ids = output_ids[:, -1:]
