@@ -23,10 +23,8 @@ from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
-    append_fp8_kv_cache, restore_fp8_kv_cache, quantize_kv_cache
-from bigdl.llm.transformers.models.utils import use_flash_attention
-from bigdl.llm.transformers.models.llama import get_ipex_version
+from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
+    restore_fp8_kv_cache, use_quantize_kv_cache
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -189,7 +187,7 @@ def chatglm2_model_forward(
 def chatglm2_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
-    if quantize_kv_cache(self.query_key_value, hidden_states):
+    if use_quantize_kv_cache(self.query_key_value, hidden_states):
         forward_function = chatglm2_quantized_attention_forward_8eb45c
     else:
         forward_function = chatglm2_attention_forward_8eb45c
@@ -263,9 +261,8 @@ def chatglm2_quantized_attention_forward_8eb45c(
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(batch_size,
                                                  n_kv_head,
+                                                 seq_len,
                                                  head_dim,
-                                                 0,
-                                                 seq_len + KV_CACHE_ALLOC_MIN_LENGTH,
                                                  query_layer.device)
             k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer)
     else:
@@ -274,15 +271,6 @@ def chatglm2_quantized_attention_forward_8eb45c(
         v_cache = v_cache.permute(1, 2, 0, 3)
         # k_cache, v_cache's shape: [bs, n_kv_head, seq_len, head_dim]
 
-        kv_seq_len = seq_len + k_cache.size(2)
-        if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
-            k_cache, v_cache = extend_fp8_kv_cache(
-                k_cache, v_cache,
-                kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                device=query_layer.device,
-            )
-            if query_layer.device.type == 'xpu':
-                torch.xpu.empty_cache()
         k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer)
 
         if seq_len != 1:

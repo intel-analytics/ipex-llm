@@ -20,7 +20,7 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.utils import get_ipex_version, get_xpu_device_type
 
-
+FP8_KV_ALLOC_LENGTH = 512
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
@@ -65,7 +65,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     return new_cache_k, new_cache_v
 
 
-def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
+def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     else:
@@ -74,29 +74,22 @@ def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
             linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
 
 
-def init_fp8_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, device):
+def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device):
+    max_length = current_length + FP8_KV_ALLOC_LENGTH
+
     k_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
                                   dtype=torch.uint8, device=device)
 
     v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
                                   dtype=torch.uint8, device=device)
 
-    k_cache = k_cache_storage.as_strided((batch_size, num_heads, current_length, head_dim),
+    k_cache = k_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
                                          k_cache_storage.stride(), storage_offset=0)
 
-    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, current_length),
+    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, 0),
                                          v_cache_storage.stride(), storage_offset=0)
 
     return k_cache, v_cache.transpose(-1, -2)
-
-
-def extend_fp8_kv_cache(k_cache, v_cache, max_length, device):
-    batch_size, num_heads, cur_length, head_dim = k_cache.shape
-    new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, head_dim,
-                                                 cur_length, max_length, device)
-    new_k_cache[:] = k_cache
-    new_v_cache[:] = v_cache
-    return new_k_cache, new_v_cache
 
 
 def append_fp8_kv_cache(k_cache, v_cache, key, value):
@@ -104,8 +97,16 @@ def append_fp8_kv_cache(k_cache, v_cache, key, value):
     new_length = cur_length + key.size(2)
     new_size = (batch_size, num_heads, new_length, head_dim)
 
-    new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
-    new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
+    if k_cache.stride(1) < new_length * k_cache.size(3):
+        new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, new_length,
+                                                     head_dim, key.device)
+        new_k_cache = new_k_cache.as_strided(new_size, new_k_cache.stride(), storage_offset=0)
+        new_v_cache = new_v_cache.as_strided(new_size, new_v_cache.stride(), storage_offset=0)
+        new_k_cache[:, :, :cur_length, :] = k_cache
+        new_v_cache[:, :, :cur_length, :] = v_cache
+    else:
+        new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
+        new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
 
     fp8_key = key.half().view(torch.uint8)[:, :, :, 1::2]
     new_k_cache[:, :, cur_length:new_length, :] = fp8_key
