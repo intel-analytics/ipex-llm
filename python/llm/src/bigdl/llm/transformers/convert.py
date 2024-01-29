@@ -48,6 +48,7 @@ from typing import Union
 import numpy as np
 import os
 from bigdl.llm.utils.common import invalidInputError
+from typing import List, Optional, Tuple, Union
 
 
 def is_auto_gptq_available():
@@ -528,6 +529,13 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         # Do nothing here for weights are empty.
         pass
 
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
+    if _enable_ipex:
+        model = _optimize_ipex(model)
+        return model
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
     return model
@@ -558,6 +566,28 @@ def replace_func(m, target_m, func_name, new_func):
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
+
+
+def _optimize_ipex(model):
+    import intel_extension_for_pytorch as ipex
+    from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+    from bigdl.llm.transformers.convert_ipex import (
+        _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
+        _llama_model_forward_4_35
+    )
+
+    AttentionMaskConverter._make_causal_mask = _make_causal_mask
+    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35)  # noqa
+    model = model_convert_reference(model)
+
+    _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
+    _ipex_optimize_decoder(model, transformers.models.llama.modeling_llama.LlamaDecoderLayer)
+
+    model.register_forward_hook(output_hook, with_kwargs=True)
+
+    return _ipex_jit(model)
 
 
 def _optimize_post(model, lightweight_bmm=False):
