@@ -86,6 +86,9 @@ jobs:
       - name: Test on xpu
         shell: bash
         run: |
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -168,6 +171,9 @@ jobs:
       - name: Test on cpu
         shell: bash
         run: |
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
           mv python/llm/test/benchmark/cpu-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
@@ -233,6 +239,9 @@ jobs:
       - name: Test on core ${{ matrix.platform }}
         shell: bash
         run: |
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
           mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
@@ -340,10 +349,10 @@ jobs:
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
           fi
-          cur_date=$(date +%Y-%m-%d)
-          echo "LOG_FILE=${cur_date}_output.txt" >> "$GITHUB_ENV"
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          echo "LOG_FILE=${date_for_test_version}_output.txt" >> "$GITHUB_ENV"
 
-          sed -i "s/date.today()/\"$cur_date\"/g" python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
       - name: Prepare igpu perf test (32-32)
         shell: bash
