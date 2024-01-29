@@ -29,7 +29,7 @@ generation_config = GenerationConfig(use_cache = True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for phi-1_5 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="microsoft/phi-1_5",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="mlabonne/phixtral-4x2_8",
                         help='The huggingface repo id for the phi-1_5 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
@@ -48,6 +48,7 @@ if __name__ == '__main__':
     
     
     model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                #  load_in_4bit=True,
                                                  trust_remote_code=True)
     model = optimize_model(model)
 

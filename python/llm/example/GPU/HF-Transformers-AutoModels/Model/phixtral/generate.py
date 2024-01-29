@@ -40,12 +40,12 @@ generation_config = GenerationConfig(use_cache = True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for phi-1_5 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="/mnt/disk1/models/phixtral-4x2_8",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="mlabonne/phixtral-4x2_8",
                         help='The huggingface repo id for the phixtral model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
+    parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
