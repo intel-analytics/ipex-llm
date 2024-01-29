@@ -1,7 +1,7 @@
 # DeciLM-7B
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on DeciLM-7B models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [Deci/DeciLM-7B-instruct](https://huggingface.co/Deci/DeciLM-7B-instruct) as a reference DeciLM-7B model.
 
-## 0. Requirements
+## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
