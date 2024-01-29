@@ -116,7 +116,8 @@ def clear_benchmarks(self):
     self.n_matched = 0
 
 
-def _prepare_past_key_values_storage_cpu(self, past_key_values, _enable_ipex=False):
+def _prepare_past_key_values_storage_cpu(self, past_key_values,
+                                         max_new_tokens, _enable_ipex=False):
     if _enable_ipex:
         ipex_past_key_values = []
         cur_len = past_key_values[0][0].size(1)
@@ -413,11 +414,12 @@ def speculative_generate(self,
                 # init past_key_values_storage and assign initial fp32 value
                 if step == 1:
                     past_key_values_storage = \
-                        self._prepare_past_key_values_storage_cpu(past_key_values, _enable_ipex)
+                        _prepare_past_key_values_storage_cpu(self, past_key_values,
+                                                             max_new_tokens, _enable_ipex)
                 # each iter cut off cur_len kv_cache from past_key_values1
                 draft_past_key_values = \
-                    self._prepare_draft_past_key_values_cpu(past_key_values,
-                                                            past_key_values_storage)
+                    _prepare_draft_past_key_values_cpu(self, past_key_values,
+                                                       past_key_values_storage)
                 original_draft_past_key_values = draft_past_key_values
             else:
                 draft_past_key_values = past_key_values
@@ -589,9 +591,9 @@ def speculative_generate(self,
 
             # Each iter assign new_matched kv_cache to past_key_values1
             if self.device.type == 'cpu':
-                self._update_past_key_values_storage_cpu(past_key_values, past_key_values_storage,
-                                                         original_draft_past_key_values,
-                                                         _enable_ipex)
+                _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_storage,
+                                                    original_draft_past_key_values,
+                                                    _enable_ipex)
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
             current_input_ids = output_ids[:, -1:]
