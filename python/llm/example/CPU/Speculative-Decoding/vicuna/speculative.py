@@ -16,7 +16,7 @@
 
 import torch
 from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
-from transformers import LlamaTokenizer, AutoTokenizer
+from transformers import AutoTokenizer
 import argparse
 import time
 import numpy as np
@@ -28,7 +28,6 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
 Vicuna_PROMPT_FORMAT = "### Human:\n{prompt} \n ### Assistant:\n"
 
 long_input = """In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
@@ -50,7 +49,7 @@ As she """
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Vicuna model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="lmsys/vicuna-13b-v1.3",
                         help='The huggingface repo id for the Vicuna (e.g. `lmsys/vicuna-13b-v1.3` and `eachadea/vicuna-7b-1.1`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
