@@ -48,6 +48,9 @@ test_api:
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
   # - "transformer_int4_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+plot_memory_vs_time_graph: False 
+# Whether plot memory usage graph (Linux Only)
+# The 'top' tool is used to obtain memory usage in Linux. However, due to different Linux distributions and versions of the top tool, the output format may vary. Therefore, you need to manually check if the memory usage obtained  correctly corresponds to the right location in the original output. After running the code, instructions will appear; you just need to follow the instructions.
 ```
 
 ## Run
@@ -68,8 +71,4 @@ For ARC performance, run `bash run-arc.sh`.
 
 For MAX GPU performance, run `bash run-max-gpu.sh`.
 
-## Run & Plot
-run `python run-plot.py`, this will output results to directory `output/`. Results include csv tables and graphs of memory usage versus time.
-> **Note**
->
-> The current code can only be run on Linux.The 'top' tool is used to obtain memory usage in Linux. However, due to different Linux distributions and versions of the top tool, the output format may vary. Therefore, you need to manually check if the memory usage obtained  correctly corresponds to the right location in the original output. After running the code, instructions will appear; you just need to follow the instructions.
+All the outputs would be in ` ./output/ `.

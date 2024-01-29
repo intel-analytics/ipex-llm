@@ -16,6 +16,7 @@
 
 
 # this code is copied from llama2 example test, and added performance test
+import argparse
 import torch
 import time
 import gc
@@ -33,6 +34,10 @@ sys.path.append(benchmark_util_path)
 from benchmark_util import BenchmarkWrapper
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
+import subprocess
+import threading
+import matplotlib.pyplot as plt
+
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
              'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
@@ -44,6 +49,50 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 
 results = []
 excludes = []
+
+# To record and plot the memory usage
+class MonitorMemoryUsage:
+    def __init__(self, index):
+        self.x = []
+        self.data = []
+        self.monitoring = False
+        self.index = index
+
+    def start_monitoring(self):
+        self.monitoring = True
+        self.start_time = time.time()
+        self.proc = subprocess.Popen(['top', '-d', '0.01', '-b'], stdout=subprocess.PIPE, text=True)
+
+        # Start a new thread to monitor memory usage
+        self.thread = threading.Thread(target=self.capture_output)
+        self.thread.start()
+
+    def capture_output(self):
+        while self.monitoring:
+            line = self.proc.stdout.readline()
+            if "MiB Mem" in line:
+                # Extract memory usage data
+                timestamp = time.time() - self.start_time
+                # Adjust the index based on your output
+                mem_usage = float(line.split()[self.index])  
+                self.x.append(timestamp * 100)
+                self.data.append(mem_usage)
+
+    def stop_monitoring(self, output_dir=".", name=""):
+        self.monitoring = False
+        self.proc.terminate()
+        self.thread.join()
+        # Plot the memory usage
+        plt.plot(self.x, self.data, marker='o', linestyle='-')
+        plt.xlabel('Time/10ms')
+        plt.ylabel('Used/MB')
+        plt.title('Used Memory Over Time')
+        # plt.legend()
+        plt.grid(True)
+        plt.ylim(min(self.data)-100, max(self.data)+200)
+        plt.savefig(f'{output_dir}/memory_usage_plot_load_{name}.png')
+        plt.close()
+
 
 def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
     for i in range(num_trials + warm_up):
@@ -62,9 +111,17 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
             result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                    actual_in_len, actual_out_len, model.peak_memory])
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1 ,index=7, plot_memory_vs_time_graph=False):
     # TODO: make a parameter
     result= {}
+    
+    if not os.path.exists("./output/"):
+        os.makedirs("./output")
+
+    if plot_memory_vs_time_graph == True:
+        monitor = MonitorMemoryUsage(index)
+        monitor.start_monitoring()
+
     if test_api == 'transformer_int4':
         result = run_transformer_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'native_int4':
@@ -87,6 +144,9 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size)
     elif test_api == 'transformer_autocast_bf16':
         result = run_transformer_autocast_bf16(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
+
+    if plot_memory_vs_time_graph == True:
+        monitor.stop_monitoring("./output", test_api + "_" + in_out_pairs[0])
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -310,7 +370,7 @@ def run_optimize_model(repo_id,
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True).eval()
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True, trust_remote_code=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path)
     end = time.perf_counter()
@@ -930,21 +990,62 @@ if __name__ == '__main__':
     today = date.today()
     if 'exclude' in conf:
         excludes = conf['exclude']
-    
+    if conf['plot_memory_vs_time_graph'] == True:
+        process = subprocess.Popen(['top', '-b', '-n', '1'], stdout=subprocess.PIPE, text=True)
+        index = 7  # This is the default index, which can be modified by keyboard input
+        flag = True
+        for line in process.stdout:
+            if "MiB Mem" in line:
+                mem_line = line
+                break
+            
+        # Instructions to check if the memory usage is correct
+        print('''
+            The first line below is the original output of the top command, and the second line extracts the memory usage using 'split()[7]' from the original output. 
+            However, due to different Linux distributions and versions of the top tool, the output format may vary.
+            Therefore, we need to manually check if the memory usage in the second line correctly corresponds to the right location in the first line.
+            If it does not, we need to manually adjust the 'split()[]' index to make them match. 
+            If it does match, enter 'y', and the program will continue to run; otherwise, enter 'n', then manually modify the index and run it again; enter 'quit' to quit.
+            ''')
+        while(flag):
+            mem_usage = line.split()[index]
+            print("-" * 100)
+            print("This is the entire output of the top command:\n", mem_line)
+            print("This is the extracted memory usage:\n", mem_usage)
+            print("-" * 100)
+            user_input = input("Please check if the memory usage is correct([y]/n/exit): ").strip().lower()
+            if user_input == "y" or user_input == "":
+                flag = False
+                print("Continuing with the process...")
+            elif user_input == "n":
+                try:
+                    index_input = input("Please type in an integer to update the index:")
+                    index = int(index_input)
+                except ValueError:
+                    print("Please type in an integer!")
+            else:
+                exit()
+
     import pandas as pd
     for api in conf.test_api:
         for model in conf.repo_id:
-            in_out_pairs = conf['in_out_pairs'].copy()
-            if excludes:
-                for in_out in conf['in_out_pairs']:
-                    model_id_input = model + ':' + in_out.split('-')[0]
-                    if model_id_input in excludes:
-                        in_out_pairs.remove(in_out)
-            run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
+            in_out_pairs_ = conf['in_out_pairs'].copy()
+            for in_out_pairs in in_out_pairs_:
+                in_out_pairs = [in_out_pairs]
+                if excludes:
+                    for in_out in conf['in_out_pairs']:
+                        model_id_input = model + ':' + in_out.split('-')[0]
+                        if model_id_input in excludes:
+                            in_out_pairs.remove(in_out)
+                if conf['plot_memory_vs_time_graph'] == True:
+                    run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+                            conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], index=index, plot_memory_vs_time_graph=True)
+                else:
+                    run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+                            conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], plot_memory_vs_time_graph=False)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
                                             'peak mem (GB)'])
 
-        df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
+        df.to_csv(f'{current_dir}/output/{api}-results-{today}.csv')
         results = []
