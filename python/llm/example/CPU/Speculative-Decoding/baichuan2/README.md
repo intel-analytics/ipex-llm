@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could run Baichuan2 BF16 in
 To run these examples with BigDL-LLM on Intel CPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [speculative.py](./speculative.py), we show a basic use case for a Baichuan2 model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel GPUs.
+In the example [speculative.py](./speculative.py), we show a basic use case for a Baichuan2 model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel CPUs.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
