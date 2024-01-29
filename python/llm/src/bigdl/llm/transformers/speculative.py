@@ -116,7 +116,7 @@ def clear_benchmarks(self):
     self.n_matched = 0
 
 
-def _prepare_past_key_values_storage_cpu(past_key_values, _enable_ipex=False):
+def _prepare_past_key_values_storage_cpu(self, past_key_values, _enable_ipex=False):
     if _enable_ipex:
         ipex_past_key_values = []
         cur_len = past_key_values[0][0].size(1)
@@ -181,7 +181,7 @@ def _prepare_past_key_values_storage_cpu(past_key_values, _enable_ipex=False):
     return past_key_values_storage
 
 
-def _prepare_draft_past_key_values_cpu(past_key_values, past_key_values_storage):
+def _prepare_draft_past_key_values_cpu(self, past_key_values, past_key_values_storage):
     tmp_past_key_values = []
     for i in range(len(past_key_values)):
         if self.config.model_type == "qwen":
@@ -202,7 +202,7 @@ def _prepare_draft_past_key_values_cpu(past_key_values, past_key_values_storage)
     return tmp_past_key_values
 
 
-def _update_past_key_values_storage_cpu(past_key_values, past_key_values_storage,
+def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_storage,
                                         original_draft_past_key_values, _enable_ipex=False):
     for i in range(len(past_key_values)):
         if not _enable_ipex:
@@ -357,7 +357,8 @@ def speculative_generate(self,
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
     if _enable_ipex:
-        if not (self.config.model_type == 'baichuan' or 'llama' in self.config.model_type):
+        if not ((self.config.model_type == 'baichuan' and self.config.hidden_size == 5120) or
+                ('llama' in self.config.model_type)):
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
                                       Llama and Baichuan2-13b models currently.")
 
@@ -412,10 +413,11 @@ def speculative_generate(self,
                 # init past_key_values_storage and assign initial fp32 value
                 if step == 1:
                     past_key_values_storage = \
-                        _prepare_past_key_values_storage_cpu(past_key_values, _enable_ipex)
+                        self._prepare_past_key_values_storage_cpu(past_key_values, _enable_ipex)
                 # each iter cut off cur_len kv_cache from past_key_values1
                 draft_past_key_values = \
-                    _prepare_draft_past_key_values_cpu(past_key_values, past_key_values_storage)
+                    self._prepare_draft_past_key_values_cpu(past_key_values,
+                                                            past_key_values_storage)
                 original_draft_past_key_values = draft_past_key_values
             else:
                 draft_past_key_values = past_key_values
@@ -587,8 +589,9 @@ def speculative_generate(self,
 
             # Each iter assign new_matched kv_cache to past_key_values1
             if self.device.type == 'cpu':
-                _update_past_key_values_storage_cpu(past_key_values, past_key_values_storage,
-                                                    original_draft_past_key_values, _enable_ipex)
+                self._update_past_key_values_storage_cpu(past_key_values, past_key_values_storage,
+                                                         original_draft_past_key_values,
+                                                         _enable_ipex)
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
             current_input_ids = output_ids[:, -1:]
