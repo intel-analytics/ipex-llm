@@ -229,7 +229,7 @@ def speculative_generate(self,
     past_key_values = None
     past_key_values1 = []
 
-    _enable_ipex = os.getenv("ENABLE_IPEX")
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
 
     tmp_matchness = 0
