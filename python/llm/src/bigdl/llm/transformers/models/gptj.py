@@ -142,8 +142,7 @@ def gptj_attention_forward(
         cache_k = cache_k.permute(0, 2, 1, 3)
         cache_v = cache_v.permute(0, 2, 1, 3)
         past_length = cache_k.size(2)
-
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+        if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads,
                                                        self.head_dim,

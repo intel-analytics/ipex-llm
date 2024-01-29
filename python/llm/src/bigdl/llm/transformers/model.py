@@ -248,7 +248,6 @@ class _BaseAutoModelClass:
             if speculative:
                 from .speculative import speculative_generate, clear_benchmarks
                 # load a sym_int4 model as draft model
-                kwargs["torch_dtype"] = torch.float32
                 draft_model = cls.load_convert('sym_int4', optimize_model, *args, **kwargs)
                 model.draft_model = draft_model
                 import types
