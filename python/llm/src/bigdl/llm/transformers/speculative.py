@@ -281,17 +281,17 @@ def speculative_generate(self,
 
             # init draft_self_past_key_values:past_key_values1 and assign initial fp32 value
             if self.device.type == 'cpu' and step == 1:
-                tmp_ipex_past_key_values = []
                 if _enable_ipex:
+                    ipex_past_key_values = []
                     cur_len = past_key_values[0][0].size(1)
                     if self.config.model_type == "qwen":
                         invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
                     elif self.config.model_type == "chatglm":
                         invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
                     else:
-                        tmp_ipex_past_key_values = [
+                        ipex_past_key_values = [
                             [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
-                            pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
+                             pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
                             for pkv in past_key_values
                         ]
 
@@ -309,7 +309,7 @@ def speculative_generate(self,
                         else:
                             len0 = past_key_values[i][1].size(1)
                             len1 = past_key_values[i][1].size(2)
-                            len2 = past_key_values[i][0].size(2) # seq length
+                            len2 = past_key_values[i][0].size(2)  # seq length
                             len3 = past_key_values[i][1].size(3)
                     if self.config.model_type == "qwen":
                         k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
@@ -347,9 +347,9 @@ def speculative_generate(self,
                             past_key_values1[i][1][:, :, :len2, :] = past_key_values[i][1].to(
                                 torch.float32)
                         else:
-                            past_key_values1[i][0][:, :, :len2, :] = tmp_ipex_past_key_values[i][0].to(
+                            past_key_values1[i][0][:, :, :len2, :] = ipex_past_key_values[i][0].to(
                                 torch.float32)
-                            past_key_values1[i][1][:, :, :len2, :] = tmp_ipex_past_key_values[i][1].to(
+                            past_key_values1[i][1][:, :, :len2, :] = ipex_past_key_values[i][1].to(
                                 torch.float32)
 
             # each iter cut off cur_len kv_cache from past_key_values1
@@ -575,8 +575,10 @@ def speculative_generate(self,
                         else:
                             size = tmp_past_key_values[i][0].size(2)
                             size1 = past_key_values[i][0].size(1)
-                            delta_past_key = past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
-                            delta_past_value = past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
+                            delta_past_key = \
+                                past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
+                            delta_past_value = \
+                                past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
 
                             past_key_values1[i][0][:, :, size:size1, :] = \
                                 delta_past_key.to(torch.float32)
