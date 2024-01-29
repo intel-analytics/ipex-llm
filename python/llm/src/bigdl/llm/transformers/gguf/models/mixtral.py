@@ -59,6 +59,7 @@ def load_gguf_mixtral(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
 
     # define an operator function that passed to low-level gguf API
     def process_mixtral(name, tensor):
+        nonlocal model
         # prepare module's name in transformers
         module_name = get_mixtral_module_name(name)
         # prepare module's weight in transformers
