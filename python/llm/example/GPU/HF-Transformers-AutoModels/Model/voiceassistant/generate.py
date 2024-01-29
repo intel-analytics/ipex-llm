@@ -20,6 +20,8 @@ import time
 import argparse
 import numpy as np
 import inquirer
+
+# for Windows device, please remove `import sounddevice`
 import sounddevice
 
 from bigdl.llm.transformers import AutoModelForCausalLM
