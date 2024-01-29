@@ -31,12 +31,12 @@ For example, 0-47 means bind the python program to core list 0-47 for a 48-core 
 
 Arguments info:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Vicuna model (e.g.  `lmsys/vicuna-13b-v1.3` and `lmsys/vicuna-33b-v1.3`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'lmsys/vicuna-13b-v1.3'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). A default prompt is provided.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
 
 #### Sample Output
-#### [lmsys/vicuna-13b-v1.3](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
+#### [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3)
 ```log
 ### Human:
 In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
@@ -63,7 +63,7 @@ E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
 ```
 
-#### [lmsys/vicuna-33b-v1.3](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
+#### [lmsys/vicuna-33b-v1.3](https://huggingface.co/lmsys/vicuna-33b-v1.3)
 ```log
 ### Human:
 In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
