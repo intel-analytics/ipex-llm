@@ -54,19 +54,18 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|User|>:AI是什么？
+<|User|>:解释一种机器学习算法
 <|Bot|>:
 -------------------- Output --------------------
-<|User|>:AI是什么？
-<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在开发能够执行人类智能任务的算法和计算机程序。AI可以执行各种任务，包括语音
-```
-
-```log
-Inference time: xxxx s
--------------------- Prompt --------------------
-<|User|>:What is AI?
-<|Bot|>:
--------------------- Output --------------------
-<|User|>:What is AI?
-<|Bot|>:AI is the ability of machines to perform tasks that would normally require human intelligence, such as perception, reasoning, learning, and decision-making. AI is made possible
+<|User|>:解释一种机器学习算法
+<|Bot|>:一种常见的机器学习算法是决策树。决策树是一种基于树形结构的分类算法，它通过一系列的判断条件，将数据集分成不同的类别。
+决策树的构建过程如下：
+1.选择一个最佳特征，将数据集分成不同的子集。
+2.对于每个子集，递归地构建决策树。
+3.对于叶子节点，将其标记为相应的类别。
+4.对于非叶子节点，将其标记为相应的特征。
+决策树的优点包括：
+1.易于理解和解释。
+2.可以处理多分类问题。
+3.可以处理缺失值。
 ```

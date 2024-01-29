@@ -1,4 +1,4 @@
-# phixtral-4x2_8
+# Phixtral-4x2_8
 
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on phi models. For illustration purposes, we utilize the [microsoft/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8) as a reference phi model.
 
@@ -56,19 +56,18 @@ In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the phi model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mlabonne/phixtral-4x2_8'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `What is AI?`.
-- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
+- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `128`.
 
 #### 2.4 Sample Output
 #### [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8)
 ```log
-Inference time: xxxx s
+Inference time: 6.53 s
 -------------------- Prompt --------------------
-Question: What is AI?
+Question: What is AI
 
  Answer:
 -------------------- Output --------------------
 Question:  What is AI?
 
- Answer: AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition,
-
+ Answer: AI, or artificial intelligence, is the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of algorithms and models that enable machines to perform tasks that typically require human intelligence, such as problem-solving, decision-making, and language understanding. AI has the potential to revolutionize various industries, from healthcare to transportation, by automating processes, improving efficiency, and enabling new forms of innovation.
 ```

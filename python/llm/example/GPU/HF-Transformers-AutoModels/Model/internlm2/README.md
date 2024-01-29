@@ -41,21 +41,21 @@ Arguments info:
 #### Sample Output
 #### [internlm/internlm2-chat-7b](https://huggingface.co/internlm/internlm2-chat-7b)
 ```log
-Inference time: xxxx s
+Inference time: 2.16 s
 -------------------- Prompt --------------------
-<|User|>:AI是什么？
+<|User|>:解释一种机器学习算法
 <|Bot|>:
 -------------------- Output --------------------
-<|User|>:AI是什么？
-<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在使计算机能够像人类一样思考、学习和执行任务。AI技术包括机器学习、自然
-```
+<|User|>:解释一种机器学习算法
+<|Bot|>:好的，我可以解释一种常见的机器学习算法——决策树。
 
-```log
-Inference time: xxxx s
--------------------- Prompt --------------------
-<|User|>:What is AI?
-<|Bot|>:
--------------------- Output --------------------
-<|User|>:What is AI?
-<|Bot|>:AI is the ability of machines to perform tasks that would normally require human intelligence, such as perception, reasoning, learning, and decision-making. AI is made possible
+决策树是一种监督学习算法，用于分类和回归问题。它的主要思想是将数据集分成更小的子集，直到每个子集只包含一个类别的数据。
+
+决策树的构建过程可以分为以下几个步骤：
+
+1. **数据准备**：
+   - **数据清洗**：处理缺失值、异常值等。
+   - **特征选择**：选择对目标变量有较大影响的特征。
+2. **特征处理**：
+   - **离散化**：将连续的特征离散化，以便于决策
 ```

@@ -1,4 +1,4 @@
-# phixtral
+# Phixtral
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on phi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8) as a reference phi model.
 
 ## 0. Requirements
@@ -37,19 +37,21 @@ python ./generate.py --prompt 'What is AI?'
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the phi model (e.g. `mlabonne/phixtral-4x2_8`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mlabonne/phixtral-4x2_8'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
-- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
 
 #### Sample Output
 #### [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8)
 
 ```log
-Inference time: xxxx s
+Inference time: 3.88 s
 -------------------- Prompt --------------------
-Question: What is AI?
+Question: What is AI
 
  Answer:
 -------------------- Output --------------------
 Question: What is AI?
 
- Answer: AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition,
+ Answer:Artificial Intelligence (AI) is a rapidly growing field that focuses on the development of intelligent machines that can perform tasks that would normally require human intelligence. AI technology is designed to mimic human intelligence, allowing machines to learn, reason, and make decisions.
+
+AI technology is used in a variety of industries, including healthcare, finance, and transportation. For example, in healthcare, AI is used to analyze medical images, such as X-rays and MRIs, to help doctors make more accurate diagnoses. In finance, AI is used to detect fraudulent transactions and prevent financial crimes. In transportation, self-driving cars use AI to
 ```
