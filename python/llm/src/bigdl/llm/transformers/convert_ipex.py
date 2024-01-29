@@ -34,6 +34,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch
+from bigdl.llm.utils.common import invalidInputError
+from typing import List, Optional, Tuple, Union
+
 
 def lowering_class_cpu(m, target_m, new_class, config, tpp=False, woq=False):
     for name, sub_m in m.named_children():

@@ -573,7 +573,10 @@ def _optimize_ipex(model):
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
-    from convert_ipex import _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit
+    from bigdl.llm.transformers.convert_ipex import (
+        _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
+        _llama_model_forward_4_35
+    )
 
     AttentionMaskConverter._make_causal_mask = _make_causal_mask
     convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35)  # noqa
