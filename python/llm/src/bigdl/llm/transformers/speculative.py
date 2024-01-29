@@ -231,6 +231,10 @@ def speculative_generate(self,
 
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    if _enable_ipex:
+        if not (self.config.model_type == 'baichuan' or 'llama' in self.config.model_type):
+            invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
+                                      Llama and Baichuan2-13b models currently.")
 
     tmp_matchness = 0
     e2e_tic = 0.0
@@ -284,16 +288,11 @@ def speculative_generate(self,
                 if _enable_ipex:
                     ipex_past_key_values = []
                     cur_len = past_key_values[0][0].size(1)
-                    if self.config.model_type == "qwen":
-                        invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
-                    elif self.config.model_type == "chatglm":
-                        invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
-                    else:
-                        ipex_past_key_values = [
-                            [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
-                             pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
-                            for pkv in past_key_values
-                        ]
+                    ipex_past_key_values = [
+                        [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
+                            pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
+                        for pkv in past_key_values
+                    ]
 
                 for i in range(len(past_key_values)):
                     if not _enable_ipex:
@@ -302,15 +301,10 @@ def speculative_generate(self,
                         len2 = past_key_values[i][0].size(2)
                         len3 = past_key_values[i][0].size(3)
                     else:
-                        if self.config.model_type == "qwen":
-                            invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
-                        elif self.config.model_type == "chatglm":
-                            invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
-                        else:
-                            len0 = past_key_values[i][1].size(1)
-                            len1 = past_key_values[i][1].size(2)
-                            len2 = past_key_values[i][0].size(2)  # seq length
-                            len3 = past_key_values[i][1].size(3)
+                        len0 = past_key_values[i][1].size(1)
+                        len1 = past_key_values[i][1].size(2)
+                        len2 = past_key_values[i][0].size(2)  # seq length
+                        len3 = past_key_values[i][1].size(3)
                     if self.config.model_type == "qwen":
                         k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
                                         dtype=torch.float32)
@@ -566,22 +560,17 @@ def speculative_generate(self,
                             past_key_values1[i][1][:, :, size:size1, :] = \
                                 past_key_values[i][1][:, :, size:size1, :].to(torch.float32)
                     else:
-                        if self.config.model_type == "qwen":
-                            invalidInputError(False, "QWEN with IPEX BF16 is not supported now.")
-                        elif self.config.model_type == "chatglm":
-                            invalidInputError(False, "ChatGLM with IPEX BF16 is not supported now.")
-                        else:
-                            size = tmp_past_key_values[i][0].size(2)
-                            size1 = past_key_values[i][0].size(1)
-                            delta_past_key = \
-                                past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
-                            delta_past_value = \
-                                past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
+                        size = tmp_past_key_values[i][0].size(2)
+                        size1 = past_key_values[i][0].size(1)
+                        delta_past_key = \
+                            past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
+                        delta_past_value = \
+                            past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
 
-                            past_key_values1[i][0][:, :, size:size1, :] = \
-                                delta_past_key.to(torch.float32)
-                            past_key_values1[i][1][:, :, size:size1, :] = \
-                                delta_past_value.to(torch.float32)
+                        past_key_values1[i][0][:, :, size:size1, :] = \
+                            delta_past_key.to(torch.float32)
+                        past_key_values1[i][1][:, :, size:size1, :] = \
+                            delta_past_value.to(torch.float32)
 
             generate_ids[:, step:step+output_ids.size(1)] = output_ids
             current_input_ids = output_ids[:, -1:]
