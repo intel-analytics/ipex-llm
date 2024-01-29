@@ -47,14 +47,17 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
         trust_remote_code=True,
-    )
+        torch_dtype=torch.float16,
+    ).eval()
+
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    tokenizer.pad_token = tokenizer.eos_token
     
     # With only one line to enable BigDL-LLM optimization on model
     model = optimize_model(model)
     model = model.to('xpu')
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    tokenizer.pad_token = tokenizer.eos_token
+
 
     # Generate predicted tokens
     with torch.inference_mode():
