@@ -31,7 +31,7 @@ source /opt/intel/oneapi/setvars.sh
 ### 3. Finetune model
 
 ```
-python ./dpo_finetuning.py --gradient-checkpointing
+python ./dpo_finetuning.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --gradient-checkpointing
 ```
 > Note: The final LoRA weights and configurations are saved to './outputs' by default. You could also change the output path through specifying `--output-path`.
 
@@ -46,3 +46,11 @@ trainable params: 41,943,040 || all params: 4,012,134,400 || trainable%: 1.04540
 {'loss': 0.6714, 'learning_rate': 3e-06, 'rewards/chosen': 0.002834760583937168, 'rewards/rejected': -0.043302297592163086, 'rewards/accuracies': 0.625, 'rewards/margins': 0.04613706097006798, 'logps/rejected': -269.76953125, 'logps/chosen': -175.4458465576172, 'logits/rejected': -2.863767147064209, 'logits/chosen': -2.813715696334839, 'epoch': 0.01}
 {'loss': 0.6773, 'learning_rate': 3.5000000000000004e-06, 'rewards/chosen': -0.000818049069494009, 'rewards/rejected': -0.03519792854785919, 'rewards/accuracies': 0.6875, 'rewards/margins': 0.034379877150058746, 'logps/rejected': -307.48388671875, 'logps/chosen': -258.1222839355469, 'logits/rejected': -2.93851900100708, 'logits/chosen': -2.845832347869873, 'epoch': 0.01}
 ```
+
+### 4. Merge the adapter into the original model
+
+```
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs --output_path ./outputs/merged-model
+```
+
+Then you can use `./outputs/merged-model` as a normal huggingface transformer model to do inference.
