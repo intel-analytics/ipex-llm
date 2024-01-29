@@ -39,9 +39,50 @@ import torch
 from torch.nn import functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+import warnings
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+
+# Copied from transformers.models.llama.modeling_llama.rotate_half
+def rotate_half(x):
+    """Rotates half the hidden dims of the input."""
+    x1 = x[..., : x.shape[-1] // 2]
+    x2 = x[..., x.shape[-1] // 2 :]
+    return torch.cat((-x2, x1), dim=-1)
+
+
+# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
+def apply_rotary_pos_emb(q, k, cos, sin, position_ids, unsqueeze_dim=1):
+    """Applies Rotary Position Embedding to the query and key tensors.
+
+    Args:
+        q (`torch.Tensor`): The query tensor.
+        k (`torch.Tensor`): The key tensor.
+        cos (`torch.Tensor`): The cosine part of the rotary embedding.
+        sin (`torch.Tensor`): The sine part of the rotary embedding.
+        position_ids (`torch.Tensor`):
+            The position indices of the tokens corresponding to the query and key tensors. For 
+            example, this can be used to pass offsetted position ids when working with a KV-cache.
+        unsqueeze_dim (`int`, *optional*, defaults to 1):
+            The 'unsqueeze_dim' argument specifies the dimension along which to unsqueeze 
+            cos[position_ids] and sin[position_ids] so that they can be properly broadcasted to the 
+            dimensions of q and k. For example, note that cos[position_ids] and sin[position_ids] 
+            have the shape [batch_size, seq_len, head_dim]. Then, if q and k have the shape 
+            [batch_size, heads, seq_len, head_dim], then setting unsqueeze_dim=1 makes 
+            cos[position_ids] and sin[position_ids] broadcastable to the shapes of q and k. 
+            Similarly, if q and k have the shape [batch_size, seq_len, heads, head_dim], 
+            then set unsqueeze_dim=2.
+    Returns:
+        `tuple(torch.Tensor)` comprising of the query and key tensors rotated using the Rotary 
+        Position Embedding.
+    """
+    cos = cos[position_ids].unsqueeze(unsqueeze_dim)
+    sin = sin[position_ids].unsqueeze(unsqueeze_dim)
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+    k_embed = (k * cos) + (rotate_half(k) * sin)
+    return q_embed, k_embed
 
 
 def rw_attention_forward_7b(
@@ -594,21 +635,22 @@ def falcon_attention_forward(
             return output_tensor, present
 
 
-def falcon_attention_forward_36(
+def falcon_attention_forward_4_36(
     self,
     hidden_states: torch.Tensor,
     alibi: Optional[torch.Tensor],
     attention_mask: torch.Tensor,
-    position_ids: Optional[torch.LongTensor] = None,
-    layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
-    head_mask: Optional[torch.Tensor] = None,
-    use_cache: bool = False,
-    output_attentions: bool = False,
+    position_ids: Optional[torch.LongTensor]=None,
+    layer_past: Optional[Tuple[torch.Tensor, torch.Tensor]]=None,
+    head_mask: Optional[torch.Tensor]=None,
+    use_cache: bool=False,
+    output_attentions: bool=False,
     **kwargs,
 ):
     if "padding_mask" in kwargs:
         warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. \
+                Please make sure use `attention_mask` instead.`"
         )
 
     fused_qkv = self.query_key_value(hidden_states)  # [batch_size, seq_length, 3 x hidden_size]
@@ -618,18 +660,24 @@ def falcon_attention_forward_36(
 
     batch_size, query_length, _, _ = query_layer.shape
 
-    query_layer = query_layer.transpose(1, 2).reshape(batch_size, self.num_heads, query_length, self.head_dim)
+    query_layer = query_layer.transpose(1, 2).reshape(
+        batch_size, self.num_heads, query_length, self.head_dim)
     key_layer = key_layer.transpose(1, 2).reshape(
         batch_size, num_kv_heads, query_length, self.head_dim)
-    value_layer = value_layer.transpose(1, 2).reshape(batch_size, num_kv_heads, query_length, self.head_dim)
+    value_layer = value_layer.transpose(1, 2).reshape(
+        batch_size, num_kv_heads, query_length, self.head_dim)
 
     kv_seq_len = key_layer.shape[-2]
+    device = hidden_states.device
+
     if layer_past is not None:
         kv_seq_len += layer_past[0].shape[-2]
+        
     if alibi is None:
         cos, sin = self.rotary_emb(value_layer, seq_len=kv_seq_len)
-        query_layer, key_layer = apply_rotary_pos_emb(query_layer, key_layer, cos, sin, position_ids)
-
+        query_layer, key_layer = apply_rotary_pos_emb(
+            query_layer, key_layer, cos, sin, position_ids)
+    
     if layer_past is not None:
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, self.num_heads, -1, self.head_dim)
@@ -641,7 +689,7 @@ def falcon_attention_forward_36(
                 self.num_heads,
                 self.head_dim,
                 cache_k.size(2),
-                kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
                 dtype=cache_k.dtype,
                 device=device
             )
@@ -653,12 +701,12 @@ def falcon_attention_forward_36(
         key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
 
     elif use_cache:
-        max_cache_length = kv_length + KV_CACHE_ALLOC_BLOCK_LENGTH
+        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = init_kv_cache(
             batch_size,
             self.num_heads,
             self.head_dim,
-            kv_length,
+            kv_seq_len,
             max_cache_length,
             dtype=key_layer.dtype,
             device=device
@@ -673,13 +721,14 @@ def falcon_attention_forward_36(
     value_layer = value_layer.view(batch_size * self.num_heads, -1, self.head_dim)
     
 
-    kv_length = key_layer.shape[-2]
+    kv_seq_len = key_layer.shape[-2]
     if use_cache:
         present = (key_layer, value_layer)
     else:
         present = None
 
-    # SDPA with memory-efficient backend is currently (torch==2.1.2) bugged with non-contiguous inputs with custom attn_mask,
+    # SDPA with memory-efficient backend is currently (torch==2.1.2) 
+    # bugged with non-contiguous inputs with custom attn_mask,
     # Reference: https://github.com/pytorch/pytorch/issues/112577.
     if query_layer.device.type == "cuda" and attention_mask is not None:
         query_layer = query_layer.contiguous()
@@ -694,7 +743,9 @@ def falcon_attention_forward_36(
                 value_layer,
                 attention_mask,
                 0.0,
-                # The query_length > 1 is necessary to match with AttentionMaskConverter.to_causal_4d that does not create a causal mask in case query_length == 1.
+                # The query_length > 1 is necessary to match with 
+                # AttentionMaskConverter.to_causal_4d that does not create a causal mask in case 
+                # query_length == 1.
                 is_causal=self.is_causal and attention_mask is None and query_length > 1,
             )
             attention_scores = None
@@ -702,8 +753,10 @@ def falcon_attention_forward_36(
             attention_scores = query_layer @ key_layer.transpose(-1, -2)
             attention_scores /= math.sqrt(self.head_dim)
 
-            attention_scores = F.softmax(attention_scores + attention_mask, dim=-1, dtype=hidden_states.dtype)
-            # It is unclear why neither dropout nor head_mask is applied here (while it is with alibi).
+            attention_scores = F.softmax(
+                attention_scores + attention_mask, dim=-1, dtype=hidden_states.dtype)
+            # It is unclear why neither dropout nor head_mask is applied here 
+            # (while it is with alibi).
             attn_output = attention_scores @ value_layer
 
         attn_output = attn_output.view(batch_size, self.num_heads, query_length, self.head_dim)
@@ -728,24 +781,29 @@ def falcon_attention_forward_36(
                 is_causal=self.is_causal and attention_mask is None and query_length > 1,
             )
             attn_output = attn_output.transpose(1, 2)
-            attn_output = attn_output.reshape(batch_size, query_length, self.num_heads * self.head_dim)
+            attn_output = attn_output.reshape(
+                batch_size, query_length, self.num_heads * self.head_dim)
 
             attn_output = self.dense(attn_output)
         else:
             matmul_result = query_layer @ key_layer.transpose(-1, -2)
 
             # change view to [batch_size, num_heads, q_length, kv_length]
-            attention_scores = matmul_result.view(batch_size, self.num_heads, query_length, kv_length)
+            attention_scores = matmul_result.view(
+                batch_size, self.num_heads, query_length, kv_seq_len)
 
-            # cast attention scores to fp32, compute scaled softmax and cast back to initial dtype - [batch_size, num_heads, q_length, kv_length]
+            # cast attention scores to fp32, compute scaled softmax and cast back to initial dtype -
+            # [batch_size, num_heads, q_length, kv_length]
             input_dtype = attention_scores.dtype
-            # `float16` has a minimum value of -65504.0, whereas `bfloat16` and `float32` have a minimum value of `-3.4e+38`
+            # `float16` has a minimum value of -65504.0, whereas `bfloat16` and `float32` have a 
+            # minimum value of `-3.4e+38`
             if input_dtype == torch.float16 or input_dtype == torch.bfloat16:
                 attention_scores = attention_scores.to(torch.float32)
 
             attention_logits = attention_scores + alibi.view(batch_size, self.num_heads, 1, -1)
             attention_logits *= self.inv_norm_factor
-            attention_probs = F.softmax(attention_logits + attention_mask, dim=-1, dtype=hidden_states.dtype)
+            attention_probs = F.softmax(
+                attention_logits + attention_mask, dim=-1, dtype=hidden_states.dtype)
             # [batch_size, num_heads, q_length, kv_length]
             attention_probs = self.attention_dropout(attention_probs)
 
@@ -753,7 +811,8 @@ def falcon_attention_forward_36(
                 attention_probs = attention_probs * head_mask
 
             # change view [batch_size, num_heads, q_length, kv_length]
-            attention_probs_reshaped = attention_probs.view(batch_size, self.num_heads, query_length, kv_length)
+            attention_probs_reshaped = attention_probs.view(
+                batch_size, self.num_heads, query_length, kv_seq_len)
 
             # matmul: [batch_size * num_heads, q_length, head_dim]
             attn_output = (attention_probs_reshaped @ value_layer).flatten(0, 1)
