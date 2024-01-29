@@ -16,7 +16,6 @@
 
 
 # this code is copied from llama2 example test, and added performance test
-import argparse
 import torch
 import time
 import gc
@@ -35,7 +34,6 @@ from benchmark_util import BenchmarkWrapper
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
 import subprocess
-import threading
 import matplotlib.pyplot as plt
 
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
@@ -988,11 +986,11 @@ if __name__ == '__main__':
     from omegaconf import OmegaConf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
     today = date.today()
+    index = 7  # This is the default index, which can be modified by keyboard input
     if 'exclude' in conf:
         excludes = conf['exclude']
     if conf['plot_memory_vs_time_graph'] == True:
         process = subprocess.Popen(['top', '-b', '-n', '1'], stdout=subprocess.PIPE, text=True)
-        index = 7  # This is the default index, which can be modified by keyboard input
         flag = True
         for line in process.stdout:
             if "MiB Mem" in line:
@@ -1037,12 +1035,10 @@ if __name__ == '__main__':
                         model_id_input = model + ':' + in_out.split('-')[0]
                         if model_id_input in excludes:
                             in_out_pairs.remove(in_out)
-                if conf['plot_memory_vs_time_graph'] == True:
-                    run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                            conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], index=index, plot_memory_vs_time_graph=True)
-                else:
-                    run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                            conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], plot_memory_vs_time_graph=False)
+                run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+                          conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], index=index, plot_memory_vs_time_graph=conf['plot_memory_vs_time_graph'])
+
+                    
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
                                             'peak mem (GB)'])
