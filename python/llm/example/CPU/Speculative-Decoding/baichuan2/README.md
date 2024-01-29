@@ -60,3 +60,16 @@ Tokens generated 128
 E2E Generation time x.xxxxs
 First token latency x.xxxxs
 ```
+
+### 4. (Optional) Enable BIGDL_OPT_IPEX
+
+To accelerate speculative decoding on CPU, you can install the main branch version of IPEX refering to [IPEX's guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation)
+
+After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently only `Baichuan2 13b` is supported.
+
+```bash
+source bigdl-llm-init -t
+export BIGDL_OPT_IPEX=true
+export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
+numactl -C 0-47 -m 0 python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```
