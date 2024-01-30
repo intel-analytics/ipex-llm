@@ -111,7 +111,7 @@ def llama_mlp_forward(
     x_2d = x.view(-1, x.shape[-1])
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training):
+    if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
@@ -214,6 +214,35 @@ def llama_decoder_forward(
         outputs += (present_key_value,)
 
     return outputs
+
+
+def fuse_qkv_weight(q_proj, k_proj, v_proj):
+    weight_size = q_proj.out_len * q_proj.in_len // 2
+    zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
+    zeros_end = weight_size + zeros_size
+    weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
+    zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
+    scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
+    qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            ], dim=-1).reshape(-1)
+    qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           ], dim=-1).reshape(-1)
+    qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            ], dim=-1).reshape(-1)
+    q_proj.weight.data = torch.empty(0)
+    k_proj.weight.data = torch.empty(0)
+    v_proj.weight.data = torch.empty(0)
+    return torch.cat([qweight, qzeros, qscales], dim=0)
+
+
+def should_use_mm_int4_qkv(self, device):
+    return device.type == "xpu" and self.q_proj.qtype == SYM_INT4 and self.q_proj.enable_xetla
 
 
 def llama_attention_forward_4_31(
@@ -459,6 +488,7 @@ def llama_attention_forward_4_31_original(
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -524,9 +554,20 @@ def llama_attention_forward_4_31_original(
                     query_states, key_states, value_states
                 )
             else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+                if should_use_mm_int4_qkv(self, device):
+                    if not hasattr(self, "qkv_proj_qweight"):
+                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                                                                self.k_proj,
+                                                                self.v_proj)
+                    import linear_q4_0
+                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    query_states = qkv_states[:, :, :hidden_size]
+                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
+                    value_states = qkv_states[:, :, 2*hidden_size:]
+                else:
+                    query_states = self.q_proj(hidden_states)
+                    key_states = self.k_proj(hidden_states)
+                    value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -682,6 +723,7 @@ def llama_attention_selective_batching_forward_4_31(
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
                           bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     updated_past_key_values = []
     # single batch decoding fast path
@@ -874,6 +916,7 @@ def llama_attention_forward_4_36(
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -944,9 +987,20 @@ def llama_attention_forward_4_36(
                     query_states, key_states, value_states
                 )
             else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+                if should_use_mm_int4_qkv(self, device):
+                    if not hasattr(self, "qkv_proj_qweight"):
+                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                                                                self.k_proj,
+                                                                self.v_proj)
+                    import linear_q4_0
+                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    query_states = qkv_states[:, :, :hidden_size]
+                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
+                    value_states = qkv_states[:, :, 2*hidden_size:]
+                else:
+                    query_states = self.q_proj(hidden_states)
+                    key_states = self.k_proj(hidden_states)
+                    value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
