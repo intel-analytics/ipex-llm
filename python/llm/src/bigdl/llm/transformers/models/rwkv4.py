@@ -41,11 +41,12 @@ def extract_key_value(self, hidden, state=None):
     # Mix hidden with the previous timestep to produce key, value, receptance
     if hidden.size(1) == 1 and state is not None:
         shifted = state[1][:, :, self.layer_id]
-        shifted = shifted.unsqueeze(0)
     else:
         shifted = self.time_shift(hidden)
         if state is not None:
             shifted[:, 0] = state[1][:, :, self.layer_id]
+    if len(shifted.size()) == 2:
+        shifted = shifted.unsqueeze(1)
     shifted = shifted.contiguous()
 
     if not hasattr(self, "mixed_mix"):
@@ -152,11 +153,12 @@ def rwkv_ffn_forward(
 ):
     if hidden.size(1) == 1 and state is not None:
         shifted = state[0][:, :, self.layer_id]
-        shifted = shifted.unsqueeze(0)
     else:
         shifted = self.time_shift(hidden)
         if state is not None:
             shifted[:, 0] = state[0][:, :, self.layer_id]
+    if len(shifted.size()) == 2:
+        shifted = shifted.unsqueeze(1)
     shifted = shifted.contiguous()
 
     if not hasattr(self, "mixed_mix"):
