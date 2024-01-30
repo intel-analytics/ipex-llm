@@ -72,6 +72,9 @@ wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936
 # Activate your conda environment
 # Set VER_IPEX in compile_bundle.sh to 0c63936d7a6740679987920367ae2e0cdb375b2e
 bash compile_bundle.sh 
+
+# Install other dependencies
+pip install -r requirements.txt
 ```
 
 After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently only `Baichuan2 13b` is supported.
