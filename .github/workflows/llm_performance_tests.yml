@@ -276,7 +276,7 @@ jobs:
 
       # TODO: Put the bigdl-llm related install process for win gpu into a action function
 
-      # Please uncomment it and commment the instead of from pypi for PR tests
+      # Please uncomment it and commment the install from pypi for PR tests
       # - name: Download llm binary
       #   uses: ./.github/actions/llm/download-llm-binary
 
