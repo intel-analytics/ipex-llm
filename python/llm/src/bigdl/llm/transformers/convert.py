@@ -580,7 +580,6 @@ def _optimize_ipex(model):
 
     AttentionMaskConverter._make_causal_mask = _make_causal_mask
     model = model_convert_reference(model)
-    #model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True)
 
     _ipex_optimize_rmsnorm(model)
     _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
