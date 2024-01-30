@@ -19,7 +19,6 @@ import time
 import argparse
 import numpy as np
 
-from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
 from transformers import AutoTokenizer, GenerationConfig
 import intel_extension_for_pytorch as ipex
 print(ipex.__version__)
@@ -53,8 +52,14 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                              load_in_4bit=True,
+    #                                              trust_remote_code=True)
+    
+    # Load huggingface model with optimize_model in BigDL
+    from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=False,
                                                  trust_remote_code=True)
     model = optimize_model(model)
 
