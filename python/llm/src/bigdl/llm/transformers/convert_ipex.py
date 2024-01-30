@@ -66,9 +66,9 @@ def _set_optimized_model_for_generation(
     if first_token_optimized_model is not None:
         model.trace_graph_first = IPEX_LLM_Model_Return(
             model, first_token_optimized_model
-        )
+        ).forward
 
-    model.trace_graph = IPEX_LLM_Model_Return(model, optimized_model)
+    model.trace_graph = IPEX_LLM_Model_Return(model, optimized_model).forward
     print(
         "ipex.llm.optimize has set the optimized or quantization model for model.generate()"
     )
@@ -99,7 +99,7 @@ def _ipex_optimize_rmsnorm(_model):
             woq=False,
         )
 
-def _ipex_optimize_decoder(model, decoder_layer):
+def _ipex_optimize_decoder(model):
     from intel_extension_for_pytorch.transformers.models.reference.modules.decoder import (
         _IPEXDecoderLayerRef
     )
@@ -115,16 +115,9 @@ def _ipex_optimize_decoder(model, decoder_layer):
             tpp=False,
             woq=False,
         )
-    # convert_class(
-    #     model,
-    #     decoder_layer,
-    #     _IPEXDecoderLayerRef,
-    #     model.config,
-    #     distributed=True,
-    # )
 
 
-def _ipex_optimize_attention(model, attention_layer):
+def _ipex_optimize_attention(model):
     from intel_extension_for_pytorch.transformers.models.reference.modules.attentions import (
         _IPEXAttentionRef
     )
@@ -140,13 +133,6 @@ def _ipex_optimize_attention(model, attention_layer):
             tpp=False,
             woq=False,
         )
-    # convert_class(
-    #     model,
-    #     attention_layer,
-    #     _IPEXAttentionRef,
-    #     model.config,
-    #     distributed=True,
-    # )
 
 
 def _ipex_jit(model):

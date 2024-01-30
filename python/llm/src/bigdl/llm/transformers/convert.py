@@ -582,8 +582,8 @@ def _optimize_ipex(model):
     model = model_convert_reference(model)
 
     _ipex_optimize_rmsnorm(model)
-    _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
-    _ipex_optimize_decoder(model, transformers.models.llama.modeling_llama.LlamaDecoderLayer)
+    _ipex_optimize_attention(model)
+    _ipex_optimize_decoder(model)
 
     model.register_forward_hook(output_hook, with_kwargs=True)
 
