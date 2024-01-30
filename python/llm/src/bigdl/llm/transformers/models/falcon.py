@@ -49,33 +49,31 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
-    x2 = x[..., x.shape[-1] // 2 :]
+    x2 = x[..., x.shape[-1] // 2:]
     return torch.cat((-x2, x1), dim=-1)
 
 
 # Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
-
     Args:
         q (`torch.Tensor`): The query tensor.
         k (`torch.Tensor`): The key tensor.
         cos (`torch.Tensor`): The cosine part of the rotary embedding.
         sin (`torch.Tensor`): The sine part of the rotary embedding.
         position_ids (`torch.Tensor`):
-            The position indices of the tokens corresponding to the query and key tensors. For 
+            The position indices of the tokens corresponding to the query and key tensors. For
             example, this can be used to pass offsetted position ids when working with a KV-cache.
         unsqueeze_dim (`int`, *optional*, defaults to 1):
-            The 'unsqueeze_dim' argument specifies the dimension along which to unsqueeze 
-            cos[position_ids] and sin[position_ids] so that they can be properly broadcasted to the 
-            dimensions of q and k. For example, note that cos[position_ids] and sin[position_ids] 
-            have the shape [batch_size, seq_len, head_dim]. Then, if q and k have the shape 
-            [batch_size, heads, seq_len, head_dim], then setting unsqueeze_dim=1 makes 
-            cos[position_ids] and sin[position_ids] broadcastable to the shapes of q and k. 
-            Similarly, if q and k have the shape [batch_size, seq_len, heads, head_dim], 
+            The 'unsqueeze_dim' argument specifies the dimension along which to unsqueeze
+            cos[position_ids] and sin[position_ids] so that they can be properly broadcasted to the
+            dimensions of q and k. For example, note that cos[position_ids] and sin[position_ids]
+            have the shape [batch_size, seq_len, head_dim]. Then, if q and k have the shape
+            [batch_size, heads, seq_len, head_dim], then setting unsqueeze_dim=1 makes
+            cos[position_ids] and sin[position_ids] broadcastable to the shapes of q and k.
+            Similarly, if q and k have the shape [batch_size, seq_len, heads, head_dim],
             then set unsqueeze_dim=2.
-    Returns:
-        `tuple(torch.Tensor)` comprising of the query and key tensors rotated using the Rotary 
+    Returns: `tuple(torch.Tensor)` comprising of the query and key tensors rotated using the Rotary
         Position Embedding.
     """
     cos = cos[position_ids].unsqueeze(unsqueeze_dim)
@@ -672,7 +670,7 @@ def falcon_attention_forward_4_36(
 
     if layer_past is not None:
         kv_seq_len += layer_past[0].shape[-2]
-        
+    
     if alibi is None:
         cos, sin = self.rotary_emb(value_layer, seq_len=kv_seq_len)
         query_layer, key_layer = apply_rotary_pos_emb(
@@ -719,14 +717,13 @@ def falcon_attention_forward_4_36(
     query_layer = query_layer.view(batch_size * self.num_heads, -1, self.head_dim)
     key_layer = key_layer.view(batch_size * self.num_heads, -1, self.head_dim)
     value_layer = value_layer.view(batch_size * self.num_heads, -1, self.head_dim)
-    
 
     kv_seq_len = key_layer.shape[-2]
     if use_cache:
         present = (key_layer, value_layer)
     else:
         present = None
-
+    
     # SDPA with memory-efficient backend is currently (torch==2.1.2) 
     # bugged with non-contiguous inputs with custom attn_mask,
     # Reference: https://github.com/pytorch/pytorch/issues/112577.
@@ -743,8 +740,8 @@ def falcon_attention_forward_4_36(
                 value_layer,
                 attention_mask,
                 0.0,
-                # The query_length > 1 is necessary to match with 
-                # AttentionMaskConverter.to_causal_4d that does not create a causal mask in case 
+                # The query_length > 1 is necessary to match with
+                # AttentionMaskConverter.to_causal_4d that does not create a causal mask in case
                 # query_length == 1.
                 is_causal=self.is_causal and attention_mask is None and query_length > 1,
             )
@@ -795,7 +792,7 @@ def falcon_attention_forward_4_36(
             # cast attention scores to fp32, compute scaled softmax and cast back to initial dtype -
             # [batch_size, num_heads, q_length, kv_length]
             input_dtype = attention_scores.dtype
-            # `float16` has a minimum value of -65504.0, whereas `bfloat16` and `float32` have a 
+            # `float16` has a minimum value of -65504.0, whereas `bfloat16` and `float32` have a
             # minimum value of `-3.4e+38`
             if input_dtype == torch.float16 or input_dtype == torch.bfloat16:
                 attention_scores = attention_scores.to(torch.float32)
