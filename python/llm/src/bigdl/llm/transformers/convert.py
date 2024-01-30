@@ -48,6 +48,7 @@ from typing import Union
 import numpy as np
 import os
 from bigdl.llm.utils.common import invalidInputError
+from typing import List, Optional, Tuple, Union
 
 
 def is_auto_gptq_available():
@@ -189,7 +190,7 @@ def convert_gptq(module, awq=False, llm_awq=False):
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
-                                 cpu_embedding=False):
+                                 cpu_embedding=False, prefix_name=''):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
@@ -200,7 +201,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             current_key_name = []
 
         is_linear, linear_args = is_linear_module(module)
-        if is_linear and name not in modules_to_not_convert:
+        full_module_name = prefix_name + '.' + name if prefix_name != '' else name
+        if is_linear and name not in modules_to_not_convert and \
+                full_module_name not in modules_to_not_convert:
             # Check if the current key is not in the `modules_to_not_convert`
             if (not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and
                     not isinstance(module, LowBitLinear)):
@@ -322,6 +325,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 current_key_name,
                 convert_shape_only,
                 cpu_embedding,
+                prefix_name=prefix_name + '.' + name if prefix_name != '' else name
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -528,6 +532,13 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         # Do nothing here for weights are empty.
         pass
 
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
+    if _enable_ipex:
+        model = _optimize_ipex(model)
+        return model
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
     return model
@@ -558,6 +569,28 @@ def replace_func(m, target_m, func_name, new_func):
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
+
+
+def _optimize_ipex(model):
+    import intel_extension_for_pytorch as ipex
+    from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+    from bigdl.llm.transformers.convert_ipex import (
+        _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
+        _llama_model_forward_4_35
+    )
+
+    AttentionMaskConverter._make_causal_mask = _make_causal_mask
+    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35)  # noqa
+    model = model_convert_reference(model)
+
+    _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
+    _ipex_optimize_decoder(model, transformers.models.llama.modeling_llama.LlamaDecoderLayer)
+
+    model.register_forward_hook(output_hook, with_kwargs=True)
+
+    return _ipex_jit(model)
 
 
 def _optimize_post(model, lightweight_bmm=False):
@@ -928,9 +961,25 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.rwkv4 import rwkv_attention_forward
+        from bigdl.llm.transformers.models.rwkv4 import rwkv_ffn_forward
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+        convert_forward(model,
+                        module.RwkvFeedForward,
+                        rwkv_ffn_forward)
+    elif model.config.model_type == "rwkv5":
+        # rwkv v5
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward
+        convert_forward(model,
+                        module.RwkvSelfAttention,
+                        rwkv_attention_forward)
+        convert_forward(model,
+                        module.RwkvFeedForward,
+                        rwkv_ffn_forward)
     elif model.config.model_type == "deci":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -944,14 +993,6 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.DeciLMAttention,
                         decilm_attention_forward_4_35_2, )
-    elif model.config.model_type == "rwkv5":
-        # rwkv v5
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
-        convert_forward(model,
-                        module.RwkvSelfAttention,
-                        rwkv_attention_forward)
     elif model.config.model_type == "gpt_bigcode":
         # starcoder
         modeling_module_name = model.__class__.__module__

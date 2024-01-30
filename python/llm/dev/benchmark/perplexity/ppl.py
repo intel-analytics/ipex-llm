@@ -19,6 +19,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
+import gc
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 
@@ -81,4 +82,9 @@ class BigDLPPL:
                 self.ppl_evaluator(data.numpy()[0, seq_len//2:, :], input_ids_chunks.numpy()[0, seq_len//2:])
             progress_bar.set_description(f"{self.ppl_evaluator}")
 
+        torch.xpu.synchronize()
+        torch.xpu.empty_cache()
+        del self.model
+        gc.collect()
+        
         return self.ppl_evaluator.result()

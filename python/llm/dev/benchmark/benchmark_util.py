@@ -510,9 +510,10 @@ class BenchmarkWrapper:
     learn more about decoding strategies refer to the [text generation strategies guide](../generation_strategies).
     """
     
-    def __init__(self, model, do_print=False):
+    def __init__(self, model, do_print=False, verbose=False):
         self.model = model
         self.do_print = do_print
+        self.verbose = verbose
         self.encoder_time = 0.0
         self.first_cost = 0.0
         self.rest_cost_mean = 0.0
@@ -2469,7 +2470,8 @@ class BenchmarkWrapper:
                 if self.device.type == "xpu":
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
-                    print(f"Peak memory for every token: {memory_every_token}")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
                 else:
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all)=========")
@@ -2783,7 +2785,8 @@ class BenchmarkWrapper:
                 if self.device.type == "xpu":
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
-                    print(f"Peak memory for every token: {memory_every_token}")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
                 else:
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all)=========")
@@ -3133,7 +3136,8 @@ class BenchmarkWrapper:
                 if self.device.type == "xpu":
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
-                    print(f"Peak memory for every token: {memory_every_token}")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
                 else:
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all)=========")
@@ -3498,7 +3502,8 @@ class BenchmarkWrapper:
                 if self.device.type == "xpu":
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
-                    print(f"Peak memory for every token: {memory_every_token}")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
                 else:
                     print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
                           f" tokens in all)=========")
