@@ -670,12 +670,12 @@ def falcon_attention_forward_4_36(
 
     if layer_past is not None:
         kv_seq_len += layer_past[0].shape[-2]
-    
+
     if alibi is None:
         cos, sin = self.rotary_emb(value_layer, seq_len=kv_seq_len)
         query_layer, key_layer = apply_rotary_pos_emb(
             query_layer, key_layer, cos, sin, position_ids)
-    
+
     if layer_past is not None:
         # reuse k, v, self_attention
         cache_k = layer_past[0].view(batch_size, self.num_heads, -1, self.head_dim)
@@ -723,8 +723,8 @@ def falcon_attention_forward_4_36(
         present = (key_layer, value_layer)
     else:
         present = None
-    
-    # SDPA with memory-efficient backend is currently (torch==2.1.2) 
+
+    # SDPA with memory-efficient backend is currently (torch==2.1.2)
     # bugged with non-contiguous inputs with custom attn_mask,
     # Reference: https://github.com/pytorch/pytorch/issues/112577.
     if query_layer.device.type == "cuda" and attention_mask is not None:
@@ -752,7 +752,7 @@ def falcon_attention_forward_4_36(
 
             attention_scores = F.softmax(
                 attention_scores + attention_mask, dim=-1, dtype=hidden_states.dtype)
-            # It is unclear why neither dropout nor head_mask is applied here 
+            # It is unclear why neither dropout nor head_mask is applied here
             # (while it is with alibi).
             attn_output = attention_scores @ value_layer
 
