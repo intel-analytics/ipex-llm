@@ -63,7 +63,7 @@ First token latency x.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-To accelerate speculative decoding on CPU, you can install the main branch version of IPEX refering to [IPEX's guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation), or install our validated version of IPEX by following scripts:
+To accelerate speculative decoding on CPU, you can install our validated version of [IPEX](https://github.com/intel/intel-extension-for-pytorch/tree/0c63936d7a6740679987920367ae2e0cdb375b2e) by following scripts: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
 
 ```bash
 # Depend on Conda and GCC 12.3
