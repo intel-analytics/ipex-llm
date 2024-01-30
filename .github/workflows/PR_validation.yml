@@ -135,6 +135,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - '.github/actions/orca/**'
               - 'python/dev/**'
+              - 'python/requirements/**'
 
             orca-pytest-openvino:
               - 'python/orca/src/bigdl/orca/learn/openvino/**'
@@ -142,6 +143,7 @@ jobs:
               - 'python/orca/dev/test/**'
               - '.github/actions/orca/**'
               - 'python/dev/**'
+              - 'python/requirements/**'
               
             orca-tutorial:
               - 'python/orca/src/**'
@@ -152,6 +154,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - '.github/actions/orca/**'
               - 'python/dev/**'
+              - 'python/requirements/**'
               
             orca-example:
               - 'python/orca/src/**'
@@ -162,6 +165,7 @@ jobs:
               - 'scala/dllib/pom.xml'
               - '.github/actions/orca/**'
               - 'python/dev/**'
+              - 'python/requirements/**'
 
   Friesian-Scala-UT:
     needs: changes
