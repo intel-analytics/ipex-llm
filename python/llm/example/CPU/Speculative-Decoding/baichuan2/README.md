@@ -61,9 +61,18 @@ E2E Generation time x.xxxxs
 First token latency x.xxxxs
 ```
 
-### 4. (Optional) Enable BIGDL_OPT_IPEX
+### 4. Accelerate with BIGDL_OPT_IPEX
 
-To accelerate speculative decoding on CPU, you can install the main branch version of IPEX refering to [IPEX's guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation)
+To accelerate speculative decoding on CPU, you can install the main branch version of IPEX refering to [IPEX's guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation), or install our validated version of IPEX by following scripts:
+
+```bash
+# Depend on Conda and GCC 12.3
+wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936d7a6740679987920367ae2e0cdb375b2e/scripts/compile_bundle.sh
+
+# Activate your conda environment
+# Set VER_IPEX in compile_bundle.sh to 0c63936d7a6740679987920367ae2e0cdb375b2e
+bash compile_bundle.sh 
+```
 
 After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently only `Baichuan2 13b` is supported.
 
