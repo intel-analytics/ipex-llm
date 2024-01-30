@@ -15,7 +15,9 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install einops # additional package required for Yuan2 to conduct generation
+pip install pandas # additional package required for Yuan2 to conduct generation
 ```
 #### 1.2 Installation on Windows
 We suggest using conda to manage environment:
