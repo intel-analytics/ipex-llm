@@ -190,7 +190,8 @@ def convert_gptq(module, awq=False, llm_awq=False):
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
-                                 cpu_embedding=False, prefix_name=''):
+                                 cpu_embedding=False, prefix_name='',
+                                 imatrix_data=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
@@ -248,7 +249,22 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-
+                        if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"]]:
+                            # For quantization which needs importance matrix
+                            # module name preprocess
+                            # full name maybe model.layers.31.self_attn.o_proj
+                            # TODO: just consider llama here
+                            # how to better aligned and generalize
+                            module_name = full_module_name.split('.')
+                            layer = module_name[2]
+                            cur_module = module_name[-1][:-5]
+                            new_module_name = '_'.join([layer, cur_module])
+                            if new_module_name in imatrix_data:
+                                cur_imatrix = imatrix_data[new_module_name]
+                            else:
+                                cur_imatrix = None
+                        else:
+                            cur_imatrix = None
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
@@ -256,7 +272,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  quantized=False,
                                                  _shape=None,
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device)
+                                                 qtype=qtype,
+                                                 imatrix=cur_imatrix,
+                                                 in_features=in_features).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -328,7 +346,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 current_key_name,
                 convert_shape_only,
                 cpu_embedding,
-                prefix_name=prefix_name + '.' + name if prefix_name != '' else name
+                prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
+                imatrix_data=imatrix_data
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -505,7 +524,8 @@ def _optimize_pre(model):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
-                         lightweight_bmm=False, torch_dtype="auto"):
+                         lightweight_bmm=False, torch_dtype="auto",
+                         imatrix_data=None):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -517,6 +537,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
+        imatrix_data=imatrix_data,
     )
     if not has_been_replaced:
         warnings.warn(
