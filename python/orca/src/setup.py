@@ -36,7 +36,7 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
-RAY_DEP = ['ray[default]==1.9.2', 'aiohttp==3.9.2', 'async-timeout==4.0.1', 'aioredis==1.3.1',
+RAY_DEP = ['ray[default]==1.9.2', 'aiohttp==3.9.0', 'async-timeout==4.0.1', 'aioredis==1.3.1',
            'hiredis==2.0.0', 'setproctitle', 'psutil==5.9.5', 'prometheus-client==0.11.0',
            'protobuf==3.20.3']
 AUTOML_DEP = RAY_DEP + ['ray[tune]==1.9.2', 'scikit-learn', 'tensorboard']

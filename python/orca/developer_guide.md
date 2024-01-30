@@ -34,7 +34,7 @@ After running the above code there will be a `BigDl/dist` directory consisting o
 ```bash
 pip install pyspark==2.4.3 # ./make-dist.sh build against spark 2.4.3 by default
 pip install ray==1.9.2
-pip install aiohttp==3.9.2 # dependencies introduced by ray, latest version has api changes
+pip install aiohttp==3.9.0 # dependencies introduced by ray, latest version has api changes
 pip install aioredis==1.3.1 # dependencies introduced by ray, latest version has api changes
 pip install pytest pyarrow pandas
 pip install bigdl-math bigdl-tf # dependencies introduced by bigdl-orca
