@@ -70,9 +70,9 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-          test_version_data=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show bigdl-llm | grep $test_version_data; then
-            echo "Did not install bigdl-llm with excepted version $test_version_data"
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show bigdl-llm | grep $test_version_date; then
+            echo "Did not install bigdl-llm with excepted version $test_version_date"
             exit 1
           fi
 
@@ -161,9 +161,9 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade bigdl-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
-          test_version_data=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show bigdl-llm | grep $test_version_data; then
-            echo "Did not install bigdl-llm with excepted version $test_version_data"
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show bigdl-llm | grep $test_version_date; then
+            echo "Did not install bigdl-llm with excepted version $test_version_date"
             exit 1
           fi
 
@@ -229,9 +229,9 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade bigdl-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
-          test_version_data=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show bigdl-llm | grep $test_version_data; then
-            echo "Did not install bigdl-llm with excepted version $test_version_data"
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show bigdl-llm | grep $test_version_date; then
+            echo "Did not install bigdl-llm with excepted version $test_version_date"
             exit 1
           fi
 
@@ -307,10 +307,10 @@ jobs:
       #     call conda deactivate
 
       - name: Determine desired bigdl-llm version
-        shell: cmd
+        shell: bash
         run: |
-          test_version_data=`date -d 'yesterday' '+%Y%m%d'`
-          echo "TEST_VERSION_DATE=${test_version_data}" >> "$GITHUB_ENV"
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
 
       - name: Install bigdl-llm and other related packages (install from pypi)
         shell: cmd
