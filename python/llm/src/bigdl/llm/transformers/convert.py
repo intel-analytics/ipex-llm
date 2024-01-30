@@ -48,6 +48,7 @@ from typing import Union
 import numpy as np
 import os
 from bigdl.llm.utils.common import invalidInputError
+from typing import List, Optional, Tuple, Union
 
 
 def is_auto_gptq_available():
@@ -528,6 +529,13 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         # Do nothing here for weights are empty.
         pass
 
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
+    if _enable_ipex:
+        model = _optimize_ipex(model)
+        return model
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
     return model
@@ -560,6 +568,28 @@ def replace_func(m, target_m, func_name, new_func):
         replace_func(sub_m, target_m, func_name, new_func)
 
 
+def _optimize_ipex(model):
+    import intel_extension_for_pytorch as ipex
+    from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    from transformers.modeling_attn_mask_utils import AttentionMaskConverter
+    from bigdl.llm.transformers.convert_ipex import (
+        _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
+        _llama_model_forward_4_35
+    )
+
+    AttentionMaskConverter._make_causal_mask = _make_causal_mask
+    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35)  # noqa
+    model = model_convert_reference(model)
+
+    _ipex_optimize_attention(model, transformers.models.llama.modeling_llama.LlamaAttention)
+    _ipex_optimize_decoder(model, transformers.models.llama.modeling_llama.LlamaDecoderLayer)
+
+    model.register_forward_hook(output_hook, with_kwargs=True)
+
+    return _ipex_jit(model)
+
+
 def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     from bigdl.llm.transformers.models.llama import llama_attention_forward_4_31
@@ -567,6 +597,7 @@ def _optimize_post(model, lightweight_bmm=False):
     from bigdl.llm.transformers.models.llama import llama_model_selective_batching_forward_4_31
     from bigdl.llm.transformers.models.llama import llama_rms_norm_forward
     from bigdl.llm.transformers.models.llama import llama_mlp_forward
+    from bigdl.llm.transformers.models.llama import llama_decoder_forward
     from transformers.modeling_utils import PreTrainedModel
 
     # All huggingface format models are inherited from `PreTrainedModel`
@@ -588,6 +619,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaMLP,
                         llama_mlp_forward)
+        convert_forward(model,
+                        transformers.models.llama.modeling_llama.LlamaDecoderLayer,
+                        llama_decoder_forward)
         if version.parse(trans_version) >= version.parse("4.36.0"):
             # transformers version >= 4.36.0
             from bigdl.llm.transformers.models.llama import llama_attention_forward_4_36
@@ -637,17 +671,12 @@ def _optimize_post(model, lightweight_bmm=False):
             # chatglm2-6b
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward_8eb45c
-            from bigdl.llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
+            from bigdl.llm.transformers.models.chatglm2 import chatglm2_attention_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm2_model_forward
             convert_forward(model,
                             module.SelfAttention,
-                            chatglm2_attention_forward_8eb45c
-                            )
-            convert_forward(model,
-                            module.CoreAttention,
-                            core_attn_forward_8eb45c)
+                            chatglm2_attention_forward)
             convert_forward(model,
                             module.ChatGLMModel,
                             chatglm2_model_forward)
@@ -929,9 +958,25 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.rwkv4 import rwkv_attention_forward
+        from bigdl.llm.transformers.models.rwkv4 import rwkv_ffn_forward
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+        convert_forward(model,
+                        module.RwkvFeedForward,
+                        rwkv_ffn_forward)
+    elif model.config.model_type == "rwkv5":
+        # rwkv v5
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward
+        convert_forward(model,
+                        module.RwkvSelfAttention,
+                        rwkv_attention_forward)
+        convert_forward(model,
+                        module.RwkvFeedForward,
+                        rwkv_ffn_forward)
     elif model.config.model_type == "deci":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -945,14 +990,6 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.DeciLMAttention,
                         decilm_attention_forward_4_35_2, )
-    elif model.config.model_type == "rwkv5":
-        # rwkv v5
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
-        convert_forward(model,
-                        module.RwkvSelfAttention,
-                        rwkv_attention_forward)
     elif model.config.model_type == "gpt_bigcode":
         # starcoder
         modeling_module_name = model.__class__.__module__
