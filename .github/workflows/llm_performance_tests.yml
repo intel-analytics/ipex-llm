@@ -325,7 +325,10 @@ jobs:
 
           pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
           pip show bigdl-llm | findstr %TEST_VERSION_DATE%
-          if %ERRORLEVEL% neq 0 (exit /b 1)
+          if %ERRORLEVEL% neq 0 (
+            echo "Did not install bigdl-llm with excepted version %TEST_VERSION_DATE%"
+            exit /b 1
+          )
           pip list
 
           call conda deactivate
