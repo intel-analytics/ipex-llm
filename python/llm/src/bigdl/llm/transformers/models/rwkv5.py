@@ -48,7 +48,6 @@ def extract_key_value(self, hidden, state=None):
             shifted[:, 0] = state[0][:, :, self.layer_id]
     if len(shifted.size()) == 2:
         shifted = shifted.unsqueeze(1)
-
     shifted = shifted.contiguous()
 
     if not hasattr(self, "mixed_mix"):
@@ -195,7 +194,6 @@ def rwkv_ffn_forward(
             shifted[:, 0] = state[2][:, :, self.layer_id]
     if len(shifted.size()) == 2:
         shifted = shifted.unsqueeze(1)
-
     shifted = shifted.contiguous()
 
     if not hasattr(self, "mixed_mix"):
