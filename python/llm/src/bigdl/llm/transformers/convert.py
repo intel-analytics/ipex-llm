@@ -256,9 +256,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             # TODO: just consider llama here
                             # how to better aligned and generalize
                             module_name = full_module_name.split('.')
-                            layer = module_name[2]
-                            cur_module = module_name[-1][:-5]
-                            new_module_name = '_'.join([layer, cur_module])
+                            if len(module_name) == 5:
+                                layer = module_name[2]
+                                cur_module = module_name[-1][:-5]
+                                new_module_name = '_'.join([layer, cur_module])
+                            elif len(module_name) == 1:
+                                new_module_name = module_name[0]
                             if new_module_name in imatrix_data:
                                 cur_imatrix = imatrix_data[new_module_name]
                             else:
