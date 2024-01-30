@@ -74,6 +74,7 @@ def _set_optimized_model_for_generation(
     )
     return model
 
+
 def _ipex_optimize_rmsnorm(_model):
     from intel_extension_for_pytorch.transformers.models.cpu.fusions.mha_fusion import _IPEXRMSNorm
     import transformers
@@ -98,6 +99,7 @@ def _ipex_optimize_rmsnorm(_model):
             tpp=False,
             woq=False,
         )
+
 
 def _ipex_optimize_decoder(model):
     from intel_extension_for_pytorch.transformers.models.reference.modules.decoder import (
@@ -187,4 +189,3 @@ def _make_causal_mask(
         mask.masked_fill_(context_mask.bool(), torch.finfo(dtype).min)
 
     return mask[None, None, :, :].expand(bsz, 1, tgt_len, tgt_len + past_key_values_length)
-
