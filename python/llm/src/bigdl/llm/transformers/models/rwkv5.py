@@ -151,7 +151,7 @@ def rwkv_attention_forward_wrapper(origin_rwkv_attention_forward):
             )
             return rwkv, state
         else:
-            return origin_rwkv_attention_forward(hidden, state, use_cache, seq_mode)
+            return origin_rwkv_attention_forward(self, hidden, state, use_cache, seq_mode)
 
     return rwkv_attention_forward
 
@@ -188,7 +188,7 @@ def rwkv_ffn_forward_wrapper(origin_rwkv_ffn_forward):
 
             return receptance * value, state
         else:
-            return origin_rwkv_ffn_forward(hidden, state)
+            return origin_rwkv_ffn_forward(self, hidden, state)
 
     return rwkv_ffn_forward
 
