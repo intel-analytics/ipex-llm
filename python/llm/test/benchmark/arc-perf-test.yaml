@@ -22,6 +22,7 @@ warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
 in_out_pairs:
   - '32-32'
   - '1024-128'

@@ -37,9 +37,9 @@ except ImportError:
     rearrange = None
 
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
-    append_fp8_kv_cache, restore_fp8_kv_cache
-from bigdl.llm.transformers.models.utils import rotate_half, quantize_kv_cache
+from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
+    restore_fp8_kv_cache, use_quantize_kv_cache
+from bigdl.llm.transformers.models.utils import rotate_half
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
@@ -146,7 +146,7 @@ def qwen_attention_forward(
     else:
         causal_mask = None
 
-    if quantize_kv_cache(self.c_attn, hidden_states):
+    if use_quantize_kv_cache(self.c_attn, hidden_states):
         query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
         # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
 
@@ -158,8 +158,7 @@ def qwen_attention_forward(
             if use_cache:
                 max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
                 k_cache, v_cache = init_fp8_kv_cache(
-                    query.size(0), self.num_heads, self.head_dim,
-                    0, max_cache_length,
+                    query.size(0), self.num_heads, kv_seq_len, self.head_dim,
                     device=query.device,
                 )
                 key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
@@ -168,17 +167,6 @@ def qwen_attention_forward(
             k_cache = k_cache.transpose(1, 2)
             v_cache = v_cache.transpose(1, 2)
             # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
-
-            if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
-                # allocate new
-                k_cache, v_cache = extend_fp8_kv_cache(
-                    k_cache, v_cache,
-                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                    device=query.device,
-                )
-                # empty cache to reduce gpu memory
-                if v_cache.device.type == 'xpu':
-                    torch.xpu.empty_cache()
 
             key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
 
@@ -192,8 +180,7 @@ def qwen_attention_forward(
             cache_k, cache_v = layer_past[0], layer_past[1]
             cache_k = cache_k.transpose(1, 2)
             cache_v = cache_v.transpose(1, 2)
-            kv_seq_len += cache_k.shape[2]
-            if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+            if cache_k.stride(1) < kv_seq_len * cache_k.size(3):
                 # allocate new
                 new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                            self.num_heads,
