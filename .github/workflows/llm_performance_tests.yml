@@ -273,16 +273,17 @@ jobs:
       - uses: actions/checkout@v3
 
       # TODO: Put the bigdl-llm related install process for win gpu into a action function
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Prepare for install bigdl-llm from source
-        shell: bash
-        run: |
-          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
-          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+      # Please uncomment it and commment the instead of from pypi for PR tests
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      # Please change to (install from source) instead of from pypi for PR tests
+      # - name: Prepare for install bigdl-llm from source
+      #   shell: bash
+      #   run: |
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+
       # - name: Install bigdl-llm and other related packages (install from source)
       #   shell: cmd
       #   run: |
