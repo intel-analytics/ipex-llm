@@ -972,14 +972,21 @@ def _optimize_post(model, lightweight_bmm=False):
         # rwkv v5
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward_wrapper
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward_wrapper
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_model_forward_wrapper
+        rwkv_attention_forward = rwkv_attention_forward_wrapper(module.RwkvSelfAttention.forward)
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+        rwkv_ffn_forward = rwkv_ffn_forward_wrapper(module.RwkvFeedForward.forward)
         convert_forward(model,
                         module.RwkvFeedForward,
                         rwkv_ffn_forward)
+        rwkv_model_forward = rwkv_model_forward_wrapper(module.Rwkv5Model.forward)
+        convert_forward(model,
+                        module.Rwkv5Model,
+                        rwkv_model_forward)
     elif model.config.model_type == "deci":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
