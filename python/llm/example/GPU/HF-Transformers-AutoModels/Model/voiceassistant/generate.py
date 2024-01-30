@@ -20,6 +20,8 @@ import time
 import argparse
 import numpy as np
 import inquirer
+
+# For Windows users, please remove `import sounddevice`
 import sounddevice
 
 from bigdl.llm.transformers import AutoModelForCausalLM
@@ -92,6 +94,8 @@ if __name__ == '__main__':
     whisper.config.forced_decoder_ids = None
     whisper = whisper.to('xpu')
     
+    # When running Llama models on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     llama_model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True, trust_remote_code=True, optimize_model=False, use_cache=True)
     llama_model = llama_model.to('xpu')
     tokenizer = LlamaTokenizer.from_pretrained(llama_model_path)

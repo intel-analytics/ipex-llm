@@ -17,11 +17,13 @@
 
 import unittest
 import os
-import pytest
+import tempfile
 import time
 import torch
+import pytest
+
 from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, LlamaTokenizer
 
 class TestTransformersAPI(unittest.TestCase):
 
@@ -108,6 +110,61 @@ class TestTransformersAPI(unittest.TestCase):
         print(f'Inference time: {end-st} s')
         res = 'Paris' in output_str        
         self.assertTrue(res)
+
+@pytest.mark.parametrize('prompt, answer', [
+    ('What is the capital of France?\n\n', 'Paris')
+    ])
+@pytest.mark.parametrize('Model, Tokenizer, model_path',[
+    (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')),
+    ])
+def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
+    tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
+    model = Model.from_pretrained(model_path,
+                                  load_in_4bit=True,
+                                  optimize_model=True,
+                                  trust_remote_code=True)
+    
+    with tempfile.TemporaryDirectory() as tempdir:
+        model.save_low_bit(tempdir)
+        loaded_model = Model.load_low_bit(tempdir,
+                                          optimize_model=True,
+                                          trust_remote_code=True)
+
+        with torch.inference_mode():
+            input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            output = loaded_model.generate(input_ids, max_new_tokens=32)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+
+            assert answer in output_str
+
+prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
+
+@pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
+    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH'), prompt),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('BLOOM_ORIGIN_PATH'), prompt),
+    (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH'), prompt),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_REPLIT_CODE_PATH'), prompt)
+])
+    
+def test_optimize_model(Model, Tokenizer, model_path, prompt):
+    tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
+
+    model = Model.from_pretrained(model_path,
+                                load_in_4bit=True,
+                                optimize_model=False,
+                                trust_remote_code=True)
+    logits_base_model = (model(input_ids)).logits
+
+    model = Model.from_pretrained(model_path,
+                                load_in_4bit=True,
+                                optimize_model=True,
+                                trust_remote_code=True)
+    logits_optimized_model = (model(input_ids)).logits
+    diff = abs(logits_base_model - logits_optimized_model).flatten()
+
+    assert any(diff) is False
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
