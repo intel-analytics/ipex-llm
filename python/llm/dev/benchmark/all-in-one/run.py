@@ -415,8 +415,6 @@ def run_transformer_int4_gpu(repo_id,
             header = ["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"]
             csv_data.append(header)
 
-    arc_perf_test_counter = 0
-
     result = {}
     with torch.inference_mode():
         for in_out in in_out_pairs:
@@ -453,8 +451,7 @@ def run_transformer_int4_gpu(repo_id,
                 input_output_tokens = in_out
                 actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
                 peak_mem = result[in_out][-1][5]
-                csv_data.append([arc_perf_test_counter, repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
-                arc_perf_test_counter += 1
+                csv_data.append(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
 
             with open(csv_name, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
