@@ -74,6 +74,29 @@ def _set_optimized_model_for_generation(
     )
     return model
 
+def _ipex_optimize_rmsnorm(_model):
+    import transformers
+    supported_classes = [
+        transformers.models.llama.modeling_llama.LlamaRMSNorm,
+    ]
+    if _model.config.architectures[0] == "BaichuanForCausalLM":
+        supported_classes.append(type(_model.model.layers[0].input_layernorm))
+    if (
+        _model.config.architectures[0] == "ChatGLMModel"
+        and _model.config.rmsnorm
+    ):
+        supported_classes.append(
+            type(_model.transformer.encoder.layers[0].input_layernorm)
+        )
+    for supported_class in supported_classes:
+        lowering_class_cpu(
+            _model,
+            supported_class,
+            _IPEXRMSNorm,
+            _model.config,
+            tpp=False,
+            woq=False,
+        )
 
 def _ipex_optimize_decoder(model, decoder_layer):
     from intel_extension_for_pytorch.transformers.models.reference.modules.decoder import (
