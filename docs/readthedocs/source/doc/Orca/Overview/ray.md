@@ -14,7 +14,7 @@ _**Note:** BigDL has been tested on Ray 1.9.2 and you are highly recommended to 
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
 When installing bigdl-orca with pip, you can specify the extras key `[ray]` to install the additional dependencies
-for running Ray (i.e. `ray[default]==1.9.2`, `aiohttp==3.9.2`, `async-timeout==4.0.1`, `aioredis==1.3.1`, `hiredis==2.0.0`, `prometheus-client==0.11.0`, `psutil`,  `setproctitle`):
+for running Ray (i.e. `ray[default]==1.9.2`, `aiohttp==3.9.0`, `async-timeout==4.0.1`, `aioredis==1.3.1`, `hiredis==2.0.0`, `prometheus-client==0.11.0`, `psutil`,  `setproctitle`):
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
