@@ -47,6 +47,8 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     print("Creating model...")
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True).eval()
     # Convert the model to xpu
