@@ -118,42 +118,101 @@ def rwkv_linear_attention_xpu(
     return out
 
 
-def rwkv_attention_forward_wrapper(origin_rwkv_attention_forward):
-    def rwkv_attention_forward(
-        self,
-        hidden: torch.Tensor,
-        state: List[torch.Tensor]=None,
-        use_cache: bool=False,
-        seq_mode: bool=True,
-    ):
-        if hidden.device.type == "xpu":
-            B = hidden.shape[0]
-            H = self.time_decay.shape[0]
-            S = hidden.shape[-1] // H
-            T = hidden.shape[1]
+def rwkv_linear_attention_cpu(
+    B,
+    H,
+    S,
+    T,
+    n_head,
+    hidden,
+    time_decay,
+    time_first,
+    receptance,
+    key,
+    value,
+    gate,
+    lxw,
+    lxb,
+    ow,
+    state,
+):
+    key = key.to(torch.float32).view(B, T, H, S).transpose(1, 2).transpose(-2, -1)
+    value = value.to(torch.float32).view(B, T, H, S).transpose(1, 2)
+    receptance = receptance.to(torch.float32).view(B, T, H, S).transpose(1, 2)
+    time_decay = torch.exp(-torch.exp(time_decay.float())).reshape(-1, 1, 1).reshape(n_head, -1, 1)
+    time_first = time_first.float().reshape(-1, 1, 1).reshape(n_head, -1, 1)
+    lxw = lxw.float()
+    lxb = lxb.float()
+    out = torch.zeros_like(key).reshape(B, T, H, S)
+    for t in range(T):
+        rt = receptance[:, :, t:t + 1, :]
+        kt = key[:, :, :, t:t + 1]
+        vt = value[:, :, t:t + 1, :]
+        at = kt @ vt
+        out[:, t] = (rt @ (time_first * at + state)).squeeze(2)
+        with torch.no_grad():
+            state = at + time_decay * state
 
-            receptance, key, value, gate, state = extract_key_value(self, hidden, state=state)
+    out = out.reshape(B * T, H * S)
+    out = F.group_norm(out, num_groups=H, weight=lxw, bias=lxb).reshape(B, T, H * S)
+    out = out.to(dtype=hidden.dtype) * gate
+    # out = out @ ow
+    out = ow(out)   # fix this
 
-            # `state`` will be updated inplaced when running on GPU
-            rwkv = rwkv_linear_attention_xpu(
-                B, H, S, T,
-                hidden,
-                self.time_decay,
-                self.time_faaaa,
-                receptance,
-                key,
-                value,
-                gate,
-                self.ln_x.weight,
-                self.ln_x.bias,
-                self.output,
-                state=state[1][self.layer_id],
-            )
-            return rwkv, state
-        else:
-            return origin_rwkv_attention_forward(self, hidden, state, use_cache, seq_mode)
+    return out, state
 
-    return rwkv_attention_forward
+
+def rwkv_attention_forward(
+    self,
+    hidden: torch.Tensor,
+    state: List[torch.Tensor]=None,
+    use_cache: bool=False,
+    seq_mode: bool=True,
+):
+    B = hidden.shape[0]
+    H = self.time_decay.shape[0]
+    S = hidden.shape[-1] // H
+    T = hidden.shape[1]
+
+    if hidden.device.type == "xpu":
+        receptance, key, value, gate, state = extract_key_value(self, hidden, state)
+        # `state`` will be updated inplaced when running on GPU
+        rwkv = rwkv_linear_attention_xpu(
+            B, H, S, T,
+            hidden,
+            self.time_decay,
+            self.time_faaaa,
+            receptance,
+            key,
+            value,
+            gate,
+            self.ln_x.weight,
+            self.ln_x.bias,
+            self.output,
+            state=state[1][self.layer_id],
+        )
+    else:
+        receptance, key, value, gate, state = self.extract_key_value(B, H, S, T, hidden, state)
+        layer_state = state[1][:, :, :, :, self.layer_id] if state is not None else None
+        rwkv, layer_state = rwkv_linear_attention_cpu(
+            B, H, S, T,
+            self.num_attention_heads,
+            hidden,
+            self.time_decay,
+            self.time_faaaa,
+            receptance,
+            key,
+            value,
+            gate,
+            self.ln_x.weight,
+            self.ln_x.bias,
+            self.output,
+            state=layer_state,
+        )
+        if layer_state is not None:
+            state[1][:, :, :, :, self.layer_id] = layer_state
+
+    return rwkv, state
 
 
 def rwkv_ffn_forward_wrapper(origin_rwkv_ffn_forward):
