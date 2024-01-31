@@ -13,6 +13,7 @@ repo_id:
   - 'mosaicml/mpt-7b-chat'
   - 'liuhaotian/llava-v1.5-7b'
   - 'RWKV/rwkv-4-world-7b'
+  - 'RWKV/rwkv-5-world-7b'
 local_model_hub: 'path to your local model hub'
 warm_up: 3
 num_trials: 5
