@@ -638,7 +638,7 @@ def llama_attention_forward_4_36(
             "Please make sure use `attention_mask` instead.`"
         )
 
-    bsz, q_len, _ = hidden_states.size()
+    bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
