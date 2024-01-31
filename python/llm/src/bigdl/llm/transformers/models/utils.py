@@ -186,7 +186,7 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
     import linear_q4_0
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
-    if model_family in ["qwen"]:
+    if model_family in ["qwen", "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
         return q_embed, k_embed
     else:
