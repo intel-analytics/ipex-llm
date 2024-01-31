@@ -114,6 +114,11 @@ jobs:
           # change csv name
           sed -i 's/test1/test2/g' run.py
           python run.py
+
+      - name: Concat csv and generate html
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/concat_csv.py
           for file in *.csv; do
               if [[ $file != *test* ]]; then
@@ -123,7 +128,11 @@ jobs:
           python -m pip install pandas==1.5.3
           cd ../../../test/benchmark
           python csv_to_html.py -f $CSV_SAVE_PATH
-          cd ../../dev/benchmark/all-in-one/
+
+      - name: Check and upload results to ftp
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
