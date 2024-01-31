@@ -579,7 +579,7 @@ def _optimize_ipex(model):
     )
 
     AttentionMaskConverter._make_causal_mask = _make_causal_mask
-    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35) # noqa
+    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35)
     model = model_convert_reference(model)
 
     _ipex_optimize_rmsnorm(model)
