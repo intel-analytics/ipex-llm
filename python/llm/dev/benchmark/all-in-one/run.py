@@ -406,10 +406,6 @@ def run_transformer_int4_gpu(repo_id,
 
     model = BenchmarkWrapper(model)
 
-    with open(csv_name, mode='a', newline='') as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"])
-
     result = {}
     with torch.inference_mode():
         for in_out in in_out_pairs:
@@ -447,6 +443,9 @@ def run_transformer_int4_gpu(repo_id,
                 peak_mem = result[in_out][-1][5]
                 with open(csv_name, mode='a', newline='') as file:
                     csv_writer = csv.writer(file)
+                    file.seek(0, os.SEEK_END)
+                    if file.tell() == 0:
+                        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"])
                     csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
 
     model.to('cpu')
