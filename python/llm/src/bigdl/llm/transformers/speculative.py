@@ -80,7 +80,7 @@ def generate(
 GenerationMixin.generate = generate
 
 
-def sample(logits, return_probs: bool=False):
+def greedy(logits, return_probs: bool=False):
     if return_probs:
         all_probs = logits.softmax(-1)
         probs, output_ids = torch.max(all_probs, dim=-1)
@@ -421,7 +421,7 @@ def speculative_generate(self,
                                                         top_p=generation_config.top_p,
                                                         temperature=generation_config.temperature)
             else:
-                output_ids = sample(logits)
+                output_ids = greedy(logits)
             generate_ids[:, step] = output_ids
             current_input_ids = output_ids
             past_key_values = output['past_key_values']
@@ -492,7 +492,7 @@ def speculative_generate(self,
                         temperature=generation_config.temperature)
                     draft_prob_list.append(draft_probs)
                 else:
-                    draft_output_ids, draft_output_probs = sample(
+                    draft_output_ids, draft_output_probs = greedy(
                         logits,
                         return_probs=True)
                 draft_generate_ids[:, step_draft+1] = draft_output_ids
@@ -574,7 +574,7 @@ def speculative_generate(self,
                                                top_p=generation_config.top_p,
                                                temperature=generation_config.temperature)
             else:
-                output_ids = sample(logits)
+                output_ids = greedy(logits)
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
             toc = time.time()
@@ -602,15 +602,12 @@ def speculative_generate(self,
                     output_ids = torch.cat([draft_tokens, last_token])
                 else:
                     max_matched = rejected_locations[0].item()
-                    # if True:
-                    #     print(f"{accept_draft_prob.shape}")
-                    #     print(f"===== accept_length: {max_matched}\np: {p}, \nq: {q}, \naccept_draft_prob: {accept_draft_prob}\nrand_probs: {random_probs}")
                     p = draft_probs[max_matched]
                     q = target_probs[max_matched]
-                    new = q - p
-                    new = torch.where(new > 0, new, 0.0)
-                    new = new / new.sum()
-                    next_token = multinomial_sample_one_no_sync(new)
+                    resample_prob = q - p
+                    resample_prob = torch.where(resample_prob > 0, resample_prob, 0.0)
+                    resample_prob = resample_prob / resample_prob.sum()
+                    next_token = multinomial_sample_one_no_sync(resample_prob)
                     output_ids = torch.cat([draft_tokens[:max_matched], next_token])
                     max_matched += 1
                 output_ids = output_ids.unsqueeze(0)
