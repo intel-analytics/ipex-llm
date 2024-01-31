@@ -193,6 +193,7 @@ def _make_causal_mask(
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
 
+
 def _llama_model_forward_4_35(
     self,
     input_ids: torch.LongTensor = None,
