@@ -265,7 +265,7 @@ def rwkv_model_forward_wrapper(origin_rwkv_model_forward):
         return_dict: Optional[bool] = None,
     ):
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        # change `state`` layout and put `num_hidden_layers` to the highest dim
+        # change `state` layout and put `num_hidden_layers` to the highest dim
         if input_ids.device.type == "xpu" and use_cache and state is None:
             state = []
             batch_size = input_ids.size(0)
