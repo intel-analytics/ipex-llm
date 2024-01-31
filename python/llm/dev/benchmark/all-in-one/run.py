@@ -406,14 +406,9 @@ def run_transformer_int4_gpu(repo_id,
 
     model = BenchmarkWrapper(model)
 
-    csv_data = []
-    try:
-        with open(csv_name, 'r') as csvfile:
-            csv_reader = csv.reader(csvfile)
-            csv_data = [row for row in csv_reader]
-    except FileNotFoundError:
-            header = ["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"]
-            csv_data.append(header)
+    with open(csv_name, mode='a', newline='') as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"])
 
     result = {}
     with torch.inference_mode():
@@ -444,18 +439,15 @@ def run_transformer_int4_gpu(repo_id,
             thread.join()
 
             if result[in_out]:
-                new_row = []
                 first_token_latency = round(np.mean(result[in_out], axis=0)[0]*1000.0, 2)
                 rest_token_latency = round(np.mean(result[in_out], axis=0)[1]*1000.0, 2)
                 encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
                 input_output_tokens = in_out
                 actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
                 peak_mem = result[in_out][-1][5]
-                csv_data.append(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
-
-            with open(csv_name, 'w', newline='') as csvfile:
-                csv_writer = csv.writer(csvfile)
-                csv_writer.writerows(csv_data)
+                with open(csv_name, mode='a', newline='') as file:
+                    csv_writer = csv.writer(file)
+                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
 
     model.to('cpu')
     torch.xpu.synchronize()
