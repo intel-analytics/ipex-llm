@@ -91,36 +91,29 @@ def greedy(logits, return_probs: bool=False):
 
 
 def deepmind_sample(logits, return_probs: bool=False, top_k: int=50, top_p: float=0.7, temperature: float=0.7):
-    assert top_k != 1 and top_p != 0.0 and temperature != 0.0
-    prob_list = None
+    prob_list = logits_to_probs(logits, top_k=top_k, top_p=top_p, temperature=temperature)
+    output_ids = multinomial_sample_one_no_sync(prob_list)
     if return_probs:
-
         all_probs = logits.softmax(-1)
-        _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature, top_k=top_k, top_p=top_p)
-        prob_list = _logits.softmax(-1)
-        output_ids = torch.multinomial(prob_list, num_samples=1).view(logits.shape[:-1])
         probs = torch.gather(all_probs, -1, output_ids.unsqueeze(-1)).squeeze(-1)
-            
         return output_ids, prob_list, probs
     else:
-        _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature, top_k=top_k, top_p=top_p)
-        prob_list = _logits.softmax(-1)
-        output_ids = torch.multinomial(prob_list, num_samples=1).view(logits.shape[:-1])
-            
         return output_ids, prob_list
 
 
 def logits_to_probs(logits, top_k: int=50, top_p: float=0.7, temperature: float=0.7):
-    assert top_k != 1 and top_p != 0.0 and temperature != 0.0
-    _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature, top_k=top_k, top_p=top_p)
+    invalidInputError(top_k != 1 and top_p != 0.0 and temperature != 0.0,
+                      "top_k != 1 and top_p != 0.0 and temperature != 0.0 if do_sample=True")
+    _logits = top_k_top_p_filtering(logits.view(-1, logits.size(-1)) / temperature,
+                                    top_k=top_k, top_p=top_p)
     prob_list = _logits.softmax(-1)
-            
+
     return prob_list
 
 
-def multinomial_sample_one_no_sync(probs_sort): # Does multinomial sampling without a cuda synchronization
+def multinomial_sample_one_no_sync(probs_sort):
     q = torch.empty_like(probs_sort).exponential_(1)
-    return torch.argmax(probs_sort / q, dim=-1, keepdim=True).to(dtype=torch.int)
+    return torch.argmax(probs_sort / q, dim=-1, keepdim=True).to(dtype=torch.int64)
 
 
 def clear_benchmarks(self):
@@ -361,8 +354,6 @@ def speculative_generate(self,
         **model_kwargs,
     )
 
-    print(f"top_k: {generation_config.top_k}, top_p={generation_config.top_p}, temperature={generation_config.temperature}")
-
     step = 0
     step_draft = 0
     step_verify = 0
@@ -503,7 +494,6 @@ def speculative_generate(self,
                 th_random = 1 if random_probs is None else random_probs[step_draft]
                 if (draft_output_probs.item() < th_stop_draft and th_random > 0.3) or \
                         step + step_draft + 2 >= max_new_tokens:
-                    # print(f"stop, {draft_output_probs}, th_stop_draft {th_stop_draft}, th_random {th_random}")
                     break
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
@@ -585,18 +575,17 @@ def speculative_generate(self,
 
             if generation_config.do_sample:
                 draft_tokens = drafted_input_ids[:, 1:].squeeze(0)
-                draft_probs = torch.stack(draft_prob_list).squeeze((1,2))
+                draft_probs = torch.stack(draft_prob_list).squeeze((1, 2))
 
                 # q: target prob, p: draft prob
                 # q >= p: always accept draft token
                 # q < p: q/p prob to accept draft token
                 p = draft_probs[torch.arange(0, drafted_n_tokens), draft_tokens]
                 q = target_probs[torch.arange(0, drafted_n_tokens), draft_tokens]
-                accept_draft_prob = torch.minimum(torch.ones(()), q[:drafted_n_tokens]/ p)
-                # random_probs = torch.rand_like(accept_draft_prob)
+                accept_draft_prob = torch.minimum(torch.ones(()), q[:drafted_n_tokens] / p)
                 rejected_locations = (random_probs[:drafted_n_tokens] > accept_draft_prob).nonzero()
 
-                if rejected_locations.shape[0] == 0: # All draft tokens have been accepted
+                if rejected_locations.shape[0] == 0:    # All draft tokens have been accepted
                     max_matched = drafted_n_tokens + 1
                     last_token = multinomial_sample_one_no_sync(target_probs[-1])
                     output_ids = torch.cat([draft_tokens, last_token])
