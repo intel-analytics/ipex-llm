@@ -305,17 +305,20 @@ def speculative_generate(self,
     # 4. Define other model kwargs
     model_kwargs["output_attentions"] = generation_config.output_attentions
     model_kwargs["output_hidden_states"] = generation_config.output_hidden_states
-    # decoder-only models with inputs_embeds forwarding must use caching (otherwise we can't detect whether we are
-    # generating the first new token or not, and we only want to use the embeddings for the first new token)
+    # decoder-only models with inputs_embeds forwarding must use caching
+    # (otherwise we can't detect whether we are generating the first new token or not,
+    # and we only want to use the embeddings for the first new token)
     if not self.config.is_encoder_decoder and model_input_name == "inputs_embeds":
         model_kwargs["use_cache"] = True
     else:
         model_kwargs["use_cache"] = generation_config.use_cache
 
-    accepts_attention_mask = "attention_mask" in set(inspect.signature(self.forward).parameters.keys())
+    accepts_attention_mask = "attention_mask" in set(
+        inspect.signature(self.forward).parameters.keys())
     requires_attention_mask = "encoder_outputs" not in model_kwargs
 
-    if model_kwargs.get("attention_mask", None) is None and requires_attention_mask and accepts_attention_mask:
+    if model_kwargs.get("attention_mask", None) is None and \
+        requires_attention_mask and accepts_attention_mask:
         model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
             inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id
         )
@@ -509,7 +512,7 @@ def speculative_generate(self,
                 cur_attention_mask = None
             else:
                 cur_attention_mask = _update_attention_mask(attention_mask,
-                                                           drafted_input_ids.size(1) + step - 2)
+                                                            drafted_input_ids.size(1) + step - 2)
             if _enable_ipex and hasattr(self, "trace_graph"):
                 if self.config.model_type == "baichuan":
                     output = self.trace_graph(input_ids=drafted_input_ids,
