@@ -58,6 +58,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     /root/miniconda3/condabin/conda create -n bigdl-speculative-py39 -y python=3.9
 SHELL ["/root/miniconda3/condabin/conda", "run", "-n", "bigdl-speculative-py39", "/bin/bash", "-c"]
 RUN cd /llm && \
+    pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip install --pre --upgrade bigdl-llm[all] && \
     wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936d7a6740679987920367ae2e0cdb375b2e/scripts/compile_bundle.sh && \
     sed -i 's/VER_IPEX=main/VER_IPEX=0c63936d7a6740679987920367ae2e0cdb375b2e/g' "compile_bundle.sh" && \
