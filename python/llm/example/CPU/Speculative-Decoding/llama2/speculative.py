@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
-        inputs = tokenizer(prompt, return_tensors='pt', padding=True)
+        inputs = tokenizer(prompt, return_tensors='pt')
         input_ids = inputs.input_ids.to(model.device)
         actual_in_len = input_ids.shape[1]
         print("actual input_ids length:" + str(actual_in_len))
