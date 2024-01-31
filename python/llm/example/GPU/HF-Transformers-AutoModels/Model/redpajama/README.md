@@ -1,4 +1,4 @@
-# Redpajama
+# RedPajama
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on redpajama models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [redpajama/gptneox-7b-redpajama-bf16](https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat) as a reference redpajama model.
 
 ## 0. Requirements
