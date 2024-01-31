@@ -829,14 +829,29 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.internlm import internlm_attention_forward
-        convert_forward(model,
+        from bigdl.llm.transformers.models.internlm import internlm2_attention_forward
+        try:    
+            convert_forward(model,
+                        module.InternLM2Attention,
+                        internlm2_attention_forward
+                        )
+        except:
+            convert_forward(model,
                         module.InternLMAttention,
                         internlm_attention_forward
                         )
-        convert_forward(model,
+        
+        try:
+            convert_forward(model,
+                        module.InternLM2RMSNorm,
+                        llama_rms_norm_forward
+                        )
+        except:
+            convert_forward(model,
                         module.InternLMRMSNorm,
                         llama_rms_norm_forward
                         )
+        
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -896,6 +911,16 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralBLockSparseTop2MLP,
                         mixtral_mlp_forward)
+    elif model.config.model_type == "phi-msft":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.phixtral import phixtral_moeblock_forward,phixtral_mlp_forward
+        convert_forward(model,
+                        module.MoE,
+                        phixtral_moeblock_forward)
+        convert_forward(model,
+                        module.MLP,
+                        phixtral_mlp_forward)
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
                 model.config.architectures[0] == "MixtralForCausalLM":

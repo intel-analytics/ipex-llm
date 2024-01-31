@@ -176,7 +176,11 @@ def run_transformer_int4(repo_id,
                                                      use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+        if repo_id in ["mlabonne/phixtral-4x2_8"]:
+            model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                                     ).eval()
+        else:
+            model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
@@ -310,9 +314,9 @@ def run_optimize_model(repo_id,
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True).eval()
+        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,trust_remote_code=True).eval()
         model = optimize_model(model, low_bit=low_bit)
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        tokenizer = AutoTokenizer.from_pretrained(model_path,trust_remote_code=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
 
@@ -392,6 +396,9 @@ def run_transformer_int4_gpu(repo_id,
                                                         trust_remote_code=True, use_cache=True, torch_dtype=torch.bfloat16).eval()
             # Convert the low-bit model back to fp32 for performance considerations.
             model = model.float()
+        elif repo_id == "mlabonne/phixtral-4x2_8":
+            model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                        trust_remote_code=True).eval()
         else:
             model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                         trust_remote_code=True, use_cache=True).eval()
@@ -468,7 +475,11 @@ def run_optimize_model_gpu(repo_id,
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
+        if repo_id == "mlabonne/phixtral-4x2_8":
+            model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
+                                                     trust_remote_code=True).eval()
+        else:
+            model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
                                                      trust_remote_code=True, use_cache=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
