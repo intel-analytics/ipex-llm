@@ -262,12 +262,13 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                 new_module_name = '_'.join([layer, cur_module])
                             elif len(module_name) == 1:
                                 new_module_name = module_name[0]
-                            if new_module_name in imatrix_data:
+                            if imatrix_data is not None and new_module_name in imatrix_data:
                                 cur_imatrix = imatrix_data[new_module_name]
                             else:
                                 cur_imatrix = None
                         else:
                             cur_imatrix = None
+                        # TODO: how to handle qtype = iq2 but imatrix is None ?
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
