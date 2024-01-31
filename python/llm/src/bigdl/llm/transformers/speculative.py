@@ -318,7 +318,7 @@ def speculative_generate(self,
     requires_attention_mask = "encoder_outputs" not in model_kwargs
 
     if model_kwargs.get("attention_mask", None) is None and \
-        requires_attention_mask and accepts_attention_mask:
+            requires_attention_mask and accepts_attention_mask:
         model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
             inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id
         )
