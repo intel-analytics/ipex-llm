@@ -575,10 +575,11 @@ def _optimize_ipex(model):
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
         _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
-        _ipex_optimize_rmsnorm
+        _ipex_optimize_rmsnorm, _llama_model_forward_4_35
     )
 
     AttentionMaskConverter._make_causal_mask = _make_causal_mask
+    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, _llama_model_forward_4_35) # noqa
     model = model_convert_reference(model)
 
     _ipex_optimize_rmsnorm(model)
