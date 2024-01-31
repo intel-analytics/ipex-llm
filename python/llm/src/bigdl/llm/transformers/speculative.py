@@ -90,7 +90,8 @@ def greedy(logits, return_probs: bool=False):
         return output_ids
 
 
-def deepmind_sample(logits, return_probs: bool=False, top_k: int=50, top_p: float=0.7, temperature: float=0.7):
+def deepmind_sample(logits, return_probs: bool=False, top_k: int=50,
+                    top_p: float=0.7, temperature: float=0.7):
     prob_list = logits_to_probs(logits, top_k=top_k, top_p=top_p, temperature=temperature)
     output_ids = multinomial_sample_one_no_sync(prob_list)
     if return_probs:
