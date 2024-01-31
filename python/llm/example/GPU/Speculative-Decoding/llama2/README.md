@@ -1,5 +1,5 @@
-# Llama2
-In this directory, you will find examples on how you could apply BigDL-LLM speculative decoding optimizations on Llama2 models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
+# LLaMA2
+In this directory, you will find examples on how you could run LLaMA2 FP16 infernece with self-speculative decoding using BigDL-LLM on [Intel GPUs](../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -20,12 +20,6 @@ source /opt/intel/oneapi/setvars.sh
 ```
 
 ### 3. Run
-
-For optimal performance on Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, it is recommended to set several environment variables.
-```bash
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-```
 
 For optimal performance on Intel Data Center GPU Max Series, it is recommended to set several environment variables.
 ```bash

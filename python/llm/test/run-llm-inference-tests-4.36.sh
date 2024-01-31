@@ -11,15 +11,14 @@ python -m pip install transformers==4.36.2
 echo "# Start testing inference"
 start=$(date "+%s")
 
-#python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k "not test_transformers"
-python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_call_models.py -v
-python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_optimize_model.py::test_optimize_model[llama] -v
+python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k "not test_transformers" -v
 
 if [ -z "$THREAD_NUM" ]; then
   THREAD_NUM=2
 fi
 export OMP_NUM_THREADS=$THREAD_NUM
-#python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k test_transformers -v
+python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k test_transformers -v \
+      --ignore=${LLM_INFERENCE_TEST_DIR}/test_optimize_mistral.py
 
 python -m pip install transformers==4.31.0
 

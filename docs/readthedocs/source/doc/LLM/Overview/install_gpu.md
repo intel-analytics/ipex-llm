@@ -124,11 +124,11 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   conda install libuv
   ```
 
-* Make sure you have configured oneAPI environment variables in your command prompt through
+* Make sure you have configured oneAPI environment variables in your Anaconda Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  Please note that you need to set these environment variables again once you have a new command prompt window.
+  Please note that you need to set these environment variables again once you have a new Anaconda Prompt window.
 
 ## Linux
 

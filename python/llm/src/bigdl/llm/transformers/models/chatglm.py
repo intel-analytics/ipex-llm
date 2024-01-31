@@ -66,7 +66,7 @@ def attention_fn(
         cache_k = cache_k.permute(1, 2, 0, 3)
         cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+        if cache_k.stride()[1] < (past_length + cur_length) * cache_k.size(3):
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        self.num_attention_heads_per_partition,

@@ -44,7 +44,7 @@ def main():
     additional_model_kwargs = parse_kwargs(args.model_kwargs)
     summary = {}
     for precision in args.precisions:
-        model_kwargs = additional_model_kwargs
+        model_kwargs = additional_model_kwargs.copy()
         if precision in ggml_tensor_qtype.keys():
             model_kwargs['load_in_low_bit'] = precision
         else:
