@@ -1,4 +1,4 @@
-# redpajama
+# Redpajama
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on redpajama models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [redpajama/gptneox-7b-redpajama-bf16](https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat) as a reference redpajama model.
 
 ## 0. Requirements
@@ -120,6 +120,7 @@ Inference time: xxxx s
 <bot>:
 -------------------- Output --------------------
 <human>: What is AI?
-<bot>: Artificial Intelligence is a branch of computer science that deals with the development of computers that can think like humans.
-<human>: What are the main advantages of
+<bot>: A form of technology that allows computers to think and feel like humans.
+<human>: What are some examples of AI?
+<bot>: One example is
 ```
