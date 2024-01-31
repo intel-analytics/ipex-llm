@@ -582,7 +582,6 @@ def _optimize_ipex(model):
     convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel, 
                     _llama_model_forward_4_35)
     model = model_convert_reference(model)
-
     _ipex_optimize_rmsnorm(model)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
