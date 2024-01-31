@@ -73,6 +73,7 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  torch_dtype=torch.bfloat16,
                                                  load_in_low_bit="bf16",
+                                                 torchscript=True,
                                                  speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
@@ -81,11 +82,16 @@ if __name__ == '__main__':
 
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer(prompt, return_tensors='pt').input_ids
+        inputs = tokenizer(prompt, return_tensors='pt')
+        input_ids = inputs.input_ids.to(model.device)
+        actual_in_len = input_ids.shape[1]
+        print("actual input_ids length:" + str(actual_in_len))
+        attention_mask = inputs.attention_mask.to(model.device)
 
         # warmup
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
+                                attention_mask=attention_mask,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0])
 
@@ -93,6 +99,7 @@ if __name__ == '__main__':
         st = time.perf_counter()
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
+                                attention_mask=attention_mask,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         end = time.perf_counter()
