@@ -86,5 +86,3 @@ if __name__ == '__main__':
         print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
-        
-
