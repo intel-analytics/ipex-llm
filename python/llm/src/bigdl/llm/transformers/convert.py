@@ -708,6 +708,7 @@ def _optimize_post(model, lightweight_bmm=False):
                             )
     elif "gptj" in model.config.model_type:
         # dolly-v1-6b
+        print("---------------------gptj convert")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.gptj import gptj_attention_forward
@@ -715,6 +716,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.GPTJAttention,
                         gptj_attention_forward)
     elif "bloom" in model.config.model_type:
+        print("---------------------bloom convert")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.bloom import bloom_attention_forward
