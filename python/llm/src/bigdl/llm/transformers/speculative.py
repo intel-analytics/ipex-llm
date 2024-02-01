@@ -468,7 +468,7 @@ def speculative_generate(self,
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                     forward_args["position_ids"] = position_ids
                 elif self.config.model_type == "gptj":
-                    past_length = past_key_values[0][0].size(-3)
+                    past_length = draft_past_key_values[0][0].size(-3)
                     position_ids = torch.Tensor([[past_length]]).long().to(self.device)
                     forward_args["position_ids"] = position_ids
                 draft_output = draft_model(**forward_args)
