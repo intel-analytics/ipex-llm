@@ -37,30 +37,33 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
+  setup-python-version:
+    runs-on: [self-hosted, llm, ubuntu-20.04-lts]
+    outputs:
+      python-version: ${{ steps.setup-python-version.outputs.python-version }}
+    steps:
+      - name: setup-python-version
+        id: setup-python-version
+        run: |
+          if ${{ github.event_name == 'pull_request' }}; then
+            python-version='[3.9]'
+          else
+            python-version='[3.9, 3.10, 3.11]'
+          fi
+          list=$(echo ${python-version} | jq -c)
+          echo "::set-output name=python-version::${list}"
   llm-unit-test:
-    needs: llm-cpp-build
+    needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
       matrix:
+        os: [windows, ubuntu-20.04-lts]
+        python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
         include:
           - os: windows
             instruction: AVX-VNNI-UT
-            python-version: "3.9"
           - os: ubuntu-20.04-lts
             instruction: avx512
-            python-version: "3.9"
-          - os: windows
-            instruction: AVX-VNNI-UT
-            python-version: "3.10"
-          - os: ubuntu-20.04-lts
-            instruction: avx512
-            python-version: "3.10"
-          - os: windows
-            instruction: AVX-VNNI-UT
-            python-version: "3.11"
-          - os: ubuntu-20.04-lts
-            instruction: avx512
-            python-version: "3.11"
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       THREAD_NUM: 24
