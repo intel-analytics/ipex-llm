@@ -470,7 +470,7 @@ class LowBitLinear(nn.Linear):
             try:
                 import intel_extension_for_pytorch
                 import linear_q4_0
-                from bigdl.llm.utils.xmx_checker import use_xmx
+                from bigdl.llm.transformers.models.utils import use_xmx
             except ModuleNotFoundError:
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe` first.")
@@ -575,7 +575,8 @@ class FP16Linear(nn.Linear):
                     self.weight_type = 2
                 return torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
         else:
-            if self.weight_type != 3:
+            if self.in_len == 4096 and self.weight_type != 3 or \
+                    self.in_len == 11008 and self.weight_type != 1:
                 # convert weight first to use esimd fp16 kernel
                 self.convert_weight_for_esimd_kernel()
             # esimd fp16 kernel for inference
@@ -591,14 +592,17 @@ class FP16Linear(nn.Linear):
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe_esimd` first.")
 
-            if x_2d.shape[0] > 1:
-                # first token or batch size > 1, re-convert weight
-                original_weight = self.weight.data.transpose(1, 2)
-                original_weight = original_weight.reshape(self.out_len, self.in_len)
-                result = F.linear(x_2d, original_weight.contiguous())
-                del original_weight
+            if x_2d.shape[0] > 8:
+                # first token or batch size > 8, re-convert weight
+                if self.weight_type == 3:
+                    original_weight = self.weight.data.transpose(1, 2)
+                    original_weight = original_weight.reshape(self.out_len, self.in_len)
+                    result = F.linear(x_2d, original_weight.contiguous())
+                    del original_weight
+                else:
+                    result = F.linear(x_2d, self.weight)
             else:
-                # rest token, use esimd optimization
+                # batch size <= 8, use esimd optimization
                 result = linear_fp16_esimd.forward(x_2d, self.weight.data)
 
             new_shape = x_shape[:-1] + (self.out_len,)
@@ -632,9 +636,8 @@ class FP16Linear(nn.Linear):
                 trans_weight = self.weight.data.transpose(0, 1)
             else:
                 trans_weight = self.weight.data
-            trans_weight = trans_weight.data.reshape(m//8, 8, n)
-            trans_weight = trans_weight.transpose(1, 2).contiguous()
-            self.weight.data = trans_weight
+            self.weight.data = trans_weight.contiguous()
+            self.weight_type = 1
         elif self.in_len == 4096:
             if self.weight_type == 2:
                 trans_weight = self.weight.data.transpose(0, 1)
@@ -643,7 +646,7 @@ class FP16Linear(nn.Linear):
             trans_weight = trans_weight.data.reshape(m//16, 16, n)
             trans_weight = trans_weight.transpose(1, 2).contiguous()
             self.weight.data = trans_weight
-        self.weight_type = 3
+            self.weight_type = 3
 
 
 class BF16Linear(nn.Linear):
@@ -665,7 +668,16 @@ class BF16Linear(nn.Linear):
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
-        result = F.linear(x, self.weight)
-        if self.bias is not None:
-            result += self.bias
+        # If x.shape>3, F.linear will use bmm, accounting for performance degradation.
+        original_shape = x.shape
+        # Convert to 2D shape
+        if len(original_shape) > 2:
+            x = x.reshape(-1, original_shape[-1])
+
+        result = F.linear(x, self.weight, self.bias)
+
+        # Convert to original shape
+        if len(original_shape) > 2:
+            result = result.reshape(*original_shape[:-1], result.shape[-1])
+
         return result.to(x.dtype)

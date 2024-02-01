@@ -15,7 +15,6 @@
 #
 
 import torch
-import intel_extension_for_pytorch as ipex
 import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer, TextGenerationPipeline

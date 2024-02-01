@@ -4,6 +4,7 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 
 ## Verified Models
 
+### Auto-AWQ Backend
 - [Llama-2-7B-Chat-AWQ](https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ)
 - [CodeLlama-7B-AWQ](https://huggingface.co/TheBloke/CodeLlama-7B-AWQ)
 - [Mistral-7B-Instruct-v0.1-AWQ](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-AWQ)
@@ -14,6 +15,10 @@ This example shows how to directly run 4-bit AWQ models using BigDL-LLM on Intel
 - [Yi-6B-AWQ](https://huggingface.co/TheBloke/Yi-6B-AWQ)
 - [Yi-34B-AWQ](https://huggingface.co/TheBloke/Yi-34B-AWQ)
 - [Mixtral-8x7B-Instruct-v0.1-AWQ](https://huggingface.co/ybelkada/Mixtral-8x7B-Instruct-v0.1-AWQ)
+
+### llm-AWQ Backend
+
+- [vicuna-7b-1.5-awq](https://huggingface.co/ybelkada/vicuna-7b-1.5-awq)
 
 ## Requirements
 
@@ -30,7 +35,7 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.35.0
 pip install autoawq==0.1.8 --no-deps

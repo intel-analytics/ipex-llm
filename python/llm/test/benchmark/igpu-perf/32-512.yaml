@@ -7,16 +7,19 @@ repo_id:
   - 'BAAI/AquilaChat2-7B'
   - '01-ai/Yi-6B'
   - 'meta-llama/Llama-2-7b-chat-hf'
+  - 'meta-llama/Llama-2-13b-chat-hf'
   - 'WisdomShell/CodeShell-7B-Chat'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
   - 'liuhaotian/llava-v1.5-7b'
-  # - 'RWKV/rwkv-4-world-7b'
+  - 'RWKV/rwkv-4-world-7b'
+  - 'RWKV/rwkv-5-world-7b'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
 in_out_pairs:
   - '32-512'
 test_api:

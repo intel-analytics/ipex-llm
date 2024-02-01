@@ -38,7 +38,7 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "mixed_fp4": 17,     # Mixture of Formats Quantization 4 bits
                      "mixed_fp8": 18,     # Mixture of Formats Quantization 8 bits
                      "fp8_e5m2": 19,      # fp8 in e5m2 format
-                     "fp8": 15,           # fp8 in e4m3 format
+                     "fp8": 19,           # fp8 in e5m2 format
                      "bf16": 20}
 
 _llama_quantize_type = {"q4_0": 2,

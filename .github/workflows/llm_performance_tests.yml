@@ -8,7 +8,8 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+    - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
+  # please uncomment it for PR tests
   # pull_request:
   #   branches: [main]
   #   paths:
@@ -20,13 +21,12 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-cpp-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-cpp-build' || github.event.inputs.artifact == 'all' }}
-    uses: ./.github/workflows/llm-binary-build.yml
+  # llm-cpp-build: # please uncomment it for PR tests
+  #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }}
-    needs: llm-cpp-build
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -59,24 +59,38 @@ jobs:
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
 
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # please uncomment it and comment the "Install BigDL-LLM from Pypi" part for PR tests
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
-        with:
-          extra-dependency: "xpu"
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
+      #   with:
+      #     extra-dependency: "xpu_2.1"
+
+      - name: Install BigDL-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show bigdl-llm | grep $test_version_date; then
+            echo "Did not install bigdl-llm with excepted version $test_version_date"
+            exit 1
+          fi
 
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Test on xpu
+      - name: Test on xpu(transformers==4.31.0)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -86,12 +100,25 @@ jobs:
           # change csv name
           sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
+
+      - name: Test on xpu(transformers==4.34.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers for model Mistral-7B-v0.1
           python -m pip install transformers==4.34.0
-          cp ../../../test/benchmark/arc-perf-transformers-434.yaml ./config.yaml
+          cp python/llm/test/benchmark/arc-perf-transformers-434.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
           # change csv name
           sed -i 's/test1/test2/g' run.py
           python run.py
+
+      - name: Concat csv and generate html
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/concat_csv.py
           for file in *.csv; do
               if [[ $file != *test* ]]; then
@@ -101,7 +128,11 @@ jobs:
           python -m pip install pandas==1.5.3
           cd ../../../test/benchmark
           python csv_to_html.py -f $CSV_SAVE_PATH
-          cd ../../dev/benchmark/all-in-one/
+
+      - name: Check and upload results to ftp
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
@@ -110,8 +141,8 @@ jobs:
           fi
           
   llm-performance-test-on-spr:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }}
-    needs: llm-cpp-build
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -138,15 +169,29 @@ jobs:
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
 
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # please uncomment it and comment the "Install BigDL-LLM from Pypi" part for PR tests
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
+
+      - name: Install BigDL-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade bigdl-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show bigdl-llm | grep $test_version_date; then
+            echo "Did not install bigdl-llm with excepted version $test_version_date"
+            exit 1
+          fi
 
       - name: Test on cpu
         shell: bash
         run: |
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
           mv python/llm/test/benchmark/cpu-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
@@ -160,8 +205,8 @@ jobs:
           python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
 
   llm-performance-test-on-core:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }}
-    needs: llm-cpp-build
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -192,15 +237,29 @@ jobs:
           python -m pip install --upgrade omegaconf pandas
           python -m pip install --upgrade tiktoken einops transformers_stream_generator
     
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # please uncomment it and comment the "Install BigDL-LLM from Pypi" part for PR tests
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
+
+      - name: Install BigDL-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade bigdl-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show bigdl-llm | grep $test_version_date; then
+            echo "Did not install bigdl-llm with excepted version $test_version_date"
+            exit 1
+          fi
 
       - name: Test on core ${{ matrix.platform }}
         shell: bash
         run: |
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+
           mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
@@ -218,8 +277,8 @@ jobs:
           fi
 
   llm-performance-test-on-igpu:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }}
-    needs: llm-cpp-build
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -233,16 +292,46 @@ jobs:
       - uses: actions/checkout@v3
 
       # TODO: Put the bigdl-llm related install process for win gpu into a action function
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Prepare for install bigdl-llm from source
+      # Please uncomment it and commment the install from pypi for PR tests
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
+
+      # - name: Prepare for install bigdl-llm from source
+      #   shell: bash
+      #   run: |
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
+      #     sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+
+      # - name: Install bigdl-llm and other related packages (install from source)
+      #   shell: cmd
+      #   run: |
+      #     call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
+      #     call conda activate igpu-perf
+
+      #     pip install --upgrade pip
+      #     pip install --upgrade wheel
+      #     pip install --upgrade omegaconf pandas
+      #     pip install --upgrade tiktoken einops transformers_stream_generator
+
+      #     cd python\llm
+      #     python setup.py clean --all bdist_wheel --win
+      #     if not exist dist\bigdl_llm*.whl (exit /b 1)
+      #     for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
+
+      #     pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     pip list
+
+      #     call conda deactivate
+
+      - name: Determine desired bigdl-llm version
         shell: bash
         run: |
-          sed -i 's/"bigdl-core-xe-21==" + VERSION + "/"bigdl-core-xe-21/g' python/llm/setup.py
-          sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
 
-      - name: Install bigdl-llm and other related packages
+      - name: Install bigdl-llm and other related packages (install from pypi)
         shell: cmd
         run: |
           call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
@@ -253,13 +342,12 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          cd python\llm
-          python setup.py clean --all bdist_wheel --win
-          if not exist dist\bigdl_llm*.whl (exit /b 1)
-          for %%i in (dist\bigdl_llm*.whl) do set whl_name=%%i
-
-          pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-          if %ERRORLEVEL% neq 0 (exit /b 1)
+          pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip show bigdl-llm | findstr %TEST_VERSION_DATE%
+          if %ERRORLEVEL% neq 0 (
+            echo "Did not install bigdl-llm with excepted version %TEST_VERSION_DATE%"
+            exit /b 1
+          )
           pip list
 
           call conda deactivate
@@ -283,10 +371,10 @@ jobs:
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
           fi
-          cur_date=$(date +%Y-%m-%d)
-          echo "LOG_FILE=${cur_date}_output.txt" >> "$GITHUB_ENV"
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          echo "LOG_FILE=${date_for_test_version}_output.txt" >> "$GITHUB_ENV"
 
-          sed -i "s/date.today()/\"$cur_date\"/g" python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
       - name: Prepare igpu perf test (32-32)
         shell: bash
@@ -345,6 +433,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\32-32\
           cd ..\..\..\test\benchmark
@@ -414,6 +503,7 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\1024-128\
           cd ..\..\..\test\benchmark
@@ -423,16 +513,15 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test (32-256)
+      # 2048-256
+      - name: Prepare igpu perf test (2048-256)
         shell: bash
         run: |
-          # hide time info
-          sed -i 's/1024-128/32-256/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/1024-128/2048-256/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-256.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256.yaml
 
-      # 32-256
-      - name: Test on igpu (32-256)
+      - name: Test on igpu (2048-256)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -445,20 +534,20 @@ jobs:
           set TRANSFORMERS_OFFLINE=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32-256.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\2048-256.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\32-256\log\%LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\2048-256\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Mistral (32-256)
+      - name: Prepare igpu perf test for Mistral (2048-256)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-256_434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_434.yaml
 
-      - name: Test on igpu for Mistral (32-256)
+      - name: Test on igpu for Mistral (2048-256)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -469,26 +558,27 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32-256_434.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\2048-256_434.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\32-256\log\%LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\2048-256\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Concat csv and generate html (32-256)
+      - name: Concat csv and generate html (2048-256)
         shell: cmd
         run: |
           call conda activate html-gen
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
-          del /q *test*.csv
-          move *.csv %CSV_SAVE_PATH%\32-256\
-          cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%\32-256\
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move %CSV_SAVE_PATH%\32-256\*.html %CSV_SAVE_PATH%
+          del /q *test*.csv
+          move *.csv %CSV_SAVE_PATH%\2048-256\
+          cd ..\..\..\test\benchmark
+          python csv_to_html.py -f %CSV_SAVE_PATH%\2048-256\
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          move %CSV_SAVE_PATH%\2048-256\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 
@@ -497,7 +587,7 @@ jobs:
         shell: bash
         run: |
           # hide time info
-          sed -i 's/32-256/32-512/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/2048-256/32-512/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-512.yaml
 
@@ -552,80 +642,13 @@ jobs:
 
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
+          if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
           move *.csv %CSV_SAVE_PATH%\32-512\
           cd ..\..\..\test\benchmark
           python csv_to_html.py -f %CSV_SAVE_PATH%\32-512\
           if %ERRORLEVEL% neq 0 (exit /b 1)
           move %CSV_SAVE_PATH%\32-512\*.html %CSV_SAVE_PATH%
-
-          call conda deactivate
-
-      # 512-64
-      - name: Prepare igpu perf test (512-64)
-        shell: bash
-        run: |
-          sed -i 's/32-512/512-64/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test2/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/512-64.yaml
-
-      - name: Test on igpu (512-64)
-        shell: cmd
-        run: |
-          call conda activate igpu-perf
-          pip install transformers==4.31.0
-
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_CACHE_PERSISTENT=1
-          set BIGDL_LLM_XMX_DISABLED=1
-          REM for llava
-          set TRANSFORMERS_OFFLINE=1
-
-          cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\512-64.yaml config.yaml
-          set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\512-64\log\%LOG_FILE% 2>&1
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-
-          call conda deactivate
-
-      - name: Prepare igpu perf test for Mistral (512-64)
-        shell: bash
-        run: |
-          sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/512-64_434.yaml
-
-      - name: Test on igpu for Mistral (512-64)
-        shell: cmd
-        run: |
-          call conda activate igpu-perf
-          pip install transformers==4.34.0
-
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_CACHE_PERSISTENT=1
-          set BIGDL_LLM_XMX_DISABLED=1
-
-          cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\512-64_434.yaml config.yaml
-          set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\512-64\log\%LOG_FILE% 2>&1
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-
-          call conda deactivate
-
-      - name: Concat csv and generate html (512-64)
-        shell: cmd
-        run: |
-          call conda activate html-gen
-
-          cd python\llm\dev\benchmark\all-in-one
-          python ..\..\..\test\benchmark\concat_csv.py
-          del /q *test*.csv
-          move *.csv %CSV_SAVE_PATH%\512-64\
-          cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%\512-64\
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          move %CSV_SAVE_PATH%\512-64\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 

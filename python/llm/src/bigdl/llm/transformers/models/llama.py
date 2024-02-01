@@ -32,18 +32,21 @@
 # limitations under the License.
 
 import torch
+import warnings
 import importlib
 import torch.nn as nn
 from typing import Optional, Tuple, Union, List
 import math
 import os
 import torch.nn.functional as F
-from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
+    apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from bigdl.llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
@@ -88,6 +91,8 @@ def llama_rms_norm_forward(self, hidden_states):
                                             self.variance_epsilon)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
+            # We should copy this result to avoid <unk> by unknown reason on Arc GPUs.
+            result = result.clone()
             return result
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
@@ -99,20 +104,47 @@ def llama_rms_norm_forward(self, hidden_states):
 def llama_mlp_forward(
     self,
     x: torch.Tensor,
+    residual=None
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
+    bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
-    if x_2d.shape[0] == 1 and x.device.type == 'xpu' \
-            and qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    if mlp_fusion_check(x_2d, qtype, self.training):
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.down_proj(linear_q4_0.mlp_forward_q4_0_xpu(
+        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+            qtype
         ))
-    return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        if residual is not None:
+            return out + residual
+        else:
+            return out
+    elif fp16_fusion_check(self.gate_proj, x, self.training) and \
+            hidden_size == 4096 and bsz == 1:
+        hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.gate_proj.weight)
+        hidden_states = torch.ops.torch_ipex.mm_resmul(
+            x, self.up_proj.weight, hidden_states1
+        )
+        if residual is None:
+            hidden_states = torch.matmul(hidden_states, self.down_proj.weight)
+        else:
+            attn_output = torch.addmm(
+                residual.flatten(0, -2),
+                hidden_states.flatten(0, -2),
+                self.down_proj.weight,
+                beta=1,
+            )
+            hidden_states = attn_output.view(x.shape)
+        return hidden_states
+    else:
+        out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        if residual is not None:
+            return out + residual
+        else:
+            return out
 
 
 def should_use_fuse_rope(self, query_states, position_ids):
@@ -121,6 +153,65 @@ def should_use_fuse_rope(self, query_states, position_ids):
     use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
+
+
+# Only for xpu and training
+def should_use_fast_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and (self.training or query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
+    use_fuse_rope = use_fuse_rope and position_ids is not None
+    return use_fuse_rope
+
+
+def llama_decoder_forward(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: Optional[bool] = False,
+    use_cache: Optional[bool] = False,
+    **kwargs,
+) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
+    if "padding_mask" in kwargs:
+            warnings.warn(
+                "Passing `padding_mask` is deprecated and will be removed in v4.37."
+                "Please make sure use `attention_mask` instead.`"
+            )
+
+    residual = hidden_states
+
+    hidden_states = self.input_layernorm(hidden_states)
+
+    # Self Attention
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+        hidden_states=hidden_states,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_value=past_key_value,
+        output_attentions=output_attentions,
+        use_cache=use_cache,
+        **kwargs,
+    )
+    hidden_states = residual + hidden_states
+
+    # Fully Connected
+    residual = hidden_states
+    hidden_states = self.post_attention_layernorm(hidden_states)
+
+    # add residual into mlp
+    hidden_states = self.mlp(hidden_states, residual)
+
+    outputs = (hidden_states,)
+
+    if output_attentions:
+        outputs += (self_attn_weights,)
+
+    if use_cache:
+        outputs += (present_key_value,)
+
+    return outputs
 
 
 def llama_attention_forward_4_31(
@@ -134,25 +225,17 @@ def llama_attention_forward_4_31(
     padding_mask: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    bsz, q_len, _ = hidden_states.size()
+    bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(hidden_states)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
+    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    is_q4_0 = qtype == SYM_INT4
+    qtype_check = qtype in [SYM_INT4, FP8E5]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
 
     # single batch decoding fast path
@@ -197,9 +280,31 @@ def llama_attention_forward_4_31(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            query_states = self.q_proj(hidden_states)
-            key_states = self.k_proj(hidden_states)
-            value_states = self.v_proj(hidden_states)
+            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+                    hidden_size == 4096:
+                # only use mm_qkv_out on pvc for llama-7b
+                if not hasattr(self, "qkv_proj_weight"):
+                    self.qkv_proj_weight = torch.stack([self.q_proj.weight,
+                                                        self.k_proj.weight,
+                                                        self.v_proj.weight]).contiguous()
+                    self.q_proj.weight.data = self.qkv_proj_weight[0, :, :]
+                    self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
+                    self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
+                    torch.xpu.empty_cache()
+                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                         device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                torch.ops.torch_ipex.mm_qkv_out(
+                    hidden_states, self.qkv_proj_weight, None,
+                    query_states, key_states, value_states
+                )
+            else:
+                query_states = self.q_proj(hidden_states)
+                key_states = self.k_proj(hidden_states)
+                value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -258,6 +363,15 @@ def llama_attention_forward_4_31(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = use_flash_attention(query_states, key_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
+
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
                                                                      dtype=attention_dtype)
@@ -270,11 +384,11 @@ def llama_attention_forward_4_31(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, self.head_dim, query_states):
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states.contiguous(),
-                                                    value_states.contiguous())
+                                                    key_states,
+                                                    value_states)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -508,64 +622,236 @@ def llama_attention_selective_batching_forward_4_31(
     return attn_output.to(original_dtype), attn_weights, updated_past_key_values
 
 
-def use_flash_attention(query):
-    bsz, q_len, _ = query.size()
-    # check whether ipex flash attention can be used
-    if bsz > 1:
-        # only use flash attention for batch_size = 1 now
-        # as flash attention doesn't support attn_mask in ipex 2.1,
-        # so it will cause output error for padded batch input
-        return False
-    if q_len == 1:
-        # now only use flash attention for first token
-        # as it seems have no performance benifit for rest token now
-        return False
-    if query.device.type != "xpu":
-        # ipex flash attention only support for xpu
-        return False
-    ipex_version = get_ipex_version()
-    if ipex_version <= "2.0.110+xpu":
-        # ipex flash attention is supported from ipex 2.1
-        return False
-    if not torch.xpu.has_xetla():
-        # ipex flash attention is only supported for xetla
-        # may update this later
-        return False
-    if query.dtype not in [torch.float32, torch.float16]:
-        # only use flash attention for fp32/fp16 input
-        return False
-    return True
+def llama_attention_forward_4_36(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    **kwargs
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    if "padding_mask" in kwargs:
+        warnings.warn(
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. "
+            "Please make sure use `attention_mask` instead.`"
+        )
 
+    bsz, q_len, hidden_size = hidden_states.size()
+    device = hidden_states.device
+    # for flash attention
+    original_dtype = hidden_states.dtype
 
-def use_esimd_sdp(q_len, head_dim, query_states):
-    if head_dim != 128:
-        # esimd_sdp only support head_dim = 128 now
-        return False
-    elif q_len != 1:
-        # esimd_sdp only support rest token now
-        return False
-    elif query_states.device.type != "xpu":
-        # esimd_sdp only support GPU now
-        return False
-    elif query_states.dtype != torch.float16:
-        # esimd_sdp only has optimization for FP16 now
-        return False
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
+    qtype = getattr(self.q_proj, "qtype", None)
+    is_q4_0 = qtype == SYM_INT4
+    no_tp = not self.config.pretraining_tp > 1
+    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+                          enough_kv_room and bsz * q_len == 1)
+
+    # single batch decoding fast path
+    # forward_qkv takes will perform QKV projection, rotary position embedding
+    # and save the key/value states to cache, then return query states and the
+    # extended key/value cache
+    if decoding_fast_path:
+        hidden_states = hidden_states.view(1, -1)
+        cache_k = past_key_value.key_cache[self.layer_idx]
+        cache_v = past_key_value.value_cache[self.layer_idx]
+        kv_seq_len = cache_k.shape[-2]
+        import linear_q4_0
+        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
+                                                                         self.q_proj.weight,
+                                                                         self.k_proj.weight,
+                                                                         self.v_proj.weight,
+                                                                         position_ids,
+                                                                         cache_k, cache_v,
+                                                                         self.q_proj.weight.qtype,
+                                                                         kv_seq_len,
+                                                                         self.head_dim)
+        kv_seq_len += 1
+        # update past_key_value's seem_tokens and kv caches.
+        if self.layer_idx == 0:
+            past_key_value.seen_tokens = kv_seq_len
+        past_key_value.key_cache[self.layer_idx] = key_states
+        past_key_value.value_cache[self.layer_idx] = value_states
+
     else:
-        device_name = torch.xpu.get_device_name(query_states.device.index)
-        if device_name.startswith("Intel(R) Arc(TM) A") or \
-                device_name.startswith("Intel(R) Data Center GPU Flex"):
-            import linear_fp16_esimd
-            if hasattr(linear_fp16_esimd, "sdp_forward"):
-                return True
-            else:
-                return False
+        if self.config.pretraining_tp > 1:
+            key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
+                                 self.config.pretraining_tp)
+            query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
+                                                    // self.config.pretraining_tp, dim=0)
+            key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
+            value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
+
+            query_states = [F.linear(hidden_states, query_slices[i])
+                            for i in range(self.config.pretraining_tp)]
+            query_states = torch.cat(query_states, dim=-1)
+
+            key_states = [F.linear(hidden_states, key_slices[i])
+                          for i in range(self.config.pretraining_tp)]
+            key_states = torch.cat(key_states, dim=-1)
+
+            value_states = [F.linear(hidden_states, value_slices[i])
+                            for i in range(self.config.pretraining_tp)]
+            value_states = torch.cat(value_states, dim=-1)
         else:
-            return False
+            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+                    hidden_size == 4096:
+                # only use mm_qkv_out on pvc for llama-7b
+                if not hasattr(self, "qkv_proj_weight"):
+                    self.qkv_proj_weight = torch.stack([self.q_proj.weight,
+                                                        self.k_proj.weight,
+                                                        self.v_proj.weight]).contiguous()
+                    self.q_proj.weight.data = self.qkv_proj_weight[0, :, :]
+                    self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
+                    self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
+                    torch.xpu.empty_cache()
+                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                         device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
+                                           device=hidden_states.device)
+                torch.ops.torch_ipex.mm_qkv_out(
+                    hidden_states, self.qkv_proj_weight, None,
+                    query_states, key_states, value_states
+                )
+            else:
+                query_states = self.q_proj(hidden_states)
+                key_states = self.k_proj(hidden_states)
+                value_states = self.v_proj(hidden_states)
+
+        query_states = query_states.view(bsz, q_len,
+                                         self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            if self.layer_idx is None:
+                invalidInputError(False,
+                                  "The cache structure has changed since version v4.36. "
+                                  f"If you are using {self.__class__.__name__} for "
+                                  "auto-regressive decodingwith k/v caching, please make sure "
+                                  "to initialize the attention class with a layer index.")
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+
+        if use_fuse_rope:
+            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                         key_states,
+                                                                         position_ids,
+                                                                         "llama")
+        else:
+            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, position_ids, "llama")
+
+        if past_key_value is not None:
+            # update the number of seen tokens
+            if self.layer_idx == 0:
+                past_key_value.seen_tokens += key_states.shape[-2]
+
+            # reuse k, v, self_attention
+            # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
+            if len(past_key_value.key_cache) <= self.layer_idx:
+                past_key_value.key_cache.append(key_states)
+                past_key_value.value_cache.append(value_states)
+            else:
+                cache_k = past_key_value.key_cache[self.layer_idx]
+                cache_v = past_key_value.value_cache[self.layer_idx]
+
+                if not enough_kv_room:
+                    # allocate new
+                    new_c_k, new_c_v = extend_kv_cache(bsz,
+                                                       self.num_key_value_heads,  # Support GQA
+                                                       self.head_dim,
+                                                       cache_k.size(2),
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                       dtype=cache_k.dtype,
+                                                       device=device)
+
+                    new_c_k[:] = cache_k
+                    new_c_v[:] = cache_v
+                    cache_k = new_c_k
+                    cache_v = new_c_v
+
+                key_states, value_states = append_kv_cache(cache_k,
+                                                           cache_v,
+                                                           key_states,
+                                                           value_states)
+
+                # update past_key_value
+                past_key_value.key_cache[self.layer_idx] = key_states
+                past_key_value.value_cache[self.layer_idx] = value_states
+
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = use_flash_attention(query_states, key_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
+
+    # repeat k/v heads if n_kv_heads < n_heads
+    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                     dtype=attention_dtype)
+    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                         dtype=attention_dtype)
+
+    if fsdp_flag:
+        # now only use flash attention for first token
+        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
+                                                     key_states,
+                                                     value_states,
+                                                     is_causal=True)
+        attn_weights = None
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
+        attn_weights = None
+    else:
+        # otherwise, use native attention
+        attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                               attention_mask,
+                                               bsz, q_len, kv_seq_len,
+                                               self.head_dim, self.num_heads)
+
+    attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
+    if attn_output.size() != attn_output_size:
+        invalidInputError(False,
+                          f"`attn_output` should be of size {attn_output_size},"
+                          f" but is {attn_output.size()}")
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+
+    if self.config.pretraining_tp > 1:
+        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
+                                                 dim=1)
+        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
+                           for i in range(self.config.pretraining_tp)])
+    else:
+        attn_output = self.o_proj(attn_output)
+
+    if not output_attentions:
+        attn_weights = None
+
+    return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
 def native_sdp(query, key, value, attention_mask,
                bsz, q_len, kv_seq_len, head_dim, num_heads):
-    attn_weights = torch.matmul(query,
+    attn_weights = torch.matmul(query.to(key.dtype),
                                 key.transpose(2, 3)) / math.sqrt(head_dim)
 
     attn_weights_size = (bsz, num_heads, q_len, kv_seq_len)
@@ -756,3 +1042,115 @@ def llama_model_selective_batching_forward_4_31(
         hidden_states=all_hidden_states,
         attentions=all_self_attns,
     )
+
+
+# For training
+def llama_attention_fast_forward(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    padding_mask: Optional[torch.LongTensor] = None,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    bsz, q_len, _ = hidden_states.size()
+    device = hidden_states.device
+    use_fast_rope = should_use_fast_rope(self, hidden_states, position_ids)
+
+    # Check for inference
+    if use_cache and past_key_value is not None and q_len == 1:
+        A, past_key_value = llama_attention_forward_4_31(
+            self,
+            hidden_states,
+            past_key_value,
+            position_ids,
+        )
+        return A, None, past_key_value
+
+    if self.config.pretraining_tp > 1:
+        key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
+                             self.config.pretraining_tp)
+        query_slices = self.q_proj.weight.split(
+            (self.num_heads * self.head_dim) // self.config.pretraining_tp, dim=0
+        )
+        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
+        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
+
+        query_states = [F.linear(hidden_states, query_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+        query_states = torch.cat(query_states, dim=-1)
+
+        key_states = [F.linear(hidden_states, key_slices[i])
+                      for i in range(self.config.pretraining_tp)]
+        key_states = torch.cat(key_states, dim=-1)
+
+        value_states = [F.linear(hidden_states, value_slices[i])
+                        for i in range(self.config.pretraining_tp)]
+        value_states = torch.cat(value_states, dim=-1)
+
+    else:
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
+        value_states = self.v_proj(hidden_states)
+
+    query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(bsz, q_len, self.num_key_value_heads,
+                                 self.head_dim).transpose(1, 2)
+    value_states = value_states.view(bsz, q_len, self.num_key_value_heads,
+                                     self.head_dim).transpose(1, 2)
+
+    kv_seq_len = key_states.shape[-2]
+    if past_key_value is not None:
+        kv_seq_len += past_key_value[0].shape[-2]
+
+    if use_fast_rope:
+        from bigdl.llm.transformers.layers.rope_embedding import apply_fast_rope_embedding
+        query_states, key_states = apply_fast_rope_embedding(query_states,
+                                                             key_states,
+                                                             position_ids,
+                                                             "llama")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "llama")
+
+    if past_key_value is not None:
+        # reuse k, v, self_attention
+        key_states = torch.cat([past_key_value[0], key_states], dim=2)
+        value_states = torch.cat([past_key_value[1], value_states], dim=2)
+
+    past_key_value = (key_states, value_states) if use_cache else None
+
+    key_states = repeat_kv(key_states, self.num_key_value_groups)
+    value_states = repeat_kv(value_states, self.num_key_value_groups)
+
+    attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                           attention_mask,
+                                           bsz, q_len, kv_seq_len,
+                                           self.head_dim, self.num_heads)
+
+    attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
+    if attn_output.size() != attn_output_size:
+        invalidInputError(False,
+                          f"`attn_output` should be of size {attn_output_size},"
+                          f" but is {attn_output.size()}")
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+
+    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+
+    if self.config.pretraining_tp > 1:
+        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
+                                                 dim=1)
+        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
+                           for i in range(self.config.pretraining_tp)])
+    else:
+        attn_output = self.o_proj(attn_output)
+
+    if not output_attentions:
+        attn_weights = None
+
+    return attn_output, attn_weights, past_key_value

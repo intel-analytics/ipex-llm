@@ -202,14 +202,25 @@ jobs:
           pip install -U langchain==0.0.184
           pip install -U chromadb==0.3.25
           pip install -U pandas==2.0.3
-          pip install -U typing_extensions==4.5.0
           bash python/llm/test/run-llm-langchain-tests.sh
   llm-unit-test-on-arc:
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9","3.10","3.11"]
+        include:
+          - pytorch-version: "2.1"
+            python-version: "3.9"
+          - pytorch-version: "2.1"
+            python-version: "3.10"
+          - pytorch-version: "2.1"
+            python-version: "3.11"
+          - pytorch-version: "2.0"
+            python-version: "3.9"
+          - pytorch-version: "2.0"
+            python-version: "3.10"
+          - pytorch-version: "2.0"
+            python-version: "3.11"
     runs-on: [self-hosted, llm, arc]
     env:
       OMP_NUM_THREADS: 16
@@ -247,15 +258,20 @@ jobs:
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
+      - name: Install BigDL-LLM for xpu
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_${{ matrix.pytorch-version }}"
 
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /opt/intel/oneapi/setvars.sh
+          # Specific oneapi position on arc ut test machines
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+            source /home/arda/intel/oneapi/setvars.sh
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+            source /opt/intel/oneapi/setvars.sh
+          fi
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Download LLMs and datasets
@@ -296,13 +312,25 @@ jobs:
       - name: Run LLM inference test
         shell: bash
         run: |
-          source /opt/intel/oneapi/setvars.sh
-          python -m pip install expecttest einops librosa
+          # Specific oneapi position on arc ut test machines
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+            source /home/arda/intel/oneapi/setvars.sh
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+            source /opt/intel/oneapi/setvars.sh
+          fi
+          python -m pip install datasets librosa soundfile einops
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
         shell: bash
         run: |
-          python -m pip install transformers==4.34.0 peft==0.5.0 accelerate==0.23.0
-          source /opt/intel/oneapi/setvars.sh
+          python -m pip uninstall datasets -y
+          python -m pip install transformers==4.34.0 datasets peft==0.5.0 accelerate==0.23.0
+          python -m pip install bitsandbytes scipy
+          # Specific oneapi position on arc ut test machines
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+            source /home/arda/intel/oneapi/setvars.sh
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+            source /opt/intel/oneapi/setvars.sh
+          fi
           bash python/llm/test/run-llm-example-tests-gpu.sh

@@ -49,6 +49,8 @@ from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, 
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
+from bigdl.llm.transformers.models.utils import use_flash_attention
+from bigdl.llm.transformers.models.utils import mlp_fusion_check
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -142,6 +144,8 @@ def mixtral_attention_forward(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
+    # for flash attention
+    original_dtype = hidden_states.dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
@@ -241,35 +245,53 @@ def mixtral_attention_forward(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
+    if not self.training and not hidden_states.requires_grad:
+        fsdp_flag = use_flash_attention(query_states, key_states)
+    else:
+        fsdp_flag = False
+    if fsdp_flag:
+        attention_dtype = torch.float16  # use fp16 for flash attention
+    else:
+        attention_dtype = original_dtype
+
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                     dtype=attention_dtype)
+    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                         dtype=attention_dtype)
 
-    attn_weights = torch.matmul(
-        query_states,
-        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    if fsdp_flag:
+        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
+                                                     key_states,
+                                                     value_states,
+                                                     is_causal=True)
+        attn_weights = None
+    else:
+        attn_weights = torch.matmul(
+            query_states,
+            key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        invalidInputError(
-            False,
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
-            f" but is {attn_weights.size()}"
-        )
-
-    if attention_mask is not None:
-        if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
             invalidInputError(
                 False,
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                f" but is {attention_mask.size()}"
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
+                f" but is {attn_weights.size()}"
             )
 
-        attn_weights = attn_weights + attention_mask
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                invalidInputError(
+                    False,
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
+                )
 
-    # upcast attention to fp32
-    attn_weights = nn.functional.\
-        softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_output = torch.matmul(attn_weights, value_states)
+            attn_weights = attn_weights + attention_mask
+
+        # upcast attention to fp32
+        attn_weights = nn.functional.\
+            softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(
@@ -293,13 +315,13 @@ def mixtral_mlp_forward(
     x: torch.Tensor,
     routing_weights
 ) -> torch.Tensor:
-    if x.shape[0] == 1 and x.device.type == 'xpu' \
-            and self.w1.qtype == ggml_tensor_qtype["sym_int4"] \
-            and not (self.training and x.requires_grad):
+    qtype = getattr(self.w1, "qtype", None)
+    if mlp_fusion_check(x, qtype, self.training):
         import linear_q4_0
-        return self.w2(linear_q4_0.mlp_forward_q4_0_xpu(
+        return self.w2(linear_q4_0.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,
             x.shape[0], x.shape[1], self.w1.out_len,
+            qtype,
         )) * routing_weights
     else:
         current_hidden_states = self.act_fn(self.w1(x)) * self.w3(x)

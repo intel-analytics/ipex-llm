@@ -46,6 +46,7 @@ from peft import (
 )
 from utils.prompter import Prompter
 
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 # import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
@@ -177,13 +178,22 @@ def train(
         )
     else:
         # Load the base model from a directory or the HF Hub to 4-bit NormalFloat format
-        model = AutoModelForCausalLM.from_pretrained(
-            base_model,
-            load_in_low_bit="sym_int4", # not support "nf4"
-            optimize_model=False,
-            torch_dtype=torch.bfloat16,
-            modules_to_not_convert=["lm_head"],
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=False,
+            bnb_4bit_quant_type="int4",  # nf4 not supported on cpu yet
+            bnb_4bit_compute_dtype=torch.bfloat16
         )
+        model = AutoModelForCausalLM.from_pretrained(base_model,
+                                                     quantization_config=bnb_config, )
+        # below is also supported
+        # model = AutoModelForCausalLM.from_pretrained(
+        #     base_model,
+        #     load_in_low_bit="sym_int4", # nf4 not supported on cpu yet
+        #     optimize_model=False,
+        #     torch_dtype=torch.bfloat16,
+        #     modules_to_not_convert=["lm_head"],
+        # )
     print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
     model = model.to("cpu")
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
