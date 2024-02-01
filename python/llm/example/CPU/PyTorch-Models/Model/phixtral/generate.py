@@ -22,14 +22,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
-
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    from bigdl.llm.transformers import AutoModelForCausalLM
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 trust_remote_code=True)
     
+    from transformers import AutoModelForCausalLM
+    model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 trust_remote_code=True)
+    model = optimize_model(model)
+
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)

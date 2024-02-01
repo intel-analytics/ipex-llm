@@ -1,11 +1,11 @@
 # Phixtral
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on phi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8) as a reference phi model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on phi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8) as a reference phixtral model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a phi model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a phixtral model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -13,7 +13,7 @@ conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install einops # additional package required for phi to conduct generation
+pip install einops # additional package required for phixtral to conduct generation
 ```
 
 ### 2. Configures OneAPI environment variables

@@ -1,10 +1,5 @@
-# Phixtral-4x2_8
-
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on phi models. For illustration purposes, we utilize the [microsoft/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8) as a reference phixtral model.
-
-> **Note**: If you want to download the Hugging Face *Transformers* model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git).
->
-> BigDL-LLM optimizes the *Transformers* model in INT4 precision at runtime, and thus no explicit conversion is needed.
+# Phixtral
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Qwen-VL models. For illustration purposes, we utilize the [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8) as a reference Phixtral model.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -20,15 +15,11 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
-pip install einops  # additional package required for phi to conduct generation
+pip install einops 
 ```
 
 ### 2. Run
 After setting up the Python environment, you could run the example by following steps.
-
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
->
-> Please select the appropriate size of the phixtral model based on the capabilities of your machine.
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
@@ -47,7 +38,7 @@ source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI？'
+numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI?'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
@@ -55,19 +46,15 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the phixtral model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mlabonne/phixtral-4x2_8'`.
-- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `What is AI`.
-- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `128`.
+- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'What is AI?'`.
+- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.4 Sample Output
 #### [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8)
 ```log
-Inference time: 6.53 s
--------------------- Prompt --------------------
-Question: What is AI
-
- Answer:
+Inference time: xxxx s
 -------------------- Output --------------------
-Question:  What is AI?
+Question: What is AI?
 
- Answer: AI, or artificial intelligence, is the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of algorithms and models that enable machines to perform tasks that typically require human intelligence, such as problem-solving, decision-making, and language understanding. AI has the potential to revolutionize various industries, from healthcare to transportation, by automating processes, improving efficiency, and enabling new forms of innovation.
+Answer: AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition,
 ```

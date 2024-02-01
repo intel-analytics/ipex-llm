@@ -58,13 +58,6 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True)
-    
-    # Load huggingface model with optimize_model in BigDL
-    # from transformers import AutoModelForCausalLM
-    # model = AutoModelForCausalLM.from_pretrained(model_path,
-    #                                              trust_remote_code=True)
-    # model = optimize_model(model)
-
     model = model.to('xpu')
 
     # Load tokenizer
