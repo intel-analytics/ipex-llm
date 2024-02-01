@@ -207,23 +207,12 @@ jobs:
           pip install -U pandas==2.0.3
           bash python/llm/test/run-llm-langchain-tests.sh
   llm-unit-test-on-arc:
-    needs: llm-cpp-build
+    needs: [setup-python-version]
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - pytorch-version: "2.1"
-            python-version: "3.9"
-          - pytorch-version: "2.1"
-            python-version: "3.10"
-          - pytorch-version: "2.1"
-            python-version: "3.11"
-          - pytorch-version: "2.0"
-            python-version: "3.9"
-          - pytorch-version: "2.0"
-            python-version: "3.10"
-          - pytorch-version: "2.0"
-            python-version: "3.11"
+        pytorch-version: [2.1, 2.0]
+        python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
     runs-on: [self-hosted, llm, arc]
     env:
       OMP_NUM_THREADS: 16
