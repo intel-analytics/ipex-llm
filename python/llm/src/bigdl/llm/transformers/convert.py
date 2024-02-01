@@ -256,19 +256,29 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             # TODO: just consider llama here
                             # how to better aligned and generalize
                             module_name = full_module_name.split('.')
+                            cur_qtype = qtype
                             if len(module_name) == 5:
                                 layer = module_name[2]
                                 cur_module = module_name[-1][:-5]
                                 new_module_name = '_'.join([layer, cur_module])
                             elif len(module_name) == 1:
                                 new_module_name = module_name[0]
+                                layer = None
+                                cur_module = None
                             if imatrix_data is not None and new_module_name in imatrix_data:
                                 cur_imatrix = imatrix_data[new_module_name]
+                                if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
+                                        or new_module_name == 'lm_head':
+                                    cur_qtype = ggml_tensor_qtype['sym_int4']
                             else:
                                 cur_imatrix = None
+                                if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
+                                        or new_module_name == 'lm_head':
+                                    cur_qtype = ggml_tensor_qtype['sym_int4']
                         else:
                             cur_imatrix = None
-                        # TODO: how to handle qtype = iq2 but imatrix is None ?
+                            cur_qtype = qtype
+                            new_module_name = None
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
@@ -276,7 +286,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  quantized=False,
                                                  _shape=None,
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype,
+                                                 qtype=cur_qtype,
                                                  imatrix=cur_imatrix,
                                                  in_features=in_features).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
@@ -537,7 +547,9 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     if optimize_model:
         model = _optimize_pre(model)
-
+    
+    print("debug imatrix_data")
+    print(imatrix_data)
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
@@ -1026,19 +1038,13 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward_wrapper
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_model_forward_wrapper
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
-        rwkv_ffn_forward = rwkv_ffn_forward_wrapper(module.RwkvFeedForward.forward)
         convert_forward(model,
                         module.RwkvFeedForward,
                         rwkv_ffn_forward)
-        rwkv_model_forward = rwkv_model_forward_wrapper(module.Rwkv5Model.forward)
-        convert_forward(model,
-                        module.Rwkv5Model,
-                        rwkv_model_forward)
     elif model.config.model_type == "deci":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
