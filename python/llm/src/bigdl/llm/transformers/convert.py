@@ -547,9 +547,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     if optimize_model:
         model = _optimize_pre(model)
-    
-    print("debug imatrix_data")
-    print(imatrix_data)
+
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
