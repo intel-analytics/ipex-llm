@@ -66,7 +66,6 @@ def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: 
 def bloom_layer_norm_forward(self, hidden_states):
     if use_fused_layer_norm(hidden_states, self.training):
         import linear_q4_0
-        print(f"hidden{hidden_states.dtype}, weight{self.weight.dtype}, bias: {self.bias.dtype}")
         result = linear_q4_0.fused_layer_norm(hidden_states,
                                               [self.weight.size(0)],
                                               self.weight,

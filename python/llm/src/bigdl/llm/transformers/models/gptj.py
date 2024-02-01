@@ -148,7 +148,7 @@ def gptj_attention_forward(
                                                        self.head_dim,
                                                        past_length,
                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
+                                                       dtype=cache_v.dtype,
                                                        device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
@@ -162,7 +162,7 @@ def gptj_attention_forward(
                                                self.head_dim,
                                                kv_seq_len,
                                                kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                               dtype=key.dtype,
+                                               dtype=value.dtype,
                                                device=device)
         key_cache[:] = key
         value_cache[:] = value
