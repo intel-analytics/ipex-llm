@@ -1,20 +1,17 @@
 # InternLM2
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate InternLM2 models. For illustration purposes, we utilize the [internlm/internlm2-chat-7b](https://huggingface.co/internlm/internlm2-chat-7b) as reference InternLM2 models.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on InternLM2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [internlm/internlm2-chat-7b](https://huggingface.co/internlm/internlm2-chat-7b) as a reference InternLM model.
 
-## Requirements
+## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-## Example 1 - Basic Version: Predict Tokens using `generate()` API
+## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a InternLM2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
-
-After installing conda, create a Python environment for BigDL-LLM:
+We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9 # recommend to use Python 3.9
+conda create -n llm python=3.9
 conda activate llm
-
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
@@ -45,6 +42,7 @@ For optimal performance, it is recommended to set several environment variables.
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
+
 ```bash
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -97,25 +95,33 @@ There is no need to set further environment variables.
 > Note: For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```bash
-python ./generate.py --prompt 'What is AI?'
+```
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
 
-In the example, several arguments can be passed to satisfy your requirements:
-
+Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the InternLM2 model (e.g. `internlm/internlm2-chat-7b`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'internlm/internlm2-chat-7b'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
 #### [internlm/internlm2-chat-7b](https://huggingface.co/internlm/internlm2-chat-7b)
 ```log
 Inference time: xxxx s
+-------------------- Prompt --------------------
+<|User|>:AI是什么？
+<|Bot|>:
 -------------------- Output --------------------
-### HUMAN:
-What is AI?
+<|User|>:AI是什么？
+<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在使计算机能够像人类一样思考、学习和执行任务。AI技术包括机器学习、自然
+```
 
-### RESPONSE:
-
-AI is a field of computer science that focuses on creating intelligent machines that can perform tasks that typically require human intelligence, such as understanding natural language,
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|User|>:What is AI?
+<|Bot|>:
+-------------------- Output --------------------
+<|User|>:What is AI?
+<|Bot|>:AI is the ability of machines to perform tasks that would normally require human intelligence, such as perception, reasoning, learning, and decision-making. AI is made possible
 ```
