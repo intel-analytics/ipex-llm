@@ -46,9 +46,9 @@ jobs:
         id: setup-python-version
         run: |
           if ${{ github.event_name == 'pull_request' }}; then
-            python_version="['3.9', '3.10', '3.11']"
+            python_version='["3.9", "3.10", "3.11"]'
           else
-            python_version="['3.9', '3.10', '3.11']"
+            python_version='["3.9", "3.10", "3.11"]'
           fi
           list=$(echo ${python_version} | jq -c)
           echo "python-version=${list}" >> "$GITHUB_OUTPUT"
