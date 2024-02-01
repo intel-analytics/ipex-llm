@@ -41,6 +41,20 @@ class _StopEverythingStoppingCriteria(transformers.StoppingCriteria):
         return shared.stop_everything
 
 
+class StopWordsCriteria(transformers.StoppingCriteria):
+    """Custom `StoppingCriteria` which checks if all generated functions in the batch are completed."""
+    def __init__(self, input_length, stop_words, tokenizer):
+        self.input_length = input_length
+        self.stop_words = stop_words
+        self.tokenizer = tokenizer
+
+    def __call__(self, input_ids, scores, **kwargs):
+        """Returns true if all generated sequences contain any of the end-of-function strings."""
+        texts =  [ self.tokenizer.decode(ids[self.input_length:]) for ids in input_ids ]
+        dones = [ any(stop_word in text for stop_word in self.stop_words) for text in texts ]
+        return all(dones)
+
+
 class Stream(transformers.StoppingCriteria):
     def __init__(self, callback_func=None):
         self.callback_func = callback_func
