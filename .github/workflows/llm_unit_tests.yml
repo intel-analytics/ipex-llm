@@ -53,7 +53,7 @@ jobs:
           list=$(echo ${python_version} | jq -c)
           echo "::set-output name=python-version::${list}"
   llm-unit-test:
-    needs: [setup-python-version, llm-cpp-build]
+    needs: [setup-python-version]
     strategy:
       fail-fast: false
       matrix:
