@@ -111,11 +111,21 @@ if __name__ == "__main__":
         target_modules=['k_proj', 'gate_proj', 'v_proj', 'up_proj', 'q_proj', 'o_proj', 'down_proj']
     )
 
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=False,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_low_bit="nf4",
-                                                 optimize_model=False,
-                                                 torch_dtype=torch.bfloat16,
-                                                 modules_to_not_convert=["lm_head"],)
+                                                 quantization_config=bnb_config, )
+
+    # below is also supported
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                              load_in_low_bit="nf4",
+    #                                              optimize_model=False,
+    #                                              torch_dtype=torch.bfloat16,
+    #                                              modules_to_not_convert=["lm_head"],)
 
     model = model.to('xpu')
     # Prepare a BigDL-LLM compatible Peft model
