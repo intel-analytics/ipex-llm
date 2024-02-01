@@ -199,10 +199,10 @@ def mixtral_attention_forward(
 
         if use_fuse_rope:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-            cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]                                       
-            sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]                                       
-            cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]                           
-            sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]                           
+            cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
+            sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
+            cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
+            sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
             query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states,
                                                                            key_states,
                                                                            sin,
