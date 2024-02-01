@@ -121,6 +121,15 @@ def _update_attention_mask(attention_mask, len=1):
         [attention_mask, attention_mask.new_ones((attention_mask.shape[0], len))],
         dim=-1)
 
+def _update_attention_mask_left(attention_mask, len=1):
+    return torch.cat(
+        [attention_mask.new_ones((attention_mask.shape[0], len)), attention_mask],
+        dim=-1)
+
+def _update_attention_mask_0(attention_mask, len=1):
+    return torch.cat(
+        [attention_mask, attention_mask.new_zeros((attention_mask.shape[0], len))],
+        dim=-1)
 
 def _prepare_past_key_values_storage_cpu(self, past_key_values,
                                          max_new_tokens, _enable_ipex=False):
@@ -256,7 +265,7 @@ def speculative_generate(self,
                          max_new_tokens=10,
                          max_step_draft=8,
                          th_stop_draft=0.8,
-                         auto_th_stop_draft=True,
+                         auto_th_stop_draft=False,
                          auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
                          hf_adjust=False,
                          generation_config: Optional[GenerationConfig] = None,
@@ -394,6 +403,16 @@ def speculative_generate(self,
     self.clear_benchmarks()
     attention_mask = model_kwargs["attention_mask"]
 
+    if len(input_ids.shape) == 1:
+        batch_size = 1
+    else:
+        batch_size = input_ids.size(0)
+
+    from transformers import AutoTokenizer
+    tokenizer = AutoTokenizer.from_pretrained("/models/Llama-2-13b-chat-hf/", trust_remote_code=True, padding_side='left')
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
     # Example:
     # Target model forward for the first token
     # Step 1. target_model(prompt) -> a
@@ -412,9 +431,15 @@ def speculative_generate(self,
         if step == 0:
             # first token use full model
             tic = time.time()
+            if attention_mask is None:
+                position_ids = None
+            else:
+                position_ids = attention_mask.long().cumsum(-1) - 1
+
             output = self(input_ids=current_input_ids,
                           past_key_values=past_key_values,
                           attention_mask=attention_mask,
+                          position_ids=position_ids,
                           return_dict=True,
                           use_cache=True)
             logits = output['logits']
@@ -454,12 +479,13 @@ def speculative_generate(self,
             tic = time.time()
             # Draft model auto-regressively generate k tokens
             # Early stop when prob less then th_stop_draft
+            delta_attention_mask = [[1] for _ in range(batch_size)]
+            continue_flag = [1] * batch_size
             for step_draft in range(max_step_draft):
                 if attention_mask is None:
                     draft_attention_mask = None
                 else:
-                    draft_attention_mask = _update_attention_mask(attention_mask,
-                                                                  step_draft + step - 1)
+                    draft_attention_mask = _update_attention_mask(attention_mask, step_draft)
                 if self.config.model_type == "chatglm":
                     past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
@@ -492,9 +518,25 @@ def speculative_generate(self,
                 draft_past_key_values = draft_output['past_key_values']
                 # check if draft prob is less then th_stop_draft
                 # Draft number + step >= max output token number
-                if min(draft_output_probs).item() < th_stop_draft or \
-                        step + step_draft + 2 >= max_new_tokens:
+
+                # if min(draft_output_probs).item() < th_stop_draft or \
+                #         step + step_draft + 2 >= max_new_tokens:
+                #     break
+
+                if step + step_draft + 2 >= max_new_tokens:
+                    for i in range(draft_output_probs.size(0)):
+                        delta_attention_mask[i].append(0)
                     break
+                
+                for i in range(draft_output_probs.size(0)):
+                    if (continue_flag[i] == 0) or (draft_output_probs[i].item() < th_stop_draft):
+                        delta_attention_mask[i].append(0)
+                        continue_flag[i] = 0
+                    else:
+                        delta_attention_mask[i].append(1)
+                if sum(continue_flag) == 0:
+                    break
+                
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
             toc = time.time()
@@ -502,7 +544,9 @@ def speculative_generate(self,
             drafted_n_tokens = step_draft + 1
             # raft input + raft completion
             drafted_input_ids = draft_generate_ids[:, :drafted_n_tokens+1]
-            self.draft_num.append(drafted_n_tokens)
+            # self.draft_num.append(drafted_n_tokens)
+            total_draft_tokens = [sum(tmp_attention_mask) for tmp_attention_mask in delta_attention_mask]
+            self.draft_num.append(sum(total_draft_tokens))
             tic = time.time()
             # Target model verify drafts
             # input.size is k + 1, 1 previous token + k drafts
@@ -511,8 +555,17 @@ def speculative_generate(self,
             if attention_mask is None:
                 cur_attention_mask = None
             else:
-                cur_attention_mask = _update_attention_mask(attention_mask,
-                                                            drafted_input_ids.size(1) + step - 2)
+                # cur_attention_mask = _update_attention_mask(attention_mask,
+                #                                             drafted_input_ids.size(1) + step - 2)
+                # import pdb
+                # pdb.set_trace()
+                delta_attention_mask = torch.tensor(delta_attention_mask, dtype = attention_mask.dtype, device = attention_mask.device)
+                delta_attention_mask = delta_attention_mask[:, :-1]
+                # attention_mask = _update_attention_mask(attention_mask, 1)
+                # cur_attention_mask = _update_attention_mask(attention_mask, step - 1)
+                cur_attention_mask = torch.cat((attention_mask, delta_attention_mask), dim=-1)
+
+
             if _enable_ipex and hasattr(self, "trace_graph"):
                 if self.config.model_type == "baichuan":
                     output = self.trace_graph(input_ids=drafted_input_ids,
@@ -521,9 +574,10 @@ def speculative_generate(self,
                                               )
                 elif "llama" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
-                    position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
-                                                device=drafted_input_ids.device).unsqueeze(0)
-                    position_ids = position_ids.repeat(1, 1) + past_key_value_len
+                    cur_len = drafted_input_ids.size(1)
+                    position_ids = cur_attention_mask.long().cumsum(-1) - 1
+                    position_ids = position_ids[:, -cur_len:]
+                    # position_ids = torch.tensor(range(past_key_value_len, cur_len))
                     output = self.trace_graph(input_ids=drafted_input_ids,
                                               attention_mask=cur_attention_mask,
                                               position_ids=position_ids,
@@ -570,49 +624,22 @@ def speculative_generate(self,
             # Drafts start from [1, k]
             # Verified output start from [0, k - 1]
             # including the one generated by the base model
-            max_matched = min(((output_ids[:, :-1] != drafted_input_ids[:, 1:]).cumsum(-1) == 0)
-                              .sum(-1)).item() + 1
-            max_of_max_matched = output_ids.size(1)
-            # Accept number is max_matched, min is 1
-            self.accept_num.append(max_matched)
-            # Clean up target model KV cache
-            if max_of_max_matched != max_matched:
-                output_ids = output_ids[:, :max_matched]
-                # For Qwen
-                if _enable_ipex:
-                    cur_len = past_key_values[0][0].size(1)
-                    delta = max_of_max_matched - max_matched
-                    tmp = torch.empty(1, (cur_len - delta), (cur_len - delta), 1,
-                                      dtype=torch.long,
-                                      ).contiguous()
-                    past_key_values = [[tmp, key_cache, value_cache, beam_idx]
-                                       for _, key_cache, value_cache, beam_idx in past_key_values]
-                else:
-                    if self.config.model_type == "qwen":
-                        past_key_values = [
-                            (k[:, :-(max_of_max_matched - max_matched), :],
-                             v[:, :-(max_of_max_matched - max_matched), :])
-                            for k, v in past_key_values
-                        ]
-                    elif self.config.model_type == "chatglm":
-                        # for chatglm, cache shape is [sl, bs, nh, hn]
-                        past_key_values = [
-                            (k[:-(max_of_max_matched - max_matched), :, :, :],
-                             v[:-(max_of_max_matched - max_matched), :, :, :])
-                            for k, v in past_key_values
-                        ]
-                    elif self.config.model_type == "baichuan":
-                        past_key_values = [
-                            (k[:, :, :-(max_of_max_matched - max_matched), :],
-                             v[:, :, :-(max_of_max_matched - max_matched), :])
-                            for k, v in past_key_values
-                        ]
-                    else:
-                        past_key_values = [
-                            (k[:, :, :-(max_of_max_matched - max_matched)],
-                             v[:, :, :-(max_of_max_matched - max_matched)])
-                            for k, v in past_key_values
-                        ]
+            print("step: ", step)
+            print(tokenizer.batch_decode(output_ids))
+
+            matched_attention_mask = (output_ids[:, :-1] != drafted_input_ids[:, 1:]).cumsum(-1) == 0
+            # matched_attention_mask = _update_attention_mask(matched_attention_mask, 1)
+            attention_mask = torch.cat((attention_mask, matched_attention_mask), dim=-1)
+            attention_mask = _update_attention_mask(attention_mask, 1)
+            
+            total_accept_tokens = [sum(tmp_attention_mask) for tmp_attention_mask in matched_attention_mask]
+            self.accept_num.append(sum(total_accept_tokens).item())
+
+            # todo: clean output_ids
+
+            # max_matched = min(((output_ids[:, :-1] != drafted_input_ids[:, 1:]).cumsum(-1) == 0)
+            #                   .sum(-1)).item() + 1
+            # max_of_max_matched = output_ids.size(1)
 
             # Each iter assign new_matched kv_cache to past_key_values1
             if self.device.type == 'cpu':
@@ -620,14 +647,38 @@ def speculative_generate(self,
                                                     original_draft_past_key_values,
                                                     _enable_ipex)
 
-            generate_ids[:, step:step+output_ids.size(1)] = output_ids
-            current_input_ids = output_ids[:, -1:]
+            # pad_attention_mask = _update_attention_mask_0(matched_attention_mask, 1)
+            pad_attention_mask = _update_attention_mask_left(matched_attention_mask, 1)
+            pad_tensor = torch.full_like(output_ids, generation_config.pad_token_id)
+            generate_ids_new = torch.where(pad_attention_mask == 0, pad_tensor, output_ids)
+            generate_ids[:, step:step+output_ids.size(1)] = generate_ids_new
 
+            print(tokenizer.batch_decode(generate_ids_new))
+            # current_input_ids = output_ids[:, -1:]
+            # print(output_ids)
+            # print(drafted_input_ids[:, 1:])
+            # print(matched_attention_mask)
+
+            # mask = generate_ids_new != generation_config.pad_token_id
+            pad_attention_mask = _update_attention_mask_0(matched_attention_mask, 1)
+            mask = pad_attention_mask.int()
+            last_non_pad_indices = mask.size(1) - mask.flip(dims=[1]).argmax(dim=1)
+            last_non_pad_indices = [tmp if tmp < mask.size(1) else 0 for tmp in last_non_pad_indices]
+            last_non_pad_elements = output_ids[torch.arange(output_ids.size(0)), last_non_pad_indices]
+
+            current_input_ids = last_non_pad_elements.unsqueeze(1)
+            # generate_ids[:, step+output_ids.size(1)] = last_non_pad_elements
+
+            # print(current_input_ids)
+            
+            # import pdb
+            # pdb.set_trace()
+            
             step += output_ids.size(1)
 
             # remove one generated by the base model
-            self.n_matched += max_matched - 1
-            self.n_drafted += drafted_n_tokens
+            self.n_matched += sum(total_accept_tokens)
+            self.n_drafted += sum(total_draft_tokens)
             step_verify += 1
 
             if auto_th_stop_draft and step_verify % auto_parameters[0] == 0:
@@ -649,12 +700,12 @@ def speculative_generate(self,
                 else:
                     max_step_draft = max(1, max_step_draft - 1)
 
-        # Stop on eos and remove content after eos
-        output_ids_list = output_ids[0].tolist()
-        if generation_config.eos_token_id in output_ids_list:
-            idx = output_ids_list.index(generation_config.eos_token_id)
-            step -= (len(output_ids_list) - idx - 1)
-            break
+        # # Stop on eos and remove content after eos
+        # output_ids_list = output_ids[0].tolist()
+        # if generation_config.eos_token_id in output_ids_list:
+        #     idx = output_ids_list.index(generation_config.eos_token_id)
+        #     step -= (len(output_ids_list) - idx - 1)
+        #     break
 
     step = min(step, max_new_tokens)
     e2e_toc = time.time()
