@@ -46,11 +46,11 @@ jobs:
         id: setup-python-version
         run: |
           if ${{ github.event_name == 'pull_request' }}; then
-            python-version='[3.9]'
+            python_version='[3.9]'
           else
-            python-version='[3.9, 3.10, 3.11]'
+            python_version='[3.9, 3.10, 3.11]'
           fi
-          list=$(echo ${python-version} | jq -c)
+          list=$(echo ${python_version} | jq -c)
           echo "::set-output name=python-version::${list}"
   llm-unit-test:
     needs: [setup-python-version, llm-cpp-build]
