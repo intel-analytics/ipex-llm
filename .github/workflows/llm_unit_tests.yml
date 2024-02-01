@@ -53,7 +53,7 @@ jobs:
           list=$(echo ${python_version} | jq -c)
           echo "::set-output name=python-version::${list}"
   llm-unit-test:
-    needs: [setup-python-version]
+    needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
       matrix:
@@ -207,7 +207,7 @@ jobs:
           pip install -U pandas==2.0.3
           bash python/llm/test/run-llm-langchain-tests.sh
   llm-unit-test-on-arc:
-    needs: [setup-python-version]
+    needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
       matrix:
