@@ -65,6 +65,7 @@ if __name__ == '__main__':
                                                  torch_dtype=torch.bfloat16,
                                                  load_in_low_bit="bf16",
                                                  speculative=True,
+                                                 torchscript=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
 
@@ -72,11 +73,16 @@ if __name__ == '__main__':
 
     with torch.inference_mode():
         prompt = args.prompt
-        input_ids = tokenizer(prompt, return_tensors='pt').input_ids
+        inputs = tokenizer(prompt, return_tensors='pt')
+        input_ids = inputs.input_ids.to(model.device)
+        actual_in_len = input_ids.shape[1]
+        print("actual input_ids length:" + str(actual_in_len))
+        attention_mask = inputs.attention_mask.to(model.device)
 
         # warmup
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
+                                attention_mask=attention_mask,
                                 do_sample=False,
                                 th_stop_draft=0.6)
         output_str = tokenizer.decode(output[0])
@@ -85,6 +91,7 @@ if __name__ == '__main__':
         st = time.perf_counter()
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
+                                attention_mask=attention_mask,
                                 do_sample=False,
                                 th_stop_draft=0.6)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
