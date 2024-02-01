@@ -66,6 +66,7 @@ RUN cd /llm && \
     cd ./intel-extension-for-pytorch && \
     pip install -r requirements.txt && \
     pip install transformers==4.36.2 && \
-    pip install transformers_stream_generator
+    pip install transformers_stream_generator && \
+    rm -rf llvm-project llvm-release intel-extension-for-pytorch compile_bundle.sh
 
 ENTRYPOINT ["/bin/bash"]
