@@ -28,7 +28,7 @@ INTERNLM_PROMPT_FORMAT = "<|User|>:{prompt}\n<|Bot|>:"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for InternLM model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="internlm/internlm-chat-7b-8k",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="internlm/internlm2-chat-7b",
                         help='The huggingface repo id for the InternLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="解释一种机器学习算法",
@@ -46,16 +46,11 @@ if __name__ == '__main__':
     from bigdl.llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 optimize_model=False,
                                                  trust_remote_code=True,
                                                  use_cache=True)
     
     
-    # from transformers import AutoModelForCausalLM
-    # model = AutoModelForCausalLM.from_pretrained(model_path,
-    #                                              trust_remote_code=True,
-    #                                              use_cache=True)
-    # model = optimize_model(model)
+
     
     model = model.to('xpu')
 

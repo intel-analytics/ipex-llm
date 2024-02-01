@@ -19,6 +19,7 @@ import time
 import argparse
 import numpy as np
 
+from bigdl.llm import optimize_model
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
@@ -38,11 +39,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    
-    from bigdl.llm.transformers import AutoModelForCausalLM
+
+    from bigdl.llm import optimize_model
+    from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
                                                  trust_remote_code=True)
+    model = optimize_model(model)
+
+    
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -53,10 +57,7 @@ if __name__ == '__main__':
         prompt = INTERNLM_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+    
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         end = time.time()
