@@ -46,14 +46,14 @@ jobs:
         id: setup-python-version
         run: |
           if ${{ github.event_name == 'pull_request' }}; then
-            python_version='["3.9", "3.10", "3.11"]'
+            python_version='["3.9"]'
           else
             python_version='["3.9", "3.10", "3.11"]'
           fi
           list=$(echo ${python_version} | jq -c)
           echo "python-version=${list}" >> "$GITHUB_OUTPUT"
   llm-unit-test:
-    needs: [setup-python-version]
+    needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
       matrix:
@@ -207,7 +207,7 @@ jobs:
           pip install -U pandas==2.0.3
           bash python/llm/test/run-llm-langchain-tests.sh
   llm-unit-test-on-arc:
-    needs: [setup-python-version]
+    needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
       matrix:
