@@ -70,8 +70,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 
-def phixtral_moeblock_forward(self,
-                             hidden_states: torch.Tensor):
+def phixtral_moeblock_forward(self, hidden_states: torch.Tensor):
     batch_size, sequence_length, hidden_dim = hidden_states.shape
     hidden_states = hidden_states.view(-1, hidden_dim)
     bs = hidden_states.shape[0]
@@ -137,7 +136,7 @@ def phixtral_moeblock_forward(self,
 def phixtral_mlp_forward(
     self,
     x: torch.Tensor,
-) -> torch.Tensor: 
+) -> torch.Tensor:
     hidden_states = self.fc1(x)
     hidden_states = self.act(hidden_states)
     hidden_states = self.fc2(hidden_states)
