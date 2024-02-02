@@ -456,21 +456,22 @@ def speculative_generate(self,
                     appended_len = step_draft + step
                     ones_to_append = torch.ones(attention_mask.size(0), appended_len)
                     draft_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
+                forward_args = {
+                    "input_ids": draft_current_input_ids,
+                    "past_key_values": draft_past_key_values,
+                    "attention_mask": draft_attention_mask,
+                    "return_dict": True,
+                    "use_cache": True,
+                }
                 if self.config.model_type == "chatglm":
                     past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
-                    draft_output = draft_model(input_ids=draft_current_input_ids,
-                                               past_key_values=draft_past_key_values,
-                                               attention_mask=draft_attention_mask,
-                                               return_dict=True,
-                                               use_cache=True,
-                                               position_ids=position_ids)
-                else:
-                    draft_output = draft_model(input_ids=draft_current_input_ids,
-                                               past_key_values=draft_past_key_values,
-                                               attention_mask=draft_attention_mask,
-                                               return_dict=True,
-                                               use_cache=True)
+                    forward_args["position_ids"] = position_ids
+                elif self.config.model_type == "gptj":
+                    past_length = draft_past_key_values[0][0].size(1)
+                    position_ids = torch.Tensor([[past_length]]).long().to(self.device)
+                    forward_args["position_ids"] = position_ids
+                draft_output = draft_model(**forward_args)
                 temp_input_ids = torch.cat((input_ids, generate_ids[:, :step],
                                             draft_generate_ids[:, 1:step_draft+1]), dim=-1)
                 logits = draft_output['logits']
@@ -548,23 +549,27 @@ def speculative_generate(self,
                 logits = output[0]
                 past_key_values = output[1]
             else:
+                forward_args = {
+                    "input_ids": drafted_input_ids,
+                    "past_key_values": past_key_values,
+                    "attention_mask": cur_attention_mask,
+                    "return_dict": True,
+                    "use_cache": True,
+                }
                 if self.config.model_type == "chatglm":
                     past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
                                                 device=drafted_input_ids.device)
                     position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
-                    output = self(input_ids=drafted_input_ids,
-                                  past_key_values=past_key_values,
-                                  attention_mask=cur_attention_mask,
-                                  return_dict=True,
-                                  use_cache=True,
-                                  position_ids=position_ids)
-                else:
-                    output = self(input_ids=drafted_input_ids,
-                                  past_key_values=past_key_values,
-                                  attention_mask=cur_attention_mask,
-                                  return_dict=True,
-                                  use_cache=True)
+                    forward_args["position_ids"] = position_ids
+                elif self.config.model_type == "gptj":
+                    past_length = past_key_values[0][0].size(1)
+                    input_len = drafted_input_ids.shape[1]
+                    position_ids = torch.arange(past_length, input_len + past_length,
+                                                dtype=torch.long, device=drafted_input_ids.device)
+                    position_ids = position_ids.unsqueeze(0).view(-1, input_len)
+                    forward_args["position_ids"] = position_ids
+                output = self(**forward_args)
             if isinstance(output, dict):
                 logits = output['logits']
                 past_key_values = output['past_key_values']
@@ -639,7 +644,7 @@ def speculative_generate(self,
                     past_key_values = [[tmp, key_cache, value_cache, beam_idx]
                                        for _, key_cache, value_cache, beam_idx in past_key_values]
                 else:
-                    if self.config.model_type == "qwen":
+                    if self.config.model_type in ["qwen", "gptj"]:
                         past_key_values = [
                             (k[:, :-(max_of_max_matched - max_matched), :],
                              v[:, :-(max_of_max_matched - max_matched), :])
