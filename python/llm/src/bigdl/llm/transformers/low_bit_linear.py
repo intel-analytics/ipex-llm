@@ -93,7 +93,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                       "Input tensor must be float32")
     src = tensor.data.data_ptr()
     src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
-    n = tensor.numel() # all elements
+    n = tensor.numel()  # all elements
     invalidInputError(n % QK == 0,
                       f"Input tensor size must be multiple of {QK}")
     k = tensor.shape[-1]
@@ -114,7 +114,9 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
             imatrix = imatrix.data.data_ptr()
             imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
             # pass nrow and n_per_row
-            ggml.ggml_quantize_tensor_with_weights(src, dst, qtype, n // in_features, in_features, hist, imatrix)
+            ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
+                                                   n // in_features, in_features,
+                                                   hist, imatrix)
     return dst_tensor
 
 

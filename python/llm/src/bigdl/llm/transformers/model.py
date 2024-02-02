@@ -121,7 +121,7 @@ class _BaseAutoModelClass:
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
-        :param imatrix: str value, represent filename of importance matrix pretrained on 
+        :param imatrix: str value, represent filename of importance matrix pretrained on
             specific datasets for use with the improved quantization methods recently
             added to llama.cpp.
         :return: a model instance
@@ -248,7 +248,7 @@ class _BaseAutoModelClass:
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             if q_k in ["iq2_xxs", "iq2_xs"]:
                 imatrix_file = kwargs.pop("imatrix", None)
-                invalidInputError(imatrix_file != None,
+                invalidInputError(imatrix_file is not None,
                                   "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
                 imatrix_data = load_imatrix_data(imatrix_file)
                 kwargs['imatrix_data'] = imatrix_data

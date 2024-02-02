@@ -41,6 +41,7 @@
 # SOFTWARE.
 import os
 from transformers.modeling_utils import _add_variant
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from ..utils.common import invalidInputError
 from typing import Union
 import torch
@@ -202,9 +203,9 @@ def load_imatrix_data(imatrix_file):
         layer = name_list[1]
         module_name = name_list[2]
         if 'ffn' in module_name:
-            module_name = module_name[4:] # from ffn_gate to gate
+            module_name = module_name[4:]  # from ffn_gate to gate
         elif 'attn' in module_name:
-            module_name = module_name[5] # from attn_k to k, attn_output to o
+            module_name = module_name[5]  # from attn_k to k, attn_output to o
         module_name = layer + '_' + module_name
         ncall = imatrix.read(4)
         ncall = int.from_bytes(ncall, 'little')
