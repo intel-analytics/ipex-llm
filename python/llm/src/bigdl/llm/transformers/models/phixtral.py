@@ -137,8 +137,7 @@ def phixtral_moeblock_forward(self,
 def phixtral_mlp_forward(
     self,
     x: torch.Tensor,
-) -> torch.Tensor:
-  
+) -> torch.Tensor: 
     hidden_states = self.fc1(x)
     hidden_states = self.act(hidden_states)
     hidden_states = self.fc2(hidden_states)
