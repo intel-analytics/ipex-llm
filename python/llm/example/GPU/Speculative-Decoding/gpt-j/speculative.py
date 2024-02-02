@@ -38,8 +38,6 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
-    parser.add_argument('--th_stop_draft', type=float, default=0.6,
-                        help='draft stop probility')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
