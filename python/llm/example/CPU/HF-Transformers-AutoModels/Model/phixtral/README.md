@@ -55,19 +55,27 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 In the example, several arguments can be passed to satisfy your requirements:
 
 - `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the phixtral model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mlabonne/phixtral-4x2_8'`.
-- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `What is AI`.
-- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `128`.
+- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `What is AI?`.
+- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.4 Sample Output
 #### [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8)
 ```log
-Inference time: 6.53 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
-Question: What is AI
-
- Answer:
+<|User|>:AI是什么？
+<|Bot|>:
 -------------------- Output --------------------
-Question:  What is AI?
+<|User|>:AI是什么？
+<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在使计算机能够像人类一样思考、学习和执行任务。AI技术包括机器学习、自然
+```
 
- Answer: AI, or artificial intelligence, is the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of algorithms and models that enable machines to perform tasks that typically require human intelligence, such as problem-solving, decision-making, and language understanding. AI has the potential to revolutionize various industries, from healthcare to transportation, by automating processes, improving efficiency, and enabling new forms of innovation.
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|User|>:What is AI?
+<|Bot|>:
+-------------------- Output --------------------
+<|User|>:What is AI?
+<|Bot|>:AI is the ability of machines to perform tasks that would normally require human intelligence, such as perception, reasoning, learning, and decision-making. AI is made possible
 ```
