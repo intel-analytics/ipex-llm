@@ -66,7 +66,7 @@ jobs:
           PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf"]'
           PR_MATRIX_DATASET: '["wikitext"]'
           PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
-          PR_LABELS: '["self-hosted", "llm", "temp-arc20"]'
+          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
@@ -91,7 +91,7 @@ jobs:
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "dataset=$dataset" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
-  llm-harness-evalution:
+  llm-ppl-evalution:
     timeout-minutes: 1000
     needs: [llm-cpp-build, set-matrix]
     strategy:
@@ -112,7 +112,7 @@ jobs:
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
-      DATASET_DIR: /home/arda/kai/non-pip/ppl-eval
+      DATASET_DIR: /mnt/disk1/datasets
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -140,7 +140,7 @@ jobs:
           echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}/
-          echo "DATASET_PATH=${DATASET_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
+          echo "DATASET_PATH=${DATASET_DIR}/${{ matrix.dataset }}/" >> "$GITHUB_ENV"
           DATASET_PATH=${DATASET_DIR}/${{ matrix.dataset }}
           
       - name: Upgrade packages
