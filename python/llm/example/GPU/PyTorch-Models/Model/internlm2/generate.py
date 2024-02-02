@@ -31,9 +31,9 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="internlm/internlm2-chat-7b",
                         help='The huggingface repo id for the InternLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="解释一种机器学习算法",
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=128,
+    parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
