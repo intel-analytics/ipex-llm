@@ -78,6 +78,8 @@ def phixtral_moeblock_forward(self,
     # router_logits: (batch * sequence_length, n_experts)
     router_logits = self.gate(hidden_states)
 
+    num_local_experts = len(self.mlp)
+
     routing_weights = F.softmax(router_logits, dim=1, dtype=torch.float)
     top_k = self.num_experts_per_tok
     routing_weights, selected_experts = torch.topk(routing_weights, top_k, dim=-1)
@@ -94,10 +96,10 @@ def phixtral_moeblock_forward(self,
         # One hot encode the selected experts to create an expert mask
         # this will be used to easily index which expert is going to be sollicitated
         expert_mask = torch.nn.functional.one_hot(selected_experts,
-                                                  num_classes=self.num_experts_per_tok).permute(2, 1, 0)
+                                                  num_classes=num_local_experts).permute(2, 1, 0)
 
         # Loop over all available experts in the model and perform the computation on each expert
-        for expert_idx in range(self.num_experts_per_tok):
+        for expert_idx in range(num_local_experts):
             expert_layer = self.mlp[expert_idx]
             idx, top_x = torch.where(expert_mask[expert_idx])
 

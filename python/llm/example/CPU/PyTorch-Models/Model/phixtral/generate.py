@@ -15,9 +15,9 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="mlabonne/phixtral-4x2_8",
                         help='The huggingface repo id for the phi model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI",
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=128,
+    parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
@@ -37,10 +37,6 @@ if __name__ == '__main__':
         prompt = PHI1_5_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
 
         # Note that phixtral uses GenerationConfig to enable 'use_cache'
         output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict, generation_config = generation_config)
