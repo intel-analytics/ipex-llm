@@ -221,3 +221,39 @@ def load_imatrix_data(imatrix_file):
 
     print(f"loaded {len(imatrix_data)} importance matrix entries from {imatrix_file}.")
     return imatrix_data
+
+
+def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
+    if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"]]:
+        # For quantization which needs importance matrix
+        # module name preprocess
+        # full name maybe model.layers.31.self_attn.o_proj
+        # TODO: just consider llama/mistral here
+        # TODO: how to better aligned and generalize
+        module_name = full_module_name.split('.')
+        cur_qtype = qtype
+        if len(module_name) == 5:
+            layer = module_name[2]
+            cur_module = module_name[-1][:-5]
+            new_module_name = '_'.join([layer, cur_module])
+        elif len(module_name) == 1:
+            new_module_name = module_name[0]
+            layer = None
+            cur_module = None
+        if imatrix_data is not None and new_module_name in imatrix_data:
+            cur_imatrix = imatrix_data[new_module_name]
+            # custom mixed quantization strategy
+            if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
+                    or new_module_name == 'lm_head':
+                cur_qtype = ggml_tensor_qtype['sym_int4']
+        else:
+            cur_imatrix = None
+            # custom mixed quantization strategy
+            if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
+                    or new_module_name == 'lm_head':
+                cur_qtype = ggml_tensor_qtype['sym_int4']
+    else:
+        cur_imatrix = None
+        cur_qtype = qtype
+
+    return cur_qtype, cur_imatrix

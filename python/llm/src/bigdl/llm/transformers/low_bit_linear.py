@@ -94,12 +94,11 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     src = tensor.data.data_ptr()
     src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
     n = tensor.numel() # all elements
-    # TODO: update below code based on iq2
     invalidInputError(n % QK == 0,
-                      "Input tensor size must be multiple of 64")
+                      f"Input tensor size must be multiple of {QK}")
     k = tensor.shape[-1]
     invalidInputError(k % QK == 0,
-                      "Last dim of input tensor must be multiple of 64")
+                      f"Last dim of input tensor must be multiple of {QK}")
 
     dst_size = (n // QK) * block_size_in_bytes
     dst_tensor = torch.empty(dst_size, dtype=torch.uint8,

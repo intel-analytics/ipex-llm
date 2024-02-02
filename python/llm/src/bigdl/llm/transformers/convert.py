@@ -43,7 +43,7 @@ import warnings
 import transformers
 import importlib.util
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from .utils import logger
+from .utils import logger, get_cur_qtype_and_imatrix
 from typing import Union
 import numpy as np
 import os
@@ -249,36 +249,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-                        if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"]]:
-                            # For quantization which needs importance matrix
-                            # module name preprocess
-                            # full name maybe model.layers.31.self_attn.o_proj
-                            # TODO: just consider llama here
-                            # how to better aligned and generalize
-                            module_name = full_module_name.split('.')
-                            cur_qtype = qtype
-                            if len(module_name) == 5:
-                                layer = module_name[2]
-                                cur_module = module_name[-1][:-5]
-                                new_module_name = '_'.join([layer, cur_module])
-                            elif len(module_name) == 1:
-                                new_module_name = module_name[0]
-                                layer = None
-                                cur_module = None
-                            if imatrix_data is not None and new_module_name in imatrix_data:
-                                cur_imatrix = imatrix_data[new_module_name]
-                                if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
-                                        or new_module_name == 'lm_head':
-                                    cur_qtype = ggml_tensor_qtype['sym_int4']
-                            else:
-                                cur_imatrix = None
-                                if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
-                                        or new_module_name == 'lm_head':
-                                    cur_qtype = ggml_tensor_qtype['sym_int4']
-                        else:
-                            cur_imatrix = None
-                            cur_qtype = qtype
-                            new_module_name = None
+                        cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
+                                                                           full_module_name,
+                                                                           imatrix_data)
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
@@ -1036,13 +1009,19 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.rwkv5 import rwkv_attention_forward
-        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_ffn_forward_wrapper
+        from bigdl.llm.transformers.models.rwkv5 import rwkv_model_forward_wrapper
         convert_forward(model,
                         module.RwkvSelfAttention,
                         rwkv_attention_forward)
+        rwkv_ffn_forward = rwkv_ffn_forward_wrapper(module.RwkvFeedForward.forward)
         convert_forward(model,
                         module.RwkvFeedForward,
                         rwkv_ffn_forward)
+        rwkv_model_forward = rwkv_model_forward_wrapper(module.Rwkv5Model.forward)
+        convert_forward(model,
+                        module.Rwkv5Model,
+                        rwkv_model_forward)
     elif model.config.model_type == "deci":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
