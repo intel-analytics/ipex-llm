@@ -131,11 +131,10 @@ class Test_Langchain_Transformers_API(TestCase):
     """
     
     def test_embed_kwargs(self):
-        from langchain_community.vectorstores import FAISS
         embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path)
-        embeddings.encode_kwargs =  {"truncation": True, "max_length": 512, "padding": True}
+        encode_kwargs =  {"truncation": True, "max_length": 512, "padding": True}
         en_texts = ["hello","goodbye"]
-        vectorstore_en = FAISS.from_texts(en_texts, embeddings, metadatas=[{"video_clip": str(i)} for i in range(len(en_texts))])
+        embeddings.embed(en_texts,**encode_kwargs)
 
 
 if __name__ == '__main__':
