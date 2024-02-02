@@ -281,6 +281,7 @@ def speculative_generate(self,
                          hf_adjust=False,
                          generation_config: Optional[GenerationConfig] = None,
                          attention_mask=None,
+                         th_batch_num=0,
                          **sampling_kwargs):
     invalidInputError(draft_model is not None,
                       "Draft model should be provided.")
@@ -579,15 +580,16 @@ def speculative_generate(self,
                     cur_draft_mask = torch.tensor(continue_flag).unsqueeze(1)
                     draft_attention_mask = torch.cat((draft_attention_mask, cur_draft_mask), dim=1)
                 
-                if sum(continue_flag) < (1):
+                if sum(continue_flag) <= (batch_size * th_batch_num):
                     break
 
                 
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
             toc = time.time()
-            self.draft_time.append(toc - tic)
+            
             drafted_n_tokens = step_draft + 1
+            self.draft_time.append((toc - tic) / drafted_n_tokens)
             # raft input + raft completion
             drafted_input_ids = draft_generate_ids[:, :drafted_n_tokens+1]
             # self.draft_num.append(drafted_n_tokens)
