@@ -832,24 +832,24 @@ def _optimize_post(model, lightweight_bmm=False):
         from bigdl.llm.transformers.models.internlm import internlm2_attention_forward
         try:
             convert_forward(model,
-                        module.InternLM2Attention,
-                        internlm2_attention_forward
-                        )
+                            module.InternLM2Attention,
+                            internlm2_attention_forward
+                            )
         except:
             convert_forward(model,
-                        module.InternLMAttention,
-                        internlm_attention_forward
-                    )
+                            module.InternLMAttention,
+                            internlm_attention_forward
+                            )
         try:
             convert_forward(model,
-                        module.InternLM2RMSNorm,
-                        llama_rms_norm_forward
-                        )
+                            module.InternLM2RMSNorm,
+                            llama_rms_norm_forward
+                            )
         except:
             convert_forward(model,
-                        module.InternLMRMSNorm,
-                        llama_rms_norm_forward
-                    )
+                            module.InternLMRMSNorm,
+                            llama_rms_norm_forward
+                            )
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
