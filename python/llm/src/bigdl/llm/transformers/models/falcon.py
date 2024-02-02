@@ -349,9 +349,9 @@ def rw_attention_forward_40b(
         key_layer = new_key_states
         value_layer = new_value_states
 
-    query_layer = query_layer.view(batch_size*self.num_heads, -1, self.head_dim)
-    key_layer = key_layer.view(batch_size*self.num_heads, -1, self.head_dim)
-    value_layer = value_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+    query_layer = query_layer.view(batch_size, self.num_heads, -1, self.head_dim)
+    key_layer = key_layer.view(batch_size, self.num_heads, -1, self.head_dim)
+    value_layer = value_layer.view(batch_size, self.num_heads, -1, self.head_dim)
     _, kv_length, _ = key_layer.shape
     if use_cache is True:
         present = (key_layer, value_layer)
@@ -714,9 +714,9 @@ def falcon_attention_forward_4_36(
         key_layer = new_key_states
         value_layer = new_value_states
 
-    query_layer = query_layer.view(batch_size * self.num_heads, -1, self.head_dim)
-    key_layer = key_layer.view(batch_size * self.num_heads, -1, self.head_dim)
-    value_layer = value_layer.view(batch_size * self.num_heads, -1, self.head_dim)
+    query_layer = query_layer.view(batch_size, self.num_heads, -1, self.head_dim)
+    key_layer = key_layer.view(batch_size, self.num_heads, -1, self.head_dim)
+    value_layer = value_layer.view(batch_size, self.num_heads, -1, self.head_dim)
 
     kv_seq_len = key_layer.shape[-2]
     if use_cache:
