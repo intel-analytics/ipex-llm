@@ -65,9 +65,9 @@ jobs:
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
-          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t"]'
+          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t", "Mistral-7B-v0.1"]'
           PR_MATRIX_TASK: '["truthfulqa"]'
-          PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
+          PR_MATRIX_PRECISION: '["fp8"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
@@ -175,7 +175,7 @@ jobs:
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
-          source $HOME/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           python run_llb.py \
           --model bigdl-llm \
           --pretrained ${MODEL_PATH} \
