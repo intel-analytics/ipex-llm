@@ -38,7 +38,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   setup-python-version:
-    runs-on: [self-hosted, llm, ubuntu-20.04-lts]
+    runs-on: ubuntu-latest
     outputs:
       python-version: ${{ steps.setup-python-version.outputs.python-version }}
     steps:
