@@ -6,4 +6,5 @@ This folder contains examples of running different training mode with BigDL-LLM 
 - [QLoRA](QLoRA): examples of running QLoRA finetuning
 - [QA-LoRA](QA-LoRA): examples of running QA-LoRA finetuning
 - [ReLora](ReLora): examples of running ReLora finetuning
+- [DPO](DPO): examples of running DPO finetuning
 - [common](common): common templates and utility classes in finetuning examples
