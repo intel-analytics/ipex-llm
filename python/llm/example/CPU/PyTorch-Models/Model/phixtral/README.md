@@ -53,8 +53,12 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### [mlabonne/phixtral-4x2_8](https://huggingface.co/mlabonne/phixtral-4x2_8)
 ```log
 Inference time: xxxx s
--------------------- Output --------------------
-Question: What is AI?
+-------------------- Prompt --------------------
+Question:What is AI?
 
-Answer: AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition,
+Answer:
+-------------------- Output --------------------
+Question:What is AI?
+
+Answer: AI, or artificial intelligence, is the simulation of human intelligence in machines that are programmed to think and learn like humans.
 ```

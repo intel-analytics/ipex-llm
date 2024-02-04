@@ -23,12 +23,6 @@ from transformers import AutoTokenizer, GenerationConfig
 import intel_extension_for_pytorch as ipex
 
 
-def trace_handler(p):
-    output = p.key_averages().table(sort_by="self_xpu_time_total", row_limit=10)
-    print(output)
-    p.export_chrome_trace("./trace_" + str(p.step_num) + ".json")
-
-
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to  # TODO: https://huggingface.co/microsoft/phi-1_5/blob/main/modeling_mixformer_sequential.py
 PHI1_5_PROMPT_FORMAT = " Question:{prompt}\n\n Answer:"
