@@ -619,3 +619,6 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 
 class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
+
+class AutoModelForTextToSpeech(_BaseAutoModelClass):
+    HF_Model = transformers.AutoModelForTextToSpeech   
