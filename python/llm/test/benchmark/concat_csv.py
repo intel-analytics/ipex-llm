@@ -34,12 +34,9 @@ def main():
             csv_files.append(file_path)
     csv_files.sort()
 
-    df1 = pd.read_csv(csv_files[0], index_col=0)
-    df2 = pd.read_csv(csv_files[1], index_col=0)
-    merged_df = pd.concat([df1, df2], ignore_index=True)
+    merged_df = pd.concat([pd.read_csv(file, index_col=0) for file in csv_files], ignore_index=True)
     merged_df.reset_index(drop=True, inplace=True)
-
-    merged_csv=csv_files[0].replace("_test1", "")
+    merged_csv = csv_files[0].replace("_test1", "").replace("_test2", "")
     merged_df.to_csv(merged_csv)
 
 if __name__ == "__main__":
