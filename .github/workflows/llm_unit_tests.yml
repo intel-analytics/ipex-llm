@@ -38,17 +38,17 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
   setup-python-version:
-    runs-on: [self-hosted, llm, ubuntu-20.04-lts]
+    runs-on: ubuntu-latest
     outputs:
       python-version: ${{ steps.setup-python-version.outputs.python-version }}
     steps:
       - name: setup-python-version
         id: setup-python-version
         run: |
-          if ${{ github.event_name == 'pull_request' }}; then
-            python_version='["3.9"]'
-          else
+          if [ ${{ github.event_name }} == 'schedule' ]; then
             python_version='["3.9", "3.10", "3.11"]'
+          else
+            python_version='["3.9"]'
           fi
           list=$(echo ${python_version} | jq -c)
           echo "python-version=${list}" >> "$GITHUB_OUTPUT"
