@@ -101,7 +101,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             num_beams,
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
-                            result[in_out_pair][-1][5] if 'int4_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
+                            result[in_out_pair][-1][5] if 'int4_gpu' in test_api else 'N/A',
+                            batch_size]) # currently only peak mem for transformer_int4_gpu is caught here
 
 
 def get_model_path(repo_id, local_model_hub):
@@ -445,8 +446,8 @@ def run_transformer_int4_gpu(repo_id,
                     csv_writer = csv.writer(file)
                     file.seek(0, os.SEEK_END)
                     if file.tell() == 0:
-                        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"])
-                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
+                        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens","actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)", "batch_size"])
+                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, actual_input_output_tokens, num_beams, low_bit, '', peak_mem, batch_size])
 
     model.to('cpu')
     torch.xpu.synchronize()
@@ -961,6 +962,6 @@ if __name__ == '__main__':
                       conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
-                                            'peak mem (GB)'])
+                                            'peak mem (GB)', 'batch_size'])
         df.to_csv(csv_name)
         results = []
