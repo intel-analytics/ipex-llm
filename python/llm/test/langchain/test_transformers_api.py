@@ -132,7 +132,7 @@ class Test_Langchain_Transformers_API(TestCase):
     
     def test_embed_kwargs(self):
         embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path)
-        encode_kwargs =  {"truncation": True, "max_length": 512, "padding": True}
+        encode_kwargs =  {"truncation": True, "max_length": 512}
         en_texts = ["hello","goodbye"]
         embeddings.embed(en_texts,**encode_kwargs)
 
