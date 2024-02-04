@@ -956,7 +956,8 @@ if __name__ == '__main__':
             if excludes:
                 for in_out in conf['in_out_pairs']:
                     model_id_input = model + ':' + in_out.split('-')[0]
-                    if model_id_input in excludes:
+                    model_id_input_batch_size = model + ':' + in_out.split('-')[0] + ':' + str(conf['batch_size'])
+                    if model_id_input in excludes or model_id_input_batch_size in excludes:
                         in_out_pairs.remove(in_out)
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
