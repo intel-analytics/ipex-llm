@@ -21,8 +21,6 @@ import numpy as np
 
 from transformers import AutoTokenizer, GenerationConfig
 import intel_extension_for_pytorch as ipex
-print(ipex.__version__)
-from torch.profiler import profile, record_function, ProfilerActivity
 from bigdl.llm import optimize_model
 
 
