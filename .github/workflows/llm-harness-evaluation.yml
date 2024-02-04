@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 17 * * *" # GMT time, 17:00 GMT == 00:00 China
+    - cron: "00 16 * * *" # GMT time, 16:00 GMT == 00:00 China
   pull_request:
     branches: [main]
     paths:
