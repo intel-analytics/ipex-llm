@@ -72,20 +72,40 @@ jobs:
       - name: Test on xpu (int4)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-perf-test-sym_int4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # batch_size = 1
+          sed -i '/batch_size/c\batch_size: 1' config.yaml
           python run.py
-          cp ./*.csv $CSV_SAVE_PATH/int4
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_1
+          rm ./*.csv
+          # batch_size = 2
+          sed -i '/batch_size/c\batch_size: 2' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_2
+          rm ./*.csv
+          # batch_size = 4
+          sed -i '/batch_size/c\batch_size: 4' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_4
+          rm ./*.csv
+          # batch_size = 8
+          sed -i '/batch_size/c\batch_size: 8' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_8
           rm ./*.csv
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f $CSV_SAVE_PATH/int4 -b $CSV_SAVE_PATH/int4/transformer_int4_gpu-results-1baseline.csv -t 5.0
-
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_1 -b $CSV_SAVE_PATH/int4/batch_size_1/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_2 -b $CSV_SAVE_PATH/int4/batch_size_2/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_4 -b $CSV_SAVE_PATH/int4/batch_size_4/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_8 -b $CSV_SAVE_PATH/int4/batch_size_8/transformer_int4_gpu-results-1baseline.csv -t 5.0
+  
       - name: Test on xpu (fp8)
         shell: bash
         run: |
@@ -96,12 +116,32 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # batch_size = 1
+          sed -i '/batch_size/c\batch_size: 1' config.yaml
           python run.py
-          cp ./*.csv $CSV_SAVE_PATH/fp8
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_1
+          rm ./*.csv
+          # batch_size = 2
+          sed -i '/batch_size/c\batch_size: 2' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_2
+          rm ./*.csv
+          # batch_size = 4
+          sed -i '/batch_size/c\batch_size: 4' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_4
+          rm ./*.csv
+          # batch_size = 8
+          sed -i '/batch_size/c\batch_size: 8' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_8
           rm ./*.csv
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f $CSV_SAVE_PATH/fp8 -b $CSV_SAVE_PATH/fp8/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_1 -b $CSV_SAVE_PATH/fp8/batch_size_1/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_2 -b $CSV_SAVE_PATH/fp8/batch_size_2/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_4 -b $CSV_SAVE_PATH/fp8/batch_size_4/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_8 -b $CSV_SAVE_PATH/fp8/batch_size_8/transformer_int4_gpu-results-1baseline.csv -t 5.0
   
   llm-stress-test-on-arc:
     needs: llm-perf-regression-test-on-arc
