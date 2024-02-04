@@ -50,7 +50,6 @@ import torch
 import intel_extension_for_pytorch as ipex
 import time
 import argparse
-from benchmark_util import BenchmarkWrapper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
@@ -94,7 +93,6 @@ if __name__ == '__main__':
     model = model.to(f'cpu:{local_rank}')
 
     print(model)
-    model = BenchmarkWrapper(model, do_print=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
