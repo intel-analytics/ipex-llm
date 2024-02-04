@@ -478,7 +478,11 @@ class LowBitLinear(nn.Linear):
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
 
-            input_seq_size = x_shape[1]
+            if len(x_shape) == 3:
+                input_seq_size = x_shape[1]
+            elif len(x_shape) < 3:
+                input_seq_size = 1
+
             if is_training:
                 # training path
                 if x_2d.requires_grad:

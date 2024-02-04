@@ -238,6 +238,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device)
                     elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
+                        if in_features % 64 != 0:
+                            # now our kernel requires in_features is a multiple of 64
+                            continue
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
