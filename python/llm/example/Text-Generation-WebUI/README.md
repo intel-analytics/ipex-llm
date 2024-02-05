@@ -14,7 +14,7 @@ Please see [BigDL-LLm Installation on Windows](https://bigdl.readthedocs.io/en/l
 ### 1.2 Install other required dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt gradio==3.50.*
 ```
 Note: Text-Generation-WebUI requires transformers version >= 4.36.0
 
