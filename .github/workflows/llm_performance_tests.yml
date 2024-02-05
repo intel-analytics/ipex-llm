@@ -203,6 +203,7 @@ jobs:
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f /mnt/disk1/nightly_perf_cpu/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/cpu/
 
   llm-performance-test-on-core:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
