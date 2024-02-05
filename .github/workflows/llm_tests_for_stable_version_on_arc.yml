@@ -66,7 +66,7 @@ jobs:
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu (int4)
@@ -109,7 +109,7 @@ jobs:
       - name: Test on xpu (fp8)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-perf-test-fp8.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -188,13 +188,13 @@ jobs:
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu (int4)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-stress-test-sym_int4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -211,7 +211,7 @@ jobs:
       - name: Test on xpu (fp8)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-stress-test-fp8.yaml python/llm/dev/benchmark/all-in-one/config.yaml
