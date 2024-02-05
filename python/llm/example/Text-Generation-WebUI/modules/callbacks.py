@@ -50,8 +50,8 @@ class StopWordsCriteria(transformers.StoppingCriteria):
 
     def __call__(self, input_ids, scores, **kwargs):
         """Returns true if all generated sequences contain any of the end-of-function strings."""
-        texts =  [ self.tokenizer.decode(ids[self.input_length:]) for ids in input_ids ]
-        dones = [ any(stop_word in text for stop_word in self.stop_words) for text in texts ]
+        texts =  [self.tokenizer.decode(ids[-1]) for ids in input_ids]
+        dones = [any(stop_word in texts for stop_word in self.stop_words)]
         return all(dones)
 
 
