@@ -479,15 +479,13 @@ def llama_attention_forward_4_31_original(
             cache_v = past_key_value[1]
             if not enough_kv_room:
                 # allocate new
-                new_cache_k, new_cache_v = extend_kv_cache(
-                    bsz,
-                    self.num_key_value_heads,  # Support GQA
-                    self.head_dim,
-                    cache_k.size(2),
-                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                    dtype=cache_k.dtype,
-                    device=device
-                )
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
                 new_cache_k[:] = cache_k
                 new_cache_v[:] = cache_v
                 cache_k = new_cache_k
@@ -498,15 +496,13 @@ def llama_attention_forward_4_31_original(
 
         elif use_cache:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_key_states, new_value_states = init_kv_cache(
-                bsz,
-                self.num_key_value_heads,
-                self.head_dim,
-                kv_seq_len,
-                max_cache_length,
-                dtype=key_states.dtype,
-                device=device
-            )
+            new_key_states, new_value_states = init_kv_cache(bsz,
+                                                             self.num_key_value_heads,
+                                                             self.head_dim,
+                                                             kv_seq_len,
+                                                             max_cache_length,
+                                                             dtype=key_states.dtype,
+                                                             device=device)
             new_key_states[:] = key_states
             new_value_states[:] = value_states
             key_states = new_key_states
