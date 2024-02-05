@@ -61,7 +61,7 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.1"
 
       - name: Test installed xpu version
         shell: bash
@@ -183,7 +183,7 @@ jobs:
   #     - name: Run LLM install (all) test
   #       uses: ./.github/actions/llm/setup-llm-env
   #       with:
-  #         extra-dependency: "xpu"
+  #         extra-dependency: "xpu_2.1"
 
   #     - name: Test installed xpu version
   #       shell: bash
