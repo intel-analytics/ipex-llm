@@ -7,12 +7,12 @@ concurrency:
 
 # Controls when the action will run.
 on:
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm_performance_tests.yml"
+      - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
@@ -143,84 +143,84 @@ jobs:
           python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_4 -b $CSV_SAVE_PATH/fp8/batch_size_4/transformer_int4_gpu-results-1baseline.csv -t 5.0
           python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_8 -b $CSV_SAVE_PATH/fp8/batch_size_8/transformer_int4_gpu-results-1baseline.csv -t 5.0
   
-  llm-stress-test-on-arc:
-    needs: llm-perf-regression-test-on-arc
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9"]
-    runs-on: [self-hosted, llm, perf]
-    env:
-      OMP_NUM_THREADS: 16
-      THREAD_NUM: 16
-      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      CSV_SAVE_PATH: '/mnt/disk1/stable_version_stress_test_gpu/'
+  # llm-stress-test-on-arc:
+  #   needs: llm-perf-regression-test-on-arc
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       python-version: ["3.9"]
+  #   runs-on: [self-hosted, llm, perf]
+  #   env:
+  #     OMP_NUM_THREADS: 16
+  #     THREAD_NUM: 16
+  #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+  #     CSV_SAVE_PATH: '/mnt/disk1/stable_version_stress_test_gpu/'
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        shell: bash
-        # pip install transformers_stream_generator for model internlm-chat-7b-8k
-        # pip install tiktoken for model Qwen-7B-Chat-10-12
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade omegaconf
-          python -m pip install --upgrade pandas
-          python -m pip install --upgrade einops
-          python -m pip install --upgrade transformers_stream_generator
-          python -m pip install --upgrade tiktoken
+  #     - name: Install dependencies
+  #       shell: bash
+  #       # pip install transformers_stream_generator for model internlm-chat-7b-8k
+  #       # pip install tiktoken for model Qwen-7B-Chat-10-12
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         python -m pip install --upgrade wheel
+  #         python -m pip install --upgrade omegaconf
+  #         python -m pip install --upgrade pandas
+  #         python -m pip install --upgrade einops
+  #         python -m pip install --upgrade transformers_stream_generator
+  #         python -m pip install --upgrade tiktoken
 
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+  #     - name: Download llm binary
+  #       uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
-        with:
-          extra-dependency: "xpu"
+  #     - name: Run LLM install (all) test
+  #       uses: ./.github/actions/llm/setup-llm-env
+  #       with:
+  #         extra-dependency: "xpu"
 
-      - name: Test installed xpu version
-        shell: bash
-        run: |
-          source /opt/intel/oneapi/setvars.sh
-          bash python/llm/test/run-llm-install-tests.sh
+  #     - name: Test installed xpu version
+  #       shell: bash
+  #       run: |
+  #         source /opt/intel/oneapi/setvars.sh
+  #         bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Test on xpu (int4)
-        shell: bash
-        run: |
-          source /opt/intel/oneapi/setvars.sh
-          export USE_XETLA=OFF
-          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          mv python/llm/test/benchmark/stable-version-arc-stress-test-sym_int4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
-          python run-stress-test.py
-          cp ./*.csv $CSV_SAVE_PATH/int4
-          rm ./*.csv
-          cd ../../../test/benchmark
-          python -m pip install pandas==1.5.3
-          python csv_to_html.py -f $CSV_SAVE_PATH/int4
+  #     - name: Test on xpu (int4)
+  #       shell: bash
+  #       run: |
+  #         source /opt/intel/oneapi/setvars.sh
+  #         export USE_XETLA=OFF
+  #         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  #         mv python/llm/test/benchmark/stable-version-arc-stress-test-sym_int4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+  #         cd python/llm/dev/benchmark/all-in-one
+  #         # hide time info
+  #         sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
+  #         python run-stress-test.py
+  #         cp ./*.csv $CSV_SAVE_PATH/int4
+  #         rm ./*.csv
+  #         cd ../../../test/benchmark
+  #         python -m pip install pandas==1.5.3
+  #         python csv_to_html.py -f $CSV_SAVE_PATH/int4
 
-      - name: Test on xpu (fp8)
-        shell: bash
-        run: |
-          source /opt/intel/oneapi/setvars.sh
-          export USE_XETLA=OFF
-          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          mv python/llm/test/benchmark/stable-version-arc-stress-test-fp8.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
-          python run-stress-test.py
-          cp ./*.csv $CSV_SAVE_PATH/fp8
-          rm ./*.csv
-          cd ../../../test/benchmark
-          python -m pip install pandas==1.5.3
-          python csv_to_html.py -f $CSV_SAVE_PATH/fp8
+  #     - name: Test on xpu (fp8)
+  #       shell: bash
+  #       run: |
+  #         source /opt/intel/oneapi/setvars.sh
+  #         export USE_XETLA=OFF
+  #         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  #         mv python/llm/test/benchmark/stable-version-arc-stress-test-fp8.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+  #         cd python/llm/dev/benchmark/all-in-one
+  #         # hide time info
+  #         sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
+  #         python run-stress-test.py
+  #         cp ./*.csv $CSV_SAVE_PATH/fp8
+  #         rm ./*.csv
+  #         cd ../../../test/benchmark
+  #         python -m pip install pandas==1.5.3
+  #         python csv_to_html.py -f $CSV_SAVE_PATH/fp8
