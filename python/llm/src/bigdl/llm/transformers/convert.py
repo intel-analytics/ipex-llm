@@ -590,13 +590,16 @@ def _optimize_ipex(model):
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
         _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
-        _ipex_optimize_rmsnorm, _llama_model_forward_4_35
+        _ipex_optimize_rmsnorm, _llama_model_forward_4_35, convert_function, GLM_get_masks
     )
 
     AttentionMaskConverter._make_causal_mask = _make_causal_mask
     convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel,
                     _llama_model_forward_4_35)
     model = model_convert_reference(model)
+    if model.config.architectures is not None \
+       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+        convert_function(model.transformer, "get_masks", GLM_get_masks)
     _ipex_optimize_rmsnorm(model)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
