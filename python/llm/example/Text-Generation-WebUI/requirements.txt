@@ -2,7 +2,6 @@ accelerate==0.21.*
 colorama
 datasets
 einops
-gradio==3.50.*
 markdown
 numpy==1.24.*
 pandas
