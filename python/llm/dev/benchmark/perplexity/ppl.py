@@ -14,77 +14,66 @@
 # limitations under the License.
 #
 
-import intel_extension_for_pytorch as ipex
 import numpy as np
 import torch
+from torch.nn import CrossEntropyLoss
 from tqdm import tqdm
-from transformers import AutoTokenizer
 import gc
 
-from bigdl.llm.transformers import AutoModelForCausalLM
-
-class PPL:
-    def __init__(self):
-        self.nll = 0
-        self.cnt = 0
-    def __call__(self, all_logits, labels):
-        '''
-            all_logits [seq_length, vocab_size]
-            labels [seq_length]
-        '''
-        seq_length = all_logits.shape[0]
-        for i in range(0, seq_length - 1):
-            logits = all_logits[i, :]
-            max_logit = np.amax(logits)
-            sum_exp = np.sum(np.exp(logits - max_logit))
-            # logits at time-step i is for predicting token at time-step (i+1)
-            next_tok = labels[i + 1]
-            log_softmax_of_tok = (logits[next_tok] - max_logit) - np.log(sum_exp)
-            self.nll += -log_softmax_of_tok
-            self.cnt += 1
-        return np.exp(self.nll / self.cnt)
-   
-    def result(self):
-        return np.exp(self.nll / self.cnt)
-
-    def __str__(self):
-        return f"PPL: {np.exp(self.nll / self.cnt):.3f}"
-
+from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 
 class BigDLPPL:
     def __init__(self, model_path, device, **model_kwargs) -> None:
         model_kwargs['trust_remote_code'] = model_kwargs.get('trust_remote_code', True)
         model_kwargs['optimize_model'] = model_kwargs.get('optimize_model', True)
         self.device = device
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
-        if 'xpu' in device:
-            import intel_extension_for_pytorch as ipex
+        if 'chatglm' in model_path.lower():
+            self.model = AutoModel.from_pretrained(model_path, **model_kwargs)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
         self.model.to(device)
-        self.ppl_evaluator = PPL()
 
-    def perplexity_hf(self, text):
-        inputs = self.tokenizer('\n\n'.join(text), return_tensors='pt').to(self.device)
-        input_ids = inputs['input_ids']
-        #    attention_mask = inputs['attention_mask']
-        progress_bar = tqdm(range(0, input_ids.shape[1], 512))
-        
-        for i0 in progress_bar:
-            input_ids_chunks = input_ids[:, i0:(i0+512)]
-            input_ids_chunks[:, 0] = 1
-            with torch.no_grad():
-                result = self.model.forward(input_ids_chunks, labels = input_ids_chunks, return_dict=True)
-                #print(f"ppl = {torch.exp(result.loss)}")
-                seq_len = result.logits.shape[1]
-                data = result.logits
-                data = data.to('cpu')
-                input_ids_chunks = input_ids_chunks.to('cpu')
-                self.ppl_evaluator(data.numpy()[0, seq_len//2:, :], input_ids_chunks.numpy()[0, seq_len//2:])
-            progress_bar.set_description(f"{self.ppl_evaluator}")
+    def perplexity_hf(self, encoded_texts):
+        self.model.eval()
+        loss_fct = CrossEntropyLoss(reduction="none")
+        ppls = []
+
+        pbar = tqdm(range(len(encoded_texts)))
+        for bid in pbar:
+            encoded_batch = encoded_texts[bid:bid+1]
+            if type(encoded_batch) == dict:
+                attn_mask = encoded_batch['attention_mask'] if 'attention_mask' in encoded_batch.keys() else None
+                encoded_batch = encoded_batch['input_ids']
+            elif type(encoded_batch) == list:
+                encoded_batch = encoded_batch[0]
+            
+            encoded_batch = encoded_batch.to(self.device)
+            attn_mask = torch.ones_like(encoded_batch)
+
+            out_logits = self.model(encoded_batch).logits
+
+            labels = encoded_batch
+
+            shift_logits = out_logits[..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
+            shift_attention_mask_batch = attn_mask[..., 1:].contiguous()
+
+            loss_ = loss_fct(shift_logits.transpose(1, 2), shift_labels).float()
+            perplexity_batch = torch.exp2(
+                (loss_ * shift_attention_mask_batch).sum(1)
+                / shift_attention_mask_batch.sum(1)
+            )
+            ppls += perplexity_batch.tolist()
+
+            pbar.set_description(f"[{bid:<4}/{len(encoded_texts)}] avg_ppls: {np.mean(np.array(ppls)[~np.isnan(np.array(ppls))]):.4f}")
+            
+            del out_logits, encoded_batch, attn_mask, shift_logits, shift_labels, shift_attention_mask_batch, perplexity_batch
+
+        ppl_mean = np.mean(np.array(ppls)[~np.isnan(np.array(ppls))])
 
         torch.xpu.synchronize()
         torch.xpu.empty_cache()
         del self.model
         gc.collect()
         
-        return self.ppl_evaluator.result()
+        return ppl_mean
