@@ -135,7 +135,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
 
         extra = Extra.forbid
     
-    def embed(self, text: str):
+    def embed(self, text: str, **kwargs):
         """Compute doc embeddings using a HuggingFace transformer model.
 
         Args:
@@ -144,7 +144,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
         Returns:
             List of embeddings, one for each text.
         """
-        input_ids = self.tokenizer.encode(text, return_tensors="pt")  # shape: [1, T]
+        input_ids = self.tokenizer.encode(text, return_tensors="pt", **kwargs)  # shape: [1, T]
         embeddings = self.model(input_ids, return_dict=False)[0]  # shape: [1, T, N]
         embeddings = embeddings.squeeze(0).detach().numpy()
         embeddings = np.mean(embeddings, axis=0)
