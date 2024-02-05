@@ -50,7 +50,7 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade tiktoken
           python -m pip install --upgrade transformers_stream_generator
-          python -m pip install --upgrade bigdl-llm[all]==2.5.0b20231201
+          python -m pip install --upgrade bigdl-llm[all]==2.5.0b1
           
 
       # - name: Download llm binary
