@@ -142,12 +142,13 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
             for pkv in past_key_values:
                 key = pkv[1]
                 value = pkv[2]
-                key = key.unsqueeze(-3)
-                key = key.expand(-1, -1, 16, -1, -1)
-                key = key.contiguous().view(len0, len1, 2 * 16, len3)
-                value = value.unsqueeze(-3)
-                value = value.expand(-1, -1, 16, -1, -1)
-                value = value.contiguous().view(len0, len1, 2 * 16, len3)
+                if False:
+                    key = key.unsqueeze(-3)
+                    key = key.expand(-1, -1, 16, -1, -1)
+                    key = key.contiguous().view(len0, len1, 2 * 16, len3)
+                    value = value.unsqueeze(-3)
+                    value = value.expand(-1, -1, 16, -1, -1)
+                    value = value.contiguous().view(len0, len1, 2 * 16, len3)
                 list = []
                 list.append(key[:cur_len, :, :, :])
                 list.append(value[:cur_len, :, :, :])
@@ -205,10 +206,16 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
         len3 = past_key_values[0][1].size(3)
         for i in range(len(past_key_values)):
             if self.config.model_type == "chatglm":
-                k0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
-                                dtype=torch.float32)
-                v0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
-                                dtype=torch.float32)
+                if False:
+                    k0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
+                                    dtype=torch.float32)
+                    v0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
+                                    dtype=torch.float32)
+                else:
+                    k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                    dtype=torch.float32)
+                    v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                    dtype=torch.float32)
                 k0 = k0.permute(2, 0, 1, 3)
                 v0 = v0.permute(2, 0, 1, 3)
                 past_key_values_storage.append((k0, v0))
@@ -296,12 +303,16 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                 for pkv in past_key_values:
                     key0 = pkv[1][size:size1, :, :, :]
                     value0 = pkv[2][size:size1, :, :, :]
-                    key = key0.unsqueeze(-3)
-                    key = key.expand(-1, -1, 16, -1, -1)
-                    key = key.contiguous().view(size1-size, len1, 2 * 16, len3)
-                    value = value0.unsqueeze(-3)
-                    value = value.expand(-1, -1, 16, -1, -1)
-                    value = value.contiguous().view(size1-size, len1, 2 * 16, len3)
+                    if False:
+                        key = key0.unsqueeze(-3)
+                        key = key.expand(-1, -1, 16, -1, -1)
+                        key = key.contiguous().view(size1-size, len1, 2 * 16, len3)
+                        value = value0.unsqueeze(-3)
+                        value = value.expand(-1, -1, 16, -1, -1)
+                        value = value.contiguous().view(size1-size, len1, 2 * 16, len3)
+                    else:
+                        key = key0
+                        value = value0
                     past_key_values_storage[i][0][ size:size1, :, :, :] = \
                         key.to(torch.float32)
                     past_key_values_storage[i][1][ size:size1, :, :, :] = \
