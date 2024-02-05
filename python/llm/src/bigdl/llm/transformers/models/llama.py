@@ -40,6 +40,8 @@ import math
 import os
 import torch.nn.functional as F
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
+    restore_fp8_kv_cache, use_quantize_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
@@ -326,40 +328,53 @@ def llama_attention_forward_4_31(
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids, "llama")
+        if use_quantize_kv_cache(self.q_proj, hidden_states):
+            if past_key_value is None:
+                if use_cache:
+                    max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+                    cache_k, cache_v = init_fp8_kv_cache(
+                        query_states.size(0), self.num_key_value_heads, kv_seq_len, self.head_dim,
+                        device=query_states.device,
+                    )
+                    key_states, value_states = append_fp8_kv_cache(cache_k, cache_v, key_states, value_states)
+            else:
+                cache_k, cache_v = past_key_value[0], past_key_value[1]
+                key_states, value_states = append_fp8_kv_cache(cache_k, cache_v, key_states, value_states)
+            key_states, value_states = restore_fp8_kv_cache(key_states, value_states, query_states.dtype)
+        else:
+            if past_key_value is not None:
+                # reuse k, v, self_attention
+                cache_k = past_key_value[0]
+                cache_v = past_key_value[1]
+                if not enough_kv_room:
+                    # allocate new
+                    new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                            self.num_key_value_heads,  # Support GQA
+                                                            self.head_dim,
+                                                            cache_k.size(2),
+                                                            kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                            dtype=cache_k.dtype,
+                                                            device=device)
+                    new_cache_k[:] = cache_k
+                    new_cache_v[:] = cache_v
+                    cache_k = new_cache_k
+                    cache_v = new_cache_v
 
-        if past_key_value is not None:
-            # reuse k, v, self_attention
-            cache_k = past_key_value[0]
-            cache_v = past_key_value[1]
-            if not enough_kv_room:
-                # allocate new
-                new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                           self.num_key_value_heads,  # Support GQA
-                                                           self.head_dim,
-                                                           cache_k.size(2),
-                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                           dtype=cache_k.dtype,
-                                                           device=device)
-                new_cache_k[:] = cache_k
-                new_cache_v[:] = cache_v
-                cache_k = new_cache_k
-                cache_v = new_cache_v
+                key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
-            key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
-
-        elif use_cache:
-            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-            new_key_states, new_value_states = init_kv_cache(bsz,
-                                                             self.num_key_value_heads,
-                                                             self.head_dim,
-                                                             kv_seq_len,
-                                                             max_cache_length,
-                                                             dtype=key_states.dtype,
-                                                             device=device)
-            new_key_states[:] = key_states
-            new_value_states[:] = value_states
-            key_states = new_key_states
-            value_states = new_value_states
+            elif use_cache:
+                max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+                new_key_states, new_value_states = init_kv_cache(bsz,
+                                                                self.num_key_value_heads,
+                                                                self.head_dim,
+                                                                kv_seq_len,
+                                                                max_cache_length,
+                                                                dtype=key_states.dtype,
+                                                                device=device)
+                new_key_states[:] = key_states
+                new_value_states[:] = value_states
+                key_states = new_key_states
+                value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
 
