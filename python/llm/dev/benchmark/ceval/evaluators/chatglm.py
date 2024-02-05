@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# refer to https://github.com/QwenLM/Qwen/blob/main/eval/evaluate_chat_ceval.py
+# refer to https://github.com/THUDM/ChatGLM2-6B/blob/main/evaluation/evaluate_ceval.py
 
 import re
 import torch
