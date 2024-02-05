@@ -366,16 +366,12 @@ def generate_reply_HF(question, original_question, seed, state, stopping_strings
 
     if shared.model.config.model_type == "qwen":
         stopping_words = ["<|endoftext|>", "<|im_end|>", "<|im_start|>"]
-        generate_params['stopping_criteria'].append(StopWordsCriteria(len(input_ids[0]),
-                                                    stopping_words,
-                                                    shared.tokenizer))
+        generate_params['stopping_criteria'].append(StopWordsCriteria(stopping_words, shared.tokenizer))
 
     for st in state['custom_stopping_strings']:
         if type(st) is str:
             stopping_words = [item.strip().strip('"') for item in [state['custom_stopping_strings']][0].split(',')]
-            generate_params['stopping_criteria'].append(StopWordsCriteria(len(input_ids[0]),
-                                                        stopping_words,
-                                                        shared.tokenizer))
+            generate_params['stopping_criteria'].append(StopWordsCriteria(stopping_words, shared.tokenizer))
 
 
     # Logits processor

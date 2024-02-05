@@ -43,14 +43,13 @@ class _StopEverythingStoppingCriteria(transformers.StoppingCriteria):
 
 class StopWordsCriteria(transformers.StoppingCriteria):
     """Custom `StoppingCriteria` which checks if all generated functions in the batch are completed."""
-    def __init__(self, input_length, stop_words, tokenizer):
-        self.input_length = input_length
+    def __init__(self, stop_words, tokenizer):
         self.stop_words = stop_words
         self.tokenizer = tokenizer
 
     def __call__(self, input_ids, scores, **kwargs):
         """Returns true if all generated sequences contain any of the end-of-function strings."""
-        texts =  [self.tokenizer.decode(input_ids[-1][-1]) for ids in input_ids]
+        texts =  [self.tokenizer.decode(input_ids[-1][-1])]
         dones = [any(stop_word in texts for stop_word in self.stop_words)]
         return all(dones)
 
