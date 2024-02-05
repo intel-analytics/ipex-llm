@@ -227,6 +227,150 @@ def llama_attention_forward_4_31(
     padding_mask: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    if use_quantize_kv_cache(self.q_proj, hidden_states):
+        forward_function = llama_attention_forward_4_31_quantized
+    else:
+        forward_function = llama_attention_forward_4_31_original
+    return forward_function(
+        self=self,
+        hidden_states=hidden_states,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_value=past_key_value,
+        output_attentions=output_attentions,
+        use_cache=use_cache,
+        padding_mask=padding_mask,
+        kwargs=kwargs
+    )
+
+
+def llama_attention_forward_4_31_quantized(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    padding_mask: Optional[torch.LongTensor] = None,
+    **kwargs,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    if "padding_mask" in kwargs:
+        warnings.warn(
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+        )
+
+    bsz, q_len, _ = hidden_states.size()
+
+    query_states = self.q_proj(hidden_states)
+    key_states = self.k_proj(hidden_states)
+    value_states = self.v_proj(hidden_states)
+
+    query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+    kv_seq_len = key_states.shape[-2]
+    if past_key_value is not None:
+        kv_seq_len += past_key_value[0].shape[-2]
+
+    if should_use_fuse_rope(self, hidden_states, position_ids):
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states, key_states, position_ids, 'llama')
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids, 'llama')
+
+    if past_key_value is None:
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            raise ValueError(
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                raise ValueError(
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                )
+            attn_weights = attn_weights + attention_mask
+
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
+        if use_cache:
+            k_cache, v_cache = init_fp8_kv_cache(
+                bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
+                device=query_states.device
+            )
+            key_states, value_states = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
+            past_key_value = (key_states, value_states)
+    else:
+        k_cache, v_cache = past_key_value
+        key_states, value_states = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
+        past_key_value = (key_states, value_states)
+
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            key_states, value_states = restore_fp8_kv_cache(key_states, value_states, query_states.dtype)
+            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
+        else:
+            import linear_q4_0
+            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+
+        attn_weights = attn_weights / math.sqrt(self.head_dim)
+
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            raise ValueError(
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                raise ValueError(
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                )
+            attn_weights = attn_weights + attention_mask
+
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            attn_output = torch.matmul(attn_weights, value_states)
+        else:
+            import linear_q4_0
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states.transpose(-1, -2))
+
+    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+        raise ValueError(
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+            f" {attn_output.size()}"
+        )
+    attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+    attn_output = self.o_proj(attn_output)
+
+    if not output_attentions:
+        attn_weights = None
+
+    if not use_cache:
+        past_key_value = None
+
+    return attn_output, attn_weights, past_key_value
+
+
+def llama_attention_forward_4_31_original(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    padding_mask: Optional[torch.LongTensor] = None,
+    **kwargs,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
@@ -329,61 +473,44 @@ def llama_attention_forward_4_31(
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids, "llama")
 
-        if use_quantize_kv_cache(self.q_proj, hidden_states):
-            if past_key_value is None:
-                if use_cache:
-                    max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-                    cache_k, cache_v = init_fp8_kv_cache(
-                        query_states.size(0), self.num_key_value_heads, kv_seq_len, self.head_dim,
-                        device=query_states.device,
-                    )
-                    key_states, value_states = append_fp8_kv_cache(cache_k, cache_v,
-                                                                   key_states, value_states)
-            else:
-                cache_k, cache_v = past_key_value[0], past_key_value[1]
-                key_states, value_states = append_fp8_kv_cache(cache_k, cache_v,
-                                                               key_states, value_states)
-            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                            query_states.dtype)
-        else:
-            if past_key_value is not None:
-                # reuse k, v, self_attention
-                cache_k = past_key_value[0]
-                cache_v = past_key_value[1]
-                if not enough_kv_room:
-                    # allocate new
-                    new_cache_k, new_cache_v = extend_kv_cache(
-                        bsz,
-                        self.num_key_value_heads,  # Support GQA
-                        self.head_dim,
-                        cache_k.size(2),
-                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                        dtype=cache_k.dtype,
-                        device=device
-                    )
-                    new_cache_k[:] = cache_k
-                    new_cache_v[:] = cache_v
-                    cache_k = new_cache_k
-                    cache_v = new_cache_v
-
-                key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                           key_states, value_states)
-
-            elif use_cache:
-                max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-                new_key_states, new_value_states = init_kv_cache(
+        if past_key_value is not None:
+            # reuse k, v, self_attention
+            cache_k = past_key_value[0]
+            cache_v = past_key_value[1]
+            if not enough_kv_room:
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(
                     bsz,
-                    self.num_key_value_heads,
+                    self.num_key_value_heads,  # Support GQA
                     self.head_dim,
-                    kv_seq_len,
-                    max_cache_length,
-                    dtype=key_states.dtype,
+                    cache_k.size(2),
+                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                    dtype=cache_k.dtype,
                     device=device
                 )
-                new_key_states[:] = key_states
-                new_value_states[:] = value_states
-                key_states = new_key_states
-                value_states = new_value_states
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
+
+            key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                        key_states, value_states)
+
+        elif use_cache:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            new_key_states, new_value_states = init_kv_cache(
+                bsz,
+                self.num_key_value_heads,
+                self.head_dim,
+                kv_seq_len,
+                max_cache_length,
+                dtype=key_states.dtype,
+                device=device
+            )
+            new_key_states[:] = key_states
+            new_value_states[:] = value_states
+            key_states = new_key_states
+            value_states = new_value_states
 
     past_key_value = (key_states, value_states) if use_cache else None
 
