@@ -166,7 +166,7 @@ def convert_function(m, func_name, new_function):
     setattr(m, func_name, bound_method)
 
 
-def GLM2_get_masks(self, input_ids, past_key_values, padding_mask=None):
+def GLM_get_masks(self, input_ids, past_key_values, padding_mask=None):
     batch_size, seq_length = input_ids.shape
     full_attention_mask = torch.ones(
         batch_size, seq_length, seq_length, device=input_ids.device
