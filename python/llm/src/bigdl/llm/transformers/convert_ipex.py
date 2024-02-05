@@ -142,6 +142,8 @@ def _ipex_jit(model):
     sample_inputs = (
         get_dummy_input(model, return_dict=True)
     )
+    if "return_last_logit" in sample_inputs:
+        del sample_inputs["return_last_logit"]
     with torch.no_grad(), torch.cpu.amp.autocast(
         enabled=True
     ):
