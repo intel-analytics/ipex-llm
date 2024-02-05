@@ -238,6 +238,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device)
                     elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
+                        if in_features % 64 != 0:
+                            # now our kernel requires in_features is a multiple of 64
+                            continue
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
@@ -829,14 +832,27 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.internlm import internlm_attention_forward
-        convert_forward(model,
-                        module.InternLMAttention,
-                        internlm_attention_forward
-                        )
-        convert_forward(model,
-                        module.InternLMRMSNorm,
-                        llama_rms_norm_forward
-                        )
+        from bigdl.llm.transformers.models.internlm import internlm2_attention_forward
+        try:
+            convert_forward(model,
+                            module.InternLM2Attention,
+                            internlm2_attention_forward
+                            )
+        except:
+            convert_forward(model,
+                            module.InternLMAttention,
+                            internlm_attention_forward
+                            )
+        try:
+            convert_forward(model,
+                            module.InternLM2RMSNorm,
+                            llama_rms_norm_forward
+                            )
+        except:
+            convert_forward(model,
+                            module.InternLMRMSNorm,
+                            llama_rms_norm_forward
+                            )
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -896,6 +912,17 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralBLockSparseTop2MLP,
                         mixtral_mlp_forward)
+    elif model.config.model_type == "phi-msft":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.phixtral import phixtral_moeblock_forward, \
+            phixtral_mlp_forward
+        convert_forward(model,
+                        module.MoE,
+                        phixtral_moeblock_forward)
+        convert_forward(model,
+                        module.MLP,
+                        phixtral_mlp_forward)
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
                 model.config.architectures[0] == "MixtralForCausalLM":

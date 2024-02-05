@@ -16,7 +16,7 @@
 import os
 
 import torch
-from transformers import LlamaTokenizer  # noqa: F402
+from transformers import AutoTokenizer
 import argparse
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -39,6 +39,6 @@ if __name__ == "__main__":
     adapter_path = args.adapter_path
     output_path = args.output_path
     
-    tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     merge_adapter(base_model, tokenizer, adapter_path, output_path)
     print(f'Finish to merge the adapter into the original model and you could find the merged model in {output_path}.')
