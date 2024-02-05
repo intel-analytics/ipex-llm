@@ -291,14 +291,16 @@ def llama_attention_forward_4_31_quantized(
                                     key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(False,
+            invalidInputError(
+                False,
                 f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
                 f" but is {attn_weights.size()}"
             )
 
         if attention_mask is not None:
             if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                invalidInputError(False,
+                invalidInputError(
+                    False,
                     f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                     f" but is {attention_mask.size()}"
                 )
@@ -332,14 +334,16 @@ def llama_attention_forward_4_31_quantized(
         attn_weights = attn_weights / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(False,
+            invalidInputError(
+                False,
                 f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
                 f" but is {attn_weights.size()}"
             )
 
         if attention_mask is not None:
             if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                invalidInputError(False,
+                invalidInputError(
+                    False,
                     f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                     f" but is {attention_mask.size()}"
                 )
@@ -357,7 +361,8 @@ def llama_attention_forward_4_31_quantized(
                                                             value_states.transpose(-1, -2))
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
+        invalidInputError(
+            False,
             f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
             f" but is {attn_output.size()}"
         )
@@ -493,20 +498,21 @@ def llama_attention_forward_4_31_original(
             cache_v = past_key_value[1]
             if not enough_kv_room:
                 # allocate new
-                new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                           self.num_key_value_heads,  # Support GQA
-                                                           self.head_dim,
-                                                           cache_k.size(2),
-                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                           dtype=cache_k.dtype,
-                                                           device=device)
+                new_cache_k, new_cache_v = extend_kv_cache(
+                    bsz,
+                    self.num_key_value_heads,  # Support GQA
+                    self.head_dim,
+                    cache_k.size(2),
+                    kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                    dtype=cache_k.dtype,
+                    device=device
+                )
                 new_cache_k[:] = cache_k
                 new_cache_v[:] = cache_v
                 cache_k = new_cache_k
                 cache_v = new_cache_v
 
-            key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                        key_states, value_states)
+            key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
 
         elif use_cache:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
