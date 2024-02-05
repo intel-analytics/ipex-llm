@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 13 * * 1,2,3,4,5" # GMT time, 13:00 GMT == 21:00 China
+    - cron: "00 13 * * 2,4" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
     branches: [main]
     paths:
@@ -53,7 +53,7 @@ jobs:
           NIGHTLY_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t","Mistral-7B-v0.1"]'
           NIGHTLY_MATRIX_DATASET: '["wikitext"]'
           NIGHTLY_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
-          NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy"]'
+          NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
         run: |
             echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
