@@ -65,7 +65,7 @@ jobs:
         env:
           PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf"]'
           PR_MATRIX_DATASET: '["wikitext"]'
-          PR_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
+          PR_MATRIX_PRECISION: '["mixed_fp4 fp8"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
