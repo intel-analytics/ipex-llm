@@ -362,7 +362,7 @@ class _BaseAutoModelClass:
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'))
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
-        # disable tie_word_embeddings for MPT due to https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/modeling_mpt.py#L232
+        # force enable tie_word_embeddings for MPT due to https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/modeling_mpt.py#L232
         if model.config.architectures[0] != 'MPTForCausalLM':
             model.config.update({"tie_word_embeddings": False})
 
