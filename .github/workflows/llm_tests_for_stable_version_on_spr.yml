@@ -7,8 +7,8 @@ concurrency:
 
 # Controls when the action will run.
 on:
-  # pull_request:
-  #   branches: [main]
+  pull_request:
+    branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -18,11 +18,11 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-cpp-build:
-    uses: ./.github/workflows/llm-binary-build.yml
+  # llm-cpp-build:
+  #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-perf-regression-test-on-spr:
-    needs: llm-cpp-build
+    # needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
@@ -50,12 +50,14 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade tiktoken
           python -m pip install --upgrade transformers_stream_generator
+          python -m pip install --upgrade bigdl-llm[all]==2.5.0b20231231
+          
 
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
 
       - name: Test on cpu
         shell: bash
