@@ -13,6 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Some parts of this file is adapted from
+# https://huggingface.co/microsoft/speecht5_tts
+#
+#    MIT License
+#
+#    Copyright (c) Microsoft Corporation.
+#
+#    Permission is hereby granted, free of charge, to any person obtaining a copy
+#    of this software and associated documentation files (the "Software"), to deal
+#    in the Software without restriction, including without limitation the rights
+#    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#    copies of the Software, and to permit persons to whom the Software is
+#    furnished to do so, subject to the following conditions:
+#
+#    The above copyright notice and this permission notice shall be included in all
+#    copies or substantial portions of the Software.
+#
+#    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#    SOFTWARE
+
 
 import torch
 import time
@@ -35,7 +60,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-data-path', type=str, default="Matthijs/cmu-arctic-xvectors",
                         help='The huggingface repo id for the audio dataset to be downloaded'
                             ', or the path to the huggingface dataset folder')
-    parser.add_argument('--text', type=str, default="This is an example text for synthesize speech.",
+    parser.add_argument('--text', type=str, default="Artificial intelligence refers to the development of computer systems that can perform tasks that typically require human intelligence.",
                         help='Text to synthesize speech')
     
     args = parser.parse_args()
@@ -52,9 +77,8 @@ if __name__ == '__main__':
     # Skip optimizing these two modules to get higher audio quality
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = optimize_model(model, cpu_embedding=True, 
-                           modules_to_not_convert=["speech_decoder_postnet.feat_out",
-                                                   "speech_decoder_postnet.prob_out"]) 
+    model = optimize_model(model, modules_to_not_convert=["speech_decoder_postnet.feat_out",
+                                                          "speech_decoder_postnet.prob_out"]) 
     model = model.to('xpu')
     vocoder = vocoder.to('xpu')
 
@@ -62,7 +86,7 @@ if __name__ == '__main__':
     
     # load xvector containing speaker's voice characteristics from a dataset
     embeddings_dataset = load_dataset(dataset_path, split="validation")
-    speaker_embeddings = torch.tensor(embeddings_dataset[0]["xvector"]).unsqueeze(0).to('xpu')
+    speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to('xpu')
     
     with torch.inference_mode():
         # ipex model needs a warmup, then inference time can be accurate
@@ -74,4 +98,4 @@ if __name__ == '__main__':
         end = time.time()
         print(f"Inference time: {end-st} s")
     
-    sf.write("speech_t5_out.wav", speech.to('cpu').numpy(), samplerate=16000)
+    sf.write("bigdl_llm_speech_t5_out.wav", speech.to('cpu').numpy(), samplerate=16000)
