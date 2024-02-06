@@ -99,11 +99,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # include:
-        #   python-version: "3.9"
-        #   model_name: "stablelm-3b-4e1t"
-        #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         task: ${{ fromJson(needs.set-matrix.outputs.task) }}
@@ -138,20 +133,6 @@ jobs:
         uses: ./.github/actions/llm/setup-llm-env
         with:
           extra-dependency: "xpu_2.1"
-        # run: |
-        #   retry_count=0
-        #   max_retries=1
-        #   command="bash ./.github/actions/llm/setup-llm-env --extra-dependency xpu_2.1"
-        #   until $command; do
-        #       exit_code=$?
-        #       echo "Attempt $((retry_count+1)) failed with exit code $exit_code. Retrying..."
-        #       retry_count=$((retry_count+1))
-        #       if [ "$retry_count" -gt "$max_retries" ]; then
-        #           echo "Reached maximum retry attempts. Exiting."
-        #           exit $exit_code
-        #       fi
-        #       sleep 5
-        #   done
 
       - name: Install harness
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
@@ -224,8 +205,6 @@ jobs:
     if: ${{ always() }}
     needs: llm-harness-evalution
     runs-on: ubuntu-latest
-    # env:
-    #   OUTPUT_PATH: ${{ needs.llm-harness-evalution.outputs.output_path }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
@@ -252,52 +231,3 @@ jobs:
           echo ${{ env.OUTPUT_PATH }} 
           ls ${{ env.OUTPUT_PATH }}
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.OUTPUT_PATH }}
-
-  # TODO: add a nightly summary job
-  # llm-harness-summary-nightly:
-  #   if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-  #   needs: llm-harness-evalution
-  #   runs-on: '["self-hosted", "llm", "temp-arc01"]'
-  #   env:
-  #     OUTPUT_PATH: ${{ needs.llm-harness-evalution.outputs.output_path }}
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Set up Python 3.9
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: 3.9
-
-  #     - name: Install dependencies
-  #       shell: bash
-  #       run: |
-  #         pip install --upgrade pip
-  #         pip install jsonlines  pytablewriter regex
-
-  #     - name: Download all results for nightly run
-  #       if: github.event_name == 'schedule'
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: harness_results
-  #         path: /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-
-  #     - name: Download all results for pull request
-  #       if: github.event_name == 'pull_request'
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: harness_results
-  #         path: /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-         
-  #     - name: Summarize the results for nightly run
-  #       if: github.event_name == 'schedule'
-  #       shell: bash
-  #       run: |
-  #         ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-  #         python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-        
-  #     - name: Summarize the results for pull request
-  #       if: github.event_name == 'pull_request'
-  #       shell: bash
-  #       run: |
-  #         ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-  #         python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-      
