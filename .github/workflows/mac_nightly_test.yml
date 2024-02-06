@@ -36,7 +36,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   Mac-Python-AppTest-Part1:
