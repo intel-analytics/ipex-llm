@@ -135,23 +135,23 @@ jobs:
         uses: ./.github/actions/llm/download-llm-binary
 
       - name: Run LLM install (all) test
-        # uses: ./.github/actions/llm/setup-llm-env
-        # with:
-        #   extra-dependency: "xpu_2.1"
-        run: |
-          retry_count=0
-          max_retries=1
-          command="bash ./.github/actions/llm/setup-llm-env --extra-dependency xpu_2.1"
-          until $command; do
-              exit_code=$?
-              echo "Attempt $((retry_count+1)) failed with exit code $exit_code. Retrying..."
-              retry_count=$((retry_count+1))
-              if [ "$retry_count" -gt "$max_retries" ]; then
-                  echo "Reached maximum retry attempts. Exiting."
-                  exit $exit_code
-              fi
-              sleep 5
-          done
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu_2.1"
+        # run: |
+        #   retry_count=0
+        #   max_retries=1
+        #   command="bash ./.github/actions/llm/setup-llm-env --extra-dependency xpu_2.1"
+        #   until $command; do
+        #       exit_code=$?
+        #       echo "Attempt $((retry_count+1)) failed with exit code $exit_code. Retrying..."
+        #       retry_count=$((retry_count+1))
+        #       if [ "$retry_count" -gt "$max_retries" ]; then
+        #           echo "Reached maximum retry attempts. Exiting."
+        #           exit $exit_code
+        #       fi
+        #       sleep 5
+        #   done
 
       - name: Install harness
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
