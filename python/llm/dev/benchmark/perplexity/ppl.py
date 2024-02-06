@@ -28,17 +28,12 @@ class BigDLPPL:
         model_kwargs['optimize_model'] = model_kwargs.get('optimize_model', True)
         self.device = device
 
-        try:
-            if 'chatglm' in model_path.lower():
-                self.model = AutoModel.from_pretrained(model_path, **model_kwargs)
-            else:
-                self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
-            self.model.to(device)
-        except RuntimeError:
-            torch.xpu.synchronize()
-            torch.xpu.empty_cache()
-            del self.model
-            gc.collect()
+        if 'chatglm' in model_path.lower():
+            self.model = AutoModel.from_pretrained(model_path, **model_kwargs)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
+        self.model.to(device)
+
 
     def perplexity_hf(self, encoded_texts):
         self.model.eval()
