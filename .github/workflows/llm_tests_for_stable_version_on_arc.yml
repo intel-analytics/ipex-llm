@@ -1,4 +1,4 @@
-name: LLM Test for Stable Version
+name: ARC LLM Test for Stable Version
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
@@ -61,47 +61,87 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.1"
 
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu (int4)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-perf-test-sym_int4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # batch_size = 1
+          sed -i '/batch_size/c\batch_size: 1' config.yaml
           python run.py
-          cp ./*.csv $CSV_SAVE_PATH/int4
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_1
+          rm ./*.csv
+          # batch_size = 2
+          sed -i '/batch_size/c\batch_size: 2' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_2
+          rm ./*.csv
+          # batch_size = 4
+          sed -i '/batch_size/c\batch_size: 4' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_4
+          rm ./*.csv
+          # batch_size = 8
+          sed -i '/batch_size/c\batch_size: 8' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/int4/batch_size_8
           rm ./*.csv
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f $CSV_SAVE_PATH/int4 -b $CSV_SAVE_PATH/int4/transformer_int4_gpu-results-1baseline.csv -t 5.0
-
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_1 -b $CSV_SAVE_PATH/int4/batch_size_1/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_2 -b $CSV_SAVE_PATH/int4/batch_size_2/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_4 -b $CSV_SAVE_PATH/int4/batch_size_4/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/int4/batch_size_8 -b $CSV_SAVE_PATH/int4/batch_size_8/transformer_int4_gpu-results-1baseline.csv -t 5.0
+  
       - name: Test on xpu (fp8)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-perf-test-fp8.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # batch_size = 1
+          sed -i '/batch_size/c\batch_size: 1' config.yaml
           python run.py
-          cp ./*.csv $CSV_SAVE_PATH/fp8
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_1
+          rm ./*.csv
+          # batch_size = 2
+          sed -i '/batch_size/c\batch_size: 2' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_2
+          rm ./*.csv
+          # batch_size = 4
+          sed -i '/batch_size/c\batch_size: 4' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_4
+          rm ./*.csv
+          # batch_size = 8
+          sed -i '/batch_size/c\batch_size: 8' config.yaml
+          python run.py
+          cp ./*.csv $CSV_SAVE_PATH/fp8/batch_size_8
           rm ./*.csv
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f $CSV_SAVE_PATH/fp8 -b $CSV_SAVE_PATH/fp8/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_1 -b $CSV_SAVE_PATH/fp8/batch_size_1/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_2 -b $CSV_SAVE_PATH/fp8/batch_size_2/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_4 -b $CSV_SAVE_PATH/fp8/batch_size_4/transformer_int4_gpu-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f $CSV_SAVE_PATH/fp8/batch_size_8 -b $CSV_SAVE_PATH/fp8/batch_size_8/transformer_int4_gpu-results-1baseline.csv -t 5.0
   
   llm-stress-test-on-arc:
     needs: llm-perf-regression-test-on-arc
@@ -143,18 +183,18 @@ jobs:
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.1"
 
       - name: Test installed xpu version
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu (int4)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-stress-test-sym_int4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -171,7 +211,7 @@ jobs:
       - name: Test on xpu (fp8)
         shell: bash
         run: |
-          source /home/arda/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           mv python/llm/test/benchmark/stable-version-arc-stress-test-fp8.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -184,111 +224,3 @@ jobs:
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH/fp8
-
-
-  llm-perf-regression-test-on-spr:
-    needs: llm-cpp-build
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9"]
-    runs-on: [self-hosted, llm, spr01-perf]
-    env:
-      OMP_NUM_THREADS: 16
-      THREAD_NUM: 16
-      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade omegaconf
-          python -m pip install --upgrade pandas
-          python -m pip install --upgrade einops
-          python -m pip install --upgrade tiktoken
-          python -m pip install --upgrade transformers_stream_generator
-
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
-
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
-
-      - name: Test on cpu
-        shell: bash
-        run: |
-          mv python/llm/test/benchmark/stable-version-cpu-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          export http_proxy=${HTTP_PROXY}
-          export https_proxy=${HTTPS_PROXY}
-          source bigdl-llm-init -t
-          export OMP_NUM_THREADS=48
-          # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
-          python run.py
-          cp ./*.csv /models/stable_version_perf_regression_test_cpu/
-          cd ../../../test/benchmark
-          python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 5.0
-  
-
-  llm-stress-test-on-spr:
-    needs: llm-perf-regression-test-on-spr
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9"]
-    runs-on: [self-hosted, llm, spr01-perf]
-    env:
-      OMP_NUM_THREADS: 16
-      THREAD_NUM: 16
-      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade omegaconf
-          python -m pip install --upgrade pandas
-          python -m pip install --upgrade einops
-          python -m pip install --upgrade tiktoken
-          python -m pip install --upgrade transformers_stream_generator
-
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
-
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
-
-      - name: Test on cpu
-        shell: bash
-        run: |
-          mv python/llm/test/benchmark/stable-version-cpu-stress-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          export http_proxy=${HTTP_PROXY}
-          export https_proxy=${HTTPS_PROXY}
-          source bigdl-llm-init -t
-          export OMP_NUM_THREADS=48
-          # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py
-          python run-stress-test.py
-          cp ./*.csv /models/stable_version_stress_test_cpu/
-          cd ../../../test/benchmark
-          python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/stable_version_stress_test_cpu/

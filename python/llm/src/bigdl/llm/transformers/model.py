@@ -41,7 +41,7 @@ import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, \
     load_state_dict, \
-    get_local_shard_files
+    get_local_shard_files, load_imatrix_data
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.gguf.api import load_gguf_model
@@ -107,10 +107,10 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
                                 ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
-                                ``'fp16'`` or ``'bf16'``, ``'sym_int4'`` means symmetric int 4,
-                                ``'asym_int4'`` means asymmetric int 4, ``'nf4'`` means 4-bit
-                                NormalFloat, etc. Relevant low bit optimizations will be applied
-                                to the model.
+                                ``'iq2_xxs'``, ``'iq2_xs'``, ``'fp16'`` or ``'bf16'``,
+                                ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
+                                asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
+                                Relevant low bit optimizations will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be ``True``.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
@@ -121,6 +121,9 @@ class _BaseAutoModelClass:
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
+        :param imatrix: str value, represent filename of importance matrix pretrained on
+            specific datasets for use with the improved quantization methods recently
+            added to llama.cpp.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -243,6 +246,12 @@ class _BaseAutoModelClass:
                 else:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
+            if q_k in ["iq2_xxs", "iq2_xs"]:
+                imatrix_file = kwargs.pop("imatrix", None)
+                invalidInputError(imatrix_file is not None,
+                                  "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+                imatrix_data = load_imatrix_data(imatrix_file)
+                kwargs['imatrix_data'] = imatrix_data
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
@@ -285,7 +294,8 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          "fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, mixed_fp4 or mixed_fp8.")
+                          f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, iq2_xxs, iq2_xs, "
+                          f"mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,
@@ -299,6 +309,7 @@ class _BaseAutoModelClass:
             cpu_embedding = True
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
+        imatrix_data = kwargs.pop("imatrix_data", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -359,9 +370,15 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
-                                     torch_dtype=kwargs.get("torch_dtype", 'auto'))
+                                     torch_dtype=kwargs.get("torch_dtype", 'auto'),
+                                     imatrix_data=imatrix_data)
         model.config.update({"bigdl_transformers_low_bit": q_k})
-        model.config.update({"tie_word_embeddings": False})
+
+        # enable tie_word_embeddings for MPT
+        # refer to https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/modeling_mpt.py#L232
+        if model.config.architectures is None \
+           or model.config.architectures[0] != 'MPTForCausalLM':
+            model.config.update({"tie_word_embeddings": False})
 
         # add save_low_bit to pretrained model dynamically
         import types
