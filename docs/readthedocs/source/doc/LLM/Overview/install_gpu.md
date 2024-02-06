@@ -198,10 +198,6 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
          .. tab:: PIP installer
 
-            Currently, oneAPI installed with PIP in the normal way is not configured properly for ``bigdl-llm``.
-            As a workaround, you can install oneAPI in a user-defined folder, 
-            and then configure your conda environment to utilize the package.
-
             Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
 
             .. code-block:: bash
@@ -303,10 +299,6 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                   sudo apt autoremove intel-oneapi-common-vars
 
          .. tab:: PIP installer
-
-            Currently, oneAPI installed with PIP in the normal way is not configured properly for ``bigdl-llm``.
-            As a workaround, you can install oneAPI in a user-defined folder, 
-            and then configure your conda environment to utilize the package.
 
             Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
 
