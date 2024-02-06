@@ -89,7 +89,16 @@ bash compile_bundle.sh
 pip install -r requirements.txt
 ```
 
-After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently only `Baichuan2 13b` is supported.
+After installed IPEX, **if the size of your baichuan2 is 7B, please do the following operations first:**
+
+```bash
+export BAICHUAN2_7B_MODEL_PATH=your_baichuan2_7b_model_path_and_make_sure_you_have_write_access_to_it
+bash convert_baichuan2_7b_with_bigdl_ipex.sh
+```
+
+**13B does not need the above, and please ignore.**
+
+Then, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration:
 
 ```bash
 source bigdl-llm-init -t
