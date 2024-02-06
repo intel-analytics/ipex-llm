@@ -27,53 +27,61 @@ class BigDLPPL:
         model_kwargs['trust_remote_code'] = model_kwargs.get('trust_remote_code', True)
         model_kwargs['optimize_model'] = model_kwargs.get('optimize_model', True)
         self.device = device
-        if 'chatglm' in model_path.lower():
-            self.model = AutoModel.from_pretrained(model_path, **model_kwargs)
-        else:
-            self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
-        self.model.to(device)
+
+        try:
+            if 'chatglm' in model_path.lower():
+                self.model = AutoModel.from_pretrained(model_path, **model_kwargs)
+            else:
+                self.model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
+            self.model.to(device)
+        except RuntimeError:
+            torch.xpu.synchronize()
+            torch.xpu.empty_cache()
+            del self.model
+            gc.collect()
 
     def perplexity_hf(self, encoded_texts):
         self.model.eval()
         loss_fct = CrossEntropyLoss(reduction="none")
         ppls = []
 
-        pbar = tqdm(range(len(encoded_texts)))
-        for bid in pbar:
-            encoded_batch = encoded_texts[bid:bid+1]
-            if type(encoded_batch) == dict:
-                attn_mask = encoded_batch['attention_mask'] if 'attention_mask' in encoded_batch.keys() else None
-                encoded_batch = encoded_batch['input_ids']
-            elif type(encoded_batch) == list:
-                encoded_batch = encoded_batch[0]
-            
-            encoded_batch = encoded_batch.to(self.device)
-            attn_mask = torch.ones_like(encoded_batch)
+        try:
+            pbar = tqdm(range(len(encoded_texts)))
+            for bid in pbar:
+                encoded_batch = encoded_texts[bid:bid+1]
+                if type(encoded_batch) == dict:
+                    attn_mask = encoded_batch['attention_mask'] if 'attention_mask' in encoded_batch.keys() else None
+                    encoded_batch = encoded_batch['input_ids']
+                elif type(encoded_batch) == list:
+                    encoded_batch = encoded_batch[0]
+                
+                encoded_batch = encoded_batch.to(self.device)
+                attn_mask = torch.ones_like(encoded_batch)
 
-            out_logits = self.model(encoded_batch).logits
+                out_logits = self.model(encoded_batch).logits
 
-            labels = encoded_batch
+                labels = encoded_batch
 
-            shift_logits = out_logits[..., :-1, :].contiguous()
-            shift_labels = labels[..., 1:].contiguous()
-            shift_attention_mask_batch = attn_mask[..., 1:].contiguous()
+                shift_logits = out_logits[..., :-1, :].contiguous()
+                shift_labels = labels[..., 1:].contiguous()
+                shift_attention_mask_batch = attn_mask[..., 1:].contiguous()
 
-            loss_ = loss_fct(shift_logits.transpose(1, 2), shift_labels).float()
-            perplexity_batch = torch.exp2(
-                (loss_ * shift_attention_mask_batch).sum(1)
-                / shift_attention_mask_batch.sum(1)
-            )
-            ppls += perplexity_batch.tolist()
+                loss_ = loss_fct(shift_logits.transpose(1, 2), shift_labels).float()
+                perplexity_batch = torch.exp2(
+                    (loss_ * shift_attention_mask_batch).sum(1)
+                    / shift_attention_mask_batch.sum(1)
+                )
+                ppls += perplexity_batch.tolist()
 
-            pbar.set_description(f"[{bid:<4}/{len(encoded_texts)}] avg_ppls: {np.mean(np.array(ppls)[~np.isnan(np.array(ppls))]):.4f}")
-            
-            del out_logits, encoded_batch, attn_mask, shift_logits, shift_labels, shift_attention_mask_batch, perplexity_batch
+                pbar.set_description(f"[{bid:<4}/{len(encoded_texts)}] avg_ppls: {np.mean(np.array(ppls)[~np.isnan(np.array(ppls))]):.4f}")
+                
+                del out_logits, encoded_batch, attn_mask, shift_logits, shift_labels, shift_attention_mask_batch, perplexity_batch
 
-        ppl_mean = np.mean(np.array(ppls)[~np.isnan(np.array(ppls))])
-
-        torch.xpu.synchronize()
-        torch.xpu.empty_cache()
-        del self.model
-        gc.collect()
+            ppl_mean = np.mean(np.array(ppls)[~np.isnan(np.array(ppls))])
+        finally:
+            torch.xpu.synchronize()
+            torch.xpu.empty_cache()
+            del self.model
+            gc.collect()
         
         return ppl_mean
