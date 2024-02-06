@@ -107,6 +107,6 @@ python ./synthesize_speech.py --text 'This is an example text for synthesize spe
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Bark model (e.g `suno/bark-small`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'suno/bark-small'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Bark model (e.g. `suno/bark-small` and `suno/bark`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'suno/bark-small'`.
 - `--voice-preset`: argument defining the voice preset of model. It is default to be `'v2/en_speaker_6'`.
 - `--text TEXT`: argument defining the text to synthesize speech. It is default to be `"BigDL-LLM is a library for running large language model on Intel XPU with very low latency."`.
