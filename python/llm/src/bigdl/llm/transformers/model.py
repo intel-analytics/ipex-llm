@@ -271,10 +271,11 @@ class _BaseAutoModelClass:
                 else:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
+            imatrix_file = kwargs.pop("imatrix", None)
             if q_k in ["iq2_xxs", "iq2_xs"]:
-                imatrix_file = kwargs.pop("imatrix", None)
                 invalidInputError(imatrix_file is not None,
-                                  "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+                                "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+            if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
                 kwargs['imatrix_data'] = imatrix_data
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)

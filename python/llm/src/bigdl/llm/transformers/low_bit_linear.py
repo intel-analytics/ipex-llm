@@ -72,6 +72,7 @@ MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 IQ2_XXS = ggml_tensor_qtype["iq2_xxs"]
 IQ2_XS = ggml_tensor_qtype["iq2_xs"]
+Q2_K = ggml_tensor_qtype["q2_k"]
 
 
 def get_block_size(qtype: str):
@@ -105,12 +106,13 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        if qtype not in [IQ2_XXS, IQ2_XS]:
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K]:
             ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
         else:
-            # quantize with importance matrix
-            imatrix = imatrix.data.data_ptr()
-            imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
+            if imatrix is not None:
+                # quantize with importance matrix
+                imatrix = imatrix.data.data_ptr()
+                imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
             # pass nrow and n_per_row
             ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
                                                    n // in_features, in_features,

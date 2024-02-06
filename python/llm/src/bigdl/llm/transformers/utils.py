@@ -225,7 +225,8 @@ def load_imatrix_data(imatrix_file):
 
 
 def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
-    if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"]]:
+    if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"],
+                 ggml_tensor_qtype["q2_k"]] and imatrix_data is not None:
         # For quantization which needs importance matrix
         # module name preprocess
         # full name maybe model.layers.31.self_attn.o_proj
@@ -253,11 +254,9 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
             if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
                     or new_module_name == 'lm_head':
                 cur_qtype = ggml_tensor_qtype['sym_int4']
+        return cur_qtype, cur_imatrix
     else:
-        cur_imatrix = None
-        cur_qtype = qtype
-
-    return cur_qtype, cur_imatrix
+        return qtype, None
 
 
 def get_modelscope_hf_config(model_id_or_path: str,
