@@ -6,7 +6,7 @@ In [speculative](https://arxiv.org/abs/2302.01318) [decoding](https://arxiv.org/
 ### Self-Speculative Decoding 
 Built on top of the concept of “[self-speculative decoding](https://arxiv.org/abs/2309.08168)”, BigDL-LLM can now accelerate the original FP16 or BF16 model ***without the need of a separate draft model***; instead, it automatically converts the original model to INT4, and uses the INT4 model as the draft model behind the scene. In practice, ***~30% speedup has been observed for FP16 and BF16 LLM inference latency*** on Intel GPU and CPU respectively.
 
-### BigDL-LLM Self-Speculative Decoding
+### Using BigDL-LLM Self-Speculative Decoding
 Please refer to BigDL-LLM self-speculative decoding code snippets below, and the complete [GPU](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/Speculative-Decoding)) and [CPU](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding) examples in the project repo.
 
 ```python
