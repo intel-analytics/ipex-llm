@@ -364,7 +364,8 @@ class _BaseAutoModelClass:
 
         # enable tie_word_embeddings for MPT
         # refer to https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/modeling_mpt.py#L232
-        if model.config.architectures[0] != 'MPTForCausalLM':
+        if model.config.architectures is None \
+           or model.config.architectures[0] != 'MPTForCausalLM':
             model.config.update({"tie_word_embeddings": False})
 
         # add save_low_bit to pretrained model dynamically
