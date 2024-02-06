@@ -5,6 +5,7 @@
 </div>
 
 ---
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/intel-analytics/BigDL/badge)](https://securityscorecards.dev/viewer/?uri=github.com/intel-analytics/BigDL)
 ## BigDL-LLM
 
 **[`bigdl-llm`](python/llm)** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4/FP4/INT8/FP8** with very low latency[^1] (for any **PyTorch** model).
