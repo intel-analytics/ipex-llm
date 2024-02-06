@@ -12,4 +12,4 @@ torchmetrics==0.11.0
 opencv-python-headless
 PyTurboJPEG
 opencv-transforms
-cryptography==41.0.6
+cryptography==42.0.0
