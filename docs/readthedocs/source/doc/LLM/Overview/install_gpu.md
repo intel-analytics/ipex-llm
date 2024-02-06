@@ -302,6 +302,44 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                
                   sudo apt autoremove intel-oneapi-common-vars
 
+         .. tab:: PIP installer
+
+            Currently, oneAPI installed with PIP in the normal way is not configured properly for ``bigdl-llm``.
+            As a workaround, you can install oneAPI in a user-defined folder, 
+            and then configure your conda environment to utilize the package.
+
+            Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
+
+            .. code-block:: bash
+
+               export PYTHONUSERBASE=~/intel/oneapi
+               pip install dpcpp-cpp-rt==2023.2.0 mkl-dpcpp==2023.2.0 onednn-cpu-dpcpp-gpu-dpcpp==2023.2.0 --user
+
+            .. note::
+
+               The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is set.
+
+            Step 2: Configure conda environment activation to append ``~/intel/oneapi/lib`` to environment variable ``LD_LIBRARY_PATH``
+            In the example below, we first create conda environment ``llm`` and then configure it.
+
+            .. code-block:: bash
+
+               conda create -n llm python=3.9
+               conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
+
+            .. note::
+               You can view the configured environment variables for ``llm`` by running ``conda env config vars list -n llm``.
+               You can continue with activating the conda environment ``llm`` and installing ``bigdl-llm``.
+
+            .. note::
+
+               You can uninstall the package by simply deleting the package folder, and unsetting the conda environment configuration
+
+               .. code-block:: bash
+               
+                  rm -r ~/intel/oneapi/lib
+                  conda env config vars unset LD_LIBRARY_PATH
+
          .. tab:: Offline installer
          
             Using the offline installer allows you to customize the installation path.
