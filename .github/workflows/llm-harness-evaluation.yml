@@ -67,8 +67,8 @@ jobs:
         env:
           PR_MATRIX_MODEL_NAME: '["Llama2-7b-guanaco-dolphin-500"]'
           PR_MATRIX_TASK: '["truthfulqa"]'
-          PR_MATRIX_PRECISION: '["fp8"]'
-          PR_LABELS: '["self-hosted", "llm", "accuracy2", "accuracy-nightly"]'
+          PR_MATRIX_PRECISION: '["sys_int4"]'
+          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
