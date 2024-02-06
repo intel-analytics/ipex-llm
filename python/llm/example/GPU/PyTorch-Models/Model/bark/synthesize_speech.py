@@ -13,6 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Some parts of this file is adapted from
+# https://huggingface.co/microsoft/speecht5_tts
+#
+#    MIT License
+#
+#    Copyright (c) Microsoft Corporation.
+#
+#    Permission is hereby granted, free of charge, to any person obtaining a copy
+#    of this software and associated documentation files (the "Software"), to deal
+#    in the Software without restriction, including without limitation the rights
+#    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#    copies of the Software, and to permit persons to whom the Software is
+#    furnished to do so, subject to the following conditions:
+#
+#    The above copyright notice and this permission notice shall be included in all
+#    copies or substantial portions of the Software.
+#
+#    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#    SOFTWARE
+
 
 import torch
 import scipy
@@ -28,11 +53,14 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default='suno/bark-small',
                         help='The huggingface repo id for the Bark model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--text', type=str, default="This is an example text for synthesize speech.",
+    parser.add_argument('--voice-preset', type=str, default='v2/en_speaker_6',
+                        help='The voice preset of model')
+    parser.add_argument('--text', type=str, default="BigDL-LLM is a library for running large language model on Intel XPU with very low latency.",
                         help='Text to synthesize speech')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    voice_preset = args.voice_preset
     text = args.text
     
     # Load model
@@ -42,10 +70,9 @@ if __name__ == '__main__':
     # With only one line to enable BigDL-LLM optimization on model
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = optimize_model(model, cpu_embedding=True)
+    model = optimize_model(model)
     model = model.to('xpu')
 
-    voice_preset = "v2/en_speaker_6"
     inputs = processor(text, voice_preset=voice_preset).to('xpu')
 
     with torch.inference_mode():
@@ -63,4 +90,4 @@ if __name__ == '__main__':
  
         from scipy.io.wavfile import write as write_wav
         sample_rate = model.generation_config.sample_rate
-        write_wav("bark_out.wav", sample_rate, audio_array)
+        write_wav("bigdl_llm_bark_out.wav", sample_rate, audio_array)

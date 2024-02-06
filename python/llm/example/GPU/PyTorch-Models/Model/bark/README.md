@@ -1,5 +1,5 @@
 # Bark
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Bark models. For illustration purposes, we utilize the [suno/bark](https://huggingface.co/suno/bark) as reference Bark models.
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Bark models. For illustration purposes, we utilize the [suno/bark-small](https://huggingface.co/suno/bark-small) as reference Bark models.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -17,7 +17,7 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install scipy # additional package required for Bark to conduct generation
+pip install scipy
 ```
 
 #### 1.2 Installation on Windows
@@ -28,7 +28,7 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install scipy # additional package required for Bark to conduct generation
+pip install scipy
 ```
 
 ### 2. Configures OneAPI environment variables
@@ -107,5 +107,6 @@ python ./synthesize_speech.py --text 'This is an example text for synthesize spe
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Bark model (e.g `suno/bark`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'suno/bark'`.
-- `--text TEXT`: argument defining the text to synthesize speech. It is default to be `"This is an example text for synthesize speech."`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Bark model (e.g `suno/bark-small`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'suno/bark-small'`.
+- `--voice-preset`: argument defining the voice preset of model. It is default to be `'v2/en_speaker_6'`.
+- `--text TEXT`: argument defining the text to synthesize speech. It is default to be `"BigDL-LLM is a library for running large language model on Intel XPU with very low latency."`.
