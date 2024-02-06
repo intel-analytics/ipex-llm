@@ -41,11 +41,14 @@
 # SOFTWARE.
 import os
 from transformers.modeling_utils import _add_variant
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from ..utils.common import invalidInputError
 from typing import Union
 import torch
 from torch import nn
 import logging
+import numpy as np
+
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -179,3 +182,79 @@ def get_xpu_device_type(x):
         return "pvc"
     else:
         return "others"
+
+
+def load_imatrix_data(imatrix_file):
+    # this function is adapted from https://github.com/ggerganov/llama.cpp/blob/
+    # c82d18e863fcde91b4b1109b1d0c73ea4470c405/examples/quantize/quantize.cpp#L102
+    imatrix = open(imatrix_file, 'rb')
+    n_entries = imatrix.read(4)
+    n_entries = int.from_bytes(n_entries, 'little')
+    invalidInputError(n_entries >= 1,
+                      f"failed reading name for entry from {imatrix_file}")
+    imatrix_data = {}
+    for i in range(n_entries):
+        cur_len = imatrix.read(4)
+        cur_len = int.from_bytes(cur_len, 'little')
+        cur_name = str(imatrix.read(cur_len), encoding='utf-8')
+        # original cur_name looks like blk.14.attn_output.weight for llama
+        # TODO: how to better aligned and generalize
+        name_list = cur_name.split('.')
+        layer = name_list[1]
+        module_name = name_list[2]
+        if 'ffn' in module_name:
+            module_name = module_name[4:]  # from ffn_gate to gate
+        elif 'attn' in module_name:
+            module_name = module_name[5]  # from attn_k to k, attn_output to o
+        module_name = layer + '_' + module_name
+        ncall = imatrix.read(4)
+        ncall = int.from_bytes(ncall, 'little')
+        nval = imatrix.read(4)
+        nval = int.from_bytes(nval, 'little')
+        invalidInputError(nval >= 1,
+                          f"failed reading number of values for entry {i}")
+        byte_data = imatrix.read(4 * nval)
+        idata = np.frombuffer(byte_data, dtype=np.float32)
+
+        if ncall > 0:
+            idata = idata / ncall
+        imatrix_data[module_name] = torch.from_numpy(idata).float()
+
+    print(f"loaded {len(imatrix_data)} importance matrix entries from {imatrix_file}.")
+    return imatrix_data
+
+
+def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
+    if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"]]:
+        # For quantization which needs importance matrix
+        # module name preprocess
+        # full name maybe model.layers.31.self_attn.o_proj
+        # TODO: just consider llama/mistral here
+        # TODO: how to better aligned and generalize
+        module_name = full_module_name.split('.')
+        cur_qtype = qtype
+        if len(module_name) == 5:
+            layer = module_name[2]
+            cur_module = module_name[-1][:-5]
+            new_module_name = '_'.join([layer, cur_module])
+        elif len(module_name) == 1:
+            new_module_name = module_name[0]
+            layer = None
+            cur_module = None
+        if imatrix_data is not None and new_module_name in imatrix_data:
+            cur_imatrix = imatrix_data[new_module_name]
+            # custom mixed quantization strategy
+            if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
+                    or new_module_name == 'lm_head':
+                cur_qtype = ggml_tensor_qtype['sym_int4']
+        else:
+            cur_imatrix = None
+            # custom mixed quantization strategy
+            if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]) \
+                    or new_module_name == 'lm_head':
+                cur_qtype = ggml_tensor_qtype['sym_int4']
+    else:
+        cur_imatrix = None
+        cur_qtype = qtype
+
+    return cur_qtype, cur_imatrix
