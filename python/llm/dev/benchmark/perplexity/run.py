@@ -17,7 +17,7 @@
 import argparse
 from tqdm import tqdm
 import torch
-from datasets import concatenate_datasets, load_from_disk
+from datasets import concatenate_datasets, load_dataset
 from transformers import AutoTokenizer
 
 from ppl import BigDLPPL
@@ -30,7 +30,8 @@ def get_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seq_len", type=int, default=512)
     parser.add_argument("--model_path", required=True, type=str)
-    parser.add_argument("--dataset", required=True, type=str)
+    parser.add_argument("--datasets", required=False, type=str, default=None)
+    parser.add_argument("--dataset_path", required=False, type=str, default=None)
     parser.add_argument("--precisions", required=False, type=str, default=None, nargs='+')
     parser.add_argument("--device", type=str, default="xpu")
     return parser.parse_args()
@@ -45,13 +46,21 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
     tokenizer.model_max_length = args.seq_len
 
-    dataset_paths = [os.path.join(args.dataset, d) for d in os.listdir(args.dataset)]
-    data_subset_all = []
-    for dataset_path in dataset_paths:
-        data_ = load_from_disk(dataset_path)       
-        data_subset_all.append(data_)
-    data = concatenate_datasets(data_subset_all)
+    if args.datasets is None:
+        en_datasets = ["narrativeqa", "qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "musique", "gov_report", 
+                       "qmsum", "multi_news",  "trec", "triviaqa", "samsum", "passage_count", "passage_retrieval_en"]
+        zh_datasets = ["multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh"]
 
+        # The default testing datasets are English datasets
+        dataset_all = []
+        for dataset_name in en_datasets:
+            data_ = load_dataset(os.path.join(args.dataset_path, dataset_name), split='test') if args.dataset_path \
+                    else load_dataset('THUDM/LongBench', f'{dataset_name}', split='test')
+            dataset_all.append(data_)
+        data = concatenate_datasets(dataset_all)
+    else:
+        data = load_dataset(args.dataset_path, split='test')
+        
     encoded_texts = []
     pbar = tqdm(data)
     for i, data_i in enumerate(pbar):
