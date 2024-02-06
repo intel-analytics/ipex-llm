@@ -200,7 +200,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             Currently, oneAPI installed with PIP in the normal way is not configured properly for ``bigdl-llm``.
             As a workaround, you can install oneAPI in a user-defined folder, 
-            and then configure anaconda environment to utilize the package.
+            and then configure your conda environment to utilize the package.
 
             Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
 
@@ -211,10 +211,10 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               The installed oneAPI packages are only visible in ``pip list`` if ``PYTHONUSERBASE`` is set.
+               The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is set.
 
-            Step 2: Configure anaconda environment to set ``LD_LIBRARY_PATH`` environment variable when it is activated.
-            In the example below, we first create anaconda environment ``llm`` and then configure it.
+            Step 2: Configure conda environment activation to append ``~/intel/oneapi/lib`` to environment variable ``LD_LIBRARY_PATH``
+            In the example below, we first create conda environment ``llm`` and then configure it.
 
             .. code-block:: bash
 
@@ -222,14 +222,12 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
 
             .. note::
-               You can view the configured environment variables by running ``conda env config vars list -n llm``.
-               You modify the configured environment variables by rerunning the ``conda env config vars set`` command.
-
-               You can continue with installing ``bigdl-llm`` in ``llm`` environment if you have not done so.
+               You can view the configured environment variables for ``llm`` by running ``conda env config vars list -n llm``.
+               You can continue with activating the conda environment ``llm`` and installing ``bigdl-llm``.
 
             .. note::
 
-               You can uninstall the package by simply deleting the package folder, and unsetting the anaconda environment configuration
+               You can uninstall the package by simply deleting the package folder, and unsetting the conda environment configuration
 
                .. code-block:: bash
                
