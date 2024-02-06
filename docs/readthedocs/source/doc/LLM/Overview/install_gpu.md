@@ -231,7 +231,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
                .. code-block:: bash
                
-                  rm -r ~/intel/oneapi/lib
+                  rm -r ~/intel/oneapi
                   conda env config vars unset LD_LIBRARY_PATH
 
          .. tab:: Offline installer
@@ -337,7 +337,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
                .. code-block:: bash
                
-                  rm -r ~/intel/oneapi/lib
+                  rm -r ~/intel/oneapi
                   conda env config vars unset LD_LIBRARY_PATH
 
          .. tab:: Offline installer
@@ -464,6 +464,7 @@ If you encounter network issues when installing IPEX, you can also install BigDL
 ### Runtime Configuration
 
 To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example.
+For PIP-installed oneAPI, conda has been configured to set the required environment variables automatically.
 
 ```eval_rst
 .. tabs::
