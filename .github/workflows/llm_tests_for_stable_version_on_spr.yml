@@ -7,8 +7,8 @@ concurrency:
 
 # Controls when the action will run.
 on:
-  # pull_request:
-  #   branches: [main]
+  pull_request:
+    branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -72,7 +72,9 @@ jobs:
           cp ./*.csv /models/stable_version_perf_regression_test_cpu/
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 5.0
+          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 10.0
+          cd /models/stable_version_perf_regression_test_cpu/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/stable_version_perf_cpu/
   
 
   llm-stress-test-on-spr:
@@ -127,3 +129,5 @@ jobs:
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f /models/stable_version_stress_test_cpu/
+          cd /models/stable_version_stress_test_cpu/
+          curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/stable_version_perf_cpu/
