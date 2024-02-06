@@ -473,7 +473,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step. Configure oneAPI environment variables
+         # Required step (except for PIP-installed oneAPI). Configure oneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
          # Recommended Environment Variables
@@ -486,7 +486,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step. Configure oneAPI environment variables
+         # Required step (except for PIP-installed oneAPI). Configure oneAPI environment variables
          source /opt/intel/oneapi/setvars.sh
 
          # Recommended Environment Variables
@@ -533,5 +533,6 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
-* Step 1: Make sure you execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code.
+* Step 1: For oneAPI installed using APT or Offline Installer, make sure you execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code. 
+For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH``. If the output does not contain ``<oneAPI_folder>/lib``, run step 2 under oneAPI PIP installer again.
 * Step 2: Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
