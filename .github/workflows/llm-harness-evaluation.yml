@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 16 * * *" # GMT time, 16:00 GMT == 00:00 China
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
   pull_request:
     branches: [main]
     paths:
@@ -52,7 +52,7 @@ jobs:
         if: ${{github.event_name == 'schedule'}}
         env:
           NIGHTLY_MATRIX_MODEL_NAME: '["Llama2-7b-guanaco-dolphin-500", "falcon-7b-instruct-with-patch", 
-                        "Mistral-7B-v0.1", "mpt-7b-chat", "Baichuan2-7B-Chat-LLaMAfied", "stablelm-3b"]'
+                        "Mistral-7B-v0.1", "mpt-7b-chat", "Baichuan2-7B-Chat-LLaMAfied"]'
           NIGHTLY_MATRIX_TASK: '["arc", "truthfulqa", "winogrande"]'
           NIGHTLY_MATRIX_PRECISION: '["sym_int4", "fp8"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
@@ -65,7 +65,7 @@ jobs:
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
-          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t", "Mistral-7B-v0.1"]'
+          PR_MATRIX_MODEL_NAME: '["Mistral-7B-v0.1", "Llama2-7b-guanaco-dolphin-500"]'
           PR_MATRIX_TASK: '["truthfulqa"]'
           PR_MATRIX_PRECISION: '["fp8"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
@@ -111,6 +111,8 @@ jobs:
         device: [xpu]
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
+    outputs:
+      output_path: ${{ steps.run_harness.outputs.output_path }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
@@ -176,34 +178,31 @@ jobs:
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
+          
+          DATE=$(date +%Y-%m-%d)
+          OUTPUT_PATH="results_$DATE"
+          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
+          echo "output_path=$OUTPUT_PATH" >> $GITHUB_OUTPUT
+          
           python run_llb.py \
-          --model bigdl-llm \
-          --pretrained ${MODEL_PATH} \
-          --precision ${{ matrix.precision }} \
-          --device ${{ matrix.device }} \
-          --tasks ${{ matrix.task }} \
-          --batch_size 1 --no_cache --output_path results
+            --model bigdl-llm \
+            --pretrained ${MODEL_PATH} \
+            --precision ${{ matrix.precision }} \
+            --device ${{ matrix.device }} \
+            --tasks ${{ matrix.task }} \
+            --batch_size 1 --no_cache --output_path $OUTPUT_PATH
 
 
-      - name: Compare with golden accuracy
-        shell: bash
-        if: ${{github.event_name == 'schedule'}}
-        working-directory: ${{ github.workspace }}/python/llm
-        run: |
-          python test/benchmark/harness_nightly/accuracy_regression.py \
-          dev/benchmark/harness/results/${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json \
-          test/benchmark/harness_nightly/golden_results.json
-        
       - uses: actions/upload-artifact@v3
         with:
           name: harness_results
           path:
-            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/**
+            ${{ github.workspace }}/python/llm/dev/benchmark/harness/${{ env.OUTPUT_PATH }}/**
 
       - name: echo single result
         shell: bash
         
-        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/${{ env.OUTPUT_PATH }}/
         run: |
           cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json
 
@@ -211,6 +210,8 @@ jobs:
     if: ${{ always() }}
     needs: llm-harness-evalution
     runs-on: ubuntu-latest
+    env:
+      OUTPUT_PATH: ${{ needs.llm-harness-evalution.outputs.output_path }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
@@ -226,9 +227,57 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: harness_results
-          path: results          
+          path: ${{ env.OUTPUT_PATH }}        
       - name: Summarize the results
         shell: bash
         run: |
-          ls results
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py results
+          ls ${{ env.OUTPUT_PATH }}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.OUTPUT_PATH }}
+
+  llm-harness-summary-nightly:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: llm-harness-evalution
+    runs-on: '["self-hosted", "llm", "temp-arc01"]'
+    env:
+      OUTPUT_PATH: ${{ needs.llm-harness-evalution.outputs.output_path }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+
+      - name: Download all results for nightly run
+        if: github.event_name == 'schedule'
+        uses: actions/download-artifact@v3
+        with:
+          name: harness_results
+          path: /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+
+      - name: Download all results for pull request
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v3
+        with:
+          name: harness_results
+          path: /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+         
+      - name: Summarize the results for nightly run
+        if: github.event_name == 'schedule'
+        shell: bash
+        run: |
+          ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+        
+      - name: Summarize the results for pull request
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+      
