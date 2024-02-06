@@ -174,30 +174,25 @@ jobs:
           export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
           
-          DATE=$(date +%Y-%m-%d)
-          OUTPUT_PATH="results_$DATE"
-          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
-          echo "output_path=$OUTPUT_PATH" >> $GITHUB_OUTPUT
-          
           python run_llb.py \
             --model bigdl-llm \
             --pretrained ${MODEL_PATH} \
             --precision ${{ matrix.precision }} \
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
-            --batch_size 1 --no_cache --output_path $OUTPUT_PATH
+            --batch_size 1 --no_cache --output_path results
 
 
       - uses: actions/upload-artifact@v3
         with:
           name: harness_results
           path:
-            ${{ github.workspace }}/python/llm/dev/benchmark/harness/${{ env.OUTPUT_PATH }}/**
+            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/**
 
       - name: echo single result
         shell: bash
         
-        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/${{ env.OUTPUT_PATH }}/
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/
         run: |
           cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json
 
