@@ -110,3 +110,14 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Bark model (e.g. `suno/bark-small` and `suno/bark`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'suno/bark-small'`.
 - `--voice-preset`: argument defining the voice preset of model. It is default to be `'v2/en_speaker_6'`.
 - `--text TEXT`: argument defining the text to synthesize speech. It is default to be `"BigDL-LLM is a library for running large language model on Intel XPU with very low latency."`.
+
+#### 4.1 Sample Output
+
+#### [suno/bark-small](https://huggingface.co/suno/bark-small)
+
+Text: BigDL-LLM is a library for running large language model on Intel XPU with very low latency.
+
+<audio controls>
+  <source src="https://llm-assets.readthedocs.io/en/latest/_downloads/e92874986553193acbd321d1cfe29739/bark-example-output.wav" type="audio/wav">
+  Your browser does not support this audio format.
+</audio>
