@@ -94,8 +94,6 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     src = tensor.data.data_ptr()
     src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
     n = tensor.numel()  # all elements
-    invalidInputError(n % QK == 0,
-                      f"Input tensor size must be multiple of {QK}")
     k = tensor.shape[-1]
     invalidInputError(k % QK == 0,
                       f"Last dim of input tensor must be multiple of {QK}")
