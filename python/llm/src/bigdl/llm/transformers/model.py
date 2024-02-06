@@ -128,7 +128,12 @@ class _BaseAutoModelClass:
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
-        config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
+        try:
+            import modelscope
+            from .utils import get_modelscope_hf_config
+            config_dict, _ = get_modelscope_hf_config(pretrained_model_name_or_path)
+        except ImportError:
+            config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
         invalidInputError(not bigdl_transformers_low_bit,
                           f"Detected model is a low-bit({bigdl_transformers_low_bit}) model, "
@@ -442,7 +447,12 @@ class _BaseAutoModelClass:
         torch_dtype = kwargs.pop("torch_dtype", "auto")
         sharded_metadata = None
 
-        config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
+        try:
+            import modelscope
+            from .utils import get_modelscope_hf_config
+            config_dict, _ = get_modelscope_hf_config(pretrained_model_name_or_path)
+        except ImportError:
+            config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
         bigdl_lcmu_enabled = config_dict.pop("bigdl_lcmu_enabled", True)
 
@@ -599,11 +609,21 @@ class _BaseAutoModelClass:
 
 
 class AutoModelForCausalLM(_BaseAutoModelClass):
-    HF_Model = transformers.AutoModelForCausalLM
+    try:
+        import modelscope
+        from modelscope import AutoModelForCausalLM
+        HF_Model = modelscope.AutoModelForCausalLM
+    except ImportError:
+        HF_Model = transformers.AutoModelForCausalLM
 
 
 class AutoModel(_BaseAutoModelClass):
-    HF_Model = transformers.AutoModel
+    try:
+        import modelscope
+        from modelscope import AutoModel
+        HF_Model = modelscope.AutoModel
+    except ImportError:
+        HF_Model = transformers.AutoModel
 
 
 class AutoModelForSpeechSeq2Seq(_BaseAutoModelClass):
@@ -611,11 +631,21 @@ class AutoModelForSpeechSeq2Seq(_BaseAutoModelClass):
 
 
 class AutoModelForSeq2SeqLM(_BaseAutoModelClass):
-    HF_Model = transformers.AutoModelForSeq2SeqLM
+    try:
+        import modelscope
+        from modelscope import AutoModelForSeq2SeqLM
+        HF_Model = modelscope.AutoModelForSeq2SeqLM
+    except ImportError:
+        HF_Model = transformers.AutoModelForSeq2SeqLM
 
 
 class AutoModelForSequenceClassification(_BaseAutoModelClass):
-    HF_Model = transformers.AutoModelForSequenceClassification
+    try:
+        import modelscope
+        from modelscope import AutoModelForSequenceClassification
+        HF_Model = modelscope.AutoModelForSequenceClassification
+    except ImportError:
+        HF_Model = transformers.AutoModelForSequenceClassification
 
 
 class AutoModelForMaskedLM(_BaseAutoModelClass):
@@ -635,4 +665,9 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 
 
 class AutoModelForTokenClassification(_BaseAutoModelClass):
-    HF_Model = transformers.AutoModelForTokenClassification
+    try:
+        import modelscope
+        from modelscope import AutoModelForTokenClassification
+        HF_Model = modelscope.AutoModelForTokenClassification
+    except ImportError:
+        HF_Model = transformers.AutoModelForTokenClassification
