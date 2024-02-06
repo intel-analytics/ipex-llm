@@ -196,6 +196,46 @@ BigDL-LLM for GPU supports on Linux has been verified on:
                
                   sudo apt autoremove intel-basekit
 
+         .. tab:: PIP installer
+
+            Currently, oneAPI installed with PIP in the normal way is not configured properly for ``bigdl-llm``.
+            As a workaround, you can install oneAPI in a user-defined folder, 
+            and then configure anaconda environment to utilize the package.
+
+            Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
+
+            .. code-block:: bash
+
+               export PYTHONUSERBASE=~/intel/oneapi
+               pip install dpcpp-cpp-rt mkl-dpcpp onednn --user
+
+            .. note::
+
+               The installed oneAPI packages are only visible in ``pip list`` if ``PYTHONUSERBASE`` is set.
+
+            Step 2: Configure anaconda environment to set ``LD_LIBRARY_PATH`` environment variable when it is activated.
+            In the example below, we first create anaconda environment ``llm`` and then configure it.
+
+            .. code-block:: bash
+
+               conda create -n llm python=3.9
+               conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
+
+            .. note::
+               You can view the configured environment variables by running ``conda env config vars list -n llm``.
+               You modify the configured environment variables by rerunning the ``conda env config vars set`` command.
+
+               You can continue with installing ``bigdl-llm`` in ``llm`` environment if you have not done so.
+
+            .. note::
+
+               You can uninstall the package by simply deleting the package folder, and unsetting the anaconda environment configuration
+
+               .. code-block:: bash
+               
+                  rm -r ~/intel/oneapi/lib
+                  conda env config vars unset LD_LIBRARY_PATH
+
          .. tab:: Offline installer
          
             Using the offline installer allows you to customize the installation path.
