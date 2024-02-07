@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 13 * * 2,4" # GMT time, 13:00 GMT == 21:00 China
+    - cron: "00 14 * * *" # GMT time, 14:00 GMT == 22:00 China
   pull_request:
     branches: [main]
     paths:
@@ -56,9 +56,10 @@ jobs:
         if: ${{github.event_name == 'schedule'}}
         env:
           NIGHTLY_MATRIX_SEQ_LEN: '["512"]'
-          NIGHTLY_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t","Mistral-7B-v0.1"]'
+          NIGHTLY_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "mpt-7b-chat", 
+                        "falcon-7b-instruct-with-patch", "Mistral-7B-v0.1"]'
           NIGHTLY_MATRIX_LANGUAGE: '["en"]'
-          NIGHTLY_MATRIX_PRECISION: '["mixed_fp4", "fp8"]'
+          NIGHTLY_MATRIX_PRECISION: '["sym_int4 fp8"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
         run: |
             echo "seq_len=$NIGHTLY_MATRIX_SEQ_LEN" >> $GITHUB_ENV
@@ -73,7 +74,7 @@ jobs:
           PR_MATRIX_SEQ_LEN: '["512"]'
           PR_MATRIX_MODEL_NAME: '["falcon-7b-instruct-with-patch"]'
           PR_MATRIX_LANGUAGE: '["en"]'
-          PR_MATRIX_PRECISION: '["mixed_fp4"]'
+          PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "seq_len=$PR_MATRIX_SEQ_LEN" >> $GITHUB_ENV
@@ -124,19 +125,19 @@ jobs:
           - python-version: "3.9"
             model_name: "chatglm2-6b"
             language: "zh"
-            precision: "mixed_fp4 fp8_e4m3"
+            precision: "sym_int4 fp8"
+            seq_len: "512"
+            device: "xpu"
+          - python-version: "3.9"
+            model_name: "chatglm3-6b"
+            language: "zh"
+            precision: "sym_int4 fp8"
             seq_len: "512"
             device: "xpu"
           - python-version: "3.9"
             model_name: "Baichuan2-7B-Chat"
             language: "zh"
-            precision: "mixed_fp4"
-            seq_len: "512"
-            device: "xpu"
-          - python-version: "3.9"
-            model_name: "Baichuan2-7B-Chat"
-            language: "zh"
-            precision: "fp8_e4m3"
+            precision: "sym_int4 fp8"
             seq_len: "512"
             device: "xpu"
         
