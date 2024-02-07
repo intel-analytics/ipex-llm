@@ -105,6 +105,8 @@ def qwen2_attention_forward(
                                                         cos, sin, position_ids, "qwen2")
 
     if past_key_value is not None:
+        if use_fuse_rope:
+            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
 
