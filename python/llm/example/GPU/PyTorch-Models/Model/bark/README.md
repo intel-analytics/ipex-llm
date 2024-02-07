@@ -117,7 +117,4 @@ In the example, several arguments can be passed to satisfy your requirements:
 
 Text: BigDL-LLM is a library for running large language model on Intel XPU with very low latency.
 
-<audio controls>
-  <source src="https://llm-assets.readthedocs.io/en/latest/_downloads/e92874986553193acbd321d1cfe29739/bark-example-output.wav" type="audio/wav">
-  Your browser does not support this audio format.
-</audio>
+[Click here to hear sample output.](https://llm-assets.readthedocs.io/en/latest/_downloads/e92874986553193acbd321d1cfe29739/bark-example-output.wav)
