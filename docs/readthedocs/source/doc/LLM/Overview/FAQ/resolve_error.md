@@ -53,3 +53,11 @@ This error is caused by out of GPU memory. Some possible solutions to decrease G
 ### failed to enable AMX
 
 You could use `export BIGDL_LLM_AMX_DISABLED=1` to disable AMX manually and solve this error.
+
+### oneCCL: comm_selector.cpp:57 create_comm_impl: EXCEPTION: ze_data was not initialized
+
+You may encounter this error during finetuning on multi GPUs. Please try `sudo apt install level-zero-dev` to fix it.
+
+### Too many open files
+
+You may encounter this error during finetuning, expecially when run 70B model. Please raise the system open file limit using `ulimit -n 1048576`.
