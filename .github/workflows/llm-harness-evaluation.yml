@@ -67,7 +67,7 @@ jobs:
         env:
           PR_MATRIX_MODEL_NAME: '["Llama2-7b-guanaco-dolphin-500"]'
           PR_MATRIX_TASK: '["truthfulqa"]'
-          PR_MATRIX_PRECISION: '["sys_int4"]'
+          PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "accuracy1", "accuracy-nightly"]'
 
         run: |
