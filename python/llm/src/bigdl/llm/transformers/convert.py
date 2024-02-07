@@ -898,9 +898,11 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.Qwen2Attention,
                         qwen2_attention_forward
                         )
-        convert_forward(model,
-                        module.Qwen2RMSNorm,
-                        llama_rms_norm_forward)
+        # TODO: add RMSNorm optimization
+        # It is disabled for now as it leads to obvious performance drop for Qwen 1.5
+        # convert_forward(model,
+        #                 module.Qwen2RMSNorm,
+        #                 llama_rms_norm_forward)
         convert_forward(model,
                         module.Qwen2MLP,
                         llama_mlp_forward)
