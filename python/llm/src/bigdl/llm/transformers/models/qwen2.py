@@ -56,6 +56,7 @@ def should_use_fuse_rope(self, query_states, position_ids):
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
 
+
 def qwen2_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -66,12 +67,13 @@ def qwen2_attention_forward(
     use_cache: bool = False,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    
+
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
 
     if "padding_mask" in kwargs:
         warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. "
+            "Please make sure use `attention_mask` instead.`"
         )
     bsz, q_len, _ = hidden_states.size()
 
@@ -80,17 +82,20 @@ def qwen2_attention_forward(
     value_states = self.v_proj(hidden_states)
 
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    key_states = \
+        key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    value_states = \
+        value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         if self.layer_idx is None:
             invalidInputError(
                 False,
-                f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
-                "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
-                "with a layer index."
+                "The cache structure has changed since version v4.36. "
+                f"If you are using {self.__class__.__name__} "
+                "for auto-regressive decoding with k/v caching, "
+                "please make sure to initialize the attention class with a layer index."
             )
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
@@ -108,7 +113,10 @@ def qwen2_attention_forward(
         if use_fuse_rope:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
-        key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
+        key_states, value_states = past_key_value.update(key_states,
+                                                         value_states,
+                                                         self.layer_idx,
+                                                         cache_kwargs)
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
@@ -119,22 +127,26 @@ def qwen2_attention_forward(
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
         invalidInputError(
             False,
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-            f" {attn_weights.size()}"
+            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, "
+            f"but is {attn_weights.size()}"
         )
 
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
             invalidInputError(
                 False,
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                f"but is {attention_mask.size()}"
             )
 
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
+    attn_weights = \
+        nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+    attn_weights = nn.functional.dropout(attn_weights,
+                                         p=self.attention_dropout,
+                                         training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
