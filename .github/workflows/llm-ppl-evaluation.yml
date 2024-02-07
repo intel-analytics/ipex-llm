@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       seq_len:
-        description: 'sequence length, input one number and must be quoted.'
+        description: 'sequence length, input one number'
         required: true
         type: number      
       model_name:
@@ -29,9 +29,13 @@ on:
         required: true
         type: string
       language:
-        description: 'language, can be en, zh, or all and must be quoted.'
+        description: 'language, can be en, zh, or all'
         required: true
-        type: string
+        type: choice
+        options:
+          - "en"
+          - "zh"
+          - "all"
       runs-on:
         description: 'Labels to filter the runners, seperated by comma and must be quoted.'
         default: "accuracy"
