@@ -1,11 +1,11 @@
 repo_id:
   - 'meta-llama/Llama-2-7b-chat-hf'
-  # - 'meta-llama/Llama-2-13b-chat-hf'
-  # - 'THUDM/chatglm2-6b'
-  # - 'THUDM/chatglm3-6b'
+  - 'meta-llama/Llama-2-13b-chat-hf'
+  - 'THUDM/chatglm2-6b'
+  - 'THUDM/chatglm3-6b'
   - 'baichuan-inc/Baichuan2-7B-Chat'
-  # - 'baichuan-inc/Baichuan2-13B-Chat'
-  # - 'Qwen/Qwen-14B-Chat'
+  - 'baichuan-inc/Baichuan2-13B-Chat'
+  - 'Qwen/Qwen-14B-Chat'
 local_model_hub: '/models'
 warm_up: 1
 num_trials: 3
@@ -14,8 +14,8 @@ low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
 in_out_pairs:
   - '32-32'
-  # - '1024-128'
-  # - '2048-256'
+  - '1024-128'
+  - '2048-256'
 test_api:
   - "transformer_int4"
   # - "native_int4"

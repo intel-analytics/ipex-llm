@@ -7,8 +7,8 @@ concurrency:
 
 # Controls when the action will run.
 on:
-  pull_request:
-    branches: [main]
+  # pull_request:
+  #   branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -131,7 +131,7 @@ jobs:
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f /models/stable_version_stress_test_cpu/
-          cd /models/stable_version_stress_test_cpu/
-          for f in *.html; do
-            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/stress_test/
-          done
+          # cd /models/stable_version_stress_test_cpu/
+          # for f in *.html; do
+          #   curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/stress_test/
+          # done
