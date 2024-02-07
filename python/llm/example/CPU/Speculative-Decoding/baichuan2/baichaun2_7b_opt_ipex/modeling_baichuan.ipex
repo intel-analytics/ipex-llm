@@ -1,3 +1,5 @@
+# This is copied from https://github.com/baichuan-inc/baichuan-7B/blob/main/models/modeling_baichuan.py
+
 # Copyright 2023 Baichuan Inc. All Rights Reserved.
 
 # Copyright 2022 EleutherAI and the HuggingFace Inc. team. All rights reserved.

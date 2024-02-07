@@ -63,7 +63,7 @@ First token latency x.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.3.0+git0c63936](https://github.com/intel/intel-extension-for-pytorch/tree/0c63936d7a6740679987920367ae2e0cdb375b2e) by following steps: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
+To accelerate speculative decoding on CPU, optionally, you can install our validated version of [IPEX 2.3.0+git0c63936](https://github.com/intel/intel-extension-for-pytorch/tree/0c63936d7a6740679987920367ae2e0cdb375b2e) by following steps: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
 
 #### 4.1 Download IPEX installation script
 ```bash
@@ -89,14 +89,17 @@ bash compile_bundle.sh
 pip install -r requirements.txt
 ```
 
-After installed IPEX, **if the size of your baichuan2 is 7B, please do the following operations first:**
+#### 4.5 Run Baichuan2 Models with IPEX
+
+After installed IPEX, **if the size of your Baichuan2 is 7B**, replace `modeling_baichuan.py` file under your model directory with `./baichaun2_7b_opt_ipex/modeling_baichuan.ipex`, like:
 
 ```bash
-export BAICHUAN2_7B_MODEL_PATH=your_baichuan2_7b_model_path_and_make_sure_you_have_write_access_to_it
-bash convert_baichuan2_7b_with_bigdl_ipex.sh
+cp ./baichaun2_7b_opt_ipex/modeling_baichuan.ipex your_model_path/modeling_baichuan.py
 ```
 
-**13B does not need the above, and please ignore.**
+And also replace `tokenization_baichuan.py` file under your model directory with `./baichaun2_7b_opt_ipex/tokenization_baichuan.py`.
+
+**13B does not need the above operations, and please ignore.**
 
 Then, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration:
 
