@@ -1,12 +1,12 @@
-# RWKV5 Eagle
+# RWKV5
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on RWKV5 Eagle models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [RWKV/HF_v5-Eagle-7B](https://huggingface.co/RWKV/HF_v5-Eagle-7B) as a reference RWKV5 Eagle model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on RWKV5 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [RWKV/HF_v5-Eagle-7B](https://huggingface.co/RWKV/HF_v5-Eagle-7B) as a reference RWKV5 model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example 1: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a RWKV5 Eagle model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a RWKV5 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
 
 ### 1. Install
 #### 1.1 Installation on Linux
@@ -98,7 +98,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the RWKV5 Eagle model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'RWKV/HF_v5-Eagle-7B'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the RWKV5 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'RWKV/HF_v5-Eagle-7B'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
