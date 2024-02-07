@@ -44,11 +44,17 @@ import warnings
 import torch
 import torch.nn as nn
 
-from bigdl.llm.transformers.models.llama import should_use_fuse_rope, repeat_kv
+from bigdl.llm.transformers.models.llama import repeat_kv
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
     apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.utils.common import invalidInputError
 
+
+def should_use_fuse_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and position_ids is not None
+    return use_fuse_rope
 
 def qwen2_attention_forward(
     self,
