@@ -230,7 +230,7 @@ jobs:
 
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [llm-harness-evalution, llm-harness-summary]
+    needs: [set-matrix, llm-harness-evalution, llm-harness-summary]
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     steps:
       - uses: actions/checkout@v3
