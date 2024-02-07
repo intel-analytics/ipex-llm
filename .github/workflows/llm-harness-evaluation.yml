@@ -231,7 +231,7 @@ jobs:
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
     needs: llm-harness-evalution
-    runs-on: '["self-hosted", "llm", "accuracy1", "accuracy-nightly"]'
+    runs-on: "arc03-bigdl-linux-native01"
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
