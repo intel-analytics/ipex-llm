@@ -197,7 +197,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can uninstall the package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``) (e.g., with name ``llm``). Thus, you recommended to not install other pip packages in this folder.
+               You can uninstall the package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``). Thus, you are recommended to not install other pip packages in this folder.
                
                .. code-block:: bash
                
@@ -289,7 +289,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
 
             .. note::
 
-               You can uninstall the package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``) (e.g., with name ``llm``). Thus, you recommended to not install other pip packages in this folder.
+               You can uninstall the package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``). Thus, you are recommended to not install other pip packages in this folder.
                
                .. code-block:: bash
                
@@ -521,5 +521,5 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
 * Step 1: For oneAPI installed using APT or Offline Installer, make sure you execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code. 
-For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH``. If the output does not contain ``<oneAPI_folder>/lib``, check [Prerequisites] to install oneAPI with PIP installer again
+For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH``. If the output does not contain ``<oneAPI_folder>/lib``, check `Prerequisites`_. to install oneAPI with PIP installer again
 * Step 2: Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
