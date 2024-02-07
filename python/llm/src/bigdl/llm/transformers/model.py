@@ -137,8 +137,6 @@ class _BaseAutoModelClass:
         if model_hub == "huggingface":
             config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         elif model_hub == "modelscope":
-            warnings.warn("The model hub is specified to be modelscope, "
-                          "please make sure you have installed it.")
             import modelscope
             from modelscope.utils.hf_util import get_wrapped_class
             cls.HF_Model = get_wrapped_class(cls.HF_Model)
@@ -412,8 +410,6 @@ class _BaseAutoModelClass:
         :param pretrained_model_name_or_path: str value, Path to load the optimized model ckpt.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be True.
-        :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
-                          specify the model hub. Default to be ``'huggingface'``.
 
         :return: a model instance
         """
@@ -438,10 +434,6 @@ class _BaseAutoModelClass:
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
-        model_hub = kwargs.pop("model_hub", "huggingface")
-        invalidInputError(model_hub in ["huggingface", "modelscope"],
-                          "The parameter `model_hub` is supposed to be `huggingface` or "
-                          f"`modelscope`, but got {model_hub}.")
         kwargs_orig = copy.deepcopy(kwargs)
 
         config, kwargs = AutoConfig.from_pretrained(
@@ -463,16 +455,7 @@ class _BaseAutoModelClass:
         torch_dtype = kwargs.pop("torch_dtype", "auto")
         sharded_metadata = None
 
-        if model_hub == "huggingface":
-            config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
-        elif model_hub == "modelscope":
-            warnings.warn("The model hub is specified to be modelscope, "
-                          "please make sure you have installed it.")
-            import modelscope
-            from modelscope.utils.hf_util import get_wrapped_class
-            cls.HF_Model = get_wrapped_class(cls.HF_Model)
-            from .utils import get_modelscope_hf_config
-            config_dict, _ = get_modelscope_hf_config(pretrained_model_name_or_path)
+        config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
         bigdl_lcmu_enabled = config_dict.pop("bigdl_lcmu_enabled", True)
 
