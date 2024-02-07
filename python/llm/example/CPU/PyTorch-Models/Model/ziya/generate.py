@@ -41,7 +41,8 @@ if __name__ == '__main__':
     from transformers import AutoModelForCausalLM
     from bigdl.llm import optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 trust_remote_code=True)
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
     model = optimize_model(model)
 
     # Load tokenizer

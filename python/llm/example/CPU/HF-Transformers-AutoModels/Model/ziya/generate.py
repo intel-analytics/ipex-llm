@@ -42,7 +42,8 @@ if __name__ == '__main__':
     from bigdl.llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True)
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
