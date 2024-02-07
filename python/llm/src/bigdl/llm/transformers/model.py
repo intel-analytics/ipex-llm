@@ -124,11 +124,24 @@ class _BaseAutoModelClass:
         :param imatrix: str value, represent filename of importance matrix pretrained on
             specific datasets for use with the improved quantization methods recently
             added to llama.cpp.
+        :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
+            specify the model hub. Default to be ``'huggingface'``.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
-        config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
+        model_hub = kwargs.pop("model_hub", "huggingface")
+        invalidInputError(model_hub in ["huggingface", "modelscope"],
+                          "The parameter `model_hub` is supposed to be `huggingface` or "
+                          f"`modelscope`, but got {model_hub}.")
+        if model_hub == "huggingface":
+            config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
+        elif model_hub == "modelscope":
+            import modelscope
+            from modelscope.utils.hf_util import get_wrapped_class
+            cls.HF_Model = get_wrapped_class(cls.HF_Model)
+            from .utils import get_modelscope_hf_config
+            config_dict, _ = get_modelscope_hf_config(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
         invalidInputError(not bigdl_transformers_low_bit,
                           f"Detected model is a low-bit({bigdl_transformers_low_bit}) model, "

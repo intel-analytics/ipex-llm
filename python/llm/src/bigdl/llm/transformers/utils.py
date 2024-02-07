@@ -43,7 +43,7 @@ import os
 from transformers.modeling_utils import _add_variant
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from ..utils.common import invalidInputError
-from typing import Union
+from typing import Union, Optional
 import torch
 from torch import nn
 import logging
@@ -258,3 +258,19 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
         cur_qtype = qtype
 
     return cur_qtype, cur_imatrix
+
+
+def get_modelscope_hf_config(model_id_or_path: str,
+                             revision: Optional[str] = None):
+    # Read hf config dictionary from modelscope hub or local path
+    from modelscope.utils.constant import ModelFile
+    from modelscope.hub.file_download import model_file_download
+    from modelscope.utils.config import Config
+    if not os.path.exists(model_id_or_path):
+        local_path = model_file_download(
+            model_id_or_path, ModelFile.CONFIG, revision=revision)
+    elif os.path.isdir(model_id_or_path):
+        local_path = os.path.join(model_id_or_path, ModelFile.CONFIG)
+    elif os.path.isfile(model_id_or_path):
+        local_path = model_id_or_path
+    return Config._file2dict(local_path)
