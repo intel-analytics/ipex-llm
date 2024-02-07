@@ -19,7 +19,7 @@ from bigdl.dllib.feature.dataset import base
 import os
 import sys
 
-NEWS20_URL = 'http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz'  # noqa
+NEWS20_URL = 'https://figshare.com/ndownloader/files/13356110'  # noqa
 GLOVE_URL = 'https://nlp.stanford.edu/data/glove.6B.zip'  # noqa
 
 CLASS_NUM = 20
