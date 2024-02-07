@@ -43,7 +43,7 @@ DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
                 }
 BASE_URL = \
     {'network_traffic':
-     [f'http://mawi.wide.ad.jp/~agurim/dataset/{val[:-4]}/{val}'
+     [f'https://mawi.wide.ad.jp/~agurim/dataset/{val[:-4]}/{val}'
       for val in DATASET_NAME['network_traffic']],
      'AIOps':
      ['https://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz'],
