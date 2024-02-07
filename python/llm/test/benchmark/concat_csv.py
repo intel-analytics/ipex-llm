@@ -36,7 +36,7 @@ def main():
 
     merged_df = pd.concat([pd.read_csv(file, index_col=0) for file in csv_files], ignore_index=True)
     merged_df.reset_index(drop=True, inplace=True)
-    merged_csv = csv_files[0].replace("_test1", "").replace("_test2", "")
+    merged_csv = csv_files[0].replace("_test1", "").replace("_test2", "").replace("_test3", "")
     merged_df.to_csv(merged_csv)
 
 if __name__ == "__main__":
