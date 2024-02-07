@@ -71,9 +71,9 @@ jobs:
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_SEQ_LEN: '["512"]'
-          PR_MATRIX_MODEL_NAME: '["Mistral-7B-v0.1"]'
+          PR_MATRIX_MODEL_NAME: '["mpt-7b-chat","falcon-7b-instruct-with-patch"]'
           PR_MATRIX_LANGUAGE: '["en"]'
-          PR_MATRIX_PRECISION: '["fp4"]'
+          PR_MATRIX_PRECISION: '["fp4 sym_int8"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "seq_len=$PR_MATRIX_SEQ_LEN" >> $GITHUB_ENV
@@ -122,17 +122,17 @@ jobs:
         device: [xpu]
         include:
           - python-version: "3.9"
-            model_name: ["chatglm2-6b", "Baichuan2-7B-Chat"]
+            model_name: "chatglm2-6b"
             language: "zh"
-            precision: "fp4"
+            precision: ["fp4","sym_int8"]
             seq_len: "512"
             device: "xpu"
-          #- python-version: "3.9"
-          #  model_name: "Baichuan2-7B-Chat"
-          #  language: "zh"
-          #  precision: "fp4"
-          #  seq_len: "512"
-          #  device: "xpu"
+          - python-version: "3.9"
+            model_name: "Baichuan2-7B-Chat"
+            language: "zh"
+            precision: ["fp4 sym_int8"]
+            seq_len: "512"
+            device: "xpu"
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
