@@ -102,7 +102,7 @@ There is no need to set further environment variables.
 ### 4. Running examples
 
 ```bash
-python ./synthesize_speech.py --text 'This is an example text for synthesize speech.'
+python ./synthesize_speech.py --text 'BigDL-LLM is a library for running large language model on Intel XPU with very low latency.'
 ```
 
 In the example, several arguments can be passed to satisfy your requirements:
