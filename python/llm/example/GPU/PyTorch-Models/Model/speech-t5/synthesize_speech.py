@@ -55,10 +55,10 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the SpeechT5 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--repo-id-or-vocoder-path', type=str, default='microsoft/speecht5_hifigan',
-                        help='The huggingface repo id for the SpeechT5 vocoder to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+                        help='The huggingface repo id for the vocoder model (which generates audio from a spectrogram) to be downloaded'
+                             ', or the path to the huggingface checkpoint folder.')
     parser.add_argument('--repo-id-or-data-path', type=str, default="Matthijs/cmu-arctic-xvectors",
-                        help='The huggingface repo id for the audio dataset to be downloaded'
+                        help='The huggingface repo id for the audio dataset (which decides voice characteristics) to be downloaded'
                             ', or the path to the huggingface dataset folder')
     parser.add_argument('--text', type=str, default="Artificial intelligence refers to the development of computer systems that can perform tasks that typically require human intelligence.",
                         help='Text to synthesize speech')
