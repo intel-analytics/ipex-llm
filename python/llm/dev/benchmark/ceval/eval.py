@@ -24,6 +24,7 @@ from tqdm import tqdm
 from bigdl.llm.utils.common.log4Error import invalidInputError
 from evaluators.qwen import QwenEvaluator
 from evaluators.llama import LlamaEvaluator
+from evaluators.chatglm import ChatGLMEvaluator
 
 
 TASK_NAME_MAPPING = {
@@ -280,7 +281,6 @@ def main(args, evaluator):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_family", type=str, default="llama")
     parser.add_argument("--model_path", type=str, default="meta-llama/Llama-2-7b-chat-hf")
     parser.add_argument("--eval_type", type=str, default="validation")
     parser.add_argument("--device", type=str, default="xpu")
@@ -289,15 +289,32 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.model_family == "llama":
+    # decide the model family
+    model_families = ['llama', 'qwen', 'chatglm']
+
+    model_family = None
+    for family in model_families:
+        if family in args.model_path.lower():
+            model_family = family
+
+    assert model_family is not None, f"Model {args.model_path}'s model family is not implemented"
+
+    if model_family == "llama":
         evaluator = LlamaEvaluator(
             choices=choices,
             model_path=args.model_path,
             device=args.device,
             qtype=args.qtype
         )
-    elif args.model_family == "qwen":
+    elif model_family == "qwen":
         evaluator = QwenEvaluator(
+            choices=choices,
+            model_path=args.model_path,
+            device=args.device,
+            qtype=args.qtype
+        )
+    elif model_family == "chatglm":
+        evaluator = ChatGLMEvaluator(
             choices=choices,
             model_path=args.model_path,
             device=args.device,
@@ -306,5 +323,5 @@ if __name__ == "__main__":
     else:
         invalidInputError(
             False,
-            "Invalid model_family, currently support llama and qwen only.")
+            "Invalid model_family, currently support llama, qwen, and chatglm only.")
     main(args, evaluator=evaluator)

@@ -96,7 +96,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   Orca-Basic-Py37-Spark3:
