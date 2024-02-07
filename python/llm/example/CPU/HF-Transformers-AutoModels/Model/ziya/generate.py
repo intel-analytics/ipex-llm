@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="/mnt/disk1/models/Ziya-Coding-34B-v1.0",
                         help='The huggingface repo id for the Ziya model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="AI是什么？",
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer') 
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
@@ -41,12 +41,8 @@ if __name__ == '__main__':
     
     from bigdl.llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                #  load_in_4bit=True,
-                                                # load_in_low_bit="sym_int4",
-                                                optimize_model=True,
-                                                low_cpu_mem_usage=True,
+                                                 load_in_4bit=True,
                                                  trust_remote_code=True)
-    print("load sucess")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -56,28 +52,21 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = ZIYA_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
-        cost = []
-        for _ in range(3):
-            st = time.time()
-            # if your selected model is capable of utilizing previous key/value attentions
-            # to enhance decoding speed, but has `"use_cache": false` in its model config,
-            # it is important to set `use_cache=True` explicitly in the `generate` function
-            # to obtain optimal performance with BigDL-LLM INT4 optimizations
-            output = model.generate(input_ids,
-                                    max_new_tokens=args.n_predict,
-                                    do_sample = True,
-                                    top_p = 0.85,
-                                    temperature = 0.8,
-                                    repetition_penalty = 0.95,
-                                    eos_token_id = tokenizer.eos_token_id,
-                                    pad_token_id = tokenizer.pad_token_id,
-                                    )
-            end = time.time()
-            output_str = tokenizer.batch_decode(output)[0]
-            cost.append(end-st)
-            # print(f'Inference time: {end-st} s')
-            print('-'*20, 'Prompt', '-'*20)
-            print(prompt)
-            print('-'*20, 'Output', '-'*20)
-            print(output_str)
-        print(np.average(cost))
+        st = time.time()
+        
+        output = model.generate(input_ids,
+                                max_new_tokens=args.n_predict,
+                                do_sample = True,
+                                top_p = 0.85,
+                                temperature = 0.8,
+                                repetition_penalty = 0.95,
+                                eos_token_id = tokenizer.eos_token_id,
+                                pad_token_id = tokenizer.pad_token_id,
+                                )
+        end = time.time()
+        output_str = tokenizer.batch_decode(output)[0]
+        print(f'Inference time: {end-st} s')
+        print('-'*20, 'Prompt', '-'*20)
+        print(prompt)
+        print('-'*20, 'Output', '-'*20)
+        print(output_str)

@@ -77,6 +77,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | SOLAR | [link](example/CPU/HF-Transformers-AutoModels/Model/solar) | [link](example/GPU/HF-Transformers-AutoModels/Model/solar) |
 | Phixtral | [link](example/CPU/HF-Transformers-AutoModels/Model/phixtral) | [link](example/GPU/HF-Transformers-AutoModels/Model/phixtral) |
 | InternLM2 | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm2) | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm2) |
+| Ziya-Coding-34B-v1.0 | [link](example/CPU/HF-Transformers-AutoModels/Model/ziya) | |
 
 ### Working with `bigdl-llm`
 
