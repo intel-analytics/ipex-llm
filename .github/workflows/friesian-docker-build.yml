@@ -32,7 +32,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   serving-jar-package:
