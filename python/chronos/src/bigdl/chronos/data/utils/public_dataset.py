@@ -134,8 +134,8 @@ class PublicDataset:
 
         if not os.path.exists(self.final_file_path):
             if not os.path.exists(tar_file):
-                tar = tarfile.open(file_path, 'r:gz')
-                tar.extractall(os.path.expanduser(self.dir_path))
+                with tarfile.open(file_path, 'r:gz') as tar:
+                    tar.extractall(os.path.expanduser(self.dir_path))
             raw_df = pd.read_csv(tar_file,
                                  header=None,
                                  usecols=[0, 1, 2, 3],
