@@ -895,7 +895,7 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.qwen2 import qwen2_attention_forward
         # TODO: add these optimization back
-        # RMSNorm and rotray embedding are disabled for now 
+        # RMSNorm and rotray embedding are disabled for now
         # as they lead to obvious performance drop for Qwen 1.5
         # convert_forward(model,
         #                 module.Qwen2Attention,
