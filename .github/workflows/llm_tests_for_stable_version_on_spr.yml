@@ -72,7 +72,7 @@ jobs:
           cp ./*.csv /models/stable_version_perf_regression_test_cpu/
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 10.0
+          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 20.0
           cd /models/stable_version_perf_regression_test_cpu/
           curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/regression_test
   
