@@ -33,9 +33,9 @@ on:
         required: true
         type: choice
         options:
-          - "en"
-          - "zh"
-          - "all"
+          - en
+          - zh
+          - all
       runs-on:
         description: 'Labels to filter the runners, seperated by comma and must be quoted.'
         default: "accuracy"
