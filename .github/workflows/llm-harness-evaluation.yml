@@ -230,8 +230,8 @@ jobs:
 
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: llm-harness-evalution
-    runs-on: "arc03-bigdl-linux-native01"
+    needs: [llm-harness-evalution, llm-harness-summary]
+    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
