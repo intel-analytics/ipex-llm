@@ -546,7 +546,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
     _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
-    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"])
+    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"]):
         logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
     if _enable_ipex:
         model = _optimize_ipex(model)
