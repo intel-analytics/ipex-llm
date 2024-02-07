@@ -15,7 +15,7 @@
 #
 
 
-import os, time
+import os
 import pytest
 import tempfile
 

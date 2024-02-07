@@ -15,12 +15,11 @@
 #
 
 
-import os, time
+import os
 import pytest
-import tempfile
 
 import torch
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel, AutoModelForSpeechSeq2Seq
+from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
 
 device = os.environ['DEVICE']
