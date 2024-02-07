@@ -122,17 +122,17 @@ jobs:
         device: [xpu]
         include:
           - python-version: "3.9"
-            model_name: "chatglm2-6b"
+            model_name: ["chatglm2-6b", "Baichuan2-7B-Chat"]
             language: "zh"
             precision: "fp4"
             seq_len: "512"
             device: "xpu"
-          - python-version: "3.9"
-            model_name: "Baichuan2-7B-Chat"
-            language: "zh"
-            precision: "fp4"
-            seq_len: "512"
-            device: "xpu"
+          #- python-version: "3.9"
+          #  model_name: "Baichuan2-7B-Chat"
+          #  language: "zh"
+          #  precision: "fp4"
+          #  seq_len: "512"
+          #  device: "xpu"
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
