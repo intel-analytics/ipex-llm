@@ -247,33 +247,37 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           OUTPUT_PATH="results_$DATE"
           echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
+          NIGHTLY_FOLDER="/home/arda/harness-action-runners/nightly-accuracy-data"
+          echo "NIGHTLY_FOLDER=$NIGHTLY_FOLDER" >> $GITHUB_ENV
+          PR_FOLDER="/home/arda/harness-action-runners/pr-accuracy-data"
+          echo "PR_FOLDER=$PR_FOLDER" >> $GITHUB_ENV
 
       - name: Download all results for nightly run
         if: github.event_name == 'schedule'
         uses: actions/download-artifact@v3
         with:
           name: harness_results
-          path: /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          path: ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
   
       - name: Download all results for pr run
         if: github.event_name == 'pull_request'
         uses: actions/download-artifact@v3
         with:
           name: harness_results
-          path: /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+          path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
 
       - name: Summarize the results for nightly run
         if: github.event_name == 'schedule'
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
         
       - name: Summarize the results for pull request
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}   
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.PR_FOLDER}}   
