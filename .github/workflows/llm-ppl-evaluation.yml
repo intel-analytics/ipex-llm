@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       seq_len:
-        description: 'sequence length, seperated by comma and must be quoted.'
+        description: 'sequence length, input one number'
         required: true
         type: number      
       model_name:
@@ -29,9 +29,13 @@ on:
         required: true
         type: string
       language:
-        description: 'language, seperated by comma and must be quoted.'
+        description: 'language, can be en, zh, or all'
         required: true
-        type: string
+        type: choice
+        options:
+          - en
+          - zh
+          - all
       runs-on:
         description: 'Labels to filter the runners, seperated by comma and must be quoted.'
         default: "accuracy"
@@ -72,7 +76,7 @@ jobs:
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_SEQ_LEN: '["512"]'
-          PR_MATRIX_MODEL_NAME: '["falcon-7b-instruct-with-patch"]'
+          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf"]'
           PR_MATRIX_LANGUAGE: '["en"]'
           PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
@@ -189,7 +193,7 @@ jobs:
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity
         env:
           USE_XETLA: OFF
-          # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+          SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
           source /opt/intel/oneapi/setvars.sh
           python run.py \
