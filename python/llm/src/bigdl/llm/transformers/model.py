@@ -238,12 +238,14 @@ class _BaseAutoModelClass:
 
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
-            # set default torch_dtype='auto'. Note that when load_in_low_bit="fp16", set default torch_dtype=torch.float16
+            # set default torch_dtype='auto'.
+            # Note that when load_in_low_bit="fp16", set default torch_dtype=torch.float16
             if load_in_low_bit == "fp16":
                 if torch_dtype is not None and torch_dtype != torch.float16:
                     invalidInputError(
                         False,
-                        f"Please use torch_dtype=torch.float16 when setting load_in_low_bit='fp16'."
+                        f"Please use torch_dtype=torch.float16"
+                        f" when setting load_in_low_bit='fp16'."
                     )
                 else:
                     kwargs["torch_dtype"] = torch.float16
