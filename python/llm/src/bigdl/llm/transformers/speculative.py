@@ -131,6 +131,7 @@ def clear_benchmarks(self):
 def _prepare_past_key_values_storage_cpu(self, past_key_values,
                                          max_new_tokens, _enable_ipex=False):
     past_key_values_storage = []
+    # init ipex_past_key_values
     if _enable_ipex:
         ipex_past_key_values = []
         cur_len = past_key_values[0][0].size(1)
@@ -160,10 +161,10 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
                 for pkv in past_key_values
             ]
     if not _enable_ipex:
-        len0 = past_key_values[i][0].size(0)
-        len1 = past_key_values[i][0].size(1)
-        len2 = past_key_values[i][0].size(2)
-        len3 = past_key_values[i][0].size(3)
+        len0 = past_key_values[0][0].size(0)
+        len1 = past_key_values[0][0].size(1)
+        len2 = past_key_values[0][0].size(2)
+        len3 = past_key_values[0][0].size(3)
         for i in range(len(past_key_values)):
             if self.config.model_type == "qwen":
                 k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
@@ -300,23 +301,22 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                         dtype=torch.float32)
                 value0 =  torch.ones(size1-size, len1, len2, len3,
                         dtype=torch.float32)
-                for pkv in past_key_values:
-                    key0 = pkv[1][size:size1, :, :, :]
-                    value0 = pkv[2][size:size1, :, :, :]
-                    if False:
-                        key = key0.unsqueeze(-3)
-                        key = key.expand(-1, -1, 16, -1, -1)
-                        key = key.contiguous().view(size1-size, len1, 2 * 16, len3)
-                        value = value0.unsqueeze(-3)
-                        value = value.expand(-1, -1, 16, -1, -1)
-                        value = value.contiguous().view(size1-size, len1, 2 * 16, len3)
-                    else:
-                        key = key0
-                        value = value0
-                    past_key_values_storage[i][0][ size:size1, :, :, :] = \
-                        key.to(torch.float32)
-                    past_key_values_storage[i][1][ size:size1, :, :, :] = \
-                        value.to(torch.float32)
+                key0 = past_key_values[i][1][size:size1, :, :, :]
+                value0 = past_key_values[i][2][size:size1, :, :, :]
+                if False:
+                    key = key0.unsqueeze(-3)
+                    key = key.expand(-1, -1, 16, -1, -1)
+                    key = key.contiguous().view(size1-size, len1, 2 * 16, len3)
+                    value = value0.unsqueeze(-3)
+                    value = value.expand(-1, -1, 16, -1, -1)
+                    value = value.contiguous().view(size1-size, len1, 2 * 16, len3)
+                else:
+                    key = key0
+                    value = value0
+                past_key_values_storage[i][0][ size:size1, :, :, :] = \
+                    key.to(torch.float32)
+                past_key_values_storage[i][1][ size:size1, :, :, :] = \
+                    value.to(torch.float32)
             else:
                 delta_past_key = \
                     past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
@@ -538,7 +538,10 @@ def speculative_generate(self,
                     "use_cache": True,
                 }
                 if self.config.model_type == "chatglm":
-                    past_key_value_len = past_key_values[0][0].shape[0]
+                    if _enable_ipex:
+                        past_key_value_len = past_key_values[0][0].shape[1]
+                    else:
+                        past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                     forward_args["position_ids"] = position_ids
                 elif self.config.model_type == "gptj":
@@ -615,7 +618,7 @@ def speculative_generate(self,
                     output = self.trace_graph(input_ids=drafted_input_ids,
                             attention_mask=cur_attention_mask,
                             position_ids=position_ids,
-                            return_last_logit=torch.tensor(False),
+                            #return_last_logit=torch.tensor(False),
                             past_key_values=past_key_values,)  
                 elif "mistral" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
