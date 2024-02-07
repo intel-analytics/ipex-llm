@@ -231,7 +231,7 @@ jobs:
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
     needs: [set-matrix, llm-harness-evalution, llm-harness-summary]
-    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
+    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
@@ -268,11 +268,12 @@ jobs:
         run: |
           ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          python ../../python/llm/dev/benchmark/harness/harness_csv_to_html.py -f $CSV_SAVE_PATH /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
         
       - name: Summarize the results for pull request
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-      
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          python ../../python/llm/dev/benchmark/harness/harness_csv_to_html.py -f $CSV_SAVE_PATH /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}   
