@@ -75,7 +75,7 @@ jobs:
           python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 20.0
           cd /models/stable_version_perf_regression_test_cpu/
           for f in *.html; do
-            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/regression_test
+            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/regression_test/
           done
 
 
@@ -133,5 +133,5 @@ jobs:
           python csv_to_html.py -f /models/stable_version_stress_test_cpu/
           cd /models/stable_version_stress_test_cpu/
           for f in *.html; do
-            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/stress_test
+            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/stress_test/
           done
