@@ -47,6 +47,8 @@ import torch.nn as nn
 from bigdl.llm.transformers.models.llama import should_use_fuse_rope, repeat_kv
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
     apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.utils.common import invalidInputError
+
 
 def qwen2_attention_forward(
     self,
@@ -78,7 +80,8 @@ def qwen2_attention_forward(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         if self.layer_idx is None:
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
                 "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
                 "with a layer index."
@@ -106,14 +109,16 @@ def qwen2_attention_forward(
     attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        raise ValueError(
+        invalidInputError(
+            False,
             f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
             f" {attn_weights.size()}"
         )
 
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            raise ValueError(
+            invalidInputError(
+                False,
                 f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
             )
 
@@ -125,7 +130,8 @@ def qwen2_attention_forward(
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
+        invalidInputError(
+            False,
             f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
             f" {attn_output.size()}"
         )
