@@ -203,7 +203,7 @@ BigDL-LLM for GPU supports on Linux has been verified on:
             .. code-block:: bash
 
                export PYTHONUSERBASE=~/intel/oneapi
-               pip install dpcpp-cpp-rt mkl-dpcpp onednn --user
+               pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 --user
 
             .. note::
 
