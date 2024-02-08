@@ -265,10 +265,9 @@ def llama_attention_forward_4_31_quantized(
     qtype = getattr(self.q_proj, "qtype", None)
     qtype_check = qtype in [SYM_INT4, FP8E5]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
-                         enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
+                          and enough_kv_room and bsz * q_len == 1)
 
-    
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
     # and save the key/value states to cache, then return query states and the
@@ -278,14 +277,14 @@ def llama_attention_forward_4_31_quantized(
         kv_seq_len = 0
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         tmp_cache_k, tmp_cache_v = init_kv_cache(
-                bsz,
-                self.num_key_value_heads,
-                self.head_dim,
-                kv_seq_len,
-                max_cache_length,
-                dtype=hidden_states.dtype,
-                device=device
-            )
+            bsz,
+            self.num_key_value_heads,
+            self.head_dim,
+            kv_seq_len,
+            max_cache_length,
+            dtype=hidden_states.dtype,
+            device=device
+        )
         import linear_q4_0
         query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
                                                                          self.q_proj.weight,
