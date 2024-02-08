@@ -191,7 +191,7 @@ def convert_gptq(module, awq=False, llm_awq=False):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False, prefix_name='',
-                                 imatrix_data=None):
+                                 imatrix_data=None, embedding_qtype=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
@@ -313,7 +313,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         module.weight = None
         elif cpu_embedding and type(module) == nn.Embedding:
             # skip user-defined Embedding layer
-            model._modules[name] = LLMEmbedding(
+            model._modules[name] = LowBitEmbedding(
                 num_embeddings=module.num_embeddings,
                 embedding_dim=module.embedding_dim,
                 padding_idx=module.padding_idx,
@@ -323,6 +323,28 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 sparse=module.sparse,
                 _weight=module.weight.data,
             )
+        elif type(module) == nn.Embedding and embedding_qtype != None:
+            q_embedding = LowBitEmbedding(
+                num_embeddings=module.num_embeddings,
+                embedding_dim=module.embedding_dim,
+                padding_idx=module.padding_idx,
+                max_norm=module.max_norm,
+                norm_type=module.norm_type,
+                scale_grad_by_freq=module.scale_grad_by_freq,
+                sparse=module.sparse,
+                _weight=module.weight.data,
+            )
+            device = module.weight.data.device
+            # Copy the weights
+            paramsLowBit = FP4Params(data=module.weight.data,
+                                     requires_grad=False,
+                                     quantized=False,
+                                     _shape=None,
+                                     convert_shape_only=convert_shape_only,
+                                     qtype=embedding_qtype,
+                                     in_features=in_features).to(device)
+            q_embedding._parameters['weight'] = paramsLowBit
+            model._modules[name] = q_embedding
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
@@ -334,7 +356,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 convert_shape_only,
                 cpu_embedding,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
-                imatrix_data=imatrix_data
+                imatrix_data=imatrix_data,
+                embedding_qtype=embedding_qtype
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -512,7 +535,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
                          lightweight_bmm=False, torch_dtype="auto",
-                         imatrix_data=None):
+                         imatrix_data=None, embedding_qtype=None):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -525,6 +548,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
+        embedding_qtype=embedding_qtype
     )
     if not has_been_replaced:
         warnings.warn(

@@ -72,3 +72,25 @@ class LLMEmbedding(torch.nn.Embedding):
 
     def forward(self, x: Tensor):
         return super().forward(x.to('cpu')).to(x.device)
+
+
+class LowBitEmbedding(torch.nn.Embedding):
+    def __init__(self,
+                 num_embeddings: int,
+                 embedding_dim: int,
+                 padding_idx: Optional[int] = None,
+                 max_norm: Optional[float] = None,
+                 norm_type: float = 2.,
+                 scale_grad_by_freq: bool = False,
+                 sparse: bool = False,
+                 _weight: Optional[Tensor] = None,
+                 _freeze: bool = False,
+                 device=None, dtype=None) -> None:
+        super().__init__(num_embeddings, embedding_dim, padding_idx,
+                         max_norm, norm_type, scale_grad_by_freq, sparse,
+                         _weight, device, dtype)
+
+    def forward(self, x: Tensor):
+        print(x_2d.shape)
+        result = linear_q4_0.dequantize_rows(x_2d, self.weight.data, self.weight.qtype)
+        return result

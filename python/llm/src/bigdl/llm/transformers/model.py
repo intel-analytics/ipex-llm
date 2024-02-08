@@ -126,6 +126,8 @@ class _BaseAutoModelClass:
             added to llama.cpp.
         :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
             specify the model hub. Default to be ``'huggingface'``.
+        :param embedding_qtype: str_value, options are ``'q2_k'`` now.Default to be None.
+            Relevant low bit optimizations will be applied to embedding layer.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
