@@ -349,9 +349,9 @@ def rw_attention_forward_40b(
         key_layer = new_key_states
         value_layer = new_value_states
 
-    query_layer = query_layer.view(batch_size, self.num_heads, -1, self.head_dim)
-    key_layer = key_layer.view(batch_size, self.num_heads, -1, self.head_dim)
-    value_layer = value_layer.view(batch_size, self.num_heads, -1, self.head_dim)
+    query_layer = query_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+    key_layer = key_layer.view(batch_size*self.num_heads, -1, self.head_dim)
+    value_layer = value_layer.view(batch_size*self.num_heads, -1, self.head_dim)
     _, kv_length, _ = key_layer.shape
     if use_cache is True:
         present = (key_layer, value_layer)
@@ -718,7 +718,7 @@ def falcon_attention_forward_4_36(
     key_layer = key_layer.view(batch_size, self.num_heads, -1, self.head_dim)
     value_layer = value_layer.view(batch_size, self.num_heads, -1, self.head_dim)
 
-    kv_seq_len = key_layer.shape[-2]
+    kv_length = key_layer.shape[-2]
     if use_cache:
         present = (key_layer, value_layer)
     else:
@@ -787,7 +787,7 @@ def falcon_attention_forward_4_36(
 
             # change view to [batch_size, num_heads, q_length, kv_length]
             attention_scores = matmul_result.view(
-                batch_size, self.num_heads, query_length, kv_seq_len)
+                batch_size, self.num_heads, query_length, kv_length)
 
             # cast attention scores to fp32, compute scaled softmax and cast back to initial dtype -
             # [batch_size, num_heads, q_length, kv_length]
@@ -809,7 +809,7 @@ def falcon_attention_forward_4_36(
 
             # change view [batch_size, num_heads, q_length, kv_length]
             attention_probs_reshaped = attention_probs.view(
-                batch_size, self.num_heads, query_length, kv_seq_len)
+                batch_size, self.num_heads, query_length, kv_length)
 
             # matmul: [batch_size * num_heads, q_length, head_dim]
             attn_output = (attention_probs_reshaped @ value_layer).flatten(0, 1)
