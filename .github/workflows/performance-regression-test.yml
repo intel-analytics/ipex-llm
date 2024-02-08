@@ -1,5 +1,8 @@
 name: Performance Regression Test
 
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 16 * * *'

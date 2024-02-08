@@ -1,4 +1,8 @@
 name: stable-diffusion-win
+
+permissions:
+  contents: read
+
 on:
   # pull_request:
   #   branchs: [ main ]
