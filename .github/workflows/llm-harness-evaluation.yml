@@ -68,7 +68,7 @@ jobs:
           PR_MATRIX_MODEL_NAME: '["Mistral-7B-v0.1"]'
           PR_MATRIX_TASK: '["arc", "truthfulqa", "winogrande"]'
           PR_MATRIX_PRECISION: '["fp8"]'
-          PR_LABELS: '["self-hosted", "llm", "accuracy1", "accuracy-nightly"]'
+          PR_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
 
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
@@ -227,7 +227,7 @@ jobs:
 
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [set-matrix, llm-harness-evalution, llm-harness-summary]
+    needs: [set-matrix, llm-harness-evalution]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@v3
