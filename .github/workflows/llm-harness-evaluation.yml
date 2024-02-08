@@ -66,7 +66,7 @@ jobs:
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_MODEL_NAME: '["Mistral-7B-v0.1"]'
-          PR_MATRIX_TASK: '["truthfulqa"]'
+          PR_MATRIX_TASK: '["arc", "truthfulqa", "winogrande"]'
           PR_MATRIX_PRECISION: '["fp8"]'
           PR_LABELS: '["self-hosted", "llm", "accuracy1", "accuracy-nightly"]'
 
@@ -182,6 +182,8 @@ jobs:
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
             --batch_size 1 --no_cache --output_path results
+            # TODO: just for debug, remove it later
+            --limit 5 
 
 
       - uses: actions/upload-artifact@v3
@@ -220,13 +222,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: harness_results
-          path: ${{ env.OUTPUT_PATH }}        
+          path: results        
       - name: Summarize the results
         shell: bash
         run: |
-          echo ${{ env.OUTPUT_PATH }} 
-          ls ${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.OUTPUT_PATH }} ./
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py results
 
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
@@ -243,7 +244,10 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install jsonlines  pytablewriter regex
-
+      
+      - name: Set output path
+        shell: bash
+        run: |    
           DATE=$(date +%Y-%m-%d)
           OUTPUT_PATH="results_$DATE"
           echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
@@ -271,13 +275,13 @@ jobs:
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
         
       - name: Summarize the results for pull request
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.PR_FOLDER}}   
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}   
