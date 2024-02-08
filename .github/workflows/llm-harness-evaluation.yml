@@ -226,7 +226,7 @@ jobs:
         run: |
           echo ${{ env.OUTPUT_PATH }} 
           ls ${{ env.OUTPUT_PATH }}
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.OUTPUT_PATH }}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_results.py ${{ env.OUTPUT_PATH }} ./
 
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
