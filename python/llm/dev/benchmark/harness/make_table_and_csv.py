@@ -97,10 +97,9 @@ def make_csv(result_dict, output_path=None):
                 index += 1
 
 
-def merge_results(args):
+def merge_results(path):
     # loop dirs and subdirs in results dir
     # for each dir, load json files
-    path = args[1]
     print('Read from', path)
     merged_results = dict()
     for dirpath, dirnames, filenames in os.walk(sys.argv[1]):
@@ -117,17 +116,26 @@ def merge_results(args):
             if precision not in merged_results[model]:
                 merged_results[model][precision] = dict()
             merged_results[model][precision][task] = result_dict
-    # args[2] is the output path
-    make_csv(merged_results, args[2])         
     return merged_results
 
 
 def main(*args):
-    merged_results = merge_results(args)
-    print(make_table(merged_results)) 
+    if len(args) > 1:
+        input_path = args[1]
+    else:
+        raise ValueError("Input path is required")
+    
+    if len(args) > 2:
+        output_path = args[2]  # use the third argument as the output path
+    else:
+        output_path = "./"  # default to current directory
+
+    merged_results = merge_results(input_path)
+    make_csv(merged_results, output_path)
+    print(make_table(merged_results))
 
 
 if __name__ == "__main__":
     # when running from the harness, the first argument is the script name
-    # you must name the second argument and the third argument to be the input_dir and output_dir
+    # you must name the second argument and the third argument(optional) to be the input_dir and output_dir
     main(*sys.argv)
