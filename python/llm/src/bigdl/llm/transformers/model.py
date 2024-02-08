@@ -250,7 +250,7 @@ class _BaseAutoModelClass:
                 else:
                     kwargs["torch_dtype"] = torch.float16
             else:
-                kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+                kwargs["torch_dtype"] = torch_dtype if torch_dtype else "auto"
             # Avoid tensor parallel F.Linear Operations
             if "pretraining_tp" in config_dict:
                 if "config" in kwargs:
