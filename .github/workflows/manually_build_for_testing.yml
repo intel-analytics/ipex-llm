@@ -55,7 +55,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   bigdl-llm-finetune-lora-cpu:
