@@ -353,7 +353,7 @@ def llama_attention_forward_4_31_quantized(
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                dtype=torch.float32).to(query_states.dtype)
+                                             dtype=torch.float32).to(query_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
@@ -361,12 +361,12 @@ def llama_attention_forward_4_31_quantized(
                 device=query_states.device
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                            key_states, value_states)
+                                                           key_states, value_states)
             past_key_value = (key_states, value_states)
     else:
         k_cache, v_cache = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                        key_states, value_states)
+                                                       key_states, value_states)
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
@@ -374,10 +374,10 @@ def llama_attention_forward_4_31_quantized(
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
-            key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                            dtype=attention_dtype)
-            value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                                dtype=attention_dtype)
+            key_states = repeat_kv(key_states,
+                                   self.num_key_value_groups).to(device, dtype=attention_dtype)
+            value_states = repeat_kv(value_states,
+                                     self.num_key_value_groups).to(device, dtype=attention_dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
             import linear_q4_0
@@ -403,7 +403,7 @@ def llama_attention_forward_4_31_quantized(
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                dtype=torch.float32).to(query_states.dtype)
+                                             dtype=torch.float32).to(query_states.dtype)
 
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
