@@ -889,6 +889,24 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.QWenMLP,
                             qwen_mlp_forward)
+    elif model.config.model_type == "qwen2":
+        # for Qwen1.5-7B
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.qwen2 import qwen2_attention_forward
+        # TODO: add these optimization back
+        # RMSNorm and rotray embedding are disabled for now
+        # as they lead to obvious performance drop for Qwen 1.5
+        # convert_forward(model,
+        #                 module.Qwen2Attention,
+        #                 qwen2_attention_forward
+        #                 )
+        # convert_forward(model,
+        #                 module.Qwen2RMSNorm,
+        #                 llama_rms_norm_forward)
+        convert_forward(model,
+                        module.Qwen2MLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
