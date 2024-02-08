@@ -396,39 +396,48 @@ def llama_attention_forward_4_31_quantized(
         # otherwise, use native attention
         kv_seq_len = key_states.shape[-2]
         if past_key_value is None:
-            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+            attn_weights = torch.matmul(query_states,
+                                        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
             if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                invalidInputError(
+                    False,
+                    f"Attention weights should be of size "
+                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
                     f" {attn_weights.size()}"
                 )
 
             if attention_mask is not None:
                 if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    raise ValueError(
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                    invalidInputError(
+                        False,
+                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                        f" but is {attention_mask.size()}"
                     )
                 attn_weights = attn_weights + attention_mask
 
             # upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, value_states)
             if use_cache:
                 k_cache, v_cache = init_fp8_kv_cache(
                     bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
                     device=query_states.device
                 )
-                key_states, value_states = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
+                key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
+                                                               key_states, value_states)
                 past_key_value = (key_states, value_states)
         else:
             k_cache, v_cache = past_key_value
-            key_states, value_states = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
+            key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
+                                                           key_states, value_states)
             kv_seq_len = key_states.shape[-2]
             past_key_value = (key_states, value_states)
 
             if query_states.size(2) != 1 or query_states.device.type != 'xpu':
-                key_states, value_states = restore_fp8_kv_cache(key_states, value_states, query_states.dtype)
+                key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
+                                                                query_states.dtype)
                 attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
             else:
                 import linear_q4_0
@@ -437,26 +446,31 @@ def llama_attention_forward_4_31_quantized(
             attn_weights = attn_weights / math.sqrt(self.head_dim)
 
             if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                invalidInputError(
+                    False,
+                    f"Attention weights should be of size "
+                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
                     f" {attn_weights.size()}"
                 )
 
             if attention_mask is not None:
                 if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    raise ValueError(
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                    invalidInputError(
+                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                        f" but is {attention_mask.size()}"
                     )
                 attn_weights = attn_weights + attention_mask
 
             # upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
 
             if query_states.size(2) != 1 or query_states.device.type != 'xpu':
                 attn_output = torch.matmul(attn_weights, value_states)
             else:
                 import linear_q4_0
-                attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states.transpose(-1, -2))
+                attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
+                                                                value_states.transpose(-1, -2))
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
