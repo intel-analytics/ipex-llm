@@ -274,14 +274,12 @@ def llama_attention_forward_4_31_quantized(
     # extended key/value cache
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
-        kv_seq_len = 0
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         tmp_cache_k, tmp_cache_v = init_kv_cache(
             bsz,
             self.num_key_value_heads,
             self.head_dim,
-            kv_seq_len,
-            max_cache_length,
+            0,
+            1,
             dtype=hidden_states.dtype,
             device=device
         )
@@ -296,51 +294,9 @@ def llama_attention_forward_4_31_quantized(
                                                                          0,
                                                                          self.head_dim)
     else:
-        if self.config.pretraining_tp > 1:
-            key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
-                                 self.config.pretraining_tp)
-            query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-                                                    // self.config.pretraining_tp, dim=0)
-            key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
-            value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
-
-            query_states = [F.linear(hidden_states, query_slices[i])
-                            for i in range(self.config.pretraining_tp)]
-            query_states = torch.cat(query_states, dim=-1)
-
-            key_states = [F.linear(hidden_states, key_slices[i])
-                          for i in range(self.config.pretraining_tp)]
-            key_states = torch.cat(key_states, dim=-1)
-
-            value_states = [F.linear(hidden_states, value_slices[i])
-                            for i in range(self.config.pretraining_tp)]
-            value_states = torch.cat(value_states, dim=-1)
-        else:
-            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
-                    hidden_size == 4096:
-                # only use mm_qkv_out on pvc for llama-7b
-                if not hasattr(self, "qkv_proj_weight"):
-                    self.qkv_proj_weight = torch.stack([self.q_proj.weight,
-                                                        self.k_proj.weight,
-                                                        self.v_proj.weight]).contiguous()
-                    self.q_proj.weight.data = self.qkv_proj_weight[0, :, :]
-                    self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
-                    self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
-                    torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                torch.ops.torch_ipex.mm_qkv_out(
-                    hidden_states, self.qkv_proj_weight, None,
-                    query_states, key_states, value_states
-                )
-            else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
+        value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -372,104 +328,89 @@ def llama_attention_forward_4_31_quantized(
     else:
         attention_dtype = original_dtype
 
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                     dtype=attention_dtype)
-    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                         dtype=attention_dtype)
+    # otherwise, use native attention
+    kv_seq_len = key_states.shape[-2]
+    if past_key_value is None:
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if fsdp_flag:
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
-                                                     key_states,
-                                                     value_states,
-                                                     is_causal=True)
-        attn_weights = None
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states,
-                                                    value_states)
-        attn_output = attn_output.view(query_states.shape)
-        attn_weights = None
-    else:
-        # otherwise, use native attention
-        kv_seq_len = key_states.shape[-2]
-        if past_key_value is None:
-            attn_weights = torch.matmul(query_states,
-                                        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            invalidInputError(
+                False,
+                f"Attention weights should be of size "
+                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
 
-            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                 invalidInputError(
                     False,
-                    f"Attention weights should be of size "
-                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                    f" {attn_weights.size()}"
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
                 )
+            attn_weights = attn_weights + attention_mask
 
-            if attention_mask is not None:
-                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    invalidInputError(
-                        False,
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                        f" but is {attention_mask.size()}"
-                    )
-                attn_weights = attn_weights + attention_mask
-
-            # upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                 dtype=torch.float32).to(query_states.dtype)
-            attn_output = torch.matmul(attn_weights, value_states)
-            if use_cache:
-                k_cache, v_cache = init_fp8_kv_cache(
-                    bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
-                    device=query_states.device
-                )
-                key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                               key_states, value_states)
-                past_key_value = (key_states, value_states)
-        else:
-            k_cache, v_cache = past_key_value
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                dtype=torch.float32).to(query_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
+        if use_cache:
+            k_cache, v_cache = init_fp8_kv_cache(
+                bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
+                device=query_states.device
+            )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                           key_states, value_states)
-            kv_seq_len = key_states.shape[-2]
+                                                            key_states, value_states)
             past_key_value = (key_states, value_states)
+    else:
+        k_cache, v_cache = past_key_value
+        key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
+                                                        key_states, value_states)
+        kv_seq_len = key_states.shape[-2]
+        past_key_value = (key_states, value_states)
 
-            if query_states.size(2) != 1 or query_states.device.type != 'xpu':
-                key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                                query_states.dtype)
-                attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
-            else:
-                import linear_q4_0
-                attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
+                                                            query_states.dtype)
+            # repeat k/v heads if n_kv_heads < n_heads
+            key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                            dtype=attention_dtype)
+            value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                                dtype=attention_dtype)
+            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
+        else:
+            import linear_q4_0
+            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
 
-            attn_weights = attn_weights / math.sqrt(self.head_dim)
+        attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            invalidInputError(
+                False,
+                f"Attention weights should be of size "
+                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                 invalidInputError(
-                    False,
-                    f"Attention weights should be of size "
-                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                    f" {attn_weights.size()}"
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
                 )
+            attn_weights = attn_weights + attention_mask
 
-            if attention_mask is not None:
-                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    invalidInputError(
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                        f" but is {attention_mask.size()}"
-                    )
-                attn_weights = attn_weights + attention_mask
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                dtype=torch.float32).to(query_states.dtype)
 
-            # upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                 dtype=torch.float32).to(query_states.dtype)
-
-            if query_states.size(2) != 1 or query_states.device.type != 'xpu':
-                attn_output = torch.matmul(attn_weights, value_states)
-            else:
-                import linear_q4_0
-                attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                                value_states.transpose(-1, -2))
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            attn_output = torch.matmul(attn_weights, value_states)
+        else:
+            import linear_q4_0
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
+                                                            value_states.transpose(-1, -2))
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
