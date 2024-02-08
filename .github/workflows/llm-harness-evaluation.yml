@@ -169,6 +169,7 @@ jobs:
         env:
           USE_XETLA: OFF
           # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+        # TODO: limit just for debug, remove it later
         run: |
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
@@ -181,9 +182,8 @@ jobs:
             --precision ${{ matrix.precision }} \
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
-            --batch_size 1 --no_cache --output_path results
-            # TODO: just for debug, remove it later
-            --limit 5 
+            --batch_size 1 --no_cache --output_path results \
+            --limit 3
 
 
       - uses: actions/upload-artifact@v3
@@ -214,10 +214,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install jsonlines  pytablewriter regex
-
-          DATE=$(date +%Y-%m-%d)
-          OUTPUT_PATH="results_$DATE"
-          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
       - name: Download all results
         uses: actions/download-artifact@v3
         with:
