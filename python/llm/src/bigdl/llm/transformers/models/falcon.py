@@ -823,4 +823,3 @@ def falcon_attention_forward_4_36(
             return attn_output, present, attention_probs
         else:
             return attn_output, present
-        
