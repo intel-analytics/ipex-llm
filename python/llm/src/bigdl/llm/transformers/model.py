@@ -274,7 +274,7 @@ class _BaseAutoModelClass:
             imatrix_file = kwargs.pop("imatrix", None)
             if q_k in ["iq2_xxs", "iq2_xs"]:
                 invalidInputError(imatrix_file is not None,
-                                "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+                                  "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
             if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
                 kwargs['imatrix_data'] = imatrix_data
