@@ -1,4 +1,8 @@
 name: Scanner-snyk-docker
+
+permissions:
+  contents: read
+
 on:
 #  pull_request:
 #    branchs: [ main ]

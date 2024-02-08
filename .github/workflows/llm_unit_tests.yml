@@ -5,6 +5,9 @@ concurrency:
   group: ${{ github.workflow }}-llm-unittest-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch

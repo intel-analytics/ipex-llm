@@ -1,4 +1,8 @@
 name: Create PR to update nightly build download URL in docs/readthedocs/source/doc/Orca/Overview/install.md and auto merge
+
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 13 * * 0' # GMT time, 13:00 GMT == 21:00 China
