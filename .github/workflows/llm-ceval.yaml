@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 15 * * 5" # GMT time, 15:00 GMT == 22:00 Beijing Time
+    - cron: "00 15 * * 5" # GMT time, 15:00 GMT == 23:00 Beijing Time
   pull_request:
     branches: [main]
     paths:
@@ -94,7 +94,7 @@ jobs:
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         device: [xpu]
-        
+          
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -147,7 +147,7 @@ jobs:
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/ceval
         env:
           USE_XETLA: OFF
-          # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+          SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
           source /opt/intel/oneapi/setvars.sh
           python eval.py \
