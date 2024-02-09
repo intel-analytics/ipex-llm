@@ -74,7 +74,11 @@ def bloom_layer_norm_forward(self, hidden_states):
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
             return result
-    return F.layer_norm(hidden_states, self.normalized_shape, self.weight, self.bias, self.eps)
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    return (self.weight * (hidden_states * torch.rsqrt(variance + self.eps)) \
+            + self.bias).to(input_dtype)
 
 
 def bloom_attention_forward(
