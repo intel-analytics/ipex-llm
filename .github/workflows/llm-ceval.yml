@@ -129,7 +129,9 @@ jobs:
           if [ ! -d $CEVAL_HF_HOME ]; then
             mkdir -p $CEVAL_HF_HOME
           fi
-          mkdir "$CEVAL_HF_HOME/data"
+          if [ ! -d "$CEVAL_HF_HOME/data" ]; then
+            mkdir -p "$CEVAL_HF_HOME/data"
+          fi
           wget https://huggingface.co/datasets/ceval/ceval-exam/resolve/main/ceval-exam.zip -P "$CEVAL_HF_HOME/data"
           echo "DATA_PATH=$CEVAL_HF_HOME/data" >> "$GITHUB_ENV"
           DATA_PATH=$CEVAL_HF_HOME/data
