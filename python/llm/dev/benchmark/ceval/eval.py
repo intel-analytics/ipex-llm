@@ -222,7 +222,7 @@ hard_list = [
 choices = ["A", "B", "C", "D"]
 
 
-def cal_ceval(res):
+def cal_ceval(res, model_path, qtype):
     acc_sum_dict = dict()
     acc_norm_sum_dict = dict()
     cnt_dict = dict()
@@ -244,13 +244,22 @@ def cal_ceval(res):
             hard_acc_sum += float(res[tt])
         acc_sum_dict[class_] += float(res[tt])
         cnt_dict[class_] += 1
-    print("\n\n\n")
-    for k in ["STEM", "Social Science", "Humanities", "Other"]:
-        if k in cnt_dict:
-            print("%s acc: %.2f " % (k, acc_sum_dict[k] / cnt_dict[k]))
-    if hard_cnt > 0:
-        print("Hard acc:%.2f " % (hard_acc_sum / hard_cnt))
-    print("AVERAGE acc:%.2f " % (acc_sum / cnt))
+    
+    result_lst = []
+    subject_names = ["STEM", "Social Science", "Humanities", "Other", "Hard", "Average"]
+    for value in subject_names:
+        if value == "Hard":
+            result_lst.append(f"{hard_acc_sum / hard_cnt:.2f}")
+        elif value == "Average":
+            result_lst.append(f"{acc_sum / cnt:.2f}")
+        else:
+            result_lst.append(f"{acc_sum_dict[value] / cnt_dict[value]:.2f}")
+    
+    if not os.path.exists('results/'):
+        os.mkdir('results/')
+
+    dump_dict = {"Model Name": model_path.split('/')[-1], "Precision": qtype, "Results": result_lst}
+    json.dump(dump_dict, open(f'results/{dump_dict["Model Name"]}_{dump_dict["Precision"]}.json','w'), ensure_ascii=False, indent=4)
 
 
 def main(args, evaluator):
@@ -262,8 +271,9 @@ def main(args, evaluator):
             )
             val_df = pd.read_csv(val_file_path)
             score, _ = evaluator.eval_subject(subject_name, val_df, args.eval_type)
+            torch.xpu.empty_cache()
             result[subject_name] = score
-        cal_ceval(result)
+        cal_ceval(result, args.model_path, args.qtype)
     elif args.eval_type == "test":
         all_answers = {}
         for subject_name in tqdm(TASK_NAME_MAPPING.keys()):
@@ -272,6 +282,7 @@ def main(args, evaluator):
             )
             test_df = pd.read_csv(test_file_path)
             _, answers = evaluator.eval_subject(subject_name, test_df, args.eval_type)
+            torch.xpu.empty_cache()
             all_answers[subject_name] = answers
         json.dump(all_answers, open('submission.json','w'), ensure_ascii=False, indent=4)
     else:
@@ -297,7 +308,7 @@ if __name__ == "__main__":
         if family in args.model_path.lower():
             model_family = family
 
-    assert model_family is not None, f"Model {args.model_path}'s model family is not implemented"
+    assert model_family is not None, f"Model {args.model_path}'s evaluator is not implemented"
 
     if model_family == "llama":
         evaluator = LlamaEvaluator(
