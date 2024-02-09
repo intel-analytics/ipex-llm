@@ -144,6 +144,7 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
         if not _enable_ipex:
             len0 = past_key_values[i][0].size(0)
             len1 = past_key_values[i][0].size(1)
+            # gpt_bigcode has only 2-dimension kv
             if self.config.model_type != "gpt_bigcode":
                 len2 = past_key_values[i][0].size(2)
                 len3 = past_key_values[i][0].size(3)
@@ -177,10 +178,10 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
             past_key_values_storage[i][1][:len0, :, :, :] = past_key_values[i][1].to(
                 torch.float32)
         elif self.config.model_type == "gpt_bigcode":
-            kv = torch.ones(1, len0 + max_new_tokens, len1,
+            kv = torch.ones(len0 + max_new_tokens, len1,
                             dtype=torch.float32)
-            past_key_values_storage.append(kv)
-            past_key_values_storage[i][0][:len0] = past_key_values[i][0].to(
+            past_key_values_storage.append(kv[None, :, :])
+            past_key_values_storage[i][0][:len0, :] = past_key_values[i][0].to(
                 torch.float32)
         else:
             k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
@@ -218,7 +219,7 @@ def _prepare_draft_past_key_values_cpu(self, past_key_values, past_key_values_st
         elif self.config.model_type == "gpt_bigcode":
             len0 = past_key_values[0][0].size(0)
             kv = past_key_values_storage[i][0][:len0, :]
-            tmp_past_key_values.append(kv)
+            tmp_past_key_values.append(kv[None, :, :])
         else:
             len2 = past_key_values[0][0].size(2)
             k0 = past_key_values_storage[i][0][:, :, :len2, :]
@@ -248,19 +249,9 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
             elif self.config.model_type == "gpt_bigcode":
                 size = original_draft_past_key_values[i][0].size(0)
                 size1 = past_key_values[i][0].size(0)
-                size2 = past_key_values_storage[i][0].shape[-1]
-                size3 = past_key_values[i][0].shape[-1]
-                if size2 != size3:
-                    fill_zeros = torch.zeros(1,
-                      past_key_values[i][0].shape[0],
-                      size2 - size3,
-                      dtype=past_key_values[i][0].dtype,
-                      device=past_key_values[i][0].device)
-                    past_key_values[i] = torch.cat([past_key_values[i], fill_zeros], \
-                                                   dim=-1)
-                if past_key_values_storage[i][0][size:size1, :].shape[0] != 0:
+                if size < size1:
                     past_key_values_storage[i][0][size:size1, :] = \
-                        past_key_values[i][0][size:size1, :].to(torch.float32)
+                            past_key_values[i][0][size:size1, :].to(torch.float32)
             else:
                 size = original_draft_past_key_values[i][0].size(2)
                 size1 = past_key_values[i][0].size(2)
@@ -457,15 +448,12 @@ def speculative_generate(self,
 
             if self.device.type == 'cpu':
                 # init past_key_values_storage and assign initial fp32 value
-                if step == 1 and self.config.model_type != "gpt_bigcode":
+                if step == 1:
                     past_key_values_storage = \
                             _prepare_past_key_values_storage_cpu(self, past_key_values,
                                                                  max_new_tokens, _enable_ipex)
                 # each iter cut off cur_len kv_cache from past_key_values1
-                if self.config.model_type == "gpt_bigcode":
-                    draft_past_key_values = past_key_values
-                else:
-                    draft_past_key_values = \
+                draft_past_key_values = \
                         _prepare_draft_past_key_values_cpu(self, past_key_values,
                                                            past_key_values_storage)
                 original_draft_past_key_values = draft_past_key_values
@@ -706,7 +694,7 @@ def speculative_generate(self,
                         ]
 
             # Each iter assign new_matched kv_cache to past_key_values1
-            if self.device.type == 'cpu' and self.config.model_type != "gpt_bigcode":
+            if self.device.type == 'cpu':
                 _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_storage,
                                                     original_draft_past_key_values,
                                                     _enable_ipex)

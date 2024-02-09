@@ -53,18 +53,15 @@ def gptbigcode_attention_forward(self,
                     "If class is used as cross attention, the weights `q_attn` have to be defined. "
                     "Please make sure to instantiate class with `GPTBigCodeAttention(..., is_cross_attention=True)`."
                 )
-            #print("encoder_hidden_states!!!")
             query = self.q_attn(hidden_states)
             key_value = self.c_attn(encoder_hidden_states)
             attention_mask = encoder_attention_mask
         elif self.multi_query:
-            #print("self.multi_query!!!!")
             query, key_value = self.c_attn(hidden_states).split((self.embed_dim, 2 * self.kv_dim), dim=2)
         else:
             # Note: We split as (self.num_heads, 3, self.head_dim) instead of (3, self.num_heads, self.head_dim),
             # i.e., the memory layout is not the same as GPT2.
             # This makes the concatenation with past_key_value more efficient.
-            #print("query, key_value = ( !!!!")
             query, key_value = (
                 self.c_attn(hidden_states)
                 .view(*hidden_states.shape[:2], self.num_heads, 3 * self.head_dim)
