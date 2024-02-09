@@ -169,7 +169,6 @@ jobs:
         env:
           USE_XETLA: OFF
           # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
-        # TODO: limit just for debug, remove it later
         run: |
           export HF_HOME=${HARNESS_HF_HOME}
           export HF_DATASETS=$HARNESS_HF_HOME/datasets
@@ -183,8 +182,6 @@ jobs:
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
             --batch_size 1 --no_cache --output_path results \
-            --limit 3
-
 
       - uses: actions/upload-artifact@v3
         with:
@@ -225,6 +222,7 @@ jobs:
           ls results
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py results
 
+  # TODO: change machine to store the results later        
   llm-harness-summary-nightly:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
     needs: [set-matrix, llm-harness-evalution]
