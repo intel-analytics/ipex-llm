@@ -143,6 +143,7 @@ jobs:
         shell: bash
         run: |
           pip install transformers==4.31.0
+          pip install thefuzz
 
       - name: Run C-Eval
         shell: bash
