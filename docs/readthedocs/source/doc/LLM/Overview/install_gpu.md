@@ -134,7 +134,7 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
 
 ### Prerequisites
 
-BigDL-LLM for GPU supports on Linux has been verified on:
+BigDL-LLM GPU support on Linux has been verified on:
 
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
@@ -461,10 +461,11 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
       .. code-block:: bash
 
-         # Required step for APT or offline installed oneAPI. Configure oneAPI environment variables. Skip this step for pip-installed oneAPI since LD_LIBRARY_PATH has already been configured.
+         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
          source /opt/intel/oneapi/setvars.sh
 
-         # Recommended Environment Variables
+         # Recommended Environment Variables for optimal performance
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
@@ -476,7 +477,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
          # Required step for APT or offline installed oneAPI. Configure oneAPI environment variables. Skip this step for pip-installed oneAPI since LD_LIBRARY_PATH has already been configured.
 
-         # Recommended Environment Variables
+         # Recommended Environment Variables for optimal performance
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
@@ -520,6 +521,6 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
-* Step 1: For oneAPI installed using APT or Offline Installer, make sure you execute setvars.sh of oneAPI Base Toolkit before running BigDL-LLM code. 
-For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH``. If the output does not contain ``<oneAPI_folder>/lib``, check `Prerequisites`_. to install oneAPI with PIP installer again
+* Step 1: For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running BigDL-LLM. 
+For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured. If the output does not contain ``<oneAPI_folder>/lib``, check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
 * Step 2: Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
