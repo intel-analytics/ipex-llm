@@ -58,7 +58,7 @@ def generate(
         for var in ['max_new_tokens', 'max_step_draft', 'th_stop_draft', 'do_sample',
                     'top_k', 'top_p', 'temperature', 'hf_adjust',
                     'auto_th_stop_draft', 'auto_parameters', 'repetition_penalty',
-                    'attention_mask']:
+                    'attention_mask', 'min_draft_tokens']:
             value = kwargs.pop(var, None)
             if value is not None:
                 new_speculative_kwargs[var] = value
@@ -265,11 +265,15 @@ def speculative_generate(self,
                          auto_th_stop_draft=True,
                          auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
                          hf_adjust=False,
+                         min_draft_tokens=3,
                          generation_config: Optional[GenerationConfig] = None,
                          attention_mask=None,
                          **sampling_kwargs):
     invalidInputError(draft_model is not None,
                       "Draft model should be provided.")
+    # min_draft_tokens >= 1. Since the max_step_draft may adjust,
+    # min_draft_tokens can > max_step_draft
+    min_draft_tokens = min_draft_tokens if min_draft_tokens >= 1 else 1
 
     if generation_config is None:
         generation_config = self.generation_config
@@ -495,7 +499,8 @@ def speculative_generate(self,
                 # check if draft prob is less then th_stop_draft
                 # Draft number + step >= max output token number
                 th_random = 1 if random_probs is None else random_probs[step_draft]
-                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3) or \
+                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3 and \
+                        step_draft + 1 >= min_draft_tokens) or \
                         step + step_draft + 2 >= max_new_tokens:
                     break
             if self.device.type == 'xpu':
