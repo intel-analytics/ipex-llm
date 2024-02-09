@@ -185,7 +185,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 
                The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
 
-            Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. `~/intel/oneapi/lib`) to the environment variable `LD_LIBRARY_PATH`.
+            Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. ``~/intel/oneapi/lib``) to the environment variable ``LD_LIBRARY_PATH``.
 
             .. code-block:: bash
 
@@ -197,7 +197,8 @@ BigDL-LLM GPU support on Linux has been verified on:
 
             .. note::
 
-               You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. `~/intel/oneapi`).You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
+               You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
+               You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
                
                .. code-block:: bash
                
@@ -277,7 +278,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 
                The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
 
-            Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. `~/intel/oneapi/lib`) to the environment variable `LD_LIBRARY_PATH`.
+            Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. ``~/intel/oneapi/lib``) to the environment variable ``LD_LIBRARY_PATH``.
 
             .. code-block:: bash
 
@@ -289,7 +290,8 @@ BigDL-LLM GPU support on Linux has been verified on:
 
             .. note::
 
-               You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. `~/intel/oneapi`).You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
+               You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
+               You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
                
                .. code-block:: bash
                
@@ -524,5 +526,5 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
 * For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running BigDL-LLM. 
-For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured. If the output does not contain ``<oneAPI_folder>/lib``, check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
+For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
 * Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
