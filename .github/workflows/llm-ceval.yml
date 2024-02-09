@@ -132,11 +132,21 @@ jobs:
           if [ ! -d "$CEVAL_HF_HOME/data" ]; then
             mkdir -p "$CEVAL_HF_HOME/data"
           fi
+          if [ -d "$CEVAL_HF_HOME/data/dev" ]; then
+              rm -rf "$CEVAL_HF_HOME/data/dev"
+          fi
+
+          if [ -d "$CEVAL_HF_HOME/data/test" ]; then
+              rm -rf "$CEVAL_HF_HOME/data/test"
+          fi
+
+          if [ -d "$CEVAL_HF_HOME/data/val" ]; then
+              rm -rf "$CEVAL_HF_HOME/data/val"
+          fi
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/ceval-exam.zip -P "$CEVAL_HF_HOME/data"
           echo "DATA_PATH=$CEVAL_HF_HOME/data" >> "$GITHUB_ENV"
           DATA_PATH=$CEVAL_HF_HOME/data
-          cd "$CEVAL_HF_HOME/data"
-          unzip ceval-exam.zip
+          unzip -o "$CEVAL_HF_HOME/data/ceval-exam.zip" -d "$CEVAL_HF_HOME/data"
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
       - name: Upgrade packages
