@@ -155,6 +155,7 @@ jobs:
           pip install transformers==4.31.0
           pip install thefuzz
           pip install tiktoken
+          pip install transformers_stream_generator
 
       - name: Run C-Eval
         shell: bash
