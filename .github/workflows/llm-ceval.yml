@@ -154,6 +154,7 @@ jobs:
         run: |
           pip install transformers==4.31.0
           pip install thefuzz
+          pip install tiktoken
 
       - name: Run C-Eval
         shell: bash
