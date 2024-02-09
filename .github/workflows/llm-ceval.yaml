@@ -30,7 +30,7 @@ on:
         required: false
         type: string
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# A workflow run is made up of one or more jobs that can run sequentially
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
