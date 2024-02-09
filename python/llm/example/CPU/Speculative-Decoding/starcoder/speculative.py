@@ -28,7 +28,7 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 
 STARCODER_PROMPT_FORMAT = "{prompt}"
-prompt = "def print_hello_world():"
+prompt = "def dfs_print_Fibonacci_sequence(n):"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mistral model')

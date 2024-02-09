@@ -40,7 +40,29 @@ Arguments info:
 #### [bigcode/starcoder](https://huggingface.co/bigcode/starcoder)
 
 ```log
+def dfs_print_Fibonacci_sequence(n):
+    if n == 0:
+        return
+    elif n == 1:
+        print(0)
+        return
+    elif n == 2:
+        print(0)
+        print(1)
+        return
+    else:
+        print(0)
+        print(1)
+        dfs_print_Fibonacci_sequence(n-2)
+        print(dfs_Fibonacci_sequence(n-1))
 
+def dfs_Fibonacci_sequence(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return dfs_Fibonacci_sequence
 Tokens generated 128
 E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
@@ -48,27 +70,27 @@ First token latency xx.xxxxs
 
 #### [bigcode/tiny_starcoder_py](https://huggingface.co/bigcode/tiny_starcoder_py)
 ```log
-def print_hello_world():
-    print("Hello World!")
+def dfs_print_Fibonacci_sequence(n):
+    if n == 0:
+        return
+    print(n)
+    for i in range(2, n):
+        print(dfs_print_Fibonacci_sequence(i))
 
 
-def print_hello_world_with_args():
-    print("Hello World with args!")
+def dfs_print_Fibonacci_sequence_2(n):
+    if n == 0:
+        return
+    print(n)
+    for i in range(2, n):
+        print(dfs_print_Fibonacci_sequence_2(i))
 
 
-def print_hello_world_with_kwargs():
-    print("Hello World with kwargs!")
-
-
-def print_hello_world_with_kwargs_and_args():
-    print("Hello World with kwargs and args!")
-
-
-def print_hello_world_with_kwargs_and_kwargs_and_args_and_kwargs():
-    print("Hello World with kwargs and kwargs and args and kwargs!")
-
-
-def print_hello_world_with_kwargs_and
+def dfs_print_Fibonacci_sequence_3(n):
+    if n == 0:
+        return
+    print(n)
+    for i in
 Tokens generated 128
 E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
