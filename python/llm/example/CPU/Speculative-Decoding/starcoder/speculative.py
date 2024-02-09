@@ -54,15 +54,10 @@ if __name__ == '__main__':
                                                  torchscript=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    #model = model.to("cpu", dtype=torch.bfloat16)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
 
-    #model.draft_model =  AutoModelForCausalLM.from_pretrained(model_path,
-    #                                             load_in_4bit=True,
-    #                                             trust_remote_code=True)
-
-    with torch.inference_mode():#, torch.autocast("cpu", dtype=torch.bfloat16):
+    with torch.inference_mode():
         prompt = STARCODER_PROMPT_FORMAT.format(prompt=args.prompt)
         inputs = tokenizer(prompt, return_tensors='pt')
         input_ids = inputs.input_ids.to(model.device)

@@ -450,12 +450,12 @@ def speculative_generate(self,
                 # init past_key_values_storage and assign initial fp32 value
                 if step == 1:
                     past_key_values_storage = \
-                            _prepare_past_key_values_storage_cpu(self, past_key_values,
-                                                                 max_new_tokens, _enable_ipex)
+                        _prepare_past_key_values_storage_cpu(self, past_key_values,
+                                                             max_new_tokens, _enable_ipex)
                 # each iter cut off cur_len kv_cache from past_key_values1
                 draft_past_key_values = \
-                        _prepare_draft_past_key_values_cpu(self, past_key_values,
-                                                           past_key_values_storage)
+                    _prepare_draft_past_key_values_cpu(self, past_key_values,
+                                                       past_key_values_storage)
                 original_draft_past_key_values = draft_past_key_values
             else:
                 draft_past_key_values = past_key_values
