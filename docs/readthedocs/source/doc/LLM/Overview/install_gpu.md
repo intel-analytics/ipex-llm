@@ -525,6 +525,6 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
-* For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running BigDL-LLM. 
-For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
+* For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running BigDL-LLM.
+* For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
 * Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
