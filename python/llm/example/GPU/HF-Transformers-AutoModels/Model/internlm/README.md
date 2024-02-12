@@ -105,7 +105,7 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
-#### [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b-8k)
+#### [internlm/internlm-chat-7b](https://huggingface.co/internlm/internlm-chat-7b)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------

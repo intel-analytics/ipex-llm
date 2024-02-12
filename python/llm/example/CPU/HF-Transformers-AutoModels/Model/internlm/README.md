@@ -50,7 +50,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b-8k)
+#### [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------

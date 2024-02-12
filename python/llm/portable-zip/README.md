@@ -15,7 +15,7 @@ This portable zip includes everything you need to run an LLM with BigDL-LLM opti
 - ChatGLM2-6b
 - Baichuan-13B-Chat
 - Baichuan2-7B-Chat
-- internlm-chat-7b-8k
+- internlm-chat-7b
 - Llama-2-7b-chat-hf
 
 ## How to use
