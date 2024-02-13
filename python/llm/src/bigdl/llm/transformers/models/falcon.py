@@ -645,6 +645,9 @@ def falcon_attention_forward_4_36(
     output_attentions: bool=False,
     **kwargs,
 ):
+    """ based on transformers==4.36.0
+        https://github.com/huggingface/transformers/blob/v4.36.0/src/transformers/models/falcon/modeling_falcon.py
+    """
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. \
