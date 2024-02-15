@@ -18,7 +18,23 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
-* Step 3: Install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) 2024.0
+* Step 3: Install Intel® oneAPI Base Toolkit 2024.0
+
+Intel® oneAPI Base Toolkit 2024.0 installation methods:
+
+.. tabs::
+
+   .. tab:: PIP installer
+      Pip install oneAPI in your working environment.
+
+      .. code-block:: bash
+         pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
+
+      .. note::
+         Activating your working environment will automatically configure oneAPI.
+
+   .. tab:: Offline installer
+      Download the installer from [official source](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) and run it.
 
 ### Install BigDL-LLM From PyPI
 
