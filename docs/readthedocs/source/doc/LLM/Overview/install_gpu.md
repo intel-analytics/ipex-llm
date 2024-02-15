@@ -22,8 +22,8 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
+```eval_rst
 .. tabs::
-
    .. tab:: PIP installer
       Pip install oneAPI in your working environment.
 
@@ -35,6 +35,7 @@ Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
    .. tab:: Offline installer
       Download the installer from [official source](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) and run it.
+```
 
 ### Install BigDL-LLM From PyPI
 
