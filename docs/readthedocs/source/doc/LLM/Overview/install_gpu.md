@@ -25,16 +25,17 @@ Intel® oneAPI Base Toolkit 2024.0 installation methods:
 ```eval_rst
 .. tabs::
    .. tab:: PIP installer
-      Pip install oneAPI in your working environment.
+      Pip install oneAPI in your working conda environment.
 
       .. code-block:: bash
+
          pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 
       .. note::
-         Activating your working environment will automatically configure oneAPI.
+         Activating your working conda environment will automatically configure oneAPI environment variables.
 
    .. tab:: Offline installer
-      Download the installer from [official source](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) and run it.
+      Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ version 2024.0. oneAPI Deep Neural Network Library, oneAPI Math Kernel Library, and oneAPI DPC++/C++ Compiler are required, the other components are optional.
 ```
 
 ### Install BigDL-LLM From PyPI
@@ -141,7 +142,7 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   conda install libuv
   ```
 
-* Make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+* For oneAPI installed using Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
