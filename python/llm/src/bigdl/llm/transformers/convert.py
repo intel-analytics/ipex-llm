@@ -518,6 +518,15 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                 f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
+    # using ipex optimizer before changing to bigdl linear
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
+    if _enable_ipex:
+        model = _optimize_ipex(model)
+        return model
+
     if optimize_model:
         model = _optimize_pre(model)
 
@@ -543,14 +552,6 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         # Do nothing here for weights are empty.
         pass
 
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
-    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
-    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"]):
-        logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
-    if _enable_ipex:
-        model = _optimize_ipex(model)
-        return model
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
     return model
@@ -600,6 +601,7 @@ def _optimize_ipex(model):
     if model.config.architectures is not None \
        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
         convert_function(model.transformer, "get_masks", GLM_get_masks)
+    model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_rmsnorm(model)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
