@@ -43,7 +43,7 @@ import warnings
 import transformers
 import importlib.util
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from .utils import logger
+from .utils import logger, get_cur_qtype_and_imatrix
 from typing import Union
 import numpy as np
 import os
@@ -190,7 +190,8 @@ def convert_gptq(module, awq=False, llm_awq=False):
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
-                                 cpu_embedding=False, prefix_name=''):
+                                 cpu_embedding=False, prefix_name='',
+                                 imatrix_data=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding
@@ -238,6 +239,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                                 .to(device)
                     elif qtype not in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
+                        if in_features % 64 != 0:
+                            # now our kernel requires in_features is a multiple of 64
+                            continue
                         new_linear = LowBitLinear(
                             in_features,
                             out_features,
@@ -245,7 +249,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                         )
-
+                        cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
+                                                                           full_module_name,
+                                                                           imatrix_data)
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
@@ -253,7 +259,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  quantized=False,
                                                  _shape=None,
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device)
+                                                 qtype=cur_qtype,
+                                                 imatrix=cur_imatrix,
+                                                 in_features=in_features).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -325,7 +333,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 current_key_name,
                 convert_shape_only,
                 cpu_embedding,
-                prefix_name=prefix_name + '.' + name if prefix_name != '' else name
+                prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
+                imatrix_data=imatrix_data
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -502,7 +511,8 @@ def _optimize_pre(model):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
-                         lightweight_bmm=False, torch_dtype="auto"):
+                         lightweight_bmm=False, torch_dtype="auto",
+                         imatrix_data=None):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -514,6 +524,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
+        imatrix_data=imatrix_data,
     )
     if not has_been_replaced:
         warnings.warn(
@@ -535,7 +546,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
     _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
-    logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
+    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"]):
+        logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
     if _enable_ipex:
         model = _optimize_ipex(model)
         return model
@@ -829,14 +841,27 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.internlm import internlm_attention_forward
-        convert_forward(model,
-                        module.InternLMAttention,
-                        internlm_attention_forward
-                        )
-        convert_forward(model,
-                        module.InternLMRMSNorm,
-                        llama_rms_norm_forward
-                        )
+        from bigdl.llm.transformers.models.internlm import internlm2_attention_forward
+        try:
+            convert_forward(model,
+                            module.InternLM2Attention,
+                            internlm2_attention_forward
+                            )
+        except:
+            convert_forward(model,
+                            module.InternLMAttention,
+                            internlm_attention_forward
+                            )
+        try:
+            convert_forward(model,
+                            module.InternLM2RMSNorm,
+                            llama_rms_norm_forward
+                            )
+        except:
+            convert_forward(model,
+                            module.InternLMRMSNorm,
+                            llama_rms_norm_forward
+                            )
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -864,6 +889,28 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.QWenMLP,
                             qwen_mlp_forward)
+    elif model.config.model_type == "qwen2":
+        # for Qwen1.5-7B
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.qwen2 import qwen2_model_forward
+        from bigdl.llm.transformers.models.qwen2 import qwen2_attention_forward
+        # TODO: add these optimization back
+        # RMSNorm and rotray embedding are disabled for now
+        # as they lead to obvious performance drop for Qwen 1.5
+        convert_forward(model,
+                        module.Qwen2Model,
+                        qwen2_model_forward)
+        convert_forward(model,
+                        module.Qwen2Attention,
+                        qwen2_attention_forward
+                        )
+        # convert_forward(model,
+        #                 module.Qwen2RMSNorm,
+        #                 llama_rms_norm_forward)
+        convert_forward(model,
+                        module.Qwen2MLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -896,6 +943,17 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralBLockSparseTop2MLP,
                         mixtral_mlp_forward)
+    elif model.config.model_type == "phi-msft":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.phixtral import phixtral_moeblock_forward, \
+            phixtral_mlp_forward
+        convert_forward(model,
+                        module.MoE,
+                        phixtral_moeblock_forward)
+        convert_forward(model,
+                        module.MLP,
+                        phixtral_mlp_forward)
     elif model.config.model_type == "mistral":
         if model.config.architectures is not None and \
                 model.config.architectures[0] == "MixtralForCausalLM":

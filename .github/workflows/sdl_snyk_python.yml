@@ -1,4 +1,8 @@
 name: Scanner-snyk-python
+
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 11:00 China Every Sunday

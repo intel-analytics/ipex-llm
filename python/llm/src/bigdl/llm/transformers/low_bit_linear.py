@@ -70,6 +70,9 @@ FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
+IQ2_XXS = ggml_tensor_qtype["iq2_xxs"]
+IQ2_XS = ggml_tensor_qtype["iq2_xs"]
+Q2_K = ggml_tensor_qtype["q2_k"]
 
 
 def get_block_size(qtype: str):
@@ -81,7 +84,9 @@ def get_qk_size(qtype: int):
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
-                       device=None, convert_shape_only=False):
+                       device=None, convert_shape_only=False,
+                       imatrix: torch.Tensor=None,
+                       in_features: int=None):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -89,12 +94,10 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                       "Input tensor must be float32")
     src = tensor.data.data_ptr()
     src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
-    n = tensor.numel()
-    invalidInputError(n % QK == 0,
-                      "Input tensor size must be multiple of 64")
+    n = tensor.numel()  # all elements
     k = tensor.shape[-1]
     invalidInputError(k % QK == 0,
-                      "Last dim of input tensor must be multiple of 64")
+                      f"Last dim of input tensor must be multiple of {QK}")
 
     dst_size = (n // QK) * block_size_in_bytes
     dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
@@ -103,7 +106,17 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K]:
+            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        else:
+            if imatrix is not None:
+                # quantize with importance matrix
+                imatrix = imatrix.data.data_ptr()
+                imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
+            # pass nrow and n_per_row
+            ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
+                                                   n // in_features, in_features,
+                                                   hist, imatrix)
     return dst_tensor
 
 
@@ -193,7 +206,9 @@ class FP4Params(torch.nn.Parameter):
                 quantized=False,
                 _shape=None,
                 convert_shape_only=False,
-                qtype=None):
+                qtype=None,
+                imatrix=None,
+                in_features=None):
         if data is None:
             data = torch.empty(0)
 
@@ -203,6 +218,8 @@ class FP4Params(torch.nn.Parameter):
         self._shape = _shape
         self.qtype = qtype
         self.convert_shape_only = convert_shape_only
+        self.imatrix = imatrix
+        self.in_features = in_features
         return self
 
     def ggml_mse(self, w, ggml_qtype, device):
@@ -255,7 +272,9 @@ class FP4Params(torch.nn.Parameter):
             else:
                 w_quantized = ggml_convert_qtype(w, self.qtype,
                                                  device=device,
-                                                 convert_shape_only=self.convert_shape_only)
+                                                 convert_shape_only=self.convert_shape_only,
+                                                 imatrix=self.imatrix,
+                                                 in_features=self.in_features)
                 self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
@@ -478,7 +497,11 @@ class LowBitLinear(nn.Linear):
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
 
-            input_seq_size = x_shape[1]
+            if len(x_shape) == 3:
+                input_seq_size = x_shape[1]
+            elif len(x_shape) < 3:
+                input_seq_size = 1
+
             if is_training:
                 # training path
                 if x_2d.requires_grad:

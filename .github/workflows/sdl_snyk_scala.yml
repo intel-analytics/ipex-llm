@@ -1,4 +1,8 @@
 name: Scanner-snyk-scala
+
+permissions:
+  contents: read
+
 on:
 #  pull_request:
 #    branchs: [ main ]

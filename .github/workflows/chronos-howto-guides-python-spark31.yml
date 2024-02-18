@@ -4,7 +4,10 @@ name: Chronos Tests for How-to Guides Spark3.1 py38 py39
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
-  
+
+permissions:
+  contents: read
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on pull request events but only for the main branch

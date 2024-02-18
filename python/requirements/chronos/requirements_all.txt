@@ -8,7 +8,7 @@
 optuna<=2.10.1
 configspace<=0.5.0
 SQLAlchemy<=1.4.27
-grpcio==1.53.0
+grpcio==1.53.2
 pmdarima==1.8.5
 prophet==1.1.0
 tsfresh==0.17.0

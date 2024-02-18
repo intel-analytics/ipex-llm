@@ -4,7 +4,10 @@ name: Scala Style Check
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
-  
+
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ "main" ]
@@ -25,9 +28,6 @@ jobs:
   build:
 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-    permissions:
-      contents: read
-      packages: write
 
     steps:
     - uses: actions/checkout@v3

@@ -1,5 +1,8 @@
 name: Check download URL in docs/readthedocs/source/doc/Orca/Overview/install.md
 
+permissions:
+  contents: read
+
 on:
   push:
     paths: 'docs/readthedocs/source/doc/Orca/Overview/install.md'

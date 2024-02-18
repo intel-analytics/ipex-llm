@@ -1,5 +1,8 @@
 name: Nightly Build Example Tests PPML Spark Local on Graphene
 
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 17 * * *'
@@ -33,9 +36,6 @@ on:
 jobs:
   example-tests-ppml:
     runs-on: [self-hosted, SGX, Wilwarin]
-    permissions:
-      contents: read
-      packages: write
 
     steps:
     - uses: actions/checkout@v3

@@ -21,6 +21,7 @@ import time
 import gc
 import traceback
 import threading
+import csv
 
 import numpy as np
 from datetime import date
@@ -95,6 +96,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             round(np.mean(result[in_out_pair], axis=0)[1]*1000.0, 2),
                             round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2),
                             in_out_pair,
+                            batch_size,
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
                             f'-{int(np.mean(result[in_out_pair], axis=0)[4])}',
                             num_beams,
@@ -432,13 +434,27 @@ def run_transformer_int4_gpu(repo_id,
             thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
             thread.start()
             thread.join()
+
+            if result[in_out]:
+                first_token_latency = round(np.mean(result[in_out], axis=0)[0]*1000.0, 2)
+                rest_token_latency = round(np.mean(result[in_out], axis=0)[1]*1000.0, 2)
+                encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
+                input_output_tokens = in_out
+                actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
+                peak_mem = result[in_out][-1][5]
+                with open(csv_name, mode='a', newline='') as file:
+                    csv_writer = csv.writer(file)
+                    file.seek(0, os.SEEK_END)
+                    if file.tell() == 0:
+                        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens", "batch_size", "actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"])
+                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
+
     model.to('cpu')
     torch.xpu.synchronize()
     torch.xpu.empty_cache()
     del model
     gc.collect()
     return result
-
 
 def run_optimize_model_gpu(repo_id,
                            local_model_hub,
@@ -933,18 +949,20 @@ if __name__ == '__main__':
     
     import pandas as pd
     for api in conf.test_api:
+        global csv_name
+        csv_name = f'{current_dir}/{api}-results-{today}.csv'
         for model in conf.repo_id:
             in_out_pairs = conf['in_out_pairs'].copy()
             if excludes:
                 for in_out in conf['in_out_pairs']:
                     model_id_input = model + ':' + in_out.split('-')[0]
-                    if model_id_input in excludes:
+                    model_id_input_batch_size = model_id_input + ':' + str(conf['batch_size'])
+                    if model_id_input in excludes or model_id_input_batch_size in excludes:
                         in_out_pairs.remove(in_out)
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
-                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
+                                            'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'peak mem (GB)'])
-
-        df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
+        df.to_csv(csv_name)
         results = []
