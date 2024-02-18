@@ -61,7 +61,7 @@ def gptbigcode_attention_forward(
             attention_mask = encoder_attention_mask
         elif self.multi_query:
             query, key_value = self.c_attn(hidden_states).split(
-                    (self.embed_dim, 2 * self.kv_dim), dim=2)
+                (self.embed_dim, 2 * self.kv_dim), dim=2)
         else:
             # Note: We split as (self.num_heads, 3, self.head_dim)
             # instead of (3, self.num_heads, self.head_dim),
