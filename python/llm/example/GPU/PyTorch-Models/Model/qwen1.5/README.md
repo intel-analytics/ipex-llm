@@ -121,5 +121,23 @@ AI是什么？<|im_end|>
 You are a helpful assistant.<|im_end|>
 <|im_start|>user
 AI是什么？<|im_end|>
-<|im_start|>assistant AI（Artificial Intelligence）是指计算机科学的一个分支，其目标是创建能够理解、学习、推理和自我修正的智能机器。AI系统可以通过
+<|im_start|>assistant
+AI（Artificial Intelligence）是指计算机科学的一个分支，其目标是创建能够理解、学习、推理和自我修正的智能机器。AI系统可以通过
+```
+
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+-------------------- Output --------------------
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+AI stands for Artificial Intelligence, which is a field of computer science that focuses on creating intelligent machines that can perform tasks that typically require human intelligence, such as learning
 ```

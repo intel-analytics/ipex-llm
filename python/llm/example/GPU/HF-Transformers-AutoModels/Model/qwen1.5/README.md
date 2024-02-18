@@ -121,5 +121,23 @@ AI是什么？<|im_end|>
 You are a helpful assistant.<|im_end|>
 <|im_start|>user
 AI是什么？<|im_end|>
-<|im_start|>assistant 人工智能（AI）是指通过计算机模拟、延伸和扩展人类智能的学科，其目标是使机器具有学习、推理、感知、理解、交流
+<|im_start|>assistant
+人工智能（AI）是指通过计算机模拟、延伸和扩展人类智能的学科，其目标是使机器具有学习、推理、感知、理解、交流
+```
+
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+-------------------- Output --------------------
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+AI, or artificial intelligence, refers to the simulation of human intelligence in machines that are programmed to perform tasks that typically require human cognition, such as learning, reasoning
 ```
