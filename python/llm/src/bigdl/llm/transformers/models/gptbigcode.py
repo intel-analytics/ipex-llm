@@ -18,6 +18,7 @@
 from typing import Optional, Tuple, Union
 import torch
 
+
 def _attn_wrapper(origin_attn):
     def _attn(self, query, key, value, attention_mask=None, head_mask=None):
         attn_output, attn_weights = origin_attn(self,
