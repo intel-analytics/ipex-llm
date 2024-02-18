@@ -138,7 +138,7 @@ model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit=
 *See the complete example [here](python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types).*
 
 #### Verified Models
-Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Baichuan/Baichuan2, InternLM, QWen* and more; see the example list below.
+Over 40 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Baichuan/Baichuan2, InternLM, QWen* and more; see the example list below.
   
 | Model      | CPU Example                                                    | GPU Example                                                     |
 |------------|----------------------------------------------------------------|-----------------------------------------------------------------|
