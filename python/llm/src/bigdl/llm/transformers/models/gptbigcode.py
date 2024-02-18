@@ -39,9 +39,7 @@ def gptbigcode_attention_forward(
         encoder_attention_mask: Optional[torch.Tensor] = None,
         use_cache: Optional[bool] = False,
         output_attentions: Optional[bool] = False,
-        **kwargs) -> Union[
-                 Tuple[torch.Tensor, Optional[torch.Tensor]],
-                 Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]]]:
+        **kwargs):
         if "padding_mask" in kwargs:
             logger.warning_once(
                 "Passing `padding_mask` is deprecated and will be removed in v4.37." +
@@ -62,9 +60,8 @@ def gptbigcode_attention_forward(
             key_value = self.c_attn(encoder_hidden_states)
             attention_mask = encoder_attention_mask
         elif self.multi_query:
-            query, key_value = self.c_attn(hidden_states)
-                                   .split((self.embed_dim, 2 * self.kv_dim),
-                                           dim=2)
+            query, key_value = self.c_attn(hidden_states).split(
+                    (self.embed_dim, 2 * self.kv_dim), dim=2)
         else:
             # Note: We split as (self.num_heads, 3, self.head_dim)
             # instead of (3, self.num_heads, self.head_dim),
@@ -78,17 +75,16 @@ def gptbigcode_attention_forward(
             )
 
             if layer_past is not None:
-            # BigDL modified here
-            if layer_past.shape[-2] == key_value.shape[-2]:
-                key_value = torch.cat((layer_past, key_value), dim=-2)
-            else:
-                fill_zeros = torch.zeros(layer_past.shape[0],
-                                         layer_past.shape[1],
-                                         key_value.shape[2] - layer_past.shape[2],
-                                         dtype=layer_past.dtype,
-                                         device=layer_past.device)
-                layer_past = torch.cat([layer_past, fill_zeros], dim=-1)
-                key_value = torch.cat((layer_past, key_value), dim=-2)
+                if layer_past.shape[-2] == key_value.shape[-2]:
+                    key_value = torch.cat((layer_past, key_value), dim=-2)
+                else:
+                    fill_zeros = torch.zeros(layer_past.shape[0],
+                                             layer_past.shape[1],
+                                             key_value.shape[2] - layer_past.shape[2],
+                                             dtype=layer_past.dtype,
+                                             device=layer_past.device)
+                    layer_past = torch.cat([layer_past, fill_zeros], dim=-1)
+                    key_value = torch.cat((layer_past, key_value), dim=-2)
 
         present = key_value if use_cache else None
 
