@@ -40,8 +40,8 @@ def gptbigcode_attention_forward(
         use_cache: Optional[bool] = False,
         output_attentions: Optional[bool] = False,
         **kwargs) -> Union[
-                Tuple[torch.Tensor, Optional[torch.Tensor]],
-                Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]],]:
+                 Tuple[torch.Tensor, Optional[torch.Tensor]],
+                 Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]]]:
         if "padding_mask" in kwargs:
             logger.warning_once(
                 "Passing `padding_mask` is deprecated and will be removed in v4.37." +
@@ -50,9 +50,11 @@ def gptbigcode_attention_forward(
 
         if encoder_hidden_states is not None:
             if not hasattr(self, "q_attn") or not self.is_cross_attention:
-                raise ValueError(
+                from bigdl.llm.utils.common import invalidInputError
+                invalidInputError(
+                    False,
                     "If class is used as cross attention," +
-                    "the weights `q_attn` have to be defined. "
+                    "the weights `q_attn` have to be defined. " +
                     "Please make sure to instantiate class with " +
                     "`GPTBigCodeAttention(..., is_cross_attention=True)`."
                 )
@@ -60,8 +62,9 @@ def gptbigcode_attention_forward(
             key_value = self.c_attn(encoder_hidden_states)
             attention_mask = encoder_attention_mask
         elif self.multi_query:
-            query, key_value = self.c_attn(hidden_states).split(
-                    (self.embed_dim, 2 * self.kv_dim), dim=2)
+            query, key_value = self.c_attn(hidden_states)
+                                   .split((self.embed_dim, 2 * self.kv_dim),
+                                           dim=2)
         else:
             # Note: We split as (self.num_heads, 3, self.head_dim)
             # instead of (3, self.num_heads, self.head_dim),
