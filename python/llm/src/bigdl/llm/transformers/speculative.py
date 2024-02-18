@@ -145,7 +145,7 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
             len0 = past_key_values[i][0].size(0)
             len1 = past_key_values[i][0].size(1)
             # gpt_bigcode has only 2-dimension kv
-            if self.config.model_type != "gpt_bigcode":
+            if len(past_key_values[i][0].shape) == 4:
                 len2 = past_key_values[i][0].size(2)
                 len3 = past_key_values[i][0].size(3)
         else:
