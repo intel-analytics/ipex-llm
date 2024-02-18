@@ -111,9 +111,15 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|User|>:AI是什么？
-<|Bot|>:
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+AI是什么？<|im_end|>
+<|im_start|>assistant
 -------------------- Output --------------------
-<|User|>:AI是什么？
-<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在使计算机能够像人类一样思考、学习和执行任务。AI技术包括机器学习、自然
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+AI是什么？<|im_end|>
+<|im_start|>assistant 人工智能（AI）是指通过计算机模拟、延伸和扩展人类智能的学科，其目标是使机器具有学习、推理、感知、理解、交流
 ```

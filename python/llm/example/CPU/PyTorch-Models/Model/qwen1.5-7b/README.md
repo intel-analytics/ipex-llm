@@ -54,9 +54,15 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|User|>:AI是什么？
-<|Bot|>:
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+AI是什么？<|im_end|>
+<|im_start|>assistant
 -------------------- Output --------------------
-<|User|>:AI是什么？
-<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在使计算机能够像人类一样思考、学习和执行任务。AI技术包括机器学习、自然
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+AI是什么？<|im_end|>
+<|im_start|>assistant AI（Artificial Intelligence）是指由计算机程序实现的智能，它使机器能够模拟人类的思考、学习和决策过程，从而解决各种复杂
 ```

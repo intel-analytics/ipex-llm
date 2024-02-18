@@ -55,9 +55,15 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|User|>:AI是什么？
-<|Bot|>:
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+AI是什么？<|im_end|>
+<|im_start|>assistant
 -------------------- Output --------------------
-<|User|>:AI是什么？
-<|Bot|>:AI是人工智能的缩写，是计算机科学的一个分支，旨在使计算机能够像人类一样思考、学习和执行任务。AI技术包括机器学习、自然
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+AI是什么？<|im_end|>
+<|im_start|>assistant人工智能（AI）是指计算机科学的一个分支，旨在开发能够执行通常需要人类智能的任务的算法和系统。这些任务包括但不限于理解自然语言、
 ```
