@@ -251,7 +251,7 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                 size1 = past_key_values[i][0].size(0)
                 if size < size1:
                     past_key_values_storage[i][0][size:size1, :] = \
-                            past_key_values[i][0][size:size1, :].to(torch.float32)
+                        past_key_values[i][0][size:size1, :].to(torch.float32)
             else:
                 size = original_draft_past_key_values[i][0].size(2)
                 size1 = past_key_values[i][0].size(2)
@@ -683,7 +683,7 @@ def speculative_generate(self,
                         ]
                     elif self.config.model_type == "gpt_bigcode":
                         past_key_values = [
-                                kv[:, :-(max_of_max_matched - max_matched)]
+                            kv[:, :-(max_of_max_matched - max_matched)]
                             for kv in past_key_values
                         ]
                     else:

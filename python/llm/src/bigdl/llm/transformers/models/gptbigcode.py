@@ -28,6 +28,7 @@ def _attn_wrapper(origin_attn):
         return attn_output, attn_weights
     return _attn
 
+
 def gptbigcode_attention_forward(self,
         hidden_states: torch.Tensor,
         layer_past: Optional[torch.Tensor] = None,
@@ -37,27 +38,30 @@ def gptbigcode_attention_forward(self,
         encoder_attention_mask: Optional[torch.Tensor] = None,
         use_cache: Optional[bool] = False,
         output_attentions: Optional[bool] = False,
-        **kwargs,
-    ) -> Union[
+        **kwargs) -> Union[
         Tuple[torch.Tensor, Optional[torch.Tensor]],
         Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]],
     ]:
         if "padding_mask" in kwargs:
             logger.warning_once(
-                "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+                "Passing `padding_mask` is deprecated and will be removed in v4.37." +
+                "Please make sure use `attention_mask` instead.`"
             )
 
         if encoder_hidden_states is not None:
             if not hasattr(self, "q_attn") or not self.is_cross_attention:
                 raise ValueError(
-                    "If class is used as cross attention, the weights `q_attn` have to be defined. "
-                    "Please make sure to instantiate class with `GPTBigCodeAttention(..., is_cross_attention=True)`."
+                    "If class is used as cross attention," +
+                    "the weights `q_attn` have to be defined. "
+                    "Please make sure to instantiate class with " +
+                    "`GPTBigCodeAttention(..., is_cross_attention=True)`."
                 )
             query = self.q_attn(hidden_states)
             key_value = self.c_attn(encoder_hidden_states)
             attention_mask = encoder_attention_mask
         elif self.multi_query:
-            query, key_value = self.c_attn(hidden_states).split((self.embed_dim, 2 * self.kv_dim), dim=2)
+            query, key_value = self.c_attn(hidden_states).split(
+                    (self.embed_dim, 2 * self.kv_dim), dim=2)
         else:
             # Note: We split as (self.num_heads, 3, self.head_dim) instead of (3, self.num_heads, self.head_dim),
             # i.e., the memory layout is not the same as GPT2.
@@ -74,7 +78,11 @@ def gptbigcode_attention_forward(self,
             if layer_past.shape[-2] == key_value.shape[-2]:
                 key_value = torch.cat((layer_past, key_value), dim=-2)
             else:
-                fill_zeros = torch.zeros(layer_past.shape[0], layer_past.shape[1], key_value.shape[2] - layer_past.shape[2], dtype=layer_past.dtype, device=layer_past.device)
+                fill_zeros = torch.zeros(layer_past.shape[0],
+                                         layer_past.shape[1],
+                                         key_value.shape[2] - layer_past.shape[2],
+                                         dtype=layer_past.dtype,
+                                         device=layer_past.device)
                 layer_past = torch.cat([layer_past, fill_zeros], dim=-1)
                 key_value = torch.cat((layer_past, key_value), dim=-2)
 
