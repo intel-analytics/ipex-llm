@@ -23,6 +23,8 @@ from pytablewriter import MarkdownTableWriter, LatexTableWriter
 import os
 import json
 import sys
+import csv
+import datetime
 from harness_to_leaderboard import task_to_metric
 
 
@@ -67,10 +69,39 @@ def make_table(result_dict):
 
     return md_writer.dumps()
 
+def make_csv(result_dict, output_path=None):
+    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    file_name = f'results_{current_date}.csv'
+    full_path = os.path.join(output_path, file_name) if output_path else file_name
+    print('Writing to', full_path)
+    file_name = full_path
+    headers = ["Index", "Model", "Precision", "Arc", "TruthfulQA", "Winogrande"]
+    
+    with open(file_name, mode='w', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(headers)
+        index = 0
+        for model, model_results in result_dict.items():
+            for precision, prec_results in model_results.items():
+                row = [index, model, precision]
+                for task in headers[3:]:
+                    task_results = prec_results.get(task.lower(), None)
+                    if task_results is None:
+                        row.append("")
+                    else:
+                        m = task_to_metric[task.lower()]
+                        results = task_results["results"]
+                        result = list(results.values())[0] if len(results) == 1 else results[task.lower()]
+                        row.append("%.2f" % (result[m] * 100))
+                writer.writerow(row)
+                index += 1
 
-def merge_results(path):
+
+def merge_results(args):
     # loop dirs and subdirs in results dir
     # for each dir, load json files
+    path = args[1]
+    print('Read from', path)
     merged_results = dict()
     for dirpath, dirnames, filenames in os.walk(sys.argv[1]):
         # skip dirs without files
@@ -86,15 +117,17 @@ def merge_results(path):
             if precision not in merged_results[model]:
                 merged_results[model][precision] = dict()
             merged_results[model][precision][task] = result_dict
+    # args[2] is the output path
+    make_csv(merged_results, args[2])         
     return merged_results
 
 
 def main(*args):
-    
-    merged_results = merge_results(args[0])
-    print(make_table(merged_results))
+    merged_results = merge_results(args)
+    print(make_table(merged_results)) 
 
 
 if __name__ == "__main__":
-
+    # when running from the harness, the first argument is the script name
+    # you must name the second argument and the third argument to be the input_dir and output_dir
     main(*sys.argv)

@@ -1,4 +1,5 @@
 name: Scanner-hadolint
+
 on:
 #  schedule:
 #    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 3:00 China Every Sunday
@@ -7,6 +8,10 @@ on:
 #  pull_request:
 #    branchs: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   scan-dockerfile:
     runs-on: [self-hosted, SDL-TEST]

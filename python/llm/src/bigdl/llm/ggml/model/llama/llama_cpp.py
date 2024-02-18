@@ -965,6 +965,30 @@ _lib.ggml_quantize_tensor.argtypes = [
 _lib.ggml_quantize_tensor.restype = ctypes.c_size_t
 
 
+def ggml_quantize_tensor_with_weights(
+    src,  # type: ctypes.Array[ctypes.c_float] # type: ignore
+    dst: ctypes.c_void_p,
+    qtype: ctypes.c_int,
+    nrow: ctypes.c_int,
+    n_per_row: ctypes.c_int,
+    hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
+    weights,  # type: ctypes.Array[ctypes.c_float] # type: ignore
+) -> int:
+    return _lib.ggml_quantize_tensor_with_weights(src, dst, qtype, nrow, n_per_row, hist, weights)
+
+
+_lib.ggml_quantize_tensor_with_weights.argtypes = [
+    ctypes.POINTER(ctypes.c_float),
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int64),
+    ctypes.POINTER(ctypes.c_float),
+]
+_lib.ggml_quantize_tensor_with_weights.restype = ctypes.c_size_t
+
+
 def ggml_type_size(qtype: ctypes.c_int) -> int:
     return _lib.ggml_type_size(qtype)
 
