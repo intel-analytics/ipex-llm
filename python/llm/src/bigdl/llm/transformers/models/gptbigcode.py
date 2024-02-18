@@ -29,7 +29,8 @@ def _attn_wrapper(origin_attn):
     return _attn
 
 
-def gptbigcode_attention_forward(self,
+def gptbigcode_attention_forward(
+        self,
         hidden_states: torch.Tensor,
         layer_past: Optional[torch.Tensor] = None,
         attention_mask: Optional[torch.Tensor] = None,
@@ -39,9 +40,8 @@ def gptbigcode_attention_forward(self,
         use_cache: Optional[bool] = False,
         output_attentions: Optional[bool] = False,
         **kwargs) -> Union[
-        Tuple[torch.Tensor, Optional[torch.Tensor]],
-        Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]],
-    ]:
+                Tuple[torch.Tensor, Optional[torch.Tensor]],
+                Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]],]:
         if "padding_mask" in kwargs:
             logger.warning_once(
                 "Passing `padding_mask` is deprecated and will be removed in v4.37." +
@@ -63,7 +63,8 @@ def gptbigcode_attention_forward(self,
             query, key_value = self.c_attn(hidden_states).split(
                     (self.embed_dim, 2 * self.kv_dim), dim=2)
         else:
-            # Note: We split as (self.num_heads, 3, self.head_dim) instead of (3, self.num_heads, self.head_dim),
+            # Note: We split as (self.num_heads, 3, self.head_dim)
+            # instead of (3, self.num_heads, self.head_dim),
             # i.e., the memory layout is not the same as GPT2.
             # This makes the concatenation with past_key_value more efficient.
             query, key_value = (
@@ -73,7 +74,7 @@ def gptbigcode_attention_forward(self,
                 .split((self.head_dim, 2 * self.head_dim), dim=3)
             )
 
-        if layer_past is not None:
+            if layer_past is not None:
             # BigDL modified here
             if layer_past.shape[-2] == key_value.shape[-2]:
                 key_value = torch.cat((layer_past, key_value), dim=-2)
@@ -90,7 +91,11 @@ def gptbigcode_attention_forward(self,
 
         key, value = key_value.split((self.head_dim, self.head_dim), dim=-1)
 
-        attn_output, attn_weights = self._attn(query, key.transpose(-1, -2), value, attention_mask, head_mask)
+        attn_output, attn_weights = self._attn(query,
+                                               key.transpose(-1, -2),
+                                               value,
+                                               attention_mask,
+                                               head_mask)
 
         if not self.multi_query:
             attn_output = attn_output.transpose(1, 2).reshape(hidden_states.shape)
