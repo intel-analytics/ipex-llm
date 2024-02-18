@@ -27,12 +27,12 @@ ZIYA_PROMPT_FORMAT = "<human>: \n{prompt}\n<bot>: \n"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for InternLM model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="/mnt/disk1/models/Ziya-Coding-34B-v1.0",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="IDEA-CCNL/Ziya-Coding-34B-v1.0",
                         help='The huggingface repo id for the Ziya model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="def quick_sort(arr):\n",
                         help='Prompt to infer') 
-    parser.add_argument('--n-predict', type=int, default=32,
+    parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
