@@ -81,7 +81,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | RWKV5 |  | [link](example/GPU/HF-Transformers-AutoModels/Model/rwkv5) |
 | Bark | [link](example/CPU/PyTorch-Models/Model/bark) | [link](example/GPU/PyTorch-Models/Model/bark) |
 | SpeechT5 |  | [link](example/GPU/PyTorch-Models/Model/speech-t5) |
-| Qwen1.5 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5-7b) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen1.5-7b) |
+| Qwen1.5 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen1.5) |
 
 ### Working with `bigdl-llm`
 
