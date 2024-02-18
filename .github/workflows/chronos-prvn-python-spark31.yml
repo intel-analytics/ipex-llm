@@ -37,7 +37,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
@@ -91,7 +91,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
@@ -145,7 +145,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
@@ -199,7 +199,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
