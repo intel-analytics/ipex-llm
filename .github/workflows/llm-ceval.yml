@@ -149,7 +149,7 @@ jobs:
           unzip -o "$CEVAL_HF_HOME/data/ceval-exam.zip" -d "$CEVAL_HF_HOME/data"
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
-      - name: Upgrade packages
+      - name: Install Dependencies
         shell: bash
         run: |
           pip install transformers==4.31.0

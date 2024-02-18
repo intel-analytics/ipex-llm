@@ -258,7 +258,7 @@ def cal_ceval(res, model_path, qtype):
     if not os.path.exists('results/'):
         os.mkdir('results/')
 
-    dump_dict = {"Model Name": model_path.split('/')[-1], "Precision": qtype, "Results": result_lst}
+    dump_dict = {"Model Name": model_path.split('/')[-2], "Precision": qtype, "Results": result_lst}
     json.dump(dump_dict, open(f'results/{dump_dict["Model Name"]}_{dump_dict["Precision"]}.json','w'), ensure_ascii=False, indent=4)
 
 
