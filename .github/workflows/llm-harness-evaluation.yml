@@ -117,7 +117,7 @@ jobs:
       ORIGIN_DIR: /mnt/disk1/models
       HARNESS_HF_HOME: /mnt/disk1/harness_home
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -204,7 +204,7 @@ jobs:
     needs: llm-harness-evalution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
@@ -231,7 +231,7 @@ jobs:
     needs: [set-matrix, llm-harness-evalution]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:

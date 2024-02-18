@@ -150,7 +150,7 @@ jobs:
       ORIGIN_DIR: /mnt/disk1/models
       DATASET_DIR: /mnt/disk1/datasets/THUDM___long_bench/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
