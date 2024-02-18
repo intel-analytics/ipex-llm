@@ -34,8 +34,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
+
     from transformers import AutoModelForCausalLM
     from bigdl.llm import optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype = torch.bfloat16, device_map = "auto", attn_implementation="eager")
