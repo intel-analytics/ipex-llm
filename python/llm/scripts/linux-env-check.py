@@ -10,7 +10,7 @@ if __name__ == "__main__":
     
     # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
     print("-"*20 + "CPU status" + "-"*20)
-    os.system("sycl-ls | grep cpu")
+    os.system("lscpu")
     print("-"*20 + "Memory Info" + "-"*20)
     os.system("cat /proc/meminfo | grep MemTotal")
     if args.xpu:
