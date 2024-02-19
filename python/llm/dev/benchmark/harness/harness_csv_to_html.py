@@ -172,12 +172,12 @@ def main():
                 last_Winogrande[latest_csv_ind]=pd.NA
                 diff_Winogrande[latest_csv_ind]=pd.NA
 
-        latest_csv.insert(loc=5,column='last_Arc',value=last_Arc)
-        latest_csv.insert(loc=6,column='diff_Arc(%)',value=diff_Arc)
-        latest_csv.insert(loc=7,column='last_TruthfulQA',value=last_TruthfulQA)
-        latest_csv.insert(loc=8,column='diff_TruthfulQA(%)',value=diff_TruthfulQA)
-        latest_csv.insert(loc=9,column='last_Winogrande',value=last_Winogrande)
-        latest_csv.insert(loc=10,column='diff_Winogrande(%)',value=diff_Winogrande)
+        latest_csv.insert(loc=6,column='last_Arc',value=last_Arc)
+        latest_csv.insert(loc=7,column='diff_Arc(%)',value=diff_Arc)
+        latest_csv.insert(loc=8,column='last_TruthfulQA',value=last_TruthfulQA)
+        latest_csv.insert(loc=9,column='diff_TruthfulQA(%)',value=diff_TruthfulQA)
+        latest_csv.insert(loc=10,column='last_Winogrande',value=last_Winogrande)
+        latest_csv.insert(loc=11,column='diff_Winogrande(%)',value=diff_Winogrande)
 
 
         diffs_within_normal_range = is_diffs_within_normal_range(diff_Arc, diff_TruthfulQA, diff_Winogrande, threshold=highlight_threshold)
