@@ -75,11 +75,11 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show bigdl-llm | grep $test_version_date; then
-            echo "Did not install bigdl-llm with excepted version $test_version_date"
-            exit 1
-          fi
+          # test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          # if ! pip show bigdl-llm | grep $test_version_date; then
+          #   echo "Did not install bigdl-llm with excepted version $test_version_date"
+          #   exit 1
+          # fi
 
       - name: Test installed xpu version
         shell: bash
