@@ -151,14 +151,12 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
                 value = value.expand(-1, -1, query_group_size, -1, -1)
                 value = value.contiguous().view(len1, len2 * query_group_size,
                                                 len0, len3).permute(2, 0, 1, 3)
-                list = []
-                list.append(key[:cur_len, :, :, :])
-                list.append(value[:cur_len, :, :, :])
+                list = [key[:cur_len, :, :, :], value[:cur_len, :, :, :]]
                 ipex_past_key_values.append(list)
         else:
             ipex_past_key_values = [
                 [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
-                    pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
+                pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
                 for pkv in past_key_values
             ]
     if not _enable_ipex:
