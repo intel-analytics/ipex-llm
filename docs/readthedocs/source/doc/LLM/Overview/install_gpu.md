@@ -89,7 +89,7 @@ pip install --pre --upgrade bigdl-llm[xpu]
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
-Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported:
+Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported. For oneAPI installed using the Offline installer, configure oneAPI environment variables with:
 
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -142,7 +142,7 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   conda install libuv
   ```
 
-* For oneAPI installed using Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+* For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
