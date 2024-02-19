@@ -371,11 +371,11 @@ def speculative_generate(self,
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
     if _enable_ipex:
-        if not ((self.config.model_type == 'baichuan' and self.config.hidden_size == 5120) or
+        if not ((self.config.model_type == 'baichuan') or
                 ('llama' in self.config.model_type) or
                 ("mistral" in self.config.model_type)):
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
-                                      Llama, Baichuan2-13b and Mistral models currently.")
+                                      Llama, Baichuan2 and Mistral models currently.")
 
     tmp_matchness = 0
     e2e_tic = 0.0
@@ -519,9 +519,18 @@ def speculative_generate(self,
                 cur_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
             if _enable_ipex and hasattr(self, "trace_graph"):
                 if self.config.model_type == "baichuan":
+                    past_key_value_len = past_key_values[0][0].shape[2]
+                    seq_len = drafted_input_ids.shape[1]
+                    seq_len_with_past = seq_len + past_key_value_len
+                    position_ids = torch.arange(past_key_value_len,
+                                                seq_len_with_past,
+                                                dtype=torch.long,
+                                                device=drafted_input_ids.device)
+                    position_ids = position_ids.unsqueeze(0).view(-1, seq_len)
                     output = self.trace_graph(input_ids=drafted_input_ids,
                                               attention_mask=cur_attention_mask,
                                               past_key_values=past_key_values,
+                                              position_ids=position_ids,
                                               )
                 elif "llama" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
@@ -590,8 +599,6 @@ def speculative_generate(self,
             toc = time.time()
             self.verify_time.append(toc - tic)
             self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
-
-            past_key_values = output['past_key_values']
 
             if generation_config.do_sample:
                 draft_tokens = drafted_input_ids[:, 1:].squeeze(0)
