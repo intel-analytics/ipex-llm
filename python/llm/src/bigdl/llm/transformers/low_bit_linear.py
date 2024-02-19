@@ -551,14 +551,10 @@ class LowBitLinear(nn.Linear):
                 #     # Weight does not need a convert
                 #     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                 #     result = result.view(new_shape)
-                x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                result_0 = F.linear(x, x0_fp32)
                 
                 result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
                 result = result.view(new_shape)
                 
-                # import pdb
-                # pdb.set_trace()
                 result_0 = ggml_matmul_src1_x_src0_t(x0, x_2d[:x.size(1)], self.weight_shape, self.qtype)
                 new_shape_0 = (1,) + new_shape[1:]
                 result_0 = result_0.view(new_shape_0)
