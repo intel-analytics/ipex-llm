@@ -499,7 +499,7 @@ def speculative_generate(self,
                 # check if draft prob is less then th_stop_draft
                 # Draft number + step >= max output token number
                 th_random = 1 if random_probs is None else random_probs[step_draft]
-                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3 and \
+                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3 and
                         step_draft + 1 >= min_draft_tokens) or \
                         step + step_draft + 2 >= max_new_tokens:
                     break
