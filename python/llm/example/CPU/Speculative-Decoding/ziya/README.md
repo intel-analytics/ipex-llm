@@ -41,21 +41,17 @@ Arguments info:
 
 ```log
 <human>: 
-Please Complete the given function below according to the docstring: 
 写一段快速排序
 <bot>: 
 def quick_sort(arr):
-    """
-    This function takes in a list of integers and returns a new list that is sorted in ascending order.
-    """
     if len(arr) <= 1:
         return arr
-    else:
-        pivot = arr[0]
-        less_than_pivot = [x for x in arr[1:] if x <= pivot]
-        greater_than_pivot = [x for x in arr[1:] if x > pivot]
-        return quick_sort(less_than_pivot) + [pivot]
-Tokens generated 128
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+Tokens generated 100
 E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
 ```

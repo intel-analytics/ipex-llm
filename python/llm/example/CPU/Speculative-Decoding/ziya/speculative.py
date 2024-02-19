@@ -27,7 +27,7 @@ seed=42
 torch.manual_seed(seed)
 np.random.seed(seed)
 
-ZIYA_PROMPT_FORMAT = "<human>: \nPlease Complete the given function below according to the docstring: \n{prompt}\n<bot>: \n"
+ZIYA_PROMPT_FORMAT = "<human>: \n{prompt}\n<bot>: \n"
 prompt = "写一段快速排序"
 
 if __name__ == '__main__':
