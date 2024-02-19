@@ -55,7 +55,7 @@ def create_fp16_dict(fp16_path):
     fp16_dict = {}
     for _, row in fp16_df.iterrows():
         model = row['Model']
-        # 使用格式化字符串保留两位小数
+        # Formalize the data to have 2 decimal places
         fp16_dict[model] = {
             'Arc': "{:.2f}".format(row['Arc']),
             'TruthfulQA': "{:.2f}".format(row['TruthfulQA']),
@@ -94,12 +94,12 @@ def main():
     latest_csv = pd.read_csv(csv_files[0], index_col=0)
     daily_html=csv_files[0].split(".")[0]+".html"
 
-    # 添加 Index 列并将其设置为新索引
+    # Reset index
     latest_csv.reset_index(inplace=True)
 
     diffs_within_normal_range = True
 
-    # 新增显示每个模型的 FP16 值，添加差值百分比列
+    # Add display of FP16 values for each model and add percentage difference column
     for task in ['Arc', 'TruthfulQA', 'Winogrande']:
         latest_csv[f'{task}_FP16'] = latest_csv['Model'].apply(lambda model: fp16_dict.get(model, {}).get(task, 'N/A'))
         latest_csv[f'{task}_diff_FP16(%)'] = latest_csv.apply(lambda row: calculate_percentage_difference(row[task], row[f'{task}_FP16']), axis=1)
@@ -191,10 +191,9 @@ def main():
 
         styled_df = latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=3.0, color1='red', color2='green'), subset=subset1)
         for task in ['Arc', 'TruthfulQA', 'Winogrande']:
-             # 应用颜色标记
             styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=highlight_threshold, color1='red', color2='green'), subset=[f'{task}_diff_FP16(%)'])
         
-        # 添加自定义 CSS 样式以限制列宽
+        # add css style to restrict width and wrap text
         styled_df.set_table_styles([{
             'selector': 'th, td',
             'props': [('max-width', '88px'), ('word-wrap', 'break-word')]
