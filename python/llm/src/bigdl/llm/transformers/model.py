@@ -393,6 +393,9 @@ class _BaseAutoModelClass:
                 model.config.update({"bigdl_lcmu_enabled": False})
 
         model = model.to("cpu")
+        # rwkv model linear layers has been rescaled
+        if model.config.model_type == "rwkv":
+            model.layers_are_rescaled = True
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
