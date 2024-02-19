@@ -1,268 +1,236 @@
 # Getting started with BigDL-LLM in Docker
 
+This guide provides step-by-step instructions for installing and using BigDL-LLM in a Docker environment. It covers setups for both CPU and XPU (accelerated processing units) on different operating systems.
+
 ### Index
-- [Docker installation guide for BigDL-LLM on CPU](#docker-installation-guide-for-bigdl-llm-on-cpu)
-    - [BigDL-LLM on Windows](#bigdl-llm-on-windows)
-    - [BigDL-LLM on Linux/MacOS](#bigdl-llm-on-linuxmacos)
-- [Docker installation guide for BigDL LLM on XPU](#docker-installation-guide-for-bigdl-llm-on-xpu) 
-- [Docker installation guide for BigDL LLM Serving on CPU](#docker-installation-guide-for-bigdl-llm-serving-on-cpu) 
-- [Docker installation guide for BigDL LLM Serving on XPU](#docker-installation-guide-for-bigdl-llm-serving-on-xpu) 
-- [Docker installation guide for BigDL LLM Fine Tuning on CPU](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-cpu) 
-- [Docker installation guide for BigDL LLM Fine Tuning on XPU](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-xpu) 
+- [Docker installation](#docker-installation-guide-for-bigdl-llm-on-cpu)
 
-## Docker installation guide for BigDL-LLM on CPU
-
-### BigDL-LLM on Windows
-
-#### Install docker
-
-New users can quickly get started with Docker using this [official link](https://www.docker.com/get-started/).
-
-For Windows users, make sure WSL2 or Hyper-V is enabled on your computer. 
-The instructions for installing can be accessed from 
-[here](https://docs.docker.com/desktop/install/windows-install/).
+- [BigDL LLM Inference](#docker-installation-guide-for-bigdl-llm-on-xpu) 
+    - [On CPU](#bigdl-llm-on-windows)
+    - [On XPU](#bigdl-llm-on-linuxmacos)
+- [BigDL LLM Serving](#docker-installation-guide-for-bigdl-llm-serving-on-cpu) 
+    - [On CPU](#bigdl-llm-on-windows)
+    - [On XPU](#bigdl-llm-on-linuxmacos)
+- [BigDL LLM Fine Tuning](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-cpu) 
+    - [On CPU](#bigdl-llm-on-windows)
+    - [On XPU](#bigdl-llm-on-linuxmacos)
 
 
-#### Pull bigdl-llm-cpu image
+## Docker Installation Instructions
 
-To pull image from hub, you can execute command on console:
-```bash
-docker pull intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
-```
-to check if the image is successfully downloaded, you can use:
-```powershell
-docker images | sls intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
-```
+**Getting Started with Docker:**
 
+1. **For New Users:**
+   - Begin by visiting the [official Docker Get Started page](https://www.docker.com/get-started/) for a comprehensive introduction and installation guide.
 
-#### Start bigdl-llm-cpu container
+2. **Additional Steps for Windows Users:**
+   - Ensure that WSL2 (Windows Subsystem for Linux version 2) or Hyper-V is enabled on your system. This is a prerequisite for running Docker on Windows.
+   - Detailed installation instructions for Windows, including steps for enabling WSL2 or Hyper-V, can be found on the [Docker Desktop for Windows installation page](https://docs.docker.com/desktop/install/windows-install/).
 
-To run the image and do inference, you could create and run a bat script on Windows.
+By following these steps, you'll have Docker installed and ready for use on your machine.
 
-An example on Windows could be:
-```bat
-@echo off
-set DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
-set CONTAINER_NAME=my_container
-set MODEL_PATH=D:/llm/models[change to your model path]
+## BigDL LLM Inference on CPU
 
-:: Run the Docker container
-docker run -itd ^
-    -p 12345:12345 ^
-    --cpuset-cpus="0-7" ^
-    --cpuset-mems="0" ^
-    --memory="8G" ^
-    --name=%CONTAINER_NAME% ^
-    -v %MODEL_PATH%:/llm/models ^
-    %DOCKER_IMAGE%
-```
-
-After the container is booted, you could get into the container through `docker exec`.
-```
-docker exec -it my_container bash
-```
-
-To run inference using `BigDL-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm#cpu-int4).
+**Step 1: Pull the bigdl-llm-cpu Image**
+   - Run the following command:
+     ```bash
+     docker pull intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+     ```
 
 
-#### Getting started with chat
+**Step 2: Start the bigdl-llm-cpu Container**
+   - On Windows, create and run a batch script (`*.bat`) with the following content:
+     ```bat
+     @echo off
+     set DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+     set CONTAINER_NAME=my_container
+     set MODEL_PATH=D:/llm/models[change to your model path]
 
-chat.py can be used to initiate a conversation with a specified model. The file is under directory '/llm'.
+     :: Run the Docker container
+     docker run -itd ^
+         -p 12345:12345 ^
+         --cpuset-cpus="0-7" ^
+         --cpuset-mems="0" ^
+         --memory="8G" ^
+         --name=%CONTAINER_NAME% ^
+         -v %MODEL_PATH%:/llm/models ^
+         %DOCKER_IMAGE%
+     ```
+   - On Linux/MacOS, the instructions for are similar to Windows, with the following script for starting the container:
+      ```bash
+      #/bin/bash
+      export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+      export CONTAINER_NAME=my_container
+      export MODEL_PATH=/llm/models[change to your model path]
 
-You can download models and bind the model directory from host machine to container when start a container.
+      docker run -itd \
+          -p 12345:12345 \
+          --cpuset-cpus="0-7" \
+          --cpuset-mems="0" \
+          --memory="8G" \
+          --name=$CONTAINER_NAME \
+          -v $MODEL_PATH:/llm/models \
+          $DOCKER_IMAGE
+      ```
+   - Access the container:
+     ```
+     docker exec -it my_container bash
+     ```
 
-After entering the container through `docker exec`, you can run chat.py by:
-```bash
-cd /llm/portable-zip
-python chat.py --model-path YOUR_MODEL_PATH
-```
-If your model is chatglm-6b and mounted on /llm/models, you can excute:
-```bash
-python chat.py --model-path /llm/models/chatglm-6b
-```
-Here is a demostration:
+**Step 3: Running Inference and Tutorials**
+   - **Chat Interface**: Use `chat.py` for conversational AI. For example:
+     ```bash
+     cd /llm/portable-zip
+     python chat.py --model-path /llm/models/chatglm-6b
+     ```
+   - **Jupyter Lab Tutorials**: Start a Jupyter Lab session for BigDL-LLM tutorials.
+     ```bash
+     cd /llm
+     ./start-notebook.sh [--port EXPECTED_PORT]
+     ```
+     Access the tutorials at http://127.0.0.1:12345/lab.
 
-<a align="left"  href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif">
-            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif" width='60%' /> 
 
-</a>
 
-#### Getting started with tutorials
+## BigDL LLM Inference on XPU
+**Step 1: Pull the bigdl-llm-xpu Image**
+   - Run the following command:
+     ```bash
+     docker pull intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
+     ```
 
-You could start a jupyter-lab serving to explore bigdl-llm-tutorial which can help you build a more sophisticated Chatbo.
 
-To start serving,  run the script under '/llm':
-```bash
-cd /llm
-./start-notebook.sh [--port EXPECTED_PORT]
-```
-You could assign a port to serving, or the default port 12345 will be assigned.
+**Step 2: Start the bigdl-llm-xpu Container**
+   - To map the xpu into the container, you need to specify --device=/dev/dri when booting the container. An example could be:
+      ```bash
+      #/bin/bash
+      export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
+      export CONTAINER_NAME=my_container
+      export MODEL_PATH=/llm/models[change to your model path]
 
-If you use host network mode when booted the container, after successfully running service, you can access http://127.0.0.1:12345/lab to get into tutorial, or you should bind the correct ports between container and host. 
+      sudo docker run -itd \
+              --net=host \
+              --device=/dev/dri \
+              --memory="32G" \
+              --name=$CONTAINER_NAME \
+              --shm-size="16g" \
+              -v $MODEL_PATH:/llm/models \
+              $DOCKER_IMAGE
+      ```
 
-Here is a demostration of how to use tutorial in explorer:
+      After the container is booted, you could get into the container through `docker exec`.
 
-<a align="left" href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif">
-            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif" width='60%' /> 
+      To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
-</a>
+      ```bash
+      root@arda-arc12:/# sycl-ls
+      [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
+      [opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
+      [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
+      [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
+      ```
 
-### BigDL-LLM on Linux/MacOS
+**Step 3: Running Inference**
+  - To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU).
 
-To run container on Linux/MacOS:
-```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
-export CONTAINER_NAME=my_container
-export MODEL_PATH=/llm/models[change to your model path]
+## BigDL LLM Serving on CPU
 
-docker run -itd \
-    -p 12345:12345 \
-    --cpuset-cpus="0-7" \
-    --cpuset-mems="0" \
-    --memory="8G" \
-    --name=$CONTAINER_NAME \
-    -v $MODEL_PATH:/llm/models \
-    $DOCKER_IMAGE
-```
+**Step 1: Pull the bigdl-llm-serving-cpu Image**
+   - Run the following command:
+     ```bash
+     docker pull intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+     ```
 
-Also, you could use chat.py and bigdl-llm-tutorial for development.
 
-[Getting started with chat](#getting-started-with-chat)
+**Step 2: Start the bigdl-llm-serving-cpu Container**
+ - Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
 
-[Getting started with tutorials](#getting-started-with-tutorials)
+    ```bash
+    export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+    export CONTAINER_NAME=my_container
+    export MODEL_PATH=/llm/models[change to your model path]
 
-## Docker installation guide for BigDL LLM on XPU
-
-First, pull docker image from docker hub:
-```
-docker pull intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
-```
-To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
-An example could be:
-```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
-export CONTAINER_NAME=my_container
-export MODEL_PATH=/llm/models[change to your model path]
-
-sudo docker run -itd \
+    docker run -itd \
         --net=host \
-        --device=/dev/dri \
+        --cpuset-cpus="0-47" \
+        --cpuset-mems="0" \
         --memory="32G" \
         --name=$CONTAINER_NAME \
-        --shm-size="16g" \
         -v $MODEL_PATH:/llm/models \
         $DOCKER_IMAGE
-```
-
-After the container is booted, you could get into the container through `docker exec`.
-
-To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
-
-```bash
-root@arda-arc12:/# sycl-ls
-[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
-[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
-[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
-[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
-```
-
-To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU).
-
-## Docker installation guide for BigDL LLM Serving on CPU
-
-### Boot container
-
-Pull image:
-```
-docker pull intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
-```
-
-You could use the following bash script to start the container. Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
-```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
-export CONTAINER_NAME=my_container
-export MODEL_PATH=/llm/models[change to your model path]
-
-docker run -itd \
-    --net=host \
-    --cpuset-cpus="0-47" \
-    --cpuset-mems="0" \
-    --memory="32G" \
-    --name=$CONTAINER_NAME \
-    -v $MODEL_PATH:/llm/models \
-    $DOCKER_IMAGE
-```
-After the container is booted, you could get into the container through `docker exec`.
-
-### Models
-
-Using BigDL-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
-
-FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using BigDL-LLM, you need to make some modifications to the model's name.
-
-For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `BigDL-LLM` as backend, you need to change name from `llama-7b-hf` to `bigdl-7b`.
-The key point here is that the model's path should include "bigdl" and should not include paths matched by other model adapters.
-
-A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `BigDL-LLM` backend will be used automatically.
+    ```
+    After the container is booted, you could get into the container through `docker exec`.
+    ```
+    docker exec
+    ```
 
 
-### Start the service
+**Step 3: Prepare Models**
 
-#### Serving with Web UI
+  - Using BigDL-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
+
+  - FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using BigDL-LLM, you need to make some modifications to the model's name.
+
+  - For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `BigDL-LLM` as backend, you need to change name from `llama-7b-hf` to `bigdl-7b`.
+  The key point here is that the model's path should include "bigdl" and should not include paths matched by other model adapters.
+
+  - A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `BigDL-LLM` backend will be used automatically.
+
+
+**Step 4: Start the service**
+
+**Option 1: Serving with Web UI**
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
-##### Launch the Controller
-```bash
-python3 -m fastchat.serve.controller
-```
+- **Launch the Controller**
+  ```bash
+  python3 -m fastchat.serve.controller
+  ```
 
-This controller manages the distributed workers.
+  This controller manages the distributed workers.
 
-##### Launch the model worker(s)
-```bash
-python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
-```
-Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
+- **Launch the model worker(s)**
+  ```bash
+  python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
+  ```
+  Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
-> To run model worker using Intel GPU, simply change the --device cpu option to --device xpu
+  > To run model worker using Intel GPU, simply change the --device cpu option to --device xpu
 
-##### Launch the Gradio web server
+- **Launch the Gradio web server**
 
-```bash
-python3 -m fastchat.serve.gradio_web_server
-```
+  ```bash
+  python3 -m fastchat.serve.gradio_web_server
+  ```
 
-This is the user interface that users will interact with.
+  This is the user interface that users will interact with.
 
-By following these steps, you will be able to serve your models using the web UI with `BigDL-LLM` as the backend. You can open your browser and chat with a model now.
+  By following these steps, you will be able to serve your models using the web UI with `BigDL-LLM` as the backend. You can open your browser and chat with a model now.
 
-#### Serving with OpenAI-Compatible RESTful APIs
+**Option 2: Serving with OpenAI-Compatible RESTful APIs**
 
 To start an OpenAI API server that provides compatible APIs using `BigDL-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
-First, launch the controller
+- **Launch the Controller**
+  ```bash
+  python3 -m fastchat.serve.controller
+  ```
 
-```bash
-python3 -m fastchat.serve.controller
-```
+- **Launch the model worker(s)**
 
-Then, launch the model worker(s):
+  ```bash
+  python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
+  ```
 
-```bash
-python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
-```
+- **Launch the RESTful API server**
 
-Finally, launch the RESTful API server
-
-```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
-```
+  ```bash
+  python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
+  ```
 
 
-## Docker installation guide for BigDL LLM Serving on XPU
+## BigDL LLM Serving on XPU
 
 ### Boot container
 
@@ -355,7 +323,7 @@ Finally, launch the RESTful API server
 python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
-## Docker installation guide for BigDL LLM Fine Tuning on CPU
+## BigDL LLM Fine Tuning on CPU
 
 ### 1. Prepare BigDL image for Lora Finetuning
 
@@ -440,7 +408,7 @@ Map: 100%|██████████| 2000/2000 [00:01<00:00, 1578.71 exampl
 
 You can run BF16-Optimized lora finetuning on kubernetes with OneCCL. So for kubernetes users, please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/lora/cpu#run-bf16-optimized-lora-finetuning-on-kubernetes-with-oneccl).
 
-## Docker installation guide for BigDL LLM Fine Tuning on XPU
+## BigDL LLM Fine Tuning on XPU
 
 The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
