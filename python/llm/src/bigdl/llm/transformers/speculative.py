@@ -143,13 +143,12 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
             for pkv in past_key_values:
                 key = pkv[1]
                 value = pkv[2]
-                if True:
-                    key = key.permute(1, 2, 0, 3).unsqueeze(-3)
-                    key = key.expand(-1, -1, 16, -1, -1)
-                    key = key.contiguous().view(len1, 2 * 16, len0,  len3).permute(2, 0, 1, 3)
-                    value = value.permute(1, 2, 0, 3).unsqueeze(-3)
-                    value = value.expand(-1, -1, 16, -1, -1)
-                    value = value.contiguous().view(len1, 2 * 16, len0, len3).permute(2, 0, 1, 3)
+                key = key.permute(1, 2, 0, 3).unsqueeze(-3)
+                key = key.expand(-1, -1, 16, -1, -1)
+                key = key.contiguous().view(len1, 2 * 16, len0,  len3).permute(2, 0, 1, 3)
+                value = value.permute(1, 2, 0, 3).unsqueeze(-3)
+                value = value.expand(-1, -1, 16, -1, -1)
+                value = value.contiguous().view(len1, 2 * 16, len0, len3).permute(2, 0, 1, 3)
                 list = []
                 list.append(key[:cur_len, :, :, :])
                 list.append(value[:cur_len, :, :, :])
@@ -207,16 +206,10 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
         len3 = past_key_values[0][1].size(3)
         for i in range(len(past_key_values)):
             if self.config.model_type == "chatglm":
-                if True:
-                    k0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
-                                    dtype=torch.float32)
-                    v0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
-                                    dtype=torch.float32)
-                else:
-                    k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
-                                    dtype=torch.float32)
-                    v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
-                                    dtype=torch.float32)
+                k0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len0, len1 * 16, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
                 k0 = k0.permute(2, 0, 1, 3)
                 v0 = v0.permute(2, 0, 1, 3)
                 past_key_values_storage.append((k0, v0))
@@ -303,18 +296,14 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                         dtype=torch.float32)
                 key0 = past_key_values[i][1][size:size1, :, :, :]
                 value0 = past_key_values[i][2][size:size1, :, :, :]
-                if True:
-                    key = key0.permute(1, 2, 0, 3).unsqueeze(-3)
-                    key = key.expand(-1, -1, 16, -1, -1)
-                    key = key.contiguous().view(len1,2 * 16, size1-size, len3)
-                    key = key.permute(2, 0, 1, 3)
-                    value = value0.permute(1, 2, 0, 3).unsqueeze(-3)
-                    value = value.expand(-1, -1, 16, -1, -1)
-                    value = value.contiguous().view(len1, 2 * 16, size1-size, len3)
-                    value = value.permute(2, 0, 1, 3)
-                else:
-                    key = key0
-                    value = value0
+                key = key0.permute(1, 2, 0, 3).unsqueeze(-3)
+                key = key.expand(-1, -1, 16, -1, -1)
+                key = key.contiguous().view(len1,2 * 16, size1-size, len3)
+                key = key.permute(2, 0, 1, 3)
+                value = value0.permute(1, 2, 0, 3).unsqueeze(-3)
+                value = value.expand(-1, -1, 16, -1, -1)
+                value = value.contiguous().view(len1, 2 * 16, size1-size, len3)
+                value = value.permute(2, 0, 1, 3)
                 past_key_values_storage[i][0][ size:size1, :, :, :] = \
                     key.to(torch.float32)
                 past_key_values_storage[i][1][ size:size1, :, :, :] = \
@@ -680,7 +669,8 @@ def speculative_generate(self,
             self.verify_time.append(toc - tic)
             self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
 
-            #past_key_values = output['past_key_values']
+            if past_key_values is None:
+                past_key_values = output['past_key_values']
 
             if generation_config.do_sample:
                 draft_tokens = drafted_input_ids[:, 1:].squeeze(0)
