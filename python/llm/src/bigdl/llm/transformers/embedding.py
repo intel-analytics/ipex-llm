@@ -102,7 +102,7 @@ class LowBitEmbedding(torch.nn.Embedding):
             import linear_q4_0
         except ModuleNotFoundError:
             invalidInputError(False,
-                                "Please `pip install bigdl_core_xe` first.")
+                              "Please `pip install bigdl_core_xe` first.")
 
         result = linear_q4_0.dequantize_rows(x.contiguous(), self.weight.data,
                                              self.weight.qtype, self.embedding_dim)

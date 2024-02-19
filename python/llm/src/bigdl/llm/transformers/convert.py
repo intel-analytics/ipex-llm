@@ -323,7 +323,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 sparse=module.sparse,
                 _weight=module.weight.data,
             )
-        elif type(module) == nn.Embedding and embedding_qtype != None:
+        elif type(module) == nn.Embedding and embedding_qtype is not None:
             q_embedding = LowBitEmbedding(
                 num_embeddings=module.num_embeddings,
                 embedding_dim=module.embedding_dim,

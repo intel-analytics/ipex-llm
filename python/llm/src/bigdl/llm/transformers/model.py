@@ -280,7 +280,8 @@ class _BaseAutoModelClass:
                                   "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
             cpu_embedding = kwargs.get("cpu_embedding", False)
             # for 2bit, default use embedding_quantization
-            if q_k in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding and embedding_qtype is None:
+            if q_k in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding and \
+                    embedding_qtype is None:
                 embedding_qtype = "q2_k"
             if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
