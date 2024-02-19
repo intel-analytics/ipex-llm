@@ -77,7 +77,7 @@ def setup_package():
                         'tensorflow': ['bigdl-nano=='+VERSION] + TF_DEP,
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],
                         'distributed:platform_system!="Windows"': ['bigdl-orca-spark3==' + VERSION,
-                                                                   'grpcio==1.53.0', 'pyarrow'] +
+                                                                   'grpcio==1.53.2', 'pyarrow'] +
                         ORCA_AUTOML_DEP,
                         'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
@@ -85,7 +85,7 @@ def setup_package():
                                 'optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27',
                                 'bigdl-orca-spark3==' + VERSION +
                                 ';platform_system!="Windows"',
-                                'grpcio==1.53.0',
+                                'grpcio==1.53.2',
                                 'pmdarima==1.8.5',
                                 'prophet==1.1.0',
                                 'holidays==0.24',

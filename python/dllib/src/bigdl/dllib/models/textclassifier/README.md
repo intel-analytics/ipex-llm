@@ -15,7 +15,7 @@
 
 ### Data preparation
 - You don't need to download the data by yourself.
-- If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
+- If there is no [Pre-train GloVe word embeddings](https://nlp.stanford.edu/data/glove.6B.zip)
 or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) in
 `./data/news20` directory with the following structure looks like:
 

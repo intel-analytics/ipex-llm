@@ -31,7 +31,7 @@ def highlight_vals(val, max=3.0, color1='red', color2='green'):
         return ''
 
 def nonzero_min(lst):
-    non_zero_lst = [num for num in lst if num >= 0.0]
+    non_zero_lst = [num for num in lst if num > 0.0]
     return min(non_zero_lst) if non_zero_lst else None
 
 def is_diffs_within_normal_range(diff1, diff2, threshold=5.0):

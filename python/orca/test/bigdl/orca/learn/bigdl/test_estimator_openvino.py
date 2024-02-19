@@ -72,9 +72,8 @@ class TestEstimatorForOpenVINO(TestCase):
         model_url = data_url + "/analytics-zoo-data/openvino2020_resnet50.tar"
         model_path = maybe_download("openvino2020_resnet50.tar",
                                     local_path, model_url)
-        tar = tarfile.open(model_path)
-        tar.extractall(path=local_path)
-        tar.close()
+        with tarfile.open(model_path) as tar:
+            tar.extractall(path=local_path)
         model_path = os.path.join(local_path, "openvino2020_resnet50/resnet_v1_50.xml")
         self.est = Estimator.from_openvino(model_path=model_path)
 
@@ -83,9 +82,8 @@ class TestEstimatorForOpenVINO(TestCase):
         model_url = data_url + "/analytics-zoo-data/roberta.tar"
         model_path = maybe_download("roberta.tar",
                                     local_path, model_url)
-        tar = tarfile.open(model_path)
-        tar.extractall(path=local_path)
-        tar.close()
+        with tarfile.open(model_path) as tar:
+            tar.extractall(path=local_path)
         model_path = os.path.join(local_path, "roberta/model.xml")
         self.est = Estimator.from_openvino(model_path=model_path)
 
@@ -94,9 +92,8 @@ class TestEstimatorForOpenVINO(TestCase):
         model_url = data_url + "/analytics-zoo-data/ov_multi_output.tar"
         model_path = maybe_download("ov_multi_output.tar",
                                     local_path, model_url)
-        tar = tarfile.open(model_path)
-        tar.extractall(path=local_path)
-        tar.close()
+        with tarfile.open(model_path) as tar:
+            tar.extractall(path=local_path)
         model_path = os.path.join(local_path, "FP32/model_float32.xml")
         self.est = Estimator.from_openvino(model_path=model_path)
 
