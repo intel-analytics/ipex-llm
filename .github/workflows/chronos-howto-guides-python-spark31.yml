@@ -4,7 +4,10 @@ name: Chronos Tests for How-to Guides Spark3.1 py38 py39
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
-  
+
+permissions:
+  contents: read
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on pull request events but only for the main branch
@@ -26,7 +29,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
@@ -81,7 +84,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Maven
