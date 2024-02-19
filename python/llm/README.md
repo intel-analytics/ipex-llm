@@ -77,6 +77,11 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | SOLAR | [link](example/CPU/HF-Transformers-AutoModels/Model/solar) | [link](example/GPU/HF-Transformers-AutoModels/Model/solar) |
 | Phixtral | [link](example/CPU/HF-Transformers-AutoModels/Model/phixtral) | [link](example/GPU/HF-Transformers-AutoModels/Model/phixtral) |
 | InternLM2 | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm2) | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm2) |
+| RWKV4 |  | [link](example/GPU/HF-Transformers-AutoModels/Model/rwkv4) |
+| RWKV5 |  | [link](example/GPU/HF-Transformers-AutoModels/Model/rwkv5) |
+| Bark | [link](example/CPU/PyTorch-Models/Model/bark) | [link](example/GPU/PyTorch-Models/Model/bark) |
+| SpeechT5 |  | [link](example/GPU/PyTorch-Models/Model/speech-t5) |
+
 
 ### Working with `bigdl-llm`
 

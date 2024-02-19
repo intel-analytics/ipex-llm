@@ -5,6 +5,9 @@ concurrency:
   group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # Controls when the action will run.
 on:
   # pull_request:
@@ -33,7 +36,7 @@ jobs:
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -72,8 +75,12 @@ jobs:
           cp ./*.csv /models/stable_version_perf_regression_test_cpu/
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 5.0
-  
+          python csv_to_html.py -f /models/stable_version_perf_regression_test_cpu/ -b /models/stable_version_perf_regression_test_cpu/transformer_int4-results-1baseline.csv -t 10.0
+          cd /models/stable_version_perf_regression_test_cpu/
+          for f in *.html; do
+            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/regression_test/
+          done
+
 
   llm-stress-test-on-spr:
     needs: llm-perf-regression-test-on-spr
@@ -87,7 +94,7 @@ jobs:
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -127,3 +134,7 @@ jobs:
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f /models/stable_version_stress_test_cpu/
+          # cd /models/stable_version_stress_test_cpu/
+          # for f in *.html; do
+          #   curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/stable_version_cpu/stress_test/
+          # done

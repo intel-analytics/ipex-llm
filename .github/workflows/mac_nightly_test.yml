@@ -36,7 +36,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   Mac-Python-AppTest-Part1:
@@ -44,7 +43,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/app/mac-python-apptest-part1
     - name: Create Job Badge
@@ -65,7 +64,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/dllib/mac-dllib-scalatest-spark3
     - name: Create Job Badge
@@ -85,7 +84,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/dllib/mac-dllib-python-exampletest-spark3
     - name: Create Job Badge
@@ -105,7 +104,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/friesian/mac-friesian-python-ut-spark3
     - name: Create Job Badge
@@ -125,7 +124,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/friesian/mac-friesian-python-ut-pip-spark3
     - name: Create Job Badge
@@ -145,7 +144,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-tf2-spark3
     - name: Create Job Badge
@@ -165,7 +164,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-tf2-pip-spark3
     - name: Create Job Badge
@@ -185,7 +184,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-feature-tf1-spark3
     - name: Create Job Badge
@@ -205,7 +204,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/friesian/mac-friesian-python-exampletest-feature-tf1-pip-spark3
     - name: Create Job Badge
@@ -225,7 +224,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/orca/mac-orca-python-ut-spark3
     - name: Create Job Badge
@@ -245,7 +244,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/orca/mac-orca-python-ut-ray-spark3
     - name: Create Job Badge
@@ -265,7 +264,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-spark3
     - name: Create Job Badge
@@ -285,7 +284,7 @@ jobs:
     runs-on: [self-hosted, mac, macOS]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-ray-spark3
     - name: Create Job Badge
@@ -304,7 +303,7 @@ jobs:
   create-workflow-badge:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: create workflow badge
       if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
