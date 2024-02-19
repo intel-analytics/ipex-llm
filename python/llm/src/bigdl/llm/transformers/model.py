@@ -126,8 +126,8 @@ class _BaseAutoModelClass:
             added to llama.cpp.
         :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
             specify the model hub. Default to be ``'huggingface'``.
-        :param embedding_qtype: str_value, options are ``'q2_k'`` now.Default to be None.
-            Relevant low bit optimizations will be applied to embedding layer.
+        :param embedding_qtype: str value, options are ``'q2_k'`` now. Default to be None.
+            Relevant low bit optimizations will be applied to nn.Embedding layer.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -158,6 +158,7 @@ class _BaseAutoModelClass:
         user_quantization_config = kwargs.pop("quantization_config", None)
         speculative = kwargs.pop("speculative", False)
         torch_dtype = kwargs.pop("torch_dtype", None)
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
 
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
@@ -277,9 +278,14 @@ class _BaseAutoModelClass:
             if q_k in ["iq2_xxs", "iq2_xs"]:
                 invalidInputError(imatrix_file is not None,
                                   "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+            cpu_embedding = kwargs.get("cpu_embedding", False)
+            # for 2bit, default use embedding_quantization
+            if q_k in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding and embedding_qtype is None:
+                embedding_qtype = "q2_k"
             if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
-                kwargs['imatrix_data'] = imatrix_data
+                kwargs["imatrix_data"] = imatrix_data
+            kwargs["embedding_qtype"] = embedding_qtype
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
@@ -338,6 +344,9 @@ class _BaseAutoModelClass:
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
         imatrix_data = kwargs.pop("imatrix_data", None)
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
+        if embedding_qtype is not None:
+            embedding_qtype = ggml_tensor_qtype[embedding_qtype]
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -399,7 +408,8 @@ class _BaseAutoModelClass:
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
-                                     imatrix_data=imatrix_data)
+                                     imatrix_data=imatrix_data,
+                                     embedding_qtype=embedding_qtype)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # enable tie_word_embeddings for MPT

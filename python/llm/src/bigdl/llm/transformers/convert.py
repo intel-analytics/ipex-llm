@@ -194,7 +194,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  imatrix_data=None, embedding_qtype=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
-    from bigdl.llm.transformers.embedding import LLMEmbedding
+    from bigdl.llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -313,7 +313,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         module.weight = None
         elif cpu_embedding and type(module) == nn.Embedding:
             # skip user-defined Embedding layer
-            model._modules[name] = LowBitEmbedding(
+            model._modules[name] = LLMEmbedding(
                 num_embeddings=module.num_embeddings,
                 embedding_dim=module.embedding_dim,
                 padding_idx=module.padding_idx,
@@ -333,6 +333,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 scale_grad_by_freq=module.scale_grad_by_freq,
                 sparse=module.sparse,
                 _weight=module.weight.data,
+                qtype=embedding_qtype,
             )
             device = module.weight.data.device
             # Copy the weights
@@ -342,7 +343,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                      _shape=None,
                                      convert_shape_only=convert_shape_only,
                                      qtype=embedding_qtype,
-                                     in_features=in_features).to(device)
+                                     in_features=module.embedding_dim).to(device)
             q_embedding._parameters['weight'] = paramsLowBit
             model._modules[name] = q_embedding
 

@@ -20,6 +20,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from torch.nn import Parameter
 from typing import Optional
+from bigdl.llm.transformers.low_bit_linear import FP4Params
 
 
 # To prevent insufficient available memory when moving embedding from XPU back to CPU,
@@ -85,12 +86,22 @@ class LowBitEmbedding(torch.nn.Embedding):
                  sparse: bool = False,
                  _weight: Optional[Tensor] = None,
                  _freeze: bool = False,
-                 device=None, dtype=None) -> None:
+                 device=None, dtype=None,
+                 qtype=None) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq, sparse,
                          _weight, device, dtype)
+        self.weight = FP4Params(self.weight.data,
+                                requires_grad=False,
+                                quantized=False, _shape=None, qtype=qtype)
+        self.embedding_dim = embedding_dim
 
     def forward(self, x: Tensor):
-        print(x_2d.shape)
-        result = linear_q4_0.dequantize_rows(x_2d, self.weight.data, self.weight.qtype)
+        try:
+            import intel_extension_for_pytorch
+            import linear_q4_0
+        except ModuleNotFoundError:
+            invalidInputError(False,
+                                "Please `pip install bigdl_core_xe` first.")
+        result = linear_q4_0.dequantize_rows(x, self.weight.data, self.weight.qtype, self.embedding_dim)
         return result
