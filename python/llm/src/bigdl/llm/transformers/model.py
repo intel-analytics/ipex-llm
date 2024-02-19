@@ -478,6 +478,7 @@ class _BaseAutoModelClass:
         offload_folder = kwargs.pop("offload_folder", None)
         offload_state_dict = kwargs.pop("offload_state_dict", False)
         torch_dtype = kwargs.pop("torch_dtype", "auto")
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
         sharded_metadata = None
 
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
@@ -497,6 +498,10 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        if bigdl_transformers_low_bit in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding:
+            embedding_qtype = "q2_k"
+        if embedding_qtype is not None:
+            embedding_qtype = ggml_tensor_qtype[embedding_qtype]
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
@@ -577,7 +582,8 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
+                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
+                                     embedding_qtype=embedding_qtype)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

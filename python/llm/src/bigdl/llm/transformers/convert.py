@@ -346,6 +346,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                      in_features=module.embedding_dim).to(device)
             q_embedding._parameters['weight'] = paramsLowBit
             model._modules[name] = q_embedding
+            # Force requires grad to False to avoid unexpected errors
+            model._modules[name].requires_grad_(False)
+            module.weight = None
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
