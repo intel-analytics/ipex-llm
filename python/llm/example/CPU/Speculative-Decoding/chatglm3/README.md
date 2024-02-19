@@ -49,3 +49,6 @@ E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
 ```
 
+### 4. Accelerate with BIGDL_OPT_IPEX
+
+BIGDL_OPT_IPEX can help to accelerate speculative decoding on chatglm3-6b, and please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-bigdl_opt_ipex) for a try.
