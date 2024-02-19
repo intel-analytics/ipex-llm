@@ -104,7 +104,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             num_beams,
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
-                            result[in_out_pair][-1][5] if 'int4_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
+                            result[in_out_pair][-1][5] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
 
 
 def get_model_path(repo_id, local_model_hub):
