@@ -911,9 +911,9 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.Qwen2Attention,
                         qwen2_attention_forward
                         )
-        # convert_forward(model,
-        #                 module.Qwen2RMSNorm,
-        #                 llama_rms_norm_forward)
+        convert_forward(model,
+                        module.Qwen2RMSNorm,
+                        llama_rms_norm_forward)
         convert_forward(model,
                         module.Qwen2MLP,
                         llama_mlp_forward)
