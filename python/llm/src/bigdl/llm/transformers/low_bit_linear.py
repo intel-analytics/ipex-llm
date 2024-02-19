@@ -542,15 +542,45 @@ class LowBitLinear(nn.Linear):
             else:
                 from bigdl.llm.utils.isa_checker import is_server, is_spr
 
-                # convert if necessary, and compute a linear result
-                if is_server() and (not is_spr()) and \
-                        self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
-                    x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                    result = F.linear(x, x0_fp32)
+                # # convert if necessary, and compute a linear result
+                # if is_server() and (not is_spr()) and \
+                #         self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
+                #     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                #     result = F.linear(x, x0_fp32)
+                # else:
+                #     # Weight does not need a convert
+                #     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+                #     result = result.view(new_shape)
+                x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+                result_0 = F.linear(x, x0_fp32)
+                
+                result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
+                result = result.view(new_shape)
+                
+                # import pdb
+                # pdb.set_trace()
+                result_0 = ggml_matmul_src1_x_src0_t(x0, x_2d[:x.size(1)], self.weight_shape, self.qtype)
+                new_shape_0 = (1,) + new_shape[1:]
+                result_0 = result_0.view(new_shape_0)
+                
+                if not torch.equal(result_0,result[0].unsqueeze(0)):
+                    import pickle
+                    cur_data = {
+                        'x0': x0,
+                        'weight_shape': self.weight_shape,
+                        'weight_length': self.weight_length,
+                        'x0_fp32': x0_fp32,
+                        'result_0': result_0,
+                        'qtype': self.qtype,
+                        'new_shape': new_shape,
+                        'result': result,
+                    }
+                    with open('debug.pkl', 'wb') as file:
+                        pickle.dump(cur_data, file)
+                    import pdb
+                    pdb.set_trace()
                 else:
-                    # Weight does not need a convert
-                    result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
-                    result = result.view(new_shape)
+                    print("passed")
             # allreduce to combine partial results and add bias if necessary
             if self.mp_group is not None:
                 # deepspeed distibuted mode
