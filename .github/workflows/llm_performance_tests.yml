@@ -13,12 +13,12 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm_performance_tests.yml"
+      - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
@@ -28,7 +28,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -116,6 +116,20 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
           sed -i 's/test1/test2/g' run.py
+          python run.py
+
+      - name: Test on xpu(transformers==4.37.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          python -m pip install transformers==4.37.0
+          cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test2/test3/g' run.py
           python run.py
 
       - name: Concat csv and generate html
