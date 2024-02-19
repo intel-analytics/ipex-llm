@@ -439,9 +439,10 @@ def speculative_generate(self,
     if _enable_ipex:
         if not ((self.config.model_type == 'baichuan') or
                 ('llama' in self.config.model_type) or
-                ("mistral" in self.config.model_type)):
+                ("mistral" in self.config.model_type) or
+                ("chatglm" in self.config.model_type)):
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
-                                      Llama, Baichuan2 and Mistral models currently.")
+                                      Llama, Baichuan2, Mistral and ChatGLM models currently.")
         if "chatglm" in self.config.model_type:
             global query_group_size
             query_group_size = draft_model.config.num_attention_heads // \
