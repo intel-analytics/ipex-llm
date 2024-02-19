@@ -136,7 +136,7 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
         ipex_past_key_values = []
         cur_len = past_key_values[0][0].size(1)
         if self.config.model_type == "chatglm":
-            len0 = past_key_values[0][1].size(0) # seq max length
+            len0 = past_key_values[0][1].size(0)  # seq max length
             len1 = past_key_values[0][1].size(1)
             len2 = past_key_values[0][1].size(2)
             len3 = past_key_values[0][1].size(3)
@@ -145,10 +145,12 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
                 value = pkv[2]
                 key = key.permute(1, 2, 0, 3).unsqueeze(-3)
                 key = key.expand(-1, -1, query_group_size, -1, -1)
-                key = key.contiguous().view(len1, len2 * query_group_size, len0,  len3).permute(2, 0, 1, 3)
+                key = key.contiguous().view(len1, len2 * query_group_size,
+                                            len0,  len3).permute(2, 0, 1, 3)
                 value = value.permute(1, 2, 0, 3).unsqueeze(-3)
                 value = value.expand(-1, -1, query_group_size, -1, -1)
-                value = value.contiguous().view(len1, len2 * query_group_size, len0, len3).permute(2, 0, 1, 3)
+                value = value.contiguous().view(len1, len2 * query_group_size,
+                                                len0, len3).permute(2, 0, 1, 3)
                 list = []
                 list.append(key[:cur_len, :, :, :])
                 list.append(value[:cur_len, :, :, :])
@@ -231,7 +233,8 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
     return past_key_values_storage
 
 
-def _prepare_draft_past_key_values_cpu(self, past_key_values, past_key_values_storage, _enable_ipex):
+def _prepare_draft_past_key_values_cpu(self, past_key_values,
+                                       past_key_values_storage, _enable_ipex):
     tmp_past_key_values = []
     for i in range(len(past_key_values)):
         if self.config.model_type == "qwen":
@@ -286,14 +289,14 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
             if self.config.model_type == "chatglm":
                 size = original_draft_past_key_values[0][0].size(0)
                 size1 = past_key_values[0][0].size(1)
-                len0 = past_key_values[0][1].size(0) # seq max_length
+                len0 = past_key_values[0][1].size(0)  # seq max_length
                 len1 = past_key_values[0][1].size(1)
                 len2 = past_key_values[0][1].size(2)
                 len3 = past_key_values[0][1].size(3)
-                key0 =  torch.ones(size1-size, len1, len2, len3,
-                        dtype=torch.float32)
-                value0 =  torch.ones(size1-size, len1, len2, len3,
-                        dtype=torch.float32)
+                key0 = torch.ones(size1-size, len1, len2, len3,
+                                  dtype=torch.float32)
+                value0 = torch.ones(size1-size, len1, len2, len3,
+                                    dtype=torch.float32)
                 key0 = past_key_values[i][1][size:size1, :, :, :]
                 value0 = past_key_values[i][2][size:size1, :, :, :]
                 key = key0.permute(1, 2, 0, 3).unsqueeze(-3)
@@ -304,9 +307,9 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                 value = value.expand(-1, -1, query_group_size, -1, -1)
                 value = value.contiguous().view(len1, len2 * query_group_size, size1-size, len3)
                 value = value.permute(2, 0, 1, 3)
-                past_key_values_storage[i][0][ size:size1, :, :, :] = \
+                past_key_values_storage[i][0][size:size1, :, :, :] = \
                     key.to(torch.float32)
-                past_key_values_storage[i][1][ size:size1, :, :, :] = \
+                past_key_values_storage[i][1][size:size1, :, :, :] = \
                     value.to(torch.float32)
             else:
                 delta_past_key = \
@@ -442,7 +445,7 @@ def speculative_generate(self,
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
                                       Llama, Baichuan2-13b and Mistral models currently.")
         if "chatglm" in self.config.model_type:
-            global query_group_size 
+            global query_group_size
             query_group_size = draft_model.config.num_attention_heads // \
                 draft_model.config.multi_query_group_num
 
@@ -611,10 +614,10 @@ def speculative_generate(self,
                                                 device=drafted_input_ids.device).unsqueeze(0)
                     position_ids = position_ids.repeat(1, 1) + past_key_value_len
                     output = self.trace_graph(input_ids=drafted_input_ids,
-                            attention_mask=cur_attention_mask,
-                            position_ids=position_ids,
-                            #return_last_logit=torch.tensor(False),
-                            past_key_values=past_key_values,)  
+                                              attention_mask=cur_attention_mask,
+                                              position_ids=position_ids,
+                                              # return_last_logit=torch.tensor(False),
+                                              past_key_values=past_key_values,)
                 elif "mistral" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
                     seq_len = drafted_input_ids.shape[1]

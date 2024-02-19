@@ -201,6 +201,7 @@ def GLM_get_masks(self, input_ids, past_key_values, padding_mask=None):
     full_attention_mask.unsqueeze_(1)
     return full_attention_mask
 
+
 @staticmethod
 def _make_causal_mask(
     input_ids_shape: torch.Size,
