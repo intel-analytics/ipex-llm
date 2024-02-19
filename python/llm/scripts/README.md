@@ -14,7 +14,6 @@ python linux-env-check.py --xpu
 ```
 
 ## Windows
-Use `win-env-check.py` to print the environment-related information. 
 Use `python win-env-check.py` to print the environment-related information. 
 ```bash
 python win-env-check.py
