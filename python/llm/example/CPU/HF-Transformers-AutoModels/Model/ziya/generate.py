@@ -26,7 +26,7 @@ from transformers import AutoTokenizer
 ZIYA_PROMPT_FORMAT = "<human>: \n{prompt}\n<bot>: \n"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for InternLM model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Ziya model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="IDEA-CCNL/Ziya-Coding-34B-v1.0",
                         help='The huggingface repo id for the Ziya model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
@@ -40,6 +40,10 @@ if __name__ == '__main__':
 
     
     from bigdl.llm.transformers import AutoModelForCausalLM
+    # enabling `use_cache=True` allows the model to utilize the previous
+    # key/values attentions to speed up decoding;
+    # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+    # it is important to set use_cache=True for Ziya models
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True,
