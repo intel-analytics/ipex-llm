@@ -156,7 +156,7 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
         else:
             ipex_past_key_values = [
                 [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
-                pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
+                    pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
                 for pkv in past_key_values
             ]
     if not _enable_ipex:
