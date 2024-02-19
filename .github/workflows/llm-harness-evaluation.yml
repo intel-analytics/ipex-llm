@@ -272,6 +272,7 @@ jobs:
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip 
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
         
