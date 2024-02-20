@@ -166,7 +166,8 @@ jobs:
           fi
       
 
-      - name: Run harness
+      - name: Run harness nightly
+        if: ${{github.event_name == 'schedule'}}
         shell: bash
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
         env:
@@ -185,6 +186,28 @@ jobs:
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
             --batch_size 1 --no_cache --output_path results \
+      
+      - name: Run harness pr
+        if: ${{github.event_name == 'pull_request'}}
+        shell: bash
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
+        env:
+          USE_XETLA: OFF
+          # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+        run: |
+          export HF_HOME=${HARNESS_HF_HOME}
+          export HF_DATASETS=$HARNESS_HF_HOME/datasets
+          export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
+          source /opt/intel/oneapi/setvars.sh
+          
+          python run_llb.py \
+            --model bigdl-llm \
+            --pretrained ${MODEL_PATH} \
+            --precision ${{ matrix.precision }} \
+            --device ${{ matrix.device }} \
+            --tasks ${{ matrix.task }} \
+            --batch_size 1 --no_cache --output_path results \
+            --limit 3 \
 
       - uses: actions/upload-artifact@v3
         with:
