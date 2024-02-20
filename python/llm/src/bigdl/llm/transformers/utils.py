@@ -253,7 +253,7 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
             # if no imatrix is available, use fp8 for lm_head
             cur_imatrix = None
             if new_module_name == 'lm_head':
-                cur_qtype = ggml_tensor_qtype['fp8']
+                cur_qtype = ggml_tensor_qtype['sym_int8']
         return cur_qtype, cur_imatrix
     elif qtype == ggml_tensor_qtype["q2_k"]:
         new_module_name, layer, cur_module = module_name_process(full_module_name)
@@ -266,7 +266,7 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
             # if no imatrix is available, use fp8 for lm_head
             cur_imatrix = None
             if new_module_name == 'lm_head':
-                cur_qtype = ggml_tensor_qtype['fp8']
+                cur_qtype = ggml_tensor_qtype['sym_int8']
     else:
         return qtype, None
 
