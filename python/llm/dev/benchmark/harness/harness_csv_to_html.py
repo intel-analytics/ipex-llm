@@ -21,12 +21,14 @@ import sys
 import argparse
 import pandas as pd
 
-def highlight_vals(val, max=3.0, color1='red', color2='green'):
+def highlight_vals(val, max=3.0, color1='red', color2='green', color3='yellow'):
     if isinstance(val, float):
         if val > max:
             return 'background-color: %s' % color2
         elif val <= -max:
             return 'background-color: %s' % color1
+        elif val != 0.0:
+            return 'background-color: %s' % color3
     else:
         return ''
 
