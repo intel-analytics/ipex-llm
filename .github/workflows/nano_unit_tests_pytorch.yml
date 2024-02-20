@@ -5,6 +5,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -29,14 +32,14 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.8"]
         pytorch-version: [
-          "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
-          "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
-          "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
-          "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
-          "pytorch_20 neural-compressor==2.1 oneccl_bind_pt==2.0",
+          "pytorch_110 neural-compressor==1.13.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.10.0-cp38-cp38-linux_x86_64.whl",
+          "pytorch_111 neural-compressor==1.13.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.11.0-cp38-cp38-linux_x86_64.whl",
+          "pytorch_112 neural-compressor==1.13.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.12.100%2Bcpu-cp38-cp38-linux_x86_64.whl",
+          "pytorch_113 neural-compressor==2.0 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.13.0%2Bcpu-cp38-cp38-linux_x86_64.whl",
+          "pytorch_20 neural-compressor==2.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-2.0.0%2Bcpu-cp38-cp38-linux_x86_64.whl",
           ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -108,14 +111,14 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.8"]
         pytorch-version: [
-          "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
-          "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
-          "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
-          "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
-          "pytorch_20 neural-compressor==2.1 oneccl_bind_pt==2.0",
+          "pytorch_110 neural-compressor==1.13.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.10.0-cp38-cp38-linux_x86_64.whl",
+          "pytorch_111 neural-compressor==1.13.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.11.0-cp38-cp38-linux_x86_64.whl",
+          "pytorch_112 neural-compressor==1.13.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.12.100%2Bcpu-cp38-cp38-linux_x86_64.whl",
+          "pytorch_113 neural-compressor==2.0 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-1.13.0%2Bcpu-cp38-cp38-linux_x86_64.whl",
+          "pytorch_20 neural-compressor==2.1 https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/oneccl_bind_pt-2.0.0%2Bcpu-cp38-cp38-linux_x86_64.whl",
           ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Run PyTorch unit tests(Ray)
         shell: bash
@@ -240,7 +243,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -291,7 +294,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:

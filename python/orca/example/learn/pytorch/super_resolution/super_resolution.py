@@ -104,7 +104,7 @@ def download_bsd300(dest=opt.data_dir):
 
     if not exists(output_image_dir):
         makedirs(dest)
-        url = "http://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/BSDS300-images.tgz"
+        url = "https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/BSDS300-images.tgz"
         print("downloading url ", url)
 
         file_path = join(dest, basename(url))

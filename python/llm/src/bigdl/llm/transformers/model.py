@@ -59,6 +59,7 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "quantization_config")
         delattr(self.config, "_pre_quantization_dtype")
 
+    origin_device = self.device
     self.to('cpu')
 
     kwargs['safe_serialization'] = False
@@ -85,6 +86,8 @@ def save_low_bit(self, *args, **kwargs):
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
+    if origin_device != 'cpu':
+        self.to(origin_device)
 
 
 class _BaseAutoModelClass:
@@ -155,6 +158,7 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
         speculative = kwargs.pop("speculative", False)
+        torch_dtype = kwargs.pop("torch_dtype", None)
 
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
@@ -250,8 +254,19 @@ class _BaseAutoModelClass:
 
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
-            # set default torch_dtype='auto'
-            kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+            # set default torch_dtype='auto'.
+            # Note that when load_in_low_bit="fp16", set default torch_dtype=torch.float16
+            if load_in_low_bit == "fp16":
+                if torch_dtype is not None and torch_dtype != torch.float16:
+                    invalidInputError(
+                        False,
+                        f"Please use torch_dtype=torch.float16"
+                        f" when setting load_in_low_bit='fp16'."
+                    )
+                else:
+                    kwargs["torch_dtype"] = torch.float16
+            else:
+                kwargs["torch_dtype"] = torch_dtype or "auto"
             # Avoid tensor parallel F.Linear Operations
             if "pretraining_tp" in config_dict:
                 if "config" in kwargs:
@@ -259,10 +274,11 @@ class _BaseAutoModelClass:
                 else:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
+            imatrix_file = kwargs.pop("imatrix", None)
             if q_k in ["iq2_xxs", "iq2_xs"]:
-                imatrix_file = kwargs.pop("imatrix", None)
                 invalidInputError(imatrix_file is not None,
                                   "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+            if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
                 kwargs['imatrix_data'] = imatrix_data
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
@@ -547,6 +563,10 @@ class _BaseAutoModelClass:
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)
+
+        # rwkv model linear layers has been rescaled
+        if model.config.model_type == "rwkv":
+            model.layers_are_rescaled = True
 
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"

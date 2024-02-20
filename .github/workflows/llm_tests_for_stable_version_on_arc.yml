@@ -5,6 +5,9 @@ concurrency:
   group: ${{ github.workflow }}-llm-performance-tests-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # Controls when the action will run.
 on:
   # pull_request:
@@ -35,7 +38,7 @@ jobs:
       CSV_SAVE_PATH: '/mnt/disk1/stable_version_perf_gpu/'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -157,7 +160,7 @@ jobs:
       CSV_SAVE_PATH: '/mnt/disk1/stable_version_stress_test_gpu/'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
