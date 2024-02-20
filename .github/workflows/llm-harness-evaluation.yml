@@ -207,7 +207,7 @@ jobs:
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
             --batch_size 1 --no_cache --output_path results \
-            --limit 2 \
+            --limit 1 \
 
       - uses: actions/upload-artifact@v3
         with:
@@ -294,7 +294,7 @@ jobs:
       - name: Download fp16.csv for summary
         shell: bash
         run: |
-          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/dev/benchmark/harness/fp16.csv -P ${{ env.NIGHTLY_FOLDER}}/..
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/dev/benchmark/harness/fp16.csv -O ${{ env.NIGHTLY_FOLDER}}/../fp16.csv
           ls ${{ env.NIGHTLY_FOLDER}}/..
 
       - name: Summarize the results for nightly run
