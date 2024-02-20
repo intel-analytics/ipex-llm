@@ -1,0 +1,195 @@
+name: LLM C-Eval
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: "00 15 * * *" # GMT time, 15:00 GMT == 23:00 Beijing Time
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm-ceval.yml"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'Model names, separated by comma and must be quoted.'
+        required: true
+        type: string
+      precision:
+        description: 'Precisions, separated by comma and must be quoted.'
+        required: true
+        type: string
+      runs-on:
+        description: 'Labels to filter the runners, separated by comma and must be quoted.'
+        default: "accuracy"
+        required: false
+        type: string
+
+# A workflow run is made up of one or more jobs that can run sequentially
+jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+  # Set the testing matrix based on the event (schedule, PR, or manual dispatch)
+  set-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      model_name: ${{ steps.set-matrix.outputs.model_name }}
+      precision: ${{ steps.set-matrix.outputs.precision }}
+      runner: ${{ steps.set-matrix.outputs.runner }}
+    steps:
+      - name: set-nightly-env        
+        if: ${{github.event_name == 'schedule'}}
+        env:
+          NIGHTLY_MATRIX_MODEL_NAME: '["chatglm2-6b","chinese-llama2-7b", "Qwen-7B-Chat"]'
+          NIGHTLY_MATRIX_PRECISION: '["sym_int4", "fp8_e5m2"]'
+          NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
+        run: |
+            echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
+
+      - name: set-pr-env
+        if: ${{github.event_name == 'pull_request'}}
+        env:
+          PR_MATRIX_MODEL_NAME: '["Qwen-7B-Chat"]'
+          PR_MATRIX_PRECISION: '["sym_int4", "fp8_e5m2"]'
+          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
+        run: |
+            echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "runner=$PR_LABELS" >> $GITHUB_ENV
+      - name: set-manual-env
+        if: ${{github.event_name == 'workflow_dispatch'}}
+        env:
+          MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
+          MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
+          MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.runs-on)}}
+        run: |
+            echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
+      - name: set-matrix
+        id: set-matrix
+        run: |
+            echo "model_name=$model_name" >> $GITHUB_OUTPUT
+            echo "precision=$precision" >> $GITHUB_OUTPUT
+            echo "runner=$runner" >> $GITHUB_OUTPUT
+  llm-ceval-evaluation:
+    timeout-minutes: 1200
+    needs: [llm-cpp-build, set-matrix]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
+        precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
+        device: [xpu]
+          
+    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
+    env:
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      ORIGIN_DIR: /mnt/disk1/models
+      CEVAL_HF_HOME: /mnt/disk1/ceval_home
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu_2.1"
+      
+      - name: Download models and datasets
+        shell: bash
+        run: |
+          echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
+          MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
+          if [ ! -d $CEVAL_HF_HOME ]; then
+            mkdir -p $CEVAL_HF_HOME
+          fi
+          if [ ! -d "$CEVAL_HF_HOME/data" ]; then
+            mkdir -p "$CEVAL_HF_HOME/data"
+          fi
+          if [ -d "$CEVAL_HF_HOME/data/dev" ]; then
+              rm -rf "$CEVAL_HF_HOME/data/dev"
+          fi
+
+          if [ -d "$CEVAL_HF_HOME/data/test" ]; then
+              rm -rf "$CEVAL_HF_HOME/data/test"
+          fi
+
+          if [ -d "$CEVAL_HF_HOME/data/val" ]; then
+              rm -rf "$CEVAL_HF_HOME/data/val"
+          fi
+          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/ceval-exam.zip -P "$CEVAL_HF_HOME/data"
+          echo "DATA_PATH=$CEVAL_HF_HOME/data" >> "$GITHUB_ENV"
+          DATA_PATH=$CEVAL_HF_HOME/data
+          unzip -o "$CEVAL_HF_HOME/data/ceval-exam.zip" -d "$CEVAL_HF_HOME/data"
+          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
+          
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          pip install transformers==4.31.0
+          pip install thefuzz
+          pip install tiktoken
+          pip install transformers_stream_generator
+
+      - name: Run C-Eval
+        shell: bash
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/ceval
+        env:
+          USE_XETLA: OFF
+          SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          python eval.py \
+          --model_path ${MODEL_PATH} \
+          --eval_type validation \
+          --device xpu \
+          --eval_data_path ${DATA_PATH} \
+          --qtype ${{ matrix.precision }}
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ceval_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/ceval/results/**
+
+  llm-ceval-summary:
+    if: ${{ always() }}
+    needs: llm-ceval-evaluation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: ceval_results
+          path: results
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/ceval/organize_results.py results/
