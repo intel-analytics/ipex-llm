@@ -163,9 +163,9 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
         len0 = past_key_values[0][0].size(0)
         len1 = past_key_values[0][0].size(1)
         # gpt_bigcode has only 2-dimension kv
-        if len(past_key_values[i][0].shape) == 4:
-            len2 = past_key_values[i][0].size(2)
-            len3 = past_key_values[i][0].size(3)
+        if len(past_key_values[0][0].shape) == 4:
+            len2 = past_key_values[0][0].size(2)
+            len3 = past_key_values[0][0].size(3)
         for i in range(len(past_key_values)):
             if self.config.model_type == "qwen":
                 k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
