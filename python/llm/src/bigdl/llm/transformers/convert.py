@@ -518,6 +518,16 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                 f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
+    # using ipex optimizer before changing to bigdl linear
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"]):
+        logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
+    if _enable_ipex:
+        model = _optimize_ipex(model)
+        return model
+
     if optimize_model:
         model = _optimize_pre(model)
 
@@ -543,14 +553,6 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         # Do nothing here for weights are empty.
         pass
 
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
-    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
-    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"]):
-        logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
-    if _enable_ipex:
-        model = _optimize_ipex(model)
-        return model
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
     return model
@@ -590,13 +592,17 @@ def _optimize_ipex(model):
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
         _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
-        _ipex_optimize_rmsnorm, _llama_model_forward_4_35
+        _ipex_optimize_rmsnorm, _llama_model_forward_4_35, convert_function, GLM_get_masks
     )
 
     AttentionMaskConverter._make_causal_mask = _make_causal_mask
     convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel,
                     _llama_model_forward_4_35)
     model = model_convert_reference(model)
+    if model.config.architectures is not None \
+       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+        convert_function(model.transformer, "get_masks", GLM_get_masks)
+    model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_rmsnorm(model)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
@@ -895,9 +901,6 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.qwen2 import qwen2_model_forward
         from bigdl.llm.transformers.models.qwen2 import qwen2_attention_forward
-        # TODO: add these optimization back
-        # RMSNorm and rotray embedding are disabled for now
-        # as they lead to obvious performance drop for Qwen 1.5
         convert_forward(model,
                         module.Qwen2Model,
                         qwen2_model_forward)
@@ -905,9 +908,9 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.Qwen2Attention,
                         qwen2_attention_forward
                         )
-        # convert_forward(model,
-        #                 module.Qwen2RMSNorm,
-        #                 llama_rms_norm_forward)
+        convert_forward(model,
+                        module.Qwen2RMSNorm,
+                        llama_rms_norm_forward)
         convert_forward(model,
                         module.Qwen2MLP,
                         llama_mlp_forward)

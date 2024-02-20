@@ -4,7 +4,10 @@ name: Scala Style Check
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
-  
+
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ "main" ]
@@ -25,11 +28,9 @@ jobs:
   build:
 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-    permissions:
-      contents: read
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK 8
       uses: actions/setup-java@v3
       with:
@@ -79,7 +80,7 @@ jobs:
     if: github.event.pull_request == ''
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: create workflow badge
       if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
