@@ -21,6 +21,7 @@ import omegaconf
 import time
 import os
 import sys
+import gc
 
 from run import LLAMA_IDS, CHATGLM_IDS, LLAVA_IDS, get_model_path
 
@@ -59,6 +60,9 @@ def save_model_in_low_bit(repo_id,
 
     model.save_low_bit(model_path+'-'+low_bit)
     tokenizer.save_pretrained(model_path+'-'+low_bit)
+
+    del model
+    gc.collect()
 
 if __name__ == '__main__':
     from omegaconf import OmegaConf
