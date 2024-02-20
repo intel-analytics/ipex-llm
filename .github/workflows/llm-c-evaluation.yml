@@ -79,7 +79,7 @@ jobs:
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
-  llm-ceval-evalution:
+  llm-ceval-evaluation:
     timeout-minutes: 1200
     needs: [llm-cpp-build, set-matrix]
     strategy:
@@ -175,7 +175,7 @@ jobs:
 
   llm-ceval-summary:
     if: ${{ always() }}
-    needs: llm-ceval-evalution
+    needs: llm-ceval-evaluation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

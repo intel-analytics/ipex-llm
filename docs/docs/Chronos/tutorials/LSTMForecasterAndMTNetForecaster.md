@@ -43,7 +43,7 @@ mtnet_forecaster = MTNetForecaster(target_dim=1,
                         cnn_height=2)
 ```
 ### **Step 2: Use forecast model**
-Use ```forecaster.fit/evalute/predict``` in the same way as [tfpark.KerasModel](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/)
+Use ```forecaster.fit/evaluate/predict``` in the same way as [tfpark.KerasModel](https://analytics-zoo.github.io/master/#APIGuide/TFPark/model/)
 
 For univariant forecasting (i.e. to predict one series at a time), you can use either **LSTMForecaster** or **MTNetForecaster**. The input data shape for `fit/evaluation/predict` should match the arguments you used to create the forecaster. Specifically:
 
