@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 15 * * 5" # GMT time, 15:00 GMT == 23:00 Beijing Time
+    - cron: "00 15 * * *" # GMT time, 15:00 GMT == 23:00 Beijing Time
   pull_request:
     branches: [main]
     paths:
@@ -85,11 +85,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # include:
-        #   python-version: "3.9"
-        #   model_name: "stablelm-3b-4e1t"
-        #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
