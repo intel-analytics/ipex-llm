@@ -31,10 +31,6 @@ on:
         description: 'Precisions, separated by comma and must be quoted.'
         required: true
         type: string
-      language:
-        description: 'language, can be en, zh, or all and must be quoted.'
-        required: true
-        type: string
       runs-on:
         description: 'Labels to filter the runners, separated by comma and must be quoted.'
         default: "accuracy"
@@ -52,7 +48,6 @@ jobs:
       seq_len: ${{ steps.set-matrix.outputs.seq_len }}
       model_name: ${{ steps.set-matrix.outputs.model_name }}
       precision: ${{ steps.set-matrix.outputs.precision }}
-      language: ${{ steps.set-matrix.outputs.language }}
       runner: ${{ steps.set-matrix.outputs.runner }}
     steps:
       - name: set-nightly-env
@@ -60,44 +55,39 @@ jobs:
         env:
           NIGHTLY_MATRIX_SEQ_LEN: '["512"]'
           NIGHTLY_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "mpt-7b-chat", 
-                        "falcon-7b-instruct-with-patch", "Mistral-7B-v0.1"]'
-          NIGHTLY_MATRIX_LANGUAGE: '["en"]'
+                        "falcon-7b-instruct-with-patch", "Mistral-7B-v0.1",
+                        "chatglm2-6b", "chatglm3-6b", "Baichuan2-7B-Chat"]'
           NIGHTLY_MATRIX_PRECISION: '["sym_int4 fp8"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
         run: |
             echo "seq_len=$NIGHTLY_MATRIX_SEQ_LEN" >> $GITHUB_ENV
             echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "language=$NIGHTLY_MATRIX_LANGUAGE" >> $GITHUB_ENV
             echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
 
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_SEQ_LEN: '["512"]'
-          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf"]'
-          PR_MATRIX_LANGUAGE: '["en"]'
+          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "chatglm3-6b"]'
           PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "seq_len=$PR_MATRIX_SEQ_LEN" >> $GITHUB_ENV
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "language=$PR_MATRIX_LANGUAGE" >> $GITHUB_ENV
             echo "runner=$PR_LABELS" >> $GITHUB_ENV
       - name: set-manual-env
         if: ${{github.event_name == 'workflow_dispatch'}}
         env:
           MANUAL_MATRIX_SEQ_LEN: ${{format('[ {0} ]', inputs.seq_len)}}
           MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
-          MANUAL_MATRIX_LANGUAGE: ${{format('[ {0} ]', inputs.language)}}
           MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
           MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.runs-on)}}
         run: |
             echo "seq_len=$MANUAL_MATRIX_SEQ_LEN" >> $GITHUB_ENV
             echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "language=$MANUAL_MATRIX_LANGUAGE" >> $GITHUB_ENV
             echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
       - name: set-matrix
         id: set-matrix
@@ -105,7 +95,6 @@ jobs:
             echo "seq_len=$seq_len" >> $GITHUB_OUTPUT
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
-            echo "language=$language" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
   llm-ppl-evaluation:
     timeout-minutes: 1000
@@ -113,36 +102,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # include:
-        #   python-version: "3.9"
-        #   model_name: "stablelm-3b-4e1t"
-        #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
-        language: ${{ fromJson(needs.set-matrix.outputs.language) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         seq_len: ${{ fromJson(needs.set-matrix.outputs.seq_len) }}
         device: [xpu]
-        include:
-          - python-version: "3.9"
-            model_name: "chatglm2-6b"
-            language: "zh"
-            precision: "sym_int4 fp8"
-            seq_len: "512"
-            device: "xpu"
-          - python-version: "3.9"
-            model_name: "chatglm3-6b"
-            language: "zh"
-            precision: "sym_int4 fp8"
-            seq_len: "512"
-            device: "xpu"
-          - python-version: "3.9"
-            model_name: "Baichuan2-7B-Chat"
-            language: "zh"
-            precision: "sym_int4 fp8"
-            seq_len: "512"
-            device: "xpu"
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
@@ -195,10 +159,15 @@ jobs:
           SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
           source /opt/intel/oneapi/setvars.sh
+          if [[ "${{ matrix.model_name }}" == *"chatglm"* || "${{ matrix.model_name }}" == *"Baichuan"* ]]; then
+            LANGUAGE="zh"
+          else
+            LANGUAGE="en"
+          fi
           python run.py \
           --seq_len ${{ matrix.seq_len }} \
           --model_path ${MODEL_PATH} \
           --precisions ${{ matrix.precision }} \
           --device ${{ matrix.device }} \
           --dataset_path ${DATASET_DIR} \
-          --language ${{ matrix.language }}
+          --language ${LANGUAGE}
