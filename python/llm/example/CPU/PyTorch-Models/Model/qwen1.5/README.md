@@ -15,7 +15,7 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
-pip install transformers==4.37.2 # install transformers which supports Qwen2
+pip install transformers==4.37.0 # install transformers which supports Qwen2
 ```
 
 ### 2. Run
