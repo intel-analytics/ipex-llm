@@ -25,7 +25,7 @@ jobs:
   snyk-docker:
     runs-on: [self-hosted, SDL-TEST]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: set env
       run: |
         echo "IMAGE=${{inputs.snyk_image}}"

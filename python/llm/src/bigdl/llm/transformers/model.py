@@ -59,6 +59,7 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "quantization_config")
         delattr(self.config, "_pre_quantization_dtype")
 
+    origin_device = self.device
     self.to('cpu')
 
     kwargs['safe_serialization'] = False
@@ -85,6 +86,8 @@ def save_low_bit(self, *args, **kwargs):
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
+    if origin_device != 'cpu':
+        self.to(origin_device)
 
 
 class _BaseAutoModelClass:
@@ -560,6 +563,10 @@ class _BaseAutoModelClass:
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)
+
+        # rwkv model linear layers has been rescaled
+        if model.config.model_type == "rwkv":
+            model.layers_are_rescaled = True
 
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"

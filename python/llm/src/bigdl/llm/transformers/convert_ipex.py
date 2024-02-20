@@ -142,6 +142,8 @@ def _ipex_jit(model):
     sample_inputs = (
         get_dummy_input(model, return_dict=True)
     )
+    if "return_last_logit" in sample_inputs:
+        del sample_inputs["return_last_logit"]
     with torch.no_grad(), torch.cpu.amp.autocast(
         enabled=True
     ):
@@ -157,6 +159,47 @@ def _ipex_jit(model):
         )
 
     return model.eval()
+
+
+def convert_function(m, func_name, new_function):
+    bound_method = new_function.__get__(m, m.__class__)
+    setattr(m, func_name, bound_method)
+
+
+def GLM_get_masks(self, input_ids, past_key_values, padding_mask=None):
+    batch_size, seq_length = input_ids.shape
+    full_attention_mask = torch.ones(
+        batch_size, seq_length, seq_length, device=input_ids.device
+    )
+    full_attention_mask.tril_()
+    past_length = 0
+    if past_key_values:
+        if len(past_key_values[0]) != 4:  # not discrete kv cache
+            past_length = past_key_values[0][0].shape[0]
+        else:  # discrete kv cache
+            past_length = past_key_values[0][0].shape[-2]
+
+    import os
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    # always call for jit
+    if past_length or _enable_ipex:
+        full_attention_mask = torch.cat(
+            (
+                torch.ones(
+                    batch_size, seq_length, past_length, device=input_ids.device
+                ),
+                full_attention_mask,
+            ),
+            dim=-1,
+        )
+    if padding_mask is not None:
+        full_attention_mask = full_attention_mask * padding_mask.unsqueeze(1)
+    # if not past_length and padding_mask is not None:
+    #     full_attention_mask -= padding_mask.unsqueeze(-1) - 1
+    full_attention_mask = (full_attention_mask < 0.5).bool()
+    full_attention_mask.unsqueeze_(1)
+    return full_attention_mask
 
 
 @staticmethod
