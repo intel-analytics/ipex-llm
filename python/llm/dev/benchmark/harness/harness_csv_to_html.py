@@ -160,7 +160,7 @@ def main():
                     previous_winogrande=previous_csv_row[Winogrande]
                     if previous_arc > 0.0 and previous_truthfulqa > 0.0 and previous_winogrande > 0.0:
                         last_Arc[latest_csv_ind]=previous_arc
-                        diff_Arc[latest_csv_ind]=round((previous_arc-latest_arc)*100/previous_arc,2)
+                        diff_Arc[latest_csv_ind]=round((latest_arc-previous_arc)*100/previous_arc,2)
                         last_TruthfulQA[latest_csv_ind]=previous_truthfulqa
                         diff_TruthfulQA[latest_csv_ind]=round((previous_truthfulqa-latest_truthfulqa)*100/previous_truthfulqa,2)
                         last_Winogrande[latest_csv_ind]=previous_winogrande
