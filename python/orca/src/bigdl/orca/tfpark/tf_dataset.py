@@ -497,7 +497,7 @@ class TFDataset(object):
         """
         Create a TFDataset from tfrecord files.
         :param sc: The SparkContext
-        :param file_path: comma seperated tfrecord file(s) path
+        :param file_path: comma separated tfrecord file(s) path
         :param batch_size: the batch size, used for training, should be a multiple of
         total core num
         :param batch_per_thread: the batch size for each thread, used for inference or evaluation

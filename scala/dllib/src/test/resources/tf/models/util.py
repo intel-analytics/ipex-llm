@@ -35,7 +35,7 @@ def merge_checkpoint(input_graph,
         input_graph: the GraphDef file, not in the binary form
         input_checkpoint: the checkpoint file
         output_node_names: A string of name of the output names, 
-            use comma to seperate multi outputs
+            use comma to separate multi outputs
         output_graph: String of the location and the name of the
             output graph
     """
