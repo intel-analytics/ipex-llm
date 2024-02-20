@@ -81,7 +81,7 @@ def main():
     args = parser.parse_args()
 
     # fp16.csv is downloaded previously under the parent folder of the folder_path
-    parent_dir = os.path.dirname(os.path.dirname(args.folder_path))
+    parent_dir = os.path.dirname((args.folder_path))
     fp16_path = os.path.join(parent_dir, 'fp16.csv')
     fp16_dict = create_fp16_dict(fp16_path)
 
