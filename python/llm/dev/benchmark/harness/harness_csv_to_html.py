@@ -80,7 +80,8 @@ def main():
                         help="the baseline path which stores the baseline.csv file")
     args = parser.parse_args()
 
-    fp16_dict = create_fp16_dict('fp16.csv')
+    # The file path of the fp16.csv is specified to the absolute path on arc03
+    fp16_dict = create_fp16_dict('/home/arda/harness-action-runners/fp16.csv')
 
     csv_files = []
     for file_name in os.listdir(args.folder_path):
