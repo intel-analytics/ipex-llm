@@ -207,7 +207,7 @@ jobs:
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
             --batch_size 1 --no_cache --output_path results \
-            --limit 1 \
+            --limit 2 \
 
       - uses: actions/upload-artifact@v3
         with:
