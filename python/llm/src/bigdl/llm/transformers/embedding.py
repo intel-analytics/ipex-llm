@@ -20,6 +20,8 @@ from torch import Tensor
 from torch.nn import functional as F
 from torch.nn import Parameter
 from typing import Optional
+from bigdl.llm.transformers.low_bit_linear import FP4Params
+from bigdl.llm.utils.common import invalidInputError
 
 
 # To prevent insufficient available memory when moving embedding from XPU back to CPU,
@@ -72,3 +74,39 @@ class LLMEmbedding(torch.nn.Embedding):
 
     def forward(self, x: Tensor):
         return super().forward(x.to('cpu')).to(x.device)
+
+
+class LowBitEmbedding(torch.nn.Embedding):
+    def __init__(self,
+                 num_embeddings: int,
+                 embedding_dim: int,
+                 padding_idx: Optional[int] = None,
+                 max_norm: Optional[float] = None,
+                 norm_type: float = 2.,
+                 scale_grad_by_freq: bool = False,
+                 sparse: bool = False,
+                 _weight: Optional[Tensor] = None,
+                 _freeze: bool = False,
+                 device=None, dtype=None,
+                 qtype=None) -> None:
+        super().__init__(num_embeddings, embedding_dim, padding_idx,
+                         max_norm, norm_type, scale_grad_by_freq, sparse,
+                         _weight, device, dtype)
+        self.weight = FP4Params(self.weight.data,
+                                requires_grad=False,
+                                quantized=False, _shape=None, qtype=qtype)
+        self.embedding_dim = embedding_dim
+
+    def forward(self, x: Tensor):
+        invalidInputError(x.device.type == "xpu",
+                          "`LowBitEmbedding` only supports GPU now.")
+        try:
+            import intel_extension_for_pytorch
+            import linear_q4_0
+        except ModuleNotFoundError:
+            invalidInputError(False,
+                              "Please `pip install bigdl_core_xe` first.")
+
+        result = linear_q4_0.dequantize_rows(x.contiguous(), self.weight.data,
+                                             self.weight.qtype, self.embedding_dim)
+        return result
