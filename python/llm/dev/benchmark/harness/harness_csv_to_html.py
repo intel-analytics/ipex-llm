@@ -162,9 +162,9 @@ def main():
                         last_Arc[latest_csv_ind]=previous_arc
                         diff_Arc[latest_csv_ind]=round((latest_arc-previous_arc)*100/previous_arc,2)
                         last_TruthfulQA[latest_csv_ind]=previous_truthfulqa
-                        diff_TruthfulQA[latest_csv_ind]=round((previous_truthfulqa-latest_truthfulqa)*100/previous_truthfulqa,2)
+                        diff_TruthfulQA[latest_csv_ind]=round((latest_truthfulqa-previous_truthfulqa)*100/previous_truthfulqa,2)
                         last_Winogrande[latest_csv_ind]=previous_winogrande
-                        diff_Winogrande[latest_csv_ind]=round((previous_winogrande-latest_winogrande)*100/previous_winogrande,2)
+                        diff_Winogrande[latest_csv_ind]=round((latest_winogrande-previous_winogrande)*100/previous_winogrande,2)
                         in_previous_flag=True
 
             if not in_previous_flag:
