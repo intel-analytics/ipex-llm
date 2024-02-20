@@ -56,7 +56,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     /root/miniconda3/condabin/conda init bash && \
     /bin/bash -c "source /root/.bashrc" && \
     /root/miniconda3/condabin/conda create -n bigdl-speculative-py39 -y python=3.9
-# SHELL ["/root/miniconda3/condabin/conda", "run", "-n", "bigdl-speculative-py39", "/bin/bash", "-c"]
 RUN cp /root/miniconda3/condabin/conda /usr/bin && \
     conda init bash && \
     . ~/.bashrc && \
