@@ -21,6 +21,7 @@ from torch.nn import functional as F
 from torch.nn import Parameter
 from typing import Optional
 from bigdl.llm.transformers.low_bit_linear import FP4Params
+from bigdl.llm.utils.common import invalidInputError
 
 
 # To prevent insufficient available memory when moving embedding from XPU back to CPU,
@@ -97,6 +98,8 @@ class LowBitEmbedding(torch.nn.Embedding):
         self.embedding_dim = embedding_dim
 
     def forward(self, x: Tensor):
+        invalidInputError(x.device.type == "xpu",
+                          "`LowBitEmbedding` only supports GPU now.")
         try:
             import intel_extension_for_pytorch
             import linear_q4_0
