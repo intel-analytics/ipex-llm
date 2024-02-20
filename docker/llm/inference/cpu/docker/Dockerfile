@@ -56,8 +56,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     /root/miniconda3/condabin/conda init bash && \
     /bin/bash -c "source /root/.bashrc" && \
     /root/miniconda3/condabin/conda create -n bigdl-speculative-py39 -y python=3.9
-SHELL ["/root/miniconda3/condabin/conda", "run", "-n", "bigdl-speculative-py39", "/bin/bash", "-c"]
-RUN cd /llm && \
+RUN cp /root/miniconda3/condabin/conda /usr/bin && \
+    conda init bash && \
+    . ~/.bashrc && \
+    conda activate bigdl-speculative-py39 && \
+    cd /llm && \
     pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip install --pre --upgrade bigdl-llm[all] && \
     wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936d7a6740679987920367ae2e0cdb375b2e/scripts/compile_bundle.sh && \
@@ -66,8 +69,9 @@ RUN cd /llm && \
     cd ./intel-extension-for-pytorch && \
     pip install -r requirements.txt && \
     pip install transformers==4.36.2 && \
-    pip install transformers_stream_generator && \
+    pip install transformers_stream_generator
+RUN cd /llm && \
     rm -rf llvm-project llvm-release intel-extension-for-pytorch compile_bundle.sh && \
     echo "conda deactivate" >> /root/.bashrc
-
+    
 ENTRYPOINT ["/bin/bash"]
