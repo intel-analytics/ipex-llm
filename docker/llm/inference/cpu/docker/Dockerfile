@@ -68,8 +68,8 @@ RUN cp /root/miniconda3/condabin/conda /usr/bin && \
     cd ./intel-extension-for-pytorch && \
     pip install -r requirements.txt && \
     pip install transformers==4.36.2 && \
-    pip install transformers_stream_generator
-RUN cd /llm && \
+    pip install transformers_stream_generator && \
+    cd /llm && \
     rm -rf llvm-project llvm-release intel-extension-for-pytorch compile_bundle.sh && \
     echo "conda deactivate" >> /root/.bashrc
     
