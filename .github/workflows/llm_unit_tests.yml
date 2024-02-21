@@ -314,6 +314,10 @@ jobs:
             echo "Directory $QWEN_7B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Qwen-7B-Chat -P $ORIGIN_DIR
           fi
+          if [ ! -d $BAICHUAN_13B_ORIGIN_PATH ]; then
+            echo "Directory $BAICHUAN_13B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Baichuan-13B-Chat -P $ORIGIN_DIR
+          fi
           
       - name: Run LLM inference test
         shell: bash
