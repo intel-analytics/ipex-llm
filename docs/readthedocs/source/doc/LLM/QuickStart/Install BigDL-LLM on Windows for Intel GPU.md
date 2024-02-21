@@ -4,7 +4,7 @@
 
 ### Install GPU driver
 
-1. Step 1: Install Visual Studio 2022 Community Edition from [here]([Download Visual Studio Tools - Install Free for Windows, Mac, Linux (microsoft.com)](https://visualstudio.microsoft.com/downloads/)). 
+1. Step 1: Install Visual Studio 2022 Community Edition from [here](https://visualstudio.microsoft.com/downloads/). 
 
    <img src="./figs/fig1.png"  style="zoom:20%;" />
 
@@ -14,7 +14,7 @@
 >
 > The installation could be slow and cost 15 minutes. Need at least 7GB. 
 >
-> If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page]([Install C and C++ support in Visual Studio | Microsoft Learn](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)). 
+> If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
 
 2. Step 2: Install latest GPU driver from [here]([Intel® Arc™ & Iris® Xe Graphics - Windows*](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed.  After rebooting, we can check GPU status from GUI. 
 
@@ -24,7 +24,7 @@
 
 ### Install conda
 
-We recommend using miniconda to create environment. Please refer to the [page]([Miniconda — Anaconda documentation](https://docs.anaconda.com/free/miniconda/)) to install miniconda. 
+We recommend using miniconda to create environment. Please refer to the [page](https://docs.anaconda.com/free/miniconda/) to install miniconda. 
 
 * Choose windows miniconda installer. Download and install. It takes a few minutes. 
 
