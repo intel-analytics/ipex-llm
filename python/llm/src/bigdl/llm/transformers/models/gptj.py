@@ -24,6 +24,7 @@ from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, 
 from transformers.utils.import_utils import is_torch_fx_proxy
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.models.gptj.modeling_gptj import GPTJModel
+from bigdl.llm.utils.common import invalidInputError
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -103,13 +104,16 @@ def gptj_attention_forward(
     key = self._split_heads(key, self.num_attention_heads, self.head_dim, True)
     value = self._split_heads(value, self.num_attention_heads, self.head_dim, False)
 
-    sin, cos, use_fuse_rope = rotary_emb
+    sin, cos = rotary_emb
+    use_fuse_rope = hidden_states.device.type == "xpu" and not self.training
 
     if self.rotary_dim is not None:
         k_rot = key[:, :, :, : self.rotary_dim]
         q_rot = query[:, :, :, : self.rotary_dim]
-        
+
         if use_fuse_rope:
+            # ipex's apply_rotary_embedding_two_qk can change the origin storage,
+            # so q/k will get the result directly.
             torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
                 q_rot, k_rot, sin, cos, q_rot, k_rot
             )
@@ -120,7 +124,14 @@ def gptj_attention_forward(
             key = torch.cat([k_rot, k_pass], dim=-1)
             query = torch.cat([q_rot, q_pass], dim=-1)
     else:
-        query, key = apply_rotary_pos_emb(query, key, cos, sin, position_ids, "gptj")
+        if use_fuse_rope:
+            # ipex's apply_rotary_embedding_two_qk can change the origin storage,
+            # so q/k will get the result directly.
+            torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+                query, key, sin, cos, query, key
+            )
+        else:
+            query, key = apply_rotary_pos_emb(query, key, cos, sin, position_ids, "gptj")
 
     batch_size, q_len, _ = hidden_states.size()
 
@@ -222,11 +233,14 @@ def gptj_block_forward(
 
 def create_sinusoidal_positions(num_pos: int, dim: int) -> torch.Tensor:
     inv_freq = 1.0 / (10000 ** (torch.arange(0, dim, 2) / dim))
-    sinusoid_inp = torch.einsum("i , j -> i j", torch.arange(num_pos, dtype=torch.float), inv_freq).float()
+    sinusoid_inp = torch.einsum("i , j -> i j",
+                                torch.arange(num_pos, dtype=torch.float), inv_freq).float()
     return torch.cat((torch.sin(sinusoid_inp), torch.cos(sinusoid_inp)), dim=1)
 
 
 old_init = GPTJModel.__init__
+
+
 def gptj_model_new_init(self, config):
     old_init(self, config)
     embed_dim = config.hidden_size
@@ -258,15 +272,18 @@ def gptj_model_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+    output_attentions = output_attentions if output_attentions is not None \
+        else self.config.output_attentions
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None
+        else self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
     elif input_ids is not None:
         self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
         input_shape = input_ids.size()
@@ -276,7 +293,7 @@ def gptj_model_forward(
         input_shape = inputs_embeds.size()[:-1]
         batch_size = inputs_embeds.shape[0]
     else:
-        raise ValueError("You have to specify either input_ids or inputs_embeds")
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
 
     device = input_ids.device if input_ids is not None else inputs_embeds.device
 
@@ -290,13 +307,14 @@ def gptj_model_forward(
         past_length = past_key_values[0][0].size(-2)
 
     if position_ids is None:
-        position_ids = torch.arange(past_length, input_shape[-1] + past_length, dtype=torch.long, device=device)
+        position_ids = torch.arange(past_length, input_shape[-1] + past_length,
+                                    dtype=torch.long, device=device)
         position_ids = position_ids.unsqueeze(0)
 
     # Attention mask.
     if attention_mask is not None:
         if batch_size <= 0:
-            raise ValueError("batch_size has to be defined and > 0")
+            invalidInputError(False, "batch_size has to be defined and > 0")
         attention_mask = attention_mask.view(batch_size, -1)
         # We create a 3D attention mask from a 2D tensor mask.
         # Sizes are [batch_size, 1, 1, to_seq_length]
@@ -335,15 +353,14 @@ def gptj_model_forward(
     if self.gradient_checkpointing and self.training:
         if use_cache:
             logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                "Setting `use_cache=False`..."
             )
             use_cache = False
 
     presents = () if use_cache else None
     all_self_attentions = () if output_attentions else None
     all_hidden_states = () if output_hidden_states else None
-
-    use_fuse_rope = input_ids.device.type == "xpu" and not self.training
 
     # Repeat cos sin here, call only once for each token.
     # If put this to attension forward, it will generate too many times.
@@ -352,7 +369,8 @@ def gptj_model_forward(
         # every time in the torch.fx case
         embed_positions = get_embed_positions(self.embed_positions, position_ids)
     else:
-        embed_positions, self.embed_positions = get_new_embed_positions(position_ids, self.embed_positions)
+        embed_positions, self.embed_positions = get_new_embed_positions(position_ids,
+                                                                        self.embed_positions)
 
     repeated_position_ids = position_ids.unsqueeze(-1).repeat(1, 1, embed_positions.shape[-1])
     sincos = torch.gather(embed_positions, 1, repeated_position_ids)
@@ -394,7 +412,7 @@ def gptj_model_forward(
                 position_ids=position_ids,
                 head_mask=head_mask[i],
                 use_cache=use_cache,
-                rotary_emb=(sin, cos, use_fuse_rope),
+                rotary_emb=(sin, cos),
                 output_attentions=output_attentions,
             )
 
@@ -419,7 +437,8 @@ def gptj_model_forward(
         all_hidden_states = all_hidden_states + (hidden_states,)
 
     if not return_dict:
-        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions] if v is not None)
+        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions]
+                     if v is not None)
 
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
