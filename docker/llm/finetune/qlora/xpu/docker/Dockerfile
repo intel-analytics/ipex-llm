@@ -33,6 +33,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # install huggingface dependencies
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
     pip install peft==0.5.0 datasets && \
+    pip install bitsandbytes scipy && \
     wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py
 
 COPY ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh
