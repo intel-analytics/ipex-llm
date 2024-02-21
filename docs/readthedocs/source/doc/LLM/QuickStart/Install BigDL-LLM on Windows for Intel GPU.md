@@ -59,15 +59,8 @@ pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 # Alread
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
-2. Step 2: Configurations. 
 
-   To use GPU acceleration on Windows, several environment variables are required before running a GPU example. Make sure you are using CMD (**Anaconda** Prompt if using conda) as **PowerShell is not supported**. For oneAPI installed using the Offline installer, configure oneAPI environment variables with:
-
-   ```bash
-   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-   ```
-
-3. Step 3: Now we can test whether all the components have been installed correctly. If we can import all the packages correctly following the python file below, then the installation is correct. 
+2. Step 2: Now we can test whether all the components have been installed correctly. If we can import all the packages correctly following the python file below, then the installation is correct. 
    ```python
    import torch
    import time
