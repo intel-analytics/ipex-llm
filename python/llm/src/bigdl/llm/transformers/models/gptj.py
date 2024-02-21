@@ -103,22 +103,22 @@ def gptj_attention_forward(
     key = self._split_heads(key, self.num_attention_heads, self.head_dim, True)
     value = self._split_heads(value, self.num_attention_heads, self.head_dim, False)
 
-    # if is_torch_fx_proxy(position_ids) or torch.jit.is_tracing():
-    #     # The logic to conditionally copy to GPU could not be traced, so we do this
-    #     # every time in the torch.fx case
-    #     embed_positions = get_embed_positions(self.embed_positions, position_ids)
-    # else:
-    #     embed_positions = self._get_embed_positions(position_ids)
-
-    # repeated_position_ids = position_ids.unsqueeze(-1).repeat(1, 1, embed_positions.shape[-1])
-    # sincos = torch.gather(embed_positions, 1, repeated_position_ids)
-    # sin, cos = torch.split(sincos, sincos.shape[-1] // 2, dim=-1)
-    sin, cos = rotary_emb
+    sin, cos, use_fuse_rope = rotary_emb
 
     if self.rotary_dim is not None:
         k_rot = key[:, :, :, : self.rotary_dim]
         q_rot = query[:, :, :, : self.rotary_dim]
-        q_rot, k_rot = apply_rotary_pos_emb(q_rot, k_rot, cos, sin, position_ids, "gptj")
+        
+        if use_fuse_rope:
+            torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+                q_rot, k_rot, sin, cos, q_rot, k_rot
+            )
+        else:
+            k_pass = key[:, :, :, self.rotary_dim:]
+            q_pass = query[:, :, :, self.rotary_dim:]
+            q_rot, k_rot = apply_rotary_pos_emb(q_rot, k_rot, cos, sin, position_ids, "gptj")
+            key = torch.cat([k_rot, k_pass], dim=-1)
+            query = torch.cat([q_rot, q_pass], dim=-1)
     else:
         query, key = apply_rotary_pos_emb(query, key, cos, sin, position_ids, "gptj")
 
@@ -343,6 +343,10 @@ def gptj_model_forward(
     all_self_attentions = () if output_attentions else None
     all_hidden_states = () if output_hidden_states else None
 
+    use_fuse_rope = input_ids.device.type == "xpu" and not self.training
+
+    # Repeat cos sin here, call only once for each token.
+    # If put this to attension forward, it will generate too many times.
     if is_torch_fx_proxy(position_ids) or torch.jit.is_tracing():
         # The logic to conditionally copy to GPU could not be traced, so we do this
         # every time in the torch.fx case
@@ -390,7 +394,7 @@ def gptj_model_forward(
                 position_ids=position_ids,
                 head_mask=head_mask[i],
                 use_cache=use_cache,
-                rotary_emb=(sin, cos),
+                rotary_emb=(sin, cos, use_fuse_rope),
                 output_attentions=output_attentions,
             )
 

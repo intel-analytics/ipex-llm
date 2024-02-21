@@ -153,10 +153,9 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
     elif model_family == "gptj":
-        torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
-            q, k, sin, cos, q, k
-        )
-        return q, k
+        q_embed = (q * cos) + (rotate_every_two(q) * sin)
+        k_embed = (k * cos) + (rotate_every_two(k) * sin)
+        return q_embed, k_embed
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
