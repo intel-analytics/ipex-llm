@@ -1,6 +1,6 @@
 # Example of QLoRA Finetuning with BigDL-LLM
 
-This simple example demonstrates how to finetune a llama2-7b model use BigDL-LLM 4bit optimizations using [Intel GPUs](../../../README.md).
+This simple example demonstrates how to finetune a llama2-7b model use BigDL-LLM 4bit optimizations with TRL library on [Intel GPU](../../../README.md).
 Note, this example is just used for illustrating related usage and don't guarantee convergence of training.
 
 ## 0. Requirements
