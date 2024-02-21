@@ -60,7 +60,6 @@ import functools
 from bigdl.llm.transformers import training_patch
 
 LOG = logging.getLogger("bigdl.llm.qlora")
-is_trl_patched = False
 
 
 class LoraLowBitLinear(LowBitLinear, LoraLayer):
@@ -249,10 +248,7 @@ def get_peft_model(*args, **kwargs):
                                                                   old_create_new_module))
 
     try:
-        if is_trl_patched:
-            from peft import get_peft_model_original
-        else:
-            from peft import get_peft_model as get_peft_model_original
+        from peft import get_peft_model as get_peft_model_original
         model = get_peft_model_original(*args, **kwargs)
     finally:
         LoraModel._create_new_module = old_create_new_module
@@ -368,36 +364,3 @@ def _optimize_post(model):
             model,
             transformers.models.llama.modeling_llama.LlamaAttention,
             llama_attention_fast_forward,)
-
-
-def patch_trl():
-    '''
-    patch_trl is used to make `trl.SFTTrainer` compatible with bigdl-llm optimized PreTrainedModel
-    by one-line patching.
-    '''
-    global is_trl_patched
-    if is_trl_patched:
-        return
-
-    import importlib
-    if importlib.util.find_spec("peft") is not None:
-        import peft
-        get_peft_model_original = getattr(peft, "get_peft_model")
-        setattr(peft, "get_peft_model", get_peft_model)
-        setattr(peft, "get_peft_model_original", get_peft_model_original)
-        is_trl_patched = True
-
-
-def unpatch_trl():
-    '''
-    unpatch_trl is an reverse function to patch_trl. It will change back to trl.
-    '''
-    global is_trl_patched
-    if not is_trl_patched:
-        return
-
-    import importlib
-    if importlib.util.find_spec("peft") is not None:
-        import peft
-        setattr(peft, "get_peft_model", peft.get_peft_model_original)
-        is_trl_patched = False

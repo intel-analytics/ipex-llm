@@ -21,13 +21,11 @@ import transformers
 from transformers import LlamaTokenizer
 from peft import LoraConfig
 from transformers import BitsAndBytesConfig
-from bigdl.llm.transformers.qlora import patch_trl, unpatch_trl, prepare_model_for_kbit_training
+from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
-import argparse
-# Necessary to obtain a bigdl-llm compatible SFTTrainer, make sure call it before import SFTTrainer
-patch_trl()
 from trl import SFTTrainer
+import argparse
 
 if __name__ == "__main__":
 
@@ -63,7 +61,6 @@ if __name__ == "__main__":
     # Enable gradient_checkpointing if your memory is not enough,
     # it will slowdown the training speed
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
-
     config = LoraConfig(
         r=8, 
         lora_alpha=32, 
@@ -72,6 +69,7 @@ if __name__ == "__main__":
         bias="none", 
         task_type="CAUSAL_LM",
     )
+    model = get_peft_model(model, config)
 
     trainer = SFTTrainer(
         model=model,
@@ -90,10 +88,7 @@ if __name__ == "__main__":
             gradient_checkpointing=True, # can further reduce memory but slower
         ),
         dataset_text_field="quote",
-        peft_config=config # PeftModel is initialized internally by passing peft config
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
     result = trainer.train()
     print(result)
-
-    unpatch_trl() # unpatch related changes
