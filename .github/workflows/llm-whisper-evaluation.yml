@@ -54,11 +54,10 @@ jobs:
       runner: ${{ steps.set-matrix.outputs.runner }}
 
     steps:
-      - name: set-nightly-env
-        if: ${{github.event_name == 'schedule'}}
+      - name: set-env
         env:
           NIGHTLY_MATRIX_MODEL_NAME: '["whisper-medium"]'
-          NIGHTLY_MATRIX_TASK: '["librispeech]'
+          NIGHTLY_MATRIX_TASK: '["librispeech"]'
           NIGHTLY_MATRIX_PRECISION: '["sym_int4"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "perf"]'
         run: |
@@ -66,33 +65,6 @@ jobs:
             echo "task=$NIGHTLY_MATRIX_TASK" >> $GITHUB_ENV
             echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
             echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
-
-      - name: set-pr-env
-        if: ${{github.event_name == 'pull_request'}}
-        env:
-          PR_MATRIX_MODEL_NAME: '["whisper-medium"]'
-          PR_MATRIX_TASK: '["librispeech"]'
-          PR_MATRIX_PRECISION: '["sym_int4"]'
-          PR_LABELS: '["self-hosted", "llm", "perf"]'
-
-        run: |
-            echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
-            echo "task=$PR_MATRIX_TASK" >> $GITHUB_ENV
-            echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "runner=$PR_LABELS" >> $GITHUB_ENV
-
-      - name: set-manual-env
-        if: ${{github.event_name == 'workflow_dispatch'}}
-        env:
-          MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
-          MANUAL_MATRIX_TASK: ${{format('[ {0} ]', inputs.task)}}
-          MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
-          MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.runs-on)}}
-        run: |
-            echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
-            echo "task=$MANUAL_MATRIX_TASK" >> $GITHUB_ENV
-            echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
 
       - name: set-matrix
         id: set-matrix
@@ -118,7 +90,7 @@ jobs:
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
-      CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/whisper_nightly_gpu/' || 'whisper_pr_gpu/' }}
+      CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/whisper_nightly_gpu/' || '/mnt/disk1/whisper_pr_gpu/' }}
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
