@@ -53,7 +53,7 @@ When you successfully install oneAPI from pip, you will see similar thing from t
 1. Step 1: Run the commands below in Anaconda prompt. 
 
 ```bash
-conda create -n llm python=3.9 libuv # Already Done in "Install conda" section
+conda create -n llm python=3.9 libuv # Already done in "Install conda" section
 conda activate llm
 pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 # Already done in "Install oneAPI" section
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
@@ -86,7 +86,7 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
    
    if __name__ == '__main__':
        parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for phi-1_5 model')
-       parser.add_argument('--repo-id-or-model-path', type=str, default="C://Users/zhicunlv/OneDrive - Intel Corporation/Desktop/issues/demo/models/phi-1_5",
+       parser.add_argument('--repo-id-or-model-path', type=str, default="microsoft/phi-1_5",
                            help='The huggingface repo id for the phi-1_5 model to be downloaded'
                                 ', or the path to the huggingface checkpoint folder')
        parser.add_argument('--prompt', type=str, default="What is AI?",
