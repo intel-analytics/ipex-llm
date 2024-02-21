@@ -548,11 +548,11 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     # using ipex optimizer before changing to bigdl linear
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
-    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
-    if (device == "cpu") and (qtype == ggml_tensor_qtype["bf16"]):
+    # _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    if device == "cpu":
         logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
     if _enable_ipex:
-        model = _optimize_ipex(model)
+        model = _optimize_ipex(model, qtype)
         return model
 
     if optimize_model:
@@ -613,7 +613,7 @@ def replace_func(m, target_m, func_name, new_func):
         replace_func(sub_m, target_m, func_name, new_func)
 
 
-def _optimize_ipex(model):
+def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
     import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
@@ -646,8 +646,7 @@ def _optimize_ipex(model):
         # baichuan2
         rms_classes.append(type(model.model.layers[0].input_layernorm))
 
-    model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
-    _ipex_optimize_model(model, rms_classes)
+    _ipex_optimize_model(model, rms_classes, qtype)
     return _ipex_jit(model)
 
 

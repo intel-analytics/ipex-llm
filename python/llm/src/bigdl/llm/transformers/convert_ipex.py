@@ -43,7 +43,7 @@ from intel_extension_for_pytorch.transformers.optimize import (
 )
 
 
-def _ipex_optimize_rmsnorm(_model, supported_classes):
+def _ipex_optimize_rmsnorm(_model, supported_classes, is_tpp=False, is_woq=False):
     from intel_extension_for_pytorch.transformers.models.cpu.fusions.mha_fusion import _IPEXRMSNorm
     for supported_class in supported_classes:
         lowering_class_cpu(
@@ -51,12 +51,12 @@ def _ipex_optimize_rmsnorm(_model, supported_classes):
             supported_class,
             _IPEXRMSNorm,
             _model.config,
-            tpp=False,
-            woq=False,
+            tpp=is_tpp,
+            woq=is_woq,
         )
 
 
-def _ipex_optimize_decoder(model):
+def _ipex_optimize_decoder(model, is_tpp=False, is_woq=False):
     from intel_extension_for_pytorch.transformers.models.reference.modules.decoder import (
         _IPEXDecoderLayerRef
     )
@@ -69,12 +69,12 @@ def _ipex_optimize_decoder(model):
             supported_mlp_class,
             _IPEXDecoderLayerCPU,
             model.config,
-            tpp=False,
-            woq=False,
+            tpp=is_tpp,
+            woq=is_woq,
         )
 
 
-def _ipex_optimize_attention(model):
+def _ipex_optimize_attention(model, is_tpp=False, is_woq=False):
     from intel_extension_for_pytorch.transformers.models.reference.modules.attentions import (
         _IPEXAttentionRef
     )
@@ -87,18 +87,47 @@ def _ipex_optimize_attention(model):
             supported_mha_class,
             _IPEXAttentionCPU,
             model.config,
-            tpp=False,
-            woq=False,
+            tpp=is_tpp,
+            woq=is_woq,
         )
 
 
-def _ipex_optimize_model(model, rms_classes):
+def _ipex_optimize_model(model, rms_classes, qtype):
     from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
 
-    _ipex_optimize_rmsnorm(model, rms_classes)
-    _ipex_optimize_attention(model)
-    _ipex_optimize_decoder(model)
-    model.register_forward_hook(output_hook, with_kwargs=True)
+    is_woq = False
+    is_quantization = False
+    _disable_tpp()
+    if qtype == ggml_tensor_qtype["bf16"]:
+        _enable_tpp()
+        model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
+    elif qtype == ggml_tensor_qtype["sym_int4"]:
+        is_quantization = True
+        is_woq = True
+        act_quant_mode_dict = {
+            "PER_TENSOR": ipex.quantization.WoqActQuantMode.PER_TENSOR,
+            "PER_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_IC_BLOCK,
+            "PER_BATCH": ipex.quantization.WoqActQuantMode.PER_BATCH,
+            "PER_BATCH_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_BATCH_IC_BLOCK,
+        }
+        qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+            weight_dtype=torch.quint4x2,  # INT4
+            lowp_mode=ipex.quantization.WoqLowpMode.INT8,
+            act_quant_mode=act_quant_mode_dict["PER_IC_BLOCK"],
+            group_size=-1,
+        )
+        model = ipex_quantization_flow(model, torch.bfloat16, None, qconfig, None)
+    
+    is_tpp = _using_tpp()
+
+    if not is_quantization:
+        _ipex_optimize_rmsnorm(model, rms_classes, tpp=is_tpp, woq=is_woq)
+    
+    _ipex_optimize_attention(model, tpp=is_tpp, woq=is_woq)
+    _ipex_optimize_decoder(model, tpp=is_tpp, woq=is_woq)
+
+    if not is_quantization:
+        model.register_forward_hook(output_hook, with_kwargs=True)
 
 
 def _ipex_jit(model):
