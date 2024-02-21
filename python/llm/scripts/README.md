@@ -1,9 +1,9 @@
-## README
+# README
 Script will first check Python installation, then site-packages (transformers, torch and bigdl-llm), and hardware or operating system and finally check xpu-related issue. 
-### Linux
-#### How to use
+## Linux
+### How to use
 Run `bash env-check.sh` on linux. 
-#### Sample output
+### Sample output
 Here is the output of the scipt on arc12 with GPU installed properly.
 Note that when only CPU is aviailable, we can ignore xpu related checks. 
 ```
@@ -58,7 +58,7 @@ ipex=2.1.10+xpu
 -----------------------------------------------------------------
 ```
 
-#### FAQs
+### FAQs
 1. How to create environment with proper python version and dependencies?
 We suggest using conda to manage environment:
 When CPU-only, 
@@ -76,5 +76,6 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
 If you get messages "Python Version must be higher than 3.9.x" or "No Python found!", we recommend install the virtual environment again with the above commands.
 
 2. How to install xpu-smi?
+TODO
 
 3. Site-package version. Here we list transformers, torch, BigDL. 
