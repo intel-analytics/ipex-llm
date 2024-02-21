@@ -561,14 +561,14 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
-    # 2bit needs model_type to choose custom quantization strategy
+    # mixed quantization needs model_type to choose custom quantization strategy
     model_type = getattr(model.config, "model_type", None)
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
         embedding_qtype=embedding_qtype,
-        model_type = model_type
+        model_type=model_type
     )
     if not has_been_replaced:
         warnings.warn(

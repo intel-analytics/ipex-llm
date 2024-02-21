@@ -198,7 +198,7 @@ def load_imatrix_data(imatrix_file):
         cur_len = int.from_bytes(cur_len, 'little')
         cur_name = str(imatrix.read(cur_len), encoding='utf-8')
         # cur_name looks like blk.14.attn_output.weight for llama / mistral,
-        # cur_name looks like blk.0.ffn_down.3.weight for mixtral and 
+        # cur_name looks like blk.0.ffn_down.3.weight for mixtral and
         # blk.17.ffn_gate_inp.weight for mixtral
         name_list = cur_name.split('.')
         layer = name_list[1]
@@ -234,7 +234,7 @@ def load_imatrix_data(imatrix_file):
 
 def module_name_process(full_module_name):
     # full name maybe model.layers.31.self_attn.o_proj for llama/mistral
-    # full name maybe model.layers.0.block_sparse_moe.gate or 
+    # full name maybe model.layers.0.block_sparse_moe.gate or
     # model.layers.0.block_sparse_moe.experts.0.w1 for mixtral
     module_name_list = full_module_name.split('.')
     if len(module_name_list) >= 5:
