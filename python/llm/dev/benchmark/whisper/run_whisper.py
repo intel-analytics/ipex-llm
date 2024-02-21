@@ -21,6 +21,12 @@ import torch
 from evaluate import load
 import time
 import argparse
+import pandas as pd
+import os
+import csv
+from datetime import date
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
  
 def get_args():
     parser = argparse.ArgumentParser(description="Evaluate Whisper performance and accuracy")
@@ -67,6 +73,21 @@ if __name__ == '__main__':
     wer = load("./wer")
     speech_length = sum(result["length"][1:])
     prc_time = sum(result["time"][1:])
-    print("Realtime Factor(RTF) is : %.4f" % (prc_time/speech_length))
-    print("Realtime X(RTX) is : %.2f" % (speech_length/prc_time))
-    print(f'WER is {100 * wer.compute(references=result["reference"], predictions=result["prediction"])}')
+
+    MODEL = args.model_path.split('/')[-2]
+    RTF = prc_time/speech_length
+    RTX = speech_length/prc_time
+    WER = 100 * wer.compute(references=result["reference"], predictions=result["prediction"])
+
+    today = date.today()
+    csv_name = f'{current_dir}/whisper-results-{today}.csv'
+    with open(csv_name, mode='a', newline='') as file:
+        csv_writer = csv.writer(file)
+        file.seek(0, os.SEEK_END)
+        if file.tell() == 0:
+            csv_writer.writerow(["models","RTF","RTX","WER"])
+        csv_writer.writerow([MODEL, RTF, RTX, WER])
+
+    print("Realtime Factor(RTF) is : %.4f" % RTF)
+    print("Realtime X(RTX) is : %.2f" % RTX)
+    print(f'WER is {WER}')
