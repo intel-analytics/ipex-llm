@@ -95,6 +95,7 @@ def _load_pre():
 class _BaseAutoModelClass:
     HF_MODEL = None
 
+
     @classmethod
     def from_pretrained(cls,
                         *args,

@@ -109,7 +109,7 @@ def gptj_attention_forward(
 ) -> Union[
     Tuple[torch.Tensor, Tuple[torch.Tensor]],
     Optional[Tuple[torch.Tensor, Tuple[torch.Tensor], Tuple[torch.Tensor, ...]]],
-    ]:
+]:
     query = self.q_proj(hidden_states)
     key = self.k_proj(hidden_states)
     value = self.v_proj(hidden_states)
@@ -134,7 +134,7 @@ def gptj_attention_forward(
                 )
             else:
                 torch.ops.torch_ipex.apply_rotary_embedding(q_rot, sin, cos, q_rot)
-                torch.ops.torch_ipex.apply_rotary_embedding(k_rot, sin, cos, k_rot)  
+                torch.ops.torch_ipex.apply_rotary_embedding(k_rot, sin, cos, k_rot)
         else:
             k_pass = key[:, :, :, self.rotary_dim:]
             q_pass = query[:, :, :, self.rotary_dim:]
@@ -146,7 +146,6 @@ def gptj_attention_forward(
             # ipex's apply_rotary_embedding_two_qk can change the origin storage,
             # so q/k will get the result directly.
             if "2.1" in get_ipex_version():
-                print(f"2.1")
                 torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
                     query, key, sin, cos, query, key
                 )
