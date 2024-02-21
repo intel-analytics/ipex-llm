@@ -21,12 +21,14 @@ import sys
 import argparse
 import pandas as pd
 
-def highlight_vals(val, max=3.0, color1='red', color2='green'):
+def highlight_vals(val, max=3.0, color1='red', color2='green', color3='yellow'):
     if isinstance(val, float):
         if val > max:
             return 'background-color: %s' % color2
         elif val <= -max:
             return 'background-color: %s' % color1
+        elif val != 0.0:
+            return 'background-color: %s' % color3
     else:
         return ''
 
@@ -80,7 +82,10 @@ def main():
                         help="the baseline path which stores the baseline.csv file")
     args = parser.parse_args()
 
-    fp16_dict = create_fp16_dict('fp16.csv')
+    # fp16.csv is downloaded previously under the parent folder of the folder_path
+    parent_dir = os.path.dirname((args.folder_path))
+    fp16_path = os.path.join(parent_dir, 'fp16.csv')
+    fp16_dict = create_fp16_dict(fp16_path)
 
     csv_files = []
     for file_name in os.listdir(args.folder_path):
@@ -157,11 +162,11 @@ def main():
                     previous_winogrande=previous_csv_row[Winogrande]
                     if previous_arc > 0.0 and previous_truthfulqa > 0.0 and previous_winogrande > 0.0:
                         last_Arc[latest_csv_ind]=previous_arc
-                        diff_Arc[latest_csv_ind]=round((previous_arc-latest_arc)*100/previous_arc,2)
+                        diff_Arc[latest_csv_ind]=round((latest_arc-previous_arc)*100/previous_arc,2)
                         last_TruthfulQA[latest_csv_ind]=previous_truthfulqa
-                        diff_TruthfulQA[latest_csv_ind]=round((previous_truthfulqa-latest_truthfulqa)*100/previous_truthfulqa,2)
+                        diff_TruthfulQA[latest_csv_ind]=round((latest_truthfulqa-previous_truthfulqa)*100/previous_truthfulqa,2)
                         last_Winogrande[latest_csv_ind]=previous_winogrande
-                        diff_Winogrande[latest_csv_ind]=round((previous_winogrande-latest_winogrande)*100/previous_winogrande,2)
+                        diff_Winogrande[latest_csv_ind]=round((latest_winogrande-previous_winogrande)*100/previous_winogrande,2)
                         in_previous_flag=True
 
             if not in_previous_flag:
@@ -172,12 +177,12 @@ def main():
                 last_Winogrande[latest_csv_ind]=pd.NA
                 diff_Winogrande[latest_csv_ind]=pd.NA
 
-        latest_csv.insert(loc=5,column='last_Arc',value=last_Arc)
-        latest_csv.insert(loc=6,column='diff_Arc(%)',value=diff_Arc)
-        latest_csv.insert(loc=7,column='last_TruthfulQA',value=last_TruthfulQA)
-        latest_csv.insert(loc=8,column='diff_TruthfulQA(%)',value=diff_TruthfulQA)
-        latest_csv.insert(loc=9,column='last_Winogrande',value=last_Winogrande)
-        latest_csv.insert(loc=10,column='diff_Winogrande(%)',value=diff_Winogrande)
+        latest_csv.insert(loc=6,column='last_Arc',value=last_Arc)
+        latest_csv.insert(loc=7,column='diff_Arc(%)',value=diff_Arc)
+        latest_csv.insert(loc=8,column='last_TruthfulQA',value=last_TruthfulQA)
+        latest_csv.insert(loc=9,column='diff_TruthfulQA(%)',value=diff_TruthfulQA)
+        latest_csv.insert(loc=10,column='last_Winogrande',value=last_Winogrande)
+        latest_csv.insert(loc=11,column='diff_Winogrande(%)',value=diff_Winogrande)
 
 
         diffs_within_normal_range = is_diffs_within_normal_range(diff_Arc, diff_TruthfulQA, diff_Winogrande, threshold=highlight_threshold)
