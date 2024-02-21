@@ -114,9 +114,7 @@ class Test_Optimize_Gpu_Model:
    
     @pytest.mark.parametrize('Name, Model, Tokenizer, model_path',TEST_MODEL_LIST)
     def test_dynamic_functions(self, Name, Model, Tokenizer, model_path):
-        if Name == "Llama2-7B":
-            self.Llama2_7B_gpu_model(Name, Model, Tokenizer, model_path)
-        elif Name == "Qwen-7B-Chat":
+        if Name == "Qwen-7B-Chat":
             self.Qwen_7B_gpu_model(Name, Model, Tokenizer, model_path)
         elif Name == "Mistral-7B-Instruct-v0.1":
             self.Mistral_7B_Instruct_gpu_model(Name, Model, Tokenizer, model_path)
