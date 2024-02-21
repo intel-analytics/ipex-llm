@@ -139,6 +139,18 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
            print('-'*20, 'Output', '-'*20)
            print(output_str)
    ```
+   Here is the sample output on the laptop. 
+   ```
+   Inference time: 3.526491641998291 s
+   -------------------- Prompt --------------------
+   Question:What is AI?
+
+   Answer:
+   -------------------- Output --------------------
+   Question:What is AI?
+
+   Answer: AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.
+   ```
 
    
 
