@@ -645,12 +645,6 @@ def _optimize_ipex(model):
     elif model.config.model_type == 'baichuan' and model.config.vocab_size == 125696:
         # baichuan2
         rms_classes.append(type(model.model.layers[0].input_layernorm))
-        # if model.config.hidden_size == 4096:
-        #     # baichuan2-7B
-        #     pass
-        # elif model.config.hidden_size == 5120:
-        #     # baichuan2-13B
-        #     pass
 
     model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_model(model, rms_classes)
