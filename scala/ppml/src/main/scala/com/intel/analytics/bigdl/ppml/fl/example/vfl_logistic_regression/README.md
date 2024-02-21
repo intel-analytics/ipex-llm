@@ -17,7 +17,7 @@ Run the script ```split_data.py``` to split features of the dataset, and create 
 python3 split_dataset.py 
 ```
 Then, you will be prompted to type the original data file name, if you press 'ENTER', the script will use the defualt value "pima-indians-diabetes.csv", you can also type names of other data files to be splitted.
-By default, the script will put column index 0,1,2,3,8 of "pima-indians-diabetes.csv" in data file 1, and the rest of them in file 2, if you want to split on customed column indexes, you need to specify it in the command line, seperate them with spaces, for example:
+By default, the script will put column index 0,1,2,3,8 of "pima-indians-diabetes.csv" in data file 1, and the rest of them in file 2, if you want to split on customed column indexes, you need to specify it in the command line, separate them with spaces, for example:
 ```bash
 python3 split_dataset.py 0 2 4 6
 ```

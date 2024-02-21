@@ -59,6 +59,7 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "quantization_config")
         delattr(self.config, "_pre_quantization_dtype")
 
+    origin_device = self.device
     self.to('cpu')
 
     kwargs['safe_serialization'] = False
@@ -85,6 +86,8 @@ def save_low_bit(self, *args, **kwargs):
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
+    if origin_device != 'cpu':
+        self.to(origin_device)
 
 
 class _BaseAutoModelClass:
@@ -126,6 +129,8 @@ class _BaseAutoModelClass:
             added to llama.cpp.
         :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
             specify the model hub. Default to be ``'huggingface'``.
+        :param embedding_qtype: str value, options are ``'q2_k'`` now. Default to be None.
+            Relevant low bit optimizations will be applied to nn.Embedding layer.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -156,6 +161,7 @@ class _BaseAutoModelClass:
         user_quantization_config = kwargs.pop("quantization_config", None)
         speculative = kwargs.pop("speculative", False)
         torch_dtype = kwargs.pop("torch_dtype", None)
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
 
         if user_quantization_config is not None and \
                 "BitsAndBytesConfig" in str(user_quantization_config.__class__):
@@ -275,9 +281,15 @@ class _BaseAutoModelClass:
             if q_k in ["iq2_xxs", "iq2_xs"]:
                 invalidInputError(imatrix_file is not None,
                                   "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+            cpu_embedding = kwargs.get("cpu_embedding", False)
+            # for 2bit, default use embedding_quantization
+            if q_k in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding and \
+                    embedding_qtype is None:
+                embedding_qtype = "q2_k"
             if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
-                kwargs['imatrix_data'] = imatrix_data
+                kwargs["imatrix_data"] = imatrix_data
+            kwargs["embedding_qtype"] = embedding_qtype
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
@@ -336,6 +348,9 @@ class _BaseAutoModelClass:
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
         imatrix_data = kwargs.pop("imatrix_data", None)
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
+        if embedding_qtype is not None:
+            embedding_qtype = ggml_tensor_qtype[embedding_qtype]
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -397,7 +412,8 @@ class _BaseAutoModelClass:
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
-                                     imatrix_data=imatrix_data)
+                                     imatrix_data=imatrix_data,
+                                     embedding_qtype=embedding_qtype)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # enable tie_word_embeddings for MPT
@@ -466,6 +482,7 @@ class _BaseAutoModelClass:
         offload_folder = kwargs.pop("offload_folder", None)
         offload_state_dict = kwargs.pop("offload_state_dict", False)
         torch_dtype = kwargs.pop("torch_dtype", "auto")
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
         sharded_metadata = None
 
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
@@ -485,6 +502,10 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        if bigdl_transformers_low_bit in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding:
+            embedding_qtype = "q2_k"
+        if embedding_qtype is not None:
+            embedding_qtype = ggml_tensor_qtype[embedding_qtype]
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
@@ -561,11 +582,16 @@ class _BaseAutoModelClass:
         else:
             model = model_class(config, *model_args, **kwargs)
 
+        # rwkv model linear layers has been rescaled
+        if model.config.model_type == "rwkv":
+            model.layers_are_rescaled = True
+
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
+                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
+                                     embedding_qtype=embedding_qtype)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

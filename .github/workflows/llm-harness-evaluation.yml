@@ -1,4 +1,4 @@
-name: LLM Harness Evalution
+name: LLM Harness Evaluation
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
@@ -20,19 +20,19 @@ on:
   workflow_dispatch:
     inputs:
       model_name:
-        description: 'Model names, seperated by comma and must be quoted.'
+        description: 'Model names, separated by comma and must be quoted.'
         required: true
         type: string
       precision:
-        description: 'Precisions, seperated by comma and must be quoted.'
+        description: 'Precisions, separated by comma and must be quoted.'
         required: true
         type: string
       task:
-        description: 'Tasks, seperated by comma and must be quoted.'
+        description: 'Tasks, separated by comma and must be quoted.'
         required: true
         type: string
       runs-on:
-        description: 'Labels to filter the runners, seperated by comma and must be quoted.'
+        description: 'Labels to filter the runners, separated by comma and must be quoted.'
         default: "accuracy"
         required: false
         type: string
@@ -97,7 +97,7 @@ jobs:
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "task=$task" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
-  llm-harness-evalution:
+  llm-harness-evaluation:
     timeout-minutes: 1000
     needs: [llm-cpp-build, set-matrix]
     strategy:
@@ -166,7 +166,8 @@ jobs:
           fi
       
 
-      - name: Run harness
+      - name: Run harness nightly
+        if: ${{github.event_name == 'schedule'}}
         shell: bash
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
         env:
@@ -185,6 +186,28 @@ jobs:
             --device ${{ matrix.device }} \
             --tasks ${{ matrix.task }} \
             --batch_size 1 --no_cache --output_path results \
+      
+      - name: Run harness pr
+        if: ${{github.event_name == 'pull_request'}}
+        shell: bash
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
+        env:
+          USE_XETLA: OFF
+          # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
+        run: |
+          export HF_HOME=${HARNESS_HF_HOME}
+          export HF_DATASETS=$HARNESS_HF_HOME/datasets
+          export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
+          source /opt/intel/oneapi/setvars.sh
+          
+          python run_llb.py \
+            --model bigdl-llm \
+            --pretrained ${MODEL_PATH} \
+            --precision ${{ matrix.precision }} \
+            --device ${{ matrix.device }} \
+            --tasks ${{ matrix.task }} \
+            --batch_size 1 --no_cache --output_path results \
+            --limit 3 \
 
       - uses: actions/upload-artifact@v3
         with:
@@ -201,7 +224,7 @@ jobs:
 
   llm-harness-summary:
     if: ${{ always() }}
-    needs: llm-harness-evalution
+    needs: llm-harness-evaluation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -226,9 +249,9 @@ jobs:
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py results
 
   # TODO: change machine to store the results later        
-  llm-harness-summary-nightly:
+  llm-harness-summary-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [set-matrix, llm-harness-evalution]
+    needs: [set-matrix, llm-harness-evaluation]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -267,18 +290,27 @@ jobs:
           name: harness_results
           path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
 
+      # Save fp16.csv in the parent folder of env.nightly_folder
+      - name: Download fp16.csv for summary
+        shell: bash
+        run: |
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/dev/benchmark/harness/fp16.csv -O ${{ env.NIGHTLY_FOLDER}}/../fp16.csv
+          ls ${{ env.NIGHTLY_FOLDER}}/..
+
       - name: Summarize the results for nightly run
         if: github.event_name == 'schedule'
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
-        
+
       - name: Summarize the results for pull request
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
           python ${{ github.workspace }}/python/llm/dev/benchmark/harness/harness_csv_to_html.py -f ${{ env.PR_FOLDER}}

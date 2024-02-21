@@ -118,6 +118,20 @@ jobs:
           sed -i 's/test1/test2/g' run.py
           python run.py
 
+      - name: Test on xpu(transformers==4.37.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          python -m pip install transformers==4.37.0
+          cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test2/test3/g' run.py
+          python run.py
+
       - name: Concat csv and generate html
         shell: bash
         run: |

@@ -21,12 +21,14 @@ import sys
 import argparse
 import pandas as pd
 
-def highlight_vals(val, max=3.0, color1='red', color2='green'):
+def highlight_vals(val, max=3.0, color1='red', color2='green', color3='yellow'):
     if isinstance(val, float):
         if val > max:
             return 'background-color: %s' % color2
         elif val <= -max:
             return 'background-color: %s' % color1
+        elif val != 0.0:
+            return 'background-color: %s' % color3
     else:
         return ''
 
@@ -34,8 +36,8 @@ def nonzero_min(lst):
     non_zero_lst = [num for num in lst if num > 0.0]
     return min(non_zero_lst) if non_zero_lst else None
 
-def is_diffs_within_normal_range(diff1, diff2, diff3, threshold=5.0):
-    return not any(diff < (-threshold) for diff in diff1 + diff2 + diff3 if isinstance(diff, float))
+def is_diffs_within_normal_range(diff_Arc, diff_TruthfulQA, diff_Winogrande, threshold=5.0):
+    return not any(diff < (-threshold) for diff in diff_Arc + diff_TruthfulQA + diff_Winogrande if isinstance(diff, float))
 
 def add_to_dict(dict, key, value):
     if key not in dict:
@@ -50,6 +52,26 @@ def best_in_dict(dict, key, value):
         return value
     return value
 
+def create_fp16_dict(fp16_path):
+    fp16_df = pd.read_csv(fp16_path)
+    fp16_dict = {}
+    for _, row in fp16_df.iterrows():
+        model = row['Model']
+        # Formalize the data to have 2 decimal places
+        fp16_dict[model] = {
+            'Arc': "{:.2f}".format(row['Arc']),
+            'TruthfulQA': "{:.2f}".format(row['TruthfulQA']),
+            'Winogrande': "{:.2f}".format(row['Winogrande'])
+        }
+    return fp16_dict
+
+def calculate_percentage_difference(current, fp16):
+    if fp16 != 'N/A' and current != 'N/A' and float(fp16) != 0:
+        return (float(current) - float(fp16)) / float(fp16) * 100
+    else:
+        return 'N/A'
+
+
 def main():
     parser = argparse.ArgumentParser(description="convert .csv file to .html file")
     parser.add_argument("-f", "--folder_path", type=str, dest="folder_path",
@@ -59,6 +81,11 @@ def main():
     parser.add_argument("-b", "--baseline_path", type=str, dest="baseline_path",
                         help="the baseline path which stores the baseline.csv file")
     args = parser.parse_args()
+
+    # fp16.csv is downloaded previously under the parent folder of the folder_path
+    parent_dir = os.path.dirname((args.folder_path))
+    fp16_path = os.path.join(parent_dir, 'fp16.csv')
+    fp16_dict = create_fp16_dict(fp16_path)
 
     csv_files = []
     for file_name in os.listdir(args.folder_path):
@@ -72,7 +99,15 @@ def main():
     latest_csv = pd.read_csv(csv_files[0], index_col=0)
     daily_html=csv_files[0].split(".")[0]+".html"
 
+    # Reset index
+    latest_csv.reset_index(inplace=True)
+
     diffs_within_normal_range = True
+
+    # Add display of FP16 values for each model and add percentage difference column
+    for task in ['Arc', 'TruthfulQA', 'Winogrande']:
+        latest_csv[f'{task}_FP16'] = latest_csv['Model'].apply(lambda model: fp16_dict.get(model, {}).get(task, 'N/A'))
+        latest_csv[f'{task}_diff_FP16(%)'] = latest_csv.apply(lambda row: calculate_percentage_difference(row[task], row[f'{task}_FP16']), axis=1)
 
     if len(csv_files)>1:
         if args.baseline_path:
@@ -80,19 +115,13 @@ def main():
         else:
             previous_csv = pd.read_csv(csv_files[1], index_col=0)
 
-        last1=['']*len(latest_csv.index)
-        diff1=['']*len(latest_csv.index)
-        last2=['']*len(latest_csv.index)
-        diff2=['']*len(latest_csv.index)
-        last3=['']*len(latest_csv.index)
-        diff3=['']*len(latest_csv.index)
+        last_Arc=['']*len(latest_csv.index)
+        diff_Arc=['']*len(latest_csv.index)
+        last_TruthfulQA=['']*len(latest_csv.index)
+        diff_TruthfulQA=['']*len(latest_csv.index)
+        last_Winogrande=['']*len(latest_csv.index)
+        diff_Winogrande=['']*len(latest_csv.index)
 
-        best_last1=['']*len(latest_csv.index)
-        best_diff1=['']*len(latest_csv.index)
-        best_last2=['']*len(latest_csv.index)
-        best_diff2=['']*len(latest_csv.index)
-        best_last3=['']*len(latest_csv.index)
-        best_diff3=['']*len(latest_csv.index)
 
         Arc='Arc'
         TruthfulQA='TruthfulQA'
@@ -119,21 +148,6 @@ def main():
             latest_truthfulqa=latest_csv_row[TruthfulQA]
             latest_winogrande=latest_csv_row[Winogrande]
 
-            key1=latest_csv_model+'-'+latest_csv_precision+'-'+'Arc'
-            key2=latest_csv_model+'-'+latest_csv_precision+'-'+'TruthfulQA'
-            key3=latest_csv_model+'-'+latest_csv_precision+'-'+'Winogrande'
-
-            best_last1_value=best_in_dict(csv_dict, key1, latest_arc)
-            best_last2_value=best_in_dict(csv_dict, key2, latest_truthfulqa)
-            best_last3_value=best_in_dict(csv_dict, key3, latest_winogrande)
-
-            best_last1[latest_csv_ind]=best_last1_value
-            best_diff1[latest_csv_ind]=round((best_last1_value-latest_arc)*100/best_last1_value,2)
-            best_last2[latest_csv_ind]=best_last2_value
-            best_diff2[latest_csv_ind]=round((best_last2_value-latest_truthfulqa)*100/best_last2_value,2)
-            best_last3[latest_csv_ind]=best_last3_value
-            best_diff3[latest_csv_ind]=round((best_last3_value-latest_winogrande)*100/best_last3_value,2)
-
             in_previous_flag=False
 
             for previous_csv_ind,previous_csv_row in previous_csv.iterrows():
@@ -147,48 +161,50 @@ def main():
                     previous_truthfulqa=previous_csv_row[TruthfulQA]
                     previous_winogrande=previous_csv_row[Winogrande]
                     if previous_arc > 0.0 and previous_truthfulqa > 0.0 and previous_winogrande > 0.0:
-                        last1[latest_csv_ind]=previous_arc
-                        diff1[latest_csv_ind]=round((previous_arc-latest_arc)*100/previous_arc,2)
-                        last2[latest_csv_ind]=previous_truthfulqa
-                        diff2[latest_csv_ind]=round((previous_truthfulqa-latest_truthfulqa)*100/previous_truthfulqa,2)
-                        last3[latest_csv_ind]=previous_winogrande
-                        diff3[latest_csv_ind]=round((previous_winogrande-latest_winogrande)*100/previous_winogrande,2)
+                        last_Arc[latest_csv_ind]=previous_arc
+                        diff_Arc[latest_csv_ind]=round((latest_arc-previous_arc)*100/previous_arc,2)
+                        last_TruthfulQA[latest_csv_ind]=previous_truthfulqa
+                        diff_TruthfulQA[latest_csv_ind]=round((latest_truthfulqa-previous_truthfulqa)*100/previous_truthfulqa,2)
+                        last_Winogrande[latest_csv_ind]=previous_winogrande
+                        diff_Winogrande[latest_csv_ind]=round((latest_winogrande-previous_winogrande)*100/previous_winogrande,2)
                         in_previous_flag=True
 
             if not in_previous_flag:
-                last1[latest_csv_ind]=pd.NA
-                diff1[latest_csv_ind]=pd.NA
-                last2[latest_csv_ind]=pd.NA
-                diff2[latest_csv_ind]=pd.NA
-                last3[latest_csv_ind]=pd.NA
-                diff3[latest_csv_ind]=pd.NA
+                last_Arc[latest_csv_ind]=pd.NA
+                diff_Arc[latest_csv_ind]=pd.NA
+                last_TruthfulQA[latest_csv_ind]=pd.NA
+                diff_TruthfulQA[latest_csv_ind]=pd.NA
+                last_Winogrande[latest_csv_ind]=pd.NA
+                diff_Winogrande[latest_csv_ind]=pd.NA
 
-        latest_csv.insert(loc=5,column='last1',value=last1)
-        latest_csv.insert(loc=6,column='diff1(%)',value=diff1)
-        latest_csv.insert(loc=7,column='last2',value=last2)
-        latest_csv.insert(loc=8,column='diff2(%)',value=diff2)
-        latest_csv.insert(loc=9,column='last3',value=last3)
-        latest_csv.insert(loc=10,column='diff3(%)',value=diff3)
+        latest_csv.insert(loc=6,column='last_Arc',value=last_Arc)
+        latest_csv.insert(loc=7,column='diff_Arc(%)',value=diff_Arc)
+        latest_csv.insert(loc=8,column='last_TruthfulQA',value=last_TruthfulQA)
+        latest_csv.insert(loc=9,column='diff_TruthfulQA(%)',value=diff_TruthfulQA)
+        latest_csv.insert(loc=10,column='last_Winogrande',value=last_Winogrande)
+        latest_csv.insert(loc=11,column='diff_Winogrande(%)',value=diff_Winogrande)
 
-        latest_csv.insert(loc=11,column='best 1',value=best_last1)
-        latest_csv.insert(loc=12,column='best diff1(%)',value=best_diff1)
-        latest_csv.insert(loc=13,column='best 2',value=best_last2)
-        latest_csv.insert(loc=14,column='best diff2(%)',value=best_diff2)
-        latest_csv.insert(loc=15,column='best 3',value=best_last3)
-        latest_csv.insert(loc=16,column='best diff3(%)',value=best_diff3)
 
-        diffs_within_normal_range = is_diffs_within_normal_range(diff1, diff2, diff3, threshold=highlight_threshold)
+        diffs_within_normal_range = is_diffs_within_normal_range(diff_Arc, diff_TruthfulQA, diff_Winogrande, threshold=highlight_threshold)
 
-        subset1=['diff1(%)','diff2(%)','diff3(%)' ]
-        subset2=['best diff1(%)','best diff2(%)','best diff3(%)']
+        subset1=['diff_Arc(%)','diff_TruthfulQA(%)','diff_Winogrande(%)' ]
         
-        columns={'Arc': '{:.2f}', 'TruthfulQA': '{:.2f}', 'Winogrande': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
-                'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'last3': '{:.2f}', 'diff3(%)': '{:.2f}',
-                'best 1': '{:.2f}', 'best diff1(%)': '{:.2f}', 'best 2': '{:.2f}', 'best diff2(%)': '{:.2f}', 'best 3': '{:.2f}', 'best diff3(%)': '{:.2f}'}
+        columns={'Arc': '{:.2f}', 'TruthfulQA': '{:.2f}', 'Winogrande': '{:.2f}', 'last_Arc': '{:.2f}', 'diff_Arc(%)': '{:.2f}',
+                'last_TruthfulQA': '{:.2f}', 'diff_TruthfulQA(%)': '{:.2f}', 'last_Winogrande': '{:.2f}', 'diff_Winogrande(%)': '{:.2f}'}
+
+        latest_csv.drop('Index', axis=1, inplace=True)
 
         styled_df = latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=3.0, color1='red', color2='green'), subset=subset1)
-        styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=3.0, color1='yellow'), subset=subset2)
-        html_output = styled_df.set_table_attributes("border=1").render()
+        for task in ['Arc', 'TruthfulQA', 'Winogrande']:
+            styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=highlight_threshold, color1='red', color2='green'), subset=[f'{task}_diff_FP16(%)'])
+        
+        # add css style to restrict width and wrap text
+        styled_df.set_table_styles([{
+            'selector': 'th, td',
+            'props': [('max-width', '88px'), ('word-wrap', 'break-word')]
+        }], overwrite=False)
+        
+        html_output = styled_df.set_table_attributes("border=1").to_html()
 
         with open(daily_html, 'w') as f:
             f.write(html_output)
