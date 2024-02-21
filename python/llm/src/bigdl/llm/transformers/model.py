@@ -92,9 +92,9 @@ def _load_pre():
     from bigdl.llm.transformers.models.gptj import gptj_model_new_init
     GPTJModel.__init__ = gptj_model_new_init
 
+
 class _BaseAutoModelClass:
     HF_MODEL = None
-
 
     @classmethod
     def from_pretrained(cls,

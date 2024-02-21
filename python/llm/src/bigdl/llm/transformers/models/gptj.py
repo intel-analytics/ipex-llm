@@ -27,18 +27,18 @@ from transformers.models.gptj.modeling_gptj import GPTJModel
 from bigdl.llm.utils.common import invalidInputError
 
 
-_ipex_version = None
+_ipex_at_least_21 = None
 
 
-def get_ipex_version():
+def at_least_ipex_21():
+    global _ipex_at_least_21
+    if _ipex_at_least_21 is not None:
+        return _ipex_at_least_21
+    
+    from bigdl.llm.transformers.utils import get_ipex_version
 
-    global _ipex_version
-    if _ipex_version is not None:
-        return _ipex_version
-
-    import intel_extension_for_pytorch as ipex
-    _ipex_version = ipex.__version__
-    return _ipex_version
+    _ipex_at_least_21 = get_ipex_version() >= "2.1.10+xpu"
+    return _ipex_at_least_21
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -128,7 +128,7 @@ def gptj_attention_forward(
         if use_fuse_rope:
             # ipex's apply_rotary_embedding_two_qk can change the origin storage,
             # so q/k will get the result directly.
-            if "2.1" in get_ipex_version():
+            if at_least_ipex_21():
                 torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
                     q_rot, k_rot, sin, cos, q_rot, k_rot
                 )
@@ -145,7 +145,7 @@ def gptj_attention_forward(
         if use_fuse_rope:
             # ipex's apply_rotary_embedding_two_qk can change the origin storage,
             # so q/k will get the result directly.
-            if "2.1" in get_ipex_version():
+            if at_least_ipex_21():
                 torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
                     query, key, sin, cos, query, key
                 )
