@@ -98,27 +98,13 @@ First token latency xx.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.3.0+git0c63936](https://github.com/intel/intel-extension-for-pytorch/tree/0c63936d7a6740679987920367ae2e0cdb375b2e) by following steps: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
+To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.2.0+cpu](https://github.com/intel/intel-extension-for-pytorch/tree/v2.2.0%2Bcpu) refering to [IPEX's installation guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=cpu&version=v2.2.0%2Bcpu), or by the following commands: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
 
-#### 4.1 Download IPEX installation script
 ```bash
-# Depend on Conda and GCC 12.3
-wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936d7a6740679987920367ae2e0cdb375b2e/scripts/compile_bundle.sh
-```
-
-#### 4.2 Activate your conda environment
-```bash
-conda activate <your_conda_env>
-```
-#### 4.3 Set VER_IPEX in compile_bundle.sh to 0c63936d7a6740679987920367ae2e0cdb375b2e
-```bash
-sed -i 's/VER_IPEX=main/VER_IPEX=0c63936d7a6740679987920367ae2e0cdb375b2e/g' "compile_bundle.sh"
-```
-
-#### 4.4 Install IPEX and other dependencies
-```bash
-# Install IPEX 2.3.0+git0c63936
-bash compile_bundle.sh 
+# Install IPEX 2.2.0+cpu
+python -m pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install intel-extension-for-pytorch==2.2.0
+python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
 
 # Update transformers
 pip install transformers==4.36.2
