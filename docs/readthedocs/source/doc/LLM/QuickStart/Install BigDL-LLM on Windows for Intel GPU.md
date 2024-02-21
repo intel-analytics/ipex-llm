@@ -16,7 +16,7 @@
 >
 > If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
 
-2. Step 2: Install latest GPU driver from [here]([Intel® Arc™ & Iris® Xe Graphics - Windows*](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed.  After rebooting, we can check GPU status from GUI. 
+2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed.  After rebooting, we can check GPU status from GUI. 
 
 <img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:20%;" />
 
@@ -103,6 +103,7 @@ pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-w
        # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
        model = AutoModelForCausalLM.from_pretrained(model_path,
                                                     load_in_4bit=True,
+                                                    cpu_embedding=True,
                                                     trust_remote_code=True)
    
        model = model.to('xpu')
