@@ -11,7 +11,7 @@ permissions:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 11 * * *" # GMT time, 11:00 GMT == 19:00 China
+    - cron: "00 12 * * *" # GMT time, 12:00 GMT == 20:00 China
   pull_request:
     branches: [main]
     paths:
