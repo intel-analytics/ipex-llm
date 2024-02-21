@@ -13,7 +13,7 @@ conda create -n llm python=3.9
 conda activate llm
 pip install --pre --upgrade bigdl-llm[all]
 pip install intel_extension_for_pytorch==2.1.0
-pip install transformers==4.35.2
+pip install transformers==4.31.0
 ```
 ### 2. Configures high-performing processor environment variables
 ```bash
@@ -95,7 +95,3 @@ Tokens generated 128
 E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
 ```
-
-### 4. Accelerate with BIGDL_OPT_IPEX
-
-BIGDL_OPT_IPEX can help to accelerate speculative decoding on Starcoder, and please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/Speculative-Decoding/baichuan2/README.md#4-accelerate-with-bigdl_opt_ipex) for a try.
