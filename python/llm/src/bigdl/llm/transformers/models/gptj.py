@@ -27,6 +27,20 @@ from transformers.models.gptj.modeling_gptj import GPTJModel
 from bigdl.llm.utils.common import invalidInputError
 
 
+_ipex_version = None
+
+
+def get_ipex_version():
+
+    global _ipex_version
+    if _ipex_version is not None:
+        return _ipex_version
+
+    import intel_extension_for_pytorch as ipex
+    _ipex_version = ipex.__version__
+    return _ipex_version
+
+
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
@@ -95,7 +109,7 @@ def gptj_attention_forward(
 ) -> Union[
     Tuple[torch.Tensor, Tuple[torch.Tensor]],
     Optional[Tuple[torch.Tensor, Tuple[torch.Tensor], Tuple[torch.Tensor, ...]]],
-]:
+    ]:
     query = self.q_proj(hidden_states)
     key = self.k_proj(hidden_states)
     value = self.v_proj(hidden_states)
@@ -114,9 +128,13 @@ def gptj_attention_forward(
         if use_fuse_rope:
             # ipex's apply_rotary_embedding_two_qk can change the origin storage,
             # so q/k will get the result directly.
-            torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
-                q_rot, k_rot, sin, cos, q_rot, k_rot
-            )
+            if "2.1" in get_ipex_version():
+                torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+                    q_rot, k_rot, sin, cos, q_rot, k_rot
+                )
+            else:
+                torch.ops.torch_ipex.apply_rotary_embedding(q_rot, sin, cos, q_rot)
+                torch.ops.torch_ipex.apply_rotary_embedding(k_rot, sin, cos, k_rot)  
         else:
             k_pass = key[:, :, :, self.rotary_dim:]
             q_pass = query[:, :, :, self.rotary_dim:]
@@ -127,9 +145,14 @@ def gptj_attention_forward(
         if use_fuse_rope:
             # ipex's apply_rotary_embedding_two_qk can change the origin storage,
             # so q/k will get the result directly.
-            torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
-                query, key, sin, cos, query, key
-            )
+            if "2.1" in get_ipex_version():
+                print(f"2.1")
+                torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+                    query, key, sin, cos, query, key
+                )
+            else:
+                torch.ops.torch_ipex.apply_rotary_embedding(query, sin, cos, query)
+                torch.ops.torch_ipex.apply_rotary_embedding(key, sin, cos, key)
         else:
             query, key = apply_rotary_pos_emb(query, key, cos, sin, position_ids, "gptj")
 

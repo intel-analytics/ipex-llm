@@ -728,7 +728,8 @@ def _optimize_post(model, lightweight_bmm=False):
         # dolly-v1-6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.gptj import gptj_attention_forward, gptj_model_forward, gptj_block_forward
+        from bigdl.llm.transformers.models.gptj import gptj_attention_forward, gptj_model_forward,\
+            gptj_block_forward
         convert_forward(model,
                         module.GPTJAttention,
                         gptj_attention_forward)
