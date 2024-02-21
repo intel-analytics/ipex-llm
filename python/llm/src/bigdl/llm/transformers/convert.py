@@ -191,7 +191,8 @@ def convert_gptq(module, awq=False, llm_awq=False):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False, prefix_name='',
-                                 imatrix_data=None, embedding_qtype=None):
+                                 imatrix_data=None, embedding_qtype=None,
+                                 model_type=None):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -251,7 +252,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         )
                         cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                            full_module_name,
-                                                                           imatrix_data)
+                                                                           imatrix_data,
+                                                                           model_type)
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
@@ -361,7 +363,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 cpu_embedding,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
                 imatrix_data=imatrix_data,
-                embedding_qtype=embedding_qtype
+                embedding_qtype=embedding_qtype,
+                model_type=model_type
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -558,11 +561,17 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
+    # mixed quantization needs model_type to choose custom quantization strategy
+    if hasattr(model, "config"):
+        model_type = getattr(model.config, "model_type", None)
+    else:
+        model_type = None
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
-        embedding_qtype=embedding_qtype
+        embedding_qtype=embedding_qtype,
+        model_type=model_type
     )
     if not has_been_replaced:
         warnings.warn(
