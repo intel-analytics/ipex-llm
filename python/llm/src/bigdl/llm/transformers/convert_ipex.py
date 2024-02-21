@@ -37,7 +37,7 @@
 import torch
 from bigdl.llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
-from intel_extension_for_pytorch.transformers.transformers.optimize import (
+from intel_extension_for_pytorch.transformers.optimize import (
     lowering_class_cpu,
     convert_class,
 )
