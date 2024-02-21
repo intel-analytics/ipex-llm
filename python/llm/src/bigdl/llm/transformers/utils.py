@@ -237,7 +237,10 @@ def module_name_process(full_module_name):
     # full name maybe model.layers.0.block_sparse_moe.gate or 
     # model.layers.0.block_sparse_moe.experts.0.w1 for mixtral
     module_name_list = full_module_name.split('.')
-    super_module_name = module_name_list[3]
+    if len(module_name_list) >= 5:
+        super_module_name = module_name_list[3]
+    else:
+        super_module_name = None
     exp_id = None
     if super_module_name == 'block_sparse_moe':
         # handle mixtral moe here
@@ -264,14 +267,21 @@ def module_name_process(full_module_name):
     return new_module_name, layer, cur_module
 
 
-def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data):
+def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_type=None):
     cur_qtype = qtype
     if qtype in [ggml_tensor_qtype["iq2_xxs"], ggml_tensor_qtype["iq2_xs"]]:
         # For quantization which needs importance matrix
         new_module_name, layer, cur_module = module_name_process(full_module_name)
         # custom mixed quantization strategy
-        if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]):
-            cur_qtype = ggml_tensor_qtype['q2_k']
+        if model_type == "mixtral":
+            if cur_module == 'v':
+                # llama.cpp use q4_K here
+                cur_qtype = ggml_tensor_qtype['sym_int4']
+            elif cur_module == 'down' and int(layer) in [0, 1, 2, 3]:
+                cur_qtype = ggml_tensor_qtype['q2_k']
+        else:
+            if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]):
+                cur_qtype = ggml_tensor_qtype['q2_k']
         if imatrix_data is not None and new_module_name in imatrix_data:
             cur_imatrix = imatrix_data[new_module_name]
         else:
