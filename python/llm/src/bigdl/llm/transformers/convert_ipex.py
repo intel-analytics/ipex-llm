@@ -125,7 +125,7 @@ def _ipex_jit(model):
             model, optimized_model=trace_model
         )
 
-    return model.eval()
+    return model
 
 
 def convert_function(m, func_name, new_function):
