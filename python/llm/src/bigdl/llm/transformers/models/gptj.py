@@ -34,7 +34,7 @@ def at_least_ipex_21():
     global _ipex_at_least_21
     if _ipex_at_least_21 is not None:
         return _ipex_at_least_21
-    
+
     from bigdl.llm.transformers.utils import get_ipex_version
 
     _ipex_at_least_21 = get_ipex_version() >= "2.1.10+xpu"
