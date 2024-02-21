@@ -562,7 +562,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         model = _optimize_pre(model)
 
     # mixed quantization needs model_type to choose custom quantization strategy
-    model_type = getattr(model.config, "model_type", None)
+    if hasattr(model, "config"):
+        model_type = getattr(model.config, "model_type", None)
+    else:
+        model_type = None
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
