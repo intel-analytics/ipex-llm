@@ -46,7 +46,7 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
@@ -61,7 +61,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         actual_out_len = output_ids.shape[1] - actual_in_len
         if i >= warm_up:
             result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                   actual_in_len, actual_out_len, model.peak_memory])
+                                   actual_in_len, actual_out_len, load_time, model.peak_memory])
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1):
     # TODO: make a parameter
@@ -106,7 +106,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             num_beams,
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
-                            result[in_out_pair][-1][5] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
+                            result[in_out_pair][-1][5],
+                            result[in_out_pair][-1][6] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
 
 
 def get_model_path(repo_id, local_model_hub):
@@ -186,7 +187,8 @@ def run_transformer_int4(repo_id,
                                                      use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -223,7 +225,7 @@ def run_transformer_int4(repo_id,
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     return result
 
 def run_pytorch_autocast_bf16(repo_id,
@@ -251,7 +253,8 @@ def run_pytorch_autocast_bf16(repo_id,
                                                      use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
     result = {}
@@ -288,7 +291,7 @@ def run_pytorch_autocast_bf16(repo_id,
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     return result
 
 def run_optimize_model(repo_id,
@@ -320,7 +323,8 @@ def run_optimize_model(repo_id,
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -357,7 +361,7 @@ def run_optimize_model(repo_id,
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     return result
 
 
@@ -407,7 +411,8 @@ def run_transformer_int4_gpu(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s and {}GB".format(end - st, torch.xpu.memory.memory_reserved()/(1024**3)))
+    load_time = end - st
+    print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
     model = BenchmarkWrapper(model)
 
@@ -435,7 +440,7 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials))
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time))
             thread.start()
             thread.join()
 
@@ -445,13 +450,14 @@ def run_transformer_int4_gpu(repo_id,
                 encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
                 input_output_tokens = in_out
                 actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
-                peak_mem = result[in_out][-1][5]
+                load_time = result[in_out][-1][5]
+                peak_mem = result[in_out][-1][6]
                 with open(csv_name, mode='a', newline='') as file:
                     csv_writer = csv.writer(file)
                     file.seek(0, os.SEEK_END)
                     if file.tell() == 0:
                         csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens", "batch_size", "actual input/output tokens","num_beams","low_bit","cpu_embedding","peak mem (GB)"])
-                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', peak_mem])
+                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem])
 
     model.to('cpu')
     torch.xpu.synchronize()
@@ -497,7 +503,8 @@ def run_optimize_model_gpu(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -536,7 +543,7 @@ def run_optimize_model_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     del model
     torch.xpu.empty_cache()
     return result
@@ -571,7 +578,8 @@ def run_ipex_fp16_gpu(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -610,7 +618,7 @@ def run_ipex_fp16_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     del model
     torch.xpu.empty_cache()
     return result
@@ -648,7 +656,8 @@ def run_bigdl_fp16_gpu(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -687,7 +696,7 @@ def run_bigdl_fp16_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     del model
     torch.xpu.empty_cache()
     return result
@@ -739,7 +748,8 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
     model = model.to(f'cpu:{local_rank}')
 
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -778,7 +788,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up :
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len])
+                                           actual_in_len, actual_out_len, load_time])
     return result
 
 
@@ -825,7 +835,8 @@ def run_transformer_int4_gpu_win(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s and {}GB".format(end - st, torch.xpu.memory.memory_reserved()/(1024**3)))
+    load_time = end - st
+    print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
     model = BenchmarkWrapper(model)
 
@@ -865,7 +876,7 @@ def run_transformer_int4_gpu_win(repo_id,
                     actual_out_len = output_ids.shape[1] - actual_in_len
                     if i >= warm_up:
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                               actual_in_len, actual_out_len, model.peak_memory])
+                                               actual_in_len, actual_out_len, load_time, model.peak_memory])
                     # torch.xpu.empty_cache() # this may make first token slower
             except RuntimeError:
                 traceback.print_exc()
@@ -920,7 +931,8 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
             # For gpt-j model family, this optimization can provide a better performance.
             model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s and {}GB".format(end - st, torch.xpu.memory.memory_reserved()/(1024**3)))
+    load_time = end - st
+    print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
     model = BenchmarkWrapper(model)
 
@@ -960,7 +972,7 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                     actual_out_len = output_ids.shape[1] - actual_in_len
                     if i >= warm_up:
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                               actual_in_len, actual_out_len, model.peak_memory])
+                                               actual_in_len, actual_out_len, load_time, model.peak_memory])
                     # torch.xpu.empty_cache() # this may make first token slower
             except RuntimeError:
                 traceback.print_exc()
@@ -1000,7 +1012,8 @@ def run_transformer_autocast_bf16( repo_id,
                                                      use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
-    print(">> loading of model costs {}s".format(end - st))
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
 
@@ -1037,7 +1050,7 @@ def run_transformer_autocast_bf16( repo_id,
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                          actual_in_len, actual_out_len])
+                                          actual_in_len, actual_out_len, load_time])
     return result
 
 if __name__ == '__main__':
@@ -1063,6 +1076,6 @@ if __name__ == '__main__':
                       conf['low_bit'], conf['cpu_embedding'], conf['batch_size'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
-                                            'peak mem (GB)'])
+                                            'model loading time (s)', 'peak mem (GB)'])
         df.to_csv(csv_name)
         results = []
