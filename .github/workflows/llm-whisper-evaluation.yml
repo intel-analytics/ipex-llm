@@ -56,7 +56,7 @@ jobs:
     steps:
       - name: set-env
         env:
-          NIGHTLY_MATRIX_MODEL_NAME: '["whisper-medium"]'
+          NIGHTLY_MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small", "whisper-medium", "whisper-base"]'
           NIGHTLY_MATRIX_TASK: '["librispeech"]'
           NIGHTLY_MATRIX_PRECISION: '["sym_int4"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "perf"]'
