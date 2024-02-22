@@ -43,12 +43,20 @@ test_api:
   - "pytorch_autocast_bf16"
   # - "transformer_autocast_bf16"
   # - "ipex_fp16_gpu" # on Intel GPU
+  # - "bigdl_fp16_gpu" # on Intel GPU
   # - "transformer_int4_gpu"  # on Intel GPU
   # - "optimize_model_gpu"  # on Intel GPU
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
-  # - "transformer_int4_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
+  # - "transformer_int4_gpu_win" # on Intel GPU for Windows
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+
 ```
+
+## (Optional) Save model in low bit
+If you choose the `transformer_int4_loadlowbit_gpu_win` test API, you will need to save the model in low bit first.
+
+Run `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
 
 ## Run
 
