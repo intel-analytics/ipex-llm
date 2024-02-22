@@ -14,6 +14,7 @@
 * Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
 After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
   >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=70%; />
+  > 
   > We can check GPU status from Arc Control (the left one in fig) or Task Manager (the right one in fig). 
   >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
@@ -43,17 +44,16 @@ We recommend using miniconda to create environment. Please refer to the [page](h
 
 ### Install bigdl-llm
 
-* Run the commands below in Anaconda prompt. Please note that transformer version should match the model you want to use. For example, here we use transformers 4.37.0 to run the demo. 
+* Run the commands below in Anaconda prompt. 
 
   ```bash
   conda activate llm
 
   pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-  pip install transformers==4.37.0 
   ```
 
 
-* Now we can test whether all the components have been installed correctly. If we can import all the packages correctly following the python file below, then the installation is correct. 
+* Now you can test whether all the components have been installed correctly within the interactive python prompt. If we can import all the packages correctly following the python file below, then the installation is correct. 
   ```python
   import torch
   import time
@@ -65,8 +65,14 @@ We recommend using miniconda to create environment. Please refer to the [page](h
   ```
 
 ### A quick example
-Then we use phi-1.5 as an example to show how to run the model with bigdl-llm on windows. 
-  ```python
+Then we use phi-1.5 as an example to show how to run the model with bigdl-llm on windows. Here we we provide `demo.py` and you can run it with `python demo.py`. 
+> Note that transformer version should match the model you want to use. For example, here we use transformers 4.37.0 to run the demo. 
+> ```
+> pip install transformers==4.37.0 
+> ```
+
+```python
+  # demo.py
   import torch
   import numpy as np
   from bigdl.llm.transformers import AutoModelForCausalLM
