@@ -1,6 +1,6 @@
 # Install BigDL-LLM on Windows for Intel GPU
 
-## iGPU
+## MTL & iGPU & Arc
 
 ### Install GPU driver
 
@@ -49,6 +49,7 @@ We recommend using miniconda to create environment. Please refer to the [page](h
   conda activate llm
 
   pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+  pip install transformers==4.37.0 
   ```
 
 
@@ -75,7 +76,7 @@ Then we use phi-1.5 as an example to show how to run the model with bigdl-llm on
   generation_config = GenerationConfig(use_cache = True)
 
   if __name__ == '__main__':
-      model_path = "C://Users/zhicunlv/OneDrive - Intel Corporation/Desktop/issues/demo/models/phi-1_5"
+      model_path = "microsoft/phi-1_5"
       prompt = "What is AI?"
       n_predict = 32
       # Load model in 4 bit,
@@ -84,7 +85,7 @@ Then we use phi-1.5 as an example to show how to run the model with bigdl-llm on
       # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
       model = AutoModelForCausalLM.from_pretrained(model_path,
                                                   load_in_4bit=True,
-                                                  cpu_embedding=True,
+                                                  # cpu_embedding=True,
                                                   trust_remote_code=True)
 
       model = model.to('xpu')
