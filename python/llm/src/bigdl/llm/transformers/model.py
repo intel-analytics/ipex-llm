@@ -90,6 +90,12 @@ def save_low_bit(self, *args, **kwargs):
         self.to(origin_device)
 
 
+def _load_pre():
+    from transformers import GPTJModel
+    from bigdl.llm.transformers.models.gptj import gptj_model_new_init
+    GPTJModel.__init__ = gptj_model_new_init
+
+
 class _BaseAutoModelClass:
     HF_MODEL = None
 
@@ -399,6 +405,7 @@ class _BaseAutoModelClass:
                 offload_dir=None
             )
         else:
+            _load_pre()
             try:
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:

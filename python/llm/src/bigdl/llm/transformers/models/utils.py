@@ -153,14 +153,25 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
     elif model_family == "gptj":
-        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
-        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+
+
+def apply_ipex_rotate_every_two(q, k, cos, sin):
+    # ipex's apply_rotary_embedding_two_qk can change the origin storage,
+    # so q/k will get the result directly.
+    from bigdl.llm.transformers.utils import get_ipex_version
+    if get_ipex_version() >= "2.1.10+xpu":
+        torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+            q, k, sin, cos, q, k
+        )
+    else:
+        torch.ops.torch_ipex.apply_rotary_embedding(q, sin, cos, q)
+        torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
 def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
