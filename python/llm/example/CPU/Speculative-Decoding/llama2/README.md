@@ -105,6 +105,7 @@ To accelerate speculative decoding on CPU, you can install our validated version
 python -m pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install intel-extension-for-pytorch==2.2.0
 python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
+# if there is any installation problem for oneccl_binding, you can also find suitable index url at "https://pytorch-extension.intel.com/release-whl/stable/cpu/cn/" or "https://developer.intel.com/ipex-whl-stable-cpu" according to your environment.
 
 # Update transformers
 pip install transformers==4.36.2
