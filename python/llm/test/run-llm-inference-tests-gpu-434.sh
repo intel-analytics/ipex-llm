@@ -24,5 +24,5 @@ unset BIGDL_LLM_XMX_DISABLED
 now=$(date "+%s")
 time=$((now-start))
 
-echo "Bigdl-llm gpu inference tests for Mistral finished"
+echo "Bigdl-llm gpu inference tests for transformers 4.34.0 finished"
 echo "Time used:$time seconds"
