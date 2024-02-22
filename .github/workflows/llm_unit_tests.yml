@@ -328,9 +328,9 @@ jobs:
           elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
             source /opt/intel/oneapi/setvars.sh
           fi
-          python -m pip install datasets librosa soundfile einops
+          python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
           bash python/llm/test/run-llm-inference-tests-gpu.sh
-          python -m pip install transformers==4.34.0
+          python -m pip install transformers==4.34.0 
           bash python/llm/test/run-llm-inference-tests-gpu-mistral.sh
 
       - name: Run LLM example tests
