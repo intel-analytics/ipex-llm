@@ -189,7 +189,6 @@ def gemma_attention_forward(
             if len(past_key_value.key_cache) <= self.layer_idx:
                 past_key_value.key_cache.append(key_states)
                 past_key_value.value_cache.append(value_states)
-                past_key_value.value_cache.append(cache_position)
             else:
                 cache_k = past_key_value.key_cache[self.layer_idx]
                 cache_v = past_key_value.value_cache[self.layer_idx]
