@@ -4,19 +4,18 @@
 
 ### Install GPU driver
 
-1. Step 1: Install Visual Studio 2022 Community Edition from [here](https://visualstudio.microsoft.com/downloads/). 
+* Install Visual Studio 2022 Community Edition from [here](https://visualstudio.microsoft.com/downloads/). 
 
+  > Note select `Desktop development with C++` during installation.
+  > The installation could be slow and cost 15 minutes. Need at least 7GB. 
+  > If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
+  > <img src="./figs/fig1.png" alt="image-20240221102252560" width=80%; />
 
-> Note select `Desktop development with C++` during installation.
-> The installation could be slow and cost 15 minutes. Need at least 7GB. 
-> If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
-> <img src="./figs/fig1.png" alt="image-20240221102252560" width=80%; />
-
-2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
+* Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
 After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
->  <img src="./figs/fig3.png" width=70%; />
-> We can check GPU status from Arc Control (the left one in fig) or Task Manager (the right one in fig). 
->  <img src="./figs/fig4.png"  width=70%; />
+  >  <img src="./figs/fig3.png" width=70%; />
+  > We can check GPU status from Arc Control (the left one in fig) or Task Manager (the right one in fig). 
+  >  <img src="./figs/fig4.png"  width=70%; />
 
 ### Install conda
 
@@ -34,7 +33,7 @@ We recommend using miniconda to create environment. Please refer to the [page](h
 
 ### Install oneAPI 
 
- Install oneAPI Base Toolkit with the help of pip. After ensuring  `conda` is ready, we can use `pip ` to install oneAPI Base Toolkit. 
+* Install oneAPI Base Toolkit with the help of pip. After ensuring  `conda` is ready, we can use `pip ` to install oneAPI Base Toolkit. 
 
 ```bash
 pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
@@ -44,24 +43,24 @@ pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 
 ### Install bigdl-llm
 
-1. Step 1: Run the commands below in Anaconda prompt. 
+* Run the commands below in Anaconda prompt. 
 
-```bash
-conda activate llm
+  ```bash
+  conda activate llm
 
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-```
+  pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+  ```
 
 
-2. Step 2: Now we can test whether all the components have been installed correctly. If we can import all the packages correctly following the python file below, then the installation is correct. 
+* Now we can test whether all the components have been installed correctly. If we can import all the packages correctly following the python file below, then the installation is correct. 
   ```python
-  import torch
-  import time
-  import argparse
-  import numpy as np
-   
-  from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
-  from transformers import AutoTokenizer, GenerationConfig
+    import torch
+    import time
+    import argparse
+    import numpy as np
+    
+    from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
+    from transformers import AutoTokenizer, GenerationConfig
   ```
 
 ### A quick example
