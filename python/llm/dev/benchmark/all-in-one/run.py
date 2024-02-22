@@ -106,7 +106,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             num_beams,
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
-                            result[in_out_pair][-1][5],
+                            round(result[in_out_pair][-1][5], 2),
                             result[in_out_pair][-1][6] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api else 'N/A']) # currently only peak mem for transformer_int4_gpu is caught here
 
 
@@ -450,7 +450,7 @@ def run_transformer_int4_gpu(repo_id,
                 encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
                 input_output_tokens = in_out
                 actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
-                load_time = result[in_out][-1][5]
+                load_time = round(result[in_out][-1][5], 2)
                 peak_mem = result[in_out][-1][6]
                 with open(csv_name, mode='a', newline='') as file:
                     csv_writer = csv.writer(file)
