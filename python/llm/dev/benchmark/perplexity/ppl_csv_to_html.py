@@ -20,6 +20,7 @@ import os
 import sys
 import argparse
 import pandas as pd
+from pathlib import Path
 
 def highlight_vals(val, max=3.0, color1='red', color2='green', color3='yellow', is_last=False):
     if isinstance(val, float):
@@ -82,7 +83,7 @@ def main():
     args = parser.parse_args()
 
     # fp16.csv is downloaded previously under the parent folder of the folder_path
-    parent_dir = os.path.dirname(os.path.dirname(args.folder_path))
+    parent_dir = Path(args.folder_path).parent
     fp16_path = os.path.join(parent_dir, 'fp16.csv')
     fp16_dict = create_fp16_dict(fp16_path)
 
