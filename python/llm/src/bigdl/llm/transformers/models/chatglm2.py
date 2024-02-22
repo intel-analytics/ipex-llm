@@ -539,7 +539,7 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
                         attn_bias += attention_mask
                     attn += attn_bias
                 attn = F.softmax(attn, dim=-1,
-                                dtype=torch.float32).to(value_layer.dtype)
+                                 dtype=torch.float32).to(value_layer.dtype)
                 context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (-1,)
