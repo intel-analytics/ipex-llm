@@ -170,4 +170,111 @@ jobs:
           --precisions ${{ matrix.precision }} \
           --device ${{ matrix.device }} \
           --dataset_path ${DATASET_DIR} \
-          --language ${LANGUAGE}
+          --language ${LANGUAGE} \
+          --output_path results
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ppl_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/**
+
+      - name: echo single result
+        shell: bash
+            
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/
+        run: |
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${LANGUAGE}/result.json
+
+  llm-ppl-summary:
+    if: ${{ always() }}
+    needs: llm-ppl-evaluation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: results        
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table_and_csv.py results
+
+  llm-ppl-summary-html:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [set-matrix, llm-ppl-evaluation]
+    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      
+      - name: Set output path
+        shell: bash
+        run: |    
+          DATE=$(date +%Y-%m-%d)
+          OUTPUT_PATH="results_$DATE"
+          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
+          NIGHTLY_FOLDER="/home/arda/ppl-action-runners/nightly-accuracy-data"
+          echo "NIGHTLY_FOLDER=$NIGHTLY_FOLDER" >> $GITHUB_ENV
+          PR_FOLDER="/home/arda/ppl-action-runners/pr-accuracy-data"
+          echo "PR_FOLDER=$PR_FOLDER" >> $GITHUB_ENV
+
+      - name: Download all results for nightly run
+        if: github.event_name == 'schedule'
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
+  
+      - name: Download all results for pr run
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
+
+      # Save fp16.csv in the parent folder of env.nightly_folder
+      - name: Download fp16.csv for summary
+        shell: bash
+        run: |
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/dev/benchmark/perplexity/fp16.csv -O ${{ env.NIGHTLY_FOLDER}}/../fp16.csv
+          ls ${{ env.NIGHTLY_FOLDER}}/..
+
+      - name: Summarize the results for nightly run
+        if: github.event_name == 'schedule'
+        shell: bash
+        run: |
+          ls /home/arda/ppl-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/ppl_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/update_html_in_parent_folder.py -f ${{ env.NIGHTLY_FOLDER }}
+
+      - name: Summarize the results for pull request
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          ls /home/arda/ppl-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/ppl_csv_to_html.py -f ${{ env.PR_FOLDER}}
