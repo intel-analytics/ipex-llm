@@ -159,7 +159,8 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
-        
+
+
 def apply_ipex_rotate_every_two(q, k, cos, sin):
     # ipex's apply_rotary_embedding_two_qk can change the origin storage,
     # so q/k will get the result directly.
