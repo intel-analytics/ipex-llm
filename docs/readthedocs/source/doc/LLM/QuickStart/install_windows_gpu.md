@@ -43,7 +43,7 @@ We recommend using miniconda to create environment. Please refer to the [page](h
 
 ### Install bigdl-llm
 
-* Run the commands below in Anaconda prompt. 
+* Run the commands below in Anaconda prompt. Please note that transformer version should match the model you want to use. For example, here we use transformers 4.37.0 to run the demo. 
 
   ```bash
   conda activate llm
