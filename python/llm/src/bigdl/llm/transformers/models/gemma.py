@@ -43,14 +43,19 @@ from torch import nn
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
-    is_enough_kv_cache_room_4_36
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_36, rotate_half
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from bigdl.llm.transformers.models.utils import use_flash_attention
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
+    cos = cos.unsqueeze(unsqueeze_dim)
+    sin = sin.unsqueeze(unsqueeze_dim)
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+    k_embed = (k * cos) + (rotate_half(k) * sin)
+    return q_embed, k_embed
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -170,14 +175,13 @@ def gemma_attention_forward(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "mistral")
+            cos, sin = self.rotary_emb(value_states, position_ids, seq_len=None)
+            query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
+                                                                           sin, cos, "gemma")
         else:
-            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+            cos, sin = self.rotary_emb(value_states, position_ids, seq_len=None)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, position_ids, "mistral")
+                                                            cos, sin, None)
 
         if past_key_value is not None:
             # update the number of seen tokens
