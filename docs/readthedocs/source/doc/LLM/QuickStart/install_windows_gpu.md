@@ -6,35 +6,30 @@
 
 1. Step 1: Install Visual Studio 2022 Community Edition from [here](https://visualstudio.microsoft.com/downloads/). 
 
-![fig1]("./figs/fig1.pdf")
 
-> Note select `Desktop development with C++` during installation. 
->
-> <img src="./figs/fig2.png" alt="image-20240221102252560" style="zoom:40%;" />
->
+> Note select `Desktop development with C++` during installation.
 > The installation could be slow and cost 15 minutes. Need at least 7GB. 
->
 > If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
+> <img src="./figs/fig1.png" alt="image-20240221102252560" style="zoom:50%;" />
 
-2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed.  After rebooting, we can check GPU status from GUI. 
-
-<img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:20%;" />
-
-<img src="./figs/fig4.png" alt="image-20240221105834031" style="zoom:20%;" />
-
+2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
+After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
+<img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:50%;" />
+We can check GPU status from Arc Control (the left one in fig) or Task Manager (the right one in fig). 
+<img src="./figs/fig4.png" alt="image-fig4" style="zoom:50%;" />
 ### Install conda
 
 We recommend using miniconda to create environment. Please refer to the [page](https://docs.anaconda.com/free/miniconda/) to install miniconda. 
 
 * Choose windows miniconda installer. Download and install. It takes a few minutes. 
 
-  <img src="./figs/fig5.png" alt="image-20240221110402278" style="zoom:20%;" />
+  <img src="./figs/fig5.png" alt="image-20240221110402278" style="zoom:50%;" />
 
 * After installation, open `Anaconda prompt` and create an environment by `conda create -n llm python=3.9 libuv` . 
 
   > Note: if you encounter CondaHTTPError problem and fail to create the environment, please check the internet connection and proxy setting. You can define your proxy setting by `conda config --set proxy_servers.http your_http_proxy_IP:port` and `conda config --set proxy_servers.https your_https_proxy_IP:port`
   >
-  > <img src="./figs/fig6.png" alt="image-20240221122852777" style="zoom:20%;" />
+  > <img src="./figs/fig6.png" alt="image-20240221122852777" style="zoom:50%;" />
 
 ### Install oneAPI 
 
@@ -46,7 +41,7 @@ pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 
 > If you encounter HTTP Timeout error, also check your internet and proxy setting in `pip.ini` file which is under "C:\Users\YourName\AppData\Roaming\pip"  folder. 
 
-When you successfully install oneAPI from pip, you will see similar thing from the Anaconda prompt command line. <img src="./figs/fig7.png" alt="image-20240221130508668" style="zoom:20%;" />
+When you successfully install oneAPI from pip, you will see similar thing from the Anaconda prompt command line. 
 
 ### Install bigdl-llm
 
