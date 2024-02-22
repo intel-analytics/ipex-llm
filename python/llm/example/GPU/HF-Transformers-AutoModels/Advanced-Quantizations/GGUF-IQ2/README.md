@@ -1,6 +1,6 @@
-# 2Bit
+# GGUF-IQ2
 
-This example shows how to directly run 2 bit (iq2) models using BigDL-LLM on Intel GPU.
+This example shows how to directly run GGUF-IQ2 models using BigDL-LLM on Intel GPU.
 
 ## Verified Models
 
@@ -16,7 +16,7 @@ To run these examples with BigDL-LLM, we have some recommended requirements for 
 
 ## Example: Predict Tokens using `generate()` API
 
-In the example [generate.py](./generate.py), we show a basic use case for a 2 bit model to predict the next N tokens using `generate()` API, with BigDL-LLM 2 bit optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a GGUF-IQ2 model to predict the next N tokens using `generate()` API, with BigDL-LLM optimizations.
 
 ### 1. Install
 

@@ -46,15 +46,16 @@ if __name__ == '__main__':
                   "or have a cup of coffee now : )")
 
     # Load model in 2 bit,
-    # which convert the relevant layers in the model into iq2_xxs format.
-    # 2 bit quantization needs weight(imatrix) file to assist in quantization
+    # which convert the relevant layers in the model into gguf_iq2_xxs format.
+    # GGUF-IQ2 quantization needs imatrix file to assist in quantization
     # and improve generation quality, and different model may need different
     # imtraix file, you can find and download imatrix file from 
     # https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/tree/main.
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_low_bit='iq2_xxs',
+                                                 load_in_low_bit='gguf_iq2_xxs',
                                                  trust_remote_code=True,
-                                                 imatrix='llama-v2-7b.imatrix').to("xpu")
+                                                 # imatrix='llama-v2-7b.imatrix').to("xpu")
+                                                 imatrix='/home/arda/ruonan/debug/imatrix/llama-v2-7b.imatrix').to("xpu")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
