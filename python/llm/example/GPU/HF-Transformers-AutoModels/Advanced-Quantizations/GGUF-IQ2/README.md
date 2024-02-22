@@ -8,7 +8,7 @@ This example shows how to run INT2 models using the IQ2 mechanism (first impleme
 - [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf), using [llama-v2-7b.imatrix](https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/resolve/main/llama-v2-7b.imatrix)
 - [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2), using [mistral-7b-instruct-v0.2.imatrix](https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/resolve/main/mistral-7b-instruct-v0.2.imatrix)
 - [Mixtral-8x7B-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1), using [mixtral-8x7b.imatrix](https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/resolve/main/mixtral-8x7b.imatrix)
-- [Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1), using [mixtral-8x7b.imatrix](https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/resolve/main/mixtral-8x7b-instruct-v0.1.imatrix)
+- [Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1), using [mixtral-8x7b-instruct-v0.1.imatrix](https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/resolve/main/mixtral-8x7b-instruct-v0.1.imatrix)
 
 ## Requirements
 
