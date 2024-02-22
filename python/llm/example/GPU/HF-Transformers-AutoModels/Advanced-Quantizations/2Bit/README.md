@@ -1,6 +1,6 @@
 # 2Bit
 
-This example shows how to directly run 2-bit(iq2) models using BigDL-LLM on Intel GPU.
+This example shows how to directly run 2 bit (iq2) models using BigDL-LLM on Intel GPU.
 
 ## Verified Models
 

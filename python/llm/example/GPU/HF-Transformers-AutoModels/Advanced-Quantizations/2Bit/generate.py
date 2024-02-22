@@ -54,8 +54,7 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_low_bit='iq2_xxs',
                                                  trust_remote_code=True,
-                                                 # imatrix='llama-v2-7b.imatrix').to("xpu")
-                                                 imatrix='/home/arda/ruonan/debug/imatrix/llama-v2-7b.imatrix').to("xpu")
+                                                 imatrix='llama-v2-7b.imatrix').to("xpu")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
