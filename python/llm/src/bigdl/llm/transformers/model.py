@@ -110,7 +110,7 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
                                 ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
-                                ``'iq2_xxs'``, ``'iq2_xs'``, ``'fp16'`` or ``'bf16'``,
+                                ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, ``'fp16'`` or ``'bf16'``,
                                 ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
                                 asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
                                 Relevant low bit optimizations will be applied to the model.
@@ -278,12 +278,13 @@ class _BaseAutoModelClass:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             imatrix_file = kwargs.pop("imatrix", None)
-            if q_k in ["iq2_xxs", "iq2_xs"]:
+            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs"]:
                 invalidInputError(imatrix_file is not None,
-                                  "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+                                  "For gguf_iq2_xxs and gguf_iq2_xs quantization,"
+                                  "imatrix is needed.")
             cpu_embedding = kwargs.get("cpu_embedding", False)
             # for 2bit, default use embedding_quantization
-            if q_k in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding and \
+            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and not cpu_embedding and \
                     embedding_qtype is None:
                 embedding_qtype = "q2_k"
             if imatrix_file is not None:
