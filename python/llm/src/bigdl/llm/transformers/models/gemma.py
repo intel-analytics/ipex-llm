@@ -14,14 +14,10 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/huggingface/transformers/blob/main/src/transformers/models/mistral/modeling_mistral.py
+# https://github.com/huggingface/transformers/blob/main/src/transformers/models/gemma/modeling_gemma.py
+# coding=utf-8
+# Copyright 2024 Google Inc. HuggingFace Inc. team. All rights reserved.
 #
-# Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
-#
-# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
-# and OPT implementations in this library. It has been modified from its
-# original forms to accommodate minor architectural differences compared
-# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,21 +30,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" PyTorch Mistral model."""
 import math
 from typing import Optional, Tuple
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_36, rotate_half
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
-from bigdl.llm.transformers.models.utils import use_flash_attention
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     cos = cos.unsqueeze(unsqueeze_dim)
@@ -232,12 +226,15 @@ def gemma_attention_forward(
         attn_weights = attn_weights + causal_mask
 
     # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
+    attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                         dtype=torch.float32).to(query_states.dtype)
+    attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                         training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
+        invalidInputError(
+            False,
             f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
             f" {attn_output.size()}"
         )
