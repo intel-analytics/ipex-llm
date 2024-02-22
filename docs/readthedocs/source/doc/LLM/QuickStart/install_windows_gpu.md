@@ -54,13 +54,13 @@ We recommend using miniconda to create environment. Please refer to the [page](h
 
 * Now we can test whether all the components have been installed correctly. If we can import all the packages correctly following the python file below, then the installation is correct. 
   ```python
-    import torch
-    import time
-    import argparse
-    import numpy as np
+  import torch
+  import time
+  import argparse
+  import numpy as np
     
-    from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
-    from transformers import AutoTokenizer, GenerationConfig
+  from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
+  from transformers import AutoTokenizer, GenerationConfig
   ```
 
 ### A quick example
