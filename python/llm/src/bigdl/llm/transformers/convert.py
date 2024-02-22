@@ -625,27 +625,38 @@ def replace_func(m, target_m, func_name, new_func):
 def _optimize_ipex(model):
     import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
-    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
-        _ipex_optimize_attention, _ipex_optimize_decoder, _ipex_jit, _make_causal_mask,
-        _ipex_optimize_rmsnorm, _llama_model_forward_4_35, convert_function, GLM_get_masks
+        _ipex_optimize_model, _ipex_jit, _make_causal_mask,
+        _llama_model_forward_4_35, convert_function, GLM_get_masks
     )
 
-    AttentionMaskConverter._make_causal_mask = _make_causal_mask
-    convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel,
-                    _llama_model_forward_4_35)
     model = model_convert_reference(model)
-    if model.config.architectures is not None \
-       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+
+    rms_classes = [
+        transformers.models.llama.modeling_llama.LlamaRMSNorm,
+    ]
+    if 'llama' in model.config.model_type:
+        AttentionMaskConverter._make_causal_mask = _make_causal_mask
+        convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel,
+                        _llama_model_forward_4_35)
+    elif "mistral" in model.config.model_type:
+        AttentionMaskConverter._make_causal_mask = _make_causal_mask
+        convert_forward(model, transformers.models.llama.modeling_llama.LlamaModel,
+                        _llama_model_forward_4_35)
+    elif model.config.architectures is not None \
+        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:  # noqa
+        # for chatglm3-6B
+        rms_classes.append(
+            type(model.transformer.encoder.layers[0].input_layernorm)
+        )
         convert_function(model.transformer, "get_masks", GLM_get_masks)
+    elif model.config.model_type == 'baichuan' and model.config.vocab_size == 125696:
+        # baichuan2
+        rms_classes.append(type(model.model.layers[0].input_layernorm))
+
     model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
-    _ipex_optimize_rmsnorm(model)
-    _ipex_optimize_attention(model)
-    _ipex_optimize_decoder(model)
-
-    model.register_forward_hook(output_hook, with_kwargs=True)
-
+    _ipex_optimize_model(model, rms_classes)
     return _ipex_jit(model)
 
 
