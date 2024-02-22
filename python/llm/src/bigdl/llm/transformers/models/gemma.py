@@ -94,7 +94,7 @@ def gemma_rms_norm_forward(self, hidden_states):
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
     variance = hidden_states.pow(2).mean(-1, keepdim=True)
-    hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.eps)
     return (1 + self.weight) * hidden_states.to(input_dtype)
 
 
