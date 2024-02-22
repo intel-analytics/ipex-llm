@@ -6,7 +6,7 @@
 
 1. Step 1: Install Visual Studio 2022 Community Edition from [here](https://visualstudio.microsoft.com/downloads/). 
 
-   <img src="./figs/fig1.pdf"  style="zoom:20%;" />
+![fig1]("./figs/fig1.pdf")
 
 > Note select `Desktop development with C++` during installation. 
 >
