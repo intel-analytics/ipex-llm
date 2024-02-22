@@ -91,7 +91,7 @@ check_env()
 {
   echo "-----------------------------------------------------------------"
   echo "Environment Variable: "
-  printenv | head -n 10
+  printenv
 }
 
 check_xpu_smi_install()
@@ -139,7 +139,7 @@ main()
   check_transformers
   check_torch
   check_bigdl
-
+  check_ipex
 
   # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
   check_cpu_info
@@ -156,7 +156,6 @@ main()
     exit -1
   else
     check_xpu_smi
-    check_ipex
   fi
 
   echo "-----------------------------------------------------------------"
