@@ -107,7 +107,7 @@ Then we use phi-1.5 as an example to show how to run the model with bigdl-llm on
           print('-'*20, 'Output', '-'*20)
           print(output_str)
    ```
-   Here is the sample output on the laptop after running the example program above. 
+   Here is the sample output on the laptop equipped with 11th Gen Intel(R) Core(TM) i7-1185G7 and Intel(R) Iris(R) Xe Graphics after running the example program above. 
    ```
    Inference time: 3.526491641998291 s
    -------------------- Prompt --------------------
