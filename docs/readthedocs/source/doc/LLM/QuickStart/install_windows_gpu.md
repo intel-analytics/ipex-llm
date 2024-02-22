@@ -14,9 +14,9 @@
 
 2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
 After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
-<img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:20%;" />
+<img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:10%;" />
 We can check GPU status from Arc Control (the left one in fig) or Task Manager (the right one in fig). 
-<img src="./figs/fig4.png" alt="image-fig4" style="zoom:50%;" />
+<img src="./figs/fig4.png" alt="image-fig4" style="zoom:30%;" />
 
 ### Install conda
 
@@ -24,13 +24,13 @@ We recommend using miniconda to create environment. Please refer to the [page](h
 
 * Choose windows miniconda installer. Download and install. It takes a few minutes. 
 
-  <img src="./figs/fig5.png" alt="image-20240221110402278" style="zoom:50%;" />
+  <img src="./figs/fig5.png" alt="image-20240221110402278" style="zoom:10%;" />
 
 * After installation, open `Anaconda prompt` and create an environment by `conda create -n llm python=3.9 libuv` . 
 
   > Note: if you encounter CondaHTTPError problem and fail to create the environment, please check the internet connection and proxy setting. You can define your proxy setting by `conda config --set proxy_servers.http your_http_proxy_IP:port` and `conda config --set proxy_servers.https your_https_proxy_IP:port`
   >
-  > <img src="./figs/fig6.png" alt="image-20240221122852777" style="zoom:50%;" />
+  > <img src="./figs/fig6.png" alt="image-20240221122852777" style="zoom:10%;" />
 
 ### Install oneAPI 
 
