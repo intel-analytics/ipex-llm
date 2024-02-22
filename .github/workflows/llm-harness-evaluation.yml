@@ -303,7 +303,7 @@ jobs:
         run: |
           ls /home/arda/harness-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
           pip install pandas==1.5.3
-          python ${{ github.workspace }}/python/llm/test/benchmark/harness/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
           python ${{ github.workspace }}/python/llm/test/benchmark/harness/harness_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
           python ${{ github.workspace }}/python/llm/test/benchmark/harness/update_html_in_parent_folder.py -f ${{ env.NIGHTLY_FOLDER }}
 
@@ -313,5 +313,5 @@ jobs:
         run: |
           ls /home/arda/harness-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
           pip install pandas==1.5.3
-          python ${{ github.workspace }}/python/llm/test/benchmark/harness/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
           python ${{ github.workspace }}/python/llm/test/benchmark/harness/harness_csv_to_html.py -f ${{ env.PR_FOLDER}}
