@@ -1,6 +1,6 @@
 # GGUF-IQ2
 
-This example shows how to directly run GGUF-IQ2 models using BigDL-LLM on Intel GPU.
+This example shows how to run INT2 models using the IQ2 mechanism (first implemented by llama.cpp) in BigDL-LLM on Intel GPU.
 
 ## Verified Models
 
