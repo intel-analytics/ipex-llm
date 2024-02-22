@@ -14,9 +14,10 @@
 
 2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
 After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
-<img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:50%;" />
+<img src="./figs/fig3.png" alt="image-20240221102217795" style="zoom:20%;" />
 We can check GPU status from Arc Control (the left one in fig) or Task Manager (the right one in fig). 
 <img src="./figs/fig4.png" alt="image-fig4" style="zoom:50%;" />
+
 ### Install conda
 
 We recommend using miniconda to create environment. Please refer to the [page](https://docs.anaconda.com/free/miniconda/) to install miniconda. 
