@@ -35,11 +35,11 @@ We recommend using miniconda to create environment. Please refer to the [page](h
 
 * Install oneAPI Base Toolkit with the help of pip. After ensuring  `conda` is ready, we can use `pip ` to install oneAPI Base Toolkit. 
 
-```bash
-pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
-```
+  ```bash
+  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
+  ```
 
-> If you encounter HTTP Timeout error, also check your internet and proxy setting in `pip.ini` file which is under "C:\Users\YourName\AppData\Roaming\pip"  folder. 
+  > If you encounter HTTP Timeout error, also check your internet and proxy setting in `pip.ini` file which is under "C:\Users\YourName\AppData\Roaming\pip"  folder. 
 
 ### Install bigdl-llm
 
