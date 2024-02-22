@@ -10,7 +10,7 @@
 > Note select `Desktop development with C++` during installation.
 > The installation could be slow and cost 15 minutes. Need at least 7GB. 
 > If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
-> <img src="./figs/fig1.png" alt="image-20240221102252560" style="zoom:50%;" />
+> <img src="./figs/fig1.png" alt="image-20240221102252560" width=50%; />
 
 2. Step 2: Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
 After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
