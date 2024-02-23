@@ -818,11 +818,20 @@ def _optimize_post(model, lightweight_bmm=False):
             elif "FalconForCausalLM" in model.config.architectures:
                 if model.config.hidden_size != 4544:
                     # falcon-180b and new falcon-40b
-                    from bigdl.llm.transformers.models.falcon import falcon_attention_forward
-                    convert_forward(model,
-                                    module.FalconAttention,
-                                    falcon_attention_forward
-                                    )
+                    if version.parse(trans_version) >= version.parse("4.36.0"):
+                    # transformers version >= 4.36.0
+                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward_4_36
+                        convert_forward(model,
+                                        module.FalconAttention,
+                                        falcon_attention_forward_4_36
+                                        )
+                    else:
+                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward
+                        convert_forward(model,
+                                        module.FalconAttention,
+                                        falcon_attention_forward
+                                        )
+
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
         if model.config.hidden_size == 4096:
@@ -1053,6 +1062,18 @@ def _optimize_post(model, lightweight_bmm=False):
                 convert_forward(model,
                                 module.MistralMLP,
                                 llama_mlp_forward)
+    elif model.config.model_type == "gemma":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.gemma import gemma_attention_forward
+        from bigdl.llm.transformers.models.gemma import gemma_rms_norm_forward
+        convert_forward(model,
+                        module.GemmaAttention,
+                        gemma_attention_forward,
+                        )
+        convert_forward(model,
+                        module.GemmaRMSNorm,
+                        gemma_rms_norm_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
