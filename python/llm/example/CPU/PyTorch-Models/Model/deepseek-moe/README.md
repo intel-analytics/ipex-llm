@@ -1,5 +1,5 @@
-# deepseek-moe
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate deepseek-moe models. For illustration purposes, we utilize the [deepseek-ai/deepseek-moe-16b-chat](https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat) as a reference deepseek-moe model.
+# DeepSeek-MoE
+In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate DeepSeek-MoE models. For illustration purposes, we utilize the [deepseek-ai/DeepSeek-MoE-16b-chat](https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat) as a reference DeepSeek-MoE model.
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -45,7 +45,7 @@ More information about arguments can be found in [Arguments Info](#23-arguments-
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the deepseek-moe model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'deepseek-ai/deepseek-moe-16b-chat'`.
+- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the DeepSeek-MoE model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'deepseek-ai/deepseek-moe-16b-chat'`.
 - `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
