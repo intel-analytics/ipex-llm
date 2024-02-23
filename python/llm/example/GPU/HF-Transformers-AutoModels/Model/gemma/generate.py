@@ -28,9 +28,9 @@ chat = [
 ]
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mistral model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Gemma model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="google/gemma-7b-it",
-                        help='The huggingface repo id for the Mistral (e.g. `google/gemma-7b-it` and `google/gemma-7b-it`) to be downloaded'
+                        help='The huggingface repo id for the Gemma (e.g. `google/gemma-7b-it` and `google/gemma-7b-it`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
