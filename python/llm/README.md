@@ -83,6 +83,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | SpeechT5 |  | [link](example/GPU/PyTorch-Models/Model/speech-t5) |
 | Ziya-Coding-34B-v1.0 | [link](example/CPU/HF-Transformers-AutoModels/Model/ziya) | |
 | Phi-2 | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-2) | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-2) |
+| Yuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
 
 ### Working with `bigdl-llm`
 
