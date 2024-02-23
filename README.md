@@ -28,7 +28,7 @@
 - [2023/10] `bigdl-llm` now supports [FastChat serving](python/llm/src/bigdl/llm/serving) on on both Intel CPU and GPU.
 - [2023/09] `bigdl-llm` now supports [Intel GPU](python/llm/example/GPU) (including iGPU, Arc, Flex and MAX).
 - [2023/09] `bigdl-llm` [tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) is released.
-- [2023/09] Over 30 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS,* and more; see the complete list [here](#verified-models).
+- [2023/09] Over 40 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS,* and more; see the complete list [here](#verified-models).
      
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
@@ -70,10 +70,11 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 #### CPU INT4
 ##### Install
 You may install **`bigdl-llm`** on Intel CPU as follows:
+> Note: See the [CPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html) for more details.
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> Note: `bigdl-llm` has been tested on Python 3.9, 3.10 and 3.11
 
 ##### Run Model
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
@@ -100,7 +101,7 @@ You may install **`bigdl-llm`** on Intel GPU as follows:
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> Note: `bigdl-llm` has been tested on Python 3.9, 3.10 and 3.11
 
 ##### Run Model
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
