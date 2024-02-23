@@ -4,7 +4,7 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 ## Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-**Important: According to Gemma's requirement, please make sure you have installed `transformers==4.38.0` to run the example.**
+**Important: According to Gemma's requirement, please make sure you have installed `transformers==4.38.1` to run the example.**
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Gemma model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
@@ -20,8 +20,8 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
-# According to Gemma's requirement, please make sure you are using a stable version of Transformers, 4.38.0 or newer.
-pip install transformers==4.38.0
+# According to Gemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
+pip install transformers==4.38.1
 ```
 
 #### 1.2 Installation on Windows
@@ -32,8 +32,8 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
-# According to Gemma's requirement, please make sure you are using a stable version of Transformers, 4.38.0 or newer.
-pip install transformers==4.38.0
+# According to Gemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
+pip install transformers==4.38.1
 ```
 
 ### 2. Configures OneAPI environment variables
