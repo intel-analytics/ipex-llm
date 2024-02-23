@@ -56,9 +56,9 @@ jobs:
     steps:
       - name: set-env
         env:
-          MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small", "whisper-medium", "whisper-base"]'
+          MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small"]'
           MATRIX_TASK: '["librispeech"]'
-          MATRIX_PRECISION: '["sym_int4", "fp8_e4m3", "fp8_e5m2"]'
+          MATRIX_PRECISION: '["sym_int4", "fp8_e4m3"]'
           LABELS: '["self-hosted", "llm", "perf"]'
         run: |
             echo "model_name=$MATRIX_MODEL_NAME" >> $GITHUB_ENV
@@ -146,4 +146,4 @@ jobs:
 
           cd python/llm/dev/benchmark/whisper
           python run_whisper.py --model_path ${MODEL_PATH} --data_type other --device xpu --load_in_low_bit ${{ matrix.precision }} --save_result
-          mv *.csv $CSV_SAVE_PATH
+          cp *.csv $CSV_SAVE_PATH
