@@ -56,41 +56,38 @@
   ```
 
 ### A quick example
-Next step you can start play with a real LLM. We use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) (an 1.3B model) for demostration. You can copy/paste the following code in a python script and run it. 
+* Next step you can start play with a real LLM. We use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) (an 1.3B model) for demostration. You can copy/paste the following code in a python script and run it. 
 > Note: to use phi-1.5, you may need to update your transformer version to 4.37.0.  
 > ```
 > pip install -U transformers==4.37.0 
 > ```
-```python
-import torch
-from bigdl.llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer, GenerationConfig
+> Note: when running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+> This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
 
-generation_config = GenerationConfig(use_cache = True)
+   ```python
+   import torch
+   from bigdl.llm.transformers import AutoModelForCausalLM
+   from transformers import AutoTokenizer, GenerationConfig
+   generation_config = GenerationConfig(use_cache = True)
+   
+   tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-1_5", trust_remote_code=True)
+   
+   model = AutoModelForCausalLM.from_pretrained(
+       "microsoft/phi-1_5", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
+   model = model.to('xpu')
+   
+   question = "What is AI?"
+   prompt = " Question:{question}\n\n Answer:".format(prompt=question)
+   
+   # Generate predicted tokens
+   with torch.inference_mode():
+       input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+       output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
+       output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+       print(output_str)
+   ```
 
-if __name__ == '__main__':
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = AutoModelForCausalLM.from_pretrained(
-        "microsoft/phi-1_5", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
-
-    model = model.to('xpu')
-
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    question = "What is AI?"
-    PHI1_5_PROMPT_FORMAT = " Question:{prompt}\n\n Answer:"
-    prompt = PHI1_5_PROMPT_FORMAT.format(prompt=question)
-
-    # Generate predicted tokens
-    with torch.inference_mode():
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        print(output_str)
-```
-An example output on the laptop equipped with i7 11th Gen Intel Core CPU and Iris Xe Graphics iGPU looks like below. 
+* An example output on the laptop equipped with i7 11th Gen Intel Core CPU and Iris Xe Graphics iGPU looks like below. 
 
 ```
 Question:What is AI?
