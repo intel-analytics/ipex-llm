@@ -42,6 +42,8 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
+    with:
+      platform: 'Linux'
   set-matrix:
     runs-on: ubuntu-latest
     outputs:
