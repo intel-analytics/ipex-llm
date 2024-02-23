@@ -52,7 +52,7 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 
 def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
-    return q_type in [SYM_INT4] and \
+    return q_type in [SYM_INT4, FP8E5] and \
         use_fuse_rope and enough_kv_room and bs == 1
 
 
