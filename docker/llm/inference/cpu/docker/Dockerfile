@@ -61,16 +61,12 @@ RUN cp /root/miniconda3/condabin/conda /usr/bin && \
     . ~/.bashrc && \
     conda activate bigdl-speculative-py39 && \
     cd /llm && \
-    pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip install --pre --upgrade bigdl-llm[all] && \
-    wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/main/scripts/compile_bundle.sh && \
-    bash compile_bundle.sh && \
-    cd ./intel-extension-for-pytorch && \
-    pip install -r requirements.txt && \
+    pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install intel-extension-for-pytorch==2.2.0 && \
+    pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
     pip install transformers==4.36.2 && \
     pip install transformers_stream_generator && \
-    cd /llm && \
-    rm -rf llvm-project llvm-release intel-extension-for-pytorch compile_bundle.sh && \
     echo "conda deactivate" >> /root/.bashrc
     
 ENTRYPOINT ["/bin/bash"]

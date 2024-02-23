@@ -70,8 +70,8 @@ FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
-IQ2_XXS = ggml_tensor_qtype["iq2_xxs"]
-IQ2_XS = ggml_tensor_qtype["iq2_xs"]
+IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
+IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
 
 

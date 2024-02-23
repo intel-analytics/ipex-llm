@@ -14,27 +14,12 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://huggingface.co/IEITYuan/Yuan2-2B-hf/blob/main/yuan_hf_model.py
+# https://huggingface.co/IEITYuan/Yuan2-2B-hf/blob/7ab7b3c18eb8e5232ce2a3f720d4e6f4b53a2806/yuan_hf_model.py
+# which is licensed under Apache License 2.0:
 #
-# coding=utf-8
-# Copyright 2022 EleutherAI and the HuggingFace Inc. team. All rights reserved.
+# https://huggingface.co/IEITYuan/Yuan2-2B-hf/blob/7ab7b3c18eb8e5232ce2a3f720d4e6f4b53a2806/README.md#%E5%A3%B0%E6%98%8E%E4%B8%8E%E5%8D%8F%E8%AE%AEterms-and-conditions
 #
-# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
-# and OPT implementations in this library. It has been modified from its
-# original forms to accommodate minor architectural differences compared
-# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+
 import copy
 import math
 from einops import rearrange
@@ -63,7 +48,7 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
     return use_fuse_rope
 
 
-def yuan2_attention_forward(
+def yuan_attention_forward(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
@@ -87,7 +72,9 @@ def yuan2_attention_forward(
 
     if use_cache:
         if past_key_value is None:
-            inference_hidden_states_memory = torch.empty(bsz, 2, hidden_states.shape[2], dtype=hidden_states.dtype)
+            inference_hidden_states_memory = torch.empty(bsz, 2,
+                                                         hidden_states.shape[2],
+                                                         dtype=hidden_states.dtype)
             is_first_step = True
         else:
             before_hidden_states = past_key_value[2]
@@ -95,13 +82,14 @@ def yuan2_attention_forward(
     if use_cache:
         if is_first_step:
             if q_len >= 2:
-                inference_hidden_states_memory = hidden_states[ :, -2:, :]
+                inference_hidden_states_memory = hidden_states[:, -2:, :]
             else:
                 inference_hidden_states_memory[:, :, :] = 0
                 inference_hidden_states_memory[:, -1:, :] = hidden_states[:, -1:, :]
         else:
             hidden_states_tmp = before_hidden_states[:, -1:, :]
-            inference_hidden_states_memory = copy.deepcopy(torch.cat((hidden_states_tmp, hidden_states), dim=1))
+            inference_hidden_states_memory = \
+                copy.deepcopy(torch.cat((hidden_states_tmp, hidden_states), dim=1))
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -121,7 +109,8 @@ def yuan2_attention_forward(
         kv_seq_len += 1
 
     else:
-        value_states = self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+        value_states = \
+            self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         if self.use_shareqk:
             # use_shareqk is disabled for now
             qk_states = self.qk_proj(hidden_states).view(bsz, q_len, self.num_heads*self.head_dim)
@@ -131,12 +120,14 @@ def yuan2_attention_forward(
             query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
             key_states = key_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         else:
-            hidden_states = self.lf_gate(hidden_states,before_hidden_states)
+            hidden_states = self.lf_gate(hidden_states, before_hidden_states)
             query_states = self.q_proj(hidden_states)
             key_states = self.k_proj(hidden_states)
             qk_states = torch.cat([query_states, key_states], dim=-1)
-            qk_states = qk_states.view(bsz,q_len,self.num_heads,int(qk_states.shape[-1]//self.num_heads))
-            (query_states,key_states) =  torch.chunk(qk_states, 2, dim=-1)
+            qk_states = qk_states.view(bsz, q_len,
+                                    self.num_heads,
+                                    int(qk_states.shape[-1]//self.num_heads))
+            (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
             query_states = query_states.transpose(1, 2)
             key_states = key_states.transpose(1, 2)
 
@@ -144,8 +135,11 @@ def yuan2_attention_forward(
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids, "yuan2")
+        query_states, key_states = apply_rotary_pos_emb(query_states,
+                                                        key_states,
+                                                        cos, sin,
+                                                        position_ids,
+                                                        "yuan")
 
         if past_key_value is not None:
             # reuse k, v, self_attention
@@ -170,18 +164,19 @@ def yuan2_attention_forward(
         elif use_cache:
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_key_states, new_value_states = init_kv_cache(bsz,
-                                                            self.num_heads,
-                                                            self.head_dim,
-                                                            kv_seq_len,
-                                                            max_cache_length,
-                                                            dtype=key_states.dtype,
-                                                            device=device)
+                                                             self.num_heads,
+                                                             self.head_dim,
+                                                             kv_seq_len,
+                                                             max_cache_length,
+                                                             dtype=key_states.dtype,
+                                                             device=device)
             new_key_states[:] = key_states
             new_value_states[:] = value_states
             key_states = new_key_states
             value_states = new_value_states
 
-    past_key_value = (key_states, value_states, inference_hidden_states_memory) if use_cache else None
+    past_key_value = \
+        (key_states, value_states, inference_hidden_states_memory) if use_cache else None
 
     if self.use_flash_attention:
         from flash_attn import flash_attn_varlen_func as flash_attn_unpadded_func
@@ -193,20 +188,26 @@ def yuan2_attention_forward(
         batch_size, seqlen_q = query_states.shape[0], query_states.shape[1]
         seqlen_k = key_states.shape[1]
 
-        q, k, v = [rearrange(x, 'b s ... -> (b s) ...') for x in [query_states, key_states, value_states]]
+        q, k, v = \
+            [rearrange(x, 'b s ... -> (b s) ...') for x in [query_states, key_states, value_states]]
 
-        cu_seqlens_q = torch.arange(0, (batch_size + 1) * seqlen_q, step=seqlen_q, dtype=torch.int,
-                                device=q.device)
+        cu_seqlens_q = torch.arange(0, (batch_size + 1) * seqlen_q,
+                                    step=seqlen_q,
+                                    dtype=torch.int,
+                                    device=q.device)
 
-        if self.training:   
-            assert seqlen_k == seqlen_q
+        if self.training:
+            invalidInputError(seqlen_k == seqlen_q,
+                              "`seqlen_k` should be equal to `seqlen_q`, but is not")
             cu_seqlens_k = cu_seqlens_q
             is_causal = self.causal_mask
         else:
             is_causal = seqlen_q == seqlen_k
-            cu_seqlens_k = torch.arange(0, (batch_size + 1) * seqlen_k, step=seqlen_k, dtype=torch.int,
-                    device=q.device)
-            self.dropout=0
+            cu_seqlens_k = torch.arange(0, (batch_size + 1) * seqlen_k,
+                                        step=seqlen_k,
+                                        dtype=torch.int,
+                                        device=q.device)
+            self.dropout = 0
 
         output = flash_attn_unpadded_func(
             q, k, v, cu_seqlens_q, cu_seqlens_k, seqlen_q, seqlen_k, self.dropout, causal=is_causal
@@ -214,33 +215,33 @@ def yuan2_attention_forward(
 
         attn_output = rearrange(output, '(b s) ... -> b s ...', b=batch_size)
     else:
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = \
+            torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
+        invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
+                          "Attention weights should be of size "
+                          f"{(bsz, self.num_heads, q_len, kv_seq_len)}, "
+                          f"but is {attn_weights.size()}")
+
         if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                invalidInputError(
-                    False,
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-                )
+            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                              f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                              f"but is {attention_mask.size()}")
             attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
+            attn_weights = torch.max(attn_weights,
+                                     torch.tensor(torch.finfo(attn_weights.dtype).min))
 
         # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_weights = \
+            torch.nn.functional.softmax(attn_weights,
+                                        dim=-1,
+                                        dtype=torch.float32).to(query_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
 
-        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            invalidInputError(
-                False,
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-                f" {attn_output.size()}"
-            )
+        invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
+                          "`attn_output` should be of size "
+                          f"{(bsz, self.num_heads, q_len, self.head_dim)}, "
+                          f"but is {attn_output.size()}")
 
         attn_output = attn_output.transpose(1, 2)
 
