@@ -77,7 +77,7 @@
 
    # Format the prompt
    question = "What is AI?"
-   prompt = " Question:{question}\n\n Answer:".format(prompt=question)
+   prompt = " Question:{prompt}\n\n Answer:".format(prompt=question)
    # Generate predicted tokens
    with torch.inference_mode():
        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
