@@ -1,4 +1,4 @@
-# Mistral
+# Gemma
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Google Gemma models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [google/gemma-7b-it ](https://huggingface.co/google/gemma-7b-it) and [google/gemma-2b-it](https://huggingface.co/google/gemma-2b-it) as reference Gemma models.
 
 ## Requirements
