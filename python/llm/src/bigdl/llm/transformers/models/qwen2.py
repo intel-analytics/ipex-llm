@@ -296,14 +296,13 @@ def qwen2_attention_forward_origin(
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
-                                                                        sin, cos, "qwen2",
-                                                                        position_ids)
+                                                                           sin, cos, "qwen2",
+                                                                           position_ids)
         else:
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids)
 
         if past_key_value is not None:
-        # update the number of seen tokens
             # update the number of seen tokens
             if self.layer_idx == 0:
                 past_key_value.seen_tokens += key_states.shape[-2]
