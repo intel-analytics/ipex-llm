@@ -353,10 +353,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>ml.dmlc</groupId>
             <artifactId>xgboost4j_${scala.major.version}</artifactId>
-	    <version>${xgboost.version}</version>
+	        <version>${xgboost.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.esotericsoftware.kryo</groupId>
@@ -370,8 +370,8 @@
         </dependency>
         <dependency>
             <groupId>ml.dmlc</groupId>
-	    <artifactId>xgboost4j-spark_${scala.major.version}</artifactId>
-	    <version>${xgboost.version}</version>
+	        <artifactId>xgboost4j-spark_${scala.major.version}</artifactId>
+	        <version>${xgboost.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.esotericsoftware.kryo</groupId>
