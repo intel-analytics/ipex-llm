@@ -43,7 +43,7 @@ jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
     with:
-      platform: '["Linux"]'
+      platform: 'Linux'
   # Set the testing matrix based on the event (schedule, PR, or manual dispatch)
   set-matrix:
     runs-on: ubuntu-latest
