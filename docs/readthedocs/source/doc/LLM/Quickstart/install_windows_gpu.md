@@ -56,10 +56,10 @@
   ```
 
 ### A quick example
-Next step you can start play with a real LLM. We use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) which only has 1.3B parameters. as an example to show how to run the model with bigdl-llm on windows. Here we we provide `demo.py` and you can run it with `python demo.py`. 
-> Note that transformer version should match the model you want to use. For example, here we use transformers 4.37.0 to run the demo. 
+Next step you can start play with a real LLM. We use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) (an 1.3B model) for demostration. You can copy/paste the following code in a python script and run it. 
+> Note: to use phi-1.5, you may need to update your transformer version to 4.37.0.  
 > ```
-> pip install transformers==4.37.0 
+> pip install -U transformers==4.37.0 
 > ```
 ```python
 import torch
