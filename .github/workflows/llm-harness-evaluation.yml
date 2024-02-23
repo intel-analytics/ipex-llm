@@ -235,7 +235,7 @@ jobs:
   # TODO: change machine to store the results later        
   llm-harness-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [set-matrix, llm-harness-evaluation]
+    needs: [llm-harness-evaluation]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
