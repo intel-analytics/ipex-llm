@@ -269,7 +269,7 @@ def qwen2_attention_forward_origin(
             past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
-        # print("fast path")
+
     else:
 
         query_states = self.q_proj(hidden_states)
