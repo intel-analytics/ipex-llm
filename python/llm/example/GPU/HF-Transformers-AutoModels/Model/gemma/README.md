@@ -134,5 +134,5 @@ Inference time: xxxx s
 user
 What is AI?
 model
-**Artificial Intelligence (AI)** is a field of computer science that involves the creation of intelligent machines capable of performing tasks typically requiring human intelligence, such as learning,
+**Artificial intelligence (AI)** is the simulation of human cognitive functions, such as learning, reasoning, and problem-solving, by machines. AI systems are designed
 ```
