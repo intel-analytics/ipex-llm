@@ -111,6 +111,7 @@ def yuan_attention_forward(
     else:
         value_states = \
             self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+
         if self.use_shareqk:
             # use_shareqk is disabled for now
             qk_states = self.qk_proj(hidden_states).view(bsz, q_len, self.num_heads*self.head_dim)
@@ -178,75 +179,36 @@ def yuan_attention_forward(
     past_key_value = \
         (key_states, value_states, inference_hidden_states_memory) if use_cache else None
 
-    if self.use_flash_attention:
-        from flash_attn import flash_attn_varlen_func as flash_attn_unpadded_func
-        attn_weights = None
-        query_states = query_states.transpose(1, 2)
-        key_states = key_states.transpose(1, 2)
-        value_states = value_states.transpose(1, 2)
+    attn_weights = \
+        torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        batch_size, seqlen_q = query_states.shape[0], query_states.shape[1]
-        seqlen_k = key_states.shape[1]
+    invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
+                      "Attention weights should be of size "
+                      f"{(bsz, self.num_heads, q_len, kv_seq_len)}, "
+                      f"but is {attn_weights.size()}")
 
-        q, k, v = \
-            [rearrange(x, 'b s ... -> (b s) ...') for x in [query_states, key_states, value_states]]
+    if attention_mask is not None:
+        invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                          f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                          f"but is {attention_mask.size()}")
+        attn_weights = attn_weights + attention_mask
+        attn_weights = torch.max(attn_weights,
+                                 torch.tensor(torch.finfo(attn_weights.dtype).min))
 
-        cu_seqlens_q = torch.arange(0, (batch_size + 1) * seqlen_q,
-                                    step=seqlen_q,
-                                    dtype=torch.int,
-                                    device=q.device)
+    # upcast attention to fp32
+    attn_weights = \
+        torch.nn.functional.softmax(attn_weights,
+                                    dim=-1,
+                                    dtype=torch.float32).to(query_states.dtype)
+    attn_output = torch.matmul(attn_weights, value_states)
 
-        if self.training:
-            invalidInputError(seqlen_k == seqlen_q,
-                              "`seqlen_k` should be equal to `seqlen_q`, but is not")
-            cu_seqlens_k = cu_seqlens_q
-            is_causal = self.causal_mask
-        else:
-            is_causal = seqlen_q == seqlen_k
-            cu_seqlens_k = torch.arange(0, (batch_size + 1) * seqlen_k,
-                                        step=seqlen_k,
-                                        dtype=torch.int,
-                                        device=q.device)
-            self.dropout = 0
+    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
+                      "`attn_output` should be of size "
+                      f"{(bsz, self.num_heads, q_len, self.head_dim)}, "
+                      f"but is {attn_output.size()}")
 
-        output = flash_attn_unpadded_func(
-            q, k, v, cu_seqlens_q, cu_seqlens_k, seqlen_q, seqlen_k, self.dropout, causal=is_causal
-        )
-
-        attn_output = rearrange(output, '(b s) ... -> b s ...', b=batch_size)
-    else:
-        attn_weights = \
-            torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-        invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
-                          "Attention weights should be of size "
-                          f"{(bsz, self.num_heads, q_len, kv_seq_len)}, "
-                          f"but is {attn_weights.size()}")
-
-        if attention_mask is not None:
-            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                              f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
-                              f"but is {attention_mask.size()}")
-            attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(attn_weights,
-                                     torch.tensor(torch.finfo(attn_weights.dtype).min))
-
-        # upcast attention to fp32
-        attn_weights = \
-            torch.nn.functional.softmax(attn_weights,
-                                        dim=-1,
-                                        dtype=torch.float32).to(query_states.dtype)
-        attn_output = torch.matmul(attn_weights, value_states)
-
-        invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
-                          "`attn_output` should be of size "
-                          f"{(bsz, self.num_heads, q_len, self.head_dim)}, "
-                          f"but is {attn_output.size()}")
-
-        attn_output = attn_output.transpose(1, 2)
-
+    attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-
     attn_output = self.o_proj(attn_output)
 
     if not output_attentions:
