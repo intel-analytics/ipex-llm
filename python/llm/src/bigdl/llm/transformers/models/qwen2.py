@@ -259,7 +259,7 @@ def qwen2_attention_forward_origin(
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
         import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
+        query_states, key_states, value_states = linear_q4_0.forward_qkv_bias(hidden_states,
                                                                          self.q_proj.weight,
                                                                          self.k_proj.weight,
                                                                          self.v_proj.weight,
