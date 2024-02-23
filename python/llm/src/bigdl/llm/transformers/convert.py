@@ -819,8 +819,8 @@ def _optimize_post(model, lightweight_bmm=False):
                 if model.config.hidden_size != 4544:
                     # falcon-180b and new falcon-40b
                     if version.parse(trans_version) >= version.parse("4.36.0"):
-                        # transformers version >= 4.36.0
-                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward_4_36  # noqa: E501
+                    # transformers version >= 4.36.0
+                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward_4_36
                         convert_forward(model,
                                         module.FalconAttention,
                                         falcon_attention_forward_4_36
