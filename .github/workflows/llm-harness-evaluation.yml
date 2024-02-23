@@ -280,7 +280,7 @@ jobs:
         shell: bash
         run: |
           ls $ACC_FOLDER/$DATE
-          python make_table_and_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
+          python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
 
       - name: Update HTML
         working-directory: ${{ github.workspace }}/python/llm/test/benchmark/harness
