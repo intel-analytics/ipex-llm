@@ -31,7 +31,7 @@ import torch.nn as nn
 from bigdl.llm.transformers.models.llama import should_use_fuse_rope
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu
+    apply_rotary_pos_emb_no_cache_xpu, mlp_fusion_check, fp16_fusion_check
 from bigdl.llm.transformers.models.llama import should_use_fuse_rope
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
@@ -45,12 +45,57 @@ def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
         use_fuse_rope and enough_kv_room and bs == 1
 
 
-def should_use_fuse_rope(self, hidden_states, position_ids):
-    use_fuse_rope = hidden_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and hidden_states.requires_grad)
+def should_use_fuse_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
 
+
+def yuan_mlp_forward(
+    self,
+    x: torch.Tensor,
+    residual=None
+) -> torch.Tensor:
+    x_2d = x.view(-1, x.shape[-1])
+    bsz, hidden_size = x_2d.shape
+    qtype = getattr(self.up_proj, "qtype", None)
+    if mlp_fusion_check(x_2d, qtype, self.training):
+        import linear_q4_0
+        if not x_2d.is_contiguous():
+            x_2d = x_2d.contiguous()
+        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
+            x_2d, self.up_proj.weight.data, self.gate_proj.weight.data,
+            x_2d.shape[0], x_2d.shape[1], self.up_proj.out_len,
+            qtype
+        ))
+        if residual is not None:
+            return out + residual
+        else:
+            return out
+    elif fp16_fusion_check(self.up_proj, x, self.training) and \
+            hidden_size == 4096 and bsz == 1:
+        hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.up_proj.weight)
+        hidden_states = torch.ops.torch_ipex.mm_resmul(
+            x, self.gate_proj.weight, hidden_states1
+        )
+        if residual is None:
+            hidden_states = torch.matmul(hidden_states, self.down_proj.weight)
+        else:
+            attn_output = torch.addmm(
+                residual.flatten(0, -2),
+                hidden_states.flatten(0, -2),
+                self.down_proj.weight,
+                beta=1,
+            )
+            hidden_states = attn_output.view(x.shape)
+        return hidden_states
+    else:
+        out = self.down_proj(self.act_fn(self.up_proj(x)) * self.gate_proj(x))
+        if residual is not None:
+            return out + residual
+        else:
+            return out
 
 def yuan_attention_forward(
     self,
