@@ -49,8 +49,7 @@
   pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
-*  You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. 
-* For example, in the Python interactive shell, execute the following import command:
+*  You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
   ```python
   from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
   ```
