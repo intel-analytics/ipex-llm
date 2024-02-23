@@ -261,7 +261,7 @@ jobs:
             echo 'ACC_FOLDER=/home/arda/harness-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
           fi
 
-      - name: Download all results
+      - name: Download harness results
         uses: actions/download-artifact@v3
         with:
           name: harness_results
