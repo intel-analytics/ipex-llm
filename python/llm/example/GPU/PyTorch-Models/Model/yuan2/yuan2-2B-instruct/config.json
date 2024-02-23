@@ -1,0 +1,39 @@
+{
+    "_from_model_config":true,
+  "architectures": [
+    "YuanForCausalLM"
+  ],
+  "auto_map":{
+          "AutoConfig":"configuration_yuan.YuanConfig",
+          "AutoModelForCausalLM":"yuan_hf_model.YuanForCausalLM"
+  },
+  "tokenizer_class":"YuanTokenizer",
+  "hidden_act": "silu",
+  "hidden_size": 2048,
+  "initializer_range": 0.02,
+  "intermediate_size": 8192,
+  "max_position_embeddings": 8192,
+  "model_type": "yuan",
+  "num_attention_heads": 32,
+  "num_hidden_layers": 24,
+  "rms_norm_eps": 1e-06,
+  "dropout": 0.1,
+  "tie_word_embeddings": true,
+  "torch_dtype": "bfloat16",
+  "transformers_version": "4.30.0.dev0",
+  "use_cache": true,
+  "causal_mask": true,
+  "use_flash_attention": false,
+  "reset_attention_mask": true,
+  "reset_position_ids": true,
+  "use_loss_mask": false,
+  "eod_token": 77185,
+  "sep_token": 77187,
+  "eod_token_id": 77185,
+  "sep_token_id": 77185,
+  "pad_token_id": 77185,
+  "bos_token_id": 77185,
+  "eos_token_id": 77185,
+  "mask_token_id": 77185,
+  "vocab_size": 135040
+}
