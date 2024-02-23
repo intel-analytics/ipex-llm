@@ -230,7 +230,7 @@ jobs:
         shell: bash
         run: |
           ls results
-          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table_and_csv.py results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table.py results
 
   # TODO: change machine to store the results later        
   llm-harness-summary-html:
