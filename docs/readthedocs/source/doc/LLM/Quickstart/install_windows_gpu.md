@@ -4,13 +4,14 @@
 
 ### Install GPU driver
 
-* Install Visual Studio 2022 Community Edition from [here](https://visualstudio.microsoft.com/downloads/). 
-
-  > Note select `Desktop development with C++` during installation.
-  > The installation could be slow and cost 15 minutes. Need at least 7GB. 
-  > If you do not select this workload during installation, go to Tools > Get Tools and Features... to change workload following [this page](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads). 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=80%; />
-* Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
+1. Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
+   
+    > Note: The installation could take around 15 minutes, and it requires at least 7GB of free disk space.  
+    > If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on [this Microsoft guide](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)  to update your installation.
+    > 
+    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
+    
+2. Install latest GPU driver from [here](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). Note the process could be slow and It takes 10 minutes to download and install. Reboot is also needed. 
 After rebooting, if driver is installed correctly we will see the Arc Control like the fig below. 
   >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=70%; />
   > 
