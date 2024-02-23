@@ -310,7 +310,8 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if x.device.type != 'xpu':
         return False
-    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"],
+                     ggml_tensor_qtype["gguf_iq2_xxs"]]:
         return False
     if training or x.requires_grad:
         return False
