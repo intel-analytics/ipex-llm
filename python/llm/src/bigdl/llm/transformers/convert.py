@@ -367,7 +367,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
                 imatrix_data=imatrix_data,
                 embedding_qtype=embedding_qtype,
-                model_type=model_type
+                model_type=model_type,
+                torch_dtype=torch_dtype
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
