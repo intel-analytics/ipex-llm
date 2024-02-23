@@ -510,7 +510,8 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
-        if bigdl_transformers_low_bit in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and not cpu_embedding:
+        if bigdl_transformers_low_bit in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and \
+                not cpu_embedding:
             embedding_qtype = "q2_k"
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]

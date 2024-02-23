@@ -326,7 +326,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 _weight=module.weight.data,
             )
         elif type(module) == nn.Embedding and embedding_qtype is not None:
-            if  torch_dtype == "auto":
+            if torch_dtype == "auto":
                 torch_dtype = torch.float32
             q_embedding = LowBitEmbedding(
                 num_embeddings=module.num_embeddings,
@@ -824,8 +824,9 @@ def _optimize_post(model, lightweight_bmm=False):
                 if model.config.hidden_size != 4544:
                     # falcon-180b and new falcon-40b
                     if version.parse(trans_version) >= version.parse("4.36.0"):
-                    # transformers version >= 4.36.0
-                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward_4_36
+                        # transformers version >= 4.36.0
+                        from bigdl.llm.transformers.models.falcon import \
+                                falcon_attention_forward_4_36
                         convert_forward(model,
                                         module.FalconAttention,
                                         falcon_attention_forward_4_36
