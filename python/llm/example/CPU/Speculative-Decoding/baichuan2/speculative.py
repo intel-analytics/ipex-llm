@@ -76,6 +76,7 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 attention_mask=attention_mask,
+                                th_stop_draft=0.55,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0])
 
@@ -84,6 +85,7 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 attention_mask=attention_mask,
+                                th_stop_draft=0.55,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         end = time.perf_counter()

@@ -101,7 +101,7 @@ Use ```TSPipeline.fit/evaluate/predict``` to train pipeline (incremental fitting
 #incremental fitting
 ts_pipeline.fit(new_train_df, new_val_df, epochs=10)
 #evaluate
-ts_pipeline.evalute(val_df)
+ts_pipeline.evaluate(val_df)
 ts_pipeline.predict(test_df) 
 
 ```

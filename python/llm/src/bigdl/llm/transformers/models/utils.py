@@ -143,7 +143,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral"]:
+                        "mixtral", "qwen2"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -153,14 +153,25 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
     elif model_family == "gptj":
-        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
-        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+
+
+def apply_ipex_rotate_every_two(q, k, cos, sin):
+    # ipex's apply_rotary_embedding_two_qk can change the origin storage,
+    # so q/k will get the result directly.
+    from bigdl.llm.transformers.utils import get_ipex_version
+    if get_ipex_version() >= "2.1.10+xpu":
+        torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+            q, k, sin, cos, q, k
+        )
+    else:
+        torch.ops.torch_ipex.apply_rotary_embedding(q, sin, cos, q)
+        torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
 def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
@@ -171,7 +182,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral"]:
+                        "mixtral", "qwen2"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids, q_embed, k_embed)
         return q_embed, k_embed
     else:
@@ -179,7 +190,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
                           f"{model_family} is not supported.")
 
 
-def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
+def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_ids=None):
     if q.device.type != "xpu":
         invalidInputError(False,
                           f"only xpu is supported in this function")
@@ -188,10 +199,22 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["qwen", "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-        return q_embed, k_embed
+    elif model_family in ["qwen2"]:
+        cos = cos.to(q.dtype)
+        sin = sin.to(q.dtype)
+        cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
+        sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
+        cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
+        sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+    elif model_family in ["gemma"]:
+        cos = cos.unsqueeze(1)
+        sin = sin.unsqueeze(1)
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+    return q_embed, k_embed
 
 
 def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
@@ -309,12 +332,13 @@ def use_xmx(x: torch.Tensor, qtype: int):
 
 
 def use_fused_layer_norm(x: torch.Tensor, training: bool):
+    device = get_xpu_device_type(x)
     return (
         not training
         and not x.requires_grad
-        and x.device.type == 'xpu'
+        and device in ["arc", "flex", "pvc", "mtl"]  # fused layer norm cannot run on UHD
         and (
-            get_xpu_device_type(x) not in ["arc", "flex"]
+            device == "mtl"  # fused layer norm conflicts with XMX, so disable it when using XMX
             or x.numel() // x.size(-1) == 1
         )
     )

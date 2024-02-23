@@ -38,7 +38,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
 
@@ -47,7 +46,7 @@ jobs:
     runs-on: [self-hosted, Vilvarin]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: set env
       env:
         DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
@@ -77,7 +76,7 @@ jobs:
     runs-on: [self-hosted, EDMM]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: set env
         env:
           DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
@@ -107,7 +106,7 @@ jobs:
     runs-on: [self-hosted, Vilvarin]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -141,7 +140,7 @@ jobs:
     runs-on: [self-hosted, Vilvarin]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -174,7 +173,7 @@ jobs:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, SGX, Wilwarin]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -207,7 +206,7 @@ jobs:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-TPC-H-On-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Vilvarin]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -240,7 +239,7 @@ jobs:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Spark-K8S-TPC-DS-On-Gramine' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Vilvarin]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -275,7 +274,7 @@ jobs:
     runs-on: [self-hosted, SGX, Wilwarin]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -308,7 +307,7 @@ jobs:
   create-workflow-badge:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: create workflow badge
       if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge

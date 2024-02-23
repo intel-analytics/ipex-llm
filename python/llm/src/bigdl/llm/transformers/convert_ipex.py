@@ -37,59 +37,14 @@
 import torch
 from bigdl.llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+from intel_extension_for_pytorch.transformers.optimize import (
+    lowering_class_cpu,
+    convert_class,
+)
 
 
-def lowering_class_cpu(m, target_m, new_class, config, tpp=False, woq=False):
-    for name, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
-            new_m = new_class(sub_m, config, tpp, woq)
-            setattr(m, name, new_m)
-        lowering_class_cpu(sub_m, target_m, new_class, config, tpp, woq)
-
-
-def convert_class(m, target_m, new_class, config, distributed=False):
-    for name, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
-            new_m = new_class(sub_m, config, distributed)
-            setattr(m, name, new_m)
-        convert_class(sub_m, target_m, new_class, config, distributed)
-
-
-def _set_optimized_model_for_generation(
-    model,
-    optimized_model,
-    first_token_optimized_model=None,
-):
-    from intel_extension_for_pytorch.transformers.models.reference.models import (
-        IPEX_LLM_Model_Return
-    )
-    if first_token_optimized_model is not None:
-        model.trace_graph_first = IPEX_LLM_Model_Return(
-            model, first_token_optimized_model
-        ).forward
-
-    model.trace_graph = IPEX_LLM_Model_Return(model, optimized_model).forward
-    print(
-        "ipex.llm.optimize has set the optimized or quantization model for model.generate()"
-    )
-    return model
-
-
-def _ipex_optimize_rmsnorm(_model):
+def _ipex_optimize_rmsnorm(_model, supported_classes):
     from intel_extension_for_pytorch.transformers.models.cpu.fusions.mha_fusion import _IPEXRMSNorm
-    import transformers
-    supported_classes = [
-        transformers.models.llama.modeling_llama.LlamaRMSNorm,
-    ]
-    if _model.config.architectures[0] == "BaichuanForCausalLM":
-        supported_classes.append(type(_model.model.layers[0].input_layernorm))
-    if (
-        _model.config.architectures[0] == "ChatGLMModel"
-        and _model.config.rmsnorm
-    ):
-        supported_classes.append(
-            type(_model.transformer.encoder.layers[0].input_layernorm)
-        )
     for supported_class in supported_classes:
         lowering_class_cpu(
             _model,
@@ -137,11 +92,25 @@ def _ipex_optimize_attention(model):
         )
 
 
+def _ipex_optimize_model(model, rms_classes):
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+
+    _ipex_optimize_rmsnorm(model, rms_classes)
+    _ipex_optimize_attention(model)
+    _ipex_optimize_decoder(model)
+    model.register_forward_hook(output_hook, with_kwargs=True)
+
+
 def _ipex_jit(model):
-    from intel_extension_for_pytorch.transformers.optimize import get_dummy_input
+    from intel_extension_for_pytorch.transformers.optimize import (
+        get_dummy_input,
+        _set_optimized_model_for_generation
+    )
     sample_inputs = (
         get_dummy_input(model, return_dict=True)
     )
+    if "return_last_logit" in sample_inputs:
+        del sample_inputs["return_last_logit"]
     with torch.no_grad(), torch.cpu.amp.autocast(
         enabled=True
     ):
@@ -156,7 +125,48 @@ def _ipex_jit(model):
             model, optimized_model=trace_model
         )
 
-    return model.eval()
+    return model
+
+
+def convert_function(m, func_name, new_function):
+    bound_method = new_function.__get__(m, m.__class__)
+    setattr(m, func_name, bound_method)
+
+
+def GLM_get_masks(self, input_ids, past_key_values, padding_mask=None):
+    batch_size, seq_length = input_ids.shape
+    full_attention_mask = torch.ones(
+        batch_size, seq_length, seq_length, device=input_ids.device
+    )
+    full_attention_mask.tril_()
+    past_length = 0
+    if past_key_values:
+        if len(past_key_values[0]) != 4:  # not discrete kv cache
+            past_length = past_key_values[0][0].shape[0]
+        else:  # discrete kv cache
+            past_length = past_key_values[0][0].shape[-2]
+
+    import os
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    # always call for jit
+    if past_length or _enable_ipex:
+        full_attention_mask = torch.cat(
+            (
+                torch.ones(
+                    batch_size, seq_length, past_length, device=input_ids.device
+                ),
+                full_attention_mask,
+            ),
+            dim=-1,
+        )
+    if padding_mask is not None:
+        full_attention_mask = full_attention_mask * padding_mask.unsqueeze(1)
+    # if not past_length and padding_mask is not None:
+    #     full_attention_mask -= padding_mask.unsqueeze(-1) - 1
+    full_attention_mask = (full_attention_mask < 0.5).bool()
+    full_attention_mask.unsqueeze_(1)
+    return full_attention_mask
 
 
 @staticmethod
