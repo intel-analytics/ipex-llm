@@ -259,11 +259,11 @@ jobs:
           path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
 
       # Save fp16.csv in the parent folder of env.nightly_folder
-      - name: Download fp16.csv for summary
-        shell: bash
-        run: |
-          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/dev/benchmark/perplexity/fp16.csv -O ${{ env.NIGHTLY_FOLDER}}/../fp16.csv
-          ls ${{ env.NIGHTLY_FOLDER}}/..
+      #- name: Download fp16.csv for summary
+      #  shell: bash
+      #  run: |
+      #    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/dev/benchmark/perplexity/fp16.csv -O ${{ env.NIGHTLY_FOLDER}}/../fp16.csv
+      #    ls ${{ env.NIGHTLY_FOLDER}}/..
 
       - name: Summarize the results for nightly run
         if: github.event_name == 'schedule'
