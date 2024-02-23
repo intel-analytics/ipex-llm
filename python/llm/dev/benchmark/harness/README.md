@@ -5,7 +5,10 @@ Before running, make sure to have [bigdl-llm](../../../README.md) installed.
 
 ## Install Harness
 ```bash
-pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@b281b09
+git clone https://github.com/EleutherAI/lm-evaluation-harness.git
+cd lm-evaluation-harness
+git checkout b281b09
+pip install -e .
 ```
 
 ## Run
