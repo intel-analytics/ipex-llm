@@ -11,6 +11,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   GIST_ID: 966d4c0bf23c67662120d1bf4b1c88dc
 
@@ -19,7 +22,7 @@ jobs:
     runs-on: [self-hosted, Linux, Bree]
     steps:
     - name: "Checkout Code"
-      uses: actions/checkout@v3
+      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
     - name: "Run FOSSA Scan"
       uses: fossas/fossa-action@main # Use a specific version if locking is preferred
@@ -81,7 +84,7 @@ jobs:
   create-workflow-badge:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: create workflow badge
       if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge

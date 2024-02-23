@@ -1,18 +1,15 @@
-# Harness Evalution
-[Harness evalution](https://github.com/EleutherAI/lm-evaluation-harness) allows users to eaisly get accuracy on various datasets. Here we have enabled harness evalution with BigDL-LLM under 
+# Harness Evaluation
+[Harness evaluation](https://github.com/EleutherAI/lm-evaluation-harness) allows users to eaisly get accuracy on various datasets. Here we have enabled harness evaluation with BigDL-LLM under 
 [Open LLM Leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard) settings.
 Before running, make sure to have [bigdl-llm](../../../README.md) installed.
 
 ## Install Harness
 ```bash
-git clone https://github.com/EleutherAI/lm-evaluation-harness.git
-cd  lm-evaluation-harness
-git checkout e81d3cc
-pip install -e .
+pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@b281b09
 ```
 
 ## Run
-run `python run_llb.py`. `run_llb.py` combines some arguments in `main.py` to make evalutions easier. The mapping of arguments is defined as a dict in [`llb.py`](llb.py).
+run `python run_llb.py`. `run_llb.py` combines some arguments in `main.py` to make evaluations easier. The mapping of arguments is defined as a dict in [`llb.py`](llb.py).
 
 ### Evaluation on CPU
 ```python

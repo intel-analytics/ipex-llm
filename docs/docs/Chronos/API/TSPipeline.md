@@ -7,7 +7,7 @@ from zoo.chronos.autots.deprecated.forecast import TSPipeline
 __Note:__
 
 - TSPipeline can be obtained from AutoTSTrainer or loaded from saved file.
-- train_df and validation_df in fit/evalute/predict are data frames. An exmaple data frame looks like below.
+- train_df and validation_df in fit/evaluate/predict are data frames. An exmaple data frame looks like below.
 
   |datetime|value|extra_feature_1|extra_feature_2|
   | --------|----- |---| ---|
