@@ -88,7 +88,8 @@ class LowBitEmbedding(torch.nn.Embedding):
                  _weight: Optional[Tensor] = None,
                  _freeze: bool = False,
                  device=None, dtype=None,
-                 qtype=None) -> None:
+                 qtype=None,
+                 torch_dtype=torch.float32) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq, sparse,
                          _weight, device, dtype)
@@ -96,6 +97,7 @@ class LowBitEmbedding(torch.nn.Embedding):
                                 requires_grad=False,
                                 quantized=False, _shape=None, qtype=qtype)
         self.embedding_dim = embedding_dim
+        self.torch_dtype = torch_dtype
 
     def forward(self, x: Tensor):
         invalidInputError(x.device.type == "xpu",
@@ -109,4 +111,4 @@ class LowBitEmbedding(torch.nn.Embedding):
 
         result = linear_q4_0.dequantize_rows(x.contiguous(), self.weight.data,
                                              self.weight.qtype, self.embedding_dim)
-        return result
+        return result.to(self.torch_dtype)

@@ -192,7 +192,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False, prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
-                                 model_type=None):
+                                 model_type=None, torch_dtype=torch.float32):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -326,6 +326,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 _weight=module.weight.data,
             )
         elif type(module) == nn.Embedding and embedding_qtype is not None:
+            if  torch_dtype == "auto":
+                torch_dtype = torch.float32
             q_embedding = LowBitEmbedding(
                 num_embeddings=module.num_embeddings,
                 embedding_dim=module.embedding_dim,
@@ -336,6 +338,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 sparse=module.sparse,
                 _weight=module.weight.data,
                 qtype=embedding_qtype,
+                torch_dtype=torch_dtype
             )
             device = module.weight.data.device
             # Copy the weights
@@ -571,7 +574,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         None, convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
         embedding_qtype=embedding_qtype,
-        model_type=model_type
+        model_type=model_type,
+        torch_dtype=torch_dtype
     )
     if not has_been_replaced:
         warnings.warn(
