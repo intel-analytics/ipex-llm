@@ -26,6 +26,11 @@ on:
         default: ''
         required: false
         type: string
+      platform:
+        description: 'Platforms to built on'
+        default: '["Windows", "Linux"]'
+        required: false
+        type: string
   workflow_call:
     inputs:
       llmcpp-ref:
@@ -33,10 +38,16 @@ on:
         default: ''
         required: false
         type: string
-
+      platform:
+        description: 'Platforms to built on'
+        default: '["Windows", "Linux"]'
+        required: false
+        type: string
+    
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   check-linux-avxvnni-artifact:
+    if: contains(${{ fromJson(inputs.platform) }}, 'Linux')
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -149,6 +160,7 @@ jobs:
           conda remove -n python311 --all -y
 
   check-linux-avx512-artifact:
+    if: contains(${{ fromJson(inputs.platform) }}, 'Linux')
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -249,6 +261,7 @@ jobs:
           conda remove -n python39 --all -y
 
   check-linux-amx-artifact:
+    if: contains(${{ fromJson(inputs.platform) }}, 'Linux')
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -319,6 +332,7 @@ jobs:
           conda remove -n python39 --all -y
           
   check-windows-avx2-artifact:
+    if: contains(${{ fromJson(inputs.platform) }}, 'Windows')
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -363,6 +377,7 @@ jobs:
             build/Release
 
   check-windows-avx-vnni-artifact:
+    if: contains(${{ fromJson(inputs.platform) }}, 'Windows')
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -472,6 +487,7 @@ jobs:
             release
 
   check-windows-avx-artifact:
+    if: contains(${{ fromJson(inputs.platform) }}, 'Windows')
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
