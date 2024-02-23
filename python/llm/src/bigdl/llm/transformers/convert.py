@@ -819,8 +819,9 @@ def _optimize_post(model, lightweight_bmm=False):
                 if model.config.hidden_size != 4544:
                     # falcon-180b and new falcon-40b
                     if version.parse(trans_version) >= version.parse("4.36.0"):
-                    # transformers version >= 4.36.0
-                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward_4_36
+                        # transformers version >= 4.36.0
+                        from bigdl.llm.transformers.models.falcon import \
+                            falcon_attention_forward_4_36
                         convert_forward(model,
                                         module.FalconAttention,
                                         falcon_attention_forward_4_36
@@ -1147,4 +1148,12 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+    elif model.config.model_type == 'yuan':
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.yuan import yuan_attention_forward
+        convert_forward(model,
+                        module.YuanAttention,
+                        yuan_attention_forward
+                        )
     return model
