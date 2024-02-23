@@ -90,7 +90,6 @@ jobs:
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
-      CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/whisper_nightly_gpu/' || '/mnt/disk1/whisper_pr_gpu/' }}
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -149,6 +148,60 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: harness_results
+          name: whisper_results
           path:
-            ${{ github.workspace }}/python/llm/dev/benchmark/whisper/results/**   
+            ${{ github.workspace }}/python/llm/dev/benchmark/whisper/results/**
+
+  llm-whisper-summary:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [set-matrix, llm-whisper-evaluation]
+    runs-on: ["self-hosted", "llm", "perf"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Set output path
+        shell: bash
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          OUTPUT_PATH="results_$DATE"
+          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
+          NIGHTLY_FOLDER="/mnt/disk1/whisper_nightly_gpu"
+          echo "NIGHTLY_FOLDER=$NIGHTLY_FOLDER" >> $GITHUB_ENV
+          PR_FOLDER="/mnt/disk1/whisper_pr_gpu"
+          echo "PR_FOLDER=$PR_FOLDER" >> $GITHUB_ENV
+
+      - name: Download all results for nightly run
+        if: github.event_name == 'schedule'
+        uses: actions/download-artifact@v3
+        with:
+          name: whisper_results
+          path: ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
+
+      - name: Download all results for pr run
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v3
+        with:
+          name: whisper_results
+          path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
+
+      - name: Summarize the results for nightly run
+        if: github.event_name == 'schedule'
+        shell: bash
+        run: |
+          ls /home/arda/whisper-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
+          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
+          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
+
+      - name: Summarize the results for pull request
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          ls /home/arda/whisper-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
+          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
+          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.PR_FOLDER}}
