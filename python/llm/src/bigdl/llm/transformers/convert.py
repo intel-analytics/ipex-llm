@@ -1147,4 +1147,12 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+    elif model.config.model_type == 'yuan':
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.yuan import yuan_attention_forward
+        convert_forward(model,
+                        module.YuanAttention,
+                        yuan_attention_forward
+                        )
     return model
