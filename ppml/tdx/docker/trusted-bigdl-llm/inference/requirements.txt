@@ -6,7 +6,7 @@ bigdl-nano==2.3.0b20230322
 accelerate
 loralib
 sentencepiece
-gradio==4.11.0
+gradio==4.19.2
 uvicorn
 sse-starlette
 openai
