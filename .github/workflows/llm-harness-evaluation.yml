@@ -69,7 +69,7 @@ jobs:
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t"]'
-          PR_MATRIX_TASK: '["truthfulqa", "winogrande"]'
+          PR_MATRIX_TASK: '["winogrande"]'
           PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
 
