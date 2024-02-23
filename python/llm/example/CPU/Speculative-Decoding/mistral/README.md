@@ -84,4 +84,4 @@ First token latency xx.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-BIGDL_OPT_IPEX can help to accelerate speculative decoding on Mistral, and please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/Speculative-Decoding/baichuan2/README.md#4-accelerate-with-bigdl_opt_ipex) for a try.
+BIGDL_OPT_IPEX can help to accelerate speculative decoding on Mistral, and please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-bigdl_opt_ipex) for a try.
