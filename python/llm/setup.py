@@ -269,7 +269,8 @@ def setup_package():
 
     all_requires = ['py-cpuinfo', 'protobuf',
                     "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                    'mpmath==1.3.0']
+                    'mpmath==1.3.0' # fix AttributeError: module 'mpmath' has no attribute 'rational'
+                    ]
     all_requires += CONVERT_DEP
 
     # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu

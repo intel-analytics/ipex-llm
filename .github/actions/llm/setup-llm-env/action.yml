@@ -34,13 +34,14 @@ runs:
         if [[ ${{ inputs.extra-dependency }} == 'xpu_2.0' ]]; then
           pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.0]" -f https://developer.intel.com/ipex-whl-stable-xpu 
           pip install pytest expecttest
+          pip install mpmath==1.3.0 # fix AttributeError: module 'mpmath' has no attribute 'rational'
         elif [[ ${{ inputs.extra-dependency }} == 'xpu_2.1' ]]; then
           pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" -f https://developer.intel.com/ipex-whl-stable-xpu 
           pip install pytest expecttest
+          pip install mpmath==1.3.0 # fix AttributeError: module 'mpmath' has no attribute 'rational'
         else
           pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
           pip install pytest
+          pip install mpmath==1.3.0 # fix AttributeError: module 'mpmath' has no attribute 'rational'
           bash python/llm/test/run-llm-install-tests.sh
         fi
-        pip uninstall mpmath -y || true
-        pip install mpmath==1.3.0
