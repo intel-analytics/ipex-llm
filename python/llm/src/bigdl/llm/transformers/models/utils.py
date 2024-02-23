@@ -207,6 +207,10 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
         cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+    elif model_family in ["gemma"]:
+        cos = cos.unsqueeze(1)
+        sin = sin.unsqueeze(1)
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
