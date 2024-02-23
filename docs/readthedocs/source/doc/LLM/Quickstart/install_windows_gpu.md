@@ -71,14 +71,14 @@
    generation_config = GenerationConfig(use_cache = True)
    
    tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-1_5", trust_remote_code=True)
-   
+   # load Model using bigdl-llm and load it to GPU
    model = AutoModelForCausalLM.from_pretrained(
        "microsoft/phi-1_5", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
    model = model.to('xpu')
-   
+
+   # Format the prompt
    question = "What is AI?"
    prompt = " Question:{question}\n\n Answer:".format(prompt=question)
-   
    # Generate predicted tokens
    with torch.inference_mode():
        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
