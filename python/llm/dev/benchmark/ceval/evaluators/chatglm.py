@@ -22,7 +22,7 @@ from thefuzz import process
 from transformers import AutoTokenizer
 
 from evaluators.evaluator import Evaluator
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModel
 from transformers.generation.utils import LogitsProcessorList
 from transformers.generation.logits_process import LogitsProcessor
 
@@ -42,7 +42,7 @@ class ChatGLMEvaluator(Evaluator):
             self.model_path,
             trust_remote_code=True
         )
-        self.model = AutoModelForCausalLM.from_pretrained(
+        self.model = AutoModel.from_pretrained(
             self.model_path,
             load_in_low_bit=self.qtype,
             optimize_model=True,
@@ -60,7 +60,7 @@ class ChatGLMEvaluator(Evaluator):
             message.append(self.format_example(dev_df.iloc[i, :], cot=cot))
         return message
         
-    def format_example(self, line, include_answer=True, cot=False, add_prompt=''):
+    def format_example(self, line, include_answer=False, cot=False, add_prompt=''):
         example = add_prompt + line['question']
         # print(example)
         for choice in self.choices:
@@ -110,6 +110,51 @@ class ChatGLMEvaluator(Evaluator):
             return answer, False
         return '-', False
     
+    def extract_choice(self, gen, prompt, choice_list):
+        res = re.search(
+            r"(?:(?:选|选择|选定)[：:]?\s*|(?:(?:答案|选项)(?![^ABCD]{0,10}?(?:不|非)[^ABCD]{0,10}?(?:是|选|为|：|:|】))[^ABCD]{0,10}?(?:是|选|为|：|:|】))[^ABCD]{0,10}?)(A|B|C|D)(?:选项)?(?:\)|。|\.|，|,|．|、|A|B|C|D|$|：|:|\)|）)",
+            gen,
+        )
+
+        if res is None:
+            res = re.search(
+                r"(A|B|C|D)(?:选?项)?(?![^ABCD]{0,4}?(?:不|非)[^ABCD]{0,4}?(?:正确|对[的，。：]|符合))[^ABCD]{0,4}?(?:正确|对[的，。：]|符合)",
+                gen,
+            )
+
+        if res is None:
+            res = re.search(r"^[\(（]?(A|B|C|D)(?:。|\)|）|\.|，|,|．|：|:|$)", gen)
+
+        if res is None:
+            res = re.search(r"(?<![a-zA-Z])(A|B|C|D)(?![a-zA-Z=])", gen)
+
+        if res is None:
+            return self.choices[choice_list.index(process.extractOne(gen, choice_list)[0])]
+        return res.group(1)
+
+    def process_before_extraction(self, gen, question, choice_dict):
+
+        question_split = question.rstrip("。").split("。")[-1].split("_")
+
+        if len(question_split[0].strip()) > 4:
+            gen = gen.replace(question_split[0], "答案是")
+        if len(question_split[-1].strip()) > 4:
+            gen = gen.replace(question_split[-1], "")
+
+        for key, val in sorted(choice_dict.items(), key=lambda x: len(x[1]), reverse=True):
+            gen = gen.replace(val.rstrip("。"), key)
+        return gen
+
+    def extract_answer(self, response, row):
+        prompt = row["question"]
+        gen = self.process_before_extraction(
+            response, prompt, {choice: row[choice] for choice in self.choices}
+        )
+        if not isinstance(prompt, str):
+            prompt = prompt[0]
+        pred = self.extract_choice(gen, prompt, [row[choice] for choice in self.choices])
+        return pred
+
     def build_prompt(self, text):
         return "[Round {}]\n\n问：{}\n\n答：".format(1, text)
 
@@ -168,7 +213,7 @@ class ChatGLMEvaluator(Evaluator):
         eval_type="validation", # "test","validation",
         dev_df=None,
         few_shot=False,
-        cot=False,
+        cot=True,
     ):
         if eval_type == "validation":
             correct_num = 0
@@ -200,12 +245,7 @@ class ChatGLMEvaluator(Evaluator):
         elif eval_type == "test":
             answers = {}
             for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
-                question = self.format_example(row)
-                response, _ = self.model.chat(
-                    self.tokenizer,
-                    question,
-                    history=None,
-                )
-                pred = self.extract_answer(response, row)
-                answers[str(i)] = pred
+                question = self.format_example(row, include_answer=False, cot=cot)
+                answers[str(i)] = self.generate_dist(self.model, self.tokenizer, question, do_sample=False, max_length=2048, history=[])
+
             return None, answers

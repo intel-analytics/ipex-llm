@@ -7,12 +7,14 @@
 ---
 ## BigDL-LLM
 
-**[`bigdl-llm`](python/llm)** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4/FP4/INT8/FP8** with very low latency[^1] (for any **PyTorch** model).
+**`bigdl-llm`** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4/FP4/INT8/FP8** with very low latency[^1] (for any **PyTorch** model).
 
 > *It is built on the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq](https://github.com/IST-DASLab/gptq), [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ), [awq](https://github.com/mit-han-lab/llm-awq), [AutoAWQ](https://github.com/casper-hansen/AutoAWQ), [vLLM](https://github.com/vllm-project/vllm), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
 
 ### Latest update 🔥 
-- [2024/02] `bigdl-llm` now supports *[Self-Speculative Decoding](https://bigdl.readthedocs.io/en/main/doc/LLM/Inference/Self_Speculative_Decoding.html)*, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel [GPU](python/llm/example/GPU/Speculative-Decoding) and [CPU](python/llm/example/CPU/Speculative-Decoding) respectively.
+- [2024/02] `bigdl-llm` added inital **INT2** support (based on llama.cpp [IQ2](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2) mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
+- [2024/02] Users can now use `bigdl-llm` through [Text-Generation-WebUI](https://github.com/intel-analytics/text-generation-webui) GUI.
+- [2024/02] `bigdl-llm` now supports *[Self-Speculative Decoding](https://bigdl.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html)*, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel [GPU](python/llm/example/GPU/Speculative-Decoding) and [CPU](python/llm/example/CPU/Speculative-Decoding) respectively.
 - [2024/02] `bigdl-llm` now supports a comprehensive list of LLM finetuning on Intel GPU (including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)).
 - [2024/01] Using `bigdl-llm` [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), we managed to finetune LLaMA2-7B in **21 minutes** and LLaMA2-70B in **3.14 hours** on 8 Intel Max 1550 GPU for [Standford-Alpaca](python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora) (see the blog [here](https://www.intel.com/content/www/us/en/developer/articles/technical/finetuning-llms-on-intel-gpus-using-bigdl-llm.html)).
 - [2024/01] 🔔🔔🔔 ***The default `bigdl-llm` GPU Linux installation has switched from PyTorch 2.0 to PyTorch 2.1, which requires new oneAPI and GPU driver versions. (See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.)***
@@ -26,7 +28,7 @@
 - [2023/10] `bigdl-llm` now supports [FastChat serving](python/llm/src/bigdl/llm/serving) on on both Intel CPU and GPU.
 - [2023/09] `bigdl-llm` now supports [Intel GPU](python/llm/example/GPU) (including iGPU, Arc, Flex and MAX).
 - [2023/09] `bigdl-llm` [tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) is released.
-- [2023/09] Over 30 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS,* and more; see the complete list [here](#verified-models).
+- [2023/09] Over 40 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS,* and more; see the complete list [here](#verified-models).
      
 ### `bigdl-llm` Demos
 See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
@@ -68,10 +70,11 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 #### CPU INT4
 ##### Install
 You may install **`bigdl-llm`** on Intel CPU as follows:
+> Note: See the [CPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html) for more details.
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> Note: `bigdl-llm` has been tested on Python 3.9, 3.10 and 3.11
 
 ##### Run Model
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
@@ -98,7 +101,7 @@ You may install **`bigdl-llm`** on Intel GPU as follows:
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> Note: `bigdl-llm` has been tested on Python 3.9, 3.10 and 3.11
 
 ##### Run Model
 You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
@@ -138,7 +141,7 @@ model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit=
 *See the complete example [here](python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types).*
 
 #### Verified Models
-Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Baichuan/Baichuan2, InternLM, QWen* and more; see the example list below.
+Over 40 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Baichuan/Baichuan2, InternLM, QWen* and more; see the example list below.
   
 | Model      | CPU Example                                                    | GPU Example                                                     |
 |------------|----------------------------------------------------------------|-----------------------------------------------------------------|
@@ -161,6 +164,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Baichuan2  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
 | InternLM   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
 | Qwen       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen)       |
+| Qwen1.5 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen1.5) |
 | Qwen-VL    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
 | Aquila     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
 | Aquila2     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila2)    | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/aquila2)     |
@@ -186,6 +190,10 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Bark | [link](python/llm/example/CPU/PyTorch-Models/Model/bark) | [link](python/llm/example/GPU/PyTorch-Models/Model/bark) |
 | SpeechT5 |  | [link](python/llm/example/GPU/PyTorch-Models/Model/speech-t5) |
 | DeepSeek-MoE | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/deepseek-moe) |  |
+| Ziya-Coding-34B-v1.0 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/ziya) | |
+| Phi-2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-2) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-2) |
+| Yuan2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
+
 
 ***For more details, please refer to the `bigdl-llm` [Document](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html), [Readme](python/llm), [Tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).***
 

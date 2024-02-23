@@ -108,7 +108,7 @@ jobs:
           echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
           echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
           echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/chatglm2-6b-q4_0.bin" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -235,8 +235,11 @@ jobs:
           echo "MPT_7B_ORIGIN_PATH=${ORIGIN_DIR}/mpt-7b-chat" >> "$GITHUB_ENV"
           echo "WHISPER_TINY_ORIGIN_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
 
+          echo "MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH=${ORIGIN_DIR}/Mistral-7B-Instruct-v0.1" >> "$GITHUB_ENV"
+          echo "BAICHUAN2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Baichuan2-7B-Chat" >> "$GITHUB_ENV"
+          echo "QWEN_7B_ORIGIN_PATH=${ORIGIN_DIR}/Qwen-7B-Chat" >> "$GITHUB_ENV"
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -303,6 +306,18 @@ jobs:
             echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
           fi
+          if [ ! -d $MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH ]; then
+            echo "Directory $MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Mistral-7B-Instruct-v0.1 -P $ORIGIN_DIR
+          fi
+          if [ ! -d $QWEN_7B_ORIGIN_PATH ]; then
+            echo "Directory $QWEN_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Qwen-7B-Chat -P $ORIGIN_DIR
+          fi
+          if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
+            echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Baichuan2-7B-Chat -P $ORIGIN_DIR
+          fi
           
       - name: Run LLM inference test
         shell: bash
@@ -313,8 +328,10 @@ jobs:
           elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
             source /opt/intel/oneapi/setvars.sh
           fi
-          python -m pip install datasets librosa soundfile einops
+          python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
           bash python/llm/test/run-llm-inference-tests-gpu.sh
+          python -m pip install transformers==4.34.0 
+          bash python/llm/test/run-llm-inference-tests-gpu-434.sh
 
       - name: Run LLM example tests
         shell: bash

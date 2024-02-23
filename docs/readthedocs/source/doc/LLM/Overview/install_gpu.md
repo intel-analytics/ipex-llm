@@ -18,7 +18,27 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
-* Step 3: Install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) 2024.0
+* Step 3: Install Intel® oneAPI Base Toolkit 2024.0
+
+Intel® oneAPI Base Toolkit 2024.0 installation methods:
+
+```eval_rst
+.. tabs::
+   .. tab:: Offline installer
+      Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.htm?operatingsystem=window&distributions=offline>`_ version 2024.0 through Offline Installer. 
+      
+      During installation, you could just continue with "Recommended Installation". If you would like to continue with "Custom Installation", please note that oneAPI Deep Neural Network Library, oneAPI Math Kernel Library, and oneAPI DPC++/C++ Compiler are required, the other components are optional.
+
+   .. tab:: PIP installer
+      Pip install oneAPI in your working conda environment.
+
+      .. code-block:: bash
+
+         pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
+
+      .. note::
+         Activating your working conda environment will automatically configure oneAPI environment variables.
+```
 
 ### Install BigDL-LLM From PyPI
 
@@ -71,7 +91,7 @@ pip install --pre --upgrade bigdl-llm[xpu]
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
-Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported:
+Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported. For oneAPI installed using the Offline installer, configure oneAPI environment variables with:
 
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -124,7 +144,7 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   conda install libuv
   ```
 
-* Make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+* For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
@@ -526,5 +546,5 @@ Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or di
 The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
 
 * For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running BigDL-LLM.
-* For PIP-installed oneAPI, run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
+* For PIP-installed oneAPI, activate your working environment and run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured for the environment. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
 * Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.

@@ -34,7 +34,7 @@ from bigdl.llm.utils.common import invalidInputError
 # patch GenerationMixin.generate
 from transformers import GenerationMixin
 original_generate = GenerationMixin.generate
-
+query_group_size = 16
 logger = logging.getLogger("bigdl.llm.speculative")
 
 
@@ -58,7 +58,7 @@ def generate(
         for var in ['max_new_tokens', 'max_step_draft', 'th_stop_draft', 'do_sample',
                     'top_k', 'top_p', 'temperature', 'hf_adjust',
                     'auto_th_stop_draft', 'auto_parameters', 'repetition_penalty',
-                    'attention_mask']:
+                    'attention_mask', 'min_step_draft']:
             value = kwargs.pop(var, None)
             if value is not None:
                 new_speculative_kwargs[var] = value
@@ -131,62 +131,98 @@ def clear_benchmarks(self):
 def _prepare_past_key_values_storage_cpu(self, past_key_values,
                                          max_new_tokens, _enable_ipex=False):
     past_key_values_storage = []
+    # init ipex_past_key_values
     if _enable_ipex:
         ipex_past_key_values = []
         cur_len = past_key_values[0][0].size(1)
-        ipex_past_key_values = [
-            [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
-                pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
-            for pkv in past_key_values
-        ]
-
-    for i in range(len(past_key_values)):
-        if not _enable_ipex:
-            len0 = past_key_values[i][0].size(0)
-            len1 = past_key_values[i][0].size(1)
-            len2 = past_key_values[i][0].size(2)
-            len3 = past_key_values[i][0].size(3)
+        if self.config.model_type == "chatglm":
+            len0 = past_key_values[0][1].size(0)  # seq max length
+            len1 = past_key_values[0][1].size(1)
+            len2 = past_key_values[0][1].size(2)
+            len3 = past_key_values[0][1].size(3)
+            for pkv in past_key_values:
+                key = pkv[1]
+                value = pkv[2]
+                key = key.permute(1, 2, 0, 3).unsqueeze(-3)
+                key = key.expand(-1, -1, query_group_size, -1, -1)
+                key = key.contiguous().view(len1, len2 * query_group_size,
+                                            len0,  len3).permute(2, 0, 1, 3)
+                value = value.permute(1, 2, 0, 3).unsqueeze(-3)
+                value = value.expand(-1, -1, query_group_size, -1, -1)
+                value = value.contiguous().view(len1, len2 * query_group_size,
+                                                len0, len3).permute(2, 0, 1, 3)
+                list = [key[:cur_len, :, :, :], value[:cur_len, :, :, :]]
+                ipex_past_key_values.append(list)
         else:
-            len0 = past_key_values[i][1].size(1)
-            len1 = past_key_values[i][1].size(2)
-            len2 = past_key_values[i][0].size(2)  # seq length
-            len3 = past_key_values[i][1].size(3)
-        if self.config.model_type == "qwen":
-            k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
-                            dtype=torch.float32)
-            v0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
-                            dtype=torch.float32)
-            k0 = k0.transpose(1, 2)
-            v0 = v0.transpose(1, 2)
-            past_key_values_storage.append((k0, v0))
-            past_key_values_storage[i][0][:, :len1, :, :] = past_key_values[i][0].to(
-                torch.float32)
-            past_key_values_storage[i][1][:, :len1, :, :] = past_key_values[i][1].to(
-                torch.float32)
-        elif self.config.model_type == "chatglm":
-            k0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
-                            dtype=torch.float32)
-            v0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
-                            dtype=torch.float32)
-            k0 = k0.permute(2, 0, 1, 3)
-            v0 = v0.permute(2, 0, 1, 3)
-            past_key_values_storage.append((k0, v0))
-            past_key_values_storage[i][0][:len0, :, :, :] = past_key_values[i][0].to(
-                torch.float32)
-            past_key_values_storage[i][1][:len0, :, :, :] = past_key_values[i][1].to(
-                torch.float32)
-        else:
-            k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
-                            dtype=torch.float32)
-            v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
-                            dtype=torch.float32)
-            past_key_values_storage.append((k0, v0))
-            if not _enable_ipex:
+            ipex_past_key_values = [
+                [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
+                    pkv[2].permute(1, 2, 0, 3)[:, :, :cur_len, :]]
+                for pkv in past_key_values
+            ]
+    if not _enable_ipex:
+        len0 = past_key_values[0][0].size(0)
+        len1 = past_key_values[0][0].size(1)
+        len2 = past_key_values[0][0].size(2)
+        len3 = past_key_values[0][0].size(3)
+        for i in range(len(past_key_values)):
+            if self.config.model_type == "qwen":
+                k0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len0, len2, len1 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                k0 = k0.transpose(1, 2)
+                v0 = v0.transpose(1, 2)
+                past_key_values_storage.append((k0, v0))
+                past_key_values_storage[i][0][:, :len1, :, :] = past_key_values[i][0].to(
+                    torch.float32)
+                past_key_values_storage[i][1][:, :len1, :, :] = past_key_values[i][1].to(
+                    torch.float32)
+            elif self.config.model_type == "chatglm":
+                k0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len1, len2, len0 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                k0 = k0.permute(2, 0, 1, 3)
+                v0 = v0.permute(2, 0, 1, 3)
+                past_key_values_storage.append((k0, v0))
+                past_key_values_storage[i][0][:len0, :, :, :] = past_key_values[i][0].to(
+                    torch.float32)
+                past_key_values_storage[i][1][:len0, :, :, :] = past_key_values[i][1].to(
+                    torch.float32)
+            else:
+                k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                past_key_values_storage.append((k0, v0))
                 past_key_values_storage[i][0][:, :, :len2, :] = past_key_values[i][0].to(
                     torch.float32)
                 past_key_values_storage[i][1][:, :, :len2, :] = past_key_values[i][1].to(
                     torch.float32)
+    else:
+        len0 = past_key_values[0][1].size(1)
+        len1 = past_key_values[0][1].size(2)
+        len2 = past_key_values[0][0].size(2)  # seq length
+        len3 = past_key_values[0][1].size(3)
+        for i in range(len(past_key_values)):
+            if self.config.model_type == "chatglm":
+                k0 = torch.ones(len0, len1 * query_group_size, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len0, len1 * query_group_size, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                k0 = k0.permute(2, 0, 1, 3)
+                v0 = v0.permute(2, 0, 1, 3)
+                past_key_values_storage.append((k0, v0))
+                past_key_values_storage[i][0][:len2, :, :, :] = ipex_past_key_values[i][0].to(
+                    torch.float32)
+                past_key_values_storage[i][1][:len2, :, :, :] = ipex_past_key_values[i][1].to(
+                    torch.float32)
             else:
+                k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                past_key_values_storage.append((k0, v0))
                 past_key_values_storage[i][0][:, :, :len2, :] = ipex_past_key_values[i][0].to(
                     torch.float32)
                 past_key_values_storage[i][1][:, :, :len2, :] = ipex_past_key_values[i][1].to(
@@ -195,7 +231,8 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
     return past_key_values_storage
 
 
-def _prepare_draft_past_key_values_cpu(self, past_key_values, past_key_values_storage):
+def _prepare_draft_past_key_values_cpu(self, past_key_values,
+                                       past_key_values_storage, _enable_ipex):
     tmp_past_key_values = []
     for i in range(len(past_key_values)):
         if self.config.model_type == "qwen":
@@ -204,7 +241,10 @@ def _prepare_draft_past_key_values_cpu(self, past_key_values, past_key_values_st
             v0 = past_key_values_storage[i][1][:, :len1, :, :]
             tmp_past_key_values.append((k0, v0))
         elif self.config.model_type == "chatglm":
-            len0 = past_key_values[0][0].size(0)
+            if not _enable_ipex:
+                len0 = past_key_values[0][0].size(0)
+            else:
+                len0 = past_key_values[0][0].size(1)
             k0 = past_key_values_storage[i][0][:len0, :, :, :]
             v0 = past_key_values_storage[i][1][:len0, :, :, :]
             tmp_past_key_values.append((k0, v0))
@@ -244,15 +284,41 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
         else:
             size = original_draft_past_key_values[i][0].size(2)
             size1 = past_key_values[i][0].size(1)
-            delta_past_key = \
-                past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
-            delta_past_value = \
-                past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
+            if self.config.model_type == "chatglm":
+                size = original_draft_past_key_values[0][0].size(0)
+                size1 = past_key_values[0][0].size(1)
+                len0 = past_key_values[0][1].size(0)  # seq max_length
+                len1 = past_key_values[0][1].size(1)
+                len2 = past_key_values[0][1].size(2)
+                len3 = past_key_values[0][1].size(3)
+                key0 = torch.ones(size1-size, len1, len2, len3,
+                                  dtype=torch.float32)
+                value0 = torch.ones(size1-size, len1, len2, len3,
+                                    dtype=torch.float32)
+                key0 = past_key_values[i][1][size:size1, :, :, :]
+                value0 = past_key_values[i][2][size:size1, :, :, :]
+                key = key0.permute(1, 2, 0, 3).unsqueeze(-3)
+                key = key.expand(-1, -1, query_group_size, -1, -1)
+                key = key.contiguous().view(len1, len2 * query_group_size, size1-size, len3)
+                key = key.permute(2, 0, 1, 3)
+                value = value0.permute(1, 2, 0, 3).unsqueeze(-3)
+                value = value.expand(-1, -1, query_group_size, -1, -1)
+                value = value.contiguous().view(len1, len2 * query_group_size, size1-size, len3)
+                value = value.permute(2, 0, 1, 3)
+                past_key_values_storage[i][0][size:size1, :, :, :] = \
+                    key.to(torch.float32)
+                past_key_values_storage[i][1][size:size1, :, :, :] = \
+                    value.to(torch.float32)
+            else:
+                delta_past_key = \
+                    past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
+                delta_past_value = \
+                    past_key_values[i][2][size:size1, :, :, :].permute(1, 2, 0, 3)
 
-            past_key_values_storage[i][0][:, :, size:size1, :] = \
-                delta_past_key.to(torch.float32)
-            past_key_values_storage[i][1][:, :, size:size1, :] = \
-                delta_past_value.to(torch.float32)
+                past_key_values_storage[i][0][:, :, size:size1, :] = \
+                    delta_past_key.to(torch.float32)
+                past_key_values_storage[i][1][:, :, size:size1, :] = \
+                    delta_past_value.to(torch.float32)
 
 
 @torch.no_grad()
@@ -265,11 +331,15 @@ def speculative_generate(self,
                          auto_th_stop_draft=True,
                          auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
                          hf_adjust=False,
+                         min_step_draft=3,
                          generation_config: Optional[GenerationConfig] = None,
                          attention_mask=None,
                          **sampling_kwargs):
     invalidInputError(draft_model is not None,
                       "Draft model should be provided.")
+    # min_step_draft >= 1. Since the max_step_draft may adjust,
+    # min_step_draft can > max_step_draft
+    min_step_draft = min_step_draft if min_step_draft >= 1 else 1
 
     if generation_config is None:
         generation_config = self.generation_config
@@ -371,11 +441,16 @@ def speculative_generate(self,
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
     if _enable_ipex:
-        if not ((self.config.model_type == 'baichuan' and self.config.hidden_size == 5120) or
+        if not ((self.config.model_type == 'baichuan') or
                 ('llama' in self.config.model_type) or
-                ("mistral" in self.config.model_type)):
+                ("mistral" in self.config.model_type) or
+                ("chatglm" in self.config.model_type)):
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
-                                      Llama, Baichuan2-13b and Mistral models currently.")
+                                      Llama, Baichuan2, Mistral and ChatGLM models currently.")
+        if "chatglm" in self.config.model_type:
+            global query_group_size
+            query_group_size = draft_model.config.num_attention_heads // \
+                draft_model.config.multi_query_group_num
 
     tmp_matchness = 0
     e2e_tic = 0.0
@@ -437,7 +512,7 @@ def speculative_generate(self,
                 # each iter cut off cur_len kv_cache from past_key_values1
                 draft_past_key_values = \
                     _prepare_draft_past_key_values_cpu(self, past_key_values,
-                                                       past_key_values_storage)
+                                                       past_key_values_storage,  _enable_ipex)
                 original_draft_past_key_values = draft_past_key_values
             else:
                 draft_past_key_values = past_key_values
@@ -464,7 +539,10 @@ def speculative_generate(self,
                     "use_cache": True,
                 }
                 if self.config.model_type == "chatglm":
-                    past_key_value_len = past_key_values[0][0].shape[0]
+                    if _enable_ipex:
+                        past_key_value_len = past_key_values[0][0].shape[1]
+                    else:
+                        past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                     forward_args["position_ids"] = position_ids
                 elif self.config.model_type == "gptj":
@@ -495,7 +573,8 @@ def speculative_generate(self,
                 # check if draft prob is less then th_stop_draft
                 # Draft number + step >= max output token number
                 th_random = 1 if random_probs is None else random_probs[step_draft]
-                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3) or \
+                if (draft_output_probs.item() < th_stop_draft and th_random > 0.3 and
+                        step_draft + 1 >= min_step_draft) or \
                         step + step_draft + 2 >= max_new_tokens:
                     break
             if self.device.type == 'xpu':
@@ -519,10 +598,25 @@ def speculative_generate(self,
                 cur_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
             if _enable_ipex and hasattr(self, "trace_graph"):
                 if self.config.model_type == "baichuan":
-                    output = self.trace_graph(input_ids=drafted_input_ids,
-                                              attention_mask=cur_attention_mask,
-                                              past_key_values=past_key_values,
-                                              )
+                    if self.config.hidden_size == 4096:
+                        past_key_value_len = past_key_values[0][0].shape[2]
+                        seq_len = drafted_input_ids.shape[1]
+                        seq_len_with_past = seq_len + past_key_value_len
+                        position_ids = torch.arange(past_key_value_len,
+                                                    seq_len_with_past,
+                                                    dtype=torch.long,
+                                                    device=drafted_input_ids.device)
+                        position_ids = position_ids.unsqueeze(0).view(-1, seq_len)
+                        output = self.trace_graph(input_ids=drafted_input_ids,
+                                                  attention_mask=cur_attention_mask,
+                                                  past_key_values=past_key_values,
+                                                  position_ids=position_ids,
+                                                  )
+                    elif self.config.hidden_size == 5120:
+                        output = self.trace_graph(input_ids=drafted_input_ids,
+                                                  attention_mask=cur_attention_mask,
+                                                  past_key_values=past_key_values,
+                                                  )
                 elif "llama" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
                     position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
@@ -533,6 +627,16 @@ def speculative_generate(self,
                                               position_ids=position_ids,
                                               past_key_values=past_key_values,
                                               )
+                elif "chatglm" in self.config.model_type:
+                    past_key_value_len = past_key_values[0][0].shape[2]
+                    position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
+                                                device=drafted_input_ids.device).unsqueeze(0)
+                    position_ids = position_ids.repeat(1, 1) + past_key_value_len
+                    output = self.trace_graph(input_ids=drafted_input_ids,
+                                              attention_mask=cur_attention_mask,
+                                              position_ids=position_ids,
+                                              # return_last_logit=torch.tensor(False),
+                                              past_key_values=past_key_values,)
                 elif "mistral" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
                     seq_len = drafted_input_ids.shape[1]
@@ -591,7 +695,8 @@ def speculative_generate(self,
             self.verify_time.append(toc - tic)
             self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
 
-            past_key_values = output['past_key_values']
+            if past_key_values is None:
+                past_key_values = output['past_key_values']
 
             if generation_config.do_sample:
                 draft_tokens = drafted_input_ids[:, 1:].squeeze(0)

@@ -67,7 +67,7 @@ jobs:
           conda create -n python310 python=3.10 -y
           conda remove -n python311 --all -y
           conda create -n python311 python=3.11 -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -175,7 +175,7 @@ jobs:
           yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -275,7 +275,7 @@ jobs:
           yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -338,7 +338,7 @@ jobs:
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -386,7 +386,7 @@ jobs:
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -491,7 +491,7 @@ jobs:
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}

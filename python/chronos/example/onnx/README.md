@@ -1,5 +1,5 @@
 # Use ONNX to speed up inferencing
-This example will demonstrate how to use ONNX to speed up the inferencing(prediction/evalution) on forecasters and `AutoTSEstimator`. 
+This example will demonstrate how to use ONNX to speed up the inferencing(prediction/evaluation) on forecasters and `AutoTSEstimator`. 
 In this example, onnx speed up the inferencing for ~4X.
 
 ## Prepare the environment

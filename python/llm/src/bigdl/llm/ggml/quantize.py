@@ -40,8 +40,8 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "fp8_e5m2": 19,      # fp8 in e5m2 format
                      "fp8": 19,           # fp8 in e5m2 format
                      "bf16": 20,
-                     "iq2_xxs": 21,
-                     "iq2_xs": 22,
+                     "gguf_iq2_xxs": 21,
+                     "gguf_iq2_xs": 22,
                      "q2_k": 23}
 
 _llama_quantize_type = {"q4_0": 2,
