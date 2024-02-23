@@ -27,8 +27,12 @@ from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
+
+from bigdl.llm.transformers.models.llama import should_use_fuse_rope
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
+    apply_rotary_pos_emb_no_cache_xpu
+from bigdl.llm.transformers.models.llama import should_use_fuse_rope
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
@@ -57,6 +61,7 @@ def yuan_attention_forward(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
     before_hidden_states = None
@@ -112,12 +117,19 @@ def yuan_attention_forward(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states,
-                                                    key_states,
-                                                    cos, sin,
-                                                    position_ids,
-                                                    "yuan")
+    
+    if use_fuse_rope:
+        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                     key_states,
+                                                                     position_ids,
+                                                                    "yuan")
+    else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+        query_states, key_states = apply_rotary_pos_emb(query_states,
+                                                        key_states,
+                                                        cos, sin,
+                                                        position_ids,
+                                                        "yuan")
 
     if past_key_value is not None:
         # reuse k, v, self_attention
