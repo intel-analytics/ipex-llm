@@ -116,7 +116,6 @@ def yuan_attention_forward(
         if self.training:
             invalidInputError(seqlen_k == seqlen_q,
                 "`seqlen_k` should be equal to `seqlen_q`, but is not")
-            assert seqlen_k == seqlen_q
             cu_seqlens_k = cu_seqlens_q
             is_causal = self.causal_mask
         else:
