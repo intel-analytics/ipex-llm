@@ -110,8 +110,6 @@ jobs:
         device: [xpu]
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
-    outputs:
-      output_path: ${{ steps.run_harness.outputs.output_path }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       ORIGIN_DIR: /mnt/disk1/models
