@@ -42,4 +42,5 @@ runs:
           pip install pytest
           bash python/llm/test/run-llm-install-tests.sh
         fi
+        pip uninstall mpmath -y || true
         pip install mpmath==1.3.0

@@ -268,7 +268,8 @@ def setup_package():
                 f'Could not find package dependency file: {file_path}')
 
     all_requires = ['py-cpuinfo', 'protobuf',
-                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                    'mpmath==1.3.0']
     all_requires += CONVERT_DEP
 
     # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
