@@ -11,14 +11,14 @@ runs:
       run: |
         rm -rf python/llm/llm-binary || true
         mkdir -p python/llm/llm-binary
-        mv linux-avx2/* python/llm/llm-binary/
-        mv linux-avx512/* python/llm/llm-binary/
-        mv linux-avxvnni/* python/llm/llm-binary/
-        mv linux-avx/* python/llm/llm-binary/
-        mv linux-amx/* python/llm/llm-binary/
-        mv windows-avx2/* python/llm/llm-binary/
-        mv windows-avx-vnni/* python/llm/llm-binary/
-        mv windows-avx/* python/llm/llm-binary/
+        mv linux-avx2/* python/llm/llm-binary/ || true
+        mv linux-avx512/* python/llm/llm-binary/ || true
+        mv linux-avxvnni/* python/llm/llm-binary/ || true
+        mv linux-avx/* python/llm/llm-binary/ || true
+        mv linux-amx/* python/llm/llm-binary/ || true
+        mv windows-avx2/* python/llm/llm-binary/ || true
+        mv windows-avx-vnni/* python/llm/llm-binary/ || true
+        mv windows-avx/* python/llm/llm-binary/ || true
         rm -rf linux-avx2 || true
         rm -rf linux-avx512 || true
         rm -rf linux-avxvnni || true
