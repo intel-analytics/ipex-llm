@@ -49,7 +49,7 @@ from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, 
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_cache_freq_xpu, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
-from bigdl.llm.transformers.models.utils import use_flash_attention
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
 
 
@@ -271,6 +271,14 @@ def mixtral_attention_forward(
                                                      key_states,
                                                      value_states,
                                                      is_causal=True)
+        attn_weights = None
+    elif use_esimd_sdp(query_states.shape[2], key_states.shape[2],
+                       self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
         attn_weights = torch.matmul(
