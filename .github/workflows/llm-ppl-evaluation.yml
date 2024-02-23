@@ -69,7 +69,7 @@ jobs:
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_SEQ_LEN: '["512"]'
-          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "chatglm3-6b"]'
+          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf"]'
           PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
@@ -184,6 +184,11 @@ jobs:
             
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/
         run: |
+          if [[ "${{ matrix.model_name }}" == *"chatglm"* || "${{ matrix.model_name }}" == *"Baichuan"* ]]; then
+            LANGUAGE="zh"
+          else
+            LANGUAGE="en"
+          fi
           cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${LANGUAGE}/result.json
 
   llm-ppl-summary:
