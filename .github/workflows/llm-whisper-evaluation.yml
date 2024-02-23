@@ -56,15 +56,15 @@ jobs:
     steps:
       - name: set-env
         env:
-          NIGHTLY_MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small", "whisper-medium", "whisper-base"]'
-          NIGHTLY_MATRIX_TASK: '["librispeech"]'
-          NIGHTLY_MATRIX_PRECISION: '["sym_int4"]'
-          NIGHTLY_LABELS: '["self-hosted", "llm", "perf"]'
+          MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small", "whisper-medium", "whisper-base"]'
+          MATRIX_TASK: '["librispeech"]'
+          MATRIX_PRECISION: '["sym_int4", "fp8_e4m3", "fp8_e5m2"]'
+          LABELS: '["self-hosted", "llm", "perf"]'
         run: |
-            echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
-            echo "task=$NIGHTLY_MATRIX_TASK" >> $GITHUB_ENV
-            echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
+            echo "model_name=$MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "task=$MATRIX_TASK" >> $GITHUB_ENV
+            echo "precision=$MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "runner=$LABELS" >> $GITHUB_ENV
 
       - name: set-matrix
         id: set-matrix
@@ -105,7 +105,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
-          python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade datasets
           python -m pip install --upgrade evaluate
@@ -146,5 +145,5 @@ jobs:
           export LIBRISPEECH_DATASET_PATH=/mnt/disk1/datasets/librispeech
 
           cd python/llm/dev/benchmark/whisper
-          python run_whisper.py --model_path ${MODEL_PATH} --data_type other --device xpu
+          python run_whisper.py --model_path ${MODEL_PATH} --data_type other --device xpu --load_in_low_bit ${{ matrix.precision }} --save_result
           mv *.csv $CSV_SAVE_PATH

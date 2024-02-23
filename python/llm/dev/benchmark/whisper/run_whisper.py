@@ -33,6 +33,8 @@ def get_args():
     parser.add_argument('--model_path', required=True, help='pretrained model path')
     parser.add_argument('--data_type', required=True, help='clean, other')
     parser.add_argument('--device', required=False, help='cpu, xpu')
+    parser.add_argument('--load_in_low_bit', default='sym_int4', help='Specify whether to load data in low bit format (e.g., 4-bit)')
+    parser.add_argument('--save_result', action='store_true', help='Save the results to a CSV file')
  
     args = parser.parse_args()
     return args
@@ -46,7 +48,7 @@ if __name__ == '__main__':
     processor = WhisperProcessor.from_pretrained(args.model_path)
     forced_decoder_ids = processor.get_decoder_prompt_ids(language='en', task='transcribe')
    
-    model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path, load_in_low_bit="sym_int4", optimize_model=True).eval().to(args.device)
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path, load_in_low_bit=args.load_in_low_bit, optimize_model=True).eval().to(args.device)
     model.config.forced_decoder_ids = None
    
     def map_to_pred(batch):
@@ -80,13 +82,15 @@ if __name__ == '__main__':
     WER = 100 * wer.compute(references=result["reference"], predictions=result["prediction"])
 
     today = date.today()
-    csv_name = f'{current_dir}/whisper-results-{today}.csv'
-    with open(csv_name, mode='a', newline='') as file:
-        csv_writer = csv.writer(file)
-        file.seek(0, os.SEEK_END)
-        if file.tell() == 0:
-            csv_writer.writerow(["models","RTF","RTX","WER"])
-        csv_writer.writerow([MODEL, RTF, RTX, WER])
+    if args.save_result:
+        csv_name = f'{current_dir}/{MODEL}-{args.data_type}-{args.device}-{args.load_in_low_bit}-{today}.csv'
+        with open(csv_name, mode='a', newline='') as file:
+            csv_writer = csv.writer(file)
+            file.seek(0, os.SEEK_END)
+            if file.tell() == 0:
+                csv_writer.writerow(["models","precision","WER","RTF"])
+            csv_writer.writerow([MODEL, args.load_in_low_bit, WER, RTF])
+        print(f'Results saved to {csv_name}')
 
     print("Realtime Factor(RTF) is : %.4f" % RTF)
     print("Realtime X(RTX) is : %.2f" % RTX)
