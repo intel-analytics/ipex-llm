@@ -194,8 +194,8 @@ jobs:
         run: |
           ls /home/arda/whisper-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
           pip install pandas==1.5.3
-          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
-          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_concat_csv.py -i ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} -o ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
 
       - name: Summarize the results for pull request
         if: github.event_name == 'pull_request'
@@ -203,5 +203,5 @@ jobs:
         run: |
           ls /home/arda/whisper-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
           pip install pandas==1.5.3
-          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
-          # python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_concat_csv.py -i ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} -o ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.PR_FOLDER}}
