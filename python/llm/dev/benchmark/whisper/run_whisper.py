@@ -84,6 +84,7 @@ if __name__ == '__main__':
     today = date.today()
     if args.save_result:
         csv_name = f'{current_dir}/results/{MODEL}-{args.data_type}-{args.device}-{args.load_in_low_bit}-{today}.csv'
+        os.makedirs(os.path.dirname(csv_name), exist_ok=True)
         with open(csv_name, mode='a', newline='') as file:
             csv_writer = csv.writer(file)
             file.seek(0, os.SEEK_END)
