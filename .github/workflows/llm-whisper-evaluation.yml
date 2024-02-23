@@ -146,4 +146,9 @@ jobs:
 
           cd python/llm/dev/benchmark/whisper
           python run_whisper.py --model_path ${MODEL_PATH} --data_type other --device xpu --load_in_low_bit ${{ matrix.precision }} --save_result
-          cp *.csv $CSV_SAVE_PATH
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: harness_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/whisper/results/**   
