@@ -63,7 +63,7 @@ RUN apt-get update --fix-missing && \
 
 COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 RUN ln -fs /bin/bash /bin/sh
-RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
+RUN if [ $SPARK_VERSION = "3.4.1" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
         wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
     elif [ $SPARK_VERSION = "2.4.6" ]; then \
