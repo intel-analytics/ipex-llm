@@ -35,7 +35,7 @@ dllib_src_path = os.path.abspath(__file__ + "/..")
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
-PYSPARK_VERSION = '2.4.6'
+PYSPARK_VERSION = '3.4.1'
 
 building_error_msg = """
 If you are packing python API from BigDL source, you should use the release script:
