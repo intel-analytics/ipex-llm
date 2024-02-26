@@ -81,7 +81,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    ```bash
    pip install -U transformers==4.37.0 
    ```
-* Step 3: Create a new file named `demo.py` and insert the code snippet below.
+* Step 4: Create a new file named `demo.py` and insert the code snippet below.
    ```python
    # Copy/Paste the contents to a new file demo.py
    import torch
@@ -108,7 +108,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    > Note: when running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
    > This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
 
-* Step 4. Run `demo.py` within the activated Python environment using the following command:
+* Step 5. Run `demo.py` within the activated Python environment using the following command:
   ```bash
   python demo.py
   ```
