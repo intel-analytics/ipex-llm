@@ -153,6 +153,12 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
                                                 len0, len3).permute(2, 0, 1, 3)
                 list = [key[:cur_len, :, :, :], value[:cur_len, :, :, :]]
                 ipex_past_key_values.append(list)
+        elif self.config.model_type == "qwen":
+            ipex_past_key_values = [
+                [pkv[1].permute(1, 0, 2, 3)[:, :cur_len, :, :],
+                    pkv[2].permute(1, 0, 2, 3)[:, :cur_len, :, :]]
+                for pkv in past_key_values
+            ]
         else:
             ipex_past_key_values = [
                 [pkv[1].permute(1, 2, 0, 3)[:, :, :cur_len, :],
@@ -216,6 +222,18 @@ def _prepare_past_key_values_storage_cpu(self, past_key_values,
                 past_key_values_storage[i][0][:len2, :, :, :] = ipex_past_key_values[i][0].to(
                     torch.float32)
                 past_key_values_storage[i][1][:len2, :, :, :] = ipex_past_key_values[i][1].to(
+                    torch.float32)
+            elif self.config.model_type == "qwen":
+                k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                v0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
+                                dtype=torch.float32)
+                k0 = k0.permute(0, 2, 1, 3)
+                v0 = v0.permute(0, 2, 1, 3)
+                past_key_values_storage.append((k0, v0))
+                past_key_values_storage[i][0][:, :len2, :, :] = ipex_past_key_values[i][0].to(
+                    torch.float32)
+                past_key_values_storage[i][1][:, :len2, :, :] = ipex_past_key_values[i][1].to(
                     torch.float32)
             else:
                 k0 = torch.ones(len0, len1, len2 + max_new_tokens, len3,
@@ -309,6 +327,16 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                     key.to(torch.float32)
                 past_key_values_storage[i][1][size:size1, :, :, :] = \
                     value.to(torch.float32)
+            elif self.config.model_type == "qwen":
+                size = original_draft_past_key_values[0][0].size(1)
+                delta_past_key = \
+                    past_key_values[i][1][size:size1, :, :, :].permute(1, 0, 2, 3)
+                delta_past_value = \
+                    past_key_values[i][2][size:size1, :, :, :].permute(1, 0, 2, 3)
+                past_key_values_storage[i][0][:, size:size1, :, :] = \
+                    delta_past_key.to(torch.float32)
+                past_key_values_storage[i][1][:, size:size1, :, :] = \
+                    delta_past_value.to(torch.float32)
             else:
                 delta_past_key = \
                     past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
@@ -444,9 +472,10 @@ def speculative_generate(self,
         if not ((self.config.model_type == 'baichuan') or
                 ('llama' in self.config.model_type) or
                 ("mistral" in self.config.model_type) or
+                ("qwen" in self.config.model_type) or
                 ("chatglm" in self.config.model_type)):
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
-                                      Llama, Baichuan2, Mistral and ChatGLM models currently.")
+                                      Llama, Baichuan2, Mistral and ChatGLM and Qwen models currently.")
         if "chatglm" in self.config.model_type:
             global query_group_size
             query_group_size = draft_model.config.num_attention_heads // \
@@ -637,6 +666,10 @@ def speculative_generate(self,
                                               position_ids=position_ids,
                                               # return_last_logit=torch.tensor(False),
                                               past_key_values=past_key_values,)
+                elif "qwen" in self.config.model_type:
+                    output = self.trace_graph(input_ids=drafted_input_ids,
+                                              attention_mask=cur_attention_mask,
+                                              past_key_values=past_key_values)
                 elif "mistral" in self.config.model_type:
                     past_key_value_len = past_key_values[0][0].shape[2]
                     seq_len = drafted_input_ids.shape[1]
