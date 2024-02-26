@@ -1,6 +1,11 @@
 name: Download LLM binary files
 description: Download built binary files from github artifact
-
+inputs:
+  platform:
+    description: 'Platforms to built on'
+    default: 'Windows,Linux'
+    required: false
+    type: string
 runs:
   using: "composite"
   steps:
@@ -11,14 +16,18 @@ runs:
       run: |
         rm -rf python/llm/llm-binary || true
         mkdir -p python/llm/llm-binary
-        mv linux-avx2/* python/llm/llm-binary/
-        mv linux-avx512/* python/llm/llm-binary/
-        mv linux-avxvnni/* python/llm/llm-binary/
-        mv linux-avx/* python/llm/llm-binary/
-        mv linux-amx/* python/llm/llm-binary/
-        mv windows-avx2/* python/llm/llm-binary/
-        mv windows-avx-vnni/* python/llm/llm-binary/
-        mv windows-avx/* python/llm/llm-binary/
+        if ${{contains(inputs.platform, 'Linux')}}; then
+          mv linux-avx2/* python/llm/llm-binary/ 
+          mv linux-avx512/* python/llm/llm-binary/
+          mv linux-avxvnni/* python/llm/llm-binary/
+          mv linux-avx/* python/llm/llm-binary/
+          mv linux-amx/* python/llm/llm-binary/
+        fi
+        if ${{contains(inputs.platform, 'Windows')}}; then
+          mv windows-avx2/* python/llm/llm-binary/
+          mv windows-avx-vnni/* python/llm/llm-binary/
+          mv windows-avx/* python/llm/llm-binary/
+        fi
         rm -rf linux-avx2 || true
         rm -rf linux-avx512 || true
         rm -rf linux-avxvnni || true

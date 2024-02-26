@@ -93,12 +93,10 @@ def _ipex_optimize_attention(model):
 
 
 def _ipex_optimize_model(model, rms_classes):
-    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
 
     _ipex_optimize_rmsnorm(model, rms_classes)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
-    model.register_forward_hook(output_hook, with_kwargs=True)
 
 
 def _ipex_jit(model):
@@ -124,6 +122,8 @@ def _ipex_jit(model):
         model = _set_optimized_model_for_generation(
             model, optimized_model=trace_model
         )
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    model.register_forward_hook(output_hook, with_kwargs=True)
 
     return model
 
