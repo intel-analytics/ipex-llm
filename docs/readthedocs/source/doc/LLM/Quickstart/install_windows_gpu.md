@@ -65,13 +65,19 @@ The process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as
 
 ## A quick example
 
-Now let's play with a real LLM. We'll use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for demostration purposes. Let's set it up and run the model to answer a prompt "What is AI?". 
+Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
    ```bash
    conda activate llm
    ```
-* Step 2: To ensure compatibility with phi-1.5, update the transformers library to version 4.37.0 by running:
+* Step 2: If you're running on integrated GPU, set some environment variables by running below commands:
+  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
+  ```bash
+  set SYCL_CACHE_PERSISTENT=1
+  set BIGDL_LLM_XMX_DISABLED=1
+  ```
+* Step 3: To ensure compatibility with `phi-1.5`, update the transformers library to version 4.37.0:
    ```bash
    pip install -U transformers==4.37.0 
    ```
