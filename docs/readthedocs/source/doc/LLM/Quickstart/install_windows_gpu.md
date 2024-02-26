@@ -1,6 +1,6 @@
 # Install BigDL-LLM on Windows for Intel GPU
 
-This guide applies to Intel integrated GPUs such as Intel Meteor Lake platform and Intel Core 11/12 gen platforms, as well as Intel Arc Series GPU.
+This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as well as Intel Arc Series GPU.
 
 ## Install GPU driver
 
