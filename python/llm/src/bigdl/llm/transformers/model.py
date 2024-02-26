@@ -90,6 +90,12 @@ def save_low_bit(self, *args, **kwargs):
         self.to(origin_device)
 
 
+def _load_pre():
+    from transformers import GPTJModel
+    from bigdl.llm.transformers.models.gptj import gptj_model_new_init
+    GPTJModel.__init__ = gptj_model_new_init
+
+
 class _BaseAutoModelClass:
     HF_MODEL = None
 
@@ -110,7 +116,7 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
                                 ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
-                                ``'iq2_xxs'``, ``'iq2_xs'``, ``'fp16'`` or ``'bf16'``,
+                                ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, ``'fp16'`` or ``'bf16'``,
                                 ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
                                 asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
                                 Relevant low bit optimizations will be applied to the model.
@@ -278,12 +284,13 @@ class _BaseAutoModelClass:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             imatrix_file = kwargs.pop("imatrix", None)
-            if q_k in ["iq2_xxs", "iq2_xs"]:
+            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs"]:
                 invalidInputError(imatrix_file is not None,
-                                  "For iq2_xxs and iq2_xs quantization, imatrix is needed.")
+                                  "For gguf_iq2_xxs and gguf_iq2_xs quantization,"
+                                  "imatrix is needed.")
             cpu_embedding = kwargs.get("cpu_embedding", False)
             # for 2bit, default use embedding_quantization
-            if q_k in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding and \
+            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and not cpu_embedding and \
                     embedding_qtype is None:
                 embedding_qtype = "q2_k"
             if imatrix_file is not None:
@@ -332,8 +339,8 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, iq2_xxs, iq2_xs, "
-                          f"mixed_fp4 or mixed_fp8.")
+                          f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
+                          f"gguf_iq2_xs, mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,
@@ -398,6 +405,7 @@ class _BaseAutoModelClass:
                 offload_dir=None
             )
         else:
+            _load_pre()
             try:
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
@@ -502,7 +510,8 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
-        if bigdl_transformers_low_bit in ["iq2_xxs", "iq2_xs", "q2_k"] and not cpu_embedding:
+        if bigdl_transformers_low_bit in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and \
+                not cpu_embedding:
             embedding_qtype = "q2_k"
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
@@ -587,7 +596,7 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
-                                     embedding_qtype=embedding_qtype)
+                                     embedding_qtype=embedding_qtype, torch_dtype=torch_dtype)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]

@@ -17,7 +17,7 @@ Please refer to [Environment Setup](#environment-setup) for more information.
 
 .. important::
 
-   ``bigdl-llm`` is tested with Python 3.9, which is recommended for best practices.
+   ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.9 is recommended for best practices.
 ```
 
 ## Recommended Requirements

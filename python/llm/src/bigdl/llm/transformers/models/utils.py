@@ -143,7 +143,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2"]:
+                        "mixtral", "qwen2", "yuan"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -153,14 +153,25 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
     elif model_family == "gptj":
-        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
-        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+
+
+def apply_ipex_rotate_every_two(q, k, cos, sin):
+    # ipex's apply_rotary_embedding_two_qk can change the origin storage,
+    # so q/k will get the result directly.
+    from bigdl.llm.transformers.utils import get_ipex_version
+    if get_ipex_version() >= "2.1.10+xpu":
+        torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+            q, k, sin, cos, q, k
+        )
+    else:
+        torch.ops.torch_ipex.apply_rotary_embedding(q, sin, cos, q)
+        torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
 def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
@@ -195,6 +206,10 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
         cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+    elif model_family in ["gemma"]:
+        cos = cos.unsqueeze(1)
+        sin = sin.unsqueeze(1)
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     else:
         invalidInputError(False,
@@ -295,7 +310,8 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if x.device.type != 'xpu':
         return False
-    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"],
+                     ggml_tensor_qtype["gguf_iq2_xxs"]]:
         return False
     if training or x.requires_grad:
         return False
