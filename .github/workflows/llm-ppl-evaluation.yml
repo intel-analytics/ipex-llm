@@ -221,9 +221,9 @@ jobs:
           ls results
           python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table.py results
 
-  llm-ppl-summary-html:
+  llm-ppl-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [set-matrix, llm-ppl-evaluation]
+    needs: [llm-ppl-evaluation]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -236,54 +236,44 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install jsonlines  pytablewriter regex
+          pip install pandas==1.5.3
       
       - name: Set output path
         shell: bash
         run: |    
-          DATE=$(date +%Y-%m-%d)
-          OUTPUT_PATH="results_$DATE"
-          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
-          NIGHTLY_FOLDER="/home/arda/ppl-action-runners/nightly-accuracy-data"
-          echo "NIGHTLY_FOLDER=$NIGHTLY_FOLDER" >> $GITHUB_ENV
-          PR_FOLDER="/home/arda/ppl-action-runners/pr-accuracy-data"
-          echo "PR_FOLDER=$PR_FOLDER" >> $GITHUB_ENV
-
-      - name: Download all results for nightly run
-        if: github.event_name == 'schedule'
-        uses: actions/download-artifact@v3
-        with:
-          name: ppl_results
-          path: ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          if ${{github.event_name == 'pull_request'}}; then
+            echo 'ACC_FOLDER=/home/arda/ppl-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+          fi
+          if ${{github.event_name == 'schedule'}}; then
+            echo 'ACC_FOLDER=/home/arda/ppl-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+          fi
   
-      - name: Download all results for pr run
-        if: github.event_name == 'pull_request'
+      - name: Download ppl results
         uses: actions/download-artifact@v3
         with:
           name: ppl_results
-          path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
+          path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
 
       # Save fp16.csv in the parent folder of env.nightly_folder
-      #- name: Download fp16.csv for summary
+      #- name: Download fp16.csv
       #  shell: bash
       #  run: |
-      #    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/perplexity/fp16.csv -O ${{ env.NIGHTLY_FOLDER}}/../fp16.csv
-      #    ls ${{ env.NIGHTLY_FOLDER}}/..
+      #    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/perplexity/fp16.csv -O $ACC_FOLDER/../fp16.csv
+      #    ls $ACC_FOLDER/..
 
-      - name: Summarize the results for nightly run
-        if: github.event_name == 'schedule'
+      - name: Write to CSV
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity
         shell: bash
         run: |
-          ls /home/arda/ppl-action-runners/nightly-accuracy-data/${{ env.OUTPUT_PATH }}
-          pip install pandas==1.5.3
-          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table_and_csv.py ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.NIGHTLY_FOLDER}}
-          python ${{ github.workspace }}/python/llm/test/benchmark/perplexity/ppl_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
-          python ${{ github.workspace }}/python/llm/test/benchmark/perplexity/update_html_in_parent_folder.py -f ${{ env.NIGHTLY_FOLDER }}
+          ls $ACC_FOLDER/$DATE
+          python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
 
-      - name: Summarize the results for pull request
-        if: github.event_name == 'pull_request'
+      - name: Update HTML
+        working-directory: ${{ github.workspace }}/python/llm/test/benchmark/perplexity
         shell: bash
         run: |
-          ls /home/arda/ppl-action-runners/pr-accuracy-data/${{ env.OUTPUT_PATH }}
-          pip install pandas==1.5.3
-          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table_and_csv.py ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} ${{ env.PR_FOLDER}}
-          python ${{ github.workspace }}/python/llm/test/benchmark/perplexity/ppl_csv_to_html.py -f ${{ env.PR_FOLDER}}
+          python ppl_csv_to_html.py -f $ACC_FOLDER
+          if ${{github.event_name == 'schedule'}}; then
+            python update_html_in_parent_folder.py -f $ACC_FOLDER
+          fi
