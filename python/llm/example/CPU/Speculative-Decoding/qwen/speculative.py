@@ -54,6 +54,8 @@ if __name__ == '__main__':
                         help='Max tokens to predict')
     parser.add_argument('--th_stop_draft', type=float, default=0.6,
                         help='draft stop probility')
+    parser.add_argument('--min_step_draft', type=int, default=1,
+                        help='min tokens per step draft')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -73,14 +75,18 @@ if __name__ == '__main__':
 
     with torch.inference_mode():
         prompt = QWEN_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer(prompt, return_tensors='pt').input_ids.to(model.device)
-        actual_in_len = input_ids.shape[1]
+        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+        input_ids = inputs.input_ids
+        attention_mask = inputs.attention_mask.to(model.device)
+
         print("actual input_ids length:" + str(actual_in_len))
 
         # warmup
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 th_stop_draft=args.th_stop_draft,
+                                attention_mask=attention_mask,
+                                min_step_draft=min_step_draft,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0])
 
@@ -89,6 +95,8 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 th_stop_draft=args.th_stop_draft,
+                                attention_mask=attention_mask,
+                                min_step_draft=min_step_draft,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         end = time.perf_counter()
