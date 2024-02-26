@@ -69,7 +69,7 @@ if __name__ == '__main__':
                                                  speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = model.to('cpu')
+    #model = model.to('cpu')
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
         input_ids = inputs.input_ids
         attention_mask = inputs.attention_mask.to(model.device)
-
+        actual_in_len = input_ids.shape[1]
         print("actual input_ids length:" + str(actual_in_len))
 
         # warmup
@@ -86,7 +86,7 @@ if __name__ == '__main__':
                                 max_new_tokens=args.n_predict,
                                 th_stop_draft=args.th_stop_draft,
                                 attention_mask=attention_mask,
-                                min_step_draft=min_step_draft,
+                                min_step_draft=args.min_step_draft,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0])
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
                                 max_new_tokens=args.n_predict,
                                 th_stop_draft=args.th_stop_draft,
                                 attention_mask=attention_mask,
-                                min_step_draft=min_step_draft,
+                                min_step_draft=args.min_step_draft,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         end = time.perf_counter()
