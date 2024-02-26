@@ -92,7 +92,7 @@ First token latency x.xxxxs
 ```
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
-
+`Qwen/Qwen-72B-Chat` is not supported using ipex now.
 To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.3.0+git004cd72d](https://github.com/intel/intel-extension-for-pytorch/tree/004cd72db60e87bb0712d42e3120bac9854bd77e) by following steps: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
 
 #### 4.1 Download IPEX installation script
