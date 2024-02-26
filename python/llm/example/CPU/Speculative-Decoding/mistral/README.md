@@ -97,7 +97,7 @@ python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-ex
 pip install transformers==4.35.2
 ```
 
-After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently `Llama2 7b and 13b` are supported.
+After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently `Mistral-7B-Instruct-v0.1 and Mistral-7B-v0.1` are supported.
 
 ```bash
 source bigdl-llm-init -t
