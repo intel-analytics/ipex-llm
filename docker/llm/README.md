@@ -92,7 +92,7 @@ conda activate bigdl-speculative-py39
 source bigdl-llm-init -t
 export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
 (numactl -m 0 -C 0-47) python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH 
---prompt PROMPT --n-predict N_PREDICT
+--prompt PROMPT --n-predict N_PREDICT --model-type MODEL_TYPE (chatglm, llama, baichuan, mistral, qwen, vicuna) --th-stop-draft THRESHOLD_FOR_STOPPING_DRAFT
 ```
 You can find more examples under [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding)
 
@@ -196,16 +196,6 @@ root@arda-arc12:/# sycl-ls
   cd /llm
   python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
   ``` 
-
-**Inference with Self-Speculative Decoding**: 
-```bash
-conda activate bigdl-speculative-py39
-source bigdl-llm-init -t
-export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
-(numactl -m 0 -C 0-47) python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH 
---prompt PROMPT --n-predict N_PREDICT
-```
-You can find more examples under [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/Speculative-Decoding)
 
 
 **Performance Benchmark**: Test all the benchmarks and record them in a result CSV. Users can provide models and related information in config.yaml.

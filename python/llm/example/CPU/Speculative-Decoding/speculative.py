@@ -59,11 +59,11 @@ assistant
 # Main program
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for models')
-    parser.add_argument('--model-type', type=str, default="chatglm",
+    parser.add_argument('--model-type', type=str, default="llama",
                         help='Type of the model to use (chatglm, llama, baichuan, mistral, qwen, vicuna)')
     parser.add_argument('--repo-id-or-model-path', type=str, 
                         help='The huggingface repo id for the model to be downloaded or the path to the checkpoint folder')
-    parser.add_argument('--prompt', type=str, default=long_input,
+    parser.add_argument('--prompt', type=str, default=None,
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')

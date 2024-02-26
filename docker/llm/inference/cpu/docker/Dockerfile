@@ -48,6 +48,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Copy vLLM-Serving
     cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL && \
+# Copy speculative.py
+    cp ./BigDL/python/llm/example/CPU/Speculative-Decoding/speculative.py ./ && \
 # Install miniconda
     curl -LO "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
