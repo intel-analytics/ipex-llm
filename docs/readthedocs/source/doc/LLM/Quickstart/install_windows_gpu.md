@@ -13,11 +13,11 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
 
 * Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
    
-    > Note: the process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the image provided below
+    > Note: the process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
 
     > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=80%; />
 
-* To monitor your GPU's performance and status, you can use either the **Arc Control** application (see the left side of the provided figure) or the **Windows Task Manager** (see the right side of the provided figure):
+* To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) or :
     >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
 ## Setup Python Environment
