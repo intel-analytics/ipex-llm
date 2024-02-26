@@ -44,11 +44,26 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
   
 ## Install `bigdl-llm`
 
-* With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU: 
+* With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU according to the network condition: 
   ```bash
   pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   ```
+  or
+  ```bash
+  pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
   > Note: If there are network issues when installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for more details. 
+
+* Runtime Configurations: Please also set the following environment variable if you would like to run LLMs on:
+  * Intel GPU
+    ```
+    set SYCL_CACHE_PERSISTENT=1
+    set BIGDL_LLM_XMX_DISABLED=1
+    ```
+  * Intel Arc™ A300-Series or Pro A60
+    ``` 
+    set SYCL_CACHE_PERSISTENT=1
+    ```
 
 * You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
   ```python
