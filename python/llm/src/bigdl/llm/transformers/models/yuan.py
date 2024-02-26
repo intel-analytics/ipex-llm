@@ -103,8 +103,8 @@ def yuan_attention_forward(
         key_states = self.k_proj(hidden_states)
         qk_states = torch.cat([query_states, key_states], dim=-1)
         qk_states = qk_states.view(bsz, q_len,
-                                self.num_heads,
-                                int(qk_states.shape[-1]//self.num_heads))
+                                   self.num_heads,
+                                   int(qk_states.shape[-1]//self.num_heads))
         (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
         query_states = query_states.transpose(1, 2)
         key_states = key_states.transpose(1, 2)
@@ -191,4 +191,3 @@ def yuan_attention_forward(
     if not output_attentions:
         attn_weights = None
     return attn_output, attn_weights, past_key_value
-  
