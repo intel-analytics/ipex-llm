@@ -475,7 +475,7 @@ def speculative_generate(self,
                 ("qwen" in self.config.model_type) or
                 ("chatglm" in self.config.model_type)):
             invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
-                                      Llama, Baichuan2, Mistral and ChatGLM models currently.")
+                                      Llama, Baichuan2, Mistral and ChatGLM and Qwen models currently.")
         if "chatglm" in self.config.model_type:
             global query_group_size
             query_group_size = draft_model.config.num_attention_heads // \
