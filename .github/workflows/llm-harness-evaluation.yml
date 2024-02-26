@@ -287,6 +287,6 @@ jobs:
         shell: bash
         run: |
           python harness_csv_to_html.py -f $ACC_FOLDER
-          if github.event_name == 'schedule'; then
+          if ${{github.event_name == 'schedule'}}; then
             python update_html_in_parent_folder.py -f $ACC_FOLDER
           fi
