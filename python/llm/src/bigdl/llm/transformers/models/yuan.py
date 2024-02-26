@@ -50,6 +50,29 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
     return use_fuse_rope
 
 
+def yuan_localized_filtering_forward(
+    self,
+    inputs: torch.Tensor,
+    before_hidden_states: torch.Tensor,
+):
+    if self.conv1.weight.dtype != torch.half:
+        self.half()
+
+    inputs = inputs.half()
+    if before_hidden_states is not None:
+        before_hidden_states = before_hidden_states.half()
+
+    invalidInputError(self.lf_conv2d_num_pad == 1, "padding must be 1")
+    if self.training:
+        lf_output = self._train_forward(inputs)
+    else:
+        lf_output = self._inference_forward(inputs, before_hidden_states)
+
+    lf_output = lf_output.to(inputs.dtype)
+
+    return lf_output
+
+
 def yuan_mlp_forward(
     self,
     x: torch.Tensor,
@@ -132,8 +155,8 @@ def yuan_attention_forward(
                 inference_hidden_states_memory[:, -1:, :] = hidden_states[:, -1:, :]
         else:
             hidden_states_tmp = before_hidden_states[:, -1:, :]
-            inference_hidden_states_memory = \
-                copy.deepcopy(torch.cat((hidden_states_tmp, hidden_states), dim=1))
+            inference_hidden_states_memory = torch.cat((hidden_states_tmp,
+                                                        hidden_states), dim=1)
 
     value_states = \
         self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
@@ -148,15 +171,10 @@ def yuan_attention_forward(
         key_states = key_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     else:
         hidden_states = self.lf_gate(hidden_states, before_hidden_states)
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        qk_states = torch.cat([query_states, key_states], dim=-1)
-        qk_states = qk_states.view(bsz, q_len,
-                                   self.num_heads,
-                                   int(qk_states.shape[-1]//self.num_heads))
+        qk_states = self.merged_qk_proj(hidden_states)
         (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
-        query_states = query_states.transpose(1, 2)
-        key_states = key_states.transpose(1, 2)
+        query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
