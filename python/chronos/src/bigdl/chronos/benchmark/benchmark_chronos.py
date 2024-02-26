@@ -217,7 +217,7 @@ def result(args, records):
     print("\033[1m\tStage\033[0m: \033[0;31m" + args.stage + "\033[0m")
     print("\033[1m\tDataset\033[0m: \033[0;31m" + args.dataset + "\033[0m")
     if args.cores:
-        print("\033[1m\tCores\033[0m: \033[0;31m" + args.core + "\033[0m")
+        print("\033[1m\tCores\033[0m: \033[0;31m" + args.cores + "\033[0m")
     else:
         core_num = psutil.cpu_count(logical=False) * \
             int(subprocess.getoutput('cat /proc/cpuinfo | '
