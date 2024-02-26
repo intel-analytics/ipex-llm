@@ -18,3 +18,8 @@ python run.py --model_path meta-llama/Llama-2-7b-chat-hf --precisions float16 sy
   ```
 - The `language` argument will only take effect if `datasets` is `None`. The choices for this argument are `en, zh, all`, which stands for all the English datasets, all the Chinese datasets and all the datasets respectively during testing.
 - If you want to test perplexity on pre-downloaded datasets, please specify the `<path/to/dataset>` in the `dataset_path` argument in your command.
+
+## Summarize the results
+"""python
+python make_table.py <input_dir>
+"""
