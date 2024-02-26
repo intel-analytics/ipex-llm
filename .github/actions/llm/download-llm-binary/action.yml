@@ -24,9 +24,9 @@ runs:
           mv linux-amx/* python/llm/llm-binary/
         fi
         if ${{contains(inputs.platform, 'Windows')}}; then
-          mv windows-avx2/* python/llm/llm-binary/ || true
-          mv windows-avx-vnni/* python/llm/llm-binary/ || true
-          mv windows-avx/* python/llm/llm-binary/ || true
+          mv windows-avx2/* python/llm/llm-binary/
+          mv windows-avx-vnni/* python/llm/llm-binary/
+          mv windows-avx/* python/llm/llm-binary/
         fi
         rm -rf linux-avx2 || true
         rm -rf linux-avx512 || true
