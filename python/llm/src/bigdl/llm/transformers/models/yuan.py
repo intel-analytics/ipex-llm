@@ -164,13 +164,14 @@ def yuan_attention_forward(
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
 
+    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
     if use_fuse_rope:
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "yuan")
+        query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states,
+                                                                       key_states,
+                                                                       sin, cos,
+                                                                       "yuan",
+                                                                       position_ids)
     else:
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states,
                                                         key_states,
                                                         cos, sin,
