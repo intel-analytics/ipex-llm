@@ -1,8 +1,8 @@
 # Install BigDL-LLM on Windows for Intel GPU
 
-## MTL & iGPU & Arc
+This guide applies to Intel integrated GPUs such as Intel Meteor Lake platform and Intel Core 11/12 gen platforms, as well as Intel Arc Series GPU.
 
-### Install GPU driver
+## Install GPU driver
 
 * Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
    
@@ -20,7 +20,7 @@
 * To monitor your GPU's performance and status, you can use either the **Arc Control** application (see the left side of the provided figure) or the **Windows Task Manager** (see the right side of the provided figure):
     >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
-### Setup Python Environment
+## Setup Python Environment
 
 * Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
@@ -35,26 +35,27 @@
   conda activate llm
   ```
  
-### Install oneAPI 
+## Install oneAPI 
 
 * With the `llm` environment active, use `pip` to install the **OneAPI Base Toolkit**:
   ```bash
   pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
   ```
   
-### Install `bigdl-llm`
+## Install `bigdl-llm`
 
 * With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU: 
   ```bash
   pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
   ```
+  > Note: If there are network issues when installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for more details. 
 
-*  You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
+* You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
   ```python
   from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
   ```
 
-### A quick example
+## A quick example
 * Next step you can start play with a real LLM. We use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) (an 1.3B model) for demostration. You can copy/paste the following code in a python script and run it. 
 > Note: to use phi-1.5, you may need to update your transformer version to 4.37.0.  
 > ```
