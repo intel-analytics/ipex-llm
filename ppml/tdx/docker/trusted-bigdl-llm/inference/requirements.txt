@@ -14,7 +14,7 @@ fastapi==0.109.1
 pydantic==1.10.8
 
 ### document qa
-langchain==0.0.329
+langchain==0.1.0
 pypdf
 chromadb==0.3.25
 
