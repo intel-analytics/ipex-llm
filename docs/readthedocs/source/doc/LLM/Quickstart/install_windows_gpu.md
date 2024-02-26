@@ -2,7 +2,7 @@
 
 This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
 
-The process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as well as Intel Arc Series GPU.
+This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as well as Intel Arc Series GPU.
 
 ## Install GPU driver
 
