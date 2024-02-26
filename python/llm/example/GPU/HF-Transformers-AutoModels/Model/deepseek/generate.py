@@ -51,6 +51,7 @@ if __name__ == '__main__':
         model_path,
         load_in_4bit=True,
         trust_remote_code=True,
+        cpu_embedding=True,
     )
     
     model = model.to('xpu')
