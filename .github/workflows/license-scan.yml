@@ -47,26 +47,26 @@ jobs:
       if: ${{ failure() }}
       run: |
         ls
-        #spark3.1.3
+        #spark3.4.1
         sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
         sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/dllib/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/orca/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/friesian/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/grpc/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/serving/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/ppml/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/assembly/pom.xml
-        mvn dependency:tree -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
-        mvn clean package -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/common/spark-version/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/dllib/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/orca/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/friesian/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/grpc/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/serving/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/ppml/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/assembly/pom.xml
+        mvn dependency:tree -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -Dspark.version=3.4.1 -DSPARK_PLATFORM=SPARK_3.4 -P spark_3.x --file scala/pom.xml
+        mvn clean package -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} -DskipTests -Dspark.version=3.4.1 -DSPARK_PLATFORM=SPARK_3.4 -P spark_3.x --file scala/pom.xml
         echo "ls -d scala/assembly/target/*"
         ls -d scala/assembly/target/*
         echo ""
-        echo "zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.1.3-2.5.0-SNAPSHOT-dist-all.zip 'jars/*.jar'"
-        zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.1.3-2.5.0-SNAPSHOT-dist-all.zip 'jars/*.jar'
+        echo "zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.4.1-2.5.0-SNAPSHOT-dist-all.zip 'jars/*.jar'"
+        zipinfo -1 scala/assembly/target/bigdl-assembly-spark_3.4.1-2.5.0-SNAPSHOT-dist-all.zip 'jars/*.jar'
     
     - name: Create Job Badge
       if: ${{ always() }}

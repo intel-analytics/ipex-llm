@@ -17,7 +17,7 @@
 #
 
 # This is the default script with maven parameters to release all the bigdl sub-packages
-# built on top of Spark3 (currently 3.1.3) for mac.
+# built on top of Spark3 (currently 3.4.1) for mac.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
@@ -44,4 +44,4 @@ else
   profiles=${*:5}
 fi
 
-bash ${RUN_SCRIPT_DIR}/release_default_spark.sh mac ${version} ${quick} ${upload} 3.1.3 ${suffix} ${profiles}
+bash ${RUN_SCRIPT_DIR}/release_default_spark.sh mac ${version} ${quick} ${upload} 3.4.1 ${suffix} ${profiles}
