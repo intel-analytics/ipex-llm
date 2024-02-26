@@ -1,6 +1,8 @@
 # Install BigDL-LLM on Windows for Intel GPU
 
-This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as well as Intel Arc Series GPU.
+This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
+
+The process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as well as Intel Arc Series GPU.
 
 ## Install GPU driver
 
@@ -37,17 +39,23 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
  
 ## Install oneAPI 
 
-* With the `llm` environment active, use `pip` to install the **OneAPI Base Toolkit**:
+* With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
   ```bash
   pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
   ```
   
 ## Install `bigdl-llm`
 
-* With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU: 
-  ```bash
-  pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-  ```
+* With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU:
+  Choose either US or CN website for extra index url:
+  * US: 
+     ```bash
+     pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+     ```
+  * CN:
+     ```bash
+     pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+     ```
   > Note: If there are network issues when installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for more details. 
 
 * You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
@@ -56,15 +64,20 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
   ```
 
 ## A quick example
-* Next step you can start play with a real LLM. We use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) (an 1.3B model) for demostration. You can copy/paste the following code in a python script and run it. 
-> Note: to use phi-1.5, you may need to update your transformer version to 4.37.0.  
-> ```
-> pip install -U transformers==4.37.0 
-> ```
-> Note: when running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-> This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
 
+Now let's play with a real LLM. We'll use [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for demostration purposes. Let's set it up and run the model to answer a prompt "What is AI?". 
+
+* Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
+   ```bash
+   conda activate llm
+   ```
+* Step 2: To ensure compatibility with phi-1.5, update the transformers library to version 4.37.0 by running:
+   ```bash
+   pip install -U transformers==4.37.0 
+   ```
+* Step 3: Create a new file named `demo.py` and insert the code snippet below.
    ```python
+   # Copy/Paste the contents to a new file demo.py
    import torch
    from bigdl.llm.transformers import AutoModelForCausalLM
    from transformers import AutoTokenizer, GenerationConfig
@@ -86,11 +99,19 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
        print(output_str)
    ```
+   > Note: when running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+   > This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
 
-* An example output on the laptop equipped with i7 11th Gen Intel Core CPU and Iris Xe Graphics iGPU looks like below. 
-
-```
-Question:What is AI?
-Answer: AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.
-```
+* Step 4. Run `demo.py` within the activated Python environment using the following command:
+  ```bash
+  python demo.py
+  ```
+   
+   ### Example output
+  
+   Example output on a system equipped with an 11th Gen Intel Core i7 CPU and Iris Xe Graphics iGPU:
+   ```
+   Question:What is AI?
+   Answer: AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.
+   ```
 
