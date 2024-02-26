@@ -56,9 +56,9 @@ jobs:
     steps:
       - name: set-env
         env:
-          MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small"]'
+          MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small", "whisper-medium", "whisper-base"]'
           MATRIX_TASK: '["librispeech"]'
-          MATRIX_PRECISION: '["sym_int4", "fp8_e4m3"]'
+          MATRIX_PRECISION: '["sym_int4", "fp8_e5m2"]'
           LABELS: '["self-hosted", "llm", "perf"]'
         run: |
             echo "model_name=$MATRIX_MODEL_NAME" >> $GITHUB_ENV
