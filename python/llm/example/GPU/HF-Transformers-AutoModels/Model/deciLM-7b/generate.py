@@ -52,6 +52,7 @@ if __name__ == '__main__':
         model_path,
         load_in_4bit=True,
         trust_remote_code=True,
+        cpu_embedding=True
     )
     
     # With only one line to enable BigDL-LLM optimization on model
