@@ -17,7 +17,7 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
 
     > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=80%; />
 
-* To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) or :
+* To monitor your GPU's performance and status, you can use either use the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) or :
     >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
 ## Setup Python Environment
