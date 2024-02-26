@@ -39,7 +39,7 @@ Run the following command:
 docker pull intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 ```
 
-### 2. Prepare Container
+### 2. Start bigdl-llm-cpu Docker Container
 
 On Windows, create and run a batch script (`*.bat`) with the following content:
 ```bat
@@ -66,7 +66,6 @@ export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
 docker run -itd \
-    --net=host \
     --privileged \
     -p 12345:12345 \
     --cpuset-cpus="0-47" \
@@ -87,6 +86,56 @@ docker exec -it $CONTAINER_NAME bash
   python chat.py --model-path /llm/models/chatglm2-6b
   ```
 
+**Inference with Self-Speculative Decoding**: 
+```bash
+conda activate bigdl-speculative-py39
+source bigdl-llm-init -t
+export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
+(numactl -m 0 -C 0-47) python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH 
+--prompt PROMPT --n-predict N_PREDICT
+```
+You can find more examples under [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding)
+
+**Performance Benchmark**: Test all the benchmarks and record them in a result CSV. Users can provide models and related information in config.yaml.
+
+```bash
+cd /llm//benchmark/all-in-one
+```
+Users can provide models and related information in config.yaml.
+```bash
+repo_id:
+  - 'THUDM/chatglm-6b'
+  - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+  # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
+local_model_hub: 'path to your local model hub'
+warm_up: 1
+num_trials: 3
+num_beams: 1 # default to greedy search
+low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
+in_out_pairs:
+  - '32-32'
+  - '1024-128'
+test_api:
+  - "transformer_int4"
+  - "native_int4"
+  - "optimize_model"
+  - "pytorch_autocast_bf16"
+  # - "transformer_autocast_bf16"
+  # - "ipex_fp16_gpu" # on Intel GPU
+  # - "bigdl_fp16_gpu" # on Intel GPU
+  # - "transformer_int4_gpu"  # on Intel GPU
+  # - "optimize_model_gpu"  # on Intel GPU
+  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
+  # - "transformer_int4_gpu_win" # on Intel GPU for Windows
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+```
+
+run bash run-spr.sh, this will output results to results.csv.
+
+You can refer to [details](https://github.com/intel-analytics/BigDL/tree/main/python/llm/dev/benchmark/all-in-one)
   
 **Jupyter Lab Tutorials**: Start a Jupyter Lab session for BigDL-LLM tutorials.
   ```bash
@@ -107,7 +156,7 @@ Run the following command:
 docker pull intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
 ```
 
-### 2. Prepare Container
+### 2. Start bigdl-llm-xpu Docker Container
 
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container. An example could be:
 ```bash
@@ -142,11 +191,63 @@ root@arda-arc12:/# sycl-ls
 ```
 
 ### 3. Start Inference
+**Chat Interface**: Use `chat.py` for conversational AI. For example:
+  ```bash
+  cd /llm
+  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+  ``` 
+
+**Inference with Self-Speculative Decoding**: 
 ```bash
-cd /llm
-python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+conda activate bigdl-speculative-py39
+source bigdl-llm-init -t
+export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
+(numactl -m 0 -C 0-47) python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH 
+--prompt PROMPT --n-predict N_PREDICT
+```
+You can find more examples under [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/Speculative-Decoding)
+
+
+**Performance Benchmark**: Test all the benchmarks and record them in a result CSV. Users can provide models and related information in config.yaml.
+
+```bash
+cd /llm//benchmark/all-in-one
+```
+Users can provide models and related information in config.yaml.
+```bash
+repo_id:
+  - 'THUDM/chatglm-6b'
+  - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+  # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
+local_model_hub: 'path to your local model hub'
+warm_up: 1
+num_trials: 3
+num_beams: 1 # default to greedy search
+low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
+in_out_pairs:
+  - '32-32'
+  - '1024-128'
+test_api:
+  - "transformer_int4"
+  - "native_int4"
+  - "optimize_model"
+  - "pytorch_autocast_bf16"
+  # - "transformer_autocast_bf16"
+  # - "ipex_fp16_gpu" # on Intel GPU
+  # - "bigdl_fp16_gpu" # on Intel GPU
+  # - "transformer_int4_gpu"  # on Intel GPU
+  # - "optimize_model_gpu"  # on Intel GPU
+  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
+  # - "transformer_int4_gpu_win" # on Intel GPU for Windows
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 ```
 
+run bash run-arc.sh, this will output results to results.csv.
+
+You can refer to [details](https://github.com/intel-analytics/BigDL/tree/main/python/llm/dev/benchmark/all-in-one)
 
 ## BigDL LLM Serving on CPU
 
@@ -158,7 +259,7 @@ Run the following command:
 docker pull intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
 ```
 
-### 2. Prepare Container
+### 2. Start bigdl-llm-serving-cpu Docker Container
 
 Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
 
@@ -246,7 +347,34 @@ To start an OpenAI API server that provides compatible APIs using `BigDL-LLM` ba
   }' http://localhost:8000/v1/completions
   ```
 
+### 4. Serving with vLLM Continuous Batching
+To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
+- **Step 1: Launch the api_server**
+  ```bash
+  #!/bin/bash
+  # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
+  # of batched prompt length the server will accept
+  numactl -C 48-95 -m 1 python -m bigdl.llm.vllm.entrypoints.openai.api_server \
+          --model /llm/models/Llama-2-7b-chat-hf-bigdl/ --port 8000  \
+          --load-format 'auto' --device cpu --dtype bfloat16 \
+          --max-num-batched-tokens 4096 &
+  ```
+
+- **Step 2: Use curl for testing, access the api server as follows:**
+
+  ```bash
+  curl http://localhost:8000/v1/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+                  "model": "/llm/models/Llama-2-7b-chat-hf-bigdl/",
+                  "prompt": "San Francisco is a",
+                  "max_tokens": 128,
+                  "temperature": 0
+  }' &
+  ```
+
+You can find example here [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/vLLM-Serving/README.md)
 
 ## BigDL LLM Serving on XPU
 
@@ -258,7 +386,7 @@ Run the following command:
 docker pull intelanalytics/bigdl-llm-serving-xpu:2.5.0-SNAPSHOT
 ```
 
-### 2. Prepare Container
+### 2. Start bigdl-llm-serving-xpu Docker Container
 
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
 
@@ -359,6 +487,34 @@ To start an OpenAI API server that provides compatible APIs using `BigDL-LLM` ba
   }' http://localhost:8000/v1/completions
   ```
 
+### 4. Serving with vLLM Continuous Batching
+To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
+
+- **Step 1: Launch the api_server**
+  ```bash
+  #!/bin/bash
+  # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
+  # of batched prompt length the server will accept
+  python -m bigdl.llm.vllm.entrypoints.openai.api_server \
+          --model /llm/models/Llama-2-7b-chat-hf/ --port 8000  \
+          --load-format 'auto' --device xpu --dtype bfloat16 \
+          --max-num-batched-tokens 4096 &
+  ```
+
+- **Step 2: Use curl for testing, access the api server as follows:**
+
+  ```bash
+  curl http://localhost:8000/v1/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+                  "model": "/llm/models/Llama-2-7b-chat-hf-bigdl/",
+                  "prompt": "San Francisco is a",
+                  "max_tokens": 128,
+                  "temperature": 0
+  }' &
+  ```
+  
+You can find example here [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/vLLM-Serving/README.md)
 
 ## BigDL LLM Fine Tuning on CPU
 
@@ -371,7 +527,7 @@ docker pull intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
 ```
 
 
-### 2. Prepare Base Model, Data and Container
+### 2. Prepare Base Model, Data and Start bigdl-llm-finetune-lora-cpu Docker Container
 
 Here, we try to finetune [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [Cleaned alpaca data](https://raw.githubusercontent.com/tloen/alpaca-lora/main/alpaca_data_cleaned_archive.json), which contains all kinds of general knowledge and has already been cleaned. And please download them and start a docker container with files mounted like below:
 
@@ -451,7 +607,7 @@ docker pull intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 
-### 2. Prepare Base Model, Data and Container
+### 2. Prepare Base Model, Data and Start bigdl-llm-finetune-qlora-xpu Docker Container
 
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [English Quotes](https://huggingface.co/datasets/Abirate/english_quotes) dataset, and please download them and start a docker container with files mounted like below:
 
