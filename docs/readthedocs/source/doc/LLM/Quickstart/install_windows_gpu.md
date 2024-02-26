@@ -46,7 +46,7 @@ This guide applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as 
 
 * With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU: 
   ```bash
-  pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+  pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   ```
   > Note: If there are network issues when installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for more details. 
 
