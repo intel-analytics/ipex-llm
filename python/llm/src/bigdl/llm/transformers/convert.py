@@ -539,6 +539,31 @@ def _optimize_pre(model):
             if model.lm_head.weight.data.device != "meta":
                 norm_weight = nn.functional.normalize(lm_head_weight_data)
                 model.lm_head.weight.data = norm_weight
+    # for yuan 2.0
+    if model.config.model_type == "yuan":
+        def merge_qk_proj_func(module):
+            if "YuanAttention" in module.__class__.__name__:
+                q_weight = module.q_proj.weight.data
+                k_weight = module.k_proj.weight.data
+                num_heads = module.num_heads
+                head_dim = module.head_dim
+                hidden_size = module.hidden_size
+
+                merged_qk_proj = torch.nn.Linear(0, 0, False)
+                weight = torch.cat([
+                    q_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
+                    k_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
+                    q_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
+                    k_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
+                ], dim=0).view(num_heads * head_dim * 2, hidden_size)
+                merged_qk_proj.weight = torch.nn.Parameter(weight, requires_grad=False)
+                merged_qk_proj.in_features = hidden_size
+                merged_qk_proj.out_features = num_heads * head_dim * 2
+                module.merged_qk_proj = merged_qk_proj
+
+                del module.q_proj
+                del module.k_proj
+        model.apply(merge_qk_proj_func)
     return model
 
 
@@ -1158,6 +1183,7 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.yuan import yuan_attention_forward
         from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
+        from bigdl.llm.transformers.models.yuan import yuan_localized_filtering_forward
         convert_forward(model,
                         module.YuanAttention,
                         yuan_attention_forward
@@ -1166,4 +1192,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.YuanMLP,
                         yuan_mlp_forward
                         )
+        convert_forward(model,
+                        module.LocalizedFiltering,
+                        yuan_localized_filtering_forward)
     return model
