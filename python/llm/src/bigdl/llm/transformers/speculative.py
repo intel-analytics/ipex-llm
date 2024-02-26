@@ -336,7 +336,7 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                 past_key_values_storage[i][0][:, size:size1, :, :] = \
                     delta_past_key.to(torch.float32)
                 past_key_values_storage[i][1][:, size:size1, :, :] = \
-                    delta_past_value.to(torch.float32)     
+                    delta_past_value.to(torch.float32)
             else:
                 delta_past_key = \
                     past_key_values[i][1][size:size1, :, :, :].permute(1, 2, 0, 3)
