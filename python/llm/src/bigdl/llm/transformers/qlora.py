@@ -248,7 +248,11 @@ def get_peft_model(*args, **kwargs):
                                                                   old_create_new_module))
 
     try:
-        from peft import get_peft_model as get_peft_model_original
+        from .llm_patch import is_bigdl_patched
+        if is_bigdl_patched:
+            from peft import get_peft_model_original
+        else:
+            from peft import get_peft_model as get_peft_model_original
         model = get_peft_model_original(*args, **kwargs)
     finally:
         LoraModel._create_new_module = old_create_new_module
