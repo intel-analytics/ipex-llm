@@ -28,11 +28,9 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 
-from bigdl.llm.transformers.models.llama import should_use_fuse_rope
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu, mlp_fusion_check, fp16_fusion_check
-from bigdl.llm.transformers.models.llama import should_use_fuse_rope
+    apply_rotary_pos_emb_cache_freq_xpu, mlp_fusion_check, fp16_fusion_check
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
@@ -45,9 +43,9 @@ def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
         use_fuse_rope and enough_kv_room and bs == 1
 
 
-def should_use_fuse_rope(self, query_states, position_ids):
-    use_fuse_rope = query_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+def should_use_fuse_rope(self, hidden_states, position_ids):
+    use_fuse_rope = hidden_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and hidden_states.requires_grad)
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
 
