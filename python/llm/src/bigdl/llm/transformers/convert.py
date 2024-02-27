@@ -1173,6 +1173,10 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.gptbigcode import _attn_wrapper
+        from bigdl.llm.transformers.models.gptbigcode import gptbigcode_attention_forward
+        convert_forward(model,
+                        module.GPTBigCodeAttention,
+                        gptbigcode_attention_forward)
         _attn = _attn_wrapper(module.GPTBigCodeAttention._attn)
         replace_func(model,
                      module.GPTBigCodeAttention,
