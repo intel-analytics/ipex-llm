@@ -48,7 +48,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
-from bigdl.llm.transformers.models.utils import use_flash_attention
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
@@ -239,6 +239,15 @@ def mistral_attention_forward(
                                                      key_states,
                                                      value_states,
                                                      is_causal=True)
+        attn_weights = None
+        attn_output = attn_output.transpose(1, 2).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, hidden_size)
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, hidden_size)

@@ -10,22 +10,22 @@ runs:
         source activate py37
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         export KERAS_BACKEND=tensorflow
-        export SPARK_HOME=/opt/work/spark-3.1.3
+        export SPARK_HOME=/opt/work/spark-3.4.1
 
-        gsed -i "s/'pyspark=='+PYSPARK_VERSION/'pyspark==3.1.3'/g" python/dllib/src/setup.py
+        gsed -i "s/'pyspark=='+PYSPARK_VERSION/'pyspark==3.4.1'/g" python/dllib/src/setup.py
         gsed -i "s/name='bigdl-dllib'/name='bigdl-dllib-spark3'/g" python/dllib/src/setup.py
         gsed -i "s/dist\/bigdl_dllib-/dist\/bigdl_dllib_spark3-/g" python/dllib/dev/release/release.sh
-        bash python/dllib/dev/release/release.sh mac default false false -Dspark.version=3.1.3 -P spark_3.x ${profiles}
+        bash python/dllib/dev/release/release.sh mac default false false -Dspark.version=3.4.1 -P spark_3.x ${profiles}
 
         gsed -i "s/bigdl-dllib==/bigdl-dllib-spark3==/g" python/orca/src/setup.py
         gsed -i "s/name='bigdl-orca'/name='bigdl-orca-spark3'/g" python/orca/src/setup.py
         gsed -i "s/dist\/bigdl_orca-/dist\/bigdl_orca_spark3-/g" python/orca/dev/release/release.sh
-        bash python/orca/dev/release/release.sh mac default true false -Dspark.version=3.1.3 -P spark_3.x
+        bash python/orca/dev/release/release.sh mac default true false -Dspark.version=3.4.1 -P spark_3.x
 
         gsed -i "s/bigdl-orca==/bigdl-orca-spark3==/g" python/friesian/src/setup.py
         gsed -i "s/name='bigdl-friesian'/name='bigdl-friesian-spark3'/g" python/friesian/src/setup.py
         gsed -i "s/dist\/bigdl_friesian-/dist\/bigdl_friesian_spark3-/g" python/friesian/dev/release/release.sh
-        bash python/friesian/dev/release/release.sh mac default false false -Dspark.version=3.1.3 -P spark_3.x
+        bash python/friesian/dev/release/release.sh mac default false false -Dspark.version=3.4.1 -P spark_3.x
        
         echo "Running py37 tests"
         # install dllib

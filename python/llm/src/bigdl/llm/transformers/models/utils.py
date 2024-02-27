@@ -143,7 +143,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2"]:
+                        "mixtral", "qwen2", "yuan"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -182,7 +182,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2"]:
+                        "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids, q_embed, k_embed)
         return q_embed, k_embed
     else:
@@ -199,7 +199,7 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["qwen", "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-    elif model_family in ["qwen2"]:
+    elif model_family in ["qwen2", "yuan"]:
         cos = cos.to(q.dtype)
         sin = sin.to(q.dtype)
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -310,7 +310,8 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if x.device.type != 'xpu':
         return False
-    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"],
+                     ggml_tensor_qtype["gguf_iq2_xxs"]]:
         return False
     if training or x.requires_grad:
         return False

@@ -1,5 +1,5 @@
 # Mistral
-In this directory, you will find examples on how you could run Baichuan2 BF16 inference with self-speculative decoding using BigDL-LLM on [Intel CPUs](../README.md). For illustration purposes,we utilize the [mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) and [mistralai/Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1) as reference Mistral models.
+In this directory, you will find examples on how you could run Mistral BF16 inference with self-speculative decoding using BigDL-LLM on [Intel CPUs](../README.md). For illustration purposes,we utilize the [mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) and [mistralai/Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1) as reference Mistral models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel CPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -84,4 +84,24 @@ First token latency xx.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-BIGDL_OPT_IPEX can help to accelerate speculative decoding on Mistral, and please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-bigdl_opt_ipex) for a try.
+To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.2.0+cpu](https://github.com/intel/intel-extension-for-pytorch/tree/v2.2.0%2Bcpu) refering to [IPEX's installation guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=cpu&version=v2.2.0%2Bcpu), or by the following commands: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
+
+```bash
+# Install IPEX 2.2.0+cpu
+python -m pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install intel-extension-for-pytorch==2.2.0
+python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
+# if there is any installation problem for oneccl_binding, you can also find suitable index url at "https://pytorch-extension.intel.com/release-whl/stable/cpu/cn/" or "https://developer.intel.com/ipex-whl-stable-cpu" according to your environment.
+
+# Update transformers
+pip install transformers==4.35.2
+```
+
+After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently `Mistral-7B-Instruct-v0.1 and Mistral-7B-v0.1` are supported.
+
+```bash
+source bigdl-llm-init -t
+export BIGDL_OPT_IPEX=true
+export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
+numactl -C 0-47 -m 0 python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```

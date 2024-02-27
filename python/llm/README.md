@@ -85,7 +85,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Ziya-Coding-34B-v1.0 | [link](example/CPU/HF-Transformers-AutoModels/Model/ziya) | |
 | Phi-2 | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-2) | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-2) |
 | Yuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
-
+| DeciLM-7B | [link](example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b) |
 ### Working with `bigdl-llm`
 
 <details><summary>Table of Contents</summary>
