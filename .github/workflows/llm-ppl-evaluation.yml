@@ -256,11 +256,11 @@ jobs:
           path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
 
       # Save fp16.csv in the parent folder of env.nightly_folder
-      #- name: Download fp16.csv
-      #  shell: bash
-      #  run: |
-      #    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/perplexity/fp16.csv -O $ACC_FOLDER/../fp16.csv
-      #    ls $ACC_FOLDER/..
+      - name: Download fp16.results
+        shell: bash
+        run: |
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/perplexity/fp16.csv -O $ACC_FOLDER/../fp16.csv
+          ls $ACC_FOLDER/..
 
       - name: Write to CSV
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity
