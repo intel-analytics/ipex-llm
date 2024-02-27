@@ -113,7 +113,7 @@ def main():
         if args.baseline_path:
             previous_csv = pd.read_csv(args.baseline_path, index_col=0)
         else:
-            previous_csv = pd.read_csv(csv_files[1], index_col=0)
+            previous_csv = pd.read_csv(args.folder_path + '/history.csv', index_col=0)
 
         last_Arc=['']*len(latest_csv.index)
         diff_Arc=['']*len(latest_csv.index)

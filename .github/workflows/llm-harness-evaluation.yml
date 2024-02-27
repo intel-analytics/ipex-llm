@@ -271,7 +271,6 @@ jobs:
           name: harness_results
           path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
 
-
       # Save fp16.csv in the parent folder of env.nightly_folder
       - name: Download FP16 results
         shell: bash
@@ -285,12 +284,21 @@ jobs:
         run: |
           ls $ACC_FOLDER/$DATE
           python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
-
+      - name: Cache history
+        id: cache-history
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ACC_FOLDER}}/history.csv
+          key: harness-cache-${{env.Date}}
+        
       - name: Update HTML
         working-directory: ${{ github.workspace }}/python/llm/test/benchmark/harness
         shell: bash
         run: |
           python harness_csv_to_html.py -f $ACC_FOLDER
-          if ${{github.event_name == 'schedule'}}; then
-            python update_html_in_parent_folder.py -f $ACC_FOLDER
-          fi
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: html
+          path:
+            ${{ env.ACC_FOLDER}}/*.html
