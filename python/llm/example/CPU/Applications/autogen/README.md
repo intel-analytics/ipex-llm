@@ -1,6 +1,5 @@
 ## Running AutoGen Agent Chat with BigDL-LLM on Local Models
-In this example, we use BigDL adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) agent chat with 
-local large language models.
+In this example, we use BigDL adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) teachable  agent chat with local large language models. This agent is capable to address the short term memory limitation in the conversational LLM chatting. It stores the user teachings to long term memory saved on disk. Those memory will be retrieved into the chat only as needed. This allows the user to teach many facts, preferences and skills to the teachable agent and have it remember them in later chats. This example demonstrates how `Teachability` can be added to the agent from user. For detailed illustration, please refer to the original documentation from AutoGen [Teachability Example](https://github.com/microsoft/autogen/blob/main/notebook/agentchat_teachability.ipynb).
 
 ### 1. Setup BigDL-LLM Environment
 ```bash
@@ -57,9 +56,6 @@ python -m fastchat.serve.controller
 
 **Terminal 2: Launch the workers**
 
-**Change the Model Name:**
-> Assume you are using the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL adapted FastChat.
-
 ```bash
 # activate conda environment
 conda activate autogen
@@ -71,7 +67,10 @@ cd autogen
 python -m bigdl.llm.serving.model_worker --model-path ... --device cpu
 ```
 
-**Potential Error Note:**
+Change the Model Name:
+> Assume you are using the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL adapted FastChat.
+
+Potential Error Note:
 > If you get `RuntimeError: Error register to Controller` in the worker terminal, please set `export no_proxy='localhost'` to ensure the registration
 
 
@@ -101,7 +100,7 @@ cd autogen
 python teachability_new_knowledge.py
 ```
 
-**Potential Error Note:**
+Potential Error Note:
 > If you get `?bu=http://localhost:8000/v1/chat/completions&bc=Failed+to+retrieve+requested+URL.&ip=10.239.44.101&er=ERR_CONNECT_FAIL` in the running terminal, please set `export no_proxy='localhost'` to ensure the registration.
 
 
