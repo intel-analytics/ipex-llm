@@ -285,7 +285,7 @@ def core_attn(self, query, key, value, causal_mask=None, attention_mask=None, he
 def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.w1, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training):
+    if mlp_fusion_check(x_2d, qtype, self.training) and not self.w1.enable_xetla:
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()

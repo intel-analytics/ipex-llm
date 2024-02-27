@@ -153,6 +153,7 @@ def mixtral_attention_forward(
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -330,7 +331,7 @@ def mixtral_mlp_forward(
     routing_weights
 ) -> torch.Tensor:
     qtype = getattr(self.w1, "qtype", None)
-    if mlp_fusion_check(x, qtype, self.training):
+    if mlp_fusion_check(x, qtype, self.training) and not self.w1.enable_xetla:
         import linear_q4_0
         return self.w2(linear_q4_0.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,

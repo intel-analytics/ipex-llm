@@ -192,7 +192,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False, prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
-                                 model_type=None, torch_dtype=torch.float32):
+                                 model_type=None, torch_dtype=torch.float32,
+                                 enable_xetla=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -223,6 +224,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype=qtype,
                             bias=has_bias,
                             mp_group=mp_group,
+                            enable_xetla=enable_xetla,
                         )
                         device = module.qweight.data.device
                         invalidInputError(device.type != "meta",
@@ -234,7 +236,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device)
+                                                 qtype=qtype,
+                                                 enable_xetla=enable_xetla).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if has_bias:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -249,6 +252,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype,
                             module.bias is not None,
                             mp_group=mp_group,
+                            enable_xetla=enable_xetla,
                         )
                         cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                            full_module_name,
@@ -263,7 +267,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=cur_qtype,
                                                  imatrix=cur_imatrix,
-                                                 in_features=in_features).to(device)
+                                                 in_features=in_features,
+                                                 enable_xetla=enable_xetla).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -368,7 +373,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 imatrix_data=imatrix_data,
                 embedding_qtype=embedding_qtype,
                 model_type=model_type,
-                torch_dtype=torch_dtype
+                torch_dtype=torch_dtype,
+                enable_xetla=enable_xetla,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -571,7 +577,9 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
                          lightweight_bmm=False, torch_dtype="auto",
-                         imatrix_data=None, embedding_qtype=None):
+                         imatrix_data=None,
+                         embedding_qtype=None,
+                         enable_xetla=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -601,7 +609,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         imatrix_data=imatrix_data,
         embedding_qtype=embedding_qtype,
         model_type=model_type,
-        torch_dtype=torch_dtype
+        torch_dtype=torch_dtype,
+        enable_xetla=enable_xetla,
     )
     if not has_been_replaced:
         warnings.warn(

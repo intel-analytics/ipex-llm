@@ -358,6 +358,7 @@ class _BaseAutoModelClass:
         embedding_qtype = kwargs.pop("embedding_qtype", None)
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
+        enable_xetla = kwargs.pop("enable_xetla", False)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -421,7 +422,8 @@ class _BaseAutoModelClass:
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
-                                     embedding_qtype=embedding_qtype)
+                                     embedding_qtype=embedding_qtype,
+                                     enable_xetla=enable_xetla,)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # enable tie_word_embeddings for MPT
