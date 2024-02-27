@@ -15,6 +15,7 @@ repo_id:
   - 'liuhaotian/llava-v1.5-7b'
   - 'RWKV/rwkv-4-world-7b'
   - 'RWKV/rwkv-5-world-7b'
+  - 'IEITYuan/Yuan2-2B-hf'
 local_model_hub: 'path to your local model hub'
 warm_up: 3
 num_trials: 5
