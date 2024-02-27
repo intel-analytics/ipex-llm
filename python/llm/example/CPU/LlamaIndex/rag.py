@@ -1,7 +1,7 @@
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from sqlalchemy import make_url
 from llama_index.vector_stores.postgres import PGVectorStore
-from llama_index.llms.llama_cpp import LlamaCPP
+# from llama_index.llms.llama_cpp import LlamaCPP
 import psycopg2
 from pathlib import Path
 from llama_index.readers.file import PyMuPDFReader
@@ -164,7 +164,7 @@ def main():
     # )
     
     # Use custom LLM in BigDL
-    from custom_LLM import BigdlLLM
+    from bigdl.llm.llamaindex.llms import BigdlLLM
     llm = BigdlLLM(
         model_name="/mnt/disk1/models/Llama-2-7b-chat-hf",
         tokenizer_name="/mnt/disk1/models/Llama-2-7b-chat-hf",
@@ -177,16 +177,6 @@ def main():
         device_map="cpu",
     )
     
-    # Use LangChain API in llamaindex with BigDL
-    # from bigdl.llm.langchain.llms import TransformersLLM
-    # from llama_index.llms.langchain import LangChainLLM
-    # llama_llm = TransformersLLM.from_model_id(
-    #     model_id="/mnt/disk1/models/Llama-2-7b-chat-hf",
-    #     model_kwargs={"temperature": 0.6, "max_length": 256, "trust_remote_code": True},
-    # )
-    # llm = LangChainLLM(llm=llama_llm)
-    
-    
     vector_store = load_vector_database()
     nodes = load_data()
     for node in nodes:
@@ -197,7 +187,8 @@ def main():
     
     vector_store.add(nodes)
     
-    query_str = "Can you tell me about the key concepts for safety finetuning"
+    # query_str = "Can you tell me about the key concepts for safety finetuning"
+    query_str = "Explain about the training data for Llama 2"
     query_embedding = embed_model.get_query_embedding(query_str)
     # construct vector store query
     
@@ -231,7 +222,6 @@ def main():
     query_engine = RetrieverQueryEngine.from_args(retriever, llm=llm)
 
     query_str = "How does Llama 2 perform compared to other open-source models?"
-
     response = query_engine.query(query_str)
 
 

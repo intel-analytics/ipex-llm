@@ -4,8 +4,6 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import torch
 from huggingface_hub import AsyncInferenceClient, InferenceClient, model_info
-from huggingface_hub.hf_api import ModelInfo
-from huggingface_hub.inference._types import ConversationalOutput
 from llama_index.core.base.llms.types import (
     ChatMessage,
     ChatResponse,
@@ -28,10 +26,7 @@ from llama_index.core.llms.callbacks import (
     llm_completion_callback,
 )
 from llama_index.core.llms.custom import CustomLLM
-from llama_index.core.base.llms.generic_utils import (
-    completion_response_to_chat_response,
-    stream_completion_response_to_chat_response,
-)
+
 from llama_index.core.base.llms.generic_utils import (
     messages_to_prompt as generic_messages_to_prompt,
 )
@@ -43,7 +38,8 @@ from transformers import (
 )
 from transformers import AutoTokenizer, LlamaTokenizer
 
-DEFAULT_HUGGINGFACE_MODEL = "/mnt/disk1/models/Llama-2-7b-chat-hf"
+
+DEFAULT_HUGGINGFACE_MODEL = "meta-llama/Llama-2-7b-chat-hf"
 
 logger = logging.getLogger(__name__)
 
@@ -159,8 +155,10 @@ class BigdlLLM(CustomLLM):
         model_kwargs = model_kwargs or {}
         from bigdl.llm.transformers import AutoModelForCausalLM
         self._model = model or AutoModelForCausalLM.from_pretrained(
-            model_name,load_in_4bit=True, device_map=device_map, **model_kwargs
+            model_name,load_in_4bit=True, **model_kwargs
         )
+        if device_map=='xpu':
+            self._model = self._model.to("xpu")
 
         # check context_window
         config_dict = self._model.config.to_dict()
