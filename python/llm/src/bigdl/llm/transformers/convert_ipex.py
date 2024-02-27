@@ -37,59 +37,14 @@
 import torch
 from bigdl.llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+from intel_extension_for_pytorch.transformers.optimize import (
+    lowering_class_cpu,
+    convert_class,
+)
 
 
-def lowering_class_cpu(m, target_m, new_class, config, tpp=False, woq=False):
-    for name, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
-            new_m = new_class(sub_m, config, tpp, woq)
-            setattr(m, name, new_m)
-        lowering_class_cpu(sub_m, target_m, new_class, config, tpp, woq)
-
-
-def convert_class(m, target_m, new_class, config, distributed=False):
-    for name, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
-            new_m = new_class(sub_m, config, distributed)
-            setattr(m, name, new_m)
-        convert_class(sub_m, target_m, new_class, config, distributed)
-
-
-def _set_optimized_model_for_generation(
-    model,
-    optimized_model,
-    first_token_optimized_model=None,
-):
-    from intel_extension_for_pytorch.transformers.models.reference.models import (
-        IPEX_LLM_Model_Return
-    )
-    if first_token_optimized_model is not None:
-        model.trace_graph_first = IPEX_LLM_Model_Return(
-            model, first_token_optimized_model
-        ).forward
-
-    model.trace_graph = IPEX_LLM_Model_Return(model, optimized_model).forward
-    print(
-        "ipex.llm.optimize has set the optimized or quantization model for model.generate()"
-    )
-    return model
-
-
-def _ipex_optimize_rmsnorm(_model):
+def _ipex_optimize_rmsnorm(_model, supported_classes):
     from intel_extension_for_pytorch.transformers.models.cpu.fusions.mha_fusion import _IPEXRMSNorm
-    import transformers
-    supported_classes = [
-        transformers.models.llama.modeling_llama.LlamaRMSNorm,
-    ]
-    if _model.config.architectures[0] == "BaichuanForCausalLM":
-        supported_classes.append(type(_model.model.layers[0].input_layernorm))
-    if (
-        _model.config.architectures[0] == "ChatGLMModel"
-        and _model.config.rmsnorm
-    ):
-        supported_classes.append(
-            type(_model.transformer.encoder.layers[0].input_layernorm)
-        )
     for supported_class in supported_classes:
         lowering_class_cpu(
             _model,
@@ -137,8 +92,18 @@ def _ipex_optimize_attention(model):
         )
 
 
+def _ipex_optimize_model(model, rms_classes):
+
+    _ipex_optimize_rmsnorm(model, rms_classes)
+    _ipex_optimize_attention(model)
+    _ipex_optimize_decoder(model)
+
+
 def _ipex_jit(model):
-    from intel_extension_for_pytorch.transformers.optimize import get_dummy_input
+    from intel_extension_for_pytorch.transformers.optimize import (
+        get_dummy_input,
+        _set_optimized_model_for_generation
+    )
     sample_inputs = (
         get_dummy_input(model, return_dict=True)
     )
@@ -157,8 +122,10 @@ def _ipex_jit(model):
         model = _set_optimized_model_for_generation(
             model, optimized_model=trace_model
         )
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    model.register_forward_hook(output_hook, with_kwargs=True)
 
-    return model.eval()
+    return model
 
 
 def convert_function(m, func_name, new_function):
