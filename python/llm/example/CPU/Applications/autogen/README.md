@@ -1,5 +1,5 @@
 ## Running AutoGen Agent Chat with BigDL-LLM on Local Models
-In this example, we use BigDL adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) teachable  agent chat with local large language models. This agent is capable to address the short term memory limitation in the conversational LLM chatting. It stores the user teachings to long term memory saved on disk. Those memory will be retrieved into the chat only as needed. This allows the user to teach many facts, preferences and skills to the teachable agent and have it remember them in later chats. This example demonstrates how `Teachability` can be added to the agent from user. For detailed illustration, please refer to the original documentation from AutoGen [Teachability Example](https://github.com/microsoft/autogen/blob/main/notebook/agentchat_teachability.ipynb).
+In this example, we use BigDL-adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) teachable  agent chat with local large language models. This agent is capable of addressing the short-term memory limitation in conversational LLM chatting. It stores the user teachings to long-term memory saved on disk. Those memories will be retrieved into the chat only as needed. This allows the user to teach the teachable agent many facts, preferences, and skills and have it remember them in later chats. This example demonstrates how `Teachability` can be added to the agent from the user. For detailed illustration, please refer to the original documentation from AutoGen [Teachability Example](https://github.com/microsoft/autogen/blob/main/notebook/agentchat_teachability.ipynb).
 
 ### 1. Setup BigDL-LLM Environment
 ```bash
@@ -35,8 +35,10 @@ pip install pyautogen==0.2.7
 ```
 
 **After setting up the environment, the folder structure should be:**
-> -- autogen
-> | -- FastChat
+```
+-- autogen
+| -- FastChat
+```
 
 
 ### 3. Build FastChat OpenAI-Compatible RESTful API
@@ -68,7 +70,7 @@ python -m bigdl.llm.serving.model_worker --model-path ... --device cpu
 ```
 
 Change the Model Name:
-> Assume you are using the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL adapted FastChat.
+> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL-adapted FastChat.
 
 Potential Error Note:
 > If you get `RuntimeError: Error register to Controller` in the worker terminal, please set `export no_proxy='localhost'` to ensure the registration
