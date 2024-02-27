@@ -118,26 +118,74 @@ class VectorDBRetriever(BaseRetriever):
 
         return nodes_with_scores
     
+def completion_to_prompt(completion):
+    return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n"
 
+
+# Transform a list of chat messages into zephyr-specific input
+def messages_to_prompt(messages):
+    prompt = ""
+    for message in messages:
+        if message.role == "system":
+            prompt += f"<|system|>\n{message.content}</s>\n"
+        elif message.role == "user":
+            prompt += f"<|user|>\n{message.content}</s>\n"
+        elif message.role == "assistant":
+            prompt += f"<|assistant|>\n{message.content}</s>\n"
+
+    # ensure we start with a system prompt, insert blank if needed
+    if not prompt.startswith("<|system|>\n"):
+        prompt = "<|system|>\n</s>\n" + prompt
+
+    # add final assistant prompt
+    prompt = prompt + "<|assistant|>\n"
+
+    return prompt
 
 def main():
     embed_model = HuggingFaceEmbedding(model_name="/mnt/disk1/models/bge-small-en")
-    llm = LlamaCPP(
-        # You can pass in the URL to a GGML model to download it automatically
-        model_url=None,
-        # optionally, you can set the path to a pre-downloaded model instead of model_url
-        model_path="/mnt/disk1/models/gguf/llama-2-7b-chat.Q4_0.gguf",
-        temperature=0.1,
-        max_new_tokens=256,
-        # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
+    
+    # Use LlamaCPP
+    # llm = LlamaCPP(
+    #     # You can pass in the URL to a GGML model to download it automatically
+    #     model_url=None,
+    #     # optionally, you can set the path to a pre-downloaded model instead of model_url
+    #     model_path="/mnt/disk1/models/gguf/llama-2-7b-chat.Q4_0.gguf",
+    #     temperature=0.1,
+    #     max_new_tokens=256,
+    #     # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
+    #     context_window=3900,
+    #     # kwargs to pass to __call__()
+    #     generate_kwargs={},
+    #     # kwargs to pass to __init__()
+    #     # set to at least 1 to use GPU
+    #     model_kwargs={"n_gpu_layers": 0},
+    #     verbose=True,
+    # )
+    
+    # Use custom LLM in BigDL
+    from custom_LLM import BigdlLLM
+    llm = BigdlLLM(
+        model_name="/mnt/disk1/models/Llama-2-7b-chat-hf",
+        tokenizer_name="/mnt/disk1/models/Llama-2-7b-chat-hf",
         context_window=3900,
-        # kwargs to pass to __call__()
-        generate_kwargs={},
-        # kwargs to pass to __init__()
-        # set to at least 1 to use GPU
-        model_kwargs={"n_gpu_layers": 0},
-        verbose=True,
+        max_new_tokens=256,
+        generate_kwargs={"temperature": 0.7, "do_sample": False},
+        model_kwargs={},
+        messages_to_prompt=messages_to_prompt,
+        completion_to_prompt=completion_to_prompt,
+        device_map="cpu",
     )
+    
+    # Use LangChain API in llamaindex with BigDL
+    # from bigdl.llm.langchain.llms import TransformersLLM
+    # from llama_index.llms.langchain import LangChainLLM
+    # llama_llm = TransformersLLM.from_model_id(
+    #     model_id="/mnt/disk1/models/Llama-2-7b-chat-hf",
+    #     model_kwargs={"temperature": 0.6, "max_length": 256, "trust_remote_code": True},
+    # )
+    # llm = LangChainLLM(llm=llama_llm)
+    
     
     vector_store = load_vector_database()
     nodes = load_data()
@@ -163,6 +211,7 @@ def main():
     )
     # returns a VectorStoreQueryResult
     query_result = vector_store.query(vector_store_query)
+    print("Retrieval Results: ")
     print(query_result.nodes[0].get_content())
 
 
@@ -175,7 +224,7 @@ def main():
         nodes_with_scores.append(NodeWithScore(node=node, score=score))
     
     retriever = VectorDBRetriever(
-        vector_store, embed_model, query_mode="default", similarity_top_k=2
+        vector_store, embed_model, query_mode="default", similarity_top_k=1
     )
     
     
@@ -185,10 +234,9 @@ def main():
 
     response = query_engine.query(query_str)
 
-    print("---------------------------------------------------")
+
+    print("------------RESPONSE GENERATION---------------------")
     print(str(response))
-    print("---------------------------------------------------")
-    print(response.source_nodes[0].get_content())
 
 
 if __name__ == "__main__":

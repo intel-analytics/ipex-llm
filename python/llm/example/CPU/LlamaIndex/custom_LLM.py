@@ -20,8 +20,8 @@ from llama_index.core.base.llms.types import (
 from llama_index.core.bridge.pydantic import Field, PrivateAttr
 from llama_index.core.callbacks import CallbackManager
 from llama_index.core.constants import (
-    DEFAULT_CONTEXT_WINDOW,
-    DEFAULT_NUM_OUTPUTS,
+    DEFAULT_CONTEXT_WINDOW, #3900
+    DEFAULT_NUM_OUTPUTS, #256
 )
 from llama_index.core.llms.callbacks import (
     llm_chat_callback,
@@ -38,19 +38,18 @@ from llama_index.core.base.llms.generic_utils import (
 from llama_index.core.prompts.base import PromptTemplate
 from llama_index.core.types import BaseOutputParser, PydanticProgramMode
 from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
     StoppingCriteria,
     StoppingCriteriaList,
 )
+from transformers import AutoTokenizer, LlamaTokenizer
 
-DEFAULT_HUGGINGFACE_MODEL = "StabilityAI/stablelm-tuned-alpha-3b"
+DEFAULT_HUGGINGFACE_MODEL = "/mnt/disk1/models/Llama-2-7b-chat-hf"
 
 logger = logging.getLogger(__name__)
 
 
 class BigdlLLM(CustomLLM):
-    """HuggingFace LLM."""
+    """Bigdl LLM."""
 
     model_name: str = Field(
         default=DEFAULT_HUGGINGFACE_MODEL,
@@ -158,8 +157,10 @@ class BigdlLLM(CustomLLM):
     ) -> None:
         """Initialize params."""
         model_kwargs = model_kwargs or {}
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, **model_kwargs)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, load_in_4bit=True, **model_kwargs)
+        from bigdl.llm.transformers import AutoModelForCausalLM
+        self._model = model or AutoModelForCausalLM.from_pretrained(
+            model_name,load_in_4bit=True, device_map=device_map, **model_kwargs
+        )
 
         # check context_window
         config_dict = self._model.config.to_dict()
@@ -245,6 +246,17 @@ class BigdlLLM(CustomLLM):
             is_chat_model=self.is_chat_model,
         )
 
+    def _tokenizer_messages_to_prompt(self, messages: Sequence[ChatMessage]) -> str:
+        """Use the tokenizer to convert messages to prompt. Fallback to generic."""
+        if hasattr(self._tokenizer, "apply_chat_template"):
+            messages_dict = [
+                {"role": message.role.value, "content": message.content}
+                for message in messages
+            ]
+            tokens = self._tokenizer.apply_chat_template(messages_dict)
+            return self._tokenizer.decode(tokens)
+
+        return generic_messages_to_prompt(messages)
 
     @llm_completion_callback()
     def complete(
@@ -257,63 +269,52 @@ class BigdlLLM(CustomLLM):
                 full_prompt = self.query_wrapper_prompt.format(query_str=prompt)
             if self.system_prompt:
                 full_prompt = f"{self.system_prompt} {full_prompt}"
-
-        inputs = self._tokenizer(full_prompt, return_tensors="pt")
-        inputs = inputs.to(self._model.device)
-
+        input_ids = self._tokenizer(full_prompt, return_tensors="pt")
+        input_ids = input_ids.to(self._model.device)
         # remove keys from the tokenizer if needed, to avoid HF errors
         for key in self.tokenizer_outputs_to_remove:
-            if key in inputs:
-                inputs.pop(key, None)
-
+            if key in input_ids:
+                input_ids.pop(key, None)
         tokens = self._model.generate(
-            **inputs,
+            **input_ids,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=self._stopping_criteria,
             **self.generate_kwargs,
         )
-        completion_tokens = tokens[0][inputs["input_ids"].size(1) :]
+        completion_tokens = tokens[0][input_ids["input_ids"].size(1) :]
         completion = self._tokenizer.decode(completion_tokens, skip_special_tokens=True)
 
         return CompletionResponse(text=completion, raw={"model_output": tokens})
+
 
     @llm_completion_callback()
     def stream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponseGen:
         """Streaming completion endpoint."""
-        from transformers import TextIteratorStreamer
-
+        from transformers import TextStreamer
         full_prompt = prompt
         if not formatted:
             if self.query_wrapper_prompt:
                 full_prompt = self.query_wrapper_prompt.format(query_str=prompt)
             if self.system_prompt:
                 full_prompt = f"{self.system_prompt} {full_prompt}"
-
-        inputs = self._tokenizer(full_prompt, return_tensors="pt")
-        inputs = inputs.to(self._model.device)
-
-        # remove keys from the tokenizer if needed, to avoid HF errors
+                
+        input_ids = self._tokenizer.encode(full_prompt, return_tensors="pt")
+        input_ids = input_ids.to(self._model.device)
+        
         for key in self.tokenizer_outputs_to_remove:
-            if key in inputs:
-                inputs.pop(key, None)
-
-        streamer = TextIteratorStreamer(
-            self._tokenizer,
-            skip_prompt=True,
-            decode_kwargs={"skip_special_tokens": True},
-        )
+            if key in input_ids:
+                input_ids.pop(key, None)
+                
+        streamer = TextStreamer(self._tokenizer, skip_prompt=True, skip_special_tokens=True)
         generation_kwargs = dict(
-            inputs,
+            input_ids,
             streamer=streamer,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=self._stopping_criteria,
             **self.generate_kwargs,
         )
-
-        # generate in background thread
-        # NOTE/TODO: token counting doesn't work with streaming
         thread = Thread(target=self._model.generate, kwargs=generation_kwargs)
         thread.start()
 
@@ -325,6 +326,3 @@ class BigdlLLM(CustomLLM):
                 yield CompletionResponse(text=text, delta=x)
 
         return gen()
-
-
-  
