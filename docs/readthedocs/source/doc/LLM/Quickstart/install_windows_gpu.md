@@ -2,7 +2,7 @@
 
 This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
 
-This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
+It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
 ## Install GPU driver
 
@@ -15,11 +15,11 @@ This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (i
 
 * Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
    
-    > Note: the process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
+    > Note: The process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
 
     > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=80%; />
 
-* To monitor your GPU's performance and status, you can use either use the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) or :
+* To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) :
     >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
 ## Setup Python Environment
@@ -47,7 +47,7 @@ This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (i
 ## Install `bigdl-llm`
 
 * With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU:
-  Choose either US or CN website for extra index url:
+  Choose either US or CN website for `extra-index-url`:
   * US: 
      ```bash
      pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -56,7 +56,7 @@ This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (i
      ```bash
      pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
      ```
-  > Note: If there are network issues when installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for more details. 
+  > Note: If yuu encounter network issues while installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for troubleshooting advice. 
 
 * You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
   ```python
@@ -71,7 +71,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    ```bash
    conda activate llm
    ```
-* Step 2: If you're running on integrated GPU, set some environment variables by running below commands:
+* Step 2: If you're running on iGPU, set some environment variables by running below commands:
   > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
   ```bash
   set SYCL_CACHE_PERSISTENT=1
@@ -105,7 +105,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
        print(output_str)
    ```
-   > Note: when running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+   > Note: when running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
    > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
 * Step 5. Run `demo.py` within the activated Python environment using the following command:
