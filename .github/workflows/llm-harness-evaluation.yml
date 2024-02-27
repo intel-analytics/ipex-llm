@@ -284,12 +284,15 @@ jobs:
         run: |
           ls $ACC_FOLDER/$DATE
           python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
+          
       - name: Cache history
         id: cache-history
         uses: actions/cache@v4
         with:
           path: ${{ env.ACC_FOLDER}}/history.csv
-          key: harness-cache-${{env.Date}}
+          key: harness-cache-${{github.event_name}}-${{env.Date}}
+          restore-keys: |
+            harness-cache-${{github.event_name}}
         
       - name: Update HTML
         working-directory: ${{ github.workspace }}/python/llm/test/benchmark/harness
