@@ -30,23 +30,6 @@ llama_llm = TransformersLLM.from_model_id(
         model_id=model_path,
         model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
     )
-# llama_llm = LlamaCPP(
-#         # You can pass in the URL to a GGML model to download it automatically
-#         model_url=None,
-#         # optionally, you can set the path to a pre-downloaded model instead of model_url
-#         model_path=model_path,
-#         temperature=0,
-#         max_new_tokens=64,
-#         # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
-#         context_window=3900,
-#         # kwargs to pass to __call__()
-#         generate_kwargs={},
-#         # kwargs to pass to __init__()
-#         # set to at least 1 to use GPU
-#         model_kwargs={"n_gpu_layers": 0},
-#         verbose=True,
-#     )
-
 llm = LangChainLLM(llm=llama_llm)
 st = time.time()
 response_gen = llm.stream_complete("Hi this is")
