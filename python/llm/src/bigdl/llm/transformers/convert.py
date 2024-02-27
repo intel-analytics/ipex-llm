@@ -1187,7 +1187,6 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.yuan import yuan_attention_forward
         from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
-        from bigdl.llm.transformers.models.yuan import yuan_localized_filtering_forward
         convert_forward(model,
                         module.YuanAttention,
                         yuan_attention_forward
@@ -1196,7 +1195,4 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.YuanMLP,
                         yuan_mlp_forward
                         )
-        convert_forward(model,
-                        module.LocalizedFiltering,
-                        yuan_localized_filtering_forward)
     return model
