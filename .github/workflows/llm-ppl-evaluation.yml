@@ -150,9 +150,9 @@ jobs:
         run: |
           pip install --upgrade datasets==2.14.6 
           if [ "${{ matrix.model_name }}" = "Mistral-7B-v0.1" ]; then
-          pip install --upgrade transformers==4.36
+            pip install --upgrade transformers==4.36
           else
-          pip install --upgrade transformers==4.31
+            pip install --upgrade transformers==4.31
           fi
 
       - name: Run perplexity
@@ -174,4 +174,106 @@ jobs:
           --precisions ${{ matrix.precision }} \
           --device ${{ matrix.device }} \
           --dataset_path ${DATASET_DIR} \
-          --language ${LANGUAGE}
+          --language ${LANGUAGE} \
+          --output_path results
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ppl_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/**
+
+      - name: echo single result
+        shell: bash
+            
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/
+        run: |
+          if [[ "${{ matrix.model_name }}" == *"chatglm"* || "${{ matrix.model_name }}" == *"Baichuan"* ]]; then
+            LANGUAGE="zh"
+          else
+            LANGUAGE="en"
+          fi
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${LANGUAGE}/result.json
+
+  llm-ppl-summary:
+    if: ${{ always() }}
+    needs: llm-ppl-evaluation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: results        
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table.py results
+
+  llm-ppl-html:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [llm-ppl-evaluation]
+    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+          pip install pandas==1.5.3
+      
+      - name: Set output path
+        shell: bash
+        run: |    
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          if ${{github.event_name == 'pull_request'}}; then
+            echo 'ACC_FOLDER=/home/arda/ppl-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+          fi
+          if ${{github.event_name == 'schedule'}}; then
+            echo 'ACC_FOLDER=/home/arda/ppl-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+          fi
+  
+      - name: Download ppl results
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
+
+      # Save fp16.csv in the parent folder of env.nightly_folder
+      - name: Download fp16.results
+        shell: bash
+        run: |
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/perplexity/fp16.csv -O $ACC_FOLDER/../fp16.csv
+          ls $ACC_FOLDER/..
+
+      - name: Write to CSV
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity
+        shell: bash
+        run: |
+          ls $ACC_FOLDER/$DATE
+          python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
+
+      - name: Update HTML
+        working-directory: ${{ github.workspace }}/python/llm/test/benchmark/perplexity
+        shell: bash
+        run: |
+          python ppl_csv_to_html.py -f $ACC_FOLDER
+          if ${{github.event_name == 'schedule'}}; then
+            python update_html_in_parent_folder.py -f $ACC_FOLDER
+          fi
