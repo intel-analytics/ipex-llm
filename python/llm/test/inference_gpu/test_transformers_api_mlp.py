@@ -36,7 +36,7 @@ class Test_Optimize_Gpu_Model:
         self.layer_outputs = []
         self.pre_layer_outputs = []
  
-    def run_optimize_gpu_model(self, Name, Model, Tokenizer, model_path, test_layer, layer_before_test_layer, lower_bound):
+    def run_optimize_gpu_model(self, Name, Model, Tokenizer, model_path, MLP_layer, layer_before_MLP, lower_bound):
         with torch.inference_mode():
             def pre_forward_hook(module, input, output, layer_name):
                 self.pre_layer_outputs.append(output)
@@ -53,11 +53,11 @@ class Test_Optimize_Gpu_Model:
                                         trust_remote_code=True)
             model = model.to(device)
             for layer_name, layer_module in model.named_modules():
-                if layer_name == layer_before_test_layer:
+                if layer_name == layer_before_MLP:
                     layer_module.register_forward_hook(
                         lambda module, input, output, layer_name=layer_name: pre_forward_hook(module, input,
                                                                                             output, layer_name))
-                if layer_name == test_layer:
+                if layer_name == MLP_layer:
                     layer_module.register_forward_hook(
                         lambda module, input, output, layer_name=layer_name: forward_hook(module, input,
                                                                                         output, layer_name))
@@ -78,11 +78,11 @@ class Test_Optimize_Gpu_Model:
                 return output
  
             for layer_name, layer_module in opt_model.named_modules():
-                if layer_name == layer_before_test_layer:
+                if layer_name == layer_before_MLP:
                     layer_module.register_forward_hook(
                         lambda module, input, output, layer_name=layer_name: replace_forward_hook(module, input,
                                                                                                 output, layer_name))
-                if layer_name == test_layer:
+                if layer_name == MLP_layer:
                     layer_module.register_forward_hook(
                         lambda module, input, output, layer_name=layer_name: forward_hook(module, input,
                                                                                         output, layer_name))
@@ -92,17 +92,17 @@ class Test_Optimize_Gpu_Model:
             opt_model.to('cpu')
  
  
-            test_layer_output_diff = []
+            MLP_output_diff = []
             for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
                 if t1 is not None and t2 is not None:
                     if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
-                        test_layer_output_diff.append(t1 - t2)
+                        MLP_output_diff.append(t1 - t2)
                     else:
                         # 'past_key_value'is of type tuple as default.
                         for i, (t3, t4) in enumerate(zip(t1, t2)):
-                            test_layer_output_diff.append(t3 - t4)
+                            MLP_output_diff.append(t3 - t4)
  
-            max_diff_tensor = [torch.max(item).item() for item in test_layer_output_diff]
+            max_diff_tensor = [torch.max(item).item() for item in MLP_output_diff]
             print(max_diff_tensor)
             torch.xpu.empty_cache()
             del model
