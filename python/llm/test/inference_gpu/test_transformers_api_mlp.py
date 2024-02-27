@@ -97,10 +97,6 @@ class Test_Optimize_Gpu_Model:
                 if t1 is not None and t2 is not None:
                     if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
                         MLP_output_diff.append(t1 - t2)
-                    else:
-                        # 'past_key_value'is of type tuple as default.
-                        for i, (t3, t4) in enumerate(zip(t1, t2)):
-                            MLP_output_diff.append(t3 - t4)
  
             max_diff_tensor = [torch.max(item).item() for item in MLP_output_diff]
             print(max_diff_tensor)
