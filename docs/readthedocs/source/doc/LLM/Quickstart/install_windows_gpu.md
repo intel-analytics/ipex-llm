@@ -2,7 +2,7 @@
 
 This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
 
-This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs, as well as Intel Arc Series GPU.
+This process applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
 ## Install GPU driver
 
@@ -105,8 +105,8 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
        print(output_str)
    ```
-   > Note: when running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-   > This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+   > Note: when running LLMs on Intel iGPUs with limited memory size (e.g. on iGPUs), we recommend setting `cpu_embedding=True` in the from_pretrained function.
+   > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
 * Step 5. Run `demo.py` within the activated Python environment using the following command:
   ```bash
