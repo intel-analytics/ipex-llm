@@ -224,9 +224,14 @@ def mistral_attention_forward_quantized(
     else:
         attention_dtype = original_dtype
 
+    # repeat k/v heads if n_kv_heads < n_heads
+    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
+                                                                     dtype=attention_dtype)
+    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
+                                                                         dtype=attention_dtype)
     kv_seq_len = key_states.shape[-2]
     if past_key_value is None:
-        attn_weights = torch.matmul(query_states,
+        attn_weights = torch.matmul(query_states.to(key_states.dtype),
                                     key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
@@ -252,7 +257,7 @@ def mistral_attention_forward_quantized(
         attn_output = torch.matmul(attn_weights, value_states)
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
-                bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
+                bsz, self.num_heads, kv_seq_len, self.head_dim,
                 device=query_states.device
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
@@ -268,11 +273,6 @@ def mistral_attention_forward_quantized(
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
-            # repeat k/v heads if n_kv_heads < n_heads
-            key_states = repeat_kv(key_states,
-                                   self.num_key_value_groups).to(device, dtype=attention_dtype)
-            value_states = repeat_kv(value_states,
-                                     self.num_key_value_groups).to(device, dtype=attention_dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
             import linear_q4_0
@@ -316,14 +316,7 @@ def mistral_attention_forward_quantized(
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
-    if self.config.pretraining_tp > 1:
-        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
-        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
-                                                 dim=1)
-        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
-                           for i in range(self.config.pretraining_tp)])
-    else:
-        attn_output = self.o_proj(attn_output)
+    attn_output = self.o_proj(attn_output)
 
     if not output_attentions:
         attn_weights = None
