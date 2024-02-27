@@ -13,14 +13,14 @@ from llama_index.core.retrievers import BaseRetriever
 from typing import Any, List
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.vector_stores import VectorStoreQuery
+import argparse
 
-
-def load_vector_database():
+def load_vector_database(username, password):
     db_name = "example_db"
     host = "localhost"
-    password = "1234qwer"
+    password = password
     port = "5432"
-    user = "arda"
+    user = username
     # conn = psycopg2.connect(connection_string)
     conn = psycopg2.connect(
         dbname="postgres",
@@ -47,9 +47,9 @@ def load_vector_database():
     return vector_store
 
 
-def load_data():
+def load_data(data_path):
     loader = PyMuPDFReader()
-    documents = loader.load(file_path="/home/arda/zhicunlv/code/BigDL/python/llm/example/CPU/LlamaIndex/data/llama2.pdf")
+    documents = loader.load(file_path=data_path)
 
 
     text_parser = SentenceSplitter(
@@ -142,32 +142,14 @@ def messages_to_prompt(messages):
 
     return prompt
 
-def main():
-    embed_model = HuggingFaceEmbedding(model_name="/mnt/disk1/models/bge-small-en")
-    
-    # Use LlamaCPP
-    # llm = LlamaCPP(
-    #     # You can pass in the URL to a GGML model to download it automatically
-    #     model_url=None,
-    #     # optionally, you can set the path to a pre-downloaded model instead of model_url
-    #     model_path="/mnt/disk1/models/gguf/llama-2-7b-chat.Q4_0.gguf",
-    #     temperature=0.1,
-    #     max_new_tokens=256,
-    #     # llama2 has a context window of 4096 tokens, but we set it lower to allow for some wiggle room
-    #     context_window=3900,
-    #     # kwargs to pass to __call__()
-    #     generate_kwargs={},
-    #     # kwargs to pass to __init__()
-    #     # set to at least 1 to use GPU
-    #     model_kwargs={"n_gpu_layers": 0},
-    #     verbose=True,
-    # )
+def main(args):
+    embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
     
     # Use custom LLM in BigDL
     from bigdl.llm.llamaindex.llms import BigdlLLM
     llm = BigdlLLM(
-        model_name="/mnt/disk1/models/Llama-2-7b-chat-hf",
-        tokenizer_name="/mnt/disk1/models/Llama-2-7b-chat-hf",
+        model_name=args.model_path,
+        tokenizer_name=args.model_path,
         context_window=3900,
         max_new_tokens=256,
         generate_kwargs={"temperature": 0.7, "do_sample": False},
@@ -177,8 +159,8 @@ def main():
         device_map="cpu",
     )
     
-    vector_store = load_vector_database()
-    nodes = load_data()
+    vector_store = load_vector_database(username=args.user, password=args.password)
+    nodes = load_data(data_path=args.data)
     for node in nodes:
         node_embedding = embed_model.get_text_embedding(
             node.get_content(metadata_mode="all")
@@ -221,7 +203,8 @@ def main():
     
     query_engine = RetrieverQueryEngine.from_args(retriever, llm=llm)
 
-    query_str = "How does Llama 2 perform compared to other open-source models?"
+    # query_str = "How does Llama 2 perform compared to other open-source models?"
+    query_str = args.question
     response = query_engine.query(query_str)
 
 
@@ -230,4 +213,19 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
+    parser.add_argument('-m','--model-path', type=str, required=True,
+                        help='the path to transformers model')
+    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+                        help='qustion you want to ask.')
+    parser.add_argument('-d','--data',type=str, default='./data/llama2.pdf',
+                        help="the data used during retrieval")
+    parser.add_argument('-u', '--user', type=str, required=True,
+                        help="user name in the database postgres")
+    parser.add_argument('-p','--password', type=str, required=True,
+                        help="the password of the user in the database")
+    parser.add_argument('-e','--embedding-model-path',default="BAAI/bge-small-en",
+                        help="the path to embedding model path")
+    args = parser.parse_args()
+    
+    main(args)

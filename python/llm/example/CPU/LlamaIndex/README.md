@@ -36,6 +36,19 @@ pip install llama-index-embeddings-huggingface
 
 ## Run the examples
 
+### Retrieval-augmented Generation
 ```bash
-python 
+python rag.py -m MODEL_PATH -e EMBEDDING_MODEL_PATH -u USERNAME -p PASSWORD -q QUESTION -d DATA
+```
+arguments info:
+- `-m MODEL_PATH`: **required**, path to the llama model
+- `-e EMBEDDING_MODEL_PATH`: path to the embedding model
+- `-u USERNAME`: username in the postgres database
+- `-p PASSWORD`: password in the postgres database
+- `-q QUESTION`: question you want to ask
+- `-d DATA`: path to data used during retrieval
+
+Here is the sample output when applying Llama-2-7b-chat-hf as the generatio model. 
+```
+AI stands for Artificial Intelligence. It refers to the development of computer systems that can perform tasks that typically require human intelligence, such as understanding natural language, recognizing images, making decisions, and solving problems. AI systems use algorithms and machine learning techniques to analyze data and make predictions or decisions based on that data.
 ```
