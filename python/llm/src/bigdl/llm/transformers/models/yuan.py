@@ -131,7 +131,7 @@ def yuan_attention_forward_quantized(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    bsz, q_len, hidden_size = hidden_states.size()
+    bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
     before_hidden_states = None
     is_first_step = False
@@ -140,7 +140,9 @@ def yuan_attention_forward_quantized(
 
     if use_cache:
         if past_key_value is None:
-            inference_hidden_states_memory = torch.empty(bsz, 2, hidden_states.shape[2], dtype=hidden_states.dtype)
+            inference_hidden_states_memory = torch.empty(bsz, 2,
+                                                         hidden_states.shape[2],
+                                                         dtype=hidden_states.dtype)
             is_first_step = True
         else:
             before_hidden_states = past_key_value[2]
@@ -154,17 +156,20 @@ def yuan_attention_forward_quantized(
                 inference_hidden_states_memory[:, -1:, :] = hidden_states[:, -1:, :]
         else:
             hidden_states_tmp = before_hidden_states[:, -1:, :]
-            inference_hidden_states_memory = copy.deepcopy(torch.cat((hidden_states_tmp, hidden_states), dim=1))
+            inference_hidden_states_memory = copy.deepcopy(torch.cat((hidden_states_tmp,
+                                                                      hidden_states), dim=1))
 
-    value_states = self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    value_states = self.v_proj(hidden_states).view(bsz, q_len,
+                                                   self.num_heads, self.head_dim).transpose(1, 2)
 
     # disabled use_shareqk
-    hidden_states = self.lf_gate(hidden_states,before_hidden_states)
+    hidden_states = self.lf_gate(hidden_states, before_hidden_states)
     query_states = self.q_proj(hidden_states)
     key_states = self.k_proj(hidden_states)
     qk_states = torch.cat([query_states, key_states], dim=-1)
-    qk_states = qk_states.view(bsz,q_len,self.num_heads,int(qk_states.shape[-1]//self.num_heads))
-    (query_states,key_states) =  torch.chunk(qk_states, 2, dim=-1)
+    qk_states = qk_states.view(bsz, q_len, self.num_heads,
+                               int(qk_states.shape[-1]//self.num_heads))
+    (query_states, key_states) =  torch.chunk(qk_states, 2, dim=-1)
     query_states = query_states.transpose(1, 2)
     key_states = key_states.transpose(1, 2)
 
@@ -203,7 +208,6 @@ def yuan_attention_forward_quantized(
             attn_weights = attn_weights + attention_mask
             attn_weights = torch.max(attn_weights,
                                      torch.tensor(torch.finfo(attn_weights.dtype).min))
-
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
@@ -247,7 +251,7 @@ def yuan_attention_forward_quantized(
             attn_weights = attn_weights + attention_mask
             attn_weights = torch.max(attn_weights,
                                      torch.tensor(torch.finfo(attn_weights.dtype).min))
-        
+
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
                                              dtype=torch.float32).to(query_states.dtype)
