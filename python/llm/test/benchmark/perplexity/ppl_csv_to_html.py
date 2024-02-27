@@ -132,8 +132,7 @@ def main():
                 current_csv_model_en=current_csv_model+'-'+current_csv_precision+'-'+'en'
                 current_csv_model_zh=current_csv_model+'-'+current_csv_precision+'-'+'zh'
                 add_to_dict(csv_dict, current_csv_model_en, current_csv_row[en])
-                add_to_dict(csv_dict, current_csv_model_zh, current_csv_row[zh])
-        print('csv_dict:', csv_dict)   
+                add_to_dict(csv_dict, current_csv_model_zh, current_csv_row[zh]) 
 
         for latest_csv_ind,latest_csv_row in latest_csv.iterrows():
 
