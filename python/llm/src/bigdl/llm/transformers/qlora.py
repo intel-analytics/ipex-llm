@@ -248,7 +248,7 @@ def get_peft_model(*args, **kwargs):
                                                                   old_create_new_module))
 
     try:
-        from .llm_patch import is_bigdl_patched
+        from .llm_patching import is_bigdl_patched
         if is_bigdl_patched:
             from peft import get_peft_model_original
         else:

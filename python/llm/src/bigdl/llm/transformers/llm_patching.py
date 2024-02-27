@@ -27,9 +27,9 @@ def replace_attr(obj, name: str, value):
     attrs.append((obj, name, original_attr))
 
 
-def patch_bigdl_llm():
+def llm_patch():
     '''
-    patch_bigdl_llm is used to make users' LLM application benefit from BigDL-LLM optimization
+    llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
     with only one-line code patch.
     '''
     global is_bigdl_patched
@@ -53,9 +53,9 @@ def patch_bigdl_llm():
     is_bigdl_patched = True
 
 
-def unpatch_bigdl_llm():
+def llm_unpatch():
     '''
-    unpatch_bigdl_llm is an reverse function to patch_bigdl_llm.
+    llm_unpatch is an reverse function to llm_patch.
     '''
     global is_bigdl_patched
 
