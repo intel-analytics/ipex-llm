@@ -14,62 +14,56 @@
 # limitations under the License.
 #
 
-import torch
-import time
 import argparse
-
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import time
+import torch
+import intel_extension_for_pytorch as ipex
 from bigdl.llm import optimize_model
+from transformers import AutoTokenizer
 
-# you could tune the prompt based on your own model,
-REPLIT_PROMPT_FORMAT = "{prompt}"
+from model import MambaLMHeadModel
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Replit model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="replit/replit-code-v1-3b",
-                        help='The huggingface repo id for the Replit model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mamba model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="state-spaces/mamba-1.4b",
+                        help='The huggingface repo id for the Mamba model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="def print_hello_world():",
+    parser.add_argument('--tokenizer-repo-id-or-path', type=str, default="EleutherAI/gpt-neox-20b",
+                        help='The huggingface repo id for the Mamba tokenizer to be downloaded'
+                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    tokenizer_path = args.tokenizer_repo_id_or_path
 
     # Load model
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 trust_remote_code=True,
-                                                 torch_dtype='auto',
-                                                 low_cpu_mem_usage=True)
+    model = MambaLMHeadModel.from_pretrained(model_path)
 
     # With only one line to enable BigDL-LLM optimization on model
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = optimize_model(model)
+    model = optimize_model(model, low_bit='asym_int4', modules_to_not_convert=["dt_proj", "x_proj"])
 
     model = model.to('xpu')
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
+
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = REPLIT_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        input_ids = tokenizer.encode(args.prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
-
-        # start inference
         st = time.time()
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()
         output = output.cpu()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        
+        output_str = tokenizer.decode(output[0])
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Output', '-'*20)
         print(output_str)
