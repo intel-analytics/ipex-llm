@@ -51,6 +51,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
 from bigdl.llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
+from bigdl.llm.transformers.low_bit_linear import IQ2_XXS
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -155,7 +156,7 @@ def mixtral_attention_forward(
                                                 bsz * q_len)
     decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
-    if decoding_fast_path:
+    if decoding_fast_path and self.q_proj.qtype != IQ2_XXS:
         hidden_states = hidden_states.view(1, -1)
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
@@ -168,6 +169,7 @@ def mixtral_attention_forward(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -176,7 +178,39 @@ def mixtral_attention_forward(
             past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
+    elif decoding_fast_path and self.q_proj.qtype == IQ2_XXS:
+        # this path self.v_proj use q4_0
+        hidden_states = hidden_states.view(1, -1)
+        cache_k = past_key_value.key_cache[self.layer_idx]
+        cache_v = past_key_value.value_cache[self.layer_idx]
+        kv_seq_len = cache_k.shape[-2]
+        import linear_q4_0
+        query_states, key_states = linear_q4_0.forward_qk(hidden_states,
+                                                          self.q_proj.weight,
+                                                          self.k_proj.weight,
+                                                          position_ids,
+                                                          cache_k, cache_v,
+                                                          self.q_proj.weight.qtype,
+                                                          kv_seq_len,
+                                                          self.head_dim)
+        kv_seq_len += 1
+        # update past_key_value's seem_tokens and kv caches.
+        if self.layer_idx == 0:
+            past_key_value.seen_tokens = kv_seq_len
+        # update value_states
+        value_states = self.v_proj(hidden_states)
+        value_states = value_states.view(bsz, q_len,
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        new_size = (cache_v.size(0),
+                    cache_v.size(1),
+                    cache_v.size(2) + value_states.size(2),
+                    cache_v.size(3))
+        new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
+        new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
+        value_states = new_cache_v
 
+        past_key_value.key_cache[self.layer_idx] = key_states
+        past_key_value.value_cache[self.layer_idx] = value_states
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
