@@ -5,7 +5,25 @@ This quickstart tutorial provides a step-by-step guide on how to use Text-Genera
 The WebUI is ported from [Text-Generation-WebUI](https://github.com/oobabooga/text-generation-webui).
 
 ## 1. Install and set up WebUI
-### 1.1 Set up Python Environment
+
+### 1.1 Install GPU driver
+* Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
+   
+    > Note: The installation could take around 15 minutes, and requires at least 7GB of free disk space.  
+    > If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on [this Microsoft guide](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)  to update your installation.
+    > 
+    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
+
+* Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
+   
+    > Note: The process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
+
+    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=80%; />
+
+* To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) :
+    >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
+
+### 1.2 Set up Python Environment
 
 * Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
@@ -20,7 +38,7 @@ The WebUI is ported from [Text-Generation-WebUI](https://github.com/oobabooga/te
   conda activate llm
   ```
 
-### 1.2 Install oneAPI and `bigdl-llm`
+### 1.3 Install oneAPI and `bigdl-llm`
 
 * With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
   ```bash
@@ -32,10 +50,10 @@ The WebUI is ported from [Text-Generation-WebUI](https://github.com/oobabooga/te
   pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
-### 1.3 Download WebUI
+### 1.4 Download WebUI
 Download text-generation-webui with `BigDL-LLM` optimizations from [here](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/bigdl-llm.zip) and unzip it to a folder. In this example, the text-generation-webui folder is `C:\text-generation-webui`
   
-### 1.4 Install other dependencies
+### 1.5 Install other dependencies
 In your **Anaconda Prompt** terminal, navigate to your unzipped text-generation-webui folder. Then use `pip` to install other WebUI dependencies:
 ```bash
 pip install -r requirements_cpu_only.txt
