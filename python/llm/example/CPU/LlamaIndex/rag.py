@@ -166,8 +166,8 @@ def main(args):
     llm = BigdlLLM(
         model_name=args.model_path,
         tokenizer_name=args.model_path,
-        context_window=3900,
-        max_new_tokens=256,
+        context_window=512,
+        max_new_tokens=32,
         generate_kwargs={"temperature": 0.7, "do_sample": False},
         model_kwargs={},
         messages_to_prompt=messages_to_prompt,
