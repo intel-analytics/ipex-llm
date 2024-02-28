@@ -232,7 +232,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
-    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+    parser.add_argument('-q', '--question', type=str, default='How does Llama 2 perform compared to other open-source models?',
                         help='qustion you want to ask.')
     parser.add_argument('-d','--data',type=str, default='./data/llama2.pdf',
                         help="the data used during retrieval")

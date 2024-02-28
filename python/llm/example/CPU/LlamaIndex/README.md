@@ -54,7 +54,7 @@ arguments info:
 - `-q QUESTION`: question you want to ask
 - `-d DATA`: path to data used during retrieval
 
-Here is the sample output when applying Llama-2-7b-chat-hf as the generatio model. 
+Here is the sample output when applying Llama-2-7b-chat-hf as the generatio model when we ask "How does Llama 2 perform compared to other open-source models?" and use llama.pdf as database. 
 ```
-AI stands for Artificial Intelligence. It refers to the development of computer systems that can perform tasks that typically require human intelligence, such as understanding natural language, recognizing images, making decisions, and solving problems. AI systems use algorithms and machine learning techniques to analyze data and make predictions or decisions based on that data.
+Llama 2 performs better than most open-source models on the benchmarks we tested. Specifically, it outperforms all open-source models on MMLU and BBH, and is close to GPT-3.5 on these benchmarks. Additionally, Llama 2 is on par or better than PaLM-2-L on almost all benchmarks. The only exception is the coding benchmarks, where Llama 2 lags significantly behind GPT-4 and PaLM-2-L. Overall, Llama 2 demonstrates strong performance on a wide range of natural language processing tasks.
 ```
