@@ -79,7 +79,7 @@ pip install --pre --upgrade bigdl-orca[ray]  # For the latest nightly build vers
 ```
 
 Note that with the extra key of [ray], `pip` will automatically install the additional dependencies for RayOnSpark,
-including `ray[default]==1.9.2`, `aiohttp==3.8.1`, `async-timeout==4.0.1`, `aioredis==1.3.1`, `hiredis==2.0.0`, `prometheus-client==0.11.0`, `psutil`,  `setproctitle`.
+including `ray[default]==1.9.2`, `aiohttp==3.9.0`, `async-timeout==4.0.1`, `aioredis==1.3.1`, `hiredis==2.0.0`, `prometheus-client==0.11.0`, `psutil`,  `setproctitle`.
 
 ### To additionally use AutoML
 
@@ -135,10 +135,10 @@ __Note__: If necessary, you need to manually uninstall `pyspark` and other [depe
 
 You can also download the BigDL package via the download links below.
 
-|           | <center>2.2.0</center> | 2.3.0-SNAPSHOT | <center>2.1.0</center> |
-| :-: | :-: | :-: | :-: |
-| Spark 2.4 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.2.0/bigdl-assembly-spark_2.4.6-2.2.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.3.0-SNAPSHOT/bigdl-assembly-spark_2.4.6-2.3.0-20230214.114049-32-fat-jars.zip) | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.1.0/bigdl-assembly-spark_2.4.6-2.1.0-fat-jars.zip) |
-| Spark 3.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.3/2.2.0/bigdl-assembly-spark_3.1.3-2.2.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.3/2.3.0-SNAPSHOT/bigdl-assembly-spark_3.1.3-2.3.0-20230214.111537-33-fat-jars.zip) | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.1.0/bigdl-assembly-spark_3.1.2-2.1.0-fat-jars.zip) |
+|           | <center>2.4.0</center> | 2.5.0-SNAPSHOT | 
+| :-: | :-: | :-: | 
+| Spark 2.4 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.4.0/bigdl-assembly-spark_2.4.6-2.4.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.5.0-SNAPSHOT/bigdl-assembly-spark_2.4.6-2.5.0-20240129.115705-78-fat-jars.zip) | 
+| Spark 3.1 | [download](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.3/2.4.0/bigdl-assembly-spark_3.1.3-2.4.0-fat-jars.zip) | [download](https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.3/2.5.0-SNAPSHOT/bigdl-assembly-spark_3.1.3-2.5.0-20240129.113204-80-fat-jars.zip) | 
 
 Note that *SNAPSHOT* indicates the latest nightly build version of BigDL.
 

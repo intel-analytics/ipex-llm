@@ -44,9 +44,12 @@
 import warnings
 import torch
 import argparse
-import os
-from streaming_llm.utils import load, download_url, load_jsonl
-from streaming_llm.enable_streaming_llm import enable_streaming_llm
+import os, sys
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+stream_llm_src = CURRENT_DIR + "/streaming_llm/"
+sys.path.append(stream_llm_src)
+from utils import load, download_url, load_jsonl
+from enable_streaming_llm import enable_streaming_llm
 warnings.filterwarnings("ignore")
 
 
@@ -99,7 +102,6 @@ def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=10
         prompt = "USER: " + prompt + "\n\nASSISTANT: "
         print("\n" + prompt, end="")
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
-        input_ids = input_ids.to(model.device)
         seq_len = input_ids.shape[1]
         if kv_cache is not None:
             space_needed = seq_len + max_gen_len
@@ -107,11 +109,13 @@ def streaming_inference(model, tokenizer, prompts, kv_cache=None, max_gen_len=10
 
         past_key_values = greedy_generate(
             model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len
+        
         )
 
 
 def main(args):
     model, tokenizer = load(args.repo_id_or_model_path)
+  
     test_filepath = os.path.join(args.data_root, "mt_bench.jsonl")
     print(f"Loading data from {test_filepath} ...")
 

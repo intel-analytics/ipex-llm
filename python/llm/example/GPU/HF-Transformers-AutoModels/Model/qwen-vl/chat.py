@@ -22,7 +22,6 @@ from transformers import AutoTokenizer
 from transformers.generation import GenerationConfig
 
 from bigdl.llm.transformers import AutoModelForCausalLM
-import intel_extension_for_pytorch as ipex
 
 torch.manual_seed(1234)
 
@@ -39,6 +38,8 @@ if __name__ == '__main__':
         
     # Load model
     # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path, 
                                                  load_in_4bit=True, 
                                                  trust_remote_code=True, 

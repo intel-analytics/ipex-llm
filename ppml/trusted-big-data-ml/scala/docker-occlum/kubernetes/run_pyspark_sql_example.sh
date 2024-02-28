@@ -6,7 +6,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --name pyspark-sql \
     --conf spark.executor.instances=1 \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.5.0-SNAPSHOT \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.driver.podTemplateFile=./driver.yaml \

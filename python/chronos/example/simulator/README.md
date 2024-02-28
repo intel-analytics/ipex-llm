@@ -4,7 +4,7 @@ This example shows how to generate synthetic data with similar distribution as t
 **Chronos will continuously improve the simulator functionalities in accuracy, performance and usability.**
 
 ## Introduction
-`DPGANSimulator` adopt DoppelGANger raised in [Using GANs for Sharing Networked Time Series Data: Challenges, Initial Promise, and Open Questions](http://arxiv.org/abs/1909.13403). The method is data-driven unsupervised method based on deep learning model with GAN (Generative Adversarial Networks) structure. The model features a pair of seperate attribute generator and feature generator and their corresponding discriminators `DPGANSimulator` also supports a rich and comprehensive input data (training data) format and outperform other algorithms in many evalution metrics.
+`DPGANSimulator` adopt DoppelGANger raised in [Using GANs for Sharing Networked Time Series Data: Challenges, Initial Promise, and Open Questions](http://arxiv.org/abs/1909.13403). The method is data-driven unsupervised method based on deep learning model with GAN (Generative Adversarial Networks) structure. The model features a pair of separate attribute generator and feature generator and their corresponding discriminators `DPGANSimulator` also supports a rich and comprehensive input data (training data) format and outperform other algorithms in many evaluation metrics.
 
 ## Data preparation
 We will use WWT (Wikipedia Web Traffic) dataset stated in the [paper](http://arxiv.org/abs/1909.13403) in this example. Please download the training data (`data_train.npz`) [here](https://drive.google.com/drive/folders/14x5f4Q34mlyZbDjADT8jbuOrgWyuUjFV).
@@ -28,7 +28,7 @@ You can easily run the example through
 ```bash
 python dpgansimulator_wwt.py --datadir /path/to/data_train.npz
 ```
-Typically, the example takes **40~60** mins to complete the training and evalution in this example.
+Typically, the example takes **40~60** mins to complete the training and evaluation in this example.
 
 Three `./*.png` files will be generated as reproduction of figure 1, 6, 19 in the [paper](http://arxiv.org/abs/1909.13403). A checkpoint will be saved in `./checkpoint` for the trained model.
 

@@ -43,10 +43,10 @@ DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
                 }
 BASE_URL = \
     {'network_traffic':
-     [f'http://mawi.wide.ad.jp/~agurim/dataset/{val[:-4]}/{val}'
+     [f'https://mawi.wide.ad.jp/~agurim/dataset/{val[:-4]}/{val}'
       for val in DATASET_NAME['network_traffic']],
      'AIOps':
-     ['http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz'],
+     ['https://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz'],
      'fsi':
      ['https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip'],
      'nyc_taxi':
@@ -134,8 +134,8 @@ class PublicDataset:
 
         if not os.path.exists(self.final_file_path):
             if not os.path.exists(tar_file):
-                tar = tarfile.open(file_path, 'r:gz')
-                tar.extractall(os.path.expanduser(self.dir_path))
+                with tarfile.open(file_path, 'r:gz') as tar:
+                    tar.extractall(os.path.expanduser(self.dir_path))
             raw_df = pd.read_csv(tar_file,
                                  header=None,
                                  usecols=[0, 1, 2, 3],

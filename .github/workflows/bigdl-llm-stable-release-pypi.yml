@@ -1,0 +1,54 @@
+name: BigDL-LLM Stable Release Pypi
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'bigdl-llm version (e.g. 2.5.0b1)'
+        required: true
+        default: '2.5.0b0'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+  bigdl-release-python-pypi:
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+    needs: llm-cpp-build
+    steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+    - name: set stable version
+      env:
+        DEFAULT_VERSION: '2.5.0b0'
+      run: |
+        echo "STABLE_VERSION=${{ github.event.inputs.version || env.DEFAULT_VERSION }}" >> $GITHUB_ENV
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+    - name: Download llm binary
+      uses: ./.github/actions/llm/download-llm-binary    
+    - name: Build package
+      run: |
+        # export TIMESTAMP=`date '+%Y%m%d'`
+        # nb_version=${STABLE_VERSION}b${TIMESTAMP}1
+        echo ${STABLE_VERSION}
+
+        ## linux ##
+        bash python/llm/dev/release_default_linux.sh ${STABLE_VERSION} true
+

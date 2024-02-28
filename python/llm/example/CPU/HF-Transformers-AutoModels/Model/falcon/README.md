@@ -19,7 +19,12 @@ pip install einops # additional package required for falcon-7b-instruct and falc
 
 ### 2. (Optional) Download Model and Replace File
 If you select the Falcon models ([tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct)), please note that their code (`modelling_RW.py`) does not support KV cache at the moment. To address issue, we have provided two updated files ([falcon-7b-instruct/modelling_RW.py](./falcon-7b-instruct/modelling_RW.py) and [falcon-40b-instruct/modelling_RW.py](./falcon-40b-instruct/modelling_RW.py)), which can be used to achieve the best performance using BigDL-LLM INT4 optimizations with KV cache support.
-
+After transformers 4.36, only transformer models are supported since remote code diverges from transformer model code, make sure set `trust_remote_code=False`.
+```python
+ model = AutoModelForCausalLM.from_pretrained(model_path,
+                                              load_in_4bit=True,
+                                              trust_remote_code=False)
+```
 
 #### 2.1 Download Model
 You could use the following code to download  [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct) with a specific snapshot id. Please note that the `modelling_RW.py` files that we provide are based on these specific commits.
@@ -70,8 +75,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
+# set BigDL-LLM env variables
+source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

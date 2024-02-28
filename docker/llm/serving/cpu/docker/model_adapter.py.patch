@@ -1,0 +1,21 @@
+--- model_adapter.py.old	2024-01-24 01:56:23.903144335 +0000
++++ model_adapter.py	2024-01-24 01:59:22.605062765 +0000
+@@ -1346,15 +1346,17 @@
+         )
+         # NOTE: if you use the old version of model file, please remove the comments below
+         # config.use_flash_attn = False
+-        config.fp16 = True
++        # config.fp16 = True
+         generation_config = GenerationConfig.from_pretrained(
+             model_path, trust_remote_code=True
+         )
++        from bigdl.llm.transformers import AutoModelForCausalLM
+         model = AutoModelForCausalLM.from_pretrained(
+             model_path,
+             config=config,
+             low_cpu_mem_usage=True,
+             trust_remote_code=True,
++            load_in_4bit=True,
+             **from_pretrained_kwargs,
+         ).eval()
+         if hasattr(model.config, "use_dynamic_ntk") and model.config.use_dynamic_ntk:

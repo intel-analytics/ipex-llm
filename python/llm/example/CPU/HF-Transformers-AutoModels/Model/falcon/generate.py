@@ -43,11 +43,11 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True)
+                                                 trust_remote_code=False)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
-                                              trust_remote_code=True)
+                                              trust_remote_code=False)
     
     # Generate predicted tokens
     with torch.inference_mode():

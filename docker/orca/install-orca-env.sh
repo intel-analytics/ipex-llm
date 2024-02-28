@@ -5,4 +5,5 @@ wget --no-check-certificate -q https://raw.githubusercontent.com/intel-analytics
 conda create -y -n bigdl python=$1
 source activate bigdl
 pip install --no-cache-dir -r requirements.txt
+pip install ray[default]==1.9.2 ray[tune]==1.9.2
 pip install --no-cache-dir -r requirements_automl.txt

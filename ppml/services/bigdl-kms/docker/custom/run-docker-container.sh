@@ -1,7 +1,7 @@
 #!/bin/bash
 export SSL_KEYS_PATH=path_of_your_ssl_keys_folder
 export SSL_PASSWORD_PATH=path_of_your_ssl_password_folder
-export CUSTOM_IMAGE_NAME=intelanalytics/bigdl-kms-reference:2.4.0-SNAPSHOT
+export CUSTOM_IMAGE_NAME=intelanalytics/bigdl-kms-reference:2.5.0-SNAPSHOT
 export ROOT_KEY=your_256bit_base64_AES_key_string
 export DATA_STORAGE_PATH=a_host_path_for_persistent_stoarge
 export SGX_ENABLED=true # false for tdx docker user

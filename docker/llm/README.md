@@ -27,11 +27,11 @@ The instructions for installing can be accessed from
 
 To pull image from hub, you can execute command on console:
 ```bash
-docker pull intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 ```
 to check if the image is successfully downloaded, you can use:
 ```powershell
-docker images | sls intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+docker images | sls intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 ```
 
 
@@ -42,7 +42,7 @@ To run the image and do inference, you could create and run a bat script on Wind
 An example on Windows could be:
 ```bat
 @echo off
-set DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+set DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 set CONTAINER_NAME=my_container
 set MODEL_PATH=D:/llm/models[change to your model path]
 
@@ -73,7 +73,7 @@ You can download models and bind the model directory from host machine to contai
 
 After entering the container through `docker exec`, you can run chat.py by:
 ```bash
-cd /llm
+cd /llm/portable-zip
 python chat.py --model-path YOUR_MODEL_PATH
 ```
 If your model is chatglm-6b and mounted on /llm/models, you can excute:
@@ -112,7 +112,7 @@ Here is a demostration of how to use tutorial in explorer:
 To run container on Linux/MacOS:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -136,13 +136,13 @@ Also, you could use chat.py and bigdl-llm-tutorial for development.
 
 First, pull docker image from docker hub:
 ```
-docker pull intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
 ```
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -176,12 +176,12 @@ To run inference using `BigDL-LLM` using xpu, you could refer to this [documenta
 
 Pull image:
 ```
-docker pull intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
 ```
 
 You could use the following bash script to start the container. Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -268,7 +268,7 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 
 Pull image:
 ```
-docker pull intelanalytics/bigdl-llm-serving-xpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-serving-xpu:2.5.0-SNAPSHOT
 ```
 
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
@@ -276,7 +276,7 @@ To map the `xpu` into the container, you need to specify `--device=/dev/dri` whe
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 export SERVICE_MODEL_PATH=/llm/models/chatglm2-6b[a specified model path for running service]
@@ -362,7 +362,7 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-lora-cpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -374,7 +374,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-lora-cpu:2.4.0-SNAPSHOT \
+  -t intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -390,7 +390,7 @@ docker run -itd \
  -e WORKER_COUNT_DOCKER=your_worker_count \
  -v your_downloaded_base_model_path:/bigdl/model \
  -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
- intelanalytics/bigdl-llm-finetune-cpu:2.4.0-SNAPSHOT \
+ intelanalytics/bigdl-llm-finetune-cpu:2.5.0-SNAPSHOT \
  bash
 ```
 
@@ -449,7 +449,7 @@ The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-qlora-xpu:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -461,7 +461,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-xpu:2.4.0-SNAPSHOT \
+  -t intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -485,7 +485,7 @@ docker run -itd \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/english_quotes \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.4.0-SNAPSHOT
+   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -502,7 +502,7 @@ docker run -itd \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.4.0-SNAPSHOT
+   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).

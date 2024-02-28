@@ -50,28 +50,93 @@ from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
 from bigdl.llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
+from bigdl.llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
+    get_ipex_version
 
 T = TypeVar("T", bound="torch.nn.Module")
 
 import bigdl.llm.ggml.model.llama.llama_cpp as ggml
-from bigdl.llm.utils.isa_checker import is_server, is_spr
 import ctypes
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-IS_SERVER = is_server()
-IS_SPR = is_spr()
-TORCH_LINEAR_THRESHOLD = 96
+
+TORCH_LINEAR_THRESHOLD = int(os.getenv("BIGDL_LLM_LINEAR_THRESHOLD", "512"))
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
+ASYM_INT4 = ggml_tensor_qtype["asym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 NF4 = ggml_tensor_qtype["nf4"]
 NF3 = ggml_tensor_qtype["nf3"]
-FP8 = ggml_tensor_qtype["fp8"]
+FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
 FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
+FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
+IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
+IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
+Q2_K = ggml_tensor_qtype["q2_k"]
+
+
+# The ggml_weight is col major and packs two rows at a stride of Q4_0//2.
+#
+# The returning weight is row major and packs two rows at a stride of 16//2.
+# 16 is the tile_size_y used in mm_int4, so that we can do something like
+# new_weight_tile = concat(weight_tile & 0x0F, weight_tile >> 4).
+#
+# A more complex packing strategy is to permute the weight so that the
+# new_weight_tile is directly VNNI packed, but I did not find significant
+# performance improvement.
+#
+# Note this format cannot be used directly in IPEX's mm_int4, which expects
+# row major but packing two consecutive columns.
+def q4_0_xpu_transpose(ggml_weight, weight_shape):
+    from bigdl.llm.transformers.low_bit_linear import get_block_size
+    Q4_0 = get_block_size("sym_int4")
+
+    n, k = weight_shape
+    ggml_weight_only = ggml_weight[:n*k//2]
+    ggml_scales = ggml_weight[n*k//2:]
+
+    qweight = ggml_weight_only.clone()
+    scales = ggml_scales.view(torch.float16).clone()
+
+    qweight_0 = qweight & 0x0F
+    qweight_1 = qweight >> 4
+
+    qweight_0 = qweight_0.reshape(n, -1, Q4_0//2)
+    qweight_1 = qweight_1.reshape(n, -1, Q4_0//2)
+    qweight = torch.cat([qweight_0, qweight_1], dim=-1)
+    qweight = qweight.reshape(n, k//16, 2, 8)
+    qweight = qweight.bitwise_left_shift(
+        torch.tensor([0, 4], dtype=torch.uint8, device=ggml_weight.device).reshape(1, 1, 2, 1))
+
+    qweight = torch.bitwise_or(qweight[:, :, 0, :], qweight[:, :, 1, :])
+    qweight = qweight.reshape(n, k//2)
+    qweight = qweight.transpose(0, 1).contiguous()
+
+    scales = scales.reshape(n, k//Q4_0).transpose(0, 1).contiguous()
+
+    # 119 is the value of 0x77
+    zeros = torch.ones([k//Q4_0, n//2], dtype=torch.uint8, device=ggml_weight.device) * (119)
+
+    qweight_bytes = qweight.view(torch.uint8).view(-1)
+    scales_bytes = scales.view(torch.uint8).view(-1)
+    zeros_bytes = zeros.view(torch.uint8).view(-1)
+
+    weight = torch.concat([qweight_bytes, zeros_bytes, scales_bytes], dim=0)
+    return weight
+
+
+def get_block_size(qtype: str):
+    return ggml.ggml_qk_size(ggml_tensor_qtype[qtype])
+
+
+def get_qk_size(qtype: int):
+    return ggml.ggml_qk_size(qtype)
 
 
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
-                       device=None, convert_shape_only=False):
+                       device=None, convert_shape_only=False,
+                       imatrix: torch.Tensor=None,
+                       in_features: int=None):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -79,12 +144,10 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                       "Input tensor must be float32")
     src = tensor.data.data_ptr()
     src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
-    n = tensor.numel()
-    invalidInputError(n % QK == 0,
-                      "Input tensor size must be multiple of 64")
+    n = tensor.numel()  # all elements
     k = tensor.shape[-1]
     invalidInputError(k % QK == 0,
-                      "Last dim of input tensor must be multiple of 64")
+                      f"Last dim of input tensor must be multiple of {QK}")
 
     dst_size = (n // QK) * block_size_in_bytes
     dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
@@ -93,7 +156,17 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K]:
+            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        else:
+            if imatrix is not None:
+                # quantize with importance matrix
+                imatrix = imatrix.data.data_ptr()
+                imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
+            # pass nrow and n_per_row
+            ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
+                                                   n // in_features, in_features,
+                                                   hist, imatrix)
     return dst_tensor
 
 
@@ -107,7 +180,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8E4, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -132,7 +205,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8E4, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -183,7 +256,10 @@ class FP4Params(torch.nn.Parameter):
                 quantized=False,
                 _shape=None,
                 convert_shape_only=False,
-                qtype=None):
+                qtype=None,
+                imatrix=None,
+                in_features=None,
+                enable_xetla=False,):
         if data is None:
             data = torch.empty(0)
 
@@ -193,6 +269,9 @@ class FP4Params(torch.nn.Parameter):
         self._shape = _shape
         self.qtype = qtype
         self.convert_shape_only = convert_shape_only
+        self.imatrix = imatrix
+        self.in_features = in_features
+        self.enable_xetla = enable_xetla
         return self
 
     def ggml_mse(self, w, ggml_qtype, device):
@@ -235,17 +314,19 @@ class FP4Params(torch.nn.Parameter):
                     self.qtype = SYM_INT8
                 else:
                     q8_0_mse, w_quant_q8_0 = self.ggml_mse(w, SYM_INT8, device=device)
-                    fp8_mse, w_quant_fp8 = self.ggml_mse(w, FP8, device=device)
+                    fp8_mse, w_quant_fp8 = self.ggml_mse(w, FP8E4, device=device)
                     if q8_0_mse <= fp8_mse:
                         self.qtype = SYM_INT8
                         self.data = w_quant_q8_0
                     else:
-                        self.qtype = FP8
+                        self.qtype = FP8E4
                         self.data = w_quant_fp8
             else:
                 w_quantized = ggml_convert_qtype(w, self.qtype,
                                                  device=device,
-                                                 convert_shape_only=self.convert_shape_only)
+                                                 convert_shape_only=self.convert_shape_only,
+                                                 imatrix=self.imatrix,
+                                                 in_features=self.in_features)
                 self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
@@ -279,13 +360,20 @@ class FP4Params(torch.nn.Parameter):
             self.data = ggml_q_format_convet_cpu2xpu(self.data,
                                                      reduce(mul, self._shape, 1),
                                                      self.qtype)
+            if self.enable_xetla:
+                self.data = q4_0_xpu_transpose(self.data, self._shape)
             new_param = FP4Params(super().to(device=device,
                                              dtype=dtype,
                                              non_blocking=non_blocking),
                                   requires_grad=self.requires_grad,
                                   quantized=self.quantized,
                                   _shape=self._shape,
-                                  qtype=self.qtype)
+                                  qtype=self.qtype,
+                                  enable_xetla=self.enable_xetla)
+            if self.enable_xetla:
+                device_type = get_xpu_device_type(new_param.data)
+                invalidInputError(device_type == "pvc",
+                                  f"xetla is only supported on PVC, but got {device_type}")
             return new_param
         elif (device is not None and device.type == "cpu" and self.data.device.type == "xpu"):
             new_param = FP4Params(super().to(device=device,
@@ -294,7 +382,11 @@ class FP4Params(torch.nn.Parameter):
                                   requires_grad=self.requires_grad,
                                   quantized=self.quantized,
                                   _shape=self._shape,
-                                  qtype=self.qtype)
+                                  qtype=self.qtype,
+                                  enable_xetla=self.enable_xetla)
+            if self.enable_xetla:
+                invalidInputError(False,
+                                  "xetla is not supported on CPUs but got enable_xetla=True")
             new_param.data = ggml_q_format_convet_xpu2cpu(new_param.data,
                                                           reduce(mul, new_param._shape, 1),
                                                           new_param.qtype)
@@ -306,7 +398,8 @@ class FP4Params(torch.nn.Parameter):
                                   requires_grad=self.requires_grad,
                                   quantized=self.quantized,
                                   _shape=self._shape,
-                                  qtype=self.qtype)
+                                  qtype=self.qtype,
+                                  enable_xetla=self.enable_xetla)
             return new_param
 
 
@@ -412,11 +505,12 @@ class MatMulLowBitCPU(torch.autograd.Function):
 
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True, mp_group=None):
+                 conver_to_half=True, mp_group=None, enable_xetla=False):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
-                                quantized=False, _shape=None, qtype=qtype)
+                                quantized=False, _shape=None, qtype=qtype,
+                                enable_xetla=enable_xetla)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
@@ -424,14 +518,36 @@ class LowBitLinear(nn.Linear):
         self.qtype = qtype
         self.conver_to_half = conver_to_half
         self.mp_group = mp_group
+        self.compute_dtype = None  # only for training
+        self.enable_xetla = enable_xetla
 
     def forward(self, x: torch.Tensor):
+        # Due to inconsistent training status in some models like Baichuan-7b-Chat,
+        # we should check both self.training and torch.is_inference_mode_enabled().
+        is_training = self.training and not torch.is_inference_mode_enabled()
+        if is_training:
+            # below logic is only for training
+            autocast_dtype = get_autocast_dtype(x)
+            if self.compute_dtype is not None and x.device.type == "xpu":
+                x = x.to(self.compute_dtype)  # solve GC issue for unlora module
+            elif autocast_dtype is not None:
+                x = x.to(autocast_dtype)
+
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
+        # [batch, input_num, in_len]
+        # input_num == token num for Transformer
         x_shape = x.shape
-        x_2d = x.view(-1, x_shape[-1])
+        # Output shape, e.g., [batch, input_num, out_len]
+        new_shape = x_shape[:-1] + (self.out_len,)
+        # Activation is empty tensor, e.g., [1, 0, 4096]
+        if 0 in x_shape:
+            # return empty tensor with output shape, x.dtype and x.device
+            return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
+        x_2d = x.view(-1, x_shape[-1])
+        # x0 for weight
         x0 = self.weight.data
 
         if x0.device.type == "xpu":
@@ -439,7 +555,7 @@ class LowBitLinear(nn.Linear):
             try:
                 import intel_extension_for_pytorch
                 import linear_q4_0
-                from bigdl.llm.utils.xmx_checker import use_xmx
+                from bigdl.llm.transformers.models.utils import use_xmx
             except ModuleNotFoundError:
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe` first.")
@@ -447,10 +563,24 @@ class LowBitLinear(nn.Linear):
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
 
-            input_seq_size = x_shape[1]
-            if self.training and x_2d.requires_grad:
-                result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
+            if len(x_shape) == 3:
+                input_seq_size = x_shape[1]
+            elif len(x_shape) < 3:
+                input_seq_size = 1
+
+            if is_training:
+                # training path
+                if x_2d.requires_grad:
+                    result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
+                else:
+                    result = linear_q4_0.forward_new(x_2d, self.weight.data,
+                                                     self.weight.qtype,
+                                                     input_seq_size)
+            elif self.enable_xetla:
+                x_2d = x_2d.half()
+                result = linear_q4_0.mm_int4(x_2d, self.weight.data)
             else:
+                # inference path
                 # current workaround to reduce first token latency of fp32 input
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
@@ -463,7 +593,6 @@ class LowBitLinear(nn.Linear):
                 else:
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                      input_seq_size)
-            new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.mp_group is not None:
                 from deepspeed import comm as dist
@@ -473,22 +602,23 @@ class LowBitLinear(nn.Linear):
         else:
             # CPU logic
             # todo may need to set a different number on different platforms
-            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8
-                              and self.qtype != FP4,
+            invalidInputError(self.qtype != NF3 and self.qtype != NF4 and self.qtype != FP8E4
+                              and self.qtype != FP4 and self.qtype != FP8E5,
                               "NF3, NF4, FP4 and FP8 quantization are currently not"
                               " supported on CPU")
             if self.training and x.requires_grad:
                 result = MatMulLowBitCPU.apply(x, self.weight)
             else:
+                from bigdl.llm.utils.isa_checker import is_server, is_spr
+
                 # convert if necessary, and compute a linear result
-                if IS_SERVER and (not IS_SPR) and \
+                if is_server() and (not is_spr()) and \
                         self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
                     result = F.linear(x, x0_fp32)
                 else:
                     # Weight does not need a convert
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
-                    new_shape = x_shape[:-1] + (self.out_len,)
                     result = result.view(new_shape)
             # allreduce to combine partial results and add bias if necessary
             if self.mp_group is not None:
@@ -501,54 +631,145 @@ class LowBitLinear(nn.Linear):
 
 
 class FP16Linear(nn.Linear):
-    def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True, mp_group=None):
+    def __init__(self, input_features, output_features, bias=True,
+                 mp_group=None, weight_type=1):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
         self.weight_length = self.out_len * self.in_len
-        self.qtype = qtype
-        self.conver_to_half = conver_to_half
+        self.qtype = ggml_tensor_qtype["fp16"]
         self.mp_group = mp_group
+        # weigh_type = 1 means original weight
+        # weigh_type = 2 means weight has been transposed
+        # weigh_type = 3 means weight has been transposed by esimd method
+        self.weight_type = 1
 
     def forward(self, x: torch.Tensor):
+        # only work for GPU
+        invalidInputError(x.device.type == "xpu",
+                          "FP16Linear only works for Intel GPUs")
+        x = x.to(torch.float16)
+        if self.bias is not None and self.bias.dtype != x.dtype:
+                self.bias.data = self.bias.data.to(x.dtype)
+        if self.weight is not None and self.weight.dtype != x.dtype:
+            self.weight.data = self.weight.data.to(x.dtype)
+
+        if not self.use_esimd_kernel(x):
+            if get_ipex_version() < "2.1.10+xpu":
+                if self.weight_type == 2:
+                    self.weight = self.weight.transpose(0, 1).contiguous()
+                    self.weight_type = 1
+                return F.linear(x, self.weight, self.bias)
+            else:
+                if self.weight_type == 1:
+                    self.weight = self.weight.transpose(0, 1).contiguous()
+                    self.weight_type = 2
+                return torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
+        else:
+            if self.in_len == 4096 and self.weight_type != 3 or \
+                    self.in_len == 11008 and self.weight_type != 1:
+                # convert weight first to use esimd fp16 kernel
+                self.convert_weight_for_esimd_kernel()
+            # esimd fp16 kernel for inference
+            x_shape = x.shape
+            x_2d = x.view(-1, x_shape[-1])
+            if x_2d.is_contiguous() is False:
+                x_2d = x_2d.contiguous()
+
+            try:
+                import intel_extension_for_pytorch
+                import linear_fp16_esimd
+            except ModuleNotFoundError:
+                invalidInputError(False,
+                                  "Please `pip install bigdl_core_xe_esimd` first.")
+
+            if x_2d.shape[0] > 8:
+                # first token or batch size > 8, re-convert weight
+                if self.weight_type == 3:
+                    original_weight = self.weight.data.transpose(1, 2)
+                    original_weight = original_weight.reshape(self.out_len, self.in_len)
+                    result = F.linear(x_2d, original_weight.contiguous())
+                    del original_weight
+                else:
+                    result = F.linear(x_2d, self.weight)
+            else:
+                # batch size <= 8, use esimd optimization
+                result = linear_fp16_esimd.forward(x_2d, self.weight.data)
+
+            new_shape = x_shape[:-1] + (self.out_len,)
+            result = result.view(new_shape)
+            if self.mp_group is not None:
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
+            if self.bias is not None:
+                result += self.bias
+
+            return result.to(x.dtype)
+
+    def use_esimd_kernel(self, x):
+        gpu_type = get_xpu_device_type(x)
+        # esimd kernel can only be used for Arc and Flex
+        if gpu_type not in ["arc", "flex"]:
+            return False
+        # now esimd kernel can only be used for specific cases (llama2-7b shape)
+        if self.in_len == 11008 and self.out_features == 4096:
+            return True
+        if self.in_len == 4096 and self.out_features in [4096, 11008]:
+            # seems has some issue with Mistral,
+            # need a further look to check whether can be used for other out features
+            return True
+        return False
+
+    def convert_weight_for_esimd_kernel(self):
+        m, n = self.out_len, self.in_len
+        if self.in_len == 11008:
+            if self.weight_type == 2:
+                trans_weight = self.weight.data.transpose(0, 1)
+            else:
+                trans_weight = self.weight.data
+            self.weight.data = trans_weight.contiguous()
+            self.weight_type = 1
+        elif self.in_len == 4096:
+            if self.weight_type == 2:
+                trans_weight = self.weight.data.transpose(0, 1)
+            else:
+                trans_weight = self.weight.data
+            trans_weight = trans_weight.data.reshape(m//16, 16, n)
+            trans_weight = trans_weight.transpose(1, 2).contiguous()
+            self.weight.data = trans_weight
+            self.weight_type = 3
+
+
+class BF16Linear(nn.Linear):
+    def __init__(self, input_features, output_features, bias=True,
+                 mp_group=None, compute_dtype=None):
+        super().__init__(input_features, output_features, bias)
+        self.in_len = input_features
+        self.out_len = output_features
+        self.weight_shape = (self.out_len, self.in_len)
+        self.weight_length = self.out_len * self.in_len
+        self.qtype = ggml_tensor_qtype["bf16"]
+        self.mp_group = mp_group
+        self.compute_dtype = compute_dtype
+
+    def forward(self, x: torch.Tensor):
+        x = x.to(torch.bfloat16)
+        if self.weight is not None and self.weight.dtype != x.dtype:
+            self.weight.data = self.weight.data.to(x.dtype)
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
-        x_shape = x.shape
-        x_2d = x.view(-1, x_shape[-1])
+        # If x.shape>3, F.linear will use bmm, accounting for performance degradation.
+        original_shape = x.shape
+        # Convert to 2D shape
+        if len(original_shape) > 2:
+            x = x.reshape(-1, original_shape[-1])
 
-        x0 = self.weight.data
-        # only work for GPU
-        invalidInputError(x0.device.type == "xpu",
-                          "FP16 only works for GPU")
-        try:
-            import intel_extension_for_pytorch
-            import linear_fp16_esimd
-        except ModuleNotFoundError:
-            invalidInputError(False,
-                              "Please `pip install bigdl_core_xe` first.")
+        result = F.linear(x, self.weight, self.bias)
 
-        if x_2d.is_contiguous() is False:
-            x_2d = x_2d.contiguous()
-
-        if x_2d.shape[0] > 1:
-            # first token or batch size > 1, re-convert weight
-            original_weight = self.weight.data.transpose(1, 2)
-            original_weight = original_weight.reshape(self.out_len, self.in_len)
-            result = F.linear(x_2d, original_weight.contiguous())
-            del original_weight
-        else:
-            # rest token, use esimd optimization
-            result = linear_fp16_esimd.forward(x_2d, self.weight.data)
-
-        new_shape = x_shape[:-1] + (self.out_len,)
-        result = result.view(new_shape)
-        if self.mp_group is not None:
-            from deepspeed import comm as dist
-            dist.inference_all_reduce(result, group=self.mp_group)
-        if self.bias is not None:
-            result += self.bias
+        # Convert to original shape
+        if len(original_shape) > 2:
+            result = result.reshape(*original_shape[:-1], result.shape[-1])
 
         return result.to(x.dtype)

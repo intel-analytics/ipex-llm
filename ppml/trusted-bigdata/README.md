@@ -53,17 +53,17 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 ### 1. Build Docker Images
 
 **Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.4.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.5.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(8G EPC and log level is error)
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g-all:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-32g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-16g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-8g:2.4.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g-all:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-32g:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-16g:2.5.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-8g:2.5.0-SNAPSHOT
 
 `16g` in image names indicates the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that the log level is all. `noattest` means the attestation service is disabled in this image, which applies to the case where `aesmd` and `pccs` are not installed successfully. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default image.
 
@@ -73,7 +73,7 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 
 The bigdata base image constitutes foundational dependencies, libraries, and devoid of confidential information. Utilize this base image to craft your custom image as detailed below.
 
-It is advisable to employ our public big data base image, `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.4.0-SNAPSHOT`. Alternatively, you may construct an individual base image, expected to be the same with our offering.
+It is advisable to employ our public big data base image, `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.5.0-SNAPSHOT`. Alternatively, you may construct an individual base image, expected to be the same with our offering.
 
 Before building your own base image, please modify the paths in `ppml/trusted-bigdata/build-base-image.sh`. Then build the docker image with the following command.
 
@@ -873,7 +873,7 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: "intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT"
+  image: "intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT"
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.SparkPi
   mainApplicationFile: "local:///ppml/spark-3.1.3/examples/jars/spark-examples_2.12-3.1.3.jar"
@@ -999,7 +999,7 @@ You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. 
 ### 2. Deploy BigDL Remote Attestation Service 
 [Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
 ### 3. Start BigDL bigdata client 
-docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.5.0-SNAPSHOT
 ```bash
 export NFS_INPUT_PATH=your_nfs_path
 sudo docker run -itd \
@@ -1010,7 +1010,7 @@ sudo docker run -itd \
     -v /dev/tdx-attest:/dev/tdx-attest \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT  \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.5.0-SNAPSHOT  \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_EXECUTOR_INSTANCES=2 \
     -e RUNTIME_EXECUTOR_CORES=2 \
@@ -1020,7 +1020,7 @@ sudo docker run -itd \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=5g \
     --name tdx-attestation-test \
-    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT bash
+    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.5.0-SNAPSHOT bash
 ```
 ### 4. Enable Attestation in configuration
 Upload `appid` and `apikey` to kubernetes as secrets:
@@ -1074,7 +1074,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.memoryOverheadFactor=0.6 \
     --conf spark.kubernetes.executor.podNamePrefix=spark-sparkpi-tdx \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.4.0-SNAPSHOT  \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.5.0-SNAPSHOT  \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template-for-tdxvm.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template-for-tdxvm.yaml \
     --class org.apache.spark.examples.SparkPi \

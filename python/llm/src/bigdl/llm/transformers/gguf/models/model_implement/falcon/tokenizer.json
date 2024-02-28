@@ -1,0 +1,160 @@
+{
+    "version": "1.0",
+    "truncation": null,
+    "padding": null,
+    "added_tokens": [
+        {
+            "id": 0,
+            "content": ">>TITLE<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 1,
+            "content": ">>ABSTRACT<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 2,
+            "content": ">>INTRODUCTION<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 3,
+            "content": ">>SUMMARY<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 4,
+            "content": ">>COMMENT<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 5,
+            "content": ">>ANSWER<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 6,
+            "content": ">>QUESTION<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 7,
+            "content": ">>DOMAIN<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 8,
+            "content": ">>PREFIX<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 9,
+            "content": ">>SUFFIX<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 10,
+            "content": ">>MIDDLE<<",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        },
+        {
+            "id": 11,
+            "content": "<|endoftext|>",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false,
+            "special": true
+        }
+    ],
+    "normalizer": null,
+    "pre_tokenizer": {
+        "type": "Sequence",
+        "pretokenizers": [
+            {
+                "type": "Punctuation",
+                "behavior": "Contiguous"
+            },
+            {
+                "type": "ByteLevel",
+                "add_prefix_space": false,
+                "trim_offsets": true,
+                "use_regex": true
+            },
+            {
+                "type": "Digits",
+                "individual_digits": false
+            },
+            {
+                "type": "Split",
+                "pattern": {
+                    "Regex": "[0-9][0-9][0-9]"
+                },
+                "behavior": "Isolated",
+                "invert": false
+            }
+        ]
+    },
+    "post_processor": null,
+    "decoder": {
+        "type": "ByteLevel",
+        "add_prefix_space": true,
+        "trim_offsets": true,
+        "use_regex": true
+    },
+    "model": {
+        "type": "BPE",
+        "dropout": null,
+        "unk_token": null,
+        "continuing_subword_prefix": null,
+        "end_of_word_suffix": null,
+        "fuse_unk": false,
+        "vocab": null,
+        "merges": null
+    }
+}

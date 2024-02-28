@@ -29,7 +29,7 @@ data:
   # If you have your ingress controller configured to connect to `zeppelin-server` service and have a domain name for it (with wildcard subdomain point the same address), you can replace serviceDomain field with your own domain.
   SERVICE_DOMAIN: 0.0.0.0:8080
   #ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE: 10.239.45.10/arda/spark:3.1.2
-  ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE: intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.4.0-SNAPSHOT
+  ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE: intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.5.0-SNAPSHOT
   ZEPPELIN_K8S_CONTAINER_IMAGE: intelanalytics/zeppelin-interpreter:0.11.0-SNAPSHOT
   ZEPPELIN_HOME: /opt/zeppelin
   ZEPPELIN_SERVER_RPC_PORTRANGE: 12320:12320

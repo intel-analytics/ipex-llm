@@ -20,4 +20,12 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .convert_model import llm_convert
-from .optimize import optimize_model 
+from .optimize import optimize_model
+import os
+
+# Default is false, set to true to auto importing Intel Extension for PyTorch.
+BIGDL_IMPORT_IPEX = os.getenv("BIGDL_IMPORT_IPEX", 'True').lower() in ('true', '1', 't')
+if BIGDL_IMPORT_IPEX:
+    # Import Intel Extension for PyTorch as ipex if XPU version is installed
+    from .utils.ipex_importer import ipex_importer
+    ipex_importer.import_ipex()

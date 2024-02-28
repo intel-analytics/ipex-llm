@@ -3,7 +3,7 @@
 
 ## Image
 
-To deploy trusted bigdl-llm serving tdx service in Kubernetes environment, please use this image: `intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT`
+To deploy trusted bigdl-llm serving tdx service in Kubernetes environment, please use this image: `intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.5.0-SNAPSHOT`
 
 ## Before deployment
 
@@ -49,7 +49,7 @@ spec:
     tdx-ac: "1"
   containers:
   - name: trusted-bigdl-llm-serving-tdx-controller # fixed
-    image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT
+    image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.5.0-SNAPSHOT
     securityContext:
       privileged: true
       runAsUser: 0
@@ -156,7 +156,7 @@ spec:
         tdx-ac: "1"
       containers:
       - name: trusted-bigdl-llm-serving-tdx-worker # fixed
-        image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.4.0-SNAPSHOT
+        image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-serving-tdx:2.5.0-SNAPSHOT
         securityContext:
           runAsUser: 0
           privileged: true

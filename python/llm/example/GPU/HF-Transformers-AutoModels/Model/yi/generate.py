@@ -15,15 +15,20 @@
 #
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# you could tune the prompt based on your own model
-YI_PROMPT_FORMAT = "{prompt}"
+# Refer to https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model
+YI_PROMPT_FORMAT = """
+<|im_start|>system
+You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
+<|im_start|>user
+{prompt}<|im_end|>
+<|im_start|>assistant
+"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Yi model')
@@ -40,6 +45,8 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  optimize_model=True,

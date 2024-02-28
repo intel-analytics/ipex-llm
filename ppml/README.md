@@ -67,7 +67,7 @@ In this section, you can get started with running a simple native python HelloWo
 
 **a. Prepare Images**
 
-For demo purposes, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT` to have a quick start.
+For demo purposes, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT` to have a quick start.
 
 Note: This public image is only for demo purposes, it is non-production. For security concerns, you are strongly recommended to generate your enclave key and build your custom image for your production environment. Refer to [How to Prepare Your PPML image for production environment](#step-1-prepare-your-ppml-image-for-production-environment).
 
@@ -90,7 +90,7 @@ Note: This public image is only for demo purposes, it is non-production. For sec
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 # ppml graphene image is deprecated, please use the gramine version
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.5.0-SNAPSHOT
 
 sudo docker pull $DOCKER_IMAGE
 
@@ -171,7 +171,7 @@ To build a secure PPML image that can be used in a production environment, BigDL
 
     The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
 
-    You can use our public bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.4.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly the same as ours.
+    You can use our public bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.5.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly the same as ours.
 
     Before building your own base image, please modify the paths in `ppml/trusted-bigdata/build-base-image.sh`. Then build the docker image with the following command.
 
@@ -220,7 +220,7 @@ Attributes:
     export SECURE_PASSWORD_PATH=/YOUR_DIR/password
     export KUBECONFIG_PATH=/YOUR_DIR/config
     export LOCAL_IP=$LOCAL_IP
-    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT # or the custom image built by yourself
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT # or the custom image built by yourself
 
     sudo docker run -itd \
         --net=host \

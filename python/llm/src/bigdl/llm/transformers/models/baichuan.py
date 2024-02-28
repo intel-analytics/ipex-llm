@@ -26,7 +26,8 @@ import torch.utils.checkpoint
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
+    append_kv_cache, is_enough_kv_cache_room_4_31
 from bigdl.llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
@@ -55,7 +56,9 @@ def baichuan_attention_forward_7b(
     value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
+    enough_kv_room = True
     if past_key_value is not None:
+        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=kv_seq_len)
         kv_seq_len += past_key_value[0].shape[-2]
     if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -76,7 +79,7 @@ def baichuan_attention_forward_7b(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+        if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
@@ -163,7 +166,9 @@ def baichuan_attention_forward_13b(
     value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
+    enough_kv_room = True
     if past_key_value is not None:
+        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=kv_seq_len)
         kv_seq_len += past_key_value[0].shape[-2]
 
     # if past_key_value is not None:
@@ -174,7 +179,7 @@ def baichuan_attention_forward_13b(
         # reuse k, v, self_attention
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+        if not enough_kv_room:
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,

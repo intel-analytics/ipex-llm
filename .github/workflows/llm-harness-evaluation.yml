@@ -1,45 +1,123 @@
-name: LLM Harness Evalution
+name: LLM Harness Evaluation
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
   group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # Controls when the action will run.
 on:
-  # schedule:
-  #   - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  schedule:
+    - cron: "30 12 * * *" # GMT time, 12:30 GMT == 20:30 China
   pull_request:
     branches: [main]
     paths:
       - ".github/workflows/llm-harness-evaluation.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'Model names, separated by comma and must be quoted.'
+        required: true
+        type: string
+      precision:
+        description: 'Precisions, separated by comma and must be quoted.'
+        required: true
+        type: string
+      task:
+        description: 'Tasks, separated by comma and must be quoted.'
+        required: true
+        type: string
+      runs-on:
+        description: 'Labels to filter the runners, separated by comma and must be quoted.'
+        default: "accuracy"
+        required: false
+        type: string
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-nightly-harness-test:
-    needs: llm-cpp-build
+    with:
+      platform: 'Linux'
+  # Set the testing matrix based on the event (schedule, PR, or manual dispatch)
+  set-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      model_name: ${{ steps.set-matrix.outputs.model_name }}
+      precision: ${{ steps.set-matrix.outputs.precision }}
+      task: ${{ steps.set-matrix.outputs.task }}
+      runner: ${{ steps.set-matrix.outputs.runner }}
+    steps:
+      - name: set-nightly-env
+        if: ${{github.event_name == 'schedule'}}
+        env:
+          NIGHTLY_MATRIX_MODEL_NAME: '["Llama2-7b-guanaco-dolphin-500", "falcon-7b-instruct-with-patch", 
+                        "Mistral-7B-v0.1", "mpt-7b-chat", "Baichuan2-7B-Chat-LLaMAfied"]'
+          NIGHTLY_MATRIX_TASK: '["arc", "truthfulqa", "winogrande"]'
+          NIGHTLY_MATRIX_PRECISION: '["sym_int4", "fp8"]'
+          NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
+        run: |
+            echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "task=$NIGHTLY_MATRIX_TASK" >> $GITHUB_ENV
+            echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
+
+      - name: set-pr-env
+        if: ${{github.event_name == 'pull_request'}}
+        env:
+          PR_MATRIX_MODEL_NAME: '["stablelm-3b-4e1t"]'
+          PR_MATRIX_TASK: '["winogrande"]'
+          PR_MATRIX_PRECISION: '["sym_int4"]'
+          PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
+
+        run: |
+            echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "task=$PR_MATRIX_TASK" >> $GITHUB_ENV
+            echo "runner=$PR_LABELS" >> $GITHUB_ENV
+      - name: set-manual-env
+        if: ${{github.event_name == 'workflow_dispatch'}}
+        env:
+          MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
+          MANUAL_MATRIX_TASK: ${{format('[ {0} ]', inputs.task)}}
+          MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
+          MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.runs-on)}}
+        run: |
+            echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "task=$MANUAL_MATRIX_TASK" >> $GITHUB_ENV
+            echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
+      - name: set-matrix
+        id: set-matrix
+        run: |
+            echo "model_name=$model_name" >> $GITHUB_OUTPUT
+            echo "precision=$precision" >> $GITHUB_OUTPUT
+            echo "task=$task" >> $GITHUB_OUTPUT
+            echo "runner=$runner" >> $GITHUB_OUTPUT
+  llm-harness-evaluation:
+    timeout-minutes: 1000
+    needs: [llm-cpp-build, set-matrix]
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        model_name: ["Llama-2-7b-chat-hf"]
-        task: ["truthfulqa"]
-        precision: ["int4"]
-    runs-on: [self-hosted, llm, accuracy]
+        model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
+        task: ${{ fromJson(needs.set-matrix.outputs.task) }}
+        precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
+        device: [xpu]
+        
+    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      ORIGIN_DIR: /mnt/disk1/models
+      HARNESS_HF_HOME: /mnt/disk1/harness_home
     steps:
-      - name: Set model and dataset directories
-        shell: bash
-        run: |
-          echo "ORIGIN_DIR=/mnt/disk1/models" >> "$GITHUB_ENV"
-          echo "HARNESS_HF_HOME=/mnt/disk1/harness_home" >> "$GITHUB_ENV"
-
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -47,29 +125,29 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          set -e
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
+        with:
+          platform: 'Linux'
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
         with:
-          extra-dependency: "xpu"
+          extra-dependency: "xpu_2.1"
 
       - name: Install harness
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/
         shell: bash
         run: |
-          cd python/llm/dev/benchmark/harness/
           git clone https://github.com/EleutherAI/lm-evaluation-harness.git
-          cd  lm-evaluation-harness
-          git checkout e81d3cc
+          cd lm-evaluation-harness
+          git checkout b281b09
           pip install -e .
-          git apply ../bigdl-llm.patch
-          cd ..
-      
       
       - name: Download models and datasets
         shell: bash
@@ -78,24 +156,141 @@ jobs:
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
           if [ ! -d $HARNESS_HF_HOME ]; then
             mkdir -p $HARNESS_HF_HOME
-            wget -r -nH -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
           fi
-          if [ ! -d $MODEL_PATH ]; then
-            wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
-          fi
+          wget -r -nH -nc -l inf --no-verbose --cut-dirs=2 ${LLM_FTP_URL}/llm/LeaderBoard_Datasets/ -P $HARNESS_HF_HOME/
+          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
-      - name: Set datasets env
+      - name: Upgrade packages
         shell: bash
         run: |
-          echo "HF_HOME=$HARNESS_HF_HOME" >> "$GITHUB_ENV"
-          echo "HF_DATASETS=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
-          echo "HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets" >> "$GITHUB_ENV"
+          pip install --upgrade datasets==2.14.6 
+          if [ "${{ matrix.model_name }}" = "Mistral-7B-v0.1" ]; then
+            pip install --upgrade transformers==4.36
+          else
+            pip install --upgrade transformers==4.31
+          fi
+      
 
       - name: Run harness
         shell: bash
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
+        env:
+          USE_XETLA: OFF
+          # SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
-          export USE_XETLA=OFF
-          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          export HF_HOME=${HARNESS_HF_HOME}
+          export HF_DATASETS=$HARNESS_HF_HOME/datasets
+          export HF_DATASETS_CACHE=$HARNESS_HF_HOME/datasets
           source /opt/intel/oneapi/setvars.sh
-          cd python/llm/dev/benchmark/harness
-          python llb.py --model bigdl-llm --pretrained ${MODEL_PATH} --precision ${{ matrix.precision }} --device xpu --tasks ${{ matrix.task }} --output_dir results/${{ matrix.model_name }} --batch 1
+          
+          # set --limit if it's pr-triggered to accelerate pr action
+          if ${{github.event_name == 'pull_request'}}; then
+            export LIMIT="--limit 4"
+          fi
+
+          python run_llb.py \
+            --model bigdl-llm \
+            --pretrained ${MODEL_PATH} \
+            --precision ${{ matrix.precision }} \
+            --device ${{ matrix.device }} \
+            --tasks ${{ matrix.task }} \
+            --batch_size 1 --no_cache --output_path results \
+            $LIMIT
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: harness_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/**
+
+      - name: echo single result
+        shell: bash
+        
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness/results/
+        run: |
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${{ matrix.task }}/result.json
+
+  llm-harness-summary:
+    if: ${{ always() }}
+    needs: llm-harness-evaluation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: harness_results
+          path: results        
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/harness/make_table.py results
+
+  # TODO: change machine to store the results later        
+  llm-harness-html:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [llm-harness-evaluation]
+    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+          pip install pandas==1.5.3
+      
+      - name: Set output path
+        shell: bash
+        run: |    
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          if ${{github.event_name == 'pull_request'}}; then
+            echo 'ACC_FOLDER=/home/arda/harness-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+          fi
+          if ${{github.event_name == 'schedule'}}; then
+            echo 'ACC_FOLDER=/home/arda/harness-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+          fi
+
+      - name: Download harness results
+        uses: actions/download-artifact@v3
+        with:
+          name: harness_results
+          path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
+
+
+      # Save fp16.csv in the parent folder of env.nightly_folder
+      - name: Download FP16 results
+        shell: bash
+        run: |
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/harness/fp16.csv -O $ACC_FOLDER/../fp16.csv
+          ls $ACC_FOLDER/..
+
+      - name: Write to CSV
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/harness
+        shell: bash
+        run: |
+          ls $ACC_FOLDER/$DATE
+          python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
+
+      - name: Update HTML
+        working-directory: ${{ github.workspace }}/python/llm/test/benchmark/harness
+        shell: bash
+        run: |
+          python harness_csv_to_html.py -f $ACC_FOLDER
+          if ${{github.event_name == 'schedule'}}; then
+            python update_html_in_parent_folder.py -f $ACC_FOLDER
+          fi

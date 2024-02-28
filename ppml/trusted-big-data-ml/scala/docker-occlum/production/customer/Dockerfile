@@ -7,7 +7,7 @@ RUN rm -rf /opt/occlum_spark/image
 FROM ubuntu:20.04
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
-ARG BIGDL_VERSION=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.5.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG HADOOP_VERSION=3.2.0
 ARG SPARK_SCALA_VERSION=2.12

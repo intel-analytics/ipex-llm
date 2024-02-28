@@ -4,7 +4,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-ppml-trusted-bigdl-llm-tdx:2.4.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/bigdl-ppml-trusted-bigdl-llm-tdx:2.5.0-SNAPSHOT .
 ```
 
 ## Attestation on anolis-tdx

@@ -1,5 +1,8 @@
 name: Performance Regression Test
 
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 16 * * *'
@@ -18,12 +21,12 @@ jobs:
       # trigged by opening a PR which modifies this file or scheduling or commenting 'APRT' in a closed PR
       - name: checkout (open pr or schedule or closed pr comments)
         if: github.event.pull_request || github.event.schedule || github.event.issue.pull_request.merged_at
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       # trigged by commenting 'APRT' in an opening PR
       - name: checkout (opening pr comments)
         if: github.event.issue.pull_request && !github.event.issue.pull_request.merged_at
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           ref: ${{ format('refs/pull/{0}/merge', github.event.issue.number) }}
 

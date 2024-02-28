@@ -1,0 +1,85 @@
+{
+    "version": "1.0",
+    "truncation": null,
+    "padding": null,
+    "added_tokens": [
+        {
+            "id": 0,
+            "special": true,
+            "content": "<unk>",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false
+        },
+        {
+            "id": 1,
+            "special": true,
+            "content": "<s>",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false
+        },
+        {
+            "id": 2,
+            "special": true,
+            "content": "</s>",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false
+        },
+        {
+            "id": 3,
+            "special": true,
+            "content": "<pad>",
+            "single_word": false,
+            "lstrip": false,
+            "rstrip": false,
+            "normalized": false
+        }
+    ],
+    "normalizer": null,
+    "pre_tokenizer": {
+        "type": "Sequence",
+        "pretokenizers": [
+            {
+                "type": "Split",
+                "pattern": {
+                    "Regex": " ?[^(\\s|[.,!?\u2026\u3002\uff0c\u3001\u0964\u06d4\u060c])]+"
+                },
+                "behavior": "Isolated",
+                "invert": false
+            },
+            {
+                "type": "ByteLevel",
+                "add_prefix_space": false,
+                "trim_offsets": true,
+                "use_regex": false
+            }
+        ]
+    },
+    "post_processor": {
+        "type": "ByteLevel",
+        "add_prefix_space": true,
+        "trim_offsets": false,
+        "use_regex": false
+    },
+    "decoder": {
+        "type": "ByteLevel",
+        "add_prefix_space": true,
+        "trim_offsets": true,
+        "use_regex": false
+    },
+    "model": {
+        "type": "BPE",
+        "dropout": null,
+        "unk_token": null,
+        "continuing_subword_prefix": null,
+        "end_of_word_suffix": null,
+        "fuse_unk": false,
+        "vocab": null,
+        "merges": null
+    }
+}

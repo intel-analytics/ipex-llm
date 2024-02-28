@@ -5,16 +5,16 @@ This image contains Gramine and some popular python toolkits including numpy, pa
 
 ## 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-python-toolkit-ref:2.4.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-python-toolkit-ref:2.5.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
 
 ### 1.1 Build Gramine Base Image
-Gramine base image provides necessary tools including gramine, python, java, etc for the image in this directory. You can build your own gramine base image following the steps in [Gramine PPML Base Image](https://github.com/intel-analytics/BigDL/tree/main/ppml/base#gramine-ppml-base-image). You can also use our public image `intelanalytics/bigdl-ppml-gramine-base:2.4.0-SNAPSHOT` for a quick start.
+Gramine base image provides necessary tools including gramine, python, java, etc for the image in this directory. You can build your own gramine base image following the steps in [Gramine PPML Base Image](https://github.com/intel-analytics/BigDL/tree/main/ppml/base#gramine-ppml-base-image). You can also use our public image `intelanalytics/bigdl-ppml-gramine-base:2.5.0-SNAPSHOT` for a quick start.
 
 ### 1.2 Build Python Toolkit Base Image
 
 The python toolkit base image is a public one that does not contain any secrets. You will use the base image to get your own custom image. 
 
-You can use our public base image `intelanalytics/bigdl-ppml-trusted-python-toolkit-base:2.4.0-SNAPSHOT`, or, You can build your own base image based on `intelanalytics/bigdl-ppml-gramine-base:2.4.0-SNAPSHOT`  as follows. Remember to assign values to the variables in `build-toolkit-base-image.sh` before running the script.
+You can use our public base image `intelanalytics/bigdl-ppml-trusted-python-toolkit-base:2.5.0-SNAPSHOT`, or, You can build your own base image based on `intelanalytics/bigdl-ppml-gramine-base:2.5.0-SNAPSHOT`  as follows. Remember to assign values to the variables in `build-toolkit-base-image.sh` before running the script.
 
 ```shell
 # configure parameters in build-toolkit-base-image.sh please

@@ -1,4 +1,4 @@
-FROM intel/oneapi-basekit:2023.2.1-devel-ubuntu22.04
+FROM intel/oneapi-basekit:2024.0.1-devel-ubuntu22.04
 ARG http_proxy
 ARG https_proxy
 ENV TZ=Asia/Shanghai
@@ -17,7 +17,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # install basic dependencies
     apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
     # install Intel GPU driver
-    apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # install python 3.9
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -32,7 +32,8 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # install huggingface dependencies
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
-    pip install peft==0.5.0 datasets && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/GPU/QLoRA-FineTuning/qlora_finetuning.py
+    pip install peft==0.5.0 datasets accelerate==0.23.0 && \
+    pip install bitsandbytes scipy && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py
 
 COPY ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh

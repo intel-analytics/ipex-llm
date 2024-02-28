@@ -15,6 +15,7 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install transformers==4.34.1 # CodeLlamaTokenizer is supported in higher version of transformers
 ```
 
 ### 2. Run
@@ -32,8 +33,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
+# set BigDL-LLM env variables
+source bigdl-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

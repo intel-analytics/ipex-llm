@@ -1,10 +1,12 @@
-FROM intel/oneapi-basekit:2023.2.1-devel-ubuntu22.04
+FROM intel/oneapi-basekit:2024.0.1-devel-ubuntu22.04
 
 ARG http_proxy
 ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
+ENV USE_XETLA=OFF
+ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 COPY chat.py /llm/chat.py
 
@@ -33,9 +35,17 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # Install related libary of chat.py
-    pip install --upgrade colorama
+    pip install --upgrade colorama && \
+    # Install vllm dependencies
+    pip install --upgrade fastapi && \
+    pip install --upgrade "uvicorn[standard]" && \
+    # Download vLLM-Serving
+    git clone https://github.com/intel-analytics/BigDL && \
+    cp -r ./BigDL/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./BigDL

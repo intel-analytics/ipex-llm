@@ -11,4 +11,4 @@ sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=$JDK_URL \
     --build-arg no_proxy=$LOCAL_IP \
-    -t intelanalytics/bigdl-kms-base:2.4.0-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/bigdl-kms-base:2.5.0-SNAPSHOT -f ./Dockerfile .

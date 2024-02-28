@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT .
 ```
 
 
@@ -16,7 +16,7 @@ docker build \
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -41,7 +41,7 @@ You can download models and bind the model directory from host machine to contai
 
 Here is an example:
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.4.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
 export MODEL_PATH=/home/llm/models
 
 sudo docker run -itd \

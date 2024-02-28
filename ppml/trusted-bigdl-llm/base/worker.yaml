@@ -18,7 +18,7 @@ spec:
         icx-1: "true"
       containers:
         - name: fastchat-worker # fixed
-          image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.4.0-SNAPSHOT
+          image: intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref:2.5.0-SNAPSHOT
           imagePullPolicy: IfNotPresent
           env:
             - name: CONTROLLER_HOST # fixed

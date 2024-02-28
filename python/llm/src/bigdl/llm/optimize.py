@@ -26,6 +26,7 @@ from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.utils import extract_local_archive_file, get_local_shard_files
 import transformers
+import warnings
 from transformers import PreTrainedModel
 from .utils.common import MuteHFLogger
 from .utils.lazy_load_torch import LazyLoadTensors
@@ -193,18 +194,24 @@ def load_low_bit(model, model_path):
 
 
 def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None,
-                   replace_embedding=False):
+                   cpu_embedding=False, lightweight_bmm=False, **kwargs):
     """
     A method to optimize any pytorch model.
 
     :param model: The original PyTorch model (nn.module)
-    :param low_bit: Supported low-bit options are "sym_int4", "asym_int4", "sym_int5",
-        "asym_int5" or "sym_int8".
-    :param optimize_llm: Whether to further optimize llm model.
+    :param low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``, ``'sym_int5'``,
+                    ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``, ``'nf4'``, ``'fp4'``,
+                    ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``, ``'fp16'`` or ``'bf16'``,
+                    ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
+                    asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
+                    Relevant low bit optimizations will be applied to the model.
+    :param optimize_llm: Whether to further optimize llm model. Default to be ``True``.
     :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped
-        when conducting model optimizations. Default to be None.
-    :param replace_embedding: Whether to replace the Embedding layer, may need to set it
-        to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+        when conducting model optimizations. Default to be ``None``.
+    :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
+        to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
+    :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
+        to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
 
     :return: The optimized model.
 
@@ -223,15 +230,20 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     invalidInputError(isinstance(model, torch.nn.Module),
                       "model should be an instance of "
                       f"`torch.nn.Module`, but got {type(model)} at last.")
-    invalidInputError(model.device.type == 'cpu',
-                      "Expect model on device `cpu`, "
+    invalidInputError(model.device.type in ('cpu', 'meta'),
+                      "Expect model on device `cpu` or `meta`, "
                       f"but got device type {model.device.type}")
+    if kwargs.pop("replace_embedding", False):
+        warnings.warn("replace_embedding is deprecated and will be removed in a future version,"
+                      " please use cpu_embedding instead.", FutureWarning)
+        cpu_embedding = True
     qtype = ggml_tensor_qtype[low_bit]
     model = ggml_convert_low_bit(model,
                                  qtype=qtype,
                                  optimize_model=optimize_llm,
                                  modules_to_not_convert=modules_to_not_convert,
-                                 replace_embedding=replace_embedding)
+                                 cpu_embedding=cpu_embedding,
+                                 lightweight_bmm=lightweight_bmm)
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()

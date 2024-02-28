@@ -51,7 +51,7 @@ spec:
             path: your_service_keys_path
       containers:
       - name: remote-attestation-service
-        image: intelanalytics/bigdl-attestation-service-reference:2.4.0-SNAPSHOT
+        image: intelanalytics/bigdl-attestation-service-reference:2.5.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         command: ["/ppml/bigdl-as-entrypoint.sh"]
         env:

@@ -37,6 +37,7 @@ from typing import Optional, Tuple
 import torch
 import torch.utils.checkpoint
 from torch.nn import functional as F
+from bigdl.llm.transformers.models.utils import use_fused_layer_norm
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 
@@ -60,6 +61,23 @@ def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: 
     out = F.dropout(x, p=prob, training=training)
     out = residual + out
     return out
+
+
+def bloom_layer_norm_forward(self, hidden_states):
+    if use_fused_layer_norm(hidden_states, self.training):
+        import linear_q4_0
+        result = linear_q4_0.fused_layer_norm(hidden_states,
+                                              [self.weight.size(0)],
+                                              self.weight,
+                                              self.bias,
+                                              self.eps)
+        # if nelement == 0, means fused norm failed, go back to python implement.
+        if result.nelement != 0:
+            return result
+    input_dtype = hidden_states.dtype
+    result = F.layer_norm(hidden_states.to(self.weight.dtype),
+                          self.normalized_shape, self.weight, self.bias, self.eps)
+    return result.to(input_dtype)
 
 
 def bloom_attention_forward(
@@ -106,7 +124,7 @@ def bloom_attention_forward(
         # reuse k, v, self_attention
         cache_k = layer_past[0].transpose(1, 2).view(batch_size, self.num_heads, -1, self.head_dim)
         cache_v = layer_past[1].view(batch_size, self.num_heads, -1, self.head_dim)
-        if cache_k.stride()[1] <= cache_k.size(2) * cache_k.size(3):
+        if cache_k.stride()[1] < kv_length * cache_k.size(3):
             # allocate new
             new_cache_k, new_cache_v = extend_kv_cache(
                 batch_size,

@@ -4,11 +4,11 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
 
-For OS, BigDL-LLM supports Ubuntu 20.04 or later, CentOS 7 or later, and Windows 10/11.
+For OS, BigDL-LLM supports Ubuntu 20.04 or later (glibc>=2.17), CentOS 7 or later (glibc>=2.17), and Windows 10/11.
 
 ## Best Known Configuration on Linux
-For better performance, it is recommended to set environment variables on Linux with the help of BigDL-Nano:
+For better performance, it is recommended to set environment variables on Linux with the help of BigDL-LLM:
 ```bash
-pip install bigdl-nano
-source bigdl-nano-init
+pip install bigdl-llm
+source bigdl-llm-init
 ```

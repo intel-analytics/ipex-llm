@@ -510,12 +510,14 @@ class BenchmarkWrapper:
     learn more about decoding strategies refer to the [text generation strategies guide](../generation_strategies).
     """
     
-    def __init__(self, model, do_print=False):
+    def __init__(self, model, do_print=False, verbose=False):
         self.model = model
         self.do_print = do_print
+        self.verbose = verbose
         self.encoder_time = 0.0
         self.first_cost = 0.0
         self.rest_cost_mean = 0.0
+        self.peak_memory = 0.0
         print(self.model.__class__)
 
     def __getattr__(self, attr):
@@ -2363,6 +2365,7 @@ class BenchmarkWrapper:
         
         first_token_time = None
         last_token_time = []
+        memory_every_token = []
         while True:
             st = time.perf_counter()
             if synced_gpus:
@@ -2440,6 +2443,8 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
+                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024**3))
+                self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
                 first_token_time = end - st
@@ -2454,13 +2459,22 @@ class BenchmarkWrapper:
                 break
 
         if self.do_print:
-            print(f"=========First token cost {first_token_time:.4f} s=========")
+            if self.device.type == "xpu":
+                print(f"=========First token cost {first_token_time:.4f} s and {memory_every_token[0]} GB=========")
+            else:
+                print(f"=========First token cost {first_token_time:.4f} s=========")
         if len(last_token_time) > 1:
             self.first_cost = first_token_time
             self.rest_cost_mean = np.mean(last_token_time)
             if self.do_print:
-                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
-                      f" tokens in all)=========")
+                if self.device.type == "xpu":
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
+                else:
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all)=========")
 
         if streamer is not None:
             streamer.end()
@@ -2662,6 +2676,7 @@ class BenchmarkWrapper:
         
         first_token_time = None
         last_token_time = []
+        memory_every_token = []
         # auto-regressive generation
         while True:
             st = time.perf_counter()
@@ -2743,6 +2758,8 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
+                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024 ** 3))
+                self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
                 first_token_time = end - st
@@ -2757,13 +2774,22 @@ class BenchmarkWrapper:
                 break
 
         if self.do_print:
-            print(f"=========First token cost {first_token_time:.4f} s=========")
+            if self.device.type == "xpu":
+                print(f"=========First token cost {first_token_time:.4f} s and {memory_every_token[0]} GB=========")
+            else:
+                print(f"=========First token cost {first_token_time:.4f} s=========")
         if len(last_token_time) > 1:
             self.first_cost = first_token_time
             self.rest_cost_mean = np.mean(last_token_time)
             if self.do_print:
-                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
-                      f" tokens in all)=========")
+                if self.device.type == "xpu":
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
+                else:
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all)=========")
 
         if streamer is not None:
             streamer.end()
@@ -2975,6 +3001,7 @@ class BenchmarkWrapper:
         first_token_time = None
         last_token_time = []
         this_peer_finished = False  # used by synced_gpus only
+        memory_every_token = []
         while True:
             st = time.perf_counter()
             if synced_gpus:
@@ -3072,6 +3099,8 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
+                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024 ** 3))
+                self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
                 first_token_time = end - st
@@ -3096,13 +3125,22 @@ class BenchmarkWrapper:
         )
 
         if self.do_print:
-            print(f"=========First token cost {first_token_time:.4f} s=========")
+            if self.device.type == "xpu":
+                print(f"=========First token cost {first_token_time:.4f} s and {memory_every_token[0]} GB=========")
+            else:
+                print(f"=========First token cost {first_token_time:.4f} s=========")
         if len(last_token_time) > 1:
             self.first_cost = first_token_time
             self.rest_cost_mean = np.mean(last_token_time)
             if self.do_print:
-                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
-                      f" tokens in all)=========")
+                if self.device.type == "xpu":
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
+                else:
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all)=========")
 
         if return_dict_in_generate:
             if not output_scores:
@@ -3322,6 +3360,7 @@ class BenchmarkWrapper:
         
         first_token_time = None
         last_token_time = []
+        memory_every_token = []
         while True:
             st = time.perf_counter()
             if synced_gpus:
@@ -3432,6 +3471,8 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
+                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024 ** 3))
+                self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
                 first_token_time = end - st
@@ -3450,13 +3491,22 @@ class BenchmarkWrapper:
         )
 
         if self.do_print:
-            print(f"=========First token cost {first_token_time:.4f} s=========")
+            if self.device.type == "xpu":
+                print(f"=========First token cost {first_token_time:.4f} s and {memory_every_token[0]} GB=========")
+            else:
+                print(f"=========First token cost {first_token_time:.4f} s=========")
         if len(last_token_time) > 1:
             self.first_cost = first_token_time
             self.rest_cost_mean = np.mean(last_token_time)
             if self.do_print:
-                print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
-                      f" tokens in all)=========")
+                if self.device.type == "xpu":
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all) and {np.max(memory_every_token[1:])} GB=========")
+                    if self.verbose:
+                        print(f"Peak memory for every token: {memory_every_token}")
+                else:
+                    print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(last_token_time)}"
+                          f" tokens in all)=========")
 
         if return_dict_in_generate:
             if not output_scores:

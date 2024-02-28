@@ -1,4 +1,5 @@
 name: Scanner-hadolint
+
 on:
 #  schedule:
 #    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 3:00 China Every Sunday
@@ -7,11 +8,15 @@ on:
 #  pull_request:
 #    branchs: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   scan-dockerfile:
     runs-on: [self-hosted, SDL-TEST]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: "bigdl-k8s-dockerfile-scanning"
       run: |
         docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile

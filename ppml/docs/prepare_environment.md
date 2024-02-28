@@ -101,10 +101,10 @@ Key Management Service (KMS) helps you manage cryptographic keys for your servic
 
 Pull Docker image from Dockerhub
     ```
-    docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT
     ```
 
-**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
+**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
 
 ### (Optional) K8s Monitoring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md

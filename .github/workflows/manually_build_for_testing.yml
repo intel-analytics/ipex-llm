@@ -15,6 +15,7 @@ on:
         options:
         - all
         - bigdl-llm-finetune-lora-cpu
+        - bigdl-llm-finetune-qlora-cpu
         - bigdl-llm-finetune-qlora-xpu
         - bigdl-llm-xpu
         - bigdl-llm-cpu
@@ -54,7 +55,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   bigdl-llm-finetune-lora-cpu:
@@ -62,7 +62,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -86,12 +86,41 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
+  bigdl-llm-finetune-qlora-cpu:
+    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.sha }}
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: bigdl-llm-finetune-qlora-cpu
+        run: |
+          echo "##############################################################"
+          echo "####### bigdl-llm-finetune-qlora-cpu ########"
+          echo "##############################################################"
+          export image=intelanalytics/bigdl-llm-finetune-qlora-cpu
+          cd docker/llm/finetune/qlora/cpu/docker
+          sudo docker build \
+            --no-cache=true \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg no_proxy=${NO_PROXY} \
+            -t ${image}:${TAG} -f ./Dockerfile .
+          sudo docker push ${image}:${TAG}
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
   bigdl-llm-finetune-qlora-xpu:
     if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -120,7 +149,7 @@ jobs:
     runs-on: [self-hosted, Shire]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -149,7 +178,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -178,7 +207,7 @@ jobs:
     runs-on: [self-hosted, Shire]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -207,7 +236,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -236,7 +265,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -267,7 +296,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -301,7 +330,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -329,7 +358,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -361,7 +390,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -394,7 +423,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -424,7 +453,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -457,7 +486,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -488,7 +517,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -523,7 +552,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -608,7 +637,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -676,7 +705,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -712,7 +741,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.sha }}
       - name: docker login
@@ -748,7 +777,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -784,7 +813,7 @@ jobs:
     runs-on: [ self-hosted, Shire ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
          ref: ${{ github.event.inputs.sha }}
       - name: docker login
@@ -830,7 +859,7 @@ jobs:
     runs-on: [ self-hosted, Shire ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.sha }}
       - name: docker login
@@ -868,7 +897,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -904,7 +933,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -940,7 +969,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker deploy kms-util
@@ -967,7 +996,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker deploy pccs
@@ -991,7 +1020,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1021,7 +1050,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1055,7 +1084,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login

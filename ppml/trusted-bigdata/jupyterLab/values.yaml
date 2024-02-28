@@ -2,7 +2,7 @@
 
 nfsServerIp: your_nfs_server_ip
 nfsPath: a_nfs_shared_folder_path_on_the_server
-imageName: intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT # or replace with custom image of user
+imageName: intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.5.0-SNAPSHOT # or replace with custom image of user
 notebookExternalIP: an_available_ip_in_your_subnetwork_to_expose_notebook_service_externally
 TEEMode: sgx # TEE mode of jupyter notebook, sgx, tdx or native
 PCCSUrl: your_pccs_url # set to "" for native TEEMode or no attestation needed

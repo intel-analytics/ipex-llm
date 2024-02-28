@@ -1,4 +1,4 @@
-transformers==4.30.0
+transformers==4.36.0
 # install torch first:
 # pip install torch==2.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 
@@ -6,15 +6,15 @@ bigdl-nano==2.3.0b20230322
 accelerate
 loralib
 sentencepiece
-gradio==3.34.0
+gradio
 uvicorn
 sse-starlette
 openai
-fastapi==0.95.2
+fastapi==0.109.1
 pydantic==1.10.8
 
 ### document qa
-langchain==0.0.329
+langchain
 pypdf
 chromadb==0.3.25
 

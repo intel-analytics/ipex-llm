@@ -14,6 +14,8 @@ You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
 
   * |inference_on_gpu|_
   * `Finetune (QLoRA) <./finetune.html>`_
+  * `Multi GPUs selection <./multi_gpus_selection.html>`_
+
 
 .. |transformers_style_api| replace:: ``transformers``-style API
 .. _transformers_style_api: ./transformers_style_api.html
@@ -26,3 +28,6 @@ You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
 
 .. |inference_on_gpu| replace:: Inference on GPU
 .. _inference_on_gpu: ./inference_on_gpu.html
+
+.. |multi_gpus_selection| replace:: Multi GPUs selection
+.. _multi_gpus_selection: ./multi_gpus_selection.html

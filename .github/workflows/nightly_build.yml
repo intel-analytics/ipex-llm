@@ -1,10 +1,10 @@
 name: Nightly Build
 
 on:
-#   pull_request:
-#     branches: [ main ]
-#     paths:
-#       - '.github/workflows/nightly_build.yml'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - '.github/workflows/nightly_build.yml'
   schedule:
     - cron: '30 11 * * *'  # GMT time, 11:30 GMT == 19:30 China
   workflow_dispatch:
@@ -29,7 +29,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
 
@@ -38,7 +37,7 @@ jobs:
     runs-on: [self-hosted, Bree]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
@@ -184,7 +183,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: set env
       env:
         DEFAULT_TAG: 'latest'
@@ -214,7 +213,7 @@ jobs:
         docker tag ${IMAGE}-spark-3.4.1:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
         # tag SNAPSHOT
-        export TAG_SNAPSHOT=2.4.0-SNAPSHOT
+        export TAG_SNAPSHOT=2.5.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}-spark-3.4.1:${TAG_SNAPSHOT}
         docker push ${IMAGE}-spark-3.4.1:${TAG_SNAPSHOT} 
         docker rmi -f ${IMAGE}-spark-3.4.1:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}-spark-3.4.1:${TAG_SNAPSHOT}
@@ -242,7 +241,7 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG}
         # tag SNAPSHOT
-        export TAG_SNAPSHOT=2.4.0-SNAPSHOT
+        export TAG_SNAPSHOT=2.5.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
         docker rmi -f ${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.4.1:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
@@ -263,7 +262,7 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         # tag SNAPSHOT
-        export TAG_SNAPSHOT=2.4.0-SNAPSHOT
+        export TAG_SNAPSHOT=2.5.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
         docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
@@ -291,7 +290,7 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         # tag SNAPSHOT
-        export TAG_SNAPSHOT=2.4.0-SNAPSHOT
+        export TAG_SNAPSHOT=2.5.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
         docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
@@ -317,7 +316,7 @@ jobs:
     runs-on: [self-hosted, Bree]
     needs: llm-cpp-build
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
 
@@ -339,7 +338,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.4.0
+        export PYPI_VERSION=2.5.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
@@ -369,7 +368,7 @@ jobs:
     runs-on: [self-hosted, Bree]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -389,7 +388,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.4.0
+        export PYPI_VERSION=2.5.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
         apt-get update
@@ -494,7 +493,7 @@ jobs:
   create-workflow-badge:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: create workflow badge
       if: ${{ always() }}
       uses: ./.github/actions/create-job-status-badge
@@ -503,8 +502,3 @@ jobs:
         gist-id: ${{env.GIST_ID}}
         file-name: nightly-build.json
         type: workflow
-
-
-
-
-
