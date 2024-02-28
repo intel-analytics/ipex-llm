@@ -33,7 +33,7 @@ from langchain.vectorstores import Chroma
 import pytest
 from unittest import TestCase
 import os
-
+from bigdl.llm.llamaindex.llms import BigdlLLM
 
 class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
@@ -48,96 +48,39 @@ class Test_Langchain_Transformers_API(TestCase):
             self.n_threads = 2     
     
     def test_bigdl_llm(self):    
-        pass
-    
-    def test_pipeline_llm(self):
-        texts = 'def hello():\n  print("hello world")\n'
-        bigdl_llm = TransformersPipelineLLM.from_model_id(model_id=self.auto_causal_model_path, task='text-generation', model_kwargs={'trust_remote_code': True})
+        def completion_to_prompt(completion):
+            return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n"
+        def messages_to_prompt(messages):
+            prompt = ""
+            for message in messages:
+                if message.role == "system":
+                    prompt += f"<|system|>\n{message.content}</s>\n"
+                elif message.role == "user":
+                    prompt += f"<|user|>\n{message.content}</s>\n"
+                elif message.role == "assistant":
+                    prompt += f"<|assistant|>\n{message.content}</s>\n"
+
+            # ensure we start with a system prompt, insert blank if needed
+            if not prompt.startswith("<|system|>\n"):
+                prompt = "<|system|>\n</s>\n" + prompt
+
+            # add final assistant prompt
+            prompt = prompt + "<|assistant|>\n"
+            return prompt
         
-        output = bigdl_llm(texts)
-        res = "hello()" in output
-        self.assertTrue(res)
-
-
-    def test_causalLM_embeddings(self):
-        bigdl_embeddings = BloomEmbeddings(model_path=self.bloom_model_path, model_kwargs={'trust_remote_code': True}, native=False)
-        text = "This is a test document."
-        query_result = bigdl_embeddings.embed_query(text)
-        doc_result = bigdl_embeddings.embed_documents([text])
-
-        bigdl_llm = BloomLLM(model_path=self.bloom_model_path, model_kwargs={'trust_remote_code': True}, native=False)
-        res = bigdl_llm(text)
-
-    """
-    def test_transformers_llama_embeddings(self):
-        bigdl_embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True})
-        text = "This is a test document."
-        query_result = bigdl_embeddings.embed_query(text)
-        doc_result = bigdl_embeddings.embed_documents([text])
-
-        bigdl_llm = TransformersLLM.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True})
-        res = bigdl_llm(text)
-    """
-
-    def test_qa_chain(self):
-        texts = '''
-            AI is a machine’s ability to perform the cognitive functions 
-            we associate with human minds, such as perceiving, reasoning, 
-            learning, interacting with an environment, problem solving,
-            and even exercising creativity. You’ve probably interacted 
-            with AI even if you didn’t realize it—voice assistants like Siri 
-            and Alexa are founded on AI technology, as are some customer 
-            service chatbots that pop up to help you navigate websites.
-            '''
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        texts = text_splitter.split_text(texts)
-        query = 'What is AI?'
-        embeddings = TransformersEmbeddings.from_model_id(model_id=self.auto_model_path, model_kwargs={'trust_remote_code': True})
-
-        docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
-
-        #get relavant texts
-        docs = docsearch.get_relevant_documents(query)
-        bigdl_llm = TransformersLLM.from_model_id(model_id=self.auto_model_path, model_kwargs={'trust_remote_code': True})
-        doc_chain = load_qa_chain(bigdl_llm, chain_type="stuff", prompt=QA_PROMPT)
-        output = doc_chain.run(input_documents=docs, question=query)
-        res = "AI" in output
-        self.assertTrue(res)
-
-    
-    """
-    def test_qa_chain_causalLM(self):
-        texts = '''
-            AI is a machine’s ability to perform the cognitive functions 
-            we associate with human minds, such as perceiving, reasoning, 
-            learning, interacting with an environment, problem solving,
-            and even exercising creativity. You’ve probably interacted 
-            with AI even if you didn’t realize it—voice assistants like Siri 
-            and Alexa are founded on AI technology, as are some customer 
-            service chatbots that pop up to help you navigate websites.
-            '''
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        texts = text_splitter.split_text(texts)
-        query = 'What is AI?'
-        embeddings = LlamaEmbeddings(model_path=self.llama_model_path, model_kwargs={'trust_remote_code': True}, native=False)
-
-        docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
-
-        #get relavant texts
-        docs = docsearch.get_relevant_documents(query)
-        bigdl_llm = LlamaLLM(model_path=self.llama_model_path, model_kwargs={'trust_remote_code': True}, native=False)
-        doc_chain = load_qa_chain(bigdl_llm, chain_type="stuff", prompt=QA_PROMPT)
-        output = doc_chain.run(input_documents=docs, question=query)
-        res = "AI" in output
-        self.assertTrue(res)
-    """
-    
-    def test_embed_kwargs(self):
-        embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path)
-        encode_kwargs =  {"truncation": True, "max_length": 512}
-        en_texts = ["hello","goodbye"]
-        embeddings.embed(en_texts,**encode_kwargs)
-
+        llm = BigdlLLM(
+            model_name=self.llama_model_path,
+            tokenizer_name=self.llama_model_path,
+            context_window=3900,
+            max_new_tokens=256,
+            model_kwargs={},
+            generate_kwargs={"temperature": 0.7, "do_sample": False},
+            messages_to_prompt=messages_to_prompt,
+            completion_to_prompt=completion_to_prompt,
+            device_map="cpu",
+        )
+        res = llm.complete("What is AI?")
+        
 
 if __name__ == '__main__':
     pytest.main([__file__])

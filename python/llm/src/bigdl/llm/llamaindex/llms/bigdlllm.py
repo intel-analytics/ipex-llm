@@ -18,8 +18,8 @@ from llama_index.core.base.llms.types import (
 from llama_index.core.bridge.pydantic import Field, PrivateAttr
 from llama_index.core.callbacks import CallbackManager
 from llama_index.core.constants import (
-    DEFAULT_CONTEXT_WINDOW, #3900
-    DEFAULT_NUM_OUTPUTS, #256
+    DEFAULT_CONTEXT_WINDOW,
+    DEFAULT_NUM_OUTPUTS,
 )
 from llama_index.core.llms.callbacks import (
     llm_chat_callback,
@@ -132,7 +132,7 @@ class BigdlLLM(CustomLLM):
         self,
         context_window: int = DEFAULT_CONTEXT_WINDOW,
         max_new_tokens: int = DEFAULT_NUM_OUTPUTS,
-        query_wrapper_prompt: Union[str, PromptTemplate] = "{query_str}",
+        query_wrapper_prompt: Union[str, PromptTemplate]="{query_str}",
         tokenizer_name: str = DEFAULT_HUGGINGFACE_MODEL,
         model_name: str = DEFAULT_HUGGINGFACE_MODEL,
         model: Optional[Any] = None,
@@ -146,18 +146,18 @@ class BigdlLLM(CustomLLM):
         is_chat_model: Optional[bool] = False,
         callback_manager: Optional[CallbackManager] = None,
         system_prompt: str = "",
-        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]] = None,
-        completion_to_prompt: Optional[Callable[[str], str]] = None,
-        pydantic_program_mode: PydanticProgramMode = PydanticProgramMode.DEFAULT,
+        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]]=None,
+        completion_to_prompt: Optional[Callable[[str], str]]=None,
+        pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
     ) -> None:
         """Initialize params."""
         model_kwargs = model_kwargs or {}
         from bigdl.llm.transformers import AutoModelForCausalLM
         self._model = model or AutoModelForCausalLM.from_pretrained(
-            model_name,load_in_4bit=True, **model_kwargs
+            model_name, load_in_4bit=True, **model_kwargs
         )
-        if device_map=='xpu':
+        if device_map == 'xpu':
             self._model = self._model.to("xpu")
 
         # check context_window
@@ -279,11 +279,10 @@ class BigdlLLM(CustomLLM):
             stopping_criteria=self._stopping_criteria,
             **self.generate_kwargs,
         )
-        completion_tokens = tokens[0][input_ids["input_ids"].size(1) :]
+        completion_tokens = tokens[0][input_ids["input_ids"].size(1):]
         completion = self._tokenizer.decode(completion_tokens, skip_special_tokens=True)
 
         return CompletionResponse(text=completion, raw={"model_output": tokens})
-
 
     @llm_completion_callback()
     def stream_complete(
@@ -297,14 +296,14 @@ class BigdlLLM(CustomLLM):
                 full_prompt = self.query_wrapper_prompt.format(query_str=prompt)
             if self.system_prompt:
                 full_prompt = f"{self.system_prompt} {full_prompt}"
-                
+
         input_ids = self._tokenizer.encode(full_prompt, return_tensors="pt")
         input_ids = input_ids.to(self._model.device)
-        
+
         for key in self.tokenizer_outputs_to_remove:
             if key in input_ids:
                 input_ids.pop(key, None)
-                
+
         streamer = TextStreamer(self._tokenizer, skip_prompt=True, skip_special_tokens=True)
         generation_kwargs = dict(
             input_ids,

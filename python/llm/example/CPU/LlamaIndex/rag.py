@@ -184,8 +184,8 @@ def main(args):
     )
     # returns a VectorStoreQueryResult
     query_result = vector_store.query(vector_store_query)
-    print("Retrieval Results: ")
-    print(query_result.nodes[0].get_content())
+    # print("Retrieval Results: ")
+    # print(query_result.nodes[0].get_content())
 
 
 
