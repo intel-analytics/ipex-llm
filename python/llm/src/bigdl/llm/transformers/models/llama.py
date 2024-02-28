@@ -939,7 +939,7 @@ def llama_attention_forward_4_36(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.vtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1

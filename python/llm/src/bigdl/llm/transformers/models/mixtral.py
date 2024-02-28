@@ -189,10 +189,11 @@ def mixtral_attention_forward(
                                                           self.q_proj.weight,
                                                           self.k_proj.weight,
                                                           position_ids,
-                                                          cache_k, cache_v,
+                                                          cache_k,
                                                           self.q_proj.weight.qtype,
                                                           kv_seq_len,
-                                                          self.head_dim)
+                                                          self.head_dim,
+                                                          10000)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
@@ -206,11 +207,10 @@ def mixtral_attention_forward(
                     cache_v.size(2) + value_states.size(2),
                     cache_v.size(3))
         new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-        new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
-        value_states = new_cache_v
+        new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + value_states.size(2), :] = value_states
 
         past_key_value.key_cache[self.layer_idx] = key_states
-        past_key_value.value_cache[self.layer_idx] = value_states
+        past_key_value.value_cache[self.layer_idx] = new_cache_v
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
