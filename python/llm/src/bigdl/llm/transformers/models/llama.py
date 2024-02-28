@@ -349,7 +349,7 @@ def llama_attention_forward_4_31_quantized(
                                                             cos, sin, position_ids, "llama")
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -629,7 +629,7 @@ def llama_attention_forward_4_31_original(
     past_key_value = (key_states, value_states) if use_cache else None
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -1068,7 +1068,7 @@ def llama_attention_forward_4_36(
                 past_key_value.value_cache[self.layer_idx] = value_states
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
