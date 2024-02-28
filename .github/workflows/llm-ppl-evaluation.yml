@@ -59,7 +59,7 @@ jobs:
           NIGHTLY_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "mpt-7b-chat", 
                         "falcon-7b-instruct-with-patch", "Mistral-7B-v0.1",
                         "chatglm2-6b", "chatglm3-6b", "Baichuan2-7B-Chat"]'
-          NIGHTLY_MATRIX_PRECISION: '["sym_int4 fp8"]'
+          NIGHTLY_MATRIX_PRECISION: '["sym_int4", "fp8"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
         run: |
             echo "seq_len=$NIGHTLY_MATRIX_SEQ_LEN" >> $GITHUB_ENV
@@ -243,10 +243,10 @@ jobs:
         run: |    
           echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
           if ${{github.event_name == 'pull_request'}}; then
-            echo 'ACC_FOLDER=/home/arda/ppl-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/ppl/pr-accuracy-data' >> $GITHUB_ENV
           fi
           if ${{github.event_name == 'schedule'}}; then
-            echo 'ACC_FOLDER=/home/arda/ppl-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/ppl/nightly-accuracy-data' >> $GITHUB_ENV
           fi
   
       - name: Download ppl results
