@@ -20,7 +20,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 # This file is adapted from
-# https://github.com/hwchase17/langchain/blob/master/langchain/llms/llamacpp.py
+# https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html
 
 # The MIT License
 
@@ -197,14 +197,15 @@ class BigdlLLM(CustomLLM):
         pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
     ) -> None:
-        """Initialize params."""
+        """
+        Initialize params according the docs
+        https://docs.llamaindex.ai/en/stable/module_guides/models/llms/usage_custom.html#
+        """
         model_kwargs = model_kwargs or {}
         from bigdl.llm.transformers import AutoModelForCausalLM
         self._model = model or AutoModelForCausalLM.from_pretrained(
             model_name, load_in_4bit=True, **model_kwargs
         )
-        if device_map == 'xpu':
-            self._model = self._model.to("xpu")
 
         # check context_window
         config_dict = self._model.config.to_dict()

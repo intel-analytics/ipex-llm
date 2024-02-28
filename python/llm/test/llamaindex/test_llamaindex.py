@@ -35,7 +35,7 @@ from unittest import TestCase
 import os
 from bigdl.llm.llamaindex.llms import BigdlLLM
 
-class Test_Langchain_Transformers_API(TestCase):
+class Test_LlamaIndex_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
@@ -45,38 +45,39 @@ class Test_Langchain_Transformers_API(TestCase):
         if thread_num is not None:
             self.n_threads = int(thread_num)
         else:
-            self.n_threads = 2     
+            self.n_threads = 2   
+            
+    def completion_to_prompt(completion):
+        return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n" 
+    
+    def messages_to_prompt(messages):
+        prompt = ""
+        for message in messages:
+            if message.role == "system":
+                prompt += f"<|system|>\n{message.content}</s>\n"
+            elif message.role == "user":
+                prompt += f"<|user|>\n{message.content}</s>\n"
+            elif message.role == "assistant":
+                prompt += f"<|assistant|>\n{message.content}</s>\n"
+
+        # ensure we start with a system prompt, insert blank if needed
+        if not prompt.startswith("<|system|>\n"):
+            prompt = "<|system|>\n</s>\n" + prompt
+
+        # add final assistant prompt
+        prompt = prompt + "<|assistant|>\n"
+        return prompt
     
     def test_bigdl_llm(self):    
-        def completion_to_prompt(completion):
-            return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n"
-        def messages_to_prompt(messages):
-            prompt = ""
-            for message in messages:
-                if message.role == "system":
-                    prompt += f"<|system|>\n{message.content}</s>\n"
-                elif message.role == "user":
-                    prompt += f"<|user|>\n{message.content}</s>\n"
-                elif message.role == "assistant":
-                    prompt += f"<|assistant|>\n{message.content}</s>\n"
-
-            # ensure we start with a system prompt, insert blank if needed
-            if not prompt.startswith("<|system|>\n"):
-                prompt = "<|system|>\n</s>\n" + prompt
-
-            # add final assistant prompt
-            prompt = prompt + "<|assistant|>\n"
-            return prompt
-        
         llm = BigdlLLM(
             model_name=self.llama_model_path,
             tokenizer_name=self.llama_model_path,
-            context_window=3900,
-            max_new_tokens=256,
+            context_window=512,
+            max_new_tokens=32,
             model_kwargs={},
             generate_kwargs={"temperature": 0.7, "do_sample": False},
-            messages_to_prompt=messages_to_prompt,
-            completion_to_prompt=completion_to_prompt,
+            messages_to_prompt=self.messages_to_prompt,
+            completion_to_prompt=self.completion_to_prompt,
             device_map="cpu",
         )
         res = llm.complete("What is AI?")
