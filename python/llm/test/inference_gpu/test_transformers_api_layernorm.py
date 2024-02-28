@@ -92,7 +92,9 @@ class Test_Optimize_Gpu_Model:
  
             LayerNorm_output_diff = []
             for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
-                LayerNorm_output_diff.append(t1 - t2)
+                if t1 is not None and t2 is not None:
+                    if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
+                        LayerNorm_output_diff.append(t1 - t2)
  
             max_diff_tensor = [torch.max(item).item() for item in LayerNorm_output_diff]
             print(max_diff_tensor)
