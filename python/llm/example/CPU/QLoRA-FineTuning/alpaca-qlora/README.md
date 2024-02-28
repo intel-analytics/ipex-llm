@@ -11,6 +11,7 @@ pip install --pre --upgrade bigdl-llm[all]
 pip install datasets transformers==4.35.0
 pip install fire peft==0.5.0
 pip install accelerate==0.23.0
+pip install bitsandbytes scipy
 ```
 
 ### 2. Configures environment variables
@@ -142,7 +143,7 @@ lora_target_modules: List[str] = ["W_pack"]
 5. (Only for baichuan) According to this [issue](https://github.com/baichuan-inc/Baichuan2/issues/204#issuecomment-1774372008),
    need to modify the [tokenization_baichuan.py](https://huggingface.co/baichuan-inc/Baichuan-7B/blob/main/tokenization_baichuan.py#L74) to fix issue.
 6. finetune as normal
-7. Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/QLoRA-FineTuning/export_merged_model.py) to merge. But also need to update tokenizer and model to ensure successful merge weight.
+7. Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge. But also need to update tokenizer and model to ensure successful merge weight.
 
 ```bash
 from transformers import AutoTokenizer  # noqa: F402

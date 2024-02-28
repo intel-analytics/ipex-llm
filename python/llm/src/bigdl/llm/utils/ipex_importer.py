@@ -35,10 +35,19 @@ class IPEXImporter:
         """
         # Check if xpu version installed
         try:
+            # Check if bigdl-core-xe is installed
             distribution('bigdl-core-xe')
             return True
         except PackageNotFoundError:
-            return False
+            # bigdl-core-xe not found
+            # Check if bigdl-core-xe-21 is installed
+            try:
+                distribution('bigdl-core-xe-21')
+                return True
+            except PackageNotFoundError:
+                # bigdl-core-xe not found
+                return False
+        return False
 
     def import_ipex(self):
         """

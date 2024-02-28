@@ -15,7 +15,6 @@
 #
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
@@ -43,6 +42,8 @@ if __name__ == '__main__':
     # "wo" module is not converted due to some issues of T5 model 
     # (https://github.com/huggingface/transformers/issues/20287),
     # "lm_head" module is not converted to generate outputs with better quality
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForSeq2SeqLM.from_pretrained(model_path,
                                                   load_in_4bit=True,
                                                   optimize_model=False,

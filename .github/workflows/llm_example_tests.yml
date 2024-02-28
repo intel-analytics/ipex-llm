@@ -5,6 +5,9 @@ concurrency:
   group: ${{ github.workflow }}-llm-example-tests-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # Controls when the action will run. 
 on:
   # schedule:
@@ -42,7 +45,7 @@ jobs:
     env:
       THREAD_NUM: 24
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:

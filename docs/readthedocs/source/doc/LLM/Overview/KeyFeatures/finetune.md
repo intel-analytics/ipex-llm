@@ -10,16 +10,17 @@ We also support finetuning LLMs (large language models) using QLoRA with BigDL-L
 
 To help you better understand the finetuning process, here we use model [Llama-2-7b-hf](https://huggingface.co/meta-llama/Llama-2-7b-hf) as an example.
 
-**Make sure you have prepared environment following instructions [here](../install_gpu.html). First of all, you need to import `intel_extension_for_pytorch` to run on Intel GPUs**:
+**Make sure you have prepared environment following instructions [here](../install_gpu.html).**
 
-```python
-import intel_extension_for_pytorch as ipex
+```eval_rst
+.. note::
+
+   If you are using an older version of ``bigdl-llm`` (specifically, older than 2.5.0b20240104), you need to manually add ``import intel_extension_for_pytorch as ipex`` at the beginning of your code.
 ```
 
 First, load model using `transformers`-style API and **set it to `to('xpu')`**. We specify `load_in_low_bit="nf4"` here to apply 4-bit NormalFloat optimization. According to the [QLoRA paper](https://arxiv.org/pdf/2305.14314.pdf), using `"nf4"` could yield better model quality than `"int4"`.
 
 ```python
-import intel_extension_for_pytorch as ipex
 from bigdl.llm.transformers import AutoModelForCausalLM
 
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf",

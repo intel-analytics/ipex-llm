@@ -1,4 +1,19 @@
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: models
+  resources:
+    requests:
+      storage: 10Gi
+  # selector: # Optional
+  #   matchLabels:
+  #     app: kubecon-models
+---
+apiVersion: v1
 kind: Pod
 metadata:
   name: bigdl-fschat-a1234bd-controller
@@ -20,6 +35,8 @@ spec:
       value: "0.0.0.0"
     - name: API_PORT # fixed
       value: "8000"
+    - name: "GRADIO_PORT" # You can change this port
+      value: "8002"
     ports:
       - containerPort: 21005
         name: con-port
@@ -105,5 +122,5 @@ spec:
       restartPolicy: "Always"
       volumes:
       - name: llm-models
-        hostPath:
-          path: /home/llm/models # change this in other envs
+        persistentVolumeClaim:
+          claimName: models-pvc

@@ -268,7 +268,9 @@ def setup_package():
                 f'Could not find package dependency file: {file_path}')
 
     all_requires = ['py-cpuinfo', 'protobuf',
-                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                    'mpmath==1.3.0' # fix AttributeError: module 'mpmath' has no attribute 'rational'
+                    ]
     all_requires += CONVERT_DEP
 
     # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
@@ -288,12 +290,9 @@ def setup_package():
                         "intel_extension_for_pytorch==2.1.10+xpu",
                         "bigdl-core-xe-21==" + VERSION,
                         "bigdl-core-xe-esimd-21==" + VERSION + ";platform_system=='Linux'"]
-    # default to ipex 2.0 for linux and 2.1 for windows
-    xpu_requires = copy.deepcopy(xpu_20_requires)
-    xpu_requires.extend(["torch==2.1.0a0;platform_system=='Windows'",
-                         "torchvision==0.16.0a0;platform_system=='Windows'",
-                         "intel_extension_for_pytorch==2.1.10+xpu;platform_system=='Windows'",
-                         "bigdl-core-xe-21==" + VERSION + ";platform_system=='Windows'"])
+    # default to ipex 2.1 for linux and windows
+    xpu_requires = copy.deepcopy(xpu_21_requires)
+
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
 
@@ -319,9 +318,9 @@ def setup_package():
             ]
         },
         extras_require={"all": all_requires,
-                        "xpu": xpu_requires,  # default to ipex 2.0 for linux and 2.1 for windows
-                        "xpu_2.0": xpu_20_requires,
-                        "xpu_2.1": xpu_21_requires,
+                        "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
+                        "xpu-2-0": xpu_20_requires,
+                        "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',

@@ -41,7 +41,7 @@ import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, \
     load_state_dict, \
-    get_local_shard_files
+    get_local_shard_files, load_imatrix_data
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.gguf.api import load_gguf_model
@@ -59,6 +59,7 @@ def save_low_bit(self, *args, **kwargs):
         delattr(self.config, "quantization_config")
         delattr(self.config, "_pre_quantization_dtype")
 
+    origin_device = self.device
     self.to('cpu')
 
     kwargs['safe_serialization'] = False
@@ -85,10 +86,17 @@ def save_low_bit(self, *args, **kwargs):
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(args[0], "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
+    if origin_device != 'cpu':
+        self.to(origin_device)
+
+
+def _load_pre():
+    from transformers import GPTJModel
+    from bigdl.llm.transformers.models.gptj import gptj_model_new_init
+    GPTJModel.__init__ = gptj_model_new_init
 
 
 class _BaseAutoModelClass:
-
     HF_MODEL = None
 
     @classmethod
@@ -102,27 +110,49 @@ class _BaseAutoModelClass:
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
 
         :param load_in_4bit: boolean value, True means loading linear's weight to symmetric int 4 if
-                                the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
-                                if the model is GPTQ model.
-                             Default to be False.
-        :param load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
-                                , sym_int8, nf3, nf4, fp4, fp8, fp8_e4m3, fp8_e5m2, fp16 or bf16.
-                                sym_int4 means symmetric int 4, asym_int4 means asymmetric int 4,
-                                nf4 means 4-bit NormalFloat, etc. Relevant low bit optimizations
-                                will be applied to the model.
+                             the model is a regular fp16/bf16/fp32 model, and to asymmetric int 4
+                             if the model is GPTQ model.
+                             Default to be ``False``.
+        :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
+                                ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
+                                ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
+                                ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, ``'fp16'`` or ``'bf16'``,
+                                ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
+                                asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
+                                Relevant low bit optimizations will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
-                               Default to be True.
+                               Default to be ``True``.
         :param modules_to_not_convert: list of str value, modules (nn.Module) that are skipped when
-                                       conducting model optimizations. Default to be None.
+                                       conducting model optimizations. Default to be ``None``.
+        :param speculative: boolean value, Whether to use speculative decoding.
+                            Default to be ``False``.
         :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
-            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
-            to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
+            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
+        :param imatrix: str value, represent filename of importance matrix pretrained on
+            specific datasets for use with the improved quantization methods recently
+            added to llama.cpp.
+        :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
+            specify the model hub. Default to be ``'huggingface'``.
+        :param embedding_qtype: str value, options are ``'q2_k'`` now. Default to be None.
+            Relevant low bit optimizations will be applied to nn.Embedding layer.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
-        config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
+        model_hub = kwargs.pop("model_hub", "huggingface")
+        invalidInputError(model_hub in ["huggingface", "modelscope"],
+                          "The parameter `model_hub` is supposed to be `huggingface` or "
+                          f"`modelscope`, but got {model_hub}.")
+        if model_hub == "huggingface":
+            config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
+        elif model_hub == "modelscope":
+            import modelscope
+            from modelscope.utils.hf_util import get_wrapped_class
+            cls.HF_Model = get_wrapped_class(cls.HF_Model)
+            from .utils import get_modelscope_hf_config
+            config_dict, _ = get_modelscope_hf_config(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
         invalidInputError(not bigdl_transformers_low_bit,
                           f"Detected model is a low-bit({bigdl_transformers_low_bit}) model, "
@@ -135,6 +165,51 @@ class _BaseAutoModelClass:
         load_in_low_bit = kwargs.pop("load_in_low_bit", None)
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
+        speculative = kwargs.pop("speculative", False)
+        torch_dtype = kwargs.pop("torch_dtype", None)
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
+
+        if user_quantization_config is not None and \
+                "BitsAndBytesConfig" in str(user_quantization_config.__class__):
+            if user_quantization_config.bnb_4bit_quant_type is not None:
+                bnb_4bit_type = user_quantization_config.bnb_4bit_quant_type
+                if bnb_4bit_type == "nf4":
+                    load_in_low_bit = "nf4"
+                elif bnb_4bit_type == "fp4":
+                    warnings.warn(
+                        "BigDL LLM QLoRA does not support fp4 now, use default nf4", FutureWarning)
+                    load_in_low_bit = "nf4"
+                elif bnb_4bit_type == "int4":
+                    load_in_low_bit = "sym_int4"
+                elif bnb_4bit_type == "bf16":
+                    load_in_low_bit = "bf16"
+                else:
+                    invalidInputError(False,
+                                      "Only nf4 or int4 is supported for bnb_4bit_quant_type")
+            else:
+                warnings.warn(
+                    "bnb_4bit_quant_type is None, use default int4", FutureWarning)
+                load_in_low_bit = "sym_int4"
+            if user_quantization_config.bnb_4bit_use_double_quant is True:
+                warnings.warn(
+                    "BigDL LLM QLoRA does not support double quant now, set to False",
+                    FutureWarning)
+            if user_quantization_config.bnb_4bit_compute_dtype is not None:
+                bnb_dtype = user_quantization_config.bnb_4bit_compute_dtype
+                if bnb_dtype == torch.float32:
+                    kwargs["torch_dtype"] = bnb_dtype
+                elif bnb_dtype == torch.bfloat16:
+                    kwargs["torch_dtype"] = bnb_dtype
+                else:
+                    invalidInputError(False,
+                                      "Only float32 or bfloat16"
+                                      " is supported for bnb_4bit_compute_dtype")
+            else:
+                warnings.warn(
+                    "torch_dtype is None, use default float32", FutureWarning)
+                kwargs["torch_dtype"] = torch.float32
+            optimize_model = False
+            kwargs["modules_to_not_convert"] = ["lm_head"]
 
         if load_in_4bit or load_in_low_bit:
 
@@ -171,8 +246,6 @@ class _BaseAutoModelClass:
                                       "Only 4-bit awq is supported in bigdl-llm.")
                     invalidInputError(awq_config.version == "gemm",
                                       "Only gemm version is supported in bigdl-llm.")
-                    invalidInputError(awq_config.backend == "autoawq",
-                                      "Only autoawq backend is supported in bigdl-llm.")
                     invalidInputError(awq_config.zero_point,
                                       "Only awq zero_point = True is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
@@ -190,8 +263,19 @@ class _BaseAutoModelClass:
 
             # load int x-bit
             kwargs["low_cpu_mem_usage"] = True
-            # set default torch_dtype='auto'
-            kwargs["torch_dtype"] = kwargs.get("torch_dtype", 'auto')
+            # set default torch_dtype='auto'.
+            # Note that when load_in_low_bit="fp16", set default torch_dtype=torch.float16
+            if load_in_low_bit == "fp16":
+                if torch_dtype is not None and torch_dtype != torch.float16:
+                    invalidInputError(
+                        False,
+                        f"Please use torch_dtype=torch.float16"
+                        f" when setting load_in_low_bit='fp16'."
+                    )
+                else:
+                    kwargs["torch_dtype"] = torch.float16
+            else:
+                kwargs["torch_dtype"] = torch_dtype or "auto"
             # Avoid tensor parallel F.Linear Operations
             if "pretraining_tp" in config_dict:
                 if "config" in kwargs:
@@ -199,7 +283,31 @@ class _BaseAutoModelClass:
                 else:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
+            imatrix_file = kwargs.pop("imatrix", None)
+            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs"]:
+                invalidInputError(imatrix_file is not None,
+                                  "For gguf_iq2_xxs and gguf_iq2_xs quantization,"
+                                  "imatrix is needed.")
+            cpu_embedding = kwargs.get("cpu_embedding", False)
+            # for 2bit, default use embedding_quantization
+            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and not cpu_embedding and \
+                    embedding_qtype is None:
+                embedding_qtype = "q2_k"
+            if imatrix_file is not None:
+                imatrix_data = load_imatrix_data(imatrix_file)
+                kwargs["imatrix_data"] = imatrix_data
+            kwargs["embedding_qtype"] = embedding_qtype
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+
+            if speculative:
+                from .speculative import speculative_generate, clear_benchmarks
+                # load a sym_int4 model as draft model
+                draft_model = cls.load_convert('sym_int4', optimize_model, *args, **kwargs)
+                model.draft_model = draft_model
+                import types
+                # add speculative_generate to pretrained model dynamically
+                model.clear_benchmarks = types.MethodType(clear_benchmarks, model)
+                model.speculative_generate = types.MethodType(speculative_generate, model)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -231,7 +339,8 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          "fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, mixed_fp4 or mixed_fp8.")
+                          f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
+                          f"gguf_iq2_xs, mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,
@@ -245,6 +354,11 @@ class _BaseAutoModelClass:
             cpu_embedding = True
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
+        imatrix_data = kwargs.pop("imatrix_data", None)
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
+        if embedding_qtype is not None:
+            embedding_qtype = ggml_tensor_qtype[embedding_qtype]
+        enable_xetla = kwargs.pop("enable_xetla", False)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -253,9 +367,9 @@ class _BaseAutoModelClass:
             # The latest transformers only support cuda version
             # This load awq ckpt logic is copied from
             # https://github.com/casper-hansen/AutoAWQ/blob/main/awq/models/base.py#L147
-            from accelerate import init_empty_weights, infer_auto_device_map,\
+            from accelerate import init_empty_weights, infer_auto_device_map, \
                 load_checkpoint_in_model
-            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers,\
+            from bigdl.llm.transformers.awq.awq import _replace_with_awq_layers, \
                 get_layer_type, _load_config
             awq_config = quant_config
             model_weights_path, config = _load_config(args[0], '', max_new_tokens=None,
@@ -292,6 +406,7 @@ class _BaseAutoModelClass:
                 offload_dir=None
             )
         else:
+            _load_pre()
             try:
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
@@ -305,9 +420,17 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
-                                     torch_dtype=kwargs.get("torch_dtype", 'auto'))
+                                     torch_dtype=kwargs.get("torch_dtype", 'auto'),
+                                     imatrix_data=imatrix_data,
+                                     embedding_qtype=embedding_qtype,
+                                     enable_xetla=enable_xetla,)
         model.config.update({"bigdl_transformers_low_bit": q_k})
-        model.config.update({"tie_word_embeddings": False})
+
+        # enable tie_word_embeddings for MPT
+        # refer to https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/modeling_mpt.py#L232
+        if model.config.architectures is None \
+           or model.config.architectures[0] != 'MPTForCausalLM':
+            model.config.update({"tie_word_embeddings": False})
 
         # add save_low_bit to pretrained model dynamically
         import types
@@ -369,6 +492,7 @@ class _BaseAutoModelClass:
         offload_folder = kwargs.pop("offload_folder", None)
         offload_state_dict = kwargs.pop("offload_state_dict", False)
         torch_dtype = kwargs.pop("torch_dtype", "auto")
+        embedding_qtype = kwargs.pop("embedding_qtype", None)
         sharded_metadata = None
 
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
@@ -388,6 +512,11 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
 
         qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        if bigdl_transformers_low_bit in ["gguf_iq2_xxs", "gguf_iq2_xs", "q2_k"] and \
+                not cpu_embedding:
+            embedding_qtype = "q2_k"
+        if embedding_qtype is not None:
+            embedding_qtype = ggml_tensor_qtype[embedding_qtype]
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
@@ -397,7 +526,7 @@ class _BaseAutoModelClass:
         if has_remote_code and trust_remote_code:
             class_ref = config.auto_map[cls.HF_Model.__name__]
             model_class = get_class_from_dynamic_module(
-                class_ref, pretrained_model_name_or_path,  **kwargs
+                class_ref, pretrained_model_name_or_path, **kwargs
             )
             if os.path.isdir(pretrained_model_name_or_path):
                 model_class.register_for_auto_class(cls.HF_Model.__name__)
@@ -451,6 +580,15 @@ class _BaseAutoModelClass:
 
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
+                if config.architectures is not None and config.architectures[0] in \
+                   ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+
+                    """
+                    ChatGLMModel uses skip_init by default, which will force modules placed on cpu
+                    if the device is not specified. This will further cause replaced linear
+                    allocating memory on cpu.
+                    """
+                    kwargs["device"] = "meta"
                 model = model_class(config, *model_args, **kwargs)
         else:
             model = model_class(config, *model_args, **kwargs)
@@ -459,7 +597,8 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm)
+                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
+                                     embedding_qtype=embedding_qtype, torch_dtype=torch_dtype)
 
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
@@ -515,6 +654,10 @@ class _BaseAutoModelClass:
                 pass
         for param in model.parameters():
             param.requires_grad_(False)
+
+        # rwkv model linear layers has been rescaled
+        if model.config.model_type == "rwkv":
+            model.rwkv.layers_are_rescaled = True
         return model
 
 

@@ -20,6 +20,7 @@ import os
 import transformers
 from transformers import LlamaTokenizer
 
+from transformers import BitsAndBytesConfig
 from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
 from bigdl.llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
@@ -45,11 +46,24 @@ if __name__ == "__main__":
     data['train'] = data['train'].map(merge)
     # use the max_length to reduce memory usage, should be adjusted by different datasets
     data = data.map(lambda samples: tokenizer(samples["prediction"], max_length=256), batched=True)
+
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=False,
+        bnb_4bit_quant_type="int4",  # nf4 not supported on cpu yet
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_low_bit="sym_int4",
-                                                 optimize_model=False,
-                                                 torch_dtype=torch.float16,
-                                                 modules_to_not_convert=["lm_head"], )
+                                                 quantization_config=bnb_config, )
+
+    # below is also supported
+    # model = AutoModelForCausalLM.from_pretrained(model_path,
+    #                                              # nf4 not supported on cpu yet
+    #                                              load_in_low_bit="sym_int4",
+    #                                              optimize_model=False,
+    #                                              torch_dtype=torch.bfloat16,
+    #                                              modules_to_not_convert=["lm_head"], )
+
     model = model.to('cpu')
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=False)
     model.enable_input_require_grads()

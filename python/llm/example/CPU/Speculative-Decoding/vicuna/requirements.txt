@@ -1,0 +1,2 @@
+transformers==4.36.2
+transformers-stream-generator

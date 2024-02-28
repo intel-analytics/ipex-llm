@@ -289,7 +289,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.isSameSizeAs(t2) should be(false)
   }
 
-  "clone" should "get a seperated tensor" in {
+  "clone" should "get a separated tensor" in {
     val t: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2, 3)))
     val t1 = t.clone()
     t.isSameSizeAs(t1) should be(true)

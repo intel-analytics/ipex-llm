@@ -7,16 +7,16 @@ runs:
       shell: bash
       run: |
         source ~/.bash_profile
-        export SPARK_HOME=/opt/work/spark-3.1.3
+        export SPARK_HOME=/opt/work/spark-3.4.1
         PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
         cd scala
-        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.3
+        ./make-dist.sh -P spark_3.x -Dspark.version=3.4.1
         cd -
         source python/friesian/dev/prepare_env.sh
         source activate py37-tf2
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         
-        pip install pyspark==3.1.3
+        pip install pyspark==3.4.1
         echo "Running py37 tests"
         cd python/friesian/dev/test
         gsed -i "s/sed/gsed/g" run-example-tests-tf2.6.0.sh

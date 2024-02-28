@@ -2,6 +2,7 @@ repo_id:
   - 'meta-llama/Llama-2-7b-chat-hf'
   - 'meta-llama/Llama-2-13b-chat-hf'
   - 'THUDM/chatglm2-6b'
+  - 'THUDM/chatglm3-6b-4bit'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
   - 'redpajama/gptneox-7b-redpajama-bf16'
@@ -13,6 +14,7 @@ repo_id:
   - 'Qwen/Qwen-7B-Chat'
   - 'BAAI/AquilaChat-7B'
   - 'baichuan-inc/Baichuan2-7B-Chat'
+  - 'baichuan-inc/Baichuan2-13B-Chat'
   - 'bigscience/bloomz-7b1'
   - 'fnlp/moss-moon-003-sft'
 local_model_hub: '/mnt/disk1/models'
@@ -20,6 +22,7 @@ warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -30,3 +33,6 @@ cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu w
 exclude:
   - 'fnlp/moss-moon-003-sft:1024'
   - 'fnlp/moss-moon-003-sft:2048'
+  - 'baichuan-inc/Baichuan2-13B-Chat:1024'
+  - 'baichuan-inc/Baichuan2-13B-Chat:2048'
+  - 'bigscience/bloomz-7b1:2048'

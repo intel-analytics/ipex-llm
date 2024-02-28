@@ -7,6 +7,8 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 - [Mixtral-8x7B-v0.1-GGUF](https://huggingface.co/TheBloke/Mixtral-8x7B-v0.1-GGUF)
 - [Baichuan2-7B-Chat-GGUF](https://huggingface.co/second-state/Baichuan2-7B-Chat-GGUF/tree/main)
 - [Bloomz-7b1-GGUF](https://huggingface.co/hzjane/bloomz-7b1-gguf)
+- [falcon-7b-quantized-gguf](https://huggingface.co/xaviviro/falcon-7b-quantized-gguf/tree/main)
+- [mpt-7b-chat-gguf](https://huggingface.co/maddes8cht/mosaicml-mpt-7b-chat-gguf/tree/main)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
@@ -24,10 +26,9 @@ After installing conda, create a Python environment for BigDL-LLM:
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
-# below command will install intel_extension_for_pytorch==2.0.110+xpu as default
-# you can install specific ipex/torch version for your need
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install transformers==4.34.0  # upgrade transformers
+pip install transformers==4.36.0  # upgrade transformers
 ```
 
 ### 2. Configures OneAPI environment variables

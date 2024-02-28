@@ -15,7 +15,6 @@
 #
 
 import torch
-import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
@@ -48,6 +47,8 @@ if __name__ == '__main__':
     # "wo" module is not converted due to some issues of T5 model
     # (https://github.com/huggingface/transformers/issues/20287),
     # "lm_head" module is not converted to generate outputs with better quality
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model, modules_to_not_convert=["wo", "lm_head"])
 
     model = model.to('xpu')

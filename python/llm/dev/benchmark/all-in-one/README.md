@@ -1,21 +1,26 @@
 # All in One Benchmark Test
+
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
 Before running, make sure to have [bigdl-llm](../../../README.md).
 
 ## Dependencies
+
 ```bash
 pip install omegaconf
 pip install pandas
 ```
 
 Install gperftools to use libtcmalloc.so for MAX GPU to get better performance:
+
 ```bash
 conda install -c conda-forge -y gperftools=2.10
 ```
 
 ## Config
+
 Config YAML file has following format
+
 ```yaml
 repo_id:
   - 'THUDM/chatglm-6b'
@@ -27,6 +32,7 @@ warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -35,18 +41,29 @@ test_api:
   - "native_int4"
   - "optimize_model"
   - "pytorch_autocast_bf16"
+  # - "transformer_autocast_bf16"
   # - "ipex_fp16_gpu" # on Intel GPU
+  # - "bigdl_fp16_gpu" # on Intel GPU
   # - "transformer_int4_gpu"  # on Intel GPU
   # - "optimize_model_gpu"  # on Intel GPU
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
-  # - "transformer_int4_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
+  # - "transformer_int4_gpu_win" # on Intel GPU for Windows
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+
 ```
 
+## (Optional) Save model in low bit
+If you choose the `transformer_int4_loadlowbit_gpu_win` test API, you will need to save the model in low bit first.
+
+Run `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
+
 ## Run
+
 run `python run.py`, this will output results to `results.csv`.
 
 For SPR performance, run `bash run-spr.sh`.
+
 > **Note**
 >
 > The value of `OMP_NUM_THREADS` should be the same as the cpu cores specified by `numactl -C`.

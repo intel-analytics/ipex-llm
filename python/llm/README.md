@@ -56,6 +56,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Baichuan2  | [link](example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/baichuan2)  |
 | InternLM   | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm)   |
 | Qwen       | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen)       | 
+| Qwen1.5 | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen1.5) | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen1.5) |
 | Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](example/GPU/HF-Transformers-AutoModels/Model/qwen-vl)    |
 | Aquila     | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila)     |
 | Aquila2    | [link](example/CPU/HF-Transformers-AutoModels/Model/aquila2)   | [link](example/GPU/HF-Transformers-AutoModels/Model/aquila2)    |
@@ -63,7 +64,6 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Whisper    | [link](example/CPU/HF-Transformers-AutoModels/Model/whisper)   | [link](example/GPU/HF-Transformers-AutoModels/Model/whisper)    |
 | Phi-1_5    | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-1_5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-1_5)    |
 | Flan-t5    | [link](example/CPU/HF-Transformers-AutoModels/Model/flan-t5)   | [link](example/GPU/HF-Transformers-AutoModels/Model/flan-t5)    |
-| Qwen-VL    | [link](example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   |   |
 | LLaVA      | [link](example/CPU/PyTorch-Models/Model/llava)                 | [link](example/GPU/PyTorch-Models/Model/llava)                  |
 | CodeLlama  | [link](example/CPU/HF-Transformers-AutoModels/Model/codellama) | [link](example/GPU/HF-Transformers-AutoModels/Model/codellama)  |
 | Skywork    | [link](example/CPU/HF-Transformers-AutoModels/Model/skywork)                 |    |
@@ -75,6 +75,18 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Yi | [link](example/CPU/HF-Transformers-AutoModels/Model/yi) | [link](example/GPU/HF-Transformers-AutoModels/Model/yi) |
 | BlueLM | [link](example/CPU/HF-Transformers-AutoModels/Model/bluelm) | [link](example/GPU/HF-Transformers-AutoModels/Model/bluelm) |
 | Mamba | [link](example/CPU/PyTorch-Models/Model/mamba) | [link](example/GPU/PyTorch-Models/Model/mamba) |
+| SOLAR | [link](example/CPU/HF-Transformers-AutoModels/Model/solar) | [link](example/GPU/HF-Transformers-AutoModels/Model/solar) |
+| Phixtral | [link](example/CPU/HF-Transformers-AutoModels/Model/phixtral) | [link](example/GPU/HF-Transformers-AutoModels/Model/phixtral) |
+| InternLM2 | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm2) | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm2) |
+| RWKV4 |  | [link](example/GPU/HF-Transformers-AutoModels/Model/rwkv4) |
+| RWKV5 |  | [link](example/GPU/HF-Transformers-AutoModels/Model/rwkv5) |
+| Bark | [link](example/CPU/PyTorch-Models/Model/bark) | [link](example/GPU/PyTorch-Models/Model/bark) |
+| SpeechT5 |  | [link](example/GPU/PyTorch-Models/Model/speech-t5) |
+| DeepSeek-MoE | [link](example/CPU/HF-Transformers-AutoModels/Model/deepseek-moe) |  |
+| Ziya-Coding-34B-v1.0 | [link](example/CPU/HF-Transformers-AutoModels/Model/ziya) | |
+| Phi-2 | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-2) | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-2) |
+| Yuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
+| DeciLM-7B | [link](example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b) |
 
 ### Working with `bigdl-llm`
 

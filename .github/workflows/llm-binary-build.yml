@@ -5,6 +5,9 @@ name: LLM Binary Build
 #   group: ${{ github.workflow }}-llm-binary-build-${{ github.event.pull_request.number || github.run_id }}
 #   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -23,6 +26,11 @@ on:
         default: ''
         required: false
         type: string
+      platform:
+        description: 'Platforms to built on'
+        default: '["Windows", "Linux"]'
+        required: false
+        type: string
   workflow_call:
     inputs:
       llmcpp-ref:
@@ -30,10 +38,16 @@ on:
         default: ''
         required: false
         type: string
-
+      platform:
+        description: 'Platforms to built on'
+        default: 'Windows,Linux'
+        required: false
+        type: string
+    
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   check-linux-avxvnni-artifact:
+    if: ${{contains(inputs.platform, 'Linux')}}
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -64,7 +78,7 @@ jobs:
           conda create -n python310 python=3.10 -y
           conda remove -n python311 --all -y
           conda create -n python311 python=3.11 -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -146,6 +160,7 @@ jobs:
           conda remove -n python311 --all -y
 
   check-linux-avx512-artifact:
+    if: ${{contains(inputs.platform, 'Linux')}}
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -172,7 +187,7 @@ jobs:
           yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -246,6 +261,7 @@ jobs:
           conda remove -n python39 --all -y
 
   check-linux-amx-artifact:
+    if: ${{contains(inputs.platform, 'Linux')}}
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -272,7 +288,7 @@ jobs:
           yum install -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -316,6 +332,7 @@ jobs:
           conda remove -n python39 --all -y
           
   check-windows-avx2-artifact:
+    if: ${{contains(inputs.platform, 'Windows')}}
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -335,7 +352,7 @@ jobs:
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -360,6 +377,7 @@ jobs:
             build/Release
 
   check-windows-avx-vnni-artifact:
+    if: ${{contains(inputs.platform, 'Windows')}}
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -383,7 +401,7 @@ jobs:
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
@@ -469,6 +487,7 @@ jobs:
             release
 
   check-windows-avx-artifact:
+    if: ${{contains(inputs.platform, 'Windows')}}
     runs-on: ubuntu-latest
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
@@ -488,7 +507,7 @@ jobs:
         run: |
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
           ref: ${{ inputs.llmcpp-ref }}
