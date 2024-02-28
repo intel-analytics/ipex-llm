@@ -46,10 +46,12 @@ def gptbigcode_attention_forward(
 
         if encoder_hidden_states is not None:
             if not hasattr(self, "q_attn") or not self.is_cross_attention:
-                raise ValueError(
-                    "If class is used as cross attention,"
-                    " the weights `q_attn` have to be defined. "
-                    "Please make sure to instantiate class with "
+                from bigdl.llm.utils.common import invalidInputError
+                invalidInputError(
+                    False,
+                    "If class is used as cross attention," +
+                    "the weights `q_attn` have to be defined. " +
+                    "Please make sure to instantiate class with " +
                     "`GPTBigCodeAttention(..., is_cross_attention=True)`."
                 )
 
