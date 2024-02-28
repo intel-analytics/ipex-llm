@@ -15,10 +15,7 @@
 #
 
 # The file is modified from
-# BigDL/python/llm/src/bigdl/llm/langchain/llms/bigdlllm.py
-# and llama_index/llms/huggingface/base.py
-# 
-
+# https://github.com/run-llama/llama_index/blob/main/llama-index-core/llama_index/core/base/llms/base.py
 
 # The MIT License
 

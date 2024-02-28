@@ -81,6 +81,7 @@ class Test_LlamaIndex_Transformers_API(TestCase):
             device_map="cpu",
         )
         res = llm.complete("What is AI?")
+        assert res!=None
         
 
 if __name__ == '__main__':
