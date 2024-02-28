@@ -1,6 +1,7 @@
 # LlamaIndex Examples
 
 The examples here show how to use LlamaIndex with `bigdl-llm`.
+The RAG example is modified from the [demo](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). 
 
 ## Install bigdl-llm
 Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
@@ -32,6 +33,11 @@ pip install llama-index-embeddings-huggingface
     ALTER ROLE <user> SUPERUSER;    
     ```
 * Install pgvector according to the [page](https://github.com/pgvector/pgvector). If you encounter problem about the installation, please refer to the [notes](https://github.com/pgvector/pgvector#installation-notes) which may be helpful. 
+* Download the database.
+    ```bash
+    mkdir data
+    wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
+    ```
 
 
 ## Run the examples

@@ -14,13 +14,11 @@
 # limitations under the License.
 #
 
-# This would makes sure Python is aware there is more than one sub-package within bigdl,
-# physically located elsewhere.
-# Otherwise there would be module not found error in non-pip's setting as Python would
-# only search the first bigdl package and end up finding only one sub-package.
+# The file is modified from
+# BigDL/python/llm/src/bigdl/llm/langchain/llms/bigdlllm.py
+# and llama_index/llms/huggingface/base.py
+# 
 
-# This file is adapted from
-# https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html
 
 # The MIT License
 
@@ -91,7 +89,14 @@ logger = logging.getLogger(__name__)
 
 
 class BigdlLLM(CustomLLM):
-    """Bigdl LLM."""
+    """Wrapper around the BigDL-LLM
+
+    Example:
+        .. code-block:: python
+
+            from bigdl.llm.llamaindex.llms import BigdlLLM
+            llm = BigdlLLM(model_path="/path/to/llama/model")
+    """
 
     model_name: str = Field(
         default=DEFAULT_HUGGINGFACE_MODEL,
@@ -198,8 +203,38 @@ class BigdlLLM(CustomLLM):
         output_parser: Optional[BaseOutputParser] = None,
     ) -> None:
         """
-        Initialize params according the docs
-        https://docs.llamaindex.ai/en/stable/module_guides/models/llms/usage_custom.html#
+        Construct BigdlLLM.
+
+        Args:
+
+            context_window: The maximum number of tokens available for input.
+            max_new_tokens: The maximum number of tokens to generate.
+            query_wrapper_prompt: The query wrapper prompt, containing the query placeholder.
+                        Should contain a `{query_str}` placeholder.
+            tokenizer_name: The name of the tokenizer to use from HuggingFace.
+                        Unused if `tokenizer` is passed in directly.
+            model_name: The model name to use from HuggingFace.
+                        Unused if `model` is passed in directly.
+            model: The HuggingFace model.
+            tokenizer: The tokenizer.
+            device_map: The device_map to use. Defaults to 'auto'.
+            stopping_ids: The stopping ids to use.
+                        Generation stops when these token IDs are predicted.
+            tokenizer_kwargs: The kwargs to pass to the tokenizer.
+            tokenizer_outputs_to_remove: The outputs to remove from the tokenizer.
+                        Sometimes huggingface tokenizers return extra inputs that cause errors.
+            model_kwargs: The kwargs to pass to the model during initialization.
+            generate_kwargs: The kwargs to pass to the model during generation.
+            is_chat_model: Whether the model is `chat`
+            callback_manager: Callback manager.
+            system_prompt: The system prompt, containing any extra instructions or context.
+            messages_to_prompt: Function to convert messages to prompt.
+            completion_to_prompt: Function to convert messages to prompt.
+            pydantic_program_mode: DEFAULT.
+            output_parser: BaseOutputParser.
+
+        Returns:
+            None.
         """
         model_kwargs = model_kwargs or {}
         from bigdl.llm.transformers import AutoModelForCausalLM
@@ -279,11 +314,28 @@ class BigdlLLM(CustomLLM):
 
     @classmethod
     def class_name(cls) -> str:
+        """
+        Get class name.
+
+        Args:
+
+
+        Returns:
+            Str of class name.
+        """
         return "BigDL_LLM"
 
     @property
     def metadata(self) -> LLMMetadata:
-        """LLM metadata."""
+        """
+        Get meta data.
+
+        Args:
+
+        Returns:
+            LLMmetadata contains context_window,
+            num_output, model_name, is_chat_model.
+        """
         return LLMMetadata(
             context_window=self.context_window,
             num_output=self.max_new_tokens,
@@ -292,7 +344,15 @@ class BigdlLLM(CustomLLM):
         )
 
     def _tokenizer_messages_to_prompt(self, messages: Sequence[ChatMessage]) -> str:
-        """Use the tokenizer to convert messages to prompt. Fallback to generic."""
+        """
+        Use the tokenizer to convert messages to prompt. Fallback to generic.
+
+        Args:
+            messages: Sequence of ChatMessage.
+
+        Returns:
+            Str of response.
+        """
         if hasattr(self._tokenizer, "apply_chat_template"):
             messages_dict = [
                 {"role": message.role.value, "content": message.content}
@@ -307,7 +367,17 @@ class BigdlLLM(CustomLLM):
     def complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponse:
-        """Completion endpoint."""
+        """
+        Complete by LLM.
+
+        Args:
+            prompt: Prompt for completion.
+            formatted: Whether the prompt is formatted by wrapper.
+            kwargs: Other kwargs for complete.
+
+        Returns:
+            CompletionReponse after generation.
+        """
         full_prompt = prompt
         if not formatted:
             if self.query_wrapper_prompt:
@@ -335,7 +405,17 @@ class BigdlLLM(CustomLLM):
     def stream_complete(
         self, prompt: str, formatted: bool = False, **kwargs: Any
     ) -> CompletionResponseGen:
-        """Streaming completion endpoint."""
+        """
+        Complete by LLM in stream.
+
+        Args:
+            prompt: Prompt for completion.
+            formatted: Whether the prompt is formatted by wrapper.
+            kwargs: Other kwargs for complete.
+
+        Returns:
+            CompletionReponse after generation.
+        """
         from transformers import TextStreamer
         full_prompt = prompt
         if not formatted:
