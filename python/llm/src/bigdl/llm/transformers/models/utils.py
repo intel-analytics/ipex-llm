@@ -274,7 +274,7 @@ def use_flash_attention(query, key, attention_mask=None):
         else:
             # TODO: below logic may change for different model
             # attention mask shape : [bsz, 1, q_len, k_len]
-            if attention_mask[0].squeeze()[0,0].item() != 0:
+            if attention_mask[0].squeeze()[0, 0].item() != 0:
                 # first batch contains padding
                 # otherwise we suppose it should be a upper triangular matrix
                 # at the same time, the diagonal is also 0
