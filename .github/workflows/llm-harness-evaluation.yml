@@ -240,7 +240,7 @@ jobs:
   llm-harness-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
     needs: [llm-harness-evaluation]
-    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up Python 3.9
@@ -259,18 +259,19 @@ jobs:
         run: |    
           echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
           if ${{github.event_name == 'pull_request'}}; then
-            echo 'ACC_FOLDER=/home/arda/harness-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+            export ACC_FOLDER=~/harness-action-runners/pr-accuracy-data
           fi
           if ${{github.event_name == 'schedule'}}; then
-            echo 'ACC_FOLDER=/home/arda/harness-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+            export ACC_FOLDER=~/harness-action-runners/nightly-accuracy-data
           fi
+          mkdir -p $ACC_FOLDER || true
+          echo ACC_FOLDER=$ACC_FOLDER >> $GITHUB_ENV
 
       - name: Download harness results
         uses: actions/download-artifact@v3
         with:
           name: harness_results
           path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
-
 
       # Save fp16.csv in the parent folder of env.nightly_folder
       - name: Download FP16 results
@@ -285,12 +286,28 @@ jobs:
         run: |
           ls $ACC_FOLDER/$DATE
           python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
-
+          
+      - name: Cache history
+        id: cache-history
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ACC_FOLDER}}/history.csv
+          key: harness_cache_${{ github.event_name }}_${{ env.Date }}
+          restore-keys: |
+            harness_cache_${{github.event_name}}
+        
       - name: Update HTML
+        if: steps.cache-history.outputs.cache-hit == 'true'
         working-directory: ${{ github.workspace }}/python/llm/test/benchmark/harness
         shell: bash
         run: |
           python harness_csv_to_html.py -f $ACC_FOLDER
-          if ${{github.event_name == 'schedule'}}; then
-            python update_html_in_parent_folder.py -f $ACC_FOLDER
-          fi
+          rm -rf $ACC_FOLDER/history.csv
+          mv results_$Date.csv history.csv
+
+      - uses: actions/upload-artifact@v3
+        if: steps.cache-history.outputs.cache-hit == 'true'
+        with:
+          name: html
+          path:
+            ${{ env.ACC_FOLDER}}/*.html
