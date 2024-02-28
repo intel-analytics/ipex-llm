@@ -320,7 +320,7 @@ def llama_attention_forward_4_31_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.vtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
                                                                          self.head_dim)
     else:
