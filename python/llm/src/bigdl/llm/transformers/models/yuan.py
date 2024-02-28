@@ -190,7 +190,7 @@ def yuan_attention_forward_quantized(
     if use_cache:
         if is_first_step:
             if q_len >= 2:
-                inference_hidden_states_memory = hidden_states[ :, -2:, :]
+                inference_hidden_states_memory = hidden_states[:, -2:, :]
             else:
                 inference_hidden_states_memory[:, :, :] = 0
                 inference_hidden_states_memory[:, -1:, :] = hidden_states[:, -1:, :]
@@ -209,7 +209,7 @@ def yuan_attention_forward_quantized(
     qk_states = torch.cat([query_states, key_states], dim=-1)
     qk_states = qk_states.view(bsz, q_len, self.num_heads,
                                int(qk_states.shape[-1]//self.num_heads))
-    (query_states, key_states) =  torch.chunk(qk_states, 2, dim=-1)
+    (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
     query_states = query_states.transpose(1, 2)
     key_states = key_states.transpose(1, 2)
 
