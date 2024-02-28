@@ -234,7 +234,6 @@ jobs:
           echo "FALCON_7B_ORIGIN_PATH=${ORIGIN_DIR}/falcon-7b-instruct-with-patch" >> "$GITHUB_ENV"
           echo "MPT_7B_ORIGIN_PATH=${ORIGIN_DIR}/mpt-7b-chat" >> "$GITHUB_ENV"
           echo "WHISPER_TINY_ORIGIN_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
-
           echo "MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH=${ORIGIN_DIR}/Mistral-7B-Instruct-v0.1" >> "$GITHUB_ENV"
           echo "BAICHUAN2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Baichuan2-7B-Chat" >> "$GITHUB_ENV"
           echo "QWEN_7B_ORIGIN_PATH=${ORIGIN_DIR}/Qwen-7B-Chat" >> "$GITHUB_ENV"
