@@ -74,6 +74,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Distil-Whisper | [link](example/CPU/HF-Transformers-AutoModels/Model/distil-whisper) | [link](example/GPU/HF-Transformers-AutoModels/Model/distil-whisper) |
 | Yi | [link](example/CPU/HF-Transformers-AutoModels/Model/yi) | [link](example/GPU/HF-Transformers-AutoModels/Model/yi) |
 | BlueLM | [link](example/CPU/HF-Transformers-AutoModels/Model/bluelm) | [link](example/GPU/HF-Transformers-AutoModels/Model/bluelm) |
+| Mamba | [link](example/CPU/PyTorch-Models/Model/mamba) | [link](example/GPU/PyTorch-Models/Model/mamba) |
 | SOLAR | [link](example/CPU/HF-Transformers-AutoModels/Model/solar) | [link](example/GPU/HF-Transformers-AutoModels/Model/solar) |
 | Phixtral | [link](example/CPU/HF-Transformers-AutoModels/Model/phixtral) | [link](example/GPU/HF-Transformers-AutoModels/Model/phixtral) |
 | InternLM2 | [link](example/CPU/HF-Transformers-AutoModels/Model/internlm2) | [link](example/GPU/HF-Transformers-AutoModels/Model/internlm2) |
@@ -86,6 +87,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Phi-2 | [link](example/CPU/HF-Transformers-AutoModels/Model/phi-2) | [link](example/GPU/HF-Transformers-AutoModels/Model/phi-2) |
 | Yuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
 | DeciLM-7B | [link](example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b) |
+
 ### Working with `bigdl-llm`
 
 <details><summary>Table of Contents</summary>
