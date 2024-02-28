@@ -16,7 +16,7 @@ on:
     paths:
       - 'python/chronos/colab-notebook/howto/**'
       - 'python/chronos/benchmark/**'
-      - '.github/workflows/chronos-howto-guides-python-spark31.yml'
+      - '.github/workflows/chronos-howto-guides-python-spark31.yml' # test
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

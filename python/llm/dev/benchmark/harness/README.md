@@ -5,7 +5,10 @@ Before running, make sure to have [bigdl-llm](../../../README.md) installed.
 
 ## Install Harness
 ```bash
-pip install git+https://github.com/EleutherAI/lm-evaluation-harness.git@b281b09
+git clone https://github.com/EleutherAI/lm-evaluation-harness.git
+cd lm-evaluation-harness
+git checkout b281b09
+pip install -e .
 ```
 
 ## Run
@@ -26,3 +29,7 @@ python run_multi_llb.py --model bigdl-llm --pretrained /path/to/model --precisio
 Taking example above, the script will fork 3 processes, each for one xpu, to execute the tasks.
 ## Results
 We follow [Open LLM Leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard) to record our metrics, `acc_norm` for `hellaswag` and `arc_challenge`, `mc2` for `truthful_qa` and `acc` for `mmlu`. For `mmlu`, there are 57 subtasks which means users may need to average them manually to get final result.
+## Summarize the results
+"""python
+python make_table.py <input_dir>
+"""
