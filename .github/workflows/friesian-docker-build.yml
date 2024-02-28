@@ -32,14 +32,13 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   serving-jar-package:
     if: ${{ github.event.inputs.artifact == 'serving-jar-package' || github.event.inputs.artifact == 'all' }}
     runs-on:  [self-hosted,alpha,Bree,ubuntu-20.04-lts]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
@@ -64,7 +63,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'docker-build' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: set env
         run: |
           echo "TAG=${{github.event.inputs.tag||'latest'}}" >> $GITHUB_ENV

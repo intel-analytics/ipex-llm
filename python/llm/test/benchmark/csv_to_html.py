@@ -31,7 +31,7 @@ def highlight_vals(val, max=3.0, color1='red', color2='green'):
         return ''
 
 def nonzero_min(lst):
-    non_zero_lst = [num for num in lst if num >= 0.0]
+    non_zero_lst = [num for num in lst if num > 0.0]
     return min(non_zero_lst) if non_zero_lst else None
 
 def is_diffs_within_normal_range(diff1, diff2, threshold=5.0):
@@ -162,7 +162,7 @@ def main():
         subset2=['best diff1(%)','best diff2(%)']
         columns={'1st token avg latency (ms)': '{:.2f}', '2+ avg latency (ms/token)': '{:.2f}', 'last1': '{:.2f}', 'diff1(%)': '{:.2f}',
                 'last2': '{:.2f}', 'diff2(%)': '{:.2f}', 'encoder time (ms)': '{:.2f}', 'peak mem (GB)': '{:.2f}',
-                'best 1': '{:.2f}', 'best diff1(%)': '{:.2f}', 'best 2': '{:.2f}', 'best diff2(%)': '{:.2f}'}
+                'best 1': '{:.2f}', 'best diff1(%)': '{:.2f}', 'best 2': '{:.2f}', 'best diff2(%)': '{:.2f}', 'model loading time (s)': '{:.2f}'}
 
         styled_df = latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=3.0, color1='red', color2='green'), subset=subset1)
         styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=3.0, color1='yellow'), subset=subset2)

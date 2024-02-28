@@ -23,10 +23,9 @@ from typing import Optional, Tuple, List
 import torch.nn.functional as F
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, extend_fp8_kv_cache, \
-    append_fp8_kv_cache, restore_fp8_kv_cache, quantize_kv_cache
-from bigdl.llm.transformers.models.utils import use_flash_attention
-from bigdl.llm.transformers.models.llama import get_ipex_version
+from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
+    restore_fp8_kv_cache, use_quantize_kv_cache
+from bigdl.llm.transformers.models.utils import use_esimd_sdp
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -189,7 +188,7 @@ def chatglm2_model_forward(
 def chatglm2_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
-    if quantize_kv_cache(self.query_key_value, hidden_states):
+    if use_quantize_kv_cache(self.query_key_value, hidden_states):
         forward_function = chatglm2_quantized_attention_forward_8eb45c
     else:
         forward_function = chatglm2_attention_forward_8eb45c
@@ -263,9 +262,8 @@ def chatglm2_quantized_attention_forward_8eb45c(
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(batch_size,
                                                  n_kv_head,
+                                                 seq_len,
                                                  head_dim,
-                                                 0,
-                                                 seq_len + KV_CACHE_ALLOC_MIN_LENGTH,
                                                  query_layer.device)
             k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer)
     else:
@@ -274,15 +272,6 @@ def chatglm2_quantized_attention_forward_8eb45c(
         v_cache = v_cache.permute(1, 2, 0, 3)
         # k_cache, v_cache's shape: [bs, n_kv_head, seq_len, head_dim]
 
-        kv_seq_len = seq_len + k_cache.size(2)
-        if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
-            k_cache, v_cache = extend_fp8_kv_cache(
-                k_cache, v_cache,
-                kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                device=query_layer.device,
-            )
-            if query_layer.device.type == 'xpu':
-                torch.xpu.empty_cache()
         k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer)
 
         if seq_len != 1:
@@ -527,23 +516,31 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
             context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
                                                            key_layer,
                                                            value_layer,
-                                                           is_causal=True)
+                                                           is_causal=True).to(key_layer.dtype)
         else:
-            head_dim = query_layer.size(-1)
-            attn = torch.matmul(query_layer.to(key_layer.dtype),
-                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-            if attention_mask is not None:
-                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
-                                        device=query_layer.device)
-                attention_mask = ~attention_mask
-                if attention_mask.dtype == torch.bool:
-                    attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-                else:
-                    attn_bias += attention_mask
-                attn += attn_bias
-            attn = F.softmax(attn, dim=-1,
-                             dtype=torch.float32).to(value_layer.dtype)
-            context_layer = torch.matmul(attn, value_layer)
+            if use_esimd_sdp(query_layer.shape[2], key_layer.shape[2],
+                             query_layer.shape[-1], query_layer):
+                import linear_fp16_esimd
+                attn_output = linear_fp16_esimd.sdp_forward(query_layer,
+                                                            key_layer,
+                                                            value_layer)
+                context_layer = attn_output.view(query_layer.shape)
+            else:
+                head_dim = query_layer.size(-1)
+                attn = torch.matmul(query_layer.to(key_layer.dtype),
+                                    key_layer.transpose(2, 3)) / math.sqrt(head_dim)
+                if attention_mask is not None:
+                    attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
+                                            device=query_layer.device)
+                    attention_mask = ~attention_mask
+                    if attention_mask.dtype == torch.bool:
+                        attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
+                    else:
+                        attn_bias += attention_mask
+                    attn += attn_bias
+                attn = F.softmax(attn, dim=-1,
+                                 dtype=torch.float32).to(value_layer.dtype)
+                context_layer = torch.matmul(attn, value_layer)
         context_layer = context_layer.permute(2, 0, 1, 3)
         new_context_layer_shape = context_layer.size()[:-2] + (-1,)
         context_layer = context_layer.reshape(*new_context_layer_shape)

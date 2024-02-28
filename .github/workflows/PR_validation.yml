@@ -57,7 +57,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   changes:
@@ -73,7 +72,7 @@ jobs:
       orca-example: ${{ steps.filter.outputs.orca-example }}
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -169,7 +168,7 @@ jobs:
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
@@ -183,7 +182,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
@@ -197,7 +196,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
@@ -211,7 +210,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
         
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
@@ -230,7 +229,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -249,7 +248,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -268,7 +267,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -287,7 +286,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -306,7 +305,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -325,7 +324,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -344,7 +343,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -363,7 +362,7 @@ jobs:
     runs-on: [self-hosted, Gondolin-Ctx]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-ray-ctx-py37
     - name: Run Test
@@ -378,7 +377,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -397,7 +396,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
@@ -416,7 +415,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: Set up JDK8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up maven
@@ -435,7 +434,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -454,7 +453,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -473,7 +472,7 @@ jobs:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -492,7 +491,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -511,7 +510,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -530,7 +529,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -549,7 +548,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -568,7 +567,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
@@ -587,7 +586,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven

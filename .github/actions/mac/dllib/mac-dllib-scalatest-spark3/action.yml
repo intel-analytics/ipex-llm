@@ -1,5 +1,5 @@
-name: 'Mac Dllib ScalaTest Spark3.1'
-description: 'Mac Dllib ScalaTest Spark3.1'
+name: 'Mac Dllib ScalaTest Spark3.4'
+description: 'Mac Dllib ScalaTest Spark3.4'
 runs:
   using: "composite"
   steps:
@@ -8,13 +8,13 @@ runs:
       run: |
         source ~/.bash_profile
         source activate py37
-        export SPARK_HOME=/opt/work/spark-3.1.3
+        export SPARK_HOME=/opt/work/spark-3.4.1
         export KERAS_BACKEND=tensorflow
         # rm /var/root/.m2/repository/io/netty/netty-common/4.1.50.Final/netty-common-4.1.50.Final.jar
         cd scala
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.1.3 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' && \
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.1.3 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' && \
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.1.3 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' 
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" test -P spark_3.x -Dspark.version=3.4.1 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' && \
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" test -P spark_3.x -Dspark.version=3.4.1 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' && \
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" test -P spark_3.x -Dspark.version=3.4.1 -pl '!orca,!friesian,!grpc,!serving,!ppml,!assembly' 
         cd -
         conda deactivate
       env:

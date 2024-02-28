@@ -7,17 +7,17 @@ runs:
       shell: bash
       run: |
         cd scala
-        ./make-dist.sh -P spark_3.x -Dspark.version=3.1.3
+        ./make-dist.sh -P spark_3.x -Dspark.version=3.4.1
         cd -
        
-        wget https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz -O ${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7.tgz
-        tar -xf spark-3.1.3-bin-hadoop2.7.tgz -C ${{ github.workspace }}/
-        export SPARK_HOME=${{ github.workspace }}/spark-3.1.3-bin-hadoop2.7
+        wget https://archive.apache.org/dist/spark/spark-3.4.1/spark-3.4.1-bin-hadoop3.tgz -O ${{ github.workspace }}/spark-3.4.1-bin-hadoop3.tgz
+        tar -xf spark-3.4.1-bin-hadoop3.tgz -C ${{ github.workspace }}/
+        export SPARK_HOME=${{ github.workspace }}/spark-3.4.1-bin-hadoop3
         
         source activate py37
         source python/friesian/dev/prepare_env.sh
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install pyspark==3.1.3 
+        pip install pyspark==3.4.1 
         pip install -i https://pypi.org/simple bigdl-math bigdl-tf
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
 

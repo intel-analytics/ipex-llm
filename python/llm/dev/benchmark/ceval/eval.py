@@ -24,6 +24,7 @@ from tqdm import tqdm
 from bigdl.llm.utils.common.log4Error import invalidInputError
 from evaluators.qwen import QwenEvaluator
 from evaluators.llama import LlamaEvaluator
+from evaluators.chatglm import ChatGLMEvaluator
 
 
 TASK_NAME_MAPPING = {
@@ -221,7 +222,7 @@ hard_list = [
 choices = ["A", "B", "C", "D"]
 
 
-def cal_ceval(res):
+def cal_ceval(res, model_path, qtype):
     acc_sum_dict = dict()
     acc_norm_sum_dict = dict()
     cnt_dict = dict()
@@ -243,13 +244,22 @@ def cal_ceval(res):
             hard_acc_sum += float(res[tt])
         acc_sum_dict[class_] += float(res[tt])
         cnt_dict[class_] += 1
-    print("\n\n\n")
-    for k in ["STEM", "Social Science", "Humanities", "Other"]:
-        if k in cnt_dict:
-            print("%s acc: %.2f " % (k, acc_sum_dict[k] / cnt_dict[k]))
-    if hard_cnt > 0:
-        print("Hard acc:%.2f " % (hard_acc_sum / hard_cnt))
-    print("AVERAGE acc:%.2f " % (acc_sum / cnt))
+    
+    result_lst = []
+    subject_names = ["STEM", "Social Science", "Humanities", "Other", "Hard", "Average"]
+    for value in subject_names:
+        if value == "Hard":
+            result_lst.append(f"{hard_acc_sum / hard_cnt:.2f}")
+        elif value == "Average":
+            result_lst.append(f"{acc_sum / cnt:.2f}")
+        else:
+            result_lst.append(f"{acc_sum_dict[value] / cnt_dict[value]:.2f}")
+    
+    if not os.path.exists('results/'):
+        os.mkdir('results/')
+
+    dump_dict = {"Model Name": model_path.split('/')[-2], "Precision": qtype, "Results": result_lst}
+    json.dump(dump_dict, open(f'results/{dump_dict["Model Name"]}_{dump_dict["Precision"]}.json','w'), ensure_ascii=False, indent=4)
 
 
 def main(args, evaluator):
@@ -261,8 +271,9 @@ def main(args, evaluator):
             )
             val_df = pd.read_csv(val_file_path)
             score, _ = evaluator.eval_subject(subject_name, val_df, args.eval_type)
+            torch.xpu.empty_cache()
             result[subject_name] = score
-        cal_ceval(result)
+        cal_ceval(result, args.model_path, args.qtype)
     elif args.eval_type == "test":
         all_answers = {}
         for subject_name in tqdm(TASK_NAME_MAPPING.keys()):
@@ -271,6 +282,7 @@ def main(args, evaluator):
             )
             test_df = pd.read_csv(test_file_path)
             _, answers = evaluator.eval_subject(subject_name, test_df, args.eval_type)
+            torch.xpu.empty_cache()
             all_answers[subject_name] = answers
         json.dump(all_answers, open('submission.json','w'), ensure_ascii=False, indent=4)
     else:
@@ -280,7 +292,6 @@ def main(args, evaluator):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_family", type=str, default="llama")
     parser.add_argument("--model_path", type=str, default="meta-llama/Llama-2-7b-chat-hf")
     parser.add_argument("--eval_type", type=str, default="validation")
     parser.add_argument("--device", type=str, default="xpu")
@@ -289,15 +300,32 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.model_family == "llama":
+    # decide the model family
+    model_families = ['llama', 'qwen', 'chatglm']
+
+    model_family = None
+    for family in model_families:
+        if family in args.model_path.lower():
+            model_family = family
+
+    assert model_family is not None, f"Model {args.model_path}'s evaluator is not implemented"
+
+    if model_family == "llama":
         evaluator = LlamaEvaluator(
             choices=choices,
             model_path=args.model_path,
             device=args.device,
             qtype=args.qtype
         )
-    elif args.model_family == "qwen":
+    elif model_family == "qwen":
         evaluator = QwenEvaluator(
+            choices=choices,
+            model_path=args.model_path,
+            device=args.device,
+            qtype=args.qtype
+        )
+    elif model_family == "chatglm":
+        evaluator = ChatGLMEvaluator(
             choices=choices,
             model_path=args.model_path,
             device=args.device,
@@ -306,5 +334,5 @@ if __name__ == "__main__":
     else:
         invalidInputError(
             False,
-            "Invalid model_family, currently support llama and qwen only.")
+            "Invalid model_family, currently support llama, qwen, and chatglm only.")
     main(args, evaluator=evaluator)

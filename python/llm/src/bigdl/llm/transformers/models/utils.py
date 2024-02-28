@@ -20,7 +20,7 @@ from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.transformers.utils import get_ipex_version, get_xpu_device_type
 
-
+FP8_KV_ALLOC_LENGTH = 512
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
@@ -65,7 +65,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     return new_cache_k, new_cache_v
 
 
-def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
+def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     else:
@@ -74,29 +74,22 @@ def quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
             linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
 
 
-def init_fp8_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, device):
+def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device):
+    max_length = current_length + FP8_KV_ALLOC_LENGTH
+
     k_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
                                   dtype=torch.uint8, device=device)
 
     v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
                                   dtype=torch.uint8, device=device)
 
-    k_cache = k_cache_storage.as_strided((batch_size, num_heads, current_length, head_dim),
+    k_cache = k_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
                                          k_cache_storage.stride(), storage_offset=0)
 
-    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, current_length),
+    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, 0),
                                          v_cache_storage.stride(), storage_offset=0)
 
     return k_cache, v_cache.transpose(-1, -2)
-
-
-def extend_fp8_kv_cache(k_cache, v_cache, max_length, device):
-    batch_size, num_heads, cur_length, head_dim = k_cache.shape
-    new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, head_dim,
-                                                 cur_length, max_length, device)
-    new_k_cache[:] = k_cache
-    new_v_cache[:] = v_cache
-    return new_k_cache, new_v_cache
 
 
 def append_fp8_kv_cache(k_cache, v_cache, key, value):
@@ -104,8 +97,16 @@ def append_fp8_kv_cache(k_cache, v_cache, key, value):
     new_length = cur_length + key.size(2)
     new_size = (batch_size, num_heads, new_length, head_dim)
 
-    new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
-    new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
+    if k_cache.stride(1) < new_length * k_cache.size(3):
+        new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, new_length,
+                                                     head_dim, key.device)
+        new_k_cache = new_k_cache.as_strided(new_size, new_k_cache.stride(), storage_offset=0)
+        new_v_cache = new_v_cache.as_strided(new_size, new_v_cache.stride(), storage_offset=0)
+        new_k_cache[:, :, :cur_length, :] = k_cache
+        new_v_cache[:, :, :cur_length, :] = v_cache
+    else:
+        new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
+        new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
 
     fp8_key = key.half().view(torch.uint8)[:, :, :, 1::2]
     new_k_cache[:, :, cur_length:new_length, :] = fp8_key
@@ -142,7 +143,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral"]:
+                        "mixtral", "qwen2", "yuan"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -152,14 +153,25 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
     elif model_family == "gptj":
-        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
-        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+
+
+def apply_ipex_rotate_every_two(q, k, cos, sin):
+    # ipex's apply_rotary_embedding_two_qk can change the origin storage,
+    # so q/k will get the result directly.
+    from bigdl.llm.transformers.utils import get_ipex_version
+    if get_ipex_version() >= "2.1.10+xpu":
+        torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
+            q, k, sin, cos, q, k
+        )
+    else:
+        torch.ops.torch_ipex.apply_rotary_embedding(q, sin, cos, q)
+        torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
 def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
@@ -178,19 +190,31 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family):
                           f"{model_family} is not supported.")
 
 
-def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family):
+def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_ids=None):
     if q.device.type != "xpu":
         invalidInputError(False,
                           f"only xpu is supported in this function")
     import linear_q4_0
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
-    if model_family in ["qwen"]:
+    if model_family in ["qwen", "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-        return q_embed, k_embed
+    elif model_family in ["qwen2", "yuan"]:
+        cos = cos.to(q.dtype)
+        sin = sin.to(q.dtype)
+        cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
+        sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
+        cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
+        sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+    elif model_family in ["gemma"]:
+        cos = cos.unsqueeze(1)
+        sin = sin.unsqueeze(1)
+        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
+    return q_embed, k_embed
 
 
 def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
@@ -286,7 +310,8 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if x.device.type != 'xpu':
         return False
-    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"]]:
+    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"],
+                     ggml_tensor_qtype["gguf_iq2_xxs"]]:
         return False
     if training or x.requires_grad:
         return False
@@ -308,12 +333,13 @@ def use_xmx(x: torch.Tensor, qtype: int):
 
 
 def use_fused_layer_norm(x: torch.Tensor, training: bool):
+    device = get_xpu_device_type(x)
     return (
         not training
         and not x.requires_grad
-        and x.device.type == 'xpu'
+        and device in ["arc", "flex", "pvc", "mtl"]  # fused layer norm cannot run on UHD
         and (
-            get_xpu_device_type(x) not in ["arc", "flex"]
+            device == "mtl"  # fused layer norm conflicts with XMX, so disable it when using XMX
             or x.numel() // x.size(-1) == 1
         )
     )

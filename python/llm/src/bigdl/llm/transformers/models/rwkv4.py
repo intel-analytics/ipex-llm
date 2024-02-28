@@ -37,6 +37,37 @@ import torch
 from typing import List
 
 
+def extract_key_value(self, hidden, state=None):
+    # Mix hidden with the previous timestep to produce key, value, receptance
+    if hidden.size(1) == 1 and state is not None:
+        shifted = state[1][:, :, self.layer_id]
+    else:
+        shifted = self.time_shift(hidden)
+        if state is not None:
+            shifted[:, 0] = state[1][:, :, self.layer_id]
+    if len(shifted.size()) == 2:
+        shifted = shifted.unsqueeze(1)
+    shifted = shifted.contiguous()
+
+    if not hasattr(self, "mixed_mix"):
+        self.mixed_mix = torch.cat([
+            self.time_mix_key.data,
+            self.time_mix_value.data,
+            self.time_mix_receptance.data,
+        ])
+
+    import linear_q4_0
+    mixed_result = linear_q4_0.rwkv_time_shift(hidden, shifted, self.mixed_mix)
+    key, value, receptance = mixed_result
+
+    key = self.key(key)
+    value = self.value(value)
+    receptance = torch.sigmoid(self.receptance(receptance))
+    if state is not None:
+        state[1][:, :, self.layer_id] = hidden[:, -1]
+    return receptance, key, value, state
+
+
 def rwkv_linear_attention_xpu(
     time_decay: torch.Tensor,
     time_first: torch.Tensor,
@@ -84,7 +115,7 @@ def rwkv_attention_forward(
     state: List[torch.Tensor]=None,
     use_cache: bool=False,
 ):
-    receptance, key, value, state = self.extract_key_value(hidden, state=state)
+    receptance, key, value, state = extract_key_value(self, hidden, state=state)
     layer_state = tuple(s[:, :, self.layer_id] for s in state[2:]) if state is not None else None
 
     if hidden.device.type == "xpu":
@@ -113,3 +144,35 @@ def rwkv_attention_forward(
         state[4][:, :, self.layer_id] = layer_state[2]
 
     return self.output(receptance * rwkv), state
+
+
+def rwkv_ffn_forward(
+    self,
+    hidden: torch.Tensor,
+    state: List[torch.Tensor]=None,
+):
+    if hidden.size(1) == 1 and state is not None:
+        shifted = state[0][:, :, self.layer_id]
+    else:
+        shifted = self.time_shift(hidden)
+        if state is not None:
+            shifted[:, 0] = state[0][:, :, self.layer_id]
+    if len(shifted.size()) == 2:
+        shifted = shifted.unsqueeze(1)
+    shifted = shifted.contiguous()
+
+    if not hasattr(self, "mixed_mix"):
+        self.mixed_mix = torch.cat([self.time_mix_key.data, self.time_mix_receptance.data])
+
+    import linear_q4_0
+    mixed_result = linear_q4_0.rwkv_time_shift(hidden, shifted, self.mixed_mix)
+    key, receptance = mixed_result
+
+    key = torch.square(torch.relu(self.key(key)))
+    value = self.value(key)
+    receptance = torch.sigmoid(self.receptance(receptance))
+
+    if state is not None:
+        state[0][:, :, self.layer_id] = hidden[:, -1]
+
+    return receptance * value, state

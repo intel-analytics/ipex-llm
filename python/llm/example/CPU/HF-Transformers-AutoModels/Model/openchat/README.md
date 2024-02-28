@@ -2,7 +2,7 @@
 
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on OpenChat models. For illustration purposes, we utilize the [OpenChat-3.5-0106](https://huggingface.co/openchat/openchat-3.5-0106) as a reference OpenChat model.
 
-## 0. Requirements
+## Requirements
 
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 

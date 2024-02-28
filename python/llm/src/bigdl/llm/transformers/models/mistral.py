@@ -48,7 +48,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
-from bigdl.llm.transformers.models.utils import use_flash_attention
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
@@ -82,7 +82,7 @@ def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
                                  num_heads, head_dim, hidden_size, attention_mask):
     attn_weights = torch.matmul(
-        query_states,
+        query_states.to(key_states.dtype),
         key_states.transpose(2, 3)) / math.sqrt(head_dim)
 
     if attn_weights.size() != (bsz, num_heads, q_len, kv_seq_len):
@@ -105,7 +105,7 @@ def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_
     # upcast attention to fp32
     attn_weights = nn.functional.\
         softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_output = torch.matmul(attn_weights, value_states)
+    attn_output = torch.matmul(attn_weights, value_states.to(query_states.dtype))
 
     if attn_output.size() != (bsz, num_heads, q_len, head_dim):
         invalidInputError(
@@ -140,6 +140,7 @@ def mistral_attention_forward(
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -242,6 +243,15 @@ def mistral_attention_forward(
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, hidden_size)
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
+        attn_weights = None
+        attn_output = attn_output.transpose(1, 2).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, hidden_size)
     else:
         attn_output, attn_weights = compute_attn_outputs_weights(query_states,
                                                                  key_states,
@@ -279,6 +289,7 @@ def mistral_attention_forward_4_36(
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
