@@ -861,6 +861,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         # transformers version >= 4.36.0
                         from bigdl.llm.transformers.models.falcon import \
                             falcon_attention_forward_4_36
+
                         convert_forward(model,
                                         module.FalconAttention,
                                         falcon_attention_forward_4_36
