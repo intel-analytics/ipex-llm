@@ -14,10 +14,6 @@
 # limitations under the License.
 #
 
-# This would makes sure Python is aware there is more than one sub-package within bigdl,
-# physically located elsewhere.
-# Otherwise there would be module not found error in non-pip's setting as Python would
-# only search the first bigdl package and end up finding only one sub-package.
 
 # This file is adapted from
 # https://github.com/hwchase17/langchain/blob/master/langchain/llms/huggingface_pipeline.py
