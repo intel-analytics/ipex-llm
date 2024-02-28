@@ -223,7 +223,7 @@ def yuan_attention_forward_quantized(
             past_key_value = (key_states, value_states, inference_hidden_states_memory)
 
     else:
-        k_cache, v_cache, inference_hidden_states_memory = past_key_value
+        k_cache, v_cache, _ = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                        key_states, value_states)
         past_key_value = (key_states, value_states, inference_hidden_states_memory)
