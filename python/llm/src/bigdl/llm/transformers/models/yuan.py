@@ -178,40 +178,38 @@ def yuan_attention_forward_quantized(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
 
-    if use_cache:
-        if past_key_value is None:
-            inference_hidden_states_memory = torch.empty(bsz, 2,
-                                                         hidden_states.shape[2],
-                                                         dtype=hidden_states.dtype)
-            is_first_step = True
+    invalidInputError(use_cache, "use_cache=True is needed")
+    invalidInputError(not self.use_shareqk, "use_shareqk is not supported for now")
+
+    if past_key_value is None:
+        is_first_step = True
+        if q_len >= 2:
+            before_hidden_states = hidden_states[:, -2:, :].transpose(0, 1).half()
         else:
-            before_hidden_states = past_key_value[2]
+            before_hidden_states = torch.zeros(2, bsz, self.hidden_size,
+                                               dtype=torch.half, device=hidden_states.device)
+            before_hidden_states[-1:, :, :] = hidden_states[:, -1:, :].transpose(0, 1)
+    else:
+        before_hidden_states = past_key_value[2]
+        this_hidden_states = torch.cat([
+            before_hidden_states,
+            hidden_states.transpose(0, 1).half(),
+        ], dim=0)
+        before_hidden_states = this_hidden_states[-2:, :, ]
 
-    if use_cache:
-        if is_first_step:
-            if q_len >= 2:
-                inference_hidden_states_memory = hidden_states[:, -2:, :]
-            else:
-                inference_hidden_states_memory[:, :, :] = 0
-                inference_hidden_states_memory[:, -1:, :] = hidden_states[:, -1:, :]
-        else:
-            hidden_states_tmp = before_hidden_states[:, -1:, :]
-            inference_hidden_states_memory = copy.deepcopy(torch.cat((hidden_states_tmp,
-                                                                      hidden_states), dim=1))
+    value_states = \
+        self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
-    value_states = self.v_proj(hidden_states).view(bsz, q_len,
-                                                   self.num_heads, self.head_dim).transpose(1, 2)
-
-    # disabled use_shareqk
-    hidden_states = self.lf_gate(hidden_states, before_hidden_states)
-    query_states = self.q_proj(hidden_states)
-    key_states = self.k_proj(hidden_states)
-    qk_states = torch.cat([query_states, key_states], dim=-1)
-    qk_states = qk_states.view(bsz, q_len, self.num_heads,
-                               int(qk_states.shape[-1]//self.num_heads))
+    if is_first_step:
+        hidden_states = yuan_localized_filtering_forward(self.lf_gate, hidden_states,
+                                                         None, hidden_states.dtype)
+    else:
+        hidden_states = yuan_localized_filtering_forward(self.lf_gate, hidden_states,
+                                                         this_hidden_states, hidden_states.dtype)
+    qk_states = self.merged_qk_proj(hidden_states)
     (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
-    query_states = query_states.transpose(1, 2)
-    key_states = key_states.transpose(1, 2)
+    query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
@@ -260,13 +258,13 @@ def yuan_attention_forward_quantized(
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                            key_states, value_states)
-            past_key_value = (key_states, value_states, inference_hidden_states_memory)
+            past_key_value = (key_states, value_states, before_hidden_states)
 
     else:
         k_cache, v_cache, _ = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                        key_states, value_states)
-        past_key_value = (key_states, value_states, inference_hidden_states_memory)
+        past_key_value = (key_states, value_states, before_hidden_states)
 
         # torch.matmul
         if query_states.size(2) != 1 or device.type != 'xpu':
