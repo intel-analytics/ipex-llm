@@ -83,7 +83,7 @@ pip install -r requirements_cpu_only.txt
   <!-- ```bash
   Running on local URL:  http://127.0.0.1:7860
   ``` -->
-  ![Image text](launch_server.png)
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" width=80%; />
 
   Open the local URL (eg., http://127.0.0.1:7864) in your web browser to access the webUI interface.
 
@@ -95,12 +95,12 @@ First, you need to place huggingface models in `C:\text-generation-webui\models`
 You can either copy a local model to that folder, or download a model from Huggingface Hub using webUI (VPN connection might be required).
 To download a model, navigate to `Model` tab, enter the Huggingface model `username/model path` under `Download model or LoRA` (for instance, `Qwen/Qwen-7B-Chat`), and click `Download`.
 
-![Image text](download_model_phi.png)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" width=80%; />
 
 After the models have been obtained, click the blue icon to refresh the `Model` drop-down list.
 Then select the model you want from the list.
 
-![Image text](select_model_phi.png)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png" width=80%; />
 
 
 ### 3.2 Load the Model
@@ -114,18 +114,18 @@ If there are still errors on missing packages, repeat the process of installing 
 * Some models are too old and do not support the installed version of transformers package. 
 In this case, errors like `AttributeError`, would appear. You are should use a more recent model.
 
-![Image text](load_model_error.png)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png" width=80%; />
 
 When the model is successfully loaded, you will get a message on this.
 
-![Image text](load_model_success_phi.png)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=80%; />
 
 ### 3.3 Run the Model on WebUI
 Select the `Chat` tab. This interface supports having multi-turn conversations with the model. 
 You may simply enter prompts and click the `Generate` button to get responses.
 You can start a new conversation by clicking `New chat`.
 
-![Image text](chat_phi.png)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=80%; />
 
 <!-- Notes:
 * Multi-turn conversations may consume GPU memory. You may specify the `Truncate the prompt up to this length` value in `Parameters` tab to reduce the GPU memory usage.
