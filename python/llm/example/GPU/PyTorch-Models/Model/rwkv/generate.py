@@ -15,39 +15,42 @@
 #
 
 import torch
+import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 from bigdl.llm import optimize_model
 
 # you could tune the prompt based on your own model,
-REPLIT_PROMPT_FORMAT = "{prompt}"
+# here the prompt tuning refers to https://huggingface.co/RWKV/rwkv-4-world-7b
+
+RWKV_PROMPT_FORMAT = "Question: {prompt}\n\nAnswer:"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Replit model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="replit/replit-code-v1-3b",
-                        help='The huggingface repo id for the Replit model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for RWKV model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="RWKV/rwkv-4-world-7b",
+                        help='The huggingface repo id for the RWKV model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="def print_hello_world():",
+    parser.add_argument('--prompt', type=str, default="你叫什么名字？",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
+    parser.add_argument('--n-predict', type=int, default=40,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model
-    model = AutoModelForCausalLM.from_pretrained(model_path,
+    # First load the model in fp16 dtype
+    model = AutoModelForCausalLM.from_pretrained(model_path, 
                                                  trust_remote_code=True,
-                                                 torch_dtype='auto',
-                                                 low_cpu_mem_usage=True)
+                                                 low_cpu_mem_usage=True, 
+                                                 torch_dtype=torch.half)
+    
+    # Call the `_rescale_layers` method, prepare to convert to int4
+    model.rwkv._rescale_layers()
 
     # With only one line to enable BigDL-LLM optimization on model
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model)
-
     model = model.to('xpu')
 
     # Load tokenizer
@@ -55,21 +58,23 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = REPLIT_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
-        output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
+        prompt = RWKV_PROMPT_FORMAT.format(prompt = args.prompt)
+        inputs = tokenizer(prompt, return_tensors="pt").to('xpu')
 
+        # ipex model needs a warmup, then inference time can be accurate
+        output = model.generate(inputs["input_ids"],  
+                                max_new_tokens=args.n_predict)
+        
         # start inference
         st = time.time()
-        output = model.generate(input_ids,
+        output = model.generate(inputs["input_ids"],  
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
-        end = time.time()
         output = output.cpu()
+        end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        
         print(f'Inference time: {end-st} s')
+        print('-'*20, 'Prompt', '-'*20)
+        print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
