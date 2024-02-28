@@ -267,10 +267,8 @@ def use_flash_attention(query, key, attention_mask=None):
         # only use flash attention for fp32/fp16 input
         return False
     if bsz > 1:
-        # only use flash attention for batch_size = 1 now
         # as flash attention doesn't support attn_mask in ipex 2.1,
         # so it will cause output error for padded batch input
-        # print("enter here, attention mask is", attention_mask)
         if attention_mask is None:
             return True
         else:
