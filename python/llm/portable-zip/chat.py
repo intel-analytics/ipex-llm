@@ -288,7 +288,7 @@ if __name__ == "__main__":
 
     if model.config.architectures is not None and model.config.architectures[0] == "QWenLMHeadModel":
         stop_words = get_stop_words_ids("Qwen", tokenizer=tokenizer)
-        kv_cache = StartRecentKVCache(start_size=start_size)
+        kv_cache = StartRecentKVCache(start_size=start_size, k_seq_dim=1, v_seq_dim=1)
         qwen_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache, stop_words=stop_words)
     elif model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
         chatglm3_stream_chat(model=model, tokenizer=tokenizer)
