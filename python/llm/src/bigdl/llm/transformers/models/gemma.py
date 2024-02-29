@@ -37,7 +37,8 @@ import torch
 from torch import nn
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu, GELU
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
+from bigdl.llm.transformers.models.utils import mlp_fusion_check, GELU
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_36, rotate_half
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 
