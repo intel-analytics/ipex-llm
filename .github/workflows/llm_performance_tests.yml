@@ -24,8 +24,8 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # llm-cpp-build: # please uncomment it for PR tests
-  #   uses: ./.github/workflows/llm-binary-build.yml
+  llm-cpp-build: # please uncomment it for PR tests
+    uses: ./.github/workflows/llm-binary-build.yml
 
   # llm-performance-test-on-arc:
   #   if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
@@ -295,7 +295,7 @@ jobs:
 
   llm-performance-test-on-igpu:
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    # needs: llm-cpp-build # please uncomment it for PR tests
+    needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
