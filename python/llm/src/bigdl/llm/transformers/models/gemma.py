@@ -123,6 +123,7 @@ def gemma_mlp_forward(
     else:
         return out
 
+
 def gemma_attention_forward(
     self,
     hidden_states: torch.Tensor,
