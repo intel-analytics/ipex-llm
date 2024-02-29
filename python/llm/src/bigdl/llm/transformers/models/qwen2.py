@@ -253,7 +253,7 @@ def qwen2_attention_forward_origin(
     qtype = getattr(self.q_proj, "qtype", None)
     qtype_check = qtype in [SYM_INT4, FP8E5]
     decoding_fast_path = (qtype_check and use_fuse_rope
-                          and enough_kv_room and bsz * q_len == 1) and True
+                          and enough_kv_room and bsz * q_len == 1)
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k = past_key_value.key_cache[self.layer_idx]
