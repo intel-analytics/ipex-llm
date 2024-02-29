@@ -14,7 +14,7 @@
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
         <akka.http.version>10.1.15</akka.http.version>
-        <akka.actor.version>2.7.0</akka.actor.version>
+        <akka.actor.version>2.5.31</akka.actor.version>
     </properties>
 
     <dependencyManagement>
