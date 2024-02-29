@@ -39,7 +39,7 @@ except ImportError:
 from bigdl.llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
-from bigdl.llm.transformers.models.utils import rotate_half
+from bigdl.llm.transformers.models.utils import rotate_half, SILU
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
@@ -292,6 +292,6 @@ def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.c_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.w2.weight.data, self.w1.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.w2.out_len,
-            qtype
+            SILU, qtype
         ))
     return self.c_proj(F.silu(self.w2(x)) * self.w1(x))

@@ -1108,6 +1108,7 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.gemma import gemma_attention_forward
         from bigdl.llm.transformers.models.gemma import gemma_rms_norm_forward
+        from bigdl.llm.transformers.models.gemma import gemma_mlp_forward
         convert_forward(model,
                         module.GemmaAttention,
                         gemma_attention_forward,
@@ -1115,6 +1116,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.GemmaRMSNorm,
                         gemma_rms_norm_forward)
+        convert_forward(model,
+                        module.GemmaMLP,
+                        gemma_mlp_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

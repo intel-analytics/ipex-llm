@@ -38,6 +38,7 @@ from torch import nn
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
+from bigdl.llm.transformers.models.utils import mlp_fusion_check, GELU
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_36, rotate_half
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 
@@ -98,6 +99,31 @@ def gemma_rms_norm_forward(self, hidden_states):
     return (1 + self.weight) * hidden_states.to(input_dtype)
 
 
+def gemma_mlp_forward(
+    self,
+    x: torch.Tensor,
+    residual=None
+) -> torch.Tensor:
+    x_2d = x.view(-1, x.shape[-1])
+    bsz, hidden_size = x_2d.shape
+    qtype = getattr(self.gate_proj, "qtype", None)
+    if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
+        import linear_q4_0
+        if not x_2d.is_contiguous():
+            x_2d = x_2d.contiguous()
+        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
+            x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
+            x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+            GELU, qtype
+        ))
+    else:
+        out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+    if residual is not None:
+        return out + residual
+    else:
+        return out
+
+
 def gemma_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -136,6 +162,7 @@ def gemma_attention_forward(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
