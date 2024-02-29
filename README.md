@@ -62,10 +62,12 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 
 ### `bigdl-llm` quickstart
 
+- [Windows GPU installation](https://test-bigdl-llm.readthedocs.io/en/main/doc/LLM/Quickstart/install_windows_gpu.html)
+- [Run BigDL-LLM using Docker](docker/llm)
 - [CPU INT4](#cpu-int4)
 - [GPU INT4](#gpu-int4)
-- [More Low-Bit Support](#more-low-bit-support)
-- [Verified Models](#verified-models)
+- [More Low-Bit support](#more-low-bit-support)
+- [Verified models](#verified-models)
 
 #### CPU INT4
 ##### Install
