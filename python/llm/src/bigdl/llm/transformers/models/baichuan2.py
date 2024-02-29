@@ -168,7 +168,6 @@ def baichuan_attention_forward_7b_quantized(
         import linear_q4_0
         attn_output = linear_q4_0.query_key_fp8_matmul(query_states * scaling_factor, key_states)
 
-
     if attention_mask is not None:
         attn_output += attention_mask
     attn_output = torch.softmax(attn_output, -1)
