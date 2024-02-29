@@ -462,27 +462,27 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_437.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
+          python run.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Concat csv and generate html (32-32)
-        shell: cmd
-        run: |
-          call conda activate html-gen
+      # - name: Concat csv and generate html (32-32)
+      #   shell: cmd
+      #   run: |
+      #     call conda activate html-gen
 
-          cd python\llm\dev\benchmark\all-in-one
-          python ..\..\..\test\benchmark\concat_csv.py
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          del /q *test*.csv
-          move *.csv %CSV_SAVE_PATH%\32-32\
-          cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%\32-32\
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          move %CSV_SAVE_PATH%\32-32\*.html %CSV_SAVE_PATH%
+      #     cd python\llm\dev\benchmark\all-in-one
+      #     python ..\..\..\test\benchmark\concat_csv.py
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     del /q *test*.csv
+      #     move *.csv %CSV_SAVE_PATH%\32-32\
+      #     cd ..\..\..\test\benchmark
+      #     python csv_to_html.py -f %CSV_SAVE_PATH%\32-32\
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     move %CSV_SAVE_PATH%\32-32\*.html %CSV_SAVE_PATH%
 
-          call conda deactivate
+      #     call conda deactivate
 
       # TODO: create a action function here for different input
       # 1024-128
@@ -556,27 +556,27 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_437.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
+          python run.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Concat csv and generate html (1024-128)
-        shell: cmd
-        run: |
-          call conda activate html-gen
+      # - name: Concat csv and generate html (1024-128)
+      #   shell: cmd
+      #   run: |
+      #     call conda activate html-gen
 
-          cd python\llm\dev\benchmark\all-in-one
-          python ..\..\..\test\benchmark\concat_csv.py
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          del /q *test*.csv
-          move *.csv %CSV_SAVE_PATH%\1024-128\
-          cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%\1024-128\
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          move %CSV_SAVE_PATH%\1024-128\*.html %CSV_SAVE_PATH%
+      #     cd python\llm\dev\benchmark\all-in-one
+      #     python ..\..\..\test\benchmark\concat_csv.py
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     del /q *test*.csv
+      #     move *.csv %CSV_SAVE_PATH%\1024-128\
+      #     cd ..\..\..\test\benchmark
+      #     python csv_to_html.py -f %CSV_SAVE_PATH%\1024-128\
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     move %CSV_SAVE_PATH%\1024-128\*.html %CSV_SAVE_PATH%
 
-          call conda deactivate
+      #     call conda deactivate
 
       # 2048-256
       # - name: Prepare igpu perf test (2048-256)
