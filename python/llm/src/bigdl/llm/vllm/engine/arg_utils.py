@@ -71,6 +71,7 @@ class EngineArgs:
     # bigdl-llm change start
     # summary: add device option
     device: Optional[str] = 'cpu'
+    load_in_low_bit: str = 'sym_int4'
     # bigdl-llm change end
 
     def __post_init__(self):
@@ -212,6 +213,10 @@ class EngineArgs:
                             choices=['gpu', 'cpu', 'xpu', None],
                             default=None,
                             help='Device to execute LLM model')
+        parser.add_argument('--load-in-low-bit',
+                            type=str,
+                            default='sym_int4',
+                            help='low_bit_quantization')
 
         return parser
 
@@ -229,7 +234,7 @@ class EngineArgs:
                                    self.download_dir, self.load_format,
                                    self.dtype, self.seed, self.revision,
                                    self.tokenizer_revision, self.max_model_len,
-                                   self.quantization, self.device)
+                                   self.quantization, self.device, self.load_in_low_bit)
         scheduler_config = SchedulerConfig(self.max_num_batched_tokens,
                                            self.max_num_seqs,
                                            model_config.max_model_len)
