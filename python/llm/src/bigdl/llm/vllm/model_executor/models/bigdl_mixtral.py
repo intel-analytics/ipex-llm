@@ -69,6 +69,8 @@ class BigDLMixtralForCausalLM(BigDLModelForCausalLM):
 
         if load_in_low_bit == 'bf16':
             torch_dtype = torch.bfloat16
+        elif load_in_low_bit == 'fp16':
+            torch_dtype = torch.float16
 
         if device == 'cpu':
             self.model = AutoModelForCausalLM.from_pretrained(

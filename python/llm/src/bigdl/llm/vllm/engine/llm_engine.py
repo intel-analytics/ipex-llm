@@ -119,8 +119,8 @@ class LLMEngine:
             f"load_format={model_config.load_format}, "
             # f"tensor_parallel_size={parallel_config.tensor_parallel_size}, "
             f"quantization={model_config.quantization}, "
-            f"seed={model_config.seed}),"
-            f"device={model_config.device},"
+            f"seed={model_config.seed}), "
+            f"device={model_config.device}, "
             f"load_in_low_bit={model_config.load_in_low_bit}"
         )
         # TODO(woosuk): Print more configs in debug mode.

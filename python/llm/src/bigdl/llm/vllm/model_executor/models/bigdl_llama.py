@@ -73,9 +73,10 @@ class BigDLLlamaForCausalLM(BigDLModelForCausalLM):
         # from bigdl.llm import optimize_model
         torch_dtype = 'auto'
 
-        print(f"use load_in_low_bit:{load_in_low_bit}")
         if load_in_low_bit == 'bf16':
             torch_dtype = torch.bfloat16
+        elif load_in_low_bit == 'fp16':
+            torch_dtype = torch.float16
         # bf16 will require to set torch_dtype to bf16
         if device == 'cpu':
             self.model = AutoModelForCausalLM.from_pretrained(
