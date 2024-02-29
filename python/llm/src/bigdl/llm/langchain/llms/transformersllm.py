@@ -131,6 +131,13 @@ class TransformersLLM(LLM):
         except:
             model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
 
+        # TODO: may refactore this code in the future
+        if 'device_map' in _model_kwargs:
+            model = model.to(_model_kwargs['device_map'])
+            _model_kwargs = {
+                k: v for k, v in _model_kwargs.items() if k != "device_map"
+            }
+
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
                 k: v for k, v in _model_kwargs.items() if k != "trust_remote_code"
@@ -188,6 +195,13 @@ class TransformersLLM(LLM):
             model = AutoModelForCausalLM.load_low_bit(model_id, **_model_kwargs)
         except:
             model = AutoModel.load_low_bit(model_id, **_model_kwargs)
+        
+        # TODO: may refactore this code in the future
+        if 'device_map' in _model_kwargs:
+            model = model.to(_model_kwargs['device_map'])
+            _model_kwargs = {
+                k: v for k, v in _model_kwargs.items() if k != "device_map"
+            }
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
