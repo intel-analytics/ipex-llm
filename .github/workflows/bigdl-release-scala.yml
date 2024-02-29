@@ -20,61 +20,61 @@ jobs:
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.6.3
-    # - name: Set up Maven Settings
-    #   uses: analytics-zoo/maven-settings-action@dev
-    #   with:
-    #     sonatypeSnapshots: true
-    #     apacheSnapshots: true
-    #     servers: |
-    #       [{
-    #         "id": "central",
-    #         "configuration": {
-    #           "httpConfiguration": {
-    #             "all": {
-    #               "connectionTimeout": "3600000",
-    #               "readTimeout": "3600000"
-    #               }    
-    #             }
-    #           }
-    #       },{
-    #         "id": "ossrh",
-    #         "username": "${{ secrets.OSSRH_USERNAME }}",
-    #         "password": "${{ secrets.OSSRH_PASSWORD }}",
-    #         "configuration": {
-    #           "timeout": "3600000"
-    #         }
-    #       },{
-    #         "id": "releases",
-    #         "username": "${{ secrets.RELEASES_USERNAME }}",
-    #         "password": "${{ secrets.RELEASES_PASSWORD }}"
-    #       },{
-    #         "id": "snapshots",
-    #         "username": "${{ secrets.SNAPSHOTS_USERNAME }}",
-    #         "password": "${{ secrets.SNAPSHOTS_PASSWORD }}"
-    #       }]
-    #     proxies: |
-    #       [{
-    #         "id": "uc-http",
-    #         "active": "true",
-    #         "protocol": "http",
-    #         "host": "${{ secrets.HTTP_PROXY_HOST_2 }}",
-    #         "port": "${{ secrets.HTTP_PROXY_PORT_2 }}",
-    #         "nonProxyHosts": "10.239.45.219|localhost"
-    #       },{
-    #         "id": "uc-https",
-    #         "active": "true",
-    #         "protocol": "https",
-    #         "host": "${{ secrets.HTTP_PROXY_HOST_2 }}",
-    #         "port": "${{ secrets.HTTP_PROXY_PORT_3 }}",
-    #         "nonProxyHosts": "10.239.45.219|localhost"
-    #       }]
-    #     mirrors: |
-    #       [{
-    #         "id": "ardaNexus",
-    #         "mirrorOf": "*",
-    #         "name": "Arda's nexus",
-    #         "url": "${NEXUS_URL}"
-    #       }]
+    - name: Set up Maven Settings
+      uses: analytics-zoo/maven-settings-action@dev
+      with:
+        sonatypeSnapshots: true
+        apacheSnapshots: true
+        servers: |
+          [{
+            "id": "central",
+            "configuration": {
+              "httpConfiguration": {
+                "all": {
+                  "connectionTimeout": "3600000",
+                  "readTimeout": "3600000"
+                  }    
+                }
+              }
+          },{
+            "id": "ossrh",
+            "username": "${{ secrets.OSSRH_USERNAME }}",
+            "password": "${{ secrets.OSSRH_PASSWORD }}",
+            "configuration": {
+              "timeout": "3600000"
+            }
+          },{
+            "id": "releases",
+            "username": "${{ secrets.RELEASES_USERNAME }}",
+            "password": "${{ secrets.RELEASES_PASSWORD }}"
+          },{
+            "id": "snapshots",
+            "username": "${{ secrets.SNAPSHOTS_USERNAME }}",
+            "password": "${{ secrets.SNAPSHOTS_PASSWORD }}"
+          }]
+        proxies: |
+          [{
+            "id": "uc-http",
+            "active": "true",
+            "protocol": "http",
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}",
+            "port": "${{ secrets.HTTP_PROXY_PORT_2 }}",
+            "nonProxyHosts": "10.239.45.219|localhost"
+          },{
+            "id": "uc-https",
+            "active": "true",
+            "protocol": "https",
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}",
+            "port": "${{ secrets.HTTP_PROXY_PORT_3 }}",
+            "nonProxyHosts": "10.239.45.219|localhost"
+          }]
+        mirrors: |
+          [{
+            "id": "ardaNexus",
+            "mirrorOf": "*",
+            "name": "Arda's nexus",
+            "url": "${NEXUS_URL}"
+          }]
     - name: Maven clean deploy
       run: |
         set -x

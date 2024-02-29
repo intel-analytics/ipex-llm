@@ -14,7 +14,7 @@
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
         <akka.http.version>10.1.15</akka.http.version>
-        <akka.actor.version>2.5.31</akka.actor.version>
+        <akka.actor.version>2.7.0</akka.actor.version>
     </properties>
 
     <dependencyManagement>
@@ -66,18 +66,6 @@
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
 	    <exclusions>
-            <exclusion>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
-            </exclusion>
-            <exclusion>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
-	    	</exclusion>
 	       <exclusion>
 		    <groupId>org.codehaus.jackson</groupId>
 		    <artifactId>jackson-core-asl</artifactId>
