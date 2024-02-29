@@ -1077,5 +1077,8 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)'])
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            print(df)
+
         df.to_csv(csv_name)
         results = []
