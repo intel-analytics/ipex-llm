@@ -3,7 +3,7 @@ ARG http_proxy
 ARG https_proxy
 ENV TZ=Asia/Shanghai
 ARG PIP_NO_CACHE_DIR=false
-ENV TRANSFORMERS_COMMIT_ID=95fe0f5
+# ENV TRANSFORMERS_COMMIT_ID=95fe0f5
 
 # retrive oneapi repo public key
 RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
@@ -13,7 +13,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     rm /etc/apt/sources.list.d/intel-graphics.list && \
     # update dependencies
-    apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # install basic dependencies
     apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
     # install Intel GPU driver
@@ -31,7 +31,8 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # install XPU bigdl-llm
     pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # install huggingface dependencies
-    pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
+    # pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
+    pip install transformers==4.36.2 && \
     pip install peft==0.5.0 datasets accelerate==0.23.0 && \
     pip install bitsandbytes scipy && \
     wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py

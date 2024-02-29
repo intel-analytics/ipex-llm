@@ -1,6 +1,7 @@
 name: Manually Build
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       artifact:
@@ -88,7 +89,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-finetune-qlora-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -115,7 +116,7 @@ jobs:
           sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-finetune-qlora-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -142,7 +143,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -169,7 +170,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-cpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -196,7 +197,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-serving-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -223,7 +224,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-serving-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3

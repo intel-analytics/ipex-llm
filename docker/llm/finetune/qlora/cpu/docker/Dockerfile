@@ -2,7 +2,7 @@ FROM ubuntu:20.04 as key-getter
 ARG http_proxy
 ARG https_proxy
 
-RUN apt-get update && \
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y curl gpg && \
     curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /root/intel-oneapi-archive-keyring.gpg
 
@@ -20,7 +20,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 
 RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     # install pytorch 2.1.0
-    apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends python3-pip python3.9-dev python3-wheel python3.9-distutils git software-properties-common && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
@@ -33,11 +33,11 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
     # install huggingface dependencies
-    pip install datasets transformers==4.35.0 && \
+    pip install datasets transformers==4.36.2 && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     # install basic dependencies
-    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
+    apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd /bigdl && \
