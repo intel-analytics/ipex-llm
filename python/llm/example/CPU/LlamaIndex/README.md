@@ -1,60 +1,74 @@
 # LlamaIndex Examples
 
-The examples here show how to use LlamaIndex with `bigdl-llm`.
-The RAG example is modified from the [demo](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). 
 
-## Install bigdl-llm
-Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
+This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `bigdl-llm`.
+> [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
-## Install Required Dependencies for llamaindex examples. 
+## Prerequisites
 
-### Install Site-packages
-```bash
-pip install llama-index-readers-file
-pip install llama-index-vector-stores-postgres
-pip install llama-index-embeddings-huggingface
-```
+Ensure `bigdl-llm` is installed by following the [BigDL-LLM Installation Guide](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install) before proceeding with the examples provided here. 
 
-### Install Postgres
-> Note: There are plenty of open-source databases you can use. Here we provide an example using Postgres. 
-* Download and install postgres by running the commands below. 
+
+## Retrieval-Augmented Generation (RAG) Example
+The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
+
+
+
+### Setting up Dependencies 
+
+* **Install LlamaIndex Packages**
     ```bash
-    sudo apt-get install postgresql-client
-    sudo apt-get install postgresql
+    pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
     ```
-* Initilize postgres. 
-    ```bash
-    sudo su - postgres
-    psql
-    ```
-    After running the commands in the shell, we reach the console of postgres. Then we can add a role like the following
-    ```bash
-    CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
-    ALTER ROLE <user> SUPERUSER;    
-    ```
-* Install pgvector according to the [page](https://github.com/pgvector/pgvector). If you encounter problem about the installation, please refer to the [notes](https://github.com/pgvector/pgvector#installation-notes) which may be helpful. 
-* Download the database.
+
+* **Database Setup (using PostgreSQL)**:
+    * Installation: 
+        ```bash
+        sudo apt-get install postgresql-client
+        sudo apt-get install postgresql
+        ```
+    * Initialization:
+
+      Switch to the **postgres** user and launch **psql** console:
+        ```bash
+        sudo su - postgres
+        psql
+        ```
+      Then, create a new user role:
+        ```bash
+        CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
+        ALTER ROLE <user> SUPERUSER;    
+        ```
+* **Pgvector Installation**:
+    Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
+
+
+* **Data Preparation**: Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
     ```bash
     mkdir data
     wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
     ```
 
 
-## Run the examples
+### Running the RAG example
 
-### Retrieval-augmented Generation
+In the current directory, run the example with command:
+
 ```bash
-python rag.py -m MODEL_PATH -e EMBEDDING_MODEL_PATH -u USERNAME -p PASSWORD -q QUESTION -d DATA
+python rag.py -m <path_to_model>
 ```
-arguments info:
-- `-m MODEL_PATH`: **required**, path to the llama model
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
 - `-e EMBEDDING_MODEL_PATH`: path to the embedding model
-- `-u USERNAME`: username in the postgres database
-- `-p PASSWORD`: password in the postgres database
+- `-u USERNAME`: username in the PostgreSQL database
+- `-p PASSWORD`: password in the PostgreSQL database
 - `-q QUESTION`: question you want to ask
-- `-d DATA`: path to data used during retrieval
+- `-d DATA`: path to source data used for retrieval (in pdf format)
 
-Here is the sample output when applying Llama-2-7b-chat-hf as the generatio model when we ask "How does Llama 2 perform compared to other open-source models?" and use llama.pdf as database. 
+### Example Output
+
+A query such as **"How does Llama 2 compare to other open-source models?"** with the Llama2 paper as the data source, using the `Llama-2-7b-chat-hf` model, will produce the output like below:
+
 ```
 Llama 2 performs better than most open-source models on the benchmarks we tested. Specifically, it outperforms all open-source models on MMLU and BBH, and is close to GPT-3.5 on these benchmarks. Additionally, Llama 2 is on par or better than PaLM-2-L on almost all benchmarks. The only exception is the coding benchmarks, where Llama 2 lags significantly behind GPT-4 and PaLM-2-L. Overall, Llama 2 demonstrates strong performance on a wide range of natural language processing tasks.
 ```
