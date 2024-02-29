@@ -413,7 +413,7 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
-                # To handle the input CUDA setting (such as 'device_map={"":0}'), CPU is used by default
+                # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
                 if kwargs.get('device_map', None):
                     kwargs.pop('device_map')
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
