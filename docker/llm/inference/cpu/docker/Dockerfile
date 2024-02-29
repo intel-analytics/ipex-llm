@@ -49,12 +49,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL && \
 # Fix vllm service 
-    pip install pydantic==1.10.11 && \
+    pip install pydantic==1.10.11
+
 # Install bigdl-llm
 RUN cd /llm && \
     pip install --pre --upgrade bigdl-llm[all] && \
     pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
     pip install intel-extension-for-pytorch==2.2.0 && \
     pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
-    pip install transformers==4.36.2 && \    
+    pip install transformers==4.36.2
+
 ENTRYPOINT ["/bin/bash"]
