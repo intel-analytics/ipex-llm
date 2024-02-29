@@ -162,6 +162,7 @@
 	<exclude>com.intel.analytics.bigdl:*:jar</exclude>
         <exclude>com.intel.analytics.zoo:*:jar</exclude>
 	<exclude>com.intel.analytics.bigdl.core.dist:all:jar</exclude>
+  <exclude>org.xerial.snappy:*</exclude>
 	<exclude>io.grpc:grpc-netty-shaded:jar</exclude>
 	<exclude>io.netty:netty-tcnative-boringssl-static:jar</exclude>
 	<exclude>com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux:jar</exclude>
