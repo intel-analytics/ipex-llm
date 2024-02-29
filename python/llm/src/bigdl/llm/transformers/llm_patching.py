@@ -16,6 +16,9 @@
 
 import transformers
 import importlib
+import sys
+from bigdl.llm.utils.common import invalidInputError
+from dataclasses import dataclass
 
 is_bigdl_patched = False
 attrs = []
@@ -37,13 +40,19 @@ def llm_patch():
         return
 
     # Initial version for LLM finetuning, other support TBD
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
     replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "AutoModel", AutoModel)
 
     if importlib.util.find_spec("peft") is not None:
+        import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
+            'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
+        invalidInputError(not import_peft_check,
+                          'llm_patch() should be called at the beginning of your code.')
         import peft
         from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
-            LoraConfig
+            LoraConfig, TrainingArguments
+        replace_attr(transformers, "TrainingArguments", TrainingArguments)
         get_peft_model_original = getattr(peft, "get_peft_model")
         replace_attr(peft, "get_peft_model", get_peft_model)
         setattr(peft, "get_peft_model_original", get_peft_model_original)

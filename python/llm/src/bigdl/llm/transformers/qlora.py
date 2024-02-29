@@ -234,6 +234,8 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
 
 from peft.tuners.lora import LoraModel
 from peft.tuners.lora import LoraConfig as LoraConfigBase
+from transformers import TrainingArguments as TrainingArgumentsBase
+from transformers.training_args import OptimizerNames
 from dataclasses import dataclass, field
 
 
@@ -241,6 +243,18 @@ from dataclasses import dataclass, field
 class LoraConfig(LoraConfigBase):
     training_mode: str = field(default="qlora", metadata={"help": "determine training mode"})
 
+supported_optim = ["adamw_hf", "adamw_torch", "adafactor", "sgd", "adagrad", "rmsprop"]
+
+@dataclass
+class TrainingArguments(TrainingArgumentsBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for optim in supported_optim.copy():
+            supported_optim.append(OptimizerNames(optim))
+        if self.optim not in supported_optim:
+            LOG.info(f"{self.optim} is not supported yet and adamw_torch optimizer is used.")
+            self.optim = OptimizerNames("adamw_torch")
+        
 
 def get_peft_model(*args, **kwargs):
     old_create_new_module = LoraModel._create_new_module
