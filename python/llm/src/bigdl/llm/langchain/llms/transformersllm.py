@@ -64,7 +64,7 @@ class TransformersLLM(LLM):
     Example:
         .. code-block:: python
 
-            from langchain.llms import TransformersLLM
+            from bigdl.llm.langchain.llms import TransformersLLM
             llm = TransformersLLM.from_model_id(model_id="THUDM/chatglm-6b")
     """
 
