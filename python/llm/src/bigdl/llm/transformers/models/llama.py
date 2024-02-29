@@ -160,7 +160,6 @@ def llama_mlp_forward(
             return out
 
 
-
 def should_use_fuse_rope(self, query_states, position_ids):
     use_fuse_rope = query_states.device.type == "xpu"
     use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
