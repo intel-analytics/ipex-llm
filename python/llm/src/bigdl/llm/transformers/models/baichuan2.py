@@ -166,12 +166,13 @@ def baichuan_attention_forward_7b_quantized(
         attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
     else:
         import linear_q4_0
-        attn_output = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+        attn_output = linear_q4_0.query_key_fp8_matmul(query_states * scaling_factor, key_states)
 
 
     if attention_mask is not None:
         attn_output += attention_mask
     attn_output = torch.softmax(attn_output, -1)
+    attn_output = attn_output.to(hidden_states.dtype)
     if query_states.size(2) != 1 or device.type != 'xpu':
         attn_output = torch.matmul(attn_output, value_states)
     else:
