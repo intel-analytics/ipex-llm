@@ -93,6 +93,7 @@ class LLM:
             Otherwise, too small values may cause out-of-memory (OOM) errors.
         device: The device to be used for the model. If None, we will default
             to use CPU as the device.
+        load_in_low_bit: The low-bit quantization for model to be loaded. Default int4.
     """
 
     def __init__(
@@ -112,6 +113,7 @@ class LLM:
         # bigdl-llm change start
         # summary: add device option
         device: Optional[str] = "cpu",
+        load_in_low_bit: str = "sym_int4",
         # bigdl-llm change end
         **kwargs,
     ) -> None:
@@ -134,6 +136,7 @@ class LLM:
             gpu_memory_utilization=gpu_memory_utilization,
             swap_space=swap_space,
             device=device,
+            load_in_low_bit=load_in_low_bit,
             **kwargs,
         )
         self.llm_engine = LLMEngine.from_engine_args(engine_args)

@@ -78,6 +78,7 @@ class ModelConfig:
             weights. If None, we assume the model weights are not quantized.
         device: The device to be used for the model. If None, we will default
             to use CPU as the device.
+        load_in_low_bit: The low-bit quantization for model to be loaded. Default int4.
     """
 
     def __init__(
@@ -95,6 +96,7 @@ class ModelConfig:
         max_model_len: Optional[int] = None,
         quantization: Optional[str] = None,
         device: Optional[str] = 'cpu',
+        load_in_low_bit: str = 'sym_int4',
     ) -> None:
         self.model = model
         self.tokenizer = tokenizer
@@ -107,6 +109,7 @@ class ModelConfig:
         self.tokenizer_revision = tokenizer_revision
         self.quantization = quantization
         self.device = device
+        self.load_in_low_bit = load_in_low_bit
 
         self.hf_config = get_config(model, trust_remote_code, revision)
         self.dtype = _get_and_verify_dtype(self.hf_config, dtype)
