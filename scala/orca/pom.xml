@@ -214,9 +214,9 @@
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
-	    <artifactId>protobuf-java</artifactId>
-	    <version>3.19.6</version>
-	    <scope>${spark-scope}</scope>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.2</version>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
