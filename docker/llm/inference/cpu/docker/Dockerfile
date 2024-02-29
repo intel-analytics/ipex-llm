@@ -48,6 +48,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Copy vLLM-Serving
     cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL && \
+# Fix vllm service 
+    pip install pydantic==1.10.11 && \
 # Install miniconda
     curl -LO "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
