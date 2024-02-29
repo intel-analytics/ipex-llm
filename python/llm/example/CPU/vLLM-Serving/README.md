@@ -21,8 +21,6 @@ pip3 install numpy
 pip3 install --pre --upgrade bigdl-llm[all]
 pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
-pip3 install "torch==2.0.1"
-pip3 install "transformers>=4.33.1"  # Required for Code Llama.
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
@@ -44,6 +42,7 @@ To run offline inference using vLLM for a quick impression, use the following ex
 #!/bin/bash
 
 # Please first modify the MODEL_PATH in offline_inference.py
+# Modify load_in_low_bit to use different quantization dtype
 
 numactl -C 48-95 -m 1 python offline_inference.py
 
@@ -60,6 +59,7 @@ To fully utilize the continuous batching feature of the `vLLM`, you can send req
 numactl -C 48-95 -m 1 python -m bigdl.llm.vllm.entrypoints.openai.api_server \
         --model /MODEL_PATH/Llama-2-7b-chat-hf-bigdl/ --port 8000  \
         --load-format 'auto' --device cpu --dtype bfloat16 \
+        --load-in-low-bit sym_int4 \
         --max-num-batched-tokens 4096
 ```
 
