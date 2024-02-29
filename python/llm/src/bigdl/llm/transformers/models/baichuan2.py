@@ -28,7 +28,7 @@ from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv
     restore_fp8_kv_cache, use_quantize_kv_cache
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
     append_kv_cache, is_enough_kv_cache_room_4_31
-from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb
+from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, SILU
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from transformers.utils import logging
@@ -80,7 +80,7 @@ def baichuan_mlp_forward(
         return self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
-            qtype
+            SILU, qtype
         ))
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 

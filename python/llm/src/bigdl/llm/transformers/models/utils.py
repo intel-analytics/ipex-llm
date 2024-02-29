@@ -26,6 +26,10 @@ SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 
+# used in fused mlp forward
+SILU = 0
+GELU = 1
+
 
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size, num_heads,

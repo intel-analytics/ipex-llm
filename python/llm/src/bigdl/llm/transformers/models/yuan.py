@@ -34,7 +34,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31. SILU
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -107,7 +107,7 @@ def yuan_mlp_forward(
         out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.up_proj.weight.data, self.gate_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.up_proj.out_len,
-            qtype
+            SILU, qtype
         ))
         if residual is not None:
             return out + residual
