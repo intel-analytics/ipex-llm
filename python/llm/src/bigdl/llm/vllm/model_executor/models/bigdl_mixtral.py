@@ -58,23 +58,27 @@ class BigDLMixtralForCausalLM(BigDLModelForCausalLM):
         config,
         device: Optional[str] = None,
         max_model_len: Optional[int] = None,
+        load_in_low_bit: str = 'sym_int4'
     ):
         super().__init__(config, device, max_model_len)
         self.config = config
         # TODO(gc): later change this to a switch?
-        if True:
-            from bigdl.llm.transformers import AutoModelForCausalLM
-            from bigdl.llm import optimize_model
+        from bigdl.llm.transformers import AutoModelForCausalLM
 
-        # low_bit = 'sym_int4'
+        torch_dtype = 'auto'
+
+        if load_in_low_bit == 'bf16':
+            torch_dtype = torch.bfloat16
+
         if device == 'cpu':
-            model = AutoModelForCausalLM.from_pretrained(
+            self.model = AutoModelForCausalLM.from_pretrained(
                 config._name_or_path,
+                load_in_low_bit=load_in_low_bit,
+                torch_dtype=torch_dtype,
                 low_cpu_mem_usage=True,
                 trust_remote_code=True,
                 use_cache=True,
             )
-            self.model = optimize_model(model)
             self.sampler = BigDLSampler(config.vocab_size, device)
         elif device == 'xpu':
             try:
@@ -83,10 +87,10 @@ class BigDLMixtralForCausalLM(BigDLModelForCausalLM):
                 print("Intel Extension for PyTorch is not installed, \
                        but is required for xpu inference.")
 
-            low_bit = 'sym_int4'
             model = AutoModelForCausalLM.from_pretrained(
                 config._name_or_path,
-                load_in_low_bit=low_bit,
+                load_in_low_bit=load_in_low_bit,
+                torch_dtype=torch_dtype,
                 trust_remote_code=True,
                 optimize_model=True,
                 use_cache=True,

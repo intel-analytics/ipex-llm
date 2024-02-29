@@ -114,8 +114,10 @@ def get_model(model_config: ModelConfig) -> nn.Module:
         if model_class in _MODEL_CLASSES_SUPPORT_QUANTIZATION:
             model = model_class(model_config.hf_config, quant_config)
         else:
+            # TODO: change for other models
             model = model_class(model_config.hf_config, device=model_config.device,
-                                max_model_len=model_config.max_model_len)
+                                max_model_len=model_config.max_model_len,
+                                load_in_low_bit=model_config.load_in_low_bit)
         # Load the weights from the cached or downloaded files.
         model.load_weights(model_config.model, model_config.download_dir,
                            model_config.load_format, model_config.revision)
