@@ -98,6 +98,8 @@ def _ipex_optimize_attention(model):
 
 def _ipex_optimize_model(model, rms_classes):
     _enable_tpp()
+    import intel_extension_for_pytorch as ipex
+    ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_rmsnorm(model, rms_classes)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
