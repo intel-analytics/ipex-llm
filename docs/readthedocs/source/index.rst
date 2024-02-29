@@ -81,8 +81,10 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 ``bigdl-llm`` quickstart
 ============================================
 
-- `CPU <#cpu-quickstart>`_
-- `GPU <#gpu-quickstart>`_
+- `Windows GPU installation <doc/LLM/Quickstart/install_windows_gpu.html>`_
+- `Run BigDL-LLM using Docker <https://github.com/intel-analytics/BigDL/tree/main/docker/llm>`_
+- `CPU quickstart <#cpu-quickstart>`_
+- `GPU quickstart <#gpu-quickstart>`_
 
 --------------------------------------------
 CPU Quickstart
