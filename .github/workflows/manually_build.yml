@@ -55,7 +55,8 @@ on:
         type: string
 
 env:
-  TAG: ${{ github.event.inputs.tag }}
+  # TAG: ${{ github.event.inputs.tag }}
+  TAG: 2.5.0-SNAPSHOT
 
 permissions:
   contents: read
