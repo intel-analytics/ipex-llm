@@ -40,6 +40,7 @@ import math
 import os
 import torch.nn.functional as F
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import SILU, GELU
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
@@ -113,9 +114,9 @@ def llama_mlp_forward(
     qtype = getattr(self.gate_proj, "qtype", None)
     act_type = self.config.hidden_act
     if act_type == "silu":
-        act_type = 0
+        act_type = SILU
     elif act_type == "gelu":
-        act_type = 1
+        act_type = GELU
     else:
         invalidInputError(
             False,

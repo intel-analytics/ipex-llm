@@ -107,7 +107,7 @@ def yuan_mlp_forward(
         out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.up_proj.weight.data, self.gate_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.up_proj.out_len,
-            qtype
+            SILU, qtype
         ))
         if residual is not None:
             return out + residual
