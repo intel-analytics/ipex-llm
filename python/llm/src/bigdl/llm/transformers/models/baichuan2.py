@@ -131,9 +131,7 @@ def baichuan_attention_forward_7b_quantized(
     value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
-    enough_kv_room = True
     if past_key_value is not None:
-        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=kv_seq_len)
         kv_seq_len += past_key_value[0].shape[-2]
     if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -144,69 +142,44 @@ def baichuan_attention_forward_7b_quantized(
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                         cos, sin, position_ids, "baichuan")
-    # [bsz, nh, t, hd]
-
-    # if past_key_value is not None:
-    #     # reuse k, v, self_attention
-    #     key_states = torch.cat([past_key_value[0], key_states], dim=2)
-    #     value_states = torch.cat([past_key_value[1], value_states], dim=2)
-    if past_key_value is not None:
-        # reuse k, v, self_attention
-        cache_k = past_key_value[0]
-        cache_v = past_key_value[1]
-        if not enough_kv_room:
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_heads,
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
-
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
-
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
+    if past_key_value is None:
+        kv_seq_len = key_states.shape[-2]
+        k_cache, v_cache = init_fp8_kv_cache(
+            bsz, self.num_heads, kv_seq_len, self.head_dim,
+            device=device
+        )
+    else:
+        k_cache, v_cache = past_key_value
+    key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
+                                                   key_states, value_states)
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    if xops is not None and self.training:
-        attn_weights = None
-        query_states = query_states.transpose(1, 2)
-        key_states = key_states.transpose(1, 2)
-        value_states = value_states.transpose(1, 2)
-        attn_output = xops.memory_efficient_attention(
-            query_states, key_states, value_states, attn_bias=xops.LowerTriangularMask()
-        )
-    else:
-        if attention_mask is not None:
-            if attention_mask.dtype == torch.bool:
-                attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
+    if attention_mask is not None:
+        if attention_mask.dtype == torch.bool:
+            attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
 
-        scaling_factor = 1 / math.sqrt(query_states.size(-1))
+    scaling_factor = 1 / math.sqrt(query_states.size(-1))
+    if query_states.size(2) != 1 or device.type != 'xpu':
+        key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
+                                                        query_states.dtype)
         attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
-        if attention_mask is not None:
-            attn_output += attention_mask
-        attn_output = torch.softmax(attn_output, -1)
-        attn_output = torch.matmul(attn_output, value_states)
+    else:
+        import linear_q4_0
+        attn_output = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
 
-        attn_output = attn_output.transpose(1, 2)
+
+    if attention_mask is not None:
+        attn_output += attention_mask
+    attn_output = torch.softmax(attn_output, -1)
+    if query_states.size(2) != 1 or device.type != 'xpu':
+        attn_output = torch.matmul(attn_output, value_states)
+    else:
+        import linear_q4_0
+        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_output,
+                                                        value_states.transpose(-1, -2))
+    attn_output = attn_output.transpose(1, 2)
+
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     attn_output = self.o_proj(attn_output)
 
