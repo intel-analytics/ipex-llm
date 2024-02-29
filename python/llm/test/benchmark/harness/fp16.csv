@@ -1,0 +1,6 @@
+Index,Model,Precision,Arc,TruthfulQA,Winogrande
+0,falcon-7b-instruct-with-patch,fp16,46.16,44.08,67.96
+1,Llama2-7b-guanaco-dolphin-500,fp16,56.74,46.96,74.27
+2,Baichuan2-7B-Chat-LLaMAfied,fp16,52.47,48.04,69.14
+3,Mistral-7B-v0.1,fp16,59.98,42.15,78.37
+4,mpt-7b-chat,fp16,46.50,40.16,68.43

@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could run Baichuan2 BF16 in
 To run these examples with BigDL-LLM on Intel CPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [speculative.py](./speculative.py), we show a basic use case for a Baichuan2 model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel GPUs.
+In the example [speculative.py](./speculative.py), we show a basic use case for a Baichuan2 model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel CPUs.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -63,33 +63,32 @@ First token latency x.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.3.0+git0c63936](https://github.com/intel/intel-extension-for-pytorch/tree/0c63936d7a6740679987920367ae2e0cdb375b2e) by following steps: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
+To accelerate speculative decoding on CPU, optionally, you can install our validated version of [IPEX 2.2.0+cpu](https://github.com/intel/intel-extension-for-pytorch/tree/v2.2.0%2Bcpu) refering to [IPEX's installation guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=cpu&version=v2.2.0%2Bcpu), or by the following steps: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
 
-#### 4.1 Download IPEX installation script
+#### 4.1 Install IPEX 2.2.0+cpu
 ```bash
-# Depend on Conda and GCC 12.3
-wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936d7a6740679987920367ae2e0cdb375b2e/scripts/compile_bundle.sh
-```
-
-#### 4.2 Activate your conda environment
-```bash
-conda activate <your_conda_env>
-```
-#### 4.3 Set VER_IPEX in compile_bundle.sh to 0c63936d7a6740679987920367ae2e0cdb375b2e
-```bash
-sed -i 's/VER_IPEX=main/VER_IPEX=0c63936d7a6740679987920367ae2e0cdb375b2e/g' "compile_bundle.sh"
-```
-
-#### 4.4 Install IPEX and other dependencies
-```bash
-# Install IPEX 2.3.0+git0c63936
-bash compile_bundle.sh 
+python -m pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install intel-extension-for-pytorch==2.2.0
+python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
+# if there is any installation problem for oneccl_binding, you can also find suitable index url at "https://pytorch-extension.intel.com/release-whl/stable/cpu/cn/" or "https://developer.intel.com/ipex-whl-stable-cpu" according to your environment.
 
 # Install other dependencies
 pip install -r requirements.txt
 ```
 
-After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently only `Baichuan2 13b` is supported.
+#### 4.2 Run Baichuan2 Models with IPEX
+
+After installed IPEX, **if the size of your Baichuan2 is 7B**, replace `modeling_baichuan.py` file under your model directory with `./baichaun2_7b_opt_ipex/modeling_baichuan.ipex`, like:
+
+```bash
+cp ./baichaun2_7b_opt_ipex/modeling_baichuan.ipex your_model_path/modeling_baichuan.py
+```
+
+And also replace `tokenization_baichuan.py` file under your model directory with `./baichaun2_7b_opt_ipex/tokenization_baichuan.py`.
+
+**13B does not need the above operations, and please ignore.**
+
+Then, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration:
 
 ```bash
 source bigdl-llm-init -t

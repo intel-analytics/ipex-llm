@@ -58,7 +58,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   bigdl-llm-finetune-lora-cpu:
@@ -66,7 +65,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -93,7 +92,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -120,7 +119,7 @@ jobs:
     runs-on: [self-hosted, Shire]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -147,7 +146,7 @@ jobs:
     runs-on: [self-hosted, Shire]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -174,7 +173,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -201,7 +200,7 @@ jobs:
     runs-on: [self-hosted, Shire]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -227,7 +226,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -254,7 +253,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -281,7 +280,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -311,7 +310,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -342,7 +341,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -373,7 +372,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -405,7 +404,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -433,7 +432,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -465,7 +464,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -606,7 +605,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -729,7 +728,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -763,7 +762,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -797,7 +796,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -832,7 +831,7 @@ jobs:
     runs-on: [ self-hosted, Shire ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -878,7 +877,7 @@ jobs:
     runs-on: [ self-hosted, Shire ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -917,7 +916,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -951,7 +950,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-serving-tdx' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -982,7 +981,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-tdx' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -1009,7 +1008,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -1044,7 +1043,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker deploy kms-util
       run: |
         export IMAGE=intelanalytics/kms-utils
@@ -1069,7 +1068,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -1117,7 +1116,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker deploy pccs
       run: |
         export IMAGE=intelanalytics/pccs
@@ -1139,7 +1138,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -1167,7 +1166,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1201,7 +1200,7 @@ jobs:
     runs-on: [self-hosted, Shire]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -1383,7 +1382,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-machine-learning-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1421,7 +1420,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-machine-learning-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1559,7 +1558,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-kms-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1588,7 +1587,7 @@ jobs:
     if: ${{ github.event.inputs.artifact == 'bigdl-kms-reference' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.sha }}
     - name: docker login
@@ -1619,7 +1618,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -1646,7 +1645,7 @@ jobs:
     runs-on: [self-hosted, Shire]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}

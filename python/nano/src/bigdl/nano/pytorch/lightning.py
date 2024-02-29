@@ -118,7 +118,7 @@ class LightningModule(pl.LightningModule):
             self.log("val/loss", loss, on_epoch=True,
                      prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"val/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
+            acc = {"val/{}_{}".format(metric.__class__.__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
@@ -126,7 +126,7 @@ class LightningModule(pl.LightningModule):
         """Define a single test step."""
         y_hat = self(*batch[:self._nargs])
         if self.metrics:
-            acc = {"test/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
+            acc = {"test/{}_{}".format(metric.__class__.__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 

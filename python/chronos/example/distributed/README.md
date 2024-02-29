@@ -60,7 +60,7 @@ forecaster.fit(data_train, epochs=args.epochs)
 ```
 
 ## Evaluate
-Use the same API as non-distributed version forecaster for evalution/prediction. `Evaluator` is only valid for pandas backend. Users may use `forecaster.evaluate` to evaluate if using spark as backend for data processing.
+Use the same API as non-distributed version forecaster for evaluation/prediction. `Evaluator` is only valid for pandas backend. Users may use `forecaster.evaluate` to evaluate if using spark as backend for data processing.
 ```python
 rmse, smape = [Evaluator.evaluate(m, y_true=unscale_y_test,
                                   y_pred=unscale_yhat,

@@ -39,7 +39,7 @@ import transformers
 from datasets import load_dataset
 import accelerate
 
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 from peft import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
@@ -174,6 +174,7 @@ def train(
             optimize_model=False,
             torch_dtype=torch.bfloat16,
             modules_to_not_convert=["lm_head"],
+            trust_remote_code=True,
         )
     else:
         # use bnb_config for qlora/qalora/relora, which use 4bit for base model
@@ -184,7 +185,8 @@ def train(
             bnb_4bit_compute_dtype=torch.bfloat16
         )
         model = AutoModelForCausalLM.from_pretrained(base_model,
-                                                     quantization_config=bnb_config, )
+                                                     quantization_config=bnb_config,
+                                                     trust_remote_code=True)
         # below is also supported
         # Load the base model from a directory or the HF Hub to 4-bit format
         # model = AutoModelForCausalLM.from_pretrained(
@@ -199,7 +201,7 @@ def train(
     model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
-    tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer.pad_token_id = (

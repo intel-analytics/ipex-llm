@@ -6,14 +6,13 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   bigdl-release-scala:
     runs-on: [self-hosted, Bree]
     # if: ${{ github.actor == 'Le-Zheng' }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
     - name: Set up Maven
@@ -80,7 +79,7 @@ jobs:
         set -x
         set -e
         ls
-        #spark3.1.3
+        #spark3.4.1
         cp scala/pom.xml scala/pom.xml.origin
         cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
         cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
@@ -93,17 +92,17 @@ jobs:
         cp scala/assembly/pom.xml scala/assembly/pom.xml.origin
         sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
         sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/dllib/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/orca/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/friesian/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/grpc/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/serving/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/ppml/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/assembly/pom.xml
-        mvn clean deploy -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign -P release-assembly -X -DstagingProgressTimeoutMinutes=20 -Dgpg.passphrase=BigDL2017 --file scala/pom.xml 
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/common/spark-version/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/dllib/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/orca/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/friesian/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/grpc/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/serving/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/ppml/pom.xml
+        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.4.1<\/artifactId>/' scala/assembly/pom.xml
+        mvn clean deploy -DskipTests -Dspark.version=3.4.1 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign -P release-assembly -X -DstagingProgressTimeoutMinutes=20 -Dgpg.passphrase=BigDL2017 --file scala/pom.xml 
         mv scala/pom.xml.origin scala/pom.xml
         mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
         mv scala/common/spark-version/3.0/pom.xml.origin scala/common/spark-version/3.0/pom.xml
