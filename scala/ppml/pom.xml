@@ -147,10 +147,10 @@
             <artifactId>shamir</artifactId>
             <version>0.7.0</version>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.41.2.2</version>
+            <version>3.45.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
