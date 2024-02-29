@@ -53,6 +53,7 @@ if __name__ == '__main__':
     # https://huggingface.co/datasets/ikawrakow/imatrix-from-wiki-train/tree/main.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_low_bit='gguf_iq2_xxs',
+                                                 torch_dtype=torch.float16,
                                                  trust_remote_code=True,
                                                  imatrix='llama-v2-7b.imatrix').to("xpu")
 
