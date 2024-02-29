@@ -112,16 +112,6 @@ def llama_mlp_forward(
     x_2d = x.view(-1, x.shape[-1])
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
-    act_type = self.config.hidden_act
-    if act_type == "silu":
-        act_type = SILU
-    elif act_type == "gelu":
-        act_type = GELU
-    else:
-        invalidInputError(
-            False,
-            "Unknown mlp activation type: " + act_type
-        )
     if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
         import linear_q4_0
         if not x_2d.is_contiguous():
@@ -129,14 +119,14 @@ def llama_mlp_forward(
         out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
-            act_type, qtype
+            SILU, qtype
         ))
         if residual is not None:
             return out + residual
         else:
             return out
     elif fp16_fusion_check(self.gate_proj, x, self.training) and \
-            hidden_size == 4096 and bsz == 1 and act_type == 0:
+            hidden_size == 4096 and bsz == 1:
         hidden_states1 = torch.ops.torch_ipex.mm_silu(x, self.gate_proj.weight)
         hidden_states = torch.ops.torch_ipex.mm_resmul(
             x, self.up_proj.weight, hidden_states1
