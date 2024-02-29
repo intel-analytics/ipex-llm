@@ -238,6 +238,7 @@ class TransformersLLM(LLM):
         if self.streaming:
             from transformers import TextStreamer
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            input_ids = input_ids.to(self.model.device)
             streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
             if stop is not None:
                 from transformers.generation.stopping_criteria import StoppingCriteriaList
@@ -254,6 +255,7 @@ class TransformersLLM(LLM):
             return text
         else:
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            input_ids = input_ids.to(self.model.device)
             if stop is not None:
                 from transformers.generation.stopping_criteria import StoppingCriteriaList
                 from transformers.tools.agents import StopSequenceCriteria
