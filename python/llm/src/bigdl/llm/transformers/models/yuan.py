@@ -34,7 +34,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31. SILU
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
