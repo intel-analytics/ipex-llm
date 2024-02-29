@@ -147,7 +147,7 @@ def yuan_attention_forward(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states):
+    if use_quantize_kv_cache(self.merged_qk_proj, hidden_states):
         forward_function = yuan_attention_forward_quantized
     else:
         forward_function = yuan_attention_forward_origin
