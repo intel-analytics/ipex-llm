@@ -29,10 +29,10 @@ replit_code_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
 prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
 @pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
-    pytest.param(AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt, id="llama"),
-    pytest.param(AutoModelForCausalLM, AutoTokenizer, bloom_model_path, prompt, id="bloom"),
-    pytest.param(AutoModel, AutoTokenizer, chatglm2_6b_model_path, prompt, id="chatglm"),
-    pytest.param(AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt, id="replit_code")
+    (AutoModelForCausalLM, LlamaTokenizer, llama_model_path, prompt),
+    (AutoModelForCausalLM, AutoTokenizer, bloom_model_path, prompt),
+    (AutoModel, AutoTokenizer, chatglm2_6b_model_path, prompt),
+    (AutoModelForCausalLM, AutoTokenizer, replit_code_model_path, prompt)
 ])
     
 def test_optimize_model(Model, Tokenizer, model_path, prompt):
