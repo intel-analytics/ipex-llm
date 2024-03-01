@@ -168,7 +168,7 @@
   <exclude>io.netty:netty-codec-http:jar</exclude>
   <exclude>io.netty:netty-buffer:jar</exclude>
   <exclude>io.netty:netty-common:jar</exclude>
-  <exclude>com.google.protobuf:akka-protobuf*:jar</exclude>
+  <exclude>com.typesafe.akka:akka-protobuf*:jar</exclude>
 	<exclude>com.intel.analytics.bigdl.core.native.opencv:opencv-java-x86_64-linux:jar</exclude>
 	<exclude>org.lz4:lz4-java:jar</exclude>
         <exclude>org.apache.hadoop:*:jar</exclude>
