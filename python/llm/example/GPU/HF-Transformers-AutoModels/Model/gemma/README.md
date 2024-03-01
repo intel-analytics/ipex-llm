@@ -136,3 +136,14 @@ What is AI?
 model
 **Artificial intelligence (AI)** is the simulation of human cognitive functions, such as learning, reasoning, and problem-solving, by machines. AI systems are designed
 ```
+
+### Know issue
+Gemma-7b-it's output is random and unreadable on Arc770 ubuntu 22.04.
+
+The output of `What's AI?` like:
+```
+wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
+```
+Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
+Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~22.04.
+
