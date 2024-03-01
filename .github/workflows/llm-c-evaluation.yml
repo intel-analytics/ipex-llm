@@ -92,7 +92,7 @@ jobs:
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         device: [xpu]
-          
+
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -175,7 +175,7 @@ jobs:
           path:
             ${{ github.workspace }}/python/llm/dev/benchmark/ceval/results/**
 
-  llm-ceval-summary-html:
+  llm-ceval-summary:
     if: ${{ always() }}
     needs: llm-c-evaluation
     runs-on: ubuntu-latest
@@ -209,7 +209,7 @@ jobs:
 
   llm-ceval-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [llm-c-evaluation]
+    needs: [llm-c-evaluation, llm-ceval-summary]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
