@@ -323,7 +323,8 @@ def llama_attention_forward_4_31_quantized(
                                                                          self.q_proj.weight.qtype,
                                                                          self.v_proj.weight.qtype,
                                                                          0,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -511,7 +512,8 @@ def llama_attention_forward_4_31_original(
                                                                          self.q_proj.weight.qtype,
                                                                          self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
         kv_seq_len += 1
 
     else:
@@ -762,7 +764,9 @@ def llama_attention_selective_batching_forward_4_31(
                                                                          self.q_proj.weight.qtype,
                                                                          self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,
+                                                                         )
         kv_seq_len += 1
     else:
         if self.config.pretraining_tp > 1:
@@ -942,7 +946,8 @@ def llama_attention_forward_4_36(
                                                                          self.q_proj.weight.qtype,
                                                                          self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:

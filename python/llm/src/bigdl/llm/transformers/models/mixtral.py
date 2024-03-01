@@ -171,7 +171,8 @@ def mixtral_attention_forward(
                                                                          self.q_proj.weight.qtype,
                                                                          self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
