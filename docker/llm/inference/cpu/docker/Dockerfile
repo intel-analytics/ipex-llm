@@ -54,6 +54,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install bigdl-llm
 RUN cd /llm && \
     pip install --pre --upgrade bigdl-llm[all] && \
+    # Fix CVE-2024-22195
+    pip install Jinja2==3.1.3 && \
     pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
     pip install intel-extension-for-pytorch==2.2.0 && \
     pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \

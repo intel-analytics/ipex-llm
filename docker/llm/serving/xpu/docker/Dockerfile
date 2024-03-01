@@ -11,7 +11,7 @@ COPY ./entrypoint.sh /opt/entrypoint.sh
 # Install Serving Dependencies
 RUN cd /llm && \
     pip install --pre --upgrade bigdl-llm[serving] && \
-    pip install transformers==4.36.2 && \
+    pip install transformers==4.36.2 gradio==4.19.2 && \
     chmod +x /opt/entrypoint.sh
 
 

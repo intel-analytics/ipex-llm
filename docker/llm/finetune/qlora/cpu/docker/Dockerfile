@@ -33,7 +33,9 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
     # install huggingface dependencies
-    pip install datasets transformers==4.36.2 && \
+    pip install datasets && \
+    # Fix Trivy CVE Issues
+    pip install transformers==4.36.2 Jinja2==3.1.3 && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     # install basic dependencies

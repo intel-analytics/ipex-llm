@@ -13,9 +13,9 @@ COPY chat.py /llm/chat.py
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list && \
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y curl wget git gnupg gpg-agent && \
     wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
     echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
@@ -34,7 +34,9 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install --pre --upgrade bigdl-llm -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    # Fix Trivy CVE Issues
+    pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
