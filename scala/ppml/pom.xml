@@ -421,12 +421,6 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_${scala.major.version}</artifactId>
             <version>${akka.actor.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-	            </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -442,12 +436,6 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream_${scala.major.version}</artifactId>
             <version>${akka.actor.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-	            </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
