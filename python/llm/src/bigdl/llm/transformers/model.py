@@ -214,6 +214,20 @@ class _BaseAutoModelClass:
                 kwargs["torch_dtype"] = torch.float32
             optimize_model = False
             kwargs["modules_to_not_convert"] = ["lm_head"]
+        else:
+            from .llm_patching import is_bigdl_patched, patched_training_mode
+            if is_bigdl_patched:
+                # To handle finetuning patch of `load_in_8bit=True` etc
+                if kwargs.get('load_in_8bit', False):
+                    kwargs.pop('load_in_8bit')
+                if patched_training_mode == "lora":
+                    load_in_low_bit = "bf16"
+                elif patched_training_mode == "qalora":
+                    load_in_low_bit = "sym_int4"
+                elif patched_training_mode == "qlora" or patched_training_mode == "relora":
+                    load_in_low_bit = "nf4"
+                optimize_model = False
+                kwargs["modules_to_not_convert"] = ["lm_head"]
 
         if load_in_4bit or load_in_low_bit:
 

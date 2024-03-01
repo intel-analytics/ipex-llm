@@ -243,18 +243,27 @@ from dataclasses import dataclass, field
 class LoraConfig(LoraConfigBase):
     training_mode: str = field(default="qlora", metadata={"help": "determine training mode"})
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .llm_patching import is_bigdl_patched, patched_training_mode
+        if is_bigdl_patched:
+            self.training_mode = patched_training_mode
+
+
 supported_optim = ["adamw_hf", "adamw_torch", "adafactor", "sgd", "adagrad", "rmsprop"]
 
 
 @dataclass
 class TrainingArguments(TrainingArgumentsBase):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        kwargs["fp16"] = False
+        kwargs["bf16"] = True
         for optim in supported_optim.copy():
             supported_optim.append(OptimizerNames(optim))
-        if self.optim not in supported_optim:
+        if kwargs["optim"] not in supported_optim:
             LOG.info(f"{self.optim} is not supported yet and adamw_torch optimizer is used.")
-            self.optim = OptimizerNames("adamw_torch")
+            kwargs["optim"] = "adamw_torch"
+        super().__init__(*args, **kwargs)
 
 
 def get_peft_model(*args, **kwargs):
