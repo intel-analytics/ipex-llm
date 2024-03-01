@@ -995,6 +995,8 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
             except RuntimeError:
                 traceback.print_exc()
                 pass
+            torch.xpu.synchronize()
+            torch.xpu.empty_cache()
     model.to('cpu')
     torch.xpu.synchronize()
     torch.xpu.empty_cache()
