@@ -266,7 +266,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  in_features=in_features).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
-                            new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
+                            new_linear._parameters['bias'] = nn.Parameter(torch.zeros(out_features))\
                                 .to(device)
                     elif qtype == ggml_tensor_qtype["fp16"]:
                         module.to(torch.float16)

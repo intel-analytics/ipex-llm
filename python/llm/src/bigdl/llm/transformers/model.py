@@ -415,7 +415,8 @@ class _BaseAutoModelClass:
                 model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
                 model.config.update({"bigdl_lcmu_enabled": False})
 
-        model = model.to("cpu")
+        # model = model.to("cpu")
+        model.config.model_type = "qwen2"
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
@@ -659,7 +660,7 @@ class _BaseAutoModelClass:
 
 
 class AutoModelForCausalLM(_BaseAutoModelClass):
-    HF_Model = transformers.AutoModelForCausalLM
+    HF_Model = transformers.Qwen2ForCausalLM
 
 
 class AutoModel(_BaseAutoModelClass):
