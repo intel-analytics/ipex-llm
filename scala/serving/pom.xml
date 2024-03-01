@@ -301,12 +301,6 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream_${scala.major.version}</artifactId>
             <version>${akka.actor.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.typesafe.akka</groupId>
-                    <artifactId>akka-protobuf_${scala.major.version}</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
