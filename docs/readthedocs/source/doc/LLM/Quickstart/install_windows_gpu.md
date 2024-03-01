@@ -101,6 +101,8 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    # Generate predicted tokens
    with torch.inference_mode():
        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+       # warm up one more time before the actual generation task for the first run, see details in `Tips & Troubleshooting`
+       # output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config)
        output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
        print(output_str)
