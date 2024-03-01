@@ -1,129 +1,92 @@
 
-# WebUI quickstart on Windows
-This quickstart tutorial provides a step-by-step guide on how to use Text-Generation-WebUI to run Hugging Face transformers-based applications on BigDL-LLM.
+# Use Text Generation WebUI on Windows with Intel GPU
 
-The WebUI is ported from [Text-Generation-WebUI](https://github.com/oobabooga/text-generation-webui).
+This quickstart guide walks you through setting up and using the **Text Generation WebUI** (a Gradio web UI for Large Language Models) with `bigdl-llm`. 
 
-## 1. Install and set up WebUI
 
-### 1.1 Install GPU driver
-* Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
-   
-    > Note: The installation could take around 15 minutes, and requires at least 7GB of free disk space.  
-    > If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on [this Microsoft guide](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)  to update your installation.
-    > 
-    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
+A preview of the WebUI in action is shown below:
 
-* Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
-   
-    > Note: The process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=80%; />
 
-    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=80%; />
 
-* To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) :
-    >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
-### 1.2 Set up Python Environment
+## 1 Install BigDL-LLM
 
-* Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
+To use the WebUI, first ensure that BigDL-LLM is installed. Follow the instructions on the [BigDL-LLM Installation Quickstart for Windows with Intel GPU](https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/LLM/Quickstart/install_windows_gpu.md). 
 
-  <!-- > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=50%; /> -->
+**After the installation, you should have created a conda environment, named `llm` for instance, for running `bigdl-llm` applications.**
 
-* After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
-  ```bash
-  conda create -n llm python=3.9 libuv
-  ```
-* Activate the newly created environment `llm`:
-  ```bash
-  conda activate llm
-  ```
+## 2 Install the WebUI
 
-### 1.3 Install oneAPI and `bigdl-llm`
 
-* With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
-  ```bash
-  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
-  ```
-
-* Use `pip` to install `bigdl-llm` for GPU:
-  ```bash
-  pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-  ```
-
-### 1.4 Download WebUI
-Download text-generation-webui with `BigDL-LLM` optimizations from [here](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/bigdl-llm.zip) and unzip it to a folder. In this example, the text-generation-webui folder is `C:\text-generation-webui`
+### Download the WebUI
+Download the `text-generation-webui` with BigDL-LLM integrations from [this link](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/bigdl-llm.zip). Unzip the content into a directory, e.g.,`C:\text-generation-webui`. 
   
-### 1.5 Install other dependencies
-In your **Anaconda Prompt** terminal, navigate to your unzipped text-generation-webui folder. Then use `pip` to install other WebUI dependencies:
+### Install Dependencies
+
+Open **Anaconda Prompt** and activate the conda environment you have created in [section 1](#1-install-bigdl-llm), e.g., `llm`. 
+```
+conda activate llm
+```
+Then, change to the directory of WebUI (e.g.,`C:\text-generation-webui`) and install the necessary dependencies:
 ```bash
+cd C:\text-generation-webui
 pip install -r requirements_cpu_only.txt
 ```
 
-## 2. Start the WebUI Server
+## 3 Start the WebUI Server
 
-* Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
-   ```bash
-   conda activate llm
-   ```
-
-* Step 2: If you're running on iGPU, set some environment variables by running below commands:
-  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
+### Set Environment Variables
+If you're running on iGPUs, set some environment variables by running below commands in **Anaconda Prompt**:
+  > Note: For more details about runtime configurations, refer to [this link](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
   ```bash
   set SYCL_CACHE_PERSISTENT=1
   set BIGDL_LLM_XMX_DISABLED=1
   ```
 
-* Step 3: Navigate to your unzipped text-generation-webui folder (`C:\text-generation-webui` in this example) and launch webUI. Models will be optimized and run at 4-bit precision.
+### Launch the Server
+In **Anaconda Prompt** with the conda environment `llm` activated, navigate to the text-generation-webui folder and start the server using the following command:
+  > Note: with `--load-in-4bit` option, the models will be optimized and run at 4-bit precision. For configuration for other formats and precisions, refer to [this link](https://github.com/intel-analytics/text-generation-webui?tab=readme-ov-file#32-optimizations-for-other-percisions).
    ```bash
-   cd C:\text-generation-webui
    python server.py --load-in-4bit
    ```
 
-* Step 4: After the successful startup of the WebUI server, links to access WebUI are displayed in the terminal.
+### Access the WebUI
+Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 
   <!-- ```bash
   Running on local URL:  http://127.0.0.1:7860
   ``` -->
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" width=80%; />
 
-  Open the local URL (eg., http://127.0.0.1:7864) in your web browser to access the webUI interface.
 
-## 3. Using WebUI
+## 4. Using the WebUI
 
-### 3.1 Select the Model
+### Model Download
 
-First, you need to place huggingface models in `C:\text-generation-webui\models`.
-You can either copy a local model to that folder, or download a model from Huggingface Hub using webUI (VPN connection might be required).
-To download a model, navigate to `Model` tab, enter the Huggingface model `username/model path` under `Download model or LoRA` (for instance, `Qwen/Qwen-7B-Chat`), and click `Download`.
+Place Huggingface models in `C:\text-generation-webui\models` by either copying locally or downloading via the WebUI. To download, navigate to the **Model** tab, enter the model's huggingface id (for instance, `Qwen/Qwen-7B-Chat`) in the **Download model or LoRA** section, and click **Download**, as illustrated below. 
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" width=80%; />
 
-After the models have been obtained, click the blue icon to refresh the `Model` drop-down list.
-Then select the model you want from the list.
+After copying or downloading the models, click on the blue **refresh** button to update the **Model** drop-down menu. Then, choose your desired model from the newly updated list.  
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png" width=80%; />
 
 
-### 3.2 Load the Model
-Using the default model settings are recommended. 
-Click `Load` to load your model.
+### Load Model
 
-* For some modes, you might see an `ImportError: This modeling file requires the following packages that were not found in your environment` error message (scroll down to the end of the error messages) and instructions for installing the packages. This is because the models require additional pip packages.
-Stop the WebUI Server in the **Anaconda Prompt** terminal with `Ctrl+C`, install the pip packages, and then run the WebUI Server again.
-If there are still errors on missing packages, repeat the process of installing missing packages.
+Default settings are recommended for most users. Click **Load** to activate the model. Address any errors by installing missing packages as prompted, and ensure compatibility with your version of the transformers package. Refer to [troubleshooting section](#troubleshooting) for more details.
 
-* Some models are too old and do not support the installed version of transformers package. 
-In this case, errors like `AttributeError`, would appear. You are should use a more recent model.
-
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png" width=80%; />
-
-When the model is successfully loaded, you will get a message on this.
+If everything goes well, you will get a message as shown below.
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=80%; />
 
-### 3.3 Run the Model on WebUI
-Select the `Chat` tab. This interface supports having multi-turn conversations with the model. 
-You may simply enter prompts and click the `Generate` button to get responses.
-You can start a new conversation by clicking `New chat`.
+
+
+### Chat with the Model
+
+In the **Chat** tab, start new conversations with **New chat**. 
+
+Enter prompts into the textbox at the bottom and press the **Generate** button to receive responses.
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=80%; />
 
@@ -134,6 +97,25 @@ You can start a new conversation by clicking `New chat`.
 
 * Please see [Chat-Tab Wiki](https://github.com/oobabooga/text-generation-webui/wiki/01-%E2%80%90-Chat-Tab) for more details. -->
 
-### 3.4 Ending the program
-Go to the **Anaconda Prompt** terminal where the WebUI Server was launched, enter `Ctrl+C` to stop the server. 
-Then close the webUI browser tab.
+### Exit the WebUI
+
+To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** terminal where the WebUI Server is runing, then close your browser tab.
+
+
+## Troubleshooting
+
+### Missing Required Dependencies
+
+During model loading, you may encounter an **ImportError** like `ImportError: This modeling file requires the following packages that were not found in your environment`. This indicates certain packages required by the model are absent from your environment. Detailed instructions for installing these necessary packages can be found at the bottom of the error messages. Take the following steps to fix these errors:
+
+- Exit the WebUI Server by pressing **Ctrl+C** in the **Anaconda Prompt** terminal.
+- Install the missing pip packages as specified in the error message
+- Restart the WebUI Server.
+
+If there are still errors on missing packages, repeat the installation process for any additional required packages.
+
+
+### Compatiblity issues
+If you encounter **AttributeError** errors like shown below, it may be due to some models being incompatible with the current version of the transformers package because they are outdated. In such instances, using a more recent model is recommended.
+
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png" width=80%; />
