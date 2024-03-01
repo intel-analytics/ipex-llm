@@ -1,10 +1,10 @@
-# Install BigDL-LLM on Windows for Intel GPU
+# Install BigDL-LLM on Windows with Intel GPU
 
 This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
 
 It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
-## Install GPU driver
+## Install GPU Driver
 
 * Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
    
@@ -63,7 +63,7 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
   from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
   ```
 
-## A quick example
+## A Quick Example
 
 Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
@@ -120,4 +120,9 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    Question:What is AI?
    Answer: AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.
    ```
+
+## Tips & Troubleshooting
+
+### Warmup for optimial performance on first run
+When running LLMs on GPU for the first time, you might notice the performance is lower than expected, with delays up to several minutes before the first token is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU models. To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks. If you're developing an application, you can incorporate this warmup step into start-up or loading routine to enhance the user experience.
 
