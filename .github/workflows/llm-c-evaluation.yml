@@ -81,7 +81,8 @@ jobs:
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
-  llm-ceval-evaluation:
+
+  llm-c-evaluation:
     timeout-minutes: 1200
     needs: [llm-cpp-build, set-matrix]
     strategy:
@@ -109,6 +110,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
+          pip install einops
+          pip install thefuzz
+          pip install tiktoken
+          pip install transformers==4.31.0
+          pip install transformers_stream_generator
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -147,15 +153,6 @@ jobs:
           DATA_PATH=$CEVAL_HF_HOME/data
           unzip -o "$CEVAL_HF_HOME/data/ceval-exam.zip" -d "$CEVAL_HF_HOME/data"
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
-          
-      - name: Install Dependencies
-        shell: bash
-        run: |
-          pip install einops
-          pip install thefuzz
-          pip install tiktoken
-          pip install transformers==4.31.0
-          pip install transformers_stream_generator
 
       - name: Run C-Eval
         shell: bash
@@ -178,9 +175,9 @@ jobs:
           path:
             ${{ github.workspace }}/python/llm/dev/benchmark/ceval/results/**
 
-  llm-ceval-summary:
+  llm-ceval-summary-html:
     if: ${{ always() }}
-    needs: llm-ceval-evaluation
+    needs: llm-c-evaluation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -188,13 +185,75 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
-      - name: Download all results
+
+      - name: Download ceval results
         uses: actions/download-artifact@v3
         with:
           name: ceval_results
           path: results
+
       - name: Summarize the results
         shell: bash
         run: |
           ls results
-          python ${{ github.workspace }}/python/llm/dev/benchmark/ceval/organize_results.py results/
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          python ${{ github.workspace }}/python/llm/dev/benchmark/ceval/organize_results.py results/ results/
+
+      - name: Set artifact file path
+        run: echo "ARTIFACT_PATH=results/results_${{ env.DATE }}.csv" >> $GITHUB_ENV
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: results_${{ env.DATE }}
+          path: ${{ env.ARTIFACT_PATH }}
+
+  llm-ceval-html:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [llm-c-evaluation]
+    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install numpy
+          pip install pandas==1.5.3
+          pip install jsonlines pytablewriter regex
+      
+      - name: Set output path
+        shell: bash
+        run: |    
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          if ${{github.event_name == 'pull_request'}}; then
+            echo 'ACC_FOLDER=/home/arda/ceval-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+          fi
+          if ${{github.event_name == 'schedule'}}; then
+            echo 'ACC_FOLDER=/home/arda/ceval-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+          fi
+
+      - name: Create ceval results directory if not exists
+          run: |
+            if [ ! -d "${{ env.ACC_FOLDER }}" ]; then
+              mkdir -p "${{ env.ACC_FOLDER }}"
+            fi
+
+      - name: Download ceval results
+        uses: actions/download-artifact@v3s
+        with:
+          name: results_${{ env.DATE }}
+          path:  ${{ env.ACC_FOLDER }}
+          rename: results_${{ env.DATE }}.csv
+
+      - name: Update HTML
+        working-directory: ${{ github.workspace }}/python/llm/test/benchmark/ceval/
+        shell: bash
+        run: |
+          python ceval_csv_to_html.py -f $ACC_FOLDER
+          if ${{github.event_name == 'schedule'}}; then
+            python update_html_in_parent_folder.py -f $ACC_FOLDER
+          fi
