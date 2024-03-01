@@ -60,7 +60,7 @@ You may encounter this error during finetuning on multi GPUs. Please try `sudo a
 
 ### random and unreadable output of Gemma-7b-it on Arc770 ubuntu 22.04 due to driver and OneAPI missmatching.
 
-If driver and OneAPI missmatching, it will lead to some error when bigdl use XMX(short prompts) for speeding up.
+If driver and OneAPI missmatching, it will lead to some error when BigDL use XMX(short prompts) for speeding up.
 The output of `What's AI?` may like below:
 ```
 wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
