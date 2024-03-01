@@ -147,7 +147,7 @@ def yuan_attention_forward(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(self.merged_qk_proj, hidden_states):
+    if use_quantize_kv_cache(self.merged_q_proj, hidden_states):
         forward_function = yuan_attention_forward_quantized
     else:
         forward_function = yuan_attention_forward_origin
@@ -206,8 +206,8 @@ def yuan_attention_forward_quantized(
     else:
         hidden_states = yuan_localized_filtering_forward(self.lf_gate, hidden_states,
                                                          this_hidden_states, hidden_states.dtype)
-    qk_states = self.merged_qk_proj(hidden_states)
-    (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
+    query_states = self.merged_q_proj(hidden_states)
+    key_states = self.merged_k_proj(hidden_states)
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     key_states = key_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
