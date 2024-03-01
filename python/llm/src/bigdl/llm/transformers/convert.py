@@ -555,17 +555,27 @@ def _optimize_pre(model):
                 head_dim = module.head_dim
                 hidden_size = module.hidden_size
 
-                merged_qk_proj = torch.nn.Linear(0, 0, False)
-                weight = torch.cat([
+                weight_q = torch.cat([
                     q_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
                     k_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
+                ], dim=0).view(num_heads * head_dim, hidden_size)
+
+                weight_k = torch.cat([
                     q_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
                     k_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
-                ], dim=0).view(num_heads * head_dim * 2, hidden_size)
-                merged_qk_proj.weight = torch.nn.Parameter(weight, requires_grad=False)
-                merged_qk_proj.in_features = hidden_size
-                merged_qk_proj.out_features = num_heads * head_dim * 2
-                module.merged_qk_proj = merged_qk_proj
+                ], dim=0).view(num_heads * head_dim, hidden_size)
+
+                merged_q_proj = torch.nn.Linear(0, 0, False)
+                merged_q_proj.weight = torch.nn.Parameter(weight_q, requires_grad=False)
+                merged_q_proj.in_features = hidden_size
+                merged_q_proj.out_features = num_heads * head_dim
+                module.merged_q_proj = merged_q_proj
+
+                merged_k_proj = torch.nn.Linear(0, 0, False)
+                merged_k_proj.weight = torch.nn.Parameter(weight_k, requires_grad=False)
+                merged_k_proj.in_features = hidden_size
+                merged_k_proj.out_features = num_heads * head_dim
+                module.merged_k_proj = merged_k_proj
 
                 del module.q_proj
                 del module.k_proj

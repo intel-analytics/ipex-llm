@@ -34,7 +34,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
-from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31. SILU
+from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, SILU
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -360,8 +360,8 @@ def yuan_attention_forward_origin(
     else:
         hidden_states = yuan_localized_filtering_forward(self.lf_gate, hidden_states,
                                                          this_hidden_states, hidden_states.dtype)
-    qk_states = self.merged_qk_proj(hidden_states)
-    (query_states, key_states) = torch.chunk(qk_states, 2, dim=-1)
+    query_states = self.merged_q_proj(hidden_states)
+    key_states = self.merged_k_proj(hidden_states)
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     key_states = key_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
 
