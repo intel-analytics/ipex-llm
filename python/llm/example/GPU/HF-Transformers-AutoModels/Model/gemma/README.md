@@ -116,8 +116,8 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-#### 2.3 Sample Output
-#### [google/gemma-7b-it](https://huggingface.co/google/gemma-7b-it)
+##### Sample Output
+##### [google/gemma-7b-it](https://huggingface.co/google/gemma-7b-it)
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------
@@ -127,7 +127,7 @@ model
 **Artificial Intelligence (AI)** is a field of computer science that involves the creation of intelligent machines capable of performing tasks typically requiring human intelligence, such as learning,
 ```
 
-#### [google/gemma-2b-it](https://huggingface.co/google/gemma-2b-it)
+##### [google/gemma-2b-it](https://huggingface.co/google/gemma-2b-it)
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------
@@ -136,3 +136,14 @@ What is AI?
 model
 **Artificial intelligence (AI)** is the simulation of human cognitive functions, such as learning, reasoning, and problem-solving, by machines. AI systems are designed
 ```
+
+### 5. Know issue
+Gemma-7b-it's output is random and unreadable on Arc770 ubuntu 22.04.
+
+The output of `What's AI?` like:
+```
+wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
+```
+Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
+Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~22.04.
+
