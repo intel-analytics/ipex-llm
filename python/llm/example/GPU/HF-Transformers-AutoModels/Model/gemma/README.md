@@ -138,12 +138,12 @@ model
 ```
 
 ### 5. Know issue
-Gemma-7b-it's output is random and unreadable on Arc770 ubuntu 22.04.
+#### 1. Random and unreadable output of Gemma-7b-it on Arc770 ubuntu 22.04 due to driver and OneAPI missmatching.
 
-The output of `What's AI?` like:
+If driver and OneAPI's verion is missmatched, the output of `What's AI?` may like below:
 ```
 wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
 ```
-Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
+The driver and OneAPI's version missmatching will lead to some error when bigdl use XMX(short prompts) for speeding up.
+If you meet this problem, please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
 Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~22.04.
-
