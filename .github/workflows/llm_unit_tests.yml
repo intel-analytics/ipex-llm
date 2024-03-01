@@ -346,3 +346,11 @@ jobs:
             source /home/arda/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
+
+      - name: Run LLM langchain test
+        shell: bash
+        run: |
+          pip install -U langchain==0.0.184
+          pip install -U chromadb==0.3.25
+          pip install -U pandas==2.0.3
+          bash python/llm/test/run-llm-langchain-tests-gpu.sh
