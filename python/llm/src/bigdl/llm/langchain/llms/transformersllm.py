@@ -133,7 +133,8 @@ class TransformersLLM(LLM):
 
         # TODO: may refactore this code in the future
         if 'device_map' in _model_kwargs:
-            model = model.to(_model_kwargs['device_map'])
+            if 'xpu' in _model_kwargs['device_map']:
+                model = model.to(_model_kwargs['device_map'])
             _model_kwargs = {
                 k: v for k, v in _model_kwargs.items() if k != "device_map"
             }
@@ -198,7 +199,8 @@ class TransformersLLM(LLM):
         
         # TODO: may refactore this code in the future
         if 'device_map' in _model_kwargs:
-            model = model.to(_model_kwargs['device_map'])
+            if 'xpu' in _model_kwargs['device_map']:
+                model = model.to(_model_kwargs['device_map'])
             _model_kwargs = {
                 k: v for k, v in _model_kwargs.items() if k != "device_map"
             }
