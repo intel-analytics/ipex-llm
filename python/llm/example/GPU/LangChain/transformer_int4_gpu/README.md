@@ -1,9 +1,9 @@
 # Langchain examples
 
-The examples here show how to use langchain with `bigdl-llm`.
+The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `bigdl-llm` on Intel GPU.
 
 ## Install bigdl-llm
-Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
+Follow the instructions in [GPU Install Guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install bigdl-llm
 
 ## Install Required Dependencies for langchain examples. 
 
