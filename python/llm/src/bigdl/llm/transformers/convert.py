@@ -662,7 +662,6 @@ def replace_func(m, target_m, func_name, new_func):
 
 
 def _optimize_ipex(model):
-    import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
@@ -694,7 +693,6 @@ def _optimize_ipex(model):
         # baichuan2
         rms_classes.append(type(model.model.layers[0].input_layernorm))
 
-    model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_model(model, rms_classes)
     return _ipex_jit(model)
 
