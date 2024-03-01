@@ -2,7 +2,7 @@ FROM ubuntu:20.04 as key-getter
 ARG http_proxy
 ARG https_proxy
 
-RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+RUN apt-get update && \
     apt-get install -y curl gpg && \
     curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /root/intel-oneapi-archive-keyring.gpg
 
@@ -20,7 +20,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 
 RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     # install pytorch 2.1.0
-    env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get update && \
     apt-get install -y --no-install-recommends python3-pip python3.9-dev python3-wheel python3.9-distutils git software-properties-common && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
@@ -39,7 +39,7 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     # install basic dependencies
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
+    apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd /bigdl && \
