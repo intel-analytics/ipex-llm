@@ -41,6 +41,10 @@ from intel_extension_for_pytorch.transformers.optimize import (
     lowering_class_cpu,
     convert_class,
 )
+from intel_extension_for_pytorch.cpu._auto_kernel_selection import (
+    _enable_tpp,
+    _using_tpp,
+)
 
 
 def _ipex_optimize_rmsnorm(_model, supported_classes):
@@ -69,7 +73,7 @@ def _ipex_optimize_decoder(model):
             supported_mlp_class,
             _IPEXDecoderLayerCPU,
             model.config,
-            tpp=False,
+            tpp=True if _using_tpp() else False,
             woq=False,
         )
 
@@ -87,13 +91,15 @@ def _ipex_optimize_attention(model):
             supported_mha_class,
             _IPEXAttentionCPU,
             model.config,
-            tpp=False,
+            tpp=True if _using_tpp() else False,
             woq=False,
         )
 
 
 def _ipex_optimize_model(model, rms_classes):
-
+    _enable_tpp()
+    import intel_extension_for_pytorch as ipex
+    ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_rmsnorm(model, rms_classes)
     _ipex_optimize_attention(model)
     _ipex_optimize_decoder(model)
