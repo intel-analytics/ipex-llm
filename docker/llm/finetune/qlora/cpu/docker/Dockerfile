@@ -39,6 +39,7 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     # install basic dependencies
+    apt-get update && \
     apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
     ln -s /usr/bin/python3 /usr/bin/python && \
