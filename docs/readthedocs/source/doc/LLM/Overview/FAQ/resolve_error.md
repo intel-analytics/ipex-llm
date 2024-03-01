@@ -60,12 +60,12 @@ You may encounter this error during finetuning on multi GPUs. Please try `sudo a
 
 ### random and unreadable output of Gemma-7b-it on Arc770 ubuntu 22.04 due to driver and OneAPI missmatching.
 
-The output of `What's AI?` like below:
+If driver and OneAPI missmatching, it will lead to some error when bigdl use XMX(short prompts) for speeding up.
+The output of `What's AI?` may like below:
 ```
 wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
 ```
-This is caused by driver and OneAPI missmatching, it will lead to some error when bigdl use XMX(short prompts) for speeding up.
-Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
+If you meet this error. Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
 Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~22.04.
 
 ### Too many open files
