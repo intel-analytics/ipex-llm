@@ -662,7 +662,6 @@ def replace_func(m, target_m, func_name, new_func):
 
 
 def _optimize_ipex(model):
-    import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
@@ -694,7 +693,6 @@ def _optimize_ipex(model):
         # baichuan2
         rms_classes.append(type(model.model.layers[0].input_layernorm))
 
-    model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
     _ipex_optimize_model(model, rms_classes)
     return _ipex_jit(model)
 
@@ -1113,6 +1111,7 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.gemma import gemma_attention_forward
         from bigdl.llm.transformers.models.gemma import gemma_rms_norm_forward
+        from bigdl.llm.transformers.models.gemma import gemma_mlp_forward
         convert_forward(model,
                         module.GemmaAttention,
                         gemma_attention_forward,
@@ -1120,6 +1119,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.GemmaRMSNorm,
                         gemma_rms_norm_forward)
+        convert_forward(model,
+                        module.GemmaMLP,
+                        gemma_mlp_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1201,13 +1203,14 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.yuan import yuan_attention_forward
-        from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
+        # from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
         convert_forward(model,
                         module.YuanAttention,
                         yuan_attention_forward
                         )
-        convert_forward(model,
-                        module.YuanMLP,
-                        yuan_mlp_forward
-                        )
+        # disable able mlp_forward for quantize_kv on mtl.
+        # convert_forward(model,
+        #                 module.YuanMLP,
+        #                 yuan_mlp_forward
+        #                 )
     return model

@@ -26,6 +26,10 @@ SYM_INT8 = ggml_tensor_qtype["sym_int8"]
 FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 
+# used in fused mlp forward
+SILU = 0
+GELU = 1
+
 
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
     key_cache_storage = torch.empty(batch_size, num_heads,
@@ -236,7 +240,7 @@ def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
         (past_key_value[0].size(2) + seq_len) * past_key_value[0].size(3)
 
 
-def use_flash_attention(query, key):
+def use_flash_attention(query, key, attention_mask=None):
     # here we support query's shape is always [batch_size, head_num, q_len, head_dim],
     # key's shape is always [batch_size, head_num, k_len, head_dim]
     invalidInputError(query.dim() == 4,
@@ -248,11 +252,6 @@ def use_flash_attention(query, key):
     bsz, _, q_len, _ = query.size()
     k_len = key.size()[2]
     # check whether ipex flash attention can be used
-    if bsz > 1:
-        # only use flash attention for batch_size = 1 now
-        # as flash attention doesn't support attn_mask in ipex 2.1,
-        # so it will cause output error for padded batch input
-        return False
     if q_len != k_len:
         # now only use flash attention for first token
         # as it seems have no performance benifit for rest token now
@@ -271,6 +270,22 @@ def use_flash_attention(query, key):
     if query.dtype not in [torch.float32, torch.float16]:
         # only use flash attention for fp32/fp16 input
         return False
+    if bsz > 1:
+        # as flash attention doesn't support attn_mask in ipex 2.1,
+        # so it will cause output error for padded batch input
+        if attention_mask is None:
+            return True
+        else:
+            # TODO: below logic may change for different model
+            # attention mask shape : [bsz, 1, q_len, k_len]
+            if attention_mask[0].squeeze()[0, 0].item() != 0:
+                # first batch contains padding
+                # otherwise we suppose it should be a upper triangular matrix
+                # at the same time, the diagonal is also 0
+                return False
+            elif not attention_mask.equal(attention_mask[0].repeat(bsz, 1, 1, 1)):
+                # check whether mask of every batch is the same
+                return False
     return True
 
 

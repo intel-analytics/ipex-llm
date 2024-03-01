@@ -24,6 +24,7 @@ BigDL-LLM
 ============================================
 Latest update 🔥
 ============================================
+- [2024/02] ``bigdl-llm`` now supports directly loading model from `ModelScope <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/ModelScope-Models>`_ (`魔搭 <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/ModelScope-Models>`_).
 - [2024/02] ``bigdl-llm`` added inital **INT2** support (based on llama.cpp `IQ2 <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_ mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
 - [2024/02] Users can now use ``bigdl-llm`` through `Text-Generation-WebUI <https://github.com/intel-analytics/text-generation-webui>`_ GUI.
 - [2024/02] ``bigdl-llm`` now supports `Self-Speculative Decoding <doc/LLM/Inference/Self_Speculative_Decoding.html>`_, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel `GPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/Speculative-Decoding>`_ and `CPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding>`_ respectively.
@@ -81,8 +82,10 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 ``bigdl-llm`` quickstart
 ============================================
 
-- `CPU <#cpu-quickstart>`_
-- `GPU <#gpu-quickstart>`_
+- `Windows GPU installation <doc/LLM/Quickstart/install_windows_gpu.html>`_
+- `Run BigDL-LLM using Docker <https://github.com/intel-analytics/BigDL/tree/main/docker/llm>`_
+- `CPU quickstart <#cpu-quickstart>`_
+- `GPU quickstart <#gpu-quickstart>`_
 
 --------------------------------------------
 CPU Quickstart

@@ -40,6 +40,7 @@ import math
 import os
 import torch.nn.functional as F
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import SILU
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
@@ -49,7 +50,7 @@ from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_s
 from bigdl.llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.models.llama.modeling_llama import LlamaModel
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
@@ -149,7 +150,7 @@ def llama_mlp_forward(
         out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
-            qtype
+            SILU, qtype
         ))
         if residual is not None:
             return out + residual
@@ -323,7 +324,7 @@ def llama_attention_forward_4_31_quantized(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
@@ -351,6 +352,7 @@ def llama_attention_forward_4_31_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
                                                                          self.head_dim)
     else:
@@ -380,7 +382,7 @@ def llama_attention_forward_4_31_quantized(
                                                             cos, sin, position_ids, "llama")
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -515,7 +517,7 @@ def llama_attention_forward_4_31_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
@@ -538,6 +540,7 @@ def llama_attention_forward_4_31_original(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -660,7 +663,7 @@ def llama_attention_forward_4_31_original(
     past_key_value = (key_states, value_states) if use_cache else None
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -750,9 +753,10 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: decoding fast path
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = past_key_value is not None and is_enough_kv_cache_room_4_31(past_key_value[0])
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    qtype = getattr(self.q_proj, "qtype", None)
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           bsz * q_len == 1)
     decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
@@ -787,6 +791,7 @@ def llama_attention_selective_batching_forward_4_31(
                                                                          position_ids,
                                                                          past_k, past_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -1133,9 +1138,9 @@ def llama_attention_forward_4_36_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    is_q4_0 = qtype == SYM_INT4
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
     decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
@@ -1156,6 +1161,7 @@ def llama_attention_forward_4_36_original(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -1289,7 +1295,7 @@ def llama_attention_forward_4_36_original(
                 past_key_value.value_cache[self.layer_idx] = value_states
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:

@@ -49,7 +49,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, \
     apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -77,7 +77,7 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 
 def use_decoding_fast_path(q_type, use_fuse_rope, enough_kv_room, bs):
-    return q_type in [SYM_INT4, FP8E5] and \
+    return q_type in [SYM_INT4, FP8E5, IQ2_XXS] and \
         use_fuse_rope and enough_kv_room and bs == 1
 
 
@@ -188,6 +188,7 @@ def mistral_attention_forward_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
                                                                          self.head_dim)
     else:
@@ -360,6 +361,7 @@ def mistral_attention_forward_original(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -512,6 +514,7 @@ def mistral_attention_forward_4_36(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1

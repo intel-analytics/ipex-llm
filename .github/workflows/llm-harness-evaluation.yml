@@ -259,10 +259,10 @@ jobs:
         run: |    
           echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
           if ${{github.event_name == 'pull_request'}}; then
-            echo 'ACC_FOLDER=/home/arda/harness-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/harness/pr-accuracy-data' >> $GITHUB_ENV
           fi
           if ${{github.event_name == 'schedule'}}; then
-            echo 'ACC_FOLDER=/home/arda/harness-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/harness/nightly-accuracy-data' >> $GITHUB_ENV
           fi
 
       - name: Download harness results

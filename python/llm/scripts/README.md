@@ -1,11 +1,41 @@
-# README
-Script will first check Python installation, then site-packages (transformers, torch and bigdl-llm), and hardware or operating system and finally check xpu-related issue. 
-## Linux
-### How to use
-Run `bash env-check.sh` on linux. 
-### Sample output
-Here is the output of the scipt on arc12 with GPU installed properly.
-Note that when only CPU is aviailable, we can ignore xpu related checks. 
+#  Utility Scripts
+
+
+## Env-Check
+
+The **Env-Check** scripts  ([env-check.sh](./env-chec.sh), [env-check.bat](./env-chec.bat)) are designed to verify your `bigdl-llm` installation and runtime environment. These scripts can help you ensure your environment is correctly set up for optimal performance. You can include the script's output when reporting issues on [BigDL Github Issues](https://github.com/intel-analytics/BigDL/issues) for easier troubleshooting.
+
+> Note: These scripts verify python installation, check for necessary packages and environmental variables, assess hardware or operating system compatibility, and identify any XPU-related issues. 
+
+### Install extra dependency
+
+* On Linux, the script uses a tool named `xpu-smi`. It is a convinent tool the monitor ths status of the GPUs. If you're runing LLMs on GPUs on Linux, we recommend installing `xpu-smi`. Run below command to install:
+```
+sudo apt install xpu-smi
+```
+* On Windows, you can ignore the sections in `xpu-smi.exe` if you didn't install it. You can always use **Windows Task Manager** to monitor the status of GPUs on Windows.   
+  
+### Usage
+
+* After installing `bigdl-llm`, open a terminal (on Linux) or **Anaconda Prompt** (on Windows), and activate the conda environment you have created for running `bigdl-llm`: 
+  ```
+  conda activate llm
+  ```
+  > If you do not know how to install `bigdl-llm`, refer to [BigDL-LLM installation](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) for more details.
+*  Within the activated python environment, run below command:
+    *  On Linux
+        ```bash
+        bash env-check.sh
+        ```
+    * On Windows,
+        ```bash
+        env-check.bat
+        ```
+
+### Sample outputs
+
+* An example output on a Linux Desktop equipped with i9 13-Gen Intel Core CPU and Intel(R) Arc(TM) A770 GPU looks like below. 
+
 ```
 -----------------------------------------------------------------
 PYTHON_VERSION=3.9.18
@@ -57,12 +87,12 @@ Environment Variable:
 SHELL=/usr/bin/zsh
 LSCOLORS=Gxfxcxdxbxegedabagacad
 TBBROOT=/opt/intel/oneapi/tbb/2021.11/env/..
-USER_ZDOTDIR=/home/arda
+USER_ZDOTDIR=/home/user
 COLORTERM=truecolor
 LESS=-R
 TERM_PROGRAM_VERSION=1.86.2
 ONEAPI_ROOT=/opt/intel/oneapi
-CONDA_EXE=/home/arda/anaconda3/bin/conda
+CONDA_EXE=/home/user/anaconda3/bin/conda
 _CE_M=
 -----------------------------------------------------------------
 xpu-smi is properly installed. 
@@ -78,110 +108,4 @@ xpu-smi is properly installed.
 |           | Function Type: physical                                                              |
 +-----------+--------------------------------------------------------------------------------------+
 -----------------------------------------------------------------
-```
-
-### FAQs
-1. How to create environment with proper python version and dependencies?
-We suggest using conda to manage environment:
-When CPU-only. Note that after creating environment by commands below, running `bash env-check.sh` will get `ipex not installed` and that is normal. 
-```bash
-conda create -n llm python=3.9
-conda activate llm
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
-```
-When XPU is available. Note that after creating environment by commands below, running `bash env-check.sh` will get ipex version if installed correctly. 
-```bash
-conda create -n llm python=3.9
-conda activate llm
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-```
-If you get messages "Python Version must be higher than 3.9.x" or "No Python found!", we recommend install the virtual environment again with the above commands.
-
-2. How to install xpu-smi?
-TODO
-
-3. Site-package version. Here we list transformers, torch, BigDL and ipex. 
-
-## Windows
-### How to use
-Run `env-check.bat` on linux. 
-### Sample output
-Here is the output of the scipt on the laptop with GPU installed properly.
-Note that when only CPU is aviailable, we can ignore xpu related checks. 
-```
-Python 3.9.18
------------------------------------------------------------------
-transformers=4.37.0
------------------------------------------------------------------
-torch=2.1.0a0+cxx11.abi
------------------------------------------------------------------
-Name: bigdl-llm
-Version: 2.5.0b20240220
-Summary: Large Language Model Develop Toolkit
-Home-page: https://github.com/intel-analytics/BigDL
-Author: BigDL Authors
-Author-email: bigdl-user-group@googlegroups.com
-License: Apache License, Version 2.0
-Location: c:\users\zhicunlv\appdata\local\miniconda3\envs\zhicun\lib\site-packages
-Requires:
-Required-by:
------------------------------------------------------------------
-ipex=2.1.10+xpu
------------------------------------------------------------------
-System Information
-
-Host Name:                 ZHICUNLV-MOBL
-OS Name:                   Microsoft Windows 11 Enterprise
-OS Version:                10.0.22621 N/A Build 22621
-OS Manufacturer:           Microsoft Corporation
-OS Configuration:          Member Workstation
-OS Build Type:             Multiprocessor Free
-Registered Owner:          Intel User
-Registered Organization:   Intel Corporation
-Product ID:                00330-80000-00000-AA731
-Original Install Date:     1/17/2024, 1:48:03 AM
-System Boot Time:          2/21/2024, 12:15:27 PM
-System Manufacturer:       HP
-System Model:              HP EliteBook 840 G8 Notebook PC
-System Type:               x64-based PC
-Processor(s):              1 Processor(s) Installed.
-                           [01]: Intel64 Family 6 Model 140 Stepping 1 GenuineIntel ~2995 Mhz
-BIOS Version:              HP T76 Ver. 01.15.02, 11/15/2023
-Windows Directory:         C:\windows
-System Directory:          C:\windows\system32
-Boot Device:               \Device\HarddiskVolume1
-System Locale:             en-us;English (United States)
-Input Locale:              zh-cn;Chinese (China)
-Time Zone:                 (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi
-Total Physical Memory:     32,496 MB
-Available Physical Memory: 16,528 MB
-Virtual Memory: Max Size:  37,360 MB
-Virtual Memory: Available: 14,926 MB
-Virtual Memory: In Use:    22,434 MB
-Page File Location(s):     C:\pagefile.sys
-Domain:                    ccr.corp.intel.com
-Logon Server:              \\SHSCCR603
-Hotfix(s):                 3 Hotfix(s) Installed.
-                           [01]: KB5034467
-                           [02]: KB5034765
-                           [03]: KB5034225
-Network Card(s):           3 NIC(s) Installed.
-                           [01]: Intel(R) Wi-Fi 6 AX201 160MHz
-                                 Connection Name: Wi-Fi
-                                 DHCP Enabled:    Yes
-                                 DHCP Server:     1.1.1.1
-                                 IP address(es)
-                                 [01]: 10.238.0.86
-                                 [02]: fe80::4d61:f10d:d482:8bad
-                           [02]: Bluetooth Device (Personal Area Network)
-                                 Connection Name: Bluetooth Network Connection
-                                 Status:          Media disconnected
-                           [03]: Realtek USB GbE Family Controller
-                                 Connection Name: Ethernet 2
-                                 Status:          Media disconnected
-Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
------------------------------------------------------------------
-'xpu-smi.exe' is not recognized as an internal or external command,
-operable program or batch file.
-xpu-smi is not installed properly.
 ```
