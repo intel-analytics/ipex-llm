@@ -12,7 +12,7 @@ A preview of the WebUI in action is shown below:
 
 ## 1 Install BigDL-LLM
 
-To use the WebUI, first ensure that BigDL-LLM is installed. Follow the instructions on the [BigDL-LLM Installation Quickstart for Windows with Intel GPU](https://github.com/intel-analytics/BigDL/blob/main/docs/readthedocs/source/doc/LLM/Quickstart/install_windows_gpu.md). 
+To use the WebUI, first ensure that BigDL-LLM is installed. Follow the instructions on the [BigDL-LLM Installation Quickstart for Windows with Intel GPU](install_windows_gpu.html). 
 
 **After the installation, you should have created a conda environment, named `llm` for instance, for running `bigdl-llm` applications.**
 
@@ -38,7 +38,7 @@ pip install -r requirements_cpu_only.txt
 
 ### Set Environment Variables
 If you're running on iGPUs, set some environment variables by running below commands in **Anaconda Prompt**:
-  > Note: For more details about runtime configurations, refer to [this link](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
+  > Note: For more details about runtime configurations, refer to [this link](../Overview/install_gpu.html#runtime-configuration): 
   ```bash
   set SYCL_CACHE_PERSISTENT=1
   set BIGDL_LLM_XMX_DISABLED=1
