@@ -46,14 +46,13 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     cd /bigdl && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv BigDL/python/llm/example/CPU/QLoRA-FineTuning/* . && \
-    rm -r BigDL && \
-    chown -R mpiuser /bigdl
+    rm -r BigDL
 
 # for docker directly run example
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
 # for k8s
 COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl/bigdl-qlora-finetuing-entrypoint.sh
 
+RUN chown -R mpiuser /bigdl
 USER mpiuser
-
 ENTRYPOINT ["/bin/bash"]
