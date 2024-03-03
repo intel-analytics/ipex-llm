@@ -1,7 +1,7 @@
 
 # Use Text Generation WebUI on Windows with Intel GPU
 
-This quickstart guide walks you through setting up and using the **Text Generation WebUI** (a Gradio web UI for Large Language Models) with `bigdl-llm`. 
+This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) (a Gradio WebUI for running Large Language Models) with `bigdl-llm`. 
 
 
 A preview of the WebUI in action is shown below:
