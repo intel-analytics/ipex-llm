@@ -209,6 +209,11 @@ jobs:
           pip install -U chromadb==0.3.25
           pip install -U pandas==2.0.3
           bash python/llm/test/run-llm-langchain-tests.sh
+      - name: Run LLM inference test of transformers 4.36
+        shell: bash
+        run: |
+          python -m pip install einops datasets librosa openai-whisper
+          bash python/llm/test/run-llm-inference-tests-4.36.sh
   llm-unit-test-on-arc:
     needs: [setup-python-version, llm-cpp-build]
     strategy:
@@ -332,6 +337,8 @@ jobs:
           bash python/llm/test/run-llm-inference-tests-gpu.sh
           python -m pip install transformers==4.34.0 
           bash python/llm/test/run-llm-inference-tests-gpu-434.sh
+          python -m pip install transformers==4.36.2
+          bash python/llm/test/run-llm-inference-tests-gpu-4.36.sh
 
       - name: Run LLM example tests
         shell: bash
