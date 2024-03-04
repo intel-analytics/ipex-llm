@@ -579,6 +579,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          lightweight_bmm=False, torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
+                         ipex_gptq_int4_model_path=None,
                          enable_xetla=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
@@ -592,7 +593,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if device == "cpu":
         logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
     if _enable_ipex:
-        model = _optimize_ipex(model, qtype)
+        model = _optimize_ipex(model, qtype, ipex_gptq_int4_model_path)
         return model
 
     if optimize_model:
@@ -661,14 +662,18 @@ def replace_func(m, target_m, func_name, new_func):
         replace_func(sub_m, target_m, func_name, new_func)
 
 
-def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
+def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"],
+                   ipex_gptq_int4_model_path=None):
     import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
         _ipex_optimize_model, _ipex_jit, _make_causal_mask,
-        _llama_model_forward_4_35, convert_function, GLM_get_masks
+        _llama_model_forward_4_35, convert_function, GLM_get_masks, ipex_int4_opt
     )
+    
+    if qtype == ggml_tensor_qtype["sym_int4"]:
+        model = ipex_int4_opt(model, low_precision_checkpoint=ipex_gptq_int4_model_path)
 
     model = model_convert_reference(model)
 

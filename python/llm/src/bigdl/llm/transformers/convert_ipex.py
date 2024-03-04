@@ -41,6 +41,13 @@ from intel_extension_for_pytorch.transformers.optimize import (
     lowering_class_cpu,
     convert_class,
 )
+from intel_extension_for_pytorch.cpu._auto_kernel_selection import (
+    _enable_tpp,
+    _using_tpp,
+    _disable_tpp
+)
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+import intel_extension_for_pytorch as ipex
 
 
 def _ipex_optimize_rmsnorm(_model, supported_classes, is_tpp=False, is_woq=False):
@@ -94,6 +101,7 @@ def _ipex_optimize_attention(model, is_tpp=False, is_woq=False):
 
 def _ipex_optimize_model(model, rms_classes, qtype):
     from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    from intel_extension_for_pytorch.transformers.optimize import ipex_quantization_flow
 
     is_woq = False
     is_quantization = False
@@ -157,6 +165,182 @@ def _ipex_jit(model):
     model.register_forward_hook(output_hook, with_kwargs=True)
 
     return model
+
+
+from enum import IntEnum
+class EXAMPLE_INPUTS_MODE(IntEnum):
+    MASK_KV = 1
+    KV_MASK = 2
+    MASK_POS_KV = 3
+    MASK_KV_POS = 4
+    MASK_KV_ENC = 5
+    MASK_KV_PIXEL = 6
+    
+
+def get_example_inputs(model):
+    batch_size = 1
+    beam_idx_tmp = torch.zeros(
+        (2048, int(batch_size * 1)), dtype=torch.long
+    ).contiguous()
+    def _get_target_nums(names):
+        for n in names:
+            if hasattr(model.config, n):
+                return getattr(model.config, n)
+        print(f"Not found target {names[0]}")
+        exit(0)
+    num_heads_names = ["num_attention_heads", "n_head", "num_heads", "n_heads"]
+    num_layers_names = ["num_hidden_layers", "n_layer", "num_layers", "n_layers"]
+    hidden_size_names = ["hidden_size", "n_embd"]
+    n_heads = _get_target_nums(num_heads_names)
+    n_layers = _get_target_nums(num_layers_names)
+    hidden_size = _get_target_nums(hidden_size_names)
+    head_dim = int(hidden_size / n_heads)
+    if model.use_global_past_key_value:
+        global global_past_key_value
+    global_past_key_value = [
+        (
+            torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
+            torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
+            torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
+            beam_idx_tmp,
+        )
+        for i in range(n_layers)
+    ]
+    
+    example_inputs = None
+    input_ids = torch.ones(32).to(torch.long)
+    attention_mask = torch.ones(len(input_ids))
+    if model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_POS_KV:
+        position_ids = torch.arange(len(input_ids))
+        example_inputs = (
+            input_ids.unsqueeze(0),
+            attention_mask.unsqueeze(0),
+            position_ids.unsqueeze(0),
+            tuple(global_past_key_value),
+        )
+    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_POS:
+        position_ids = torch.arange(len(input_ids))
+        example_inputs = (
+            input_ids.unsqueeze(0),
+            attention_mask.unsqueeze(0),
+            tuple(global_past_key_value),
+            position_ids.unsqueeze(0),
+        )
+    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.KV_MASK:
+        example_inputs = (
+            input_ids.unsqueeze(0),
+            tuple(global_past_key_value),
+            attention_mask.unsqueeze(0),
+        )
+    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV:
+        example_inputs = (
+            input_ids.unsqueeze(0),
+            attention_mask.unsqueeze(0),
+            tuple(global_past_key_value),
+        )
+    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_ENC:
+        last_hidden_state = torch.rand([1, 32, 2048])
+        global_past_key_value = [
+            (
+                torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
+                torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
+                torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
+                beam_idx_tmp,
+                torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
+                torch.zeros([32, 1, n_heads, head_dim]).contiguous(),
+                torch.zeros([32, 1, n_heads, head_dim]).contiguous(),
+                beam_idx_tmp,
+            )
+            for i in range(n_layers)
+        ]
+        example_inputs = (
+            torch.ones(1).to(torch.long).unsqueeze(0),
+            attention_mask.unsqueeze(0),
+            tuple(global_past_key_value),
+            (last_hidden_state,),
+        )
+    else:
+        raise RuntimeError("Your model does not match existing example inputs used in ipex quantization, exiting...")
+    if hasattr(model, "extra_inputs"):
+        example_inputs = example_inputs + model.extra_inputs
+    return example_inputs
+
+
+def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
+    batch_size = 1
+    output_dir = "/workspace/ipex_int4_test"
+    quantized_model_path = "/models/Llama-2-13b-chat-ipex-int4/best_model.pt"
+    amp_enabled = True
+    amp_dtype = torch.bfloat16
+    import intel_extension_for_pytorch as ipex
+    weight_dtype = torch.quint4x2
+    lowp_mode = ipex.quantization.WoqLowpMode.INT8
+    act_quant_mode_dict = {
+        "PER_TENSOR": ipex.quantization.WoqActQuantMode.PER_TENSOR,
+        "PER_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_IC_BLOCK,
+        "PER_BATCH": ipex.quantization.WoqActQuantMode.PER_BATCH,
+        "PER_BATCH_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_BATCH_IC_BLOCK,
+    }
+    qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+        weight_dtype=weight_dtype,
+        lowp_mode=lowp_mode,
+        act_quant_mode=act_quant_mode_dict["PER_IC_BLOCK"],
+        group_size=-1,
+    )
+    if low_precision_checkpoint != "":
+        low_precision_checkpoint = torch.load(low_precision_checkpoint)
+        config_dict = {
+            "weight_key": "qweight",
+            "scale_key": "scales",
+            "zero_point_key": "qzeros",
+            "bias_key": "bias",
+            "g_idx_key": "g_idx"
+        }
+        state_dict_and_config = (low_precision_checkpoint, config_dict)
+        low_precision_checkpoint = state_dict_and_config
+    else:
+        low_precision_checkpoint = None
+    user_model = ipex.llm.optimize(
+        user_model.eval(),
+        dtype=amp_dtype,
+        quantization_config=qconfig,
+        inplace=True,
+        low_precision_checkpoint=low_precision_checkpoint,
+        deployment_mode=False,
+    )
+
+    example_inputs = get_example_inputs(model)
+    with torch.no_grad(), torch.cpu.amp.autocast(
+        enabled=amp_enabled,
+    ):
+        self_jit = torch.jit.trace(
+            user_model.eval(), example_inputs, strict=False, check_trace=False
+        )
+        self_jit = torch.jit.freeze(self_jit.eval())
+        # pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        self_jit.save(quantized_model_path)
+        quant_model = self_jit
+
+    torch._C._jit_set_texpr_fuser_enabled(False)
+    qconfig = ipex.quantization.default_static_qconfig_mapping
+    user_model = ipex.llm.optimize(
+        user_model.eval(),
+        dtype=torch.float,
+        inplace=True,
+        quantization_config=qconfig,
+        deployment_mode=False,
+    )
+    if not hasattr(user_model, "trace_graph"):
+        print("load_quantized_model")
+        try:
+            self_jit = torch.jit.load(quantized_model_path)
+            self_jit = torch.jit.freeze(self_jit.eval())
+        except Exception as e:
+            print("warning: loading failed.", e)
+            self_jit = quant_model
+        ipex._set_optimized_model_for_generation(user_model, optimized_model=self_jit)
+
+    return user_model
 
 
 def convert_function(m, func_name, new_function):
