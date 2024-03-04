@@ -246,8 +246,9 @@ class LoraConfig(LoraConfigBase):
     def __init__(self, *args, **kwargs):
         self.training_mode = kwargs.pop("training_mode", "qlora")
         super().__init__(*args, **kwargs)
-        from .llm_patching import is_bigdl_patched, patched_training_mode
+        from .llm_patching import is_bigdl_patched
         if is_bigdl_patched:
+            from .model import patched_training_mode
             self.training_mode = patched_training_mode
 
 

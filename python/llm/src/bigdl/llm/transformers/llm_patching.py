@@ -18,10 +18,8 @@ import transformers
 import importlib
 import sys
 from bigdl.llm.utils.common import invalidInputError
-from dataclasses import dataclass
 
 is_bigdl_patched = False
-patched_training_mode = None
 attrs = []
 
 
@@ -31,17 +29,12 @@ def replace_attr(obj, name: str, value):
     attrs.append((obj, name, original_attr))
 
 
-def llm_patch(training_mode="qlora"):
+def llm_patch():
     '''
     llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
     with only one-line code patch.
-
-    :param training_mode: str, specify the training mode to be one of ["lora", "qlora", "qalora",
-                          "relora"]. Default to be "qlora".
     '''
     global is_bigdl_patched
-    global patched_training_mode
-    patched_training_mode = training_mode
     if is_bigdl_patched:
         return
 
@@ -66,9 +59,6 @@ def llm_patch(training_mode="qlora"):
         replace_attr(peft, "prepare_model_for_kbit_training", prepare_model_for_kbit_training)
         replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
         replace_attr(peft, "LoraConfig", LoraConfig)
-        if training_mode == "relora":
-            from bigdl.llm.transformers.relora import ReLoRATrainer
-            replace_attr(transformers, "Trainer", ReLoRATrainer)
 
     is_bigdl_patched = True
 

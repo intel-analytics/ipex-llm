@@ -50,6 +50,8 @@ import warnings
 import copy
 from .utils import logger
 
+patched_training_mode = None
+
 
 def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
@@ -214,20 +216,18 @@ class _BaseAutoModelClass:
                 kwargs["torch_dtype"] = torch.float32
             optimize_model = False
             kwargs["modules_to_not_convert"] = ["lm_head"]
-        else:
-            from .llm_patching import is_bigdl_patched, patched_training_mode
-            if is_bigdl_patched:
-                # To handle finetuning patch of `load_in_8bit=True` etc
-                if kwargs.get('load_in_8bit', False):
-                    kwargs.pop('load_in_8bit')
-                if patched_training_mode == "lora":
-                    load_in_low_bit = "bf16"
-                elif patched_training_mode == "qalora":
-                    load_in_low_bit = "sym_int4"
-                elif patched_training_mode == "qlora" or patched_training_mode == "relora":
-                    load_in_low_bit = "nf4"
-                optimize_model = False
-                kwargs["modules_to_not_convert"] = ["lm_head"]
+
+        load_in_8bit = kwargs.pop("load_in_8bit", False)
+        from .llm_patching import is_bigdl_patched
+        if is_bigdl_patched:
+            global patched_training_mode
+            if load_in_8bit:
+                patched_training_mode = 'lora'
+                load_in_low_bit = "bf16"
+            elif load_in_4bit or load_in_low_bit == "nf4":
+                patched_training_mode = 'qlora'
+            optimize_model = False
+            kwargs["modules_to_not_convert"] = ["lm_head"]
 
         if load_in_4bit or load_in_low_bit:
 
