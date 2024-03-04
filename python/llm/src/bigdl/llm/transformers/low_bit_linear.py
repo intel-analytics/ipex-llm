@@ -773,3 +773,23 @@ class BF16Linear(nn.Linear):
             result = result.reshape(*original_shape[:-1], result.shape[-1])
 
         return result.to(x.dtype)
+
+class LmHeadLinear(nn.Linear):
+    def __init__(self, bigdl_linear):
+        self.bigdl_linear = bigdl_linear
+
+    def __getattr__(self, attr):
+        if hasattr(self.bigdl_linear, attr):
+            return getattr(self.bigdl_linear, attr)
+        else:
+            raise AttributeError(f"'{type(self).__name__}' object and its model have no attribute '{attr}'")
+
+    def forward(self, input: torch.Tensor):
+        if input.dim() > 3:
+            input = input.reshape([-1, input.shape[-2], input.shape[-1]])
+        shape = list(input.size())
+        if shape[1] > 10:
+            shape[1] = 1
+            input = input[:, -1, :].view(shape)
+
+        return self.bigdl_linear(input)

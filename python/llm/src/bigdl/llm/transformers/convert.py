@@ -312,6 +312,10 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if new_linear is not None:
                         if not module.training:
                             new_linear.eval()
+                        if name == "lm_head" and model_type in ["gptj", "llama"]:
+                            print("Replacing new lm_head")
+                            from bigdl.llm.transformers.low_bit_linear import LmHeadLinear
+                            new_linear = LmHeadLinear(new_linear)
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
