@@ -84,6 +84,7 @@ def get_ipex_version():
     _ipex_version = ipex.__version__
     return _ipex_version
 
+
 def llama_model_forward_4_36(
     self,
     input_ids: torch.LongTensor = None,
@@ -962,7 +963,8 @@ def llama_attention_forward_4_36_quantized(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     if "padding_mask" in kwargs:
         warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. "
+            "Please make sure use `attention_mask` instead.`"
         )
 
     bsz, q_len, _ = hidden_states.size()
@@ -1000,16 +1002,22 @@ def llama_attention_forward_4_36_quantized(
         key_states = self.k_proj(hidden_states)
         value_states = self.v_proj(hidden_states)
 
-        query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-        key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
-        value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        query_states = query_states.view(bsz, q_len,
+                                         self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
 
         kv_seq_len = key_states.shape[-2]
         if past_key_value is not None:
             if self.layer_idx is None:
-                raise ValueError(
-                    f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
-                    "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
+                invalidInputError(
+                    False,
+                    f"The cache structure has changed since version v4.36."
+                    f" If you are using {self.__class__.__name__} "
+                    f"for auto-regressive decoding with k/v caching,"
+                    f" please make sure to initialize the attention class "
                     "with a layer index."
                 )
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
@@ -1051,38 +1059,44 @@ def llama_attention_forward_4_36_quantized(
         attn_output = torch.matmul(attn_weights, value_states)
         if use_cache:
             cache_kwargs = None
-            key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, cache_kwargs)
     else:
         cache_kwargs = None  # Specific to RoPE models
-        key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
+        key_states, value_states = past_key_value.update(key_states, value_states,
+                                                         self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             key_states = repeat_kv(key_states,
-                                    self.num_key_value_groups).to(device, dtype=query_states.dtype)
+                                   self.num_key_value_groups).to(device,dtype=query_states.dtype)
             value_states = repeat_kv(value_states,
-                                        self.num_key_value_groups).to(device, dtype=query_states.dtype)
+                                     self.num_key_value_groups).to(device,dtype=query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
             import linear_q4_0
             attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
         attn_weights = attn_weights / math.sqrt(self.head_dim)
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
+            invalidInputError(
+                False,
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
+                f" but is {attn_weights.size()}"
             )
 
         if attention_mask is not None:
             if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                invalidInputError(
+                    False,
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
                 )
             attn_weights = attn_weights + attention_mask
 
         # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_weights = nn.functional.softmax(attn_weights,
+                                             dim=-1, dtype=torch.float32).to(query_states.dtype)
         # attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
 
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
@@ -1093,9 +1107,10 @@ def llama_attention_forward_4_36_quantized(
                                                             value_states.transpose(-1, -2))
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        raise ValueError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-            f" {attn_output.size()}"
+        invalidInputError(
+            False,
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
+            f" but is {attn_output.size()}"
         )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
@@ -1104,8 +1119,10 @@ def llama_attention_forward_4_36_quantized(
 
     if self.config.pretraining_tp > 1:
         attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
-        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp, dim=1)
-        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i]) for i in range(self.config.pretraining_tp)])
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size
+                                                 // self.config.pretraining_tp, dim=1)
+        attn_output = sum([F.linear(attn_output[i],
+                                    o_proj_slices[i]) for i in range(self.config.pretraining_tp)])
     else:
         attn_output = self.o_proj(attn_output)
 
@@ -1113,6 +1130,7 @@ def llama_attention_forward_4_36_quantized(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
+
 
 def llama_attention_forward_4_36_original(
     self,
