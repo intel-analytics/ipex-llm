@@ -17,6 +17,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
     ```
 * **Install Bigdl LLM**
+
     Follow the instructions in [GPU Install Guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install bigdl-llm.
 
 * **Database Setup (using PostgreSQL)**:
@@ -147,4 +148,4 @@ In conclusion, while Llama 2 performs well on most benchmarks compared to other 
 
 ### 6. Trouble shooting
 #### 6.1 Core dump
-If you encounter a core dump error in your Python code, it is crucial to verify that the import torch statement is placed at the top of your Python file, just as what we did in `rag.py`.
+If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.
