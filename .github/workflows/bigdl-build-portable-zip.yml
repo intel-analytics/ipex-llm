@@ -22,5 +22,5 @@ jobs:
       - name: Build cpython
         run: |
           cd Tools/msi
-          buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
+          ./buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
   
