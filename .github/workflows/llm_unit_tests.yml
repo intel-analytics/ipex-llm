@@ -218,8 +218,8 @@ jobs:
         python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
     runs-on: [self-hosted, llm, arc-ut]
     env:
-      OMP_NUM_THREADS: 16
-      THREAD_NUM: 16
+      # OMP_NUM_THREADS: 16
+      # THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
       - name: Set environment variables
