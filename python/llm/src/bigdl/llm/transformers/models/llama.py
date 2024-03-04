@@ -48,7 +48,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xp
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
 
@@ -111,7 +111,7 @@ def llama_mlp_forward(
     x_2d = x.view(-1, x.shape[-1])
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training):
+    if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
@@ -216,6 +216,35 @@ def llama_decoder_forward(
     return outputs
 
 
+def fuse_qkv_weight(q_proj, k_proj, v_proj):
+    weight_size = q_proj.out_len * q_proj.in_len // 2
+    zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
+    zeros_end = weight_size + zeros_size
+    weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
+    zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
+    scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
+    qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            ], dim=-1).reshape(-1)
+    qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           ], dim=-1).reshape(-1)
+    qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            ], dim=-1).reshape(-1)
+    q_proj.weight.data = torch.empty(0)
+    k_proj.weight.data = torch.empty(0)
+    v_proj.weight.data = torch.empty(0)
+    return torch.cat([qweight, qzeros, qscales], dim=0)
+
+
+def should_use_mm_int4_qkv(self, device):
+    return device.type == "xpu" and self.q_proj.qtype == SYM_INT4 and self.q_proj.enable_xetla
+
+
 def llama_attention_forward_4_31(
     self,
     hidden_states: torch.Tensor,
@@ -263,7 +292,7 @@ def llama_attention_forward_4_31_quantized(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
@@ -291,6 +320,7 @@ def llama_attention_forward_4_31_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
                                                                          self.head_dim)
     else:
@@ -320,7 +350,7 @@ def llama_attention_forward_4_31_quantized(
                                                             cos, sin, position_ids, "llama")
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -455,10 +485,11 @@ def llama_attention_forward_4_31_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -477,6 +508,7 @@ def llama_attention_forward_4_31_original(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -524,9 +556,20 @@ def llama_attention_forward_4_31_original(
                     query_states, key_states, value_states
                 )
             else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+                if should_use_mm_int4_qkv(self, device):
+                    if not hasattr(self, "qkv_proj_qweight"):
+                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                                                                self.k_proj,
+                                                                self.v_proj)
+                    import linear_q4_0
+                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    query_states = qkv_states[:, :, :hidden_size]
+                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
+                    value_states = qkv_states[:, :, 2*hidden_size:]
+                else:
+                    query_states = self.q_proj(hidden_states)
+                    key_states = self.k_proj(hidden_states)
+                    value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -588,7 +631,7 @@ def llama_attention_forward_4_31_original(
     past_key_value = (key_states, value_states) if use_cache else None
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:
@@ -678,10 +721,12 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: decoding fast path
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = past_key_value is not None and is_enough_kv_cache_room_4_31(past_key_value[0])
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    qtype = getattr(self.q_proj, "qtype", None)
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     updated_past_key_values = []
     # single batch decoding fast path
@@ -714,6 +759,7 @@ def llama_attention_selective_batching_forward_4_31(
                                                                          position_ids,
                                                                          past_k, past_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -870,10 +916,11 @@ def llama_attention_forward_4_36(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    is_q4_0 = qtype == SYM_INT4
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -892,6 +939,7 @@ def llama_attention_forward_4_36(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -944,9 +992,20 @@ def llama_attention_forward_4_36(
                     query_states, key_states, value_states
                 )
             else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+                if should_use_mm_int4_qkv(self, device):
+                    if not hasattr(self, "qkv_proj_qweight"):
+                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                                                                self.k_proj,
+                                                                self.v_proj)
+                    import linear_q4_0
+                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    query_states = qkv_states[:, :, :hidden_size]
+                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
+                    value_states = qkv_states[:, :, 2*hidden_size:]
+                else:
+                    query_states = self.q_proj(hidden_states)
+                    key_states = self.k_proj(hidden_states)
+                    value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1014,7 +1073,7 @@ def llama_attention_forward_4_36(
                 past_key_value.value_cache[self.layer_idx] = value_states
 
     if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
+        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
     else:
         fsdp_flag = False
     if fsdp_flag:

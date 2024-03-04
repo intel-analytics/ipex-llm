@@ -397,7 +397,7 @@ jobs:
         shell: bash
         run: |
           # hide time info
-          sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
+          # sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{api}-results-{today}.csv/32-32-{api}-results-{today}_test1.csv/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32.yaml
 

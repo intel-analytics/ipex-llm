@@ -21,13 +21,13 @@ import sys
 import argparse
 import pandas as pd
 
-def highlight_vals(val, max=3.0, color1='red', color2='green', color3='yellow'):
+def highlight_vals(val, max=3.0, color1='red', color2='green', color3='yellow', is_last=False):
     if isinstance(val, float):
         if val > max:
             return 'background-color: %s' % color2
         elif val <= -max:
             return 'background-color: %s' % color1
-        elif val != 0.0:
+        elif val != 0.0 and is_last:
             return 'background-color: %s' % color3
     else:
         return ''
@@ -194,9 +194,9 @@ def main():
 
         latest_csv.drop('Index', axis=1, inplace=True)
 
-        styled_df = latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=3.0, color1='red', color2='green'), subset=subset1)
+        styled_df = latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=3.0, is_last=True), subset=subset1)
         for task in ['Arc', 'TruthfulQA', 'Winogrande']:
-            styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=highlight_threshold, color1='red', color2='green'), subset=[f'{task}_diff_FP16(%)'])
+            styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=highlight_threshold, is_last=False), subset=[f'{task}_diff_FP16(%)'])
         
         # add css style to restrict width and wrap text
         styled_df.set_table_styles([{

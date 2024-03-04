@@ -22,7 +22,7 @@ from thefuzz import process
 from transformers import AutoTokenizer
 
 from evaluators.evaluator import Evaluator
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModel
 from transformers.generation.utils import LogitsProcessorList
 from transformers.generation.logits_process import LogitsProcessor
 
@@ -42,7 +42,7 @@ class ChatGLMEvaluator(Evaluator):
             self.model_path,
             trust_remote_code=True
         )
-        self.model = AutoModelForCausalLM.from_pretrained(
+        self.model = AutoModel.from_pretrained(
             self.model_path,
             load_in_low_bit=self.qtype,
             optimize_model=True,

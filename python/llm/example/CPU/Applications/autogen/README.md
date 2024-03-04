@@ -1,6 +1,8 @@
 ## Running AutoGen Agent Chat with BigDL-LLM on Local Models
-In this example, we use BigDL adapted FastChat to run [AutoGen](https://microsoft.github.io/autogen/) agent chat with 
-local large language models.
+This example is adapted from the [Official AutoGen Teachablility tutorial](https://github.com/microsoft/autogen/blob/main/notebook/agentchat_teachability.ipynb). We use a version of FastChat modified for BigDL to create a teachable chat agent with [AutoGen](https://microsoft.github.io/autogen/) that works with locally deployed LLMs. This special agent can remember things you tell it over time, unlike regular chatbots that forget after each conversation. It does this by saving what it learns on disk, and then bring up the learnt information in future chats. This means you can teach it lots of new things—like facts, new skills, preferences, etc.
+
+In this example, we illustrate teaching the agent something it doesn't initially know. When we ask, `What is the Vicuna model?`, it doesn't have the answer. We then inform it, `Vicuna is a 13B-parameter language model released by Meta.` We repeat the process for the Orca model, telling the agent, `Orca is a 13B-parameter language model developed by Microsoft. It outperforms Vicuna on most tasks.` Finally, we test if the agent has learned by asking, `How does the Vicuna model compare to the Orca model?` The agent's response confirms it has retained and can use the information we taught it.
+
 
 ### 1. Setup BigDL-LLM Environment
 ```bash
@@ -36,8 +38,10 @@ pip install pyautogen==0.2.7
 ```
 
 **After setting up the environment, the folder structure should be:**
-> -- autogen
-> | -- FastChat
+```
+-- autogen
+| -- FastChat
+```
 
 
 ### 3. Build FastChat OpenAI-Compatible RESTful API
@@ -57,9 +61,6 @@ python -m fastchat.serve.controller
 
 **Terminal 2: Launch the workers**
 
-**Change the Model Name:**
-> Assume you are using the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL adapted FastChat.
-
 ```bash
 # activate conda environment
 conda activate autogen
@@ -71,7 +72,10 @@ cd autogen
 python -m bigdl.llm.serving.model_worker --model-path ... --device cpu
 ```
 
-**Potential Error Note:**
+Change the Model Name:
+> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL-adapted FastChat.
+
+Potential Error Note:
 > If you get `RuntimeError: Error register to Controller` in the worker terminal, please set `export no_proxy='localhost'` to ensure the registration
 
 
@@ -101,7 +105,7 @@ cd autogen
 python teachability_new_knowledge.py
 ```
 
-**Potential Error Note:**
+Potential Error Note:
 > If you get `?bu=http://localhost:8000/v1/chat/completions&bc=Failed+to+retrieve+requested+URL.&ip=10.239.44.101&er=ERR_CONNECT_FAIL` in the running terminal, please set `export no_proxy='localhost'` to ensure the registration.
 
 

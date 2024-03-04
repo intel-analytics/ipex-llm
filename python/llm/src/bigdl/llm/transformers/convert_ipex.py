@@ -153,6 +153,8 @@ def _ipex_jit(model):
         model = _set_optimized_model_for_generation(
             model, optimized_model=trace_model
         )
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    model.register_forward_hook(output_hook, with_kwargs=True)
 
     return model
 

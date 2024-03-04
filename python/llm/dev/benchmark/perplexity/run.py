@@ -24,6 +24,7 @@ from ppl import BigDLPPL
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
 import os
+import json
 
 def get_arguments():
     parser = argparse.ArgumentParser()
@@ -34,6 +35,7 @@ def get_arguments():
     parser.add_argument("--language", required=False, type=str, default="en", choices=['en', 'zh', 'all'])
     parser.add_argument("--precisions", required=False, type=str, default=None, nargs='+')
     parser.add_argument("--device", type=str, default="xpu")
+    parser.add_argument("--output_path", default=None)
     return parser.parse_args()
     
 
@@ -77,6 +79,8 @@ def main():
         encoded_texts.append(encoded_text)
     
     summary = {}
+    output_path = args.output_path if args.output_path else "results"
+    model_name = os.path.basename(os.path.realpath(args.model_path))
     for precision in args.precisions:
         model_kwargs = {}
         if precision in ggml_tensor_qtype.keys():
@@ -85,9 +89,21 @@ def main():
             model_kwargs['torch_dtype'] = getattr(torch, precision)
         print(model_kwargs)
         
+        log_dir = f"{output_path}/{model_name}/{args.device}/{precision}/{args.language}"
+        os.makedirs(log_dir, exist_ok=True)
+        results = {}
         ppl_evaluator = BigDLPPL(model_path=args.model_path, device=args.device, **model_kwargs)
         ppl = ppl_evaluator.perplexity_hf(encoded_texts)
         summary[precision] = ppl
+        results['results'] = ppl
+        results['config'] = {"model": model_name, "precision": precision, "device": args.device, "seq_len": args.seq_len, "language": args.language}
+        dumped = json.dumps(results, indent=2)
+        print(dumped)
+
+        if args.output_path:
+            with open(f"{log_dir}/result.json", "w") as f:
+                f.write(dumped)
+    
     print(summary)
 
 if __name__ == "__main__":

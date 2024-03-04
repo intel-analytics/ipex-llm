@@ -16,7 +16,7 @@ on:
     paths:
       - 'python/chronos/colab-notebook/howto/**'
       - 'python/chronos/benchmark/**'
-      - '.github/workflows/chronos-howto-guides-python-spark31.yml'
+      - '.github/workflows/chronos-howto-guides-python-spark31.yml' # test
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -51,7 +51,7 @@ jobs:
           apt-get update
           apt-get install -y libgl1
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
-          sed -i "s/pyspark==2.4.6/pyspark==3.1.3/g" python/dllib/src/setup.py
+          sed -i "s/pyspark==2.4.6/pyspark==3.4.1/g" python/dllib/src/setup.py
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
           bash python/dev/release_default_linux_spark3.sh default false false
@@ -105,7 +105,7 @@ jobs:
           apt-get install patchelf
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          sed -i "s/pyspark==2.4.6/pyspark==3.1.3/g" python/dllib/src/setup.py
+          sed -i "s/pyspark==2.4.6/pyspark==3.4.1/g" python/dllib/src/setup.py
           bash python/dev/release_default_linux_spark3.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`

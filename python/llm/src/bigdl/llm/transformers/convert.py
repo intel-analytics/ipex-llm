@@ -191,7 +191,9 @@ def convert_gptq(module, awq=False, llm_awq=False):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  current_key_name=None, convert_shape_only=False,
                                  cpu_embedding=False, prefix_name='',
-                                 imatrix_data=None, embedding_qtype=None):
+                                 imatrix_data=None, embedding_qtype=None,
+                                 model_type=None, torch_dtype=torch.float32,
+                                 enable_xetla=False):
     from bigdl.llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from bigdl.llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -222,6 +224,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype=qtype,
                             bias=has_bias,
                             mp_group=mp_group,
+                            enable_xetla=enable_xetla,
                         )
                         device = module.qweight.data.device
                         invalidInputError(device.type != "meta",
@@ -233,7 +236,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  quantized=True,
                                                  _shape=(out_features, in_features),
                                                  convert_shape_only=convert_shape_only,
-                                                 qtype=qtype).to(device)
+                                                 qtype=qtype,
+                                                 enable_xetla=enable_xetla).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if has_bias:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -248,10 +252,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype,
                             module.bias is not None,
                             mp_group=mp_group,
+                            enable_xetla=enable_xetla,
                         )
                         cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                            full_module_name,
-                                                                           imatrix_data)
+                                                                           imatrix_data,
+                                                                           model_type)
                         device = module.weight.data.device
                         # Copy the weights
                         paramsLowBit = FP4Params(data=module.weight.data,
@@ -261,7 +267,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=cur_qtype,
                                                  imatrix=cur_imatrix,
-                                                 in_features=in_features).to(device)
+                                                 in_features=in_features,
+                                                 enable_xetla=enable_xetla).to(device)
                         new_linear._parameters['weight'] = paramsLowBit
                         if module.bias is not None:
                             new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -324,6 +331,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 _weight=module.weight.data,
             )
         elif type(module) == nn.Embedding and embedding_qtype is not None:
+            if torch_dtype == "auto":
+                torch_dtype = torch.float32
             q_embedding = LowBitEmbedding(
                 num_embeddings=module.num_embeddings,
                 embedding_dim=module.embedding_dim,
@@ -334,6 +343,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 sparse=module.sparse,
                 _weight=module.weight.data,
                 qtype=embedding_qtype,
+                torch_dtype=torch_dtype
             )
             device = module.weight.data.device
             # Copy the weights
@@ -361,7 +371,10 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 cpu_embedding,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
                 imatrix_data=imatrix_data,
-                embedding_qtype=embedding_qtype
+                embedding_qtype=embedding_qtype,
+                model_type=model_type,
+                torch_dtype=torch_dtype,
+                enable_xetla=enable_xetla,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -532,6 +545,31 @@ def _optimize_pre(model):
             if model.lm_head.weight.data.device != "meta":
                 norm_weight = nn.functional.normalize(lm_head_weight_data)
                 model.lm_head.weight.data = norm_weight
+    # for yuan 2.0
+    if model.config.model_type == "yuan":
+        def merge_qk_proj_func(module):
+            if "YuanAttention" in module.__class__.__name__:
+                q_weight = module.q_proj.weight.data
+                k_weight = module.k_proj.weight.data
+                num_heads = module.num_heads
+                head_dim = module.head_dim
+                hidden_size = module.hidden_size
+
+                merged_qk_proj = torch.nn.Linear(0, 0, False)
+                weight = torch.cat([
+                    q_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
+                    k_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
+                    q_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
+                    k_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
+                ], dim=0).view(num_heads * head_dim * 2, hidden_size)
+                merged_qk_proj.weight = torch.nn.Parameter(weight, requires_grad=False)
+                merged_qk_proj.in_features = hidden_size
+                merged_qk_proj.out_features = num_heads * head_dim * 2
+                module.merged_qk_proj = merged_qk_proj
+
+                del module.q_proj
+                del module.k_proj
+        model.apply(merge_qk_proj_func)
     return model
 
 
@@ -539,7 +577,9 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
                          lightweight_bmm=False, torch_dtype="auto",
-                         imatrix_data=None, embedding_qtype=None):
+                         imatrix_data=None,
+                         embedding_qtype=None,
+                         enable_xetla=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -558,11 +598,19 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
+    # mixed quantization needs model_type to choose custom quantization strategy
+    if hasattr(model, "config"):
+        model_type = getattr(model.config, "model_type", None)
+    else:
+        model_type = None
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         None, convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
-        embedding_qtype=embedding_qtype
+        embedding_qtype=embedding_qtype,
+        model_type=model_type,
+        torch_dtype=torch_dtype,
+        enable_xetla=enable_xetla,
     )
     if not has_been_replaced:
         warnings.warn(
@@ -766,10 +814,17 @@ def _optimize_post(model, lightweight_bmm=False):
         # dolly-v1-6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from bigdl.llm.transformers.models.gptj import gptj_attention_forward
+        from bigdl.llm.transformers.models.gptj import gptj_attention_forward, gptj_model_forward,\
+            gptj_block_forward
         convert_forward(model,
                         module.GPTJAttention,
                         gptj_attention_forward)
+        convert_forward(model,
+                        module.GPTJModel,
+                        gptj_model_forward)
+        convert_forward(model,
+                        module.GPTJBlock,
+                        gptj_block_forward)
     elif "bloom" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -801,11 +856,22 @@ def _optimize_post(model, lightweight_bmm=False):
             elif "FalconForCausalLM" in model.config.architectures:
                 if model.config.hidden_size != 4544:
                     # falcon-180b and new falcon-40b
-                    from bigdl.llm.transformers.models.falcon import falcon_attention_forward
-                    convert_forward(model,
-                                    module.FalconAttention,
-                                    falcon_attention_forward
-                                    )
+                    if version.parse(trans_version) >= version.parse("4.36.0"):
+                        # transformers version >= 4.36.0
+                        from bigdl.llm.transformers.models.falcon import \
+                            falcon_attention_forward_4_36
+
+                        convert_forward(model,
+                                        module.FalconAttention,
+                                        falcon_attention_forward_4_36
+                                        )
+                    else:
+                        from bigdl.llm.transformers.models.falcon import falcon_attention_forward
+                        convert_forward(model,
+                                        module.FalconAttention,
+                                        falcon_attention_forward
+                                        )
+
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
         if model.config.hidden_size == 4096:
@@ -1036,6 +1102,18 @@ def _optimize_post(model, lightweight_bmm=False):
                 convert_forward(model,
                                 module.MistralMLP,
                                 llama_mlp_forward)
+    elif model.config.model_type == "gemma":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.gemma import gemma_attention_forward
+        from bigdl.llm.transformers.models.gemma import gemma_rms_norm_forward
+        convert_forward(model,
+                        module.GemmaAttention,
+                        gemma_attention_forward,
+                        )
+        convert_forward(model,
+                        module.GemmaRMSNorm,
+                        gemma_rms_norm_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1104,9 +1182,26 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.gptbigcode import _attn_wrapper
+        from bigdl.llm.transformers.models.gptbigcode import gptbigcode_attention_forward
+        convert_forward(model,
+                        module.GPTBigCodeAttention,
+                        gptbigcode_attention_forward)
         _attn = _attn_wrapper(module.GPTBigCodeAttention._attn)
         replace_func(model,
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+    elif model.config.model_type == 'yuan':
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.yuan import yuan_attention_forward
+        from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
+        convert_forward(model,
+                        module.YuanAttention,
+                        yuan_attention_forward
+                        )
+        convert_forward(model,
+                        module.YuanMLP,
+                        yuan_mlp_forward
+                        )
     return model
