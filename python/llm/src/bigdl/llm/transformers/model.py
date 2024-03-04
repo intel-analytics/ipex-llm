@@ -222,9 +222,11 @@ class _BaseAutoModelClass:
         if is_bigdl_patched:
             global patched_training_mode
             if load_in_8bit:
+                # lora
                 patched_training_mode = 'lora'
                 load_in_low_bit = "bf16"
-            elif load_in_4bit or load_in_low_bit == "nf4":
+            elif load_in_low_bit == "nf4":
+                # qlora with bnb config
                 patched_training_mode = 'qlora'
             optimize_model = False
             kwargs["modules_to_not_convert"] = ["lm_head"]
