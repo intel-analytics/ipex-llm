@@ -240,10 +240,10 @@ jobs:
           fi
 
       - name: Create ceval results directory if not exists
-          run: |
-            if [ ! -d "${{ env.ACC_FOLDER }}" ]; then
-              mkdir -p "${{ env.ACC_FOLDER }}"
-            fi
+        run: |
+          if [ ! -d "${{ env.ACC_FOLDER }}" ]; then
+            mkdir -p "${{ env.ACC_FOLDER }}"
+          fi
 
       - name: Download ceval results
         uses: actions/download-artifact@v3s
