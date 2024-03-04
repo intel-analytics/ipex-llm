@@ -530,15 +530,6 @@ The following packages have unmet dependencies:
 
 You can use `sudo apt install -y intel-i915-dkms intel-fw-gpu` to install instead. As the intel-platform-cse-dkms and intel-platform-vsec-dkms are already provided by intel-i915-dkms.
 
-### 3. Gemma-7b-it's output is random and unreadable on Arc770 ubuntu 22.04.
-
-The output of `What's AI?` like:
-```
-wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
-```
-Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
-Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~22.04.
-
 ### Troubleshooting
 
 #### 1. Cannot open shared object file: No such file or directory
