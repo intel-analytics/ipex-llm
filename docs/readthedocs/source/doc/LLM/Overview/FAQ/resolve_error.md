@@ -58,6 +58,16 @@ You could use `export BIGDL_LLM_AMX_DISABLED=1` to disable AMX manually and solv
 
 You may encounter this error during finetuning on multi GPUs. Please try `sudo apt install level-zero-dev` to fix it.
 
+### random and unreadable output of Gemma-7b-it on Arc770 ubuntu 22.04 due to driver and OneAPI missmatching.
+
+If driver and OneAPI missmatching, it will lead to some error when BigDL use XMX(short prompts) for speeding up.
+The output of `What's AI?` may like below:
+```
+wiedzy Artificial Intelligence meliti: Artificial Intelligence undenti beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng beng
+```
+If you meet this error. Please check your driver version and OneAPI version. Commnad is `sudo apt list --installed | egrep "intel-basekit|intel-level-zero-gpu"`. 
+Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~22.04.
+
 ### Too many open files
 
 You may encounter this error during finetuning, expecially when run 70B model. Please raise the system open file limit using `ulimit -n 1048576`.
