@@ -19,6 +19,16 @@ jobs:
         with:
           repository: 'python/cpython'
           ref: '3.9'
+      - name: Replace with SQLite 3.45.1
+        # this is to fix security issue
+        # according to cpython, 3.9 is only accepting security patches
+        # so we need to manually replace it with sqlite 3.45.1
+        shell: bash
+        run: |
+          cd ./PCbuild
+          sed -i 's/sqlite-3.37.2.0/sqlite-3.45.1.0/g' get_externals.bat
+          sed -i 's/sqlite-3.37.2.0/sqlite-3.45.1.0/g' python.props
+          cd ..
       - name: Build cpython
         run: |
           ./Tools/msi/buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
