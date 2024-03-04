@@ -429,8 +429,6 @@ class _BaseAutoModelClass:
             try:
                 # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
                 kwargs.pop('device_map', None)
-                # if kwargs.get('device_map', None):
-                #     kwargs.pop('device_map')
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
                 logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
