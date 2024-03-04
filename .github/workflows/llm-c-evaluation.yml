@@ -251,7 +251,7 @@ jobs:
           fi
 
       - name: Download ceval results
-        uses: actions/download-artifact@v3s
+        uses: actions/download-artifact@v3
         with:
           name: results_${{ env.DATE }}
           path:  ${{ env.ACC_FOLDER }}
