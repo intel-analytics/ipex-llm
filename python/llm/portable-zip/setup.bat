@@ -1,6 +1,5 @@
 :: download python and extract zip
 if "%1"=="--python-zip" (
-    powershell -Command "Expand-Archive .\cpython-3.9-embed-zip.zip -DestinationPath ."
     powershell -Command "Expand-Archive .\cpython-embed-zip.zip -DestinationPath .\python-embed"
 ) else (
     powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip -Destination python-3.9.13-embed-amd64.zip"
@@ -32,7 +31,7 @@ if "%1"=="--ui" (
 
 :: compress the python and scripts
 if "%1"=="--ui" (
-    powershell -Command "Compress-Archive -Path '.\python-embed', '.\kv_cache.py', '.\chat-ui.bat', '.\README.md' -DestinationPath .\bigdl-llm-ui.zip"
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\kv_cache.py', '.\chat-ui.bat', '.\README.md' -DestinationPath .\bigdl-llm-portable-ui.zip"
 ) else (
-    powershell -Command "Compress-Archive -Path '.\python-embed', '.\kv_cache.py', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\bigdl-llm.zip"
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\kv_cache.py', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\bigdl-llm-portable.zip"
 )
