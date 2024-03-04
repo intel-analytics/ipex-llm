@@ -1,7 +1,13 @@
 :: download python and extract zip
-powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip -Destination python-3.9.13-embed-amd64.zip"
-powershell -Command "Expand-Archive .\python-3.9.13-embed-amd64.zip -DestinationPath .\python-embed"
-del .\python-3.9.13-embed-amd64.zip
+if "%1"=="--python-zip" (
+    powershell -Command "Expand-Archive .\cpython-3.9-embed-zip.zip -DestinationPath ."
+    powershell -Command "Expand-Archive .\cpython-embed-zip.zip -DestinationPath .\python-embed"
+) else (
+    powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip -Destination python-3.9.13-embed-amd64.zip"
+    powershell -Command "Expand-Archive .\python-3.9.13-embed-amd64.zip -DestinationPath .\python-embed"
+    del .\python-3.9.13-embed-amd64.zip
+)
+
 
 set "python-embed=.\python-embed\python.exe"
 

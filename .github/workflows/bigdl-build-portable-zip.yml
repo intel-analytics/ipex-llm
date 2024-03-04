@@ -32,5 +32,21 @@ jobs:
         with:
           name: cpython-3.9-embed-zip
           path: ./PCbuild/amd64/en-us/cpython-embed-zip.zip
-
-  
+  build-portable-zip:
+    needs: build-cpython
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: cpython-3.9-embed-zip
+          path: ./python/llm/portable-zip/
+      - name: Build Portable Zip
+        shell: cmd
+        run: |
+          cd .\python\llm\portable-zip
+          setup.bat --python-zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portable-zip
+          path: ./python/llm/portable-zip/bigdl-llm.zip
