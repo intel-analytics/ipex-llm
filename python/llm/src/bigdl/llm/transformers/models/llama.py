@@ -1023,9 +1023,9 @@ def llama_attention_forward_4_36_quantized(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
         if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                            key_states,
-                                                                            position_ids,
-                                                                            "llama")
+                                                                         key_states,
+                                                                         position_ids,
+                                                                         "llama")
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1069,10 +1069,10 @@ def llama_attention_forward_4_36_quantized(
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
-            key_states = repeat_kv(key_states,
-                                   self.num_key_value_groups).to(device,dtype=query_states.dtype)
-            value_states = repeat_kv(value_states,
-                                     self.num_key_value_groups).to(device,dtype=query_states.dtype)
+            key_states = repeat_kv(key_states, self.num_key_value_groups)\
+                .to(device, dtype=query_states.dtype)
+            value_states = repeat_kv(value_states, self.num_key_value_groups)\
+                .to(device, dtype=query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
             import linear_q4_0
@@ -1097,7 +1097,6 @@ def llama_attention_forward_4_36_quantized(
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights,
                                              dim=-1, dtype=torch.float32).to(query_states.dtype)
-        # attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
 
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
