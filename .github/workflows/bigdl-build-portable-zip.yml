@@ -46,7 +46,23 @@ jobs:
         run: |
           cd .\python\llm\portable-zip
           setup.bat --python-zip
+          powershell -Command "Expand-Archive .\bigdl-llm.zip -DestinationPath .\bigdl-llm-portable"
       - uses: actions/upload-artifact@v4
         with:
-          name: portable-zip
-          path: ./python/llm/portable-zip/bigdl-llm.zip
+          name: bigdl-llm-portable
+          path: ./python/llm/portable-zip/bigdl-llm-portable
+  generate-gpg-sign:
+    needs: build-portable-zip
+    runs-on: [self-hosted, Bree]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bigdl-llm-portable
+      - name: Generate GPG Sign
+        shell: bash
+        run: |
+          gpg --armor --detach-sign bigdl-llm-portable.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bigdl-llm-portable-gpg-sign
+          path: ./bigdl-llm-portable.zip.asc
