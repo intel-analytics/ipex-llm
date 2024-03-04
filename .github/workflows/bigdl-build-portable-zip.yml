@@ -3,8 +3,8 @@ name: BigDL Build Portable Zip
 on:
   pull_request:
     branches: [ main ]
-    # paths:
-    #   - 'python/llm/portable-zip/**'
+    paths:
+      - 'python/llm/portable-zip/**'
   workflow_dispatch:
 
 
