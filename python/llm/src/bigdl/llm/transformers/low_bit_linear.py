@@ -505,7 +505,8 @@ class MatMulLowBitCPU(torch.autograd.Function):
 
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
-                 conver_to_half=True, mp_group=None, enable_xetla=False):
+                 conver_to_half=True, mp_group=None, enable_xetla=False,
+                 lm_head=False):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -520,6 +521,7 @@ class LowBitLinear(nn.Linear):
         self.mp_group = mp_group
         self.compute_dtype = None  # only for training
         self.enable_xetla = enable_xetla
+        self.lm_head = lm_head
 
     def forward(self, x: torch.Tensor):
         # Due to inconsistent training status in some models like Baichuan-7b-Chat,
@@ -535,7 +537,15 @@ class LowBitLinear(nn.Linear):
 
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
-
+        
+        if self.lm_head:
+            if x.dim() > 3:
+                x = x.reshape([-1, x.shape[-2], x.shape[-1]])
+            shape = list(x.size())
+            if shape[1] > 10:
+                shape[1] = 1
+                x = x[:, -1, :].view(shape)
+        
         # [batch, input_num, in_len]
         # input_num == token num for Transformer
         x_shape = x.shape
@@ -632,7 +642,8 @@ class LowBitLinear(nn.Linear):
 
 class FP16Linear(nn.Linear):
     def __init__(self, input_features, output_features, bias=True,
-                 mp_group=None, weight_type=1):
+                 mp_group=None, weight_type=1,
+                 lm_head=False):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
@@ -644,11 +655,20 @@ class FP16Linear(nn.Linear):
         # weigh_type = 2 means weight has been transposed
         # weigh_type = 3 means weight has been transposed by esimd method
         self.weight_type = 1
+        self.lm_head = lm_head
 
     def forward(self, x: torch.Tensor):
         # only work for GPU
         invalidInputError(x.device.type == "xpu",
                           "FP16Linear only works for Intel GPUs")
+        if self.lm_head:
+            if x.dim() > 3:
+                x = x.reshape([-1, x.shape[-2], x.shape[-1]])
+            shape = list(x.size())
+            if shape[1] > 10:
+                shape[1] = 1
+                x = x[:, -1, :].view(shape)
+
         x = x.to(torch.float16)
         if self.bias is not None and self.bias.dtype != x.dtype:
                 self.bias.data = self.bias.data.to(x.dtype)
@@ -743,7 +763,8 @@ class FP16Linear(nn.Linear):
 
 class BF16Linear(nn.Linear):
     def __init__(self, input_features, output_features, bias=True,
-                 mp_group=None, compute_dtype=None):
+                 mp_group=None, compute_dtype=None,
+                 lm_head=False):
         super().__init__(input_features, output_features, bias)
         self.in_len = input_features
         self.out_len = output_features
@@ -752,8 +773,17 @@ class BF16Linear(nn.Linear):
         self.qtype = ggml_tensor_qtype["bf16"]
         self.mp_group = mp_group
         self.compute_dtype = compute_dtype
+        self.lm_head = lm_head
 
     def forward(self, x: torch.Tensor):
+        if self.lm_head:
+            if x.dim() > 3:
+                x = x.reshape([-1, x.shape[-2], x.shape[-1]])
+            shape = list(x.size())
+            if shape[1] > 10:
+                shape[1] = 1
+                x = x[:, -1, :].view(shape)
+
         x = x.to(torch.bfloat16)
         if self.weight is not None and self.weight.dtype != x.dtype:
             self.weight.data = self.weight.data.to(x.dtype)
@@ -773,23 +803,3 @@ class BF16Linear(nn.Linear):
             result = result.reshape(*original_shape[:-1], result.shape[-1])
 
         return result.to(x.dtype)
-
-class LmHeadLinear(nn.Linear):
-    def __init__(self, bigdl_linear):
-        self.bigdl_linear = bigdl_linear
-
-    def __getattr__(self, attr):
-        if hasattr(self.bigdl_linear, attr):
-            return getattr(self.bigdl_linear, attr)
-        else:
-            raise AttributeError(f"'{type(self).__name__}' object and its model have no attribute '{attr}'")
-
-    def forward(self, input: torch.Tensor):
-        if input.dim() > 3:
-            input = input.reshape([-1, input.shape[-2], input.shape[-1]])
-        shape = list(input.size())
-        if shape[1] > 10:
-            shape[1] = 1
-            input = input[:, -1, :].view(shape)
-
-        return self.bigdl_linear(input)

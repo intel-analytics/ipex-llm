@@ -211,6 +211,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             if (not any(key in ".".join(current_key_name) for key in modules_to_not_convert) and
                     not isinstance(module, LowBitLinear)):
                 in_features, out_features, mp_group = linear_args
+                lm_head = False
+                if name == "lm_head":
+                    from bigdl.llm.transformers.utils import get_optimize_lm_head
+                    if model_type in ["gptj", "llama"] and get_optimize_lm_head():
+                        lm_head = True
                 with init_empty_weights():
                     new_linear = None
                     is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
@@ -225,6 +230,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             bias=has_bias,
                             mp_group=mp_group,
                             enable_xetla=enable_xetla,
+                            lm_head=lm_head
                         )
                         device = module.qweight.data.device
                         invalidInputError(device.type != "meta",
@@ -253,6 +259,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             module.bias is not None,
                             mp_group=mp_group,
                             enable_xetla=enable_xetla,
+                            lm_head=lm_head
                         )
                         cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                            full_module_name,
@@ -280,6 +287,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             out_features,
                             module.bias is not None,
                             mp_group=mp_group,
+                            lm_head=lm_head
                         )
                         device = module.weight.data.device
                         from bigdl.llm.transformers.utils import get_ipex_version
@@ -301,6 +309,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             out_features,
                             module.bias is not None,
                             mp_group=mp_group,
+                            lm_head=lm_head
                         )
                         device = module.weight.data.device
                         # convert here
@@ -312,10 +321,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if new_linear is not None:
                         if not module.training:
                             new_linear.eval()
-                        if name == "lm_head" and model_type in ["gptj", "llama"]:
-                            print("Replacing new lm_head")
-                            from bigdl.llm.transformers.low_bit_linear import LmHeadLinear
-                            new_linear = LmHeadLinear(new_linear)
                         model._modules[name] = new_linear
                         has_been_replaced = True
                         # Force requires grad to False to avoid unexpected errors
