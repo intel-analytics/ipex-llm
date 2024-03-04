@@ -137,8 +137,8 @@ If there are still errors on missing packages, repeat the installation process f
 
 
 ### Compatiblity issues
-If you encounter **AttributeError** errors like shown below, it may be due to some models being incompatible with the current version of the transformers package because they are outdated. In such instances, using a more recent model is recommended.
-
+If you encounter **AttributeError** errors like `AttributeError: 'BaichuanTokenizer' object has no attribute 'sp_model'`, it may be due to some models being incompatible with the current version of the transformers package because the models are outdated. In such instances, using a more recent model is recommended.
+<!-- 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png" width=100%; />
-</a>
+</a> -->
