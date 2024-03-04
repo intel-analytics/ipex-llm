@@ -144,3 +144,7 @@ However, it's important to note that the performance of Llama 2 can vary dependi
 
 In conclusion, while Llama 2 performs well on most benchmarks compared to other open-source models, its performance
 ```
+
+### 6. Trouble shooting
+#### 6.1 Core dump
+If you encounter a core dump error in your Python code, it is crucial to verify that the import torch statement is placed at the top of your Python file, just as what we did in `rag.py`.
