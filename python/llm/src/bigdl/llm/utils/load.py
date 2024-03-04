@@ -56,7 +56,28 @@ def load_model(
             else AutoTokenizer
         )
         tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
-    elif low_bit == "sym_int4":
+    elif bigdl_optimize:
+        from bigdl.llm import optimize_model
+        model_cls = (
+            AutoModelForCausalLM if any(id in model_path.lower() for id in LLAMA_IDS)
+            else AutoModel
+        )
+        model = model_cls.from_pretrained(
+            model_path, torch_dtype='auto', low_cpu_mem_usage=True
+        ).eval()
+        model = optimize_model(model, low_bit=low_bit)
+        tokenizer_cls = (
+            LlamaTokenizer if any(id in model_path.lower() for id in LLAMA_IDS)
+            else AutoTokenizer
+        )
+        tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
+
+        if device == "xpu":
+            import intel_extension_for_pytorch as ipex
+            model = model.to('xpu')
+            if isinstance(model, GPTJForCausalLM):
+                model = ipex.optimize(model.eval(), inplace=True)
+    else:
         if "chatglm" in model_path.lower():
             model = AutoModel.from_pretrained(
                 model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto'
@@ -70,27 +91,6 @@ def load_model(
                 model_path, load_in_low_bit=low_bit, trust_remote_code=True, use_cache=True
             ).eval()
 
-        tokenizer_cls = (
-            LlamaTokenizer if any(id in model_path.lower() for id in LLAMA_IDS)
-            else AutoTokenizer
-        )
-        tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
-
-        if device == "xpu":
-            import intel_extension_for_pytorch as ipex
-            model = model.to('xpu')
-            if isinstance(model, GPTJForCausalLM):
-                model = ipex.optimize(model.eval(), inplace=True)
-    elif bigdl_optimize:
-        from bigdl.llm import optimize_model
-        model_cls = (
-            AutoModelForCausalLM if any(id in model_path.lower() for id in LLAMA_IDS)
-            else AutoModel
-        )
-        model = model_cls.from_pretrained(
-            model_path, torch_dtype='auto', low_cpu_mem_usage=True
-        ).eval()
-        model = optimize_model(model, low_bit=low_bit)
         tokenizer_cls = (
             LlamaTokenizer if any(id in model_path.lower() for id in LLAMA_IDS)
             else AutoTokenizer
