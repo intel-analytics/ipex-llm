@@ -246,8 +246,8 @@ class LoraConfig(LoraConfigBase):
     def __init__(self, *args, **kwargs):
         self.training_mode = kwargs.pop("training_mode", "qlora")
         super().__init__(*args, **kwargs)
-        from .llm_patching import is_bigdl_patched
-        if is_bigdl_patched:
+        from bigdl.llm.llm_patching import is_train_patched
+        if is_train_patched:
             from .model import patched_training_mode
             self.training_mode = patched_training_mode
 
@@ -274,8 +274,8 @@ def get_peft_model(*args, **kwargs):
                                                                   old_create_new_module))
 
     try:
-        from .llm_patching import is_bigdl_patched
-        if is_bigdl_patched:
+        from bigdl.llm.llm_patching import is_train_patched
+        if is_train_patched:
             from peft import get_peft_model_original
         else:
             from peft import get_peft_model as get_peft_model_original

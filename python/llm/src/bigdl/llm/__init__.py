@@ -22,7 +22,7 @@
 from .convert_model import llm_convert
 from .optimize import optimize_model
 import os
-from .transformers.llm_patching import llm_patch, llm_unpatch
+from .llm_patching import llm_patch, llm_unpatch
 
 # Default is false, set to true to auto importing Intel Extension for PyTorch.
 BIGDL_IMPORT_IPEX = os.getenv("BIGDL_IMPORT_IPEX", 'True').lower() in ('true', '1', 't')

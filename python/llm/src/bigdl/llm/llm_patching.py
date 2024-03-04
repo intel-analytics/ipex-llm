@@ -20,6 +20,7 @@ import sys
 from bigdl.llm.utils.common import invalidInputError
 
 is_bigdl_patched = False
+is_train_patched = False  # Specifically to check finetuning patch
 attrs = []
 
 
@@ -29,22 +30,25 @@ def replace_attr(obj, name: str, value):
     attrs.append((obj, name, original_attr))
 
 
-def llm_patch():
+def llm_patch(train=False):
     '''
     llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
     with only one-line code patch.
+
+    :param train: Whether to apply bigdl-llm patch for training code, default to be `False`.
     '''
     global is_bigdl_patched
+    global is_train_patched
     if is_bigdl_patched:
         return
 
-    # Initial version for LLM finetuning, other support TBD
-    from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-    replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
-    replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
-    replace_attr(transformers, "AutoModel", AutoModel)
+    # Initial version of patch for llm finetuning, inference support TBD
+    if train:
+        from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+        replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
+        replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
+        replace_attr(transformers, "AutoModel", AutoModel)
 
-    if importlib.util.find_spec("peft") is not None:
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
         invalidInputError(not import_peft_check,
@@ -59,6 +63,7 @@ def llm_patch():
         replace_attr(peft, "prepare_model_for_kbit_training", prepare_model_for_kbit_training)
         replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
         replace_attr(peft, "LoraConfig", LoraConfig)
+        is_train_patched = True
 
     is_bigdl_patched = True
 
@@ -68,6 +73,7 @@ def llm_unpatch():
     llm_unpatch is an reverse function to llm_patch.
     '''
     global is_bigdl_patched
+    global is_train_patched
 
     if not is_bigdl_patched:
         return
@@ -75,3 +81,4 @@ def llm_unpatch():
     for obj, name, torch_attr in attrs:
         setattr(obj, name, torch_attr)
     is_bigdl_patched = False
+    is_train_patched = False
