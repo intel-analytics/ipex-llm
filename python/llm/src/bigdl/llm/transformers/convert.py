@@ -674,6 +674,7 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"],
     
     if qtype == ggml_tensor_qtype["sym_int4"]:
         model = ipex_int4_opt(model, low_precision_checkpoint=ipex_gptq_int4_model_path)
+        return model
 
     model = model_convert_reference(model)
 

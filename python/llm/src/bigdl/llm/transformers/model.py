@@ -362,6 +362,7 @@ class _BaseAutoModelClass:
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
         enable_xetla = kwargs.pop("enable_xetla", False)
+        ipex_gptq_int4_model_path = kwargs.pop("ipex_gptq_int4_model_path", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -426,7 +427,7 @@ class _BaseAutoModelClass:
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
-                                     ipex_gptq_int4_model_path=kwargs.get("ipex_gptq_int4_model_path", None),
+                                     ipex_gptq_int4_model_path=ipex_gptq_int4_model_path,
                                      enable_xetla=enable_xetla,)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 

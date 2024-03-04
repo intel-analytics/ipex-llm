@@ -195,8 +195,8 @@ def get_example_inputs(model):
     n_layers = _get_target_nums(num_layers_names)
     hidden_size = _get_target_nums(hidden_size_names)
     head_dim = int(hidden_size / n_heads)
-    if model.use_global_past_key_value:
-        global global_past_key_value
+    
+    global global_past_key_value
     global_past_key_value = [
         (
             torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
@@ -206,11 +206,12 @@ def get_example_inputs(model):
         )
         for i in range(n_layers)
     ]
+    example_inputs_mode = EXAMPLE_INPUTS_MODE.MASK_KV_POS # for llama
     
     example_inputs = None
     input_ids = torch.ones(32).to(torch.long)
     attention_mask = torch.ones(len(input_ids))
-    if model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_POS_KV:
+    if example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_POS_KV:
         position_ids = torch.arange(len(input_ids))
         example_inputs = (
             input_ids.unsqueeze(0),
@@ -218,7 +219,7 @@ def get_example_inputs(model):
             position_ids.unsqueeze(0),
             tuple(global_past_key_value),
         )
-    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_POS:
+    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_POS:
         position_ids = torch.arange(len(input_ids))
         example_inputs = (
             input_ids.unsqueeze(0),
@@ -226,19 +227,19 @@ def get_example_inputs(model):
             tuple(global_past_key_value),
             position_ids.unsqueeze(0),
         )
-    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.KV_MASK:
+    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.KV_MASK:
         example_inputs = (
             input_ids.unsqueeze(0),
             tuple(global_past_key_value),
             attention_mask.unsqueeze(0),
         )
-    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV:
+    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV:
         example_inputs = (
             input_ids.unsqueeze(0),
             attention_mask.unsqueeze(0),
             tuple(global_past_key_value),
         )
-    elif model.example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_ENC:
+    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_ENC:
         last_hidden_state = torch.rand([1, 32, 2048])
         global_past_key_value = [
             (
@@ -267,9 +268,7 @@ def get_example_inputs(model):
 
 
 def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
-    batch_size = 1
-    output_dir = "/workspace/ipex_int4_test"
-    quantized_model_path = "/models/Llama-2-13b-chat-ipex-int4/best_model.pt"
+    quantized_model_path = "/models/Llama-2-7b-IPEX-int4/best_model.pt"
     amp_enabled = True
     amp_dtype = torch.bfloat16
     import intel_extension_for_pytorch as ipex
@@ -301,7 +300,7 @@ def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
     else:
         low_precision_checkpoint = None
     user_model = ipex.llm.optimize(
-        user_model.eval(),
+        model.eval(),
         dtype=amp_dtype,
         quantization_config=qconfig,
         inplace=True,
