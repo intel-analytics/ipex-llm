@@ -50,7 +50,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: bigdl-llm-portable
-          path: ./python/llm/portable-zip/bigdl-llm-portable
+          path: ./python/llm/portable-zip/bigdl-llm-portable.zip
   generate-gpg-sign:
     needs: build-portable-zip
     runs-on: [self-hosted, Bree]
