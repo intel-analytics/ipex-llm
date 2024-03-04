@@ -1,0 +1,21 @@
+name: BigDL Build Portable Zip
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/llm/portable-zip/**'
+  workflow_dispatch:
+
+
+jobs:
+  build-cpython:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          toolset: 14.2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Check env
+        run: |
+          cl.exe --version
+  
