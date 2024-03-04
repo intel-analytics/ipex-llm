@@ -171,6 +171,7 @@ jobs:
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
+          python -m pip install --upgrade transformers_stream_generator
 
       # please uncomment it and comment the "Install BigDL-LLM from Pypi" part for PR tests
       # - name: Download llm binary
