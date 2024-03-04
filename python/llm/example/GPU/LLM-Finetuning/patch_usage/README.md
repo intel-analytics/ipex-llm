@@ -30,6 +30,6 @@ source /opt/intel/oneapi/setvars.sh
 
 This example shows how to apply bigdl-llm patch on [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k?usp=sharing).
 
-```python
+```
 python ./finetune.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 ```
