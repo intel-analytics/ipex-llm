@@ -79,7 +79,7 @@ Upon successful launch, URLs to access the WebUI will be displayed in the termin
 
 ### Model Download
 
-Place Huggingface models in `C:\text-generation-webui\models` by either copying locally or downloading via the WebUI. To download, navigate to the **Model** tab, enter the model's huggingface id (for instance, `Qwen/Qwen-7B-Chat`) in the **Download model or LoRA** section, and click **Download**, as illustrated below. 
+Place Huggingface models in `C:\text-generation-webui\models` by either copying locally or downloading via the WebUI. To download, navigate to the **Model** tab, enter the model's huggingface id (for instance, `microsoft/phi-1_5`) in the **Download model or LoRA** section, and click **Download**, as illustrated below. 
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" width=100%; />
