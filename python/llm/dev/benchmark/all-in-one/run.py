@@ -398,12 +398,9 @@ def run_transformer_int4_gpu(repo_id,
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
-        if 'starcoder' in repo_id:
-            # Load starcoder-15.5b model in bf16 format to avoid CPU OOM. 
-            model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                        trust_remote_code=True, use_cache=True, torch_dtype=torch.bfloat16).eval()
-            # Convert the low-bit model back to fp32 for performance considerations.
-            model = model.float()
+        if "4bit" in repo_id:
+            model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
+                                            trust_remote_code=True, use_cache=True).eval()
         else:
             model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                         trust_remote_code=True, use_cache=True).eval()
