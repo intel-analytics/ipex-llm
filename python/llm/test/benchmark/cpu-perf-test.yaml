@@ -6,7 +6,7 @@ repo_id:
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'baichuan-inc/Baichuan2-13B-Chat'
   - 'Qwen/Qwen-14B-Chat'
-local_model_hub: '/mnt/disk1/models'
+local_model_hub: '/models'
 warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
