@@ -19,16 +19,18 @@ jobs:
         with:
           repository: 'python/cpython'
           ref: '3.9'
-      # - name: Build cpython
-      #   run: |
-      #     ./Tools/msi/buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
+      - name: Build cpython
+        run: |
+          ./Tools/msi/buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
       - name: Rename artifact
         shell: bash
         run: |
-          ls .
-      # - uses: actions/upload-artifact@v4
-      #   with:
-      #     name: cpython-3.9-embed-zip
-      #     path: ./PCbuild/amd64/en-us
+          cd ./PCbuild/amd64/en-us
+          ls | xargs -I {} mv {} cpython-embed-zip.zip
+          cd ../../..
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cpython-3.9-embed-zip
+          path: ./PCbuild/amd64/en-us/cpython-embed-zip.zip
 
   
