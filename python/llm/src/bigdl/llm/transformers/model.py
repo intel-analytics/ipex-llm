@@ -218,8 +218,8 @@ class _BaseAutoModelClass:
             kwargs["modules_to_not_convert"] = ["lm_head"]
 
         load_in_8bit = kwargs.pop("load_in_8bit", False)
-        from bigdl.llm.llm_patching import is_train_patched
-        if is_train_patched:
+        from bigdl.llm.llm_patching import bigdl_patched
+        if bigdl_patched == 'Train':
             global patched_training_mode
             if load_in_low_bit == "nf4" or load_in_low_bit == "sym_int4" or load_in_4bit:
                 # qlora

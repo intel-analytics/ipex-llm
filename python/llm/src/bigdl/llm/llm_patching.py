@@ -18,9 +18,9 @@ import transformers
 import importlib
 import sys
 from bigdl.llm.utils.common import invalidInputError
+from enum import Enum
 
-is_bigdl_patched = False
-is_train_patched = False  # Specifically to check finetuning patch
+bigdl_patched = None  # None or 'Train' or 'Inference'
 attrs = []
 
 
@@ -37,9 +37,8 @@ def llm_patch(train=False):
 
     :param train: Whether to apply bigdl-llm patch for training code, default to be `False`.
     '''
-    global is_bigdl_patched
-    global is_train_patched
-    if is_bigdl_patched:
+    global bigdl_patched
+    if bigdl_patched:
         return
 
     # Initial version of patch for llm finetuning, inference support TBD
@@ -63,22 +62,18 @@ def llm_patch(train=False):
         replace_attr(peft, "prepare_model_for_kbit_training", prepare_model_for_kbit_training)
         replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
         replace_attr(peft, "LoraConfig", LoraConfig)
-        is_train_patched = True
-
-    is_bigdl_patched = True
+        bigdl_patched = 'Train'
 
 
 def llm_unpatch():
     '''
     llm_unpatch is an reverse function to llm_patch.
     '''
-    global is_bigdl_patched
-    global is_train_patched
+    global bigdl_patched
 
-    if not is_bigdl_patched:
+    if bigdl_patched is None:
         return
 
     for obj, name, torch_attr in attrs:
         setattr(obj, name, torch_attr)
-    is_bigdl_patched = False
-    is_train_patched = False
+    bigdl_patched = None
