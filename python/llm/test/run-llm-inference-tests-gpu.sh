@@ -13,10 +13,10 @@ set -e
 echo "# Start testing inference"
 start=$(date "+%s")
 
-if [ -z "$THREAD_NUM" ]; then
-  THREAD_NUM=2
-fi
-export OMP_NUM_THREADS=$THREAD_NUM
+# if [ -z "$THREAD_NUM" ]; then
+#   THREAD_NUM=2
+# fi
+# export OMP_NUM_THREADS=$THREAD_NUM
 pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s
 export BIGDL_LLM_XMX_DISABLED=1
 pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
