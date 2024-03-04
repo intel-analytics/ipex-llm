@@ -679,16 +679,15 @@ jobs:
 
           call conda deactivate
 
-      # 32-512
-      - name: Prepare igpu perf test (32-512)
+      # load_low_bit 1024-128 
+      - name: Prepare igpu perf test (load_low_bit 1024-128)
         shell: bash
         run: |
-          # hide time info
-          sed -i 's/2048-256/32-512/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/2048-256/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-512.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit.yaml
 
-      - name: Test on igpu (32-512)
+      - name: Test on igpu (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -701,20 +700,20 @@ jobs:
           set TRANSFORMERS_OFFLINE=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32-512.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Mistral (32-512)
+      - name: Prepare igpu perf test for Mistral (load_low_bit 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-512_434.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit_434.yaml
 
-      - name: Test on igpu for Mistral (32-512)
+      - name: Test on igpu for Mistral (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -725,20 +724,20 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32-512_434.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit_434.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (32-512)
+      - name: Prepare igpu perf test for Qwen 1.5 (load_low_bit 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test2/{today}_test3/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-512_437.yaml
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (32-512)
+      - name: Test on igpu for Qwen 1.5 (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -749,14 +748,14 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\32-512_437.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit_437.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\32-512\log\%LOG_FILE% 2>&1
+          python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
-      - name: Concat csv and generate html (32-512)
+      - name: Concat csv and generate html (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate html-gen
@@ -765,11 +764,11 @@ jobs:
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
           del /q *test*.csv
-          move *.csv %CSV_SAVE_PATH%\32-512\
+          move *.csv %CSV_SAVE_PATH%\1024-128_loadlowbit\
           cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%\32-512\
+          python csv_to_html.py -f %CSV_SAVE_PATH%\1024-128_loadlowbit\
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          move %CSV_SAVE_PATH%\32-512\*.html %CSV_SAVE_PATH%
+          move %CSV_SAVE_PATH%\1024-128_loadlowbit\*.html %CSV_SAVE_PATH%
 
           call conda deactivate
 
