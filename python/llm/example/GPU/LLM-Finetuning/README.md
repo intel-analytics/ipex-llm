@@ -8,6 +8,7 @@ This folder contains examples of running different training mode with BigDL-LLM 
 - [ReLora](ReLora): examples of running ReLora finetuning
 - [DPO](DPO): examples of running DPO finetuning
 - [common](common): common templates and utility classes in finetuning examples
+- [patch usage](patch_usage): examples of how to easily run finetuning on Intel GPU with BigDL-LLM patch
 
 
 ## Troubleshooting
