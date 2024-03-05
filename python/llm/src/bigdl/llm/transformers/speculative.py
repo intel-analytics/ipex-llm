@@ -365,10 +365,10 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                     delta_past_key.to(torch.float32)
                 past_key_values_storage[i][1][:, :, size:size1, :] = \
                     delta_past_value.to(torch.float32)
-                
+
 
 def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_len=256,
-                                    model_type="llama"):
+                               model_type="llama"):
     from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
         extend_kv_cache
     enough_kv_room = True
@@ -397,14 +397,13 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
                 cache_k = cache_k.transpose(1, 2)
                 cache_v = cache_v.transpose(1, 2)
             new_cache_k, new_cache_v = extend_kv_cache(
-                    bsz,
-                    num_heads,  # Support GQA
-                    head_dim,
-                    cache_k.size(2),
-                    current_seq_len + max_step_draft + kv_alloc_block_len,
-                    dtype=cache_v.dtype,
-                    device=device
-                )
+                bsz,
+                num_heads,  # Support GQA
+                head_dim,
+                cache_k.size(2),
+                current_seq_len + max_step_draft + kv_alloc_block_len,
+                dtype=cache_v.dtype,
+                device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
             if model_type == "chatglm":
@@ -618,7 +617,7 @@ def speculative_generate(self,
                 past_key_values, extend_kv = _check_and_extend_kv_cache(past_key_values,
                                                                         max_step_draft,
                                                                         max_new_tokens - step + 40,
-                                                                        model_type=self.config.model_type)
+                                                                        self.config.model_type)
                 draft_past_key_values = past_key_values
             draft_generate_ids[:, 0] = current_input_ids
             draft_prob_list = []
