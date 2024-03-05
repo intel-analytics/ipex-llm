@@ -68,6 +68,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: bigdl-llm-portable
+          path: ./
       - name: Generate GPG Sign
         shell: bash
         run: |
