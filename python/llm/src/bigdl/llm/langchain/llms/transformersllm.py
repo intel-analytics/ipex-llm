@@ -89,6 +89,7 @@ class TransformersLLM(LLM):
         cls,
         model_id: str,
         model_kwargs: Optional[dict] = None,
+        device_map: str = 'cpu',
         **kwargs: Any,
     ) -> LLM:
         """
@@ -132,12 +133,8 @@ class TransformersLLM(LLM):
             model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
 
         # TODO: may refactore this code in the future
-        if 'device_map' in _model_kwargs:
-            if 'xpu' in _model_kwargs['device_map']:
-                model = model.to(_model_kwargs['device_map'])
-            _model_kwargs = {
-                k: v for k, v in _model_kwargs.items() if k != "device_map"
-            }
+        if 'xpu' in device_map:
+            model = model.to(device_map)
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
@@ -157,6 +154,7 @@ class TransformersLLM(LLM):
         cls,
         model_id: str,
         model_kwargs: Optional[dict] = None,
+        device_map: str = 'cpu',
         **kwargs: Any,
     ) -> LLM:
         """
@@ -198,12 +196,8 @@ class TransformersLLM(LLM):
             model = AutoModel.load_low_bit(model_id, **_model_kwargs)
         
         # TODO: may refactore this code in the future
-        if 'device_map' in _model_kwargs:
-            if 'xpu' in _model_kwargs['device_map']:
-                model = model.to(_model_kwargs['device_map'])
-            _model_kwargs = {
-                k: v for k, v in _model_kwargs.items() if k != "device_map"
-            }
+        if 'xpu' in device_map:
+            model = model.to(device_map)
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {

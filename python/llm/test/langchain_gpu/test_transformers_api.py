@@ -38,7 +38,7 @@ class Test_Langchain_Transformers_API(TestCase):
 
     def test_bigdl_llm(self):
         texts = 'What is the capital of France?\n\n'
-        bigdl_llm = TransformersLLM.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True, 'device_map': device})
+        bigdl_llm = TransformersLLM.from_model_id(model_id=self.llama_model_path, model_kwargs={'trust_remote_code': True}, device_map=device)
         
         output = bigdl_llm(texts)
         res = "Paris" in output

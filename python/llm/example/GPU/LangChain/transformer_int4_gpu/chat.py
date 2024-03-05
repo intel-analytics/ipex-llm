@@ -37,12 +37,14 @@ def main(args):
     # llm = TransformersPipelineLLM.from_model_id(
     #     model_id=model_path,
     #     task="text-generation",
-    #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True, 'device_map': 'xpu'},
+    #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+    #     device_map='xpu'
     # )
 
     llm = TransformersLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True, 'device_map': 'xpu'},
+        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+        device_map='xpu'
     )
 
     llm_chain = LLMChain(prompt=prompt, llm=llm)
