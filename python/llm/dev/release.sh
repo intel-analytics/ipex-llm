@@ -77,8 +77,9 @@ if [ ${upload} == true ]; then
     # $upload_to_pypi_command
 
     # upload to sourceforge
-    sshpass -p "${SOURCEFORGE_PW}" \
-    scp ./dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl \
-    intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/bigdl-llm-whl/${bigdl_version}/bigdl-llm/
+    rsync -avzr -e \
+    "sshpass -p '${SOURCEFORGE_PW}' ssh -o StrictHostKeyChecking=no" \
+    ./dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl \
+    intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/bigdl-llm-whl/bigdl-llm/${bigdl_version}/
 
 fi
