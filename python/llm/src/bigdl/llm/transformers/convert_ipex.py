@@ -268,7 +268,6 @@ def get_example_inputs(model):
 
 
 def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
-    quantized_model_path = "/models/Llama-2-7b-IPEX-int4/best_model.pt"
     amp_enabled = True
     amp_dtype = torch.bfloat16
     import intel_extension_for_pytorch as ipex

@@ -580,6 +580,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          imatrix_data=None,
                          embedding_qtype=None,
                          ipex_gptq_int4_model_path=None,
+                         ipex_best_model_path=None,
                          enable_xetla=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
@@ -593,7 +594,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if device == "cpu":
         logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
     if _enable_ipex:
-        model = _optimize_ipex(model, qtype, ipex_gptq_int4_model_path)
+        model = _optimize_ipex(model, qtype, ipex_gptq_int4_model_path, ipex_best_model_path)
         return model
 
     if optimize_model:
@@ -663,7 +664,8 @@ def replace_func(m, target_m, func_name, new_func):
 
 
 def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"],
-                   ipex_gptq_int4_model_path=None):
+                   ipex_gptq_int4_model_path=None,
+                   ipex_best_model_path=None):
     import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.optimize import model_convert_reference
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
@@ -673,7 +675,8 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"],
     )
     
     if qtype == ggml_tensor_qtype["sym_int4"]:
-        model = ipex_int4_opt(model, low_precision_checkpoint=ipex_gptq_int4_model_path)
+        model = ipex_int4_opt(model, low_precision_checkpoint=ipex_gptq_int4_model_path,
+        quantized_model_path=ipex_best_model_path)
         return model
 
     model = model_convert_reference(model)
