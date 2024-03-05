@@ -170,6 +170,7 @@ def get_ipex_version():
 
 _optimize_lm_head = None
 
+
 def get_optimize_lm_head():
     global _optimize_lm_head
     if _optimize_lm_head is None:
