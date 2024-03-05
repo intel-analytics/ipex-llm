@@ -567,6 +567,9 @@ def speculative_generate(self,
 
     self.clear_benchmarks()
 
+    if self.device.type == 'xpu':
+        torch.xpu.empty_cache()
+
     # Example:
     # Target model forward for the first token
     # Step 1. target_model(prompt) -> a
@@ -627,7 +630,7 @@ def speculative_generate(self,
             else:
                 past_key_values, extend_kv = _check_and_extend_kv_cache(past_key_values,
                                                                         max_step_draft,
-                                                                        max_new_tokens - max_new_tokens + 40)
+                                                                        max_new_tokens - step + 40)
                 draft_past_key_values = past_key_values
             draft_generate_ids[:, 0] = current_input_ids
             draft_prob_list = []

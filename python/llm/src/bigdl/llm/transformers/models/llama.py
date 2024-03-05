@@ -633,6 +633,7 @@ def llama_attention_forward_4_31_original(
             cache_v = past_key_value[1]
             if not enough_kv_room:
                 # allocate new
+                print("origin extend")
                 new_cache_k, new_cache_v = extend_kv_cache(
                     bsz,
                     self.num_key_value_heads,  # Support GQA
@@ -773,6 +774,7 @@ def llama_attention_selective_batching_forward_4_31(
         past_v = past_key_value[0][1]
         kv_seq_len = past_k.shape[-2]
         if not enough_kv_room:
+            print("origin extend")
             new_cache_k, new_cache_v = extend_kv_cache(1,
                                                        self.num_key_value_heads,  # Support GQA
                                                        self.head_dim,
@@ -838,6 +840,7 @@ def llama_attention_selective_batching_forward_4_31(
                 current_kv_len = past_k.shape[-2] + 1
                 if not enough_kv_room:
                     # allocate new
+                    print("origin extend")
                     new_cache_k, new_cache_v = extend_kv_cache(1,
                                                                self.num_key_value_heads,
                                                                self.head_dim,
@@ -1294,6 +1297,7 @@ def llama_attention_forward_4_36_original(
 
                 if not enough_kv_room:
                     # allocate new
+                    print("origin extend")
                     new_c_k, new_c_v = extend_kv_cache(bsz,
                                                        self.num_key_value_heads,  # Support GQA
                                                        self.head_dim,
