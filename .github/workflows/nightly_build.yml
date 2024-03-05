@@ -1,8 +1,8 @@
 name: Nightly Build
 
 on:
-  # pull_request:
-  #   branches: [ main ]
+  pull_request:
+    branches: [ main ]
   #   paths:
   #     - '.github/workflows/nightly_build.yml'
   schedule:
@@ -312,7 +312,7 @@ jobs:
 
   python-build:
     # python build can only be published once a day, please do not publish it manually
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'all'}} 
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'all'}} 
     runs-on: [self-hosted, Bree]
     needs: llm-cpp-build
     steps:
@@ -338,18 +338,18 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.5.0
+        export PYPI_VERSION=2.4.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
-        ## windows ##
+        # ## windows ##
         bash python/dev/release_default_windows.sh ${nb_version} false true
 
         ## linux ##
         bash python/dev/release_default_linux.sh ${nb_version} true
 
-        ## mac ##
-        bash python/dev/release_default_mac.sh ${nb_version} true
+        # ## mac ##
+        # bash python/dev/release_default_mac.sh ${nb_version} true
 
     - name: Create Job Badge
       if: ${{ always() }}
