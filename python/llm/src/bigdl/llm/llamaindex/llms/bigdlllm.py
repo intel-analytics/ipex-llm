@@ -239,6 +239,9 @@ class BigdlLLM(CustomLLM):
             model_name, load_in_4bit=True, **model_kwargs
         )
 
+        if 'xpu' in device_map:
+            self._model = self._model.to(device_map)
+
         # check context_window
         config_dict = self._model.config.to_dict()
         model_context_window = int(
