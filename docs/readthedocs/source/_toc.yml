@@ -58,7 +58,7 @@ subtrees:
                       - file: doc/LLM/Overview/KeyFeatures/inference_on_gpu
                       - file: doc/LLM/Overview/KeyFeatures/finetune
                       - file: doc/LLM/Overview/KeyFeatures/multi_gpus_selection
-                      - file: doc/LLM/Overview/Quickstart/benchmarking_quickstart
+                      - file: doc/LLM/Overview/Quickstart/benchmark_quickstart
           - file: doc/LLM/Overview/examples
             title: "Examples"
             subtrees:
