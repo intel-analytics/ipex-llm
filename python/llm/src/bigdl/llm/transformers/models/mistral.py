@@ -224,6 +224,7 @@ def mistral_attention_forward_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
                                                                          self.head_dim)
     else:
@@ -396,6 +397,7 @@ def mistral_attention_forward_original(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
                                                                          self.head_dim)
         kv_seq_len += 1
@@ -576,6 +578,7 @@ def mistral_attention_forward_4_36_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
                                                                          self.head_dim)
     else:
