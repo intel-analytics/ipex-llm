@@ -213,8 +213,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 in_features, out_features, mp_group = linear_args
                 optimize_lm_head = False
                 if name == "lm_head":
-                    from bigdl.llm.transformers.utils import get_optimize_lm_head
-                    if model_type in ["gptj", "llama"] and get_optimize_lm_head():
+                    if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
+                                                                          None) == "1":
                         optimize_lm_head = True
                 with init_empty_weights():
                     new_linear = None

@@ -168,19 +168,6 @@ def get_ipex_version():
     return _ipex_version
 
 
-_optimize_lm_head = None
-
-
-def get_optimize_lm_head():
-    global _optimize_lm_head
-    if _optimize_lm_head is None:
-        if os.environ.get("BIGDL_OPTIMIZE_LM_HEAD", None) is not None:
-            _optimize_lm_head = (os.environ["BIGDL_OPTIMIZE_LM_HEAD"] == "1")
-        else:
-            _optimize_lm_head = False
-    return _optimize_lm_head
-
-
 def get_xpu_device_type(x):
     if x.device.type != "xpu":
         return x.device.type
