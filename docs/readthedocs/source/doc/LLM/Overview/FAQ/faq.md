@@ -1,17 +1,19 @@
-# FAQ: How to Resolve Errors
+# Frequently Asked Questions (FAQ)
 
-Refer to this section for common issues faced while using BigDL-LLM.
+## General Info & Concepts
 
-## Installation Error
+### GGUF format usage with BigDL-LLM?
+
+BigDL-LLM supports running GGUF/AWQ/GPTQ models on both [CPU](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Advanced-Quantizations) and [GPU](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations).
+Please also refer to [here](https://github.com/intel-analytics/BigDL?tab=readme-ov-file#latest-update-) for our latest support.
+
+## How to Resolve Errors
 
 ### Fail to install `bigdl-llm` through `pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu`
 
 You could try to install BigDL-LLM dependencies for Intel XPU from source archives:
 - For Windows system, refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for the steps.
 - For Linux system, refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id3) for the steps.
-
-
-## Runtime Error
 
 ### PyTorch is not linked with support for xpu devices
 
@@ -21,7 +23,7 @@ You could try to install BigDL-LLM dependencies for Intel XPU from source archiv
 4. If you have mutil GPUs, you could refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html) for details about GPU selection.
 5. If you do inference using the optimized model on Intel GPUs, you also need to set `to('xpu')` for input tensors.
 
-### import `intel_extension_for_pytorch` error on Windows GPU
+### Import `intel_extension_for_pytorch` error on Windows GPU
 
 Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#error-loading-intel-extension-for-pytorch) for detailed guide. We list the possible missing requirements in environment which could lead to this error.
 
@@ -50,7 +52,7 @@ This error is caused by out of GPU memory. Some possible solutions to decrease G
 2. You could try `model = model.float16()` or `model = model.bfloat16()` before moving model to GPU to use less GPU memory.
 3. You could try set `cpu_embedding=True` when call `from_pretrained` of AutoClass or `optimize_model` function.
 
-### failed to enable AMX
+### Failed to enable AMX
 
 You could use `export BIGDL_LLM_AMX_DISABLED=1` to disable AMX manually and solve this error.
 
@@ -58,7 +60,7 @@ You could use `export BIGDL_LLM_AMX_DISABLED=1` to disable AMX manually and solv
 
 You may encounter this error during finetuning on multi GPUs. Please try `sudo apt install level-zero-dev` to fix it.
 
-### random and unreadable output of Gemma-7b-it on Arc770 ubuntu 22.04 due to driver and OneAPI missmatching.
+### Random and unreadable output of Gemma-7b-it on Arc770 ubuntu 22.04 due to driver and OneAPI missmatching.
 
 If driver and OneAPI missmatching, it will lead to some error when BigDL use XMX(short prompts) for speeding up.
 The output of `What's AI?` may like below:
