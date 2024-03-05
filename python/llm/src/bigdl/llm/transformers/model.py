@@ -412,7 +412,9 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
-                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+                import intel_extension_for_pytorch as ipex
+                with ipex.OnDevice(dtype=torch.float, device="meta"):
+                    model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
                 logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
                             "will fall to traditional load method with higher memory consumption.")
@@ -420,7 +422,7 @@ class _BaseAutoModelClass:
                 model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
                 model.config.update({"bigdl_lcmu_enabled": False})
 
-        model = model.to("cpu")
+        # model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,

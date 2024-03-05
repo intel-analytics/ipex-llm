@@ -129,10 +129,10 @@ def _ipex_optimize_model(model, rms_classes, qtype):
     is_tpp = _using_tpp()
 
     if not is_quantization:
-        _ipex_optimize_rmsnorm(model, rms_classes, tpp=is_tpp, woq=is_woq)
+        _ipex_optimize_rmsnorm(model, rms_classes, is_tpp=is_tpp, is_woq=is_woq)
     
-    _ipex_optimize_attention(model, tpp=is_tpp, woq=is_woq)
-    _ipex_optimize_decoder(model, tpp=is_tpp, woq=is_woq)
+    _ipex_optimize_attention(model, is_tpp=is_tpp, is_woq=is_woq)
+    _ipex_optimize_decoder(model, is_tpp=is_tpp, is_woq=is_woq)
 
     if not is_quantization:
         model.register_forward_hook(output_hook, with_kwargs=True)
@@ -288,15 +288,10 @@ def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
     )
     if low_precision_checkpoint != "":
         low_precision_checkpoint = torch.load(low_precision_checkpoint)
-        config_dict = {
-            "weight_key": "qweight",
-            "scale_key": "scales",
-            "zero_point_key": "qzeros",
-            "bias_key": "bias",
-            "g_idx_key": "g_idx"
-        }
-        state_dict_and_config = (low_precision_checkpoint, config_dict)
-        low_precision_checkpoint = state_dict_and_config
+        # config_dict = (
+        #         ipex.utils.weight_only_quantization._legacy_lowp_checkpoint_config()
+        #     )
+        # low_precision_checkpoint = (low_precision_checkpoint, config_dict)
     else:
         low_precision_checkpoint = None
     user_model = ipex.llm.optimize(
@@ -308,17 +303,17 @@ def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
         deployment_mode=False,
     )
 
-    example_inputs = get_example_inputs(model)
-    with torch.no_grad(), torch.cpu.amp.autocast(
-        enabled=amp_enabled,
-    ):
-        self_jit = torch.jit.trace(
-            user_model.eval(), example_inputs, strict=False, check_trace=False
-        )
-        self_jit = torch.jit.freeze(self_jit.eval())
-        # pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-        self_jit.save(quantized_model_path)
-        quant_model = self_jit
+    # example_inputs = get_example_inputs(model)
+    # with torch.no_grad(), torch.cpu.amp.autocast(
+    #     enabled=amp_enabled,
+    # ):
+    #     self_jit = torch.jit.trace(
+    #         user_model.eval(), example_inputs, strict=False, check_trace=False
+    #     )
+    #     self_jit = torch.jit.freeze(self_jit.eval())
+    #     # pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+    #     self_jit.save(quantized_model_path)
+    #     quant_model = self_jit
 
     torch._C._jit_set_texpr_fuser_enabled(False)
     qconfig = ipex.quantization.default_static_qconfig_mapping
@@ -336,7 +331,8 @@ def ipex_int4_opt(model, low_precision_checkpoint="", quantized_model_path=""):
             self_jit = torch.jit.freeze(self_jit.eval())
         except Exception as e:
             print("warning: loading failed.", e)
-            self_jit = quant_model
+            return user_model
+            # self_jit = quant_model
         ipex._set_optimized_model_for_generation(user_model, optimized_model=self_jit)
 
     return user_model
