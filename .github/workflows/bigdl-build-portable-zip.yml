@@ -72,6 +72,7 @@ jobs:
       - name: Generate GPG Sign
         shell: bash
         run: |
+          ls
           gpg --armor --detach-sign bigdl-llm-portable.zip
       - uses: actions/upload-artifact@v4
         with:
