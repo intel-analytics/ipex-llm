@@ -24,10 +24,8 @@ import time
 import os
 import copy
 import logging
-import warnings
-import inspect
-import version
 import transformers
+from packaging import version
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 from transformers import top_k_top_p_filtering, GenerationConfig, \
     LogitsProcessorList, StoppingCriteriaList
@@ -376,6 +374,7 @@ def _check_and_extend_kv_cache_4_31(past_key_values, max_step_draft, kv_alloc_bl
                                                   seq_len=max_step_draft)
     device = past_key_values[0][0].device
     if not enough_kv_room:
+        print("extending....")
         past_key_values = list(past_key_values)
         bsz, num_heads, current_seq_len, head_dim = past_key_values[0][0].shape
         for i in range(len(past_key_values)):
@@ -403,6 +402,7 @@ def _check_and_extend_kv_cache_4_36(past_key_values, max_step_draft, kv_alloc_bl
                                                   idx=0,
                                                   seq_len=max_step_draft)
     if not enough_kv_room:
+        print("extending....")
         past_k_cache = past_key_values.key_cache
         past_v_cache = past_key_values.value_cache
         device = past_k_cache[0].device
@@ -426,9 +426,9 @@ def _check_and_extend_kv_cache_4_36(past_key_values, max_step_draft, kv_alloc_bl
     return past_key_values, not enough_kv_room
 
 
-_check_and_extend_kv_cache = _check_and_extend_kv_cache_4_31 \
+_check_and_extend_kv_cache = _check_and_extend_kv_cache_4_36 \
     if version.parse(transformers.__version__) >= version.parse("4.36.0") \
-        else _check_and_extend_kv_cache_4_36
+        else _check_and_extend_kv_cache_4_31
 
 @torch.no_grad()
 def speculative_generate(self,
