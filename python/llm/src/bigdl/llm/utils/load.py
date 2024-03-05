@@ -15,9 +15,9 @@
 #
 
 import torch
-import warnings
 
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+from bigdl.llm.utils.common import invalidInputError
 from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
 
 LLAMA_IDS = ['llama', 'vicuna', 'merged-baize']
@@ -32,9 +32,9 @@ def load_model(
     """Load a model using BigDL LLM backend."""
     if low_bit == "bf16":
         if "chatglm" in model_path.lower():
-            warnings.warn(
-                "Currently pytorch do not support bfloat16 on cpu for chatglm models."
-            )
+            invalidInputError(
+                False,
+                "Currently pytorch do not support bfloat16 on cpu for chatglm models.")
         model = AutoModelForCausalLM.from_pretrained(
             model_path, trust_remote_code=True, torch_dtype=torch.bfloat16,
             use_cache=True
