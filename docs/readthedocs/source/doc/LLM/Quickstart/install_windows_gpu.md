@@ -56,7 +56,7 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
      ```bash
      pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
      ```
-  > Note: If yuu encounter network issues while installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for troubleshooting advice. 
+  > Note: If you encounter network issues while installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for troubleshooting advice. 
 
 * You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, in the Python interactive shell, execute the following import command:
   ```python
