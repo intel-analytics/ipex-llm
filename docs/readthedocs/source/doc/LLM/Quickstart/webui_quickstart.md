@@ -125,6 +125,10 @@ To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** termina
 
 ## Troubleshooting
 
+### Potentially slower first response
+
+The first response to user prompt might be slower than expected, with delays of up to several minutes before the response is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU models.
+
 ### Missing Required Dependencies
 
 During model loading, you may encounter an **ImportError** like `ImportError: This modeling file requires the following packages that were not found in your environment`. This indicates certain packages required by the model are absent from your environment. Detailed instructions for installing these necessary packages can be found at the bottom of the error messages. Take the following steps to fix these errors:
