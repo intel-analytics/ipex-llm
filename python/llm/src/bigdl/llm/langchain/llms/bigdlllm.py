@@ -61,7 +61,7 @@ class BigdlNativeLLM(LLM):
     Example:
         .. code-block:: python
 
-            from langchain.llms import BigdlNativeLLM
+            from bigdl.llm.langchain.llms import BigdlNativeLLM
             llm = BigdlNativeLLM(model_path="/path/to/llama/model")
     """
 
@@ -286,7 +286,7 @@ class BigdlNativeLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlNativeLLM
+                from bigdl.llm.langchain.llms import BigdlNativeLLM
                 llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
@@ -331,7 +331,7 @@ class BigdlNativeLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlNativeLLM
+                from bigdl.llm.langchain.llms import BigdlNativeLLM
                 llm = BigdlNativeLLM(
                     model_path="/path/to/local/model.bin",
                     temperature = 0.5
@@ -364,7 +364,7 @@ class _BaseCausalLM(LLM):
     Example:
         .. code-block:: python
 
-            from langchain.llms import LlamaLLM
+            from bigdl.llm.langchain.llms import LlamaLLM
             llm = LlamaLLM(model_path="/path/to/llama/model")
     """
 
@@ -588,7 +588,7 @@ class _BaseCausalLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import LlamaLLM
+                from bigdl.llm.langchain.llms import LlamaLLM
                 llm = LlamaLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
@@ -636,7 +636,7 @@ class _BaseCausalLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import LlamaLLM
+                from bigdl.llm.langchain.llms import LlamaLLM
                 llm = LlamaLLM(
                     model_path="/path/to/local/model.bin",
                     temperature = 0.5

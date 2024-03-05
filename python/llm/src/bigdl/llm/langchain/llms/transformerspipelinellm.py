@@ -66,7 +66,7 @@ class TransformersPipelineLLM(LLM):
     Example:
         .. code-block:: python
 
-            from langchain.llms import TransformersPipelineLLM
+            from bigdl.llm.langchain.llms import TransformersPipelineLLM
             llm = TransformersPipelineLLM.from_model_id(model_id="decapoda-research/llama-7b-hf")
     """
 
