@@ -1092,9 +1092,14 @@ def _optimize_post(model, lightweight_bmm=False):
                 modeling_module_name = model.__class__.__module__
                 module = importlib.import_module(modeling_module_name)
                 from bigdl.llm.transformers.models.mistral import mistral_attention_forward_4_36
+                from bigdl.llm.transformers.models.mistral import mistral_model_forward_4_36
                 convert_forward(model,
                                 module.MistralAttention,
                                 mistral_attention_forward_4_36
+                                )
+                convert_forward(model,
+                                module.MistralModel,
+                                mistral_model_forward_4_36
                                 )
                 convert_forward(model,
                                 module.MistralRMSNorm,
