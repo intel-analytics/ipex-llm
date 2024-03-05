@@ -353,10 +353,7 @@ def use_fused_layer_norm(x: torch.Tensor, training: bool):
         not training
         and not x.requires_grad
         and device in ["arc", "flex", "pvc", "mtl"]  # fused layer norm cannot run on UHD
-        and (
-            device == "mtl"  # fused layer norm conflicts with XMX, so disable it when using XMX
-            or x.numel() // x.size(-1) == 1
-        )
+        and x.numel() // x.size(-1) == 1  # fused layer norm is slower in first token
     )
 
 
