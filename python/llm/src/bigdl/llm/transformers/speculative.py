@@ -367,33 +367,35 @@ def _update_past_key_values_storage_cpu(self, past_key_values, past_key_values_s
                     delta_past_value.to(torch.float32)
                 
 
-def _check_and_extend_kv_cache_4_31(past_key_values, max_step_draft, kv_alloc_block_len=256,
+def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_len=256,
                                     model_type="llama"):
     from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
         extend_kv_cache
     enough_kv_room = True
+    if model_type not in ["chatglm", "qwen", "baichuan", "llama", "mistral",
+                          "gptj", "opt"]:
+        return past_key_values, False
     cache_k = past_key_values[0][0]
-    if model_type in ["baichuan", "gptj"]:
-        enough_kv_room = cache_k.stride()[1] >= (cache_k.size(2) + max_step_draft) * cache_k.size(3)
-        bsz, num_heads, current_seq_len, head_dim = cache_k.shape
-        print(cache_k.shape)
-    elif model_type == "chatglm":
+    if model_type == "chatglm":
         cache_k = cache_k.permute(1, 2, 0, 3)
-        enough_kv_room = cache_k.stride()[1] >= (cache_k.size(2) + max_step_draft) * cache_k.size(3)
     elif model_type == "qwen":
         cache_k = cache_k.transpose(1, 2)
-        enough_kv_room = cache_k.stride(1) >= (cache_k.size(1) + max_step_draft) * cache_k.size(3)
-    else:
-        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value=past_key_values[0],
-                                                      seq_len=max_step_draft)
-        bsz, num_heads, current_seq_len, head_dim = cache_k.shape
+
+    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value=(cache_k, None),
+                                                  seq_len=max_step_draft)
+    bsz, num_heads, current_seq_len, head_dim = cache_k.shape
     device = past_key_values[0][0].device
     if not enough_kv_room:
-        print("extending....")
         past_key_values = list(past_key_values)
         for i in range(len(past_key_values)):
             cache_k = past_key_values[i][0]
             cache_v = past_key_values[i][1]
+            if model_type == "chatglm":
+                cache_k = cache_k.permute(1, 2, 0, 3)
+                cache_v = cache_v.permute(1, 2, 0, 3)
+            elif model_type == "qwen":
+                cache_k = cache_k.transpose(1, 2)
+                cache_v = cache_v.transpose(1, 2)
             new_cache_k, new_cache_v = extend_kv_cache(
                     bsz,
                     num_heads,  # Support GQA
@@ -405,45 +407,15 @@ def _check_and_extend_kv_cache_4_31(past_key_values, max_step_draft, kv_alloc_bl
                 )
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
-            past_key_values[i] = (new_cache_k, new_cache_v)
+            if model_type == "chatglm":
+                past_key_values[i] = (new_cache_k.permute(2, 0, 1, 3),
+                                      new_cache_v.permute(2, 0, 1, 3))
+            elif model_type == "qwen":
+                past_key_values[i] = (new_cache_k.transpose(1, 2), new_cache_v.transpose(1, 2))
+            else:
+                past_key_values[i] = (new_cache_k, new_cache_v)
     return past_key_values, not enough_kv_room
 
-
-def _check_and_extend_kv_cache_4_36(past_key_values, max_step_draft, kv_alloc_block_len=256):
-    from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_36, \
-        extend_kv_cache
-    
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value=past_key_values,
-                                                  idx=0,
-                                                  seq_len=max_step_draft)
-    if not enough_kv_room:
-        print("extending....")
-        past_k_cache = past_key_values.key_cache
-        past_v_cache = past_key_values.value_cache
-        device = past_k_cache[0].device
-        bsz, num_heads, current_seq_len, head_dim = past_k_cache.shape
-        for i in range(len(past_k_cache)):
-            cache_k = past_k_cache[i]
-            cache_v = past_v_cache[i]
-            new_cache_k, new_cache_v = extend_kv_cache(
-                    bsz,
-                    num_heads,  # Support GQA
-                    head_dim,
-                    cache_k.size(2),
-                    current_seq_len + max_step_draft + kv_alloc_block_len,
-                    dtype=cache_k.dtype,
-                    device=device
-                )
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            past_key_values.key_cache[i] = new_cache_k
-            past_key_values.value_cache[i] = new_cache_v
-    return past_key_values, not enough_kv_room
-
-
-_check_and_extend_kv_cache = _check_and_extend_kv_cache_4_36 \
-    if version.parse(transformers.__version__) >= version.parse("4.36.0") \
-        else _check_and_extend_kv_cache_4_31
 
 @torch.no_grad()
 def speculative_generate(self,
