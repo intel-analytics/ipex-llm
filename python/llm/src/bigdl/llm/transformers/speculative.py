@@ -801,7 +801,6 @@ def speculative_generate(self,
                 torch.xpu.synchronize()
                 if extend_kv:
                     torch.xpu.empty_cache()
-                print(f"verify memory: {torch.xpu.memory.memory_reserved() / (1024**3)}")
             toc = time.time()
             self.verify_time.append(toc - tic)
             self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
