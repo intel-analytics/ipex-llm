@@ -125,7 +125,7 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.realpath(__file__))
     results = []
     from omegaconf import OmegaConf
-    conf = OmegaConf.load(f'{current_dir}/loader_config.yaml')
+    conf = OmegaConf.load(f'{current_dir}/load_config.yaml')
     today = date.today()
     import pandas as pd
     csv_name = f'{current_dir}/loader-results-{today}.csv'
