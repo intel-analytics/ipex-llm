@@ -36,25 +36,25 @@ version=$1
 upload=$2
 
 # Release nano, llm and serving
-# NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
-# echo $NANO_SCRIPT_DIR
-# bash ${NANO_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
+NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
+echo $NANO_SCRIPT_DIR
+bash ${NANO_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
 
 LLM_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/llm/dev; pwd)"
 echo $LLM_SCRIPT_DIR
 bash ${LLM_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
 
-# SERVING_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/serving/dev; pwd)"
-# echo $SERVING_SCRIPT_DIR
-# bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
+SERVING_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/serving/dev; pwd)"
+echo $SERVING_SCRIPT_DIR
+bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
 
-# # Release bigdl-spark3
-# bash ${RUN_SCRIPT_DIR}/release_default_linux_spark3.sh ${version} false ${upload} true
+# Release bigdl-spark3
+bash ${RUN_SCRIPT_DIR}/release_default_linux_spark3.sh ${version} false ${upload} true
 
-# # Release default bigdl without suffix
-# bash ${RUN_SCRIPT_DIR}/release_default_linux_spark2.sh ${version} false ${upload} false
+# Release default bigdl without suffix
+bash ${RUN_SCRIPT_DIR}/release_default_linux_spark2.sh ${version} false ${upload} false
 
-# # Release bigdl-spark2. Using quick build as this will be the same as bigdl without suffix
-# bash ${RUN_SCRIPT_DIR}/release_default_linux_spark2.sh ${version} true ${upload} true
+# Release bigdl-spark2. Using quick build as this will be the same as bigdl without suffix
+bash ${RUN_SCRIPT_DIR}/release_default_linux_spark2.sh ${version} true ${upload} true
 
-# # TODO: may need to upload all whls in the very end at the same time in case any build fails?
+# TODO: may need to upload all whls in the very end at the same time in case any build fails?
