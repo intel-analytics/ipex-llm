@@ -28,13 +28,14 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
             sudo apt-get install postgresql
             ```
         * Initialization:
-
-        Switch to the **postgres** user and launch **psql** console:
+            
+            Switch to the **postgres** user and launch **psql** console
             ```bash
             sudo su - postgres
             psql
             ```
-        Then, create a new user role:
+            
+            Then, create a new user role:
             ```bash
             CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
             ALTER ROLE <user> SUPERUSER;    
@@ -47,11 +48,11 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
             cd C:\Program Files\PostgreSQL\14\bin
         ```   
         The exact path will vary depending on your PostgreSQL location.  
-        * 
+        * Then in PowerShell:
         ```bash
             .\psql -U postgres    
         ```   
-        Input the password you set in the previous installation. If PowerShell shows "postgres=#", it indicates a successful connection.
+        Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
         * Create a new user role:
         ```bash
         CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
