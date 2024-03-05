@@ -70,14 +70,8 @@ subtrees:
           #   title: "Tips and Known Issues"
           - file: doc/PythonAPI/LLM/index
             title: "API Reference"
-          - file: doc/LLM/Overview/FAQ/index
+          - file: doc/LLM/Overview/FAQ/faq
             title: "FAQ"
-            subtrees:
-              - entries:
-                - file: doc/LLM/Overview/FAQ/general_info
-                  title: "General Info & Concepts"
-                - file: doc/LLM/Overview/FAQ/resolve_error
-                  title: "How to Resolve Errors"
 
   - entries:
     - file: doc/Orca/index
