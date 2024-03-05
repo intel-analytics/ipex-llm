@@ -37,7 +37,7 @@ sys.path.insert(0, os.path.abspath("../../../python/llm/src/"))
 # -- Project information -----------------------------------------------------
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-  "header_links_before_dropdown": 9,
+  "header_links_before_dropdown": 3,
   "icon_links": [
         {
             "name": "GitHub Repository for BigDL",

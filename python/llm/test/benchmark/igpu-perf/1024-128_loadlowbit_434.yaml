@@ -7,7 +7,7 @@ num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
 in_out_pairs:
-  - '32-512'
+  - '1024-128'
 test_api:
-  - "transformer_int4_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
+  - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
 cpu_embedding: True # whether put embedding to CPU (only avaiable now for gpu win related test_api)

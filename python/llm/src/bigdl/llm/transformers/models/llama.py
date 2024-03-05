@@ -49,6 +49,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xp
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
+from transformers.models.llama.modeling_llama import LlamaModel
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
@@ -86,6 +87,37 @@ def get_ipex_version():
     import intel_extension_for_pytorch as ipex
     _ipex_version = ipex.__version__
     return _ipex_version
+
+
+def llama_model_forward_4_36(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    from bigdl.llm.transformers.kv import DynamicFp8Cache
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):
+        if not isinstance(past_key_values, DynamicFp8Cache):
+            past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    return LlamaModel.forward(
+        self=self,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+    )
 
 
 def llama_rms_norm_forward(self, hidden_states):
@@ -971,8 +1003,10 @@ def llama_attention_forward_4_36_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)

@@ -210,7 +210,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.19.6</version>
+            <version>3.25.2</version>
             <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
@@ -460,7 +460,7 @@
                     <relocations>
                         <relocation>
                             <pattern>com.google.protobuf</pattern>
-                            <shadedPattern>com.intel.analytics.shaded.protobuf_v_3_5_1</shadedPattern>
+                            <shadedPattern>com.intel.analytics.shaded.protobuf_v_3_25_2</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
