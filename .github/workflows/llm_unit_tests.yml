@@ -360,3 +360,17 @@ jobs:
             source /home/arda/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-langchain-tests-gpu.sh
+
+      - name: Run LLM llamaindex GPU test
+        shell: bash
+        run: |
+          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+          # Specific oneapi position on arc ut test machines
+          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+            pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+            source /opt/intel/oneapi/setvars.sh
+          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+            pip install --pre --upgrade bigdl-llm[xpu_2.0] -f https://developer.intel.com/ipex-whl-stable-xpu
+            source /home/arda/intel/oneapi/setvars.sh
+          fi
+          bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
