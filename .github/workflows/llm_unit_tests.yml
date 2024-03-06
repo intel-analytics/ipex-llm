@@ -347,7 +347,7 @@ jobs:
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
 
-      - name: Run LLM langchain test
+      - name: Run LLM langchain GPU test
         shell: bash
         run: |
           pip install -U langchain==0.0.184
