@@ -14,22 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, \
-    LlamaLLM, BloomLLM
-from bigdl.llm.langchain.embeddings import TransformersEmbeddings, LlamaEmbeddings, \
-    BloomEmbeddings
-
-
-from langchain.document_loaders import WebBaseLoader
-from langchain.indexes import VectorstoreIndexCreator
-
-
-from langchain.chains.question_answering import load_qa_chain
-from langchain.chains.chat_vector_db.prompts import (CONDENSE_QUESTION_PROMPT,
-                                                     QA_PROMPT)
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import Chroma
-
 import pytest
 from unittest import TestCase
 import os
