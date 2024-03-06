@@ -21,7 +21,7 @@ from bigdl.llm.llamaindex.llms import BigdlLLM
 
 class Test_LlamaIndex_Transformers_API(TestCase):
     def setUp(self):
-        self.llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
+        self.llama_model_path = os.environ.get('LLAMA2_7B_ORIGIN_PATH')
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)

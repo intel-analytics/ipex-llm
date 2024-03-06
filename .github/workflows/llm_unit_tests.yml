@@ -102,6 +102,7 @@ jobs:
           echo "ORIGINAL_REPLIT_CODE_PATH=${ORIGIN_DIR}/replit-code-v1-3b" >> "$GITHUB_ENV"
           echo "ORIGINAL_WHISPER_TINY_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
           echo "MISTRAL_ORIGIN_PATH=${ORIGIN_DIR}/Mistral-7B-v0.1" >> "$GITHUB_ENV"
+          echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
 
           echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_7b_q4_0.bin" >> "$GITHUB_ENV"
           echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_redpajama_7b_q4_0.bin" >> "$GITHUB_ENV"
@@ -189,6 +190,10 @@ jobs:
             echo "Directory $COMMON_VOICE_PATH not found. Downloading from FTP server..."
             echo "wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/common_voice -P $DATASET_DIR"
             wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/common_voice -P $DATASET_DIR
+          fi
+          if [ ! -d $LLAMA2_7B_ORIGIN_PATH ]; then
+            echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf -P $ORIGIN_DIR
           fi
 
       - name: Run LLM cli test (Linux)
