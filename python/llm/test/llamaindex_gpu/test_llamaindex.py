@@ -15,17 +15,6 @@
 #
 
 import torch
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.postgres import PGVectorStore
-# from llama_index.llms.llama_cpp import LlamaCPP
-from llama_index.readers.file import PyMuPDFReader
-from llama_index.core.schema import NodeWithScore
-from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core import QueryBundle
-from llama_index.core.retrievers import BaseRetriever
-from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.vector_stores import VectorStoreQuery
-
 import pytest
 from unittest import TestCase
 import os
