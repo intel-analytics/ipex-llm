@@ -81,54 +81,110 @@ def qwen_attention_forward(
     invalidInputError(not self.use_flash_attn and not self.use_cache_quantization,
                       "flash attn and kv_cache quantization are not supported")
 
-    mixed_x_layer = self.c_attn(hidden_states)
-    query, key, value = mixed_x_layer.split(self.split_size, dim=2)
+    #mixed_x_layer = self.c_attn(hidden_states)
+    #query, key, value = mixed_x_layer.split(self.split_size, dim=2)
 
-    query = self._split_heads(query, self.num_heads, self.head_dim)
-    key = self._split_heads(key, self.num_heads, self.head_dim)
-    value = self._split_heads(value, self.num_heads, self.head_dim)
+    #query = self._split_heads(query, self.num_heads, self.head_dim)
+    #key = self._split_heads(key, self.num_heads, self.head_dim)
+    #value = self._split_heads(value, self.num_heads, self.head_dim)
     # query, key, value's shape: [bs, seq_len, num_heads, head_dim]
+    bsz, q_len, _ = hidden_states.size()
 
-    if rotary_pos_emb_list is not None:
-        use_fuse_rope = query.device.type == "xpu" and not (self.training and query.requires_grad)
-        cur_len = query.shape[1]
-        if len(rotary_pos_emb_list) == 1:
-            rotary_pos_emb = rotary_pos_emb_list[0]
-            rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
-            if use_fuse_rope:
-                cos, sin = rotary_pos_emb
-                cos = cos.to(query.dtype)
-                sin = sin.to(query.dtype)
-                query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
-            else:
-                rotary_pos_emb = (rotary_pos_emb,) * 2
-                q_pos_emb, k_pos_emb = rotary_pos_emb
-                # Slice the pos emb for current inference
-                query = apply_rotary_pos_emb(query, q_pos_emb)
-                key = apply_rotary_pos_emb(key, k_pos_emb)
-        else:
-            query_list = []
-            key_list = []
-            for i, rotary_pos_emb in enumerate(rotary_pos_emb_list):
+    use_fuse_rope = hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad)
+    #decoding_fast_path = False
+    decoding_fast_path = (use_fuse_rope and bsz * q_len == 1)
+    #print(decoding_fast_path,end="")
+    if decoding_fast_path:
+        hidden_states = hidden_states.view(1, -1)
+        cache_k, cache_v = layer_past[0], layer_past[1]
+        #print(cache_k.stride())
+        cache_k = cache_k.transpose(1, 2)
+        cache_v = cache_v.transpose(1, 2)
+        #print(cache_k.stride())
+
+        kv_seq_len = cache_k.shape[-2]
+        # TODO:
+        self.position_ids = self.position_ids.to('xpu')
+        position_ids = self.position_ids[kv_seq_len]
+        base = 10000.0
+        import linear_q4_0
+        #print("kv_seq_len is: " + str(kv_seq_len))
+        #print("position_ids is: " + str(position_ids))
+        #print(hidden_states.shape)
+        #print(cache_k.shape)
+        #print(cache_v.shape)
+        #print("cache_k is contiguous: " + str(cache_k.is_contiguous()))
+
+
+        args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data, self.v_proj.weight.data,
+                self.q_proj.bias.data, self.k_proj.bias.data, self.v_proj.bias.data, position_ids, cache_k,
+                cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len, self.head_dim, base]
+        query, key, value = linear_q4_0.forward_qkv_bias(*args)
+        cache_k = key
+        cache_v = value
+        kv_seq_len += 1
+        #print("after forward qkv bias")
+        #print(cache_k.shape)
+        #print(cache_v.shape)
+        #print(query.shape)
+        #print(key.shape)
+        #print(value.shape)
+        #query_size, key_size = query.size(1), key.size(1)
+        query_size, key_size = 1, 1
+    else:
+        query = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
+        key = self.k_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
+        value = self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
+        #mixed_x_layer = self.c_attn(hidden_states)
+        #query, key, value = mixed_x_layer.split(self.split_size, dim=2)
+
+        #query = self._split_heads(query, self.num_heads, self.head_dim)
+        #key = self._split_heads(key, self.num_heads, self.head_dim)
+        #value = self._split_heads(value, self.num_heads, self.head_dim)
+        if rotary_pos_emb_list is not None:
+            cur_len = query.shape[1]
+            if len(rotary_pos_emb_list) == 1:
+                rotary_pos_emb = rotary_pos_emb_list[0]
                 rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
                 if use_fuse_rope:
                     cos, sin = rotary_pos_emb
                     cos = cos.to(query.dtype)
                     sin = sin.to(query.dtype)
                     query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
-                    query_list += [query]
-                    key_list += [key]
                 else:
                     rotary_pos_emb = (rotary_pos_emb,) * 2
                     q_pos_emb, k_pos_emb = rotary_pos_emb
                     # Slice the pos emb for current inference
-                    query_list += [apply_rotary_pos_emb(query[i:i+1, :, :], q_pos_emb)]
-                    key_list += [apply_rotary_pos_emb(key[i:i+1, :, :], k_pos_emb)]
-            query = torch.cat(query_list, dim=0)
-            key = torch.cat(key_list, dim=0)
-
-    query_size, key_size = query.size(1), key.size(1)
-    kv_seq_len = key_size if layer_past is None else key_size + layer_past[0].size(1)
+                    query = apply_rotary_pos_emb(query, q_pos_emb)
+                    key = apply_rotary_pos_emb(key, k_pos_emb)
+            else:
+                query_list = []
+                key_list = []
+                for i, rotary_pos_emb in enumerate(rotary_pos_emb_list):
+                    rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
+                    if use_fuse_rope:
+                        cos, sin = rotary_pos_emb
+                        cos = cos.to(query.dtype)
+                        sin = sin.to(query.dtype)
+                        query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
+                        query_list += [query]
+                        key_list += [key]
+                    else:
+                        rotary_pos_emb = (rotary_pos_emb,) * 2
+                        q_pos_emb, k_pos_emb = rotary_pos_emb
+                        # Slice the pos emb for current inference
+                        query_list += [apply_rotary_pos_emb(query[i:i+1, :, :], q_pos_emb)]
+                        key_list += [apply_rotary_pos_emb(key[i:i+1, :, :], k_pos_emb)]
+                query = torch.cat(query_list, dim=0)
+                key = torch.cat(key_list, dim=0)
+        #print(query.shape)
+        #print(key.shape)
+        #print(value.shape)
+        query_size, key_size = query.size(1), key.size(1)
+        #print("q k size:")
+        #print(query_size)
+        #print(key_size)
+        kv_seq_len = key_size if layer_past is None else key_size + layer_past[0].size(1)
 
     if kv_seq_len > self.seq_length and self.use_logn_attn and not self.training:
         seq_start = kv_seq_len - query_size
@@ -147,6 +203,7 @@ def qwen_attention_forward(
         causal_mask = None
 
     if use_quantize_kv_cache(self.c_attn, hidden_states):
+    #if use_quantize_kv_cache(self.q_proj, hidden_states):
         query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
         # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
 
@@ -175,30 +232,34 @@ def qwen_attention_forward(
             )
 
     else:
-        bsz = key.size(0)
+        #bsz = key.size(0)
         if layer_past is not None:
-            cache_k, cache_v = layer_past[0], layer_past[1]
-            cache_k = cache_k.transpose(1, 2)
-            cache_v = cache_v.transpose(1, 2)
-            if cache_k.stride(1) < kv_seq_len * cache_k.size(3):
-                # allocate new
-                new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                           self.num_heads,
-                                                           self.head_dim,
-                                                           cache_k.size(2),
-                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                           dtype=cache_k.dtype,
-                                                           device=hidden_states.device)
-                new_cache_k[:] = cache_k
-                new_cache_v[:] = cache_v
-                cache_k = new_cache_k
-                cache_v = new_cache_v
-
-            key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                       key.transpose(1, 2), value.transpose(1, 2))
-            key = key_states
-            value = value_states
+            if not decoding_fast_path:
+                cache_k, cache_v = layer_past[0], layer_past[1]
+                cache_k = cache_k.transpose(1, 2)
+                cache_v = cache_v.transpose(1, 2)
+                #print(cache_k.shape)
+                #print(cache_v.shape)
+                if cache_k.stride(1) < kv_seq_len * cache_k.size(3):
+                    # allocate new
+                    #print("allocate new!!!!!!!!")
+                    new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                               self.num_heads,
+                                                               self.head_dim,
+                                                               cache_k.size(2),
+                                                               kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                               dtype=cache_k.dtype,
+                                                               device=hidden_states.device)
+                    new_cache_k[:] = cache_k
+                    new_cache_v[:] = cache_v
+                    cache_k = new_cache_k
+                    cache_v = new_cache_v
+                key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                           key.transpose(1, 2), value.transpose(1, 2))
+                key = key_states
+                value = value_states
         elif use_cache:
+            #print("allocate first!!!!!!!!")
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_key_states, new_value_states = init_kv_cache(bsz,
                                                              self.num_heads,
@@ -212,8 +273,13 @@ def qwen_attention_forward(
             key = new_key_states
             value = new_value_states
 
-        query = query.transpose(1, 2)
+        if not decoding_fast_path:
+            query = query.transpose(1, 2)
 
+        #print("q k v:")
+        #print(query.shape)
+        #print(key.shape)
+        #print(value.shape)
         attn_output, attn_weight = self._attn(
             query.to(key.dtype), key, value, causal_mask, attention_mask, head_mask
         )
