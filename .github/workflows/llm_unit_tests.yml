@@ -209,6 +209,12 @@ jobs:
           pip install -U chromadb==0.3.25
           pip install -U pandas==2.0.3
           bash python/llm/test/run-llm-langchain-tests.sh
+      - name: Run LLM llamaindex test
+        shell: bash
+        run: |
+          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+          pip install transformers==4.31.0
+          bash python/llm/test/run-llm-llamaindex-tests.sh
   llm-unit-test-on-arc:
     needs: [setup-python-version, llm-cpp-build]
     strategy:
