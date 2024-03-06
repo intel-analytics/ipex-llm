@@ -352,7 +352,7 @@ def baichuan_attention_forward_13b_quantized(
                 bsz, self.num_heads, kv_seq_len, self.head_dim,
                 device=device
             )
-            key_states, value_states = append_kv_cache(k_cache, v_cache, key_states, value_states)
+            key_states, value_states = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
             past_key_value = (key_states, value_states)
     else:
         k_cache, v_cache = past_key_value
