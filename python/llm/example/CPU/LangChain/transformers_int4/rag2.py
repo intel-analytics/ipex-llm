@@ -3,9 +3,6 @@ from typing import Any
 from pydantic import BaseModel
 from unstructured.partition.pdf import partition_pdf
 
-# import nltk
-# nltk.download('punkt')
-
 
 # Path to save images
 path = "./Papers/"
@@ -165,8 +162,6 @@ model = TransformersLLM.from_model_id(
     model_kwargs={"temperature": 0, "max_length": 2600, "trust_remote_code": True}
 )
 
-# Option 2: Multi-modal LLM
-# model = LLaVA
 
 def debug_print(output):
     print("Debug: Raw output:", output)
@@ -184,8 +179,4 @@ chain = (
 )
 
 with timeit("RAG pipeline", output_file_path):
-    print("Results:" + 
-        chain.invoke(
-        "What is the method of this paper?"
-        )
-    )
+    chain.invoke("What is the method of this paper?")
