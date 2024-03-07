@@ -1,8 +1,17 @@
 # BigDL-LLM Benchmarking
 
-We can do benchmarking on Intel CPUs and GPUs using the benchmark script we provide.
+We can do benchmarking for BigDL-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
-## Clone Repo
+## Prepare The Environment
+
+You can refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install the version of BigDL-LLM that you would like to benchmark based on your own machine. The following dependencies are also needed to run the benchmark scripts.
+
+```
+pip install pandas
+pip install omegaconf
+```
+
+## Prepare The Scripts
 
 Navigate to your local workspace and then download BigDL from GitHub. Modify the `config.yaml` under `all-in-one folder` for your own benchmark configurations.
 
@@ -10,15 +19,6 @@ Navigate to your local workspace and then download BigDL from GitHub. Modify the
 cd your/local/workspace
 git clone https://github.com/intel-analytics/BigDL.git
 cd BigDL/python/llm/dev/benchmark/all-in-one/
-```
-
-## Install BigDL-LLM
-
-You can refer to [this](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install BigDL-LLM based on your own machine and the necessary libraries for running benchmark scripts.
-
-```
-pip install pandas
-pip install omegaconf
 ```
 
 ## Configure YAML File
@@ -45,18 +45,18 @@ Some parameters in the yaml file that you can configure:
 
 - repo_id: The repo_id consists of two parts, one is the name of the model producer and the other is the name of the folder that actually holds the model data. 
 - local_model_hub: The folder path where the models are stored in your machine.
-- low_bit: Convert the model to which precision you want to test.cd
+- low_bit: The low_bit precision you want to convert to for benchmarking.
 - batch_size: The number of samples on which the models makes predictions in one forward pass.
 - in_out_pairs: Input sequence length and output sequence length. 
 - test_api: Use different test functions on different machines.
   - `transformer_int4_gpu` on Intel GPU for Linux
   - `transformer_int4_gpu_win` on Intel GPU for Windows
   - `transformer_int4` on Intel CPU
-- cpu_embedding: Whether to put embedding on CPU (only avaiable now for windows gpu related test_api)
+- cpu_embedding: Whether to put embedding on CPU (only avaiable now for windows gpu related test_api).
 
 ## Run on Windows
 
-Please refer to [this](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration) to configure oneAPI environment variables.
+Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration) to configure oneAPI environment variables.
 
 ```eval_rst
 .. tabs::
@@ -104,4 +104,4 @@ Please refer to [this](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
 
 ## Result
 
-After the script runnning is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)`, check whether the column `actual input/output tokens` is consistent with the column `input/output tokens`, and the parameters you set before have been successfully applied in testing or not.
+After the script runnning is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for  performance results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and if the parameters you set before have been successfully applied in testing.
