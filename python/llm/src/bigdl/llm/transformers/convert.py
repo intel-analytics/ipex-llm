@@ -583,6 +583,14 @@ def _optimize_pre(model):
     return model
 
 
+def get_enable_ipex(low_bit):
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    qtype = ggml_tensor_qtype[low_bit]
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    return _enable_ipex
+
+
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,

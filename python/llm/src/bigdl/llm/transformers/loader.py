@@ -17,7 +17,7 @@
 
 import torch
 
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel, get_enable_ipex
 import time
 from datetime import date
 import argparse
@@ -44,6 +44,7 @@ def load_model(
     model_path: str,
     device: str = "cpu",
     low_bit: str = 'sym_int4',
+    trust_remote_code: bool = True,
 ):
     """Load a model using BigDL LLM backend."""
 
@@ -53,16 +54,19 @@ def load_model(
 
     tokenizer_cls = get_tokenizer_cls(model_path)
     model_cls = get_model_cls(model_path, low_bit)
-
-    model_kwargs = {"trust_remote_code": True, "use_cache": True}
+    model_kwargs = {"use_cache": True}
+    if trust_remote_code:
+        model_kwargs["trust_remote_code"] = True
     if low_bit == "bf16":
-        model_kwargs.update({"torch_dtype": torch.bfloat16})
+        model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.bfloat16})
     else:
         model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": 'auto'})
 
     # Load tokenizer
     tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
-    model = model_cls.from_pretrained(model_path, **model_kwargs).eval()
+    model = model_cls.from_pretrained(model_path, **model_kwargs)
+    if not get_enable_ipex(low_bit):
+        model = model.eval()
 
     if device == "xpu":
         import intel_extension_for_pytorch as ipex
@@ -94,7 +98,7 @@ def get_model_path(repo_id, local_model_hub):
 
 
 def run_test_generation(model_path, device, low_bit):
-    model, tokenizer = load_model(model_path, device, low_bit)
+    model, tokenizer = load_model(model_path, device, low_bit, True)
     with torch.inference_mode():
         prompt = "What is AI?"
         # TODO: if gpu, will need to move the tensor to xpu
