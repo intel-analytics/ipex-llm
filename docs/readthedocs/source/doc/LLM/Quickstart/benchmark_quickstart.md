@@ -4,7 +4,7 @@ We can do benchmarking for BigDL-LLM on Intel CPUs and GPUs using the benchmark 
 
 ## Prepare The Environment
 
-You can refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install the version of BigDL-LLM that you would like to benchmark based on your own machine. The following dependencies are also needed to run the benchmark scripts.
+You can refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install BigDL-LLM in your environment. The following dependencies are also needed to run the benchmark scripts.
 
 ```
 pip install pandas
@@ -43,7 +43,7 @@ cpu_embedding: False
 
 Some parameters in the yaml file that you can configure:
 
-- repo_id: The repo_id consists of two parts, one is the name of the model producer and the other is the name of the model that actually holds the model data.
+- repo_id: The name of the model and its organization.
 - local_model_hub: The folder path where the models are stored on your machine.
 - low_bit: The low_bit precision you want to convert to for benchmarking.
 - batch_size: The number of samples on which the models makes predictions in one forward pass.
@@ -74,6 +74,12 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
       .. code-block:: bash
 
          set SYCL_CACHE_PERSISTENT=1
+         python run.py
+
+   .. tab:: Other Intel dGPU Series(e.g. Arc™ A770)
+
+      .. code-block:: bash
+
          python run.py
 
 ```
