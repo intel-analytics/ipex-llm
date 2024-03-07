@@ -6,6 +6,12 @@ It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel
 
 Before installation, BigDL-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This example installs BigDL-LLM with PyTorch 2.1 using `pip`. For more details like installing with wheel, please refer to [Installation Webpage](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux).
 
+
+## Install Intel GPU Driver
+Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
+
+  > Note: Please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
+
 ## Setup Python Environment
 
 * Install the Miniconda as follows
