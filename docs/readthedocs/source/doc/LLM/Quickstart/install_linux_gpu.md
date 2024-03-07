@@ -1,10 +1,8 @@
 # Install BigDL-LLM on Linux with Intel GPU
 
-This guide demonstrates how to install BigDL-LLM on Linux with Intel GPUs.
+This guide demonstrates how to install BigDL-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU.
 
-It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU.
-
-Before installation, BigDL-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This example installs BigDL-LLM with PyTorch 2.1 using `pip`. For more details like installing with wheel, please refer to [Installation Webpage](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux).
+BigDL-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This example installs BigDL-LLM with PyTorch 2.1 using `pip`. For more details and other options like installing with wheel, please refer to the [Installation Webpage](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux).
 
 
 ## Install Intel GPU Driver
