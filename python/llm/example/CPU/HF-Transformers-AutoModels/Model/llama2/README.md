@@ -84,3 +84,44 @@ What is AI?
 
 AI, or artificial intelligence, refers to the ability of machines to perform tasks that would typically require human intelligence, such as learning, problem-solving,
 ```
+
+### 3. (Optional) Use BigDL-IPEX Optimizations for BF16 and INT4 
+
+To do generation with BigDL-IPEX optimizations, you need to set environment varibility `BIGDL_OPT_IPEX=true`, and config properly for `model`.
+
+#### 3.1 For BF16 model
+
+```python
+model = AutoModelForCausalLM.from_pretrained(model_path,
+                                            optimize_model=True,
+                                            torch_dtype=torch.bfloat16,
+                                            low_cpu_mem_usage=True, 
+                                            load_in_low_bit='bf16',
+                                            torchscript=True,
+                                            trust_remote_code=True,
+                                            use_cache=True)
+```
+
+#### 3.2 For INT4 model
+
+*Currently verified with [main branch of IPEX](https://github.com/intel/intel-extension-for-pytorch/tree/main)*
+
+Need to generate IPEX INT4 model (GPTQ formatted) and IPEX Quant model by following commands refering to [here](https://github.com/intel/intel-extension-for-pytorch/tree/main/examples/cpu/inference/python/llm#4116-run-in-weight-only-quantization-int4-with-ipexllm):
+```bash
+python ./run.py -m <your_model_path> --max-new-tokens 128 --ipex-weight-only-quantization --benchmark --input-tokens 1024 --num-warmup 1 --num-iter 3 --token-latency --greedy --weight-dtype INT4 --gptq --quant-with-amp --output-dir <your_output_path> --batch-size 1
+```
+
+You will find `gptq_checkpoint_g128.pt` for param `ipex_gptq_int4_model_path` and `best_model.pt` for param `ipex_best_model_path` in `<your_output_path>`. Then you can do generation with model configured like:
+
+```python
+model = AutoModelForCausalLM.from_pretrained(model_path,
+                                            optimize_model=True,
+                                            torch_dtype='auto',
+                                            low_cpu_mem_usage=True, 
+                                            load_in_low_bit='sym_int4',
+                                            torchscript=True,
+                                            trust_remote_code=True,
+                                            ipex_gptq_int4_model_path=args.ipex_gptq_int4_model_path,
+                                            ipex_best_model_path=args.ipex_best_model_path,
+                                            use_cache=True)
+```
