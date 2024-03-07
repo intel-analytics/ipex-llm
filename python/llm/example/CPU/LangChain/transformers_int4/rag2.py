@@ -1,27 +1,6 @@
-#
-# Copyright 2016 The BigDL Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
-# This would makes sure Python is aware there is more than one sub-package within bigdl,
-# physically located elsewhere.
-# Otherwise there would be module not found error in non-pip's setting as Python would
-# only search the first bigdl package and end up finding only one sub-package.
-
-# Code is adapted from https://github.com/langchain-ai/langchain/blob/master/cookbook/Semi_structured_multi_modal_RAG_LLaMA2.ipynb
 import time
 import uuid
+import argparse
 from contextlib import contextmanager
 from typing import Any, List
 
@@ -50,12 +29,12 @@ class Element(BaseModel):
 
 # Context manager for timing
 @contextmanager
-def timeit(task_name):
+def timeit(task_name, output_file_path):
     start_time = time.perf_counter()
     yield
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
-    with open(OUTPUT_FILE_PATH, "a") as file:
+    with open(output_file_path, "a") as file:
         file.write(f"Task {task_name} - Execution time: {elapsed_time} seconds\n")
 
 # Function to partition PDF and get elements
@@ -82,7 +61,7 @@ def categorize_elements(raw_elements):
 # Function to generate summaries using LLM
 def generate_summaries(text_elements, model):
     prompt_text = """You are an assistant tasked with summarizing tables and text. \
-    Give a concise summary of the table or text. \
+    Give a concise summary of the table or text.\
     Table or text chunk: {element}"""
     prompt = ChatPromptTemplate.from_template(prompt_text)
     summarize_chain = {"element": lambda x: x} | prompt | model | StrOutputParser()
@@ -122,20 +101,21 @@ def setup_retriever(texts, text_summaries):
     return retriever
 
 # Main execution
-if __name__ == "__main__":
+def main(model_path, file_path, question):
     # Partition and categorize PDF elements
-    raw_elements = get_pdf_elements(PATH)
+    raw_elements = get_pdf_elements(file_path)
     categorized_elements = categorize_elements(raw_elements)
     text_elements = [e for e in categorized_elements if e.type == "text"]
 
     # Initialize and configure the model
     model = TransformersLLM.from_model_id(
-        model_id=MODEL_ID,
+        model_id=model_path,
         model_kwargs={"temperature": 0, "max_length": 1500, "trust_remote_code": True},
     )
 
     # Generate text summaries
-    with timeit("text_summaries"):
+    output_file_path = "timing_results.txt"
+    with timeit("text_summaries", output_file_path):
         text_summaries = generate_summaries(text_elements, model)
 
     # Check for empty summaries
@@ -157,5 +137,15 @@ if __name__ == "__main__":
         | StrOutputParser()
     )
 
-    with timeit("RAG pipeline"):
-        chain.invoke("What is the method of this paper?")
+    with timeit("RAG pipeline", output_file_path):
+        chain.invoke(question)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Run RAG pipeline on a given PDF with a specified question.')
+    parser.add_argument('-m', '--model_path', type=str, required=True, help='Path to the model')
+    parser.add_argument('-p', '--file_path', type=str, required=True, help='Path to the PDF file')
+    parser.add_argument('-q', '--question', type=str, required=False, help='Question to be asked to the model', 
+                        default="What is the method of this paper?")
+    args = parser.parse_args()
+
+    main(args.model_path, args.file_path, args.question)
