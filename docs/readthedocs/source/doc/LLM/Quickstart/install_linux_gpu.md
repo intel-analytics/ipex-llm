@@ -1,4 +1,4 @@
-# Install BigDL-LLM on Windows with Intel GPU
+# Install BigDL-LLM on Linux with Intel GPU
 
 This guide demonstrates how to install BigDL-LLM on Linux with Intel GPUs.
 
@@ -83,29 +83,29 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
 
 To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example.
 
-For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
-```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
+* For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
+  ```bash
+  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+  source /opt/intel/oneapi/setvars.sh
 
-# Recommended Environment Variables for optimal performance
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-```
+  # Recommended Environment Variables for optimal performance
+  export USE_XETLA=OFF
+  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  ```
 
-For Intel Data Center GPU Max Series, we recommend:
-```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
+* For Intel Data Center GPU Max Series, we recommend:
+  ```bash
+  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+  source /opt/intel/oneapi/setvars.sh
 
-# Recommended Environment Variables for optimal performance
-export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-export ENABLE_SDP_FUSION=1
-```
-Please note that libtcmalloc.so can be installed by conda install -c conda-forge -y gperftools=2.10
+  # Recommended Environment Variables for optimal performance
+  export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  export ENABLE_SDP_FUSION=1
+  ```
+  Please note that libtcmalloc.so can be installed by conda install -c conda-forge -y gperftools=2.10
 
 
 ## A Quick Example
