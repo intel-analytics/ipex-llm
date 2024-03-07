@@ -118,7 +118,7 @@ def baichuan_attention_forward_7b_quantized(
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                            dtype=torch.float32).to(query_states.dtype)
+                                             dtype=torch.float32).to(query_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
         kv_seq_len = key_states.shape[-2]
         if use_cache:
@@ -164,7 +164,7 @@ def baichuan_attention_forward_7b_quantized(
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                            dtype=torch.float32).to(query_states.dtype)
+                                             dtype=torch.float32).to(query_states.dtype)
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
         else:
