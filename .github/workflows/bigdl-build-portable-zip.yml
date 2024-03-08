@@ -9,53 +9,53 @@ on:
 
 
 jobs:
-  # build-cpython:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - uses: ilammy/msvc-dev-cmd@v1
-  #       with:
-  #         toolset: 14.2
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         repository: 'python/cpython'
-  #         ref: '3.9'
-  #     - name: Replace with SQLite 3.45.1
-  #       # this is to fix security issue
-  #       # according to cpython, 3.9 is only accepting security patches
-  #       # so we need to manually replace it with sqlite 3.45.1
-  #       shell: bash
-  #       run: |
-  #         cd ./PCbuild
-  #         sed -i 's/sqlite-3.37.2.0/sqlite-3.45.1.0/g' get_externals.bat
-  #         sed -i 's/sqlite-3.37.2.0/sqlite-3.45.1.0/g' python.props
-  #         cd ..
-  #     - name: Build cpython
-  #       run: |
-  #         ./Tools/msi/buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
-  #     - name: Rename artifact
-  #       shell: bash
-  #       run: |
-  #         cd ./PCbuild/amd64/en-us
-  #         ls | xargs -I {} mv {} cpython-embed-zip.zip
-  #         cd ../../..
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         name: cpython-3.9-embed-zip
-  #         path: ./PCbuild/amd64/en-us/cpython-embed-zip.zip
+  build-cpython:
+    runs-on: windows-latest
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          toolset: 14.3
+      - uses: actions/checkout@v4
+        with:
+          repository: 'python/cpython'
+          ref: '3.11'
+      - name: Replace with SQLite 3.45.1
+        # this is to fix security issue
+        # according to cpython, 3.9 is only accepting security patches
+        # so we need to manually replace it with sqlite 3.45.1
+        shell: bash
+        run: |
+          cd ./PCbuild
+          sed -i 's/sqlite-3.37.2.0/sqlite-3.45.1.0/g' get_externals.bat
+          sed -i 's/sqlite-3.37.2.0/sqlite-3.45.1.0/g' python.props
+          cd ..
+      - name: Build cpython
+        run: |
+          ./Tools/msi/buildrelease.bat -x64 --skip-doc --skip-nuget --skip-msi
+      - name: Rename artifact
+        shell: bash
+        run: |
+          cd ./PCbuild/amd64/en-us
+          ls | xargs -I {} mv {} cpython-embed-zip.zip
+          cd ../../..
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cpython-3.11-embed-zip
+          path: ./PCbuild/amd64/en-us/cpython-embed-zip.zip
   build-portable-zip:
-    # needs: build-cpython
+    needs: build-cpython
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     name: cpython-3.9-embed-zip
-      #     path: ./python/llm/portable-zip/
+      - uses: actions/download-artifact@v4
+        with:
+          name: cpython-3.11-embed-zip
+          path: ./python/llm/portable-zip/
       - name: Build Portable Zip
         shell: cmd
         run: |
           cd .\python\llm\portable-zip
-          setup.bat
+          setup.bat --python-zip
           cd ..\..\..
       - uses: actions/upload-artifact@v4
         with:

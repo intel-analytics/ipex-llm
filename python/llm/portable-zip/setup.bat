@@ -1,15 +1,11 @@
 :: download python and extract zip
-@REM if "%1"=="--python-zip" (
-@REM     powershell -Command "Expand-Archive .\cpython-embed-zip.zip -DestinationPath .\python-embed"
-@REM ) else (
-@REM     powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.11.8/python-3.11.8-embed-amd64.zip -Destination python-3.11.8-embed-amd64.zip"
-@REM     powershell -Command "Expand-Archive .\python-3.11.8-embed-amd64.zip -DestinationPath .\python-embed"
-@REM     del .\python-3.12.2-embed-amd64.zip
-@REM )
-
-powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.11.8/python-3.11.8-embed-amd64.zip -Destination python-3.11.8-embed-amd64.zip"
-powershell -Command "Expand-Archive .\python-3.11.8-embed-amd64.zip -DestinationPath .\python-embed"
-del .\python-3.12.2-embed-amd64.zip
+if "%1"=="--python-zip" (
+    powershell -Command "Expand-Archive .\cpython-embed-zip.zip -DestinationPath .\python-embed"
+) else (
+    powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.11.8/python-3.11.8-embed-amd64.zip -Destination python-3.11.8-embed-amd64.zip"
+    powershell -Command "Expand-Archive .\python-3.11.8-embed-amd64.zip -DestinationPath .\python-embed"
+    del .\python-3.11.8-embed-amd64.zip
+)
 
 set "python-embed=.\python-embed\python.exe"
 
