@@ -24,6 +24,7 @@ import argparse
 from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
 from langchain import PromptTemplate, LLMChain
 from langchain import HuggingFacePipeline
+from torch import device
 
 
 def main(args):
@@ -37,12 +38,14 @@ def main(args):
     llm = TransformersLLM.from_model_id(
         model_id=model_path,
         model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+        device_map='xpu'
     )
     llm.model.save_low_bit(low_bit_model_path)
     del llm
     low_bit_llm = TransformersLLM.from_model_id_low_bit(
         model_id=low_bit_model_path,
         tokenizer_id=model_path,
+        device_map='xpu',
         model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True}
     )
     llm_chain = LLMChain(prompt=prompt, llm=low_bit_llm)
