@@ -1,6 +1,6 @@
-# Langchain examples
+# Langchain Native INT4 examples
 
-The examples here show how to use langchain with `bigdl-llm`.
+The examples in [native_int4](./native_int4) folder show how to use langchain with `bigdl-llm` native INT4 mode.
 
 ## Install bigdl-llm
 Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
