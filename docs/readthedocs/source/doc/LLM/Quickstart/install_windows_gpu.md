@@ -4,7 +4,7 @@ This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs.
 
 It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
-## Install GPU Driver
+## Install Visual Studio 2022
 
 * Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
    
@@ -12,6 +12,8 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
     > If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on [this Microsoft guide](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)  to update your installation.
     > 
     > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
+
+## Install GPU Driver
 
 * Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
    
@@ -75,12 +77,12 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    ```cmd
    conda activate llm
    ```
-* Step 2: Set some environment variables by running the below command:
+* Step 2: Configure oneAPI variables by running the following command:
   > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  If you're running on iGPU, set additional environment variables by running the below commands:
+  If you're running on iGPU, set additional environment variables by running the following commands:
   ```cmd
   set SYCL_CACHE_PERSISTENT=1
   set BIGDL_LLM_XMX_DISABLED=1
