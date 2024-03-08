@@ -240,11 +240,13 @@ class BigdlLLM(CustomLLM):
         else:
             try:
                 self._model = AutoModelForCausalLM.from_pretrained(
-                    model_name, load_in_4bit=True, use_cache=True, trust_remote_code=True,**model_kwargs
+                    model_name, load_in_4bit=True, use_cache=True,
+                    trust_remote_code=True, **model_kwargs
                 )
             except:
                 from bigdl.llm.transformers import AutoModel
-                self._model = AutoModel.from_pretrained(model_name, load_in_4bit=True, **model_kwargs)
+                self._model = AutoModel.from_pretrained(model_name,
+                                                        load_in_4bit=True, **model_kwargs)
 
         if 'xpu' in device_map:
             self._model = self._model.to(device_map)
@@ -266,7 +268,6 @@ class BigdlLLM(CustomLLM):
         if "max_length" not in tokenizer_kwargs:
             tokenizer_kwargs["max_length"] = context_window
 
-
         if tokenizer:
             self._tokenizer = tokenizer
         else:
@@ -274,7 +275,8 @@ class BigdlLLM(CustomLLM):
             try:
                 self._tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
             except:
-                self._tokenizer = LlamaTokenizer.from_pretrained(tokenizer_name, trust_remote_code=True)
+                self._tokenizer = LlamaTokenizer.from_pretrained(tokenizer_name,
+                                                                 trust_remote_code=True)
 
         if tokenizer_name != model_name:
             logger.warning(
