@@ -408,7 +408,6 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
-                
                 from bigdl.llm.transformers.convert_ipex import get_enable_ipex
                 _enable_ipex = get_enable_ipex()
                 if _enable_ipex:
@@ -424,7 +423,7 @@ class _BaseAutoModelClass:
                 model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
                 model.config.update({"bigdl_lcmu_enabled": False})
 
-        # model = model.to("cpu")
+        model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
