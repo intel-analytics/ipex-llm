@@ -1,6 +1,7 @@
 # Langchain examples
 
 The example here show how to use langchain RAG with `bigdl-llm`. This script rag2.py can analyze PDF file.
+The example is adapted from [langchain cookbook](https://github.com/langchain-ai/langchain/blob/master/cookbook/Semi_structured_multi_modal_RAG_LLaMA2.ipynb).
 
 ## Install bigdl-llm
 Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
