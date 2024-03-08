@@ -40,7 +40,7 @@ pip install -r requirements_cpu_only.txt
 Set some environment variables by running the below command in **Anaconda Prompt**:
 > Note: For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
 ```cmd
-"C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 ```
 If you're running on iGPU, set additional environment variables by running the below commands:
 ```cmd

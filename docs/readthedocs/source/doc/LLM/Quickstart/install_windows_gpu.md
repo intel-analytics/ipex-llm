@@ -32,7 +32,7 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
 * Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
 
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=90%; />
-  
+
 ## Setup Python Environment
 
 * Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
@@ -78,7 +78,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
 * Step 2: Set some environment variables by running the below command:
   > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
   ```cmd
-  "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
   If you're running on iGPU, set additional environment variables by running the below commands:
   ```cmd
