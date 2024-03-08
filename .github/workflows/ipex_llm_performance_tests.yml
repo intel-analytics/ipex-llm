@@ -13,8 +13,8 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  pull_request:
-    branches: [main]
+  # pull_request:
+  #   branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -42,7 +42,15 @@ jobs:
       CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
 
     steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: "analytics-zoo/bigdl-llm-internal"
+          ref: "ipex-llm-20240308"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -170,8 +178,15 @@ jobs:
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-
+        with:
+          repository: "analytics-zoo/bigdl-llm-internal"
+          ref: "ipex-llm-20240308"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -247,7 +262,15 @@ jobs:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       CSV_SAVE_PATH: ${{ github.event.schedule && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
     steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: "analytics-zoo/bigdl-llm-internal"
+          ref: "ipex-llm-20240308"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -314,7 +337,15 @@ jobs:
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: "analytics-zoo/bigdl-llm-internal"
+          ref: "ipex-llm-20240308"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
 
       # TODO: Put the bigdl-llm related install process for win gpu into a action function
 
