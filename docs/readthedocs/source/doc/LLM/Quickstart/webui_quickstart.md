@@ -40,6 +40,7 @@ pip install -r requirements_cpu_only.txt
 If you're running on iGPUs, set some environment variables by running below commands in **Anaconda Prompt**:
   > Note: For more details about runtime configurations, refer to [this link](../Overview/install_gpu.html#runtime-configuration): 
   ```bash
+  "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   set SYCL_CACHE_PERSISTENT=1
   set BIGDL_LLM_XMX_DISABLED=1
   ```

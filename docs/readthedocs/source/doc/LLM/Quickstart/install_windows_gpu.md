@@ -39,10 +39,15 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
  
 ## Install oneAPI 
 
-* With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
+<!-- * With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
   ```bash
   pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
-  ```
+  ``` -->
+
+* Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=90%; />
+
   
 ## Install `bigdl-llm`
 
@@ -74,6 +79,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
 * Step 2: If you're running on iGPU, set some environment variables by running below commands:
   > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
   ```bash
+  "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   set SYCL_CACHE_PERSISTENT=1
   set BIGDL_LLM_XMX_DISABLED=1
   ```
