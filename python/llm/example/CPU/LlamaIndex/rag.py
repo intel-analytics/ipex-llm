@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+# TODO: fix tokenizer
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from sqlalchemy import make_url
 from llama_index.vector_stores.postgres import PGVectorStore
