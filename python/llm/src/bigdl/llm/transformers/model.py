@@ -145,7 +145,7 @@ class _BaseAutoModelClass:
         invalidInputError(model_hub in ["huggingface", "modelscope"],
                           "The parameter `model_hub` is supposed to be `huggingface` or "
                           f"`modelscope`, but got {model_hub}.")
-        if 'device_map' in kwargs and  'xpu' in kwargs['device_map']:
+        if 'device_map' in kwargs and 'xpu' in kwargs['device_map']:
             invalidOperationError(condition=0,
                                   errMsg=("Please do not use 'device_map'"
                                           "with 'xpu' value as an argument. "
@@ -414,7 +414,6 @@ class _BaseAutoModelClass:
             _load_pre()
             try:
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
-                
             except NotImplementedError:
                 logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
                             "will fall to traditional load method with higher memory consumption.")
