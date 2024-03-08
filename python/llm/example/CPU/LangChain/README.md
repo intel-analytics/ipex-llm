@@ -18,7 +18,7 @@ pip install -U pandas==2.0.3
 
 ### Example: Chat
 
-The chat example ([chat.py](./transformers_int4/chat.py)) shows how to use `LLMChain` to build an chat pipeline. 
+The chat example ([chat.py](./transformers_int4/chat.py)) shows how to use `LLMChain` to build a chat pipeline. 
 
 To run the example, execute the following command in the current directory:
 
@@ -53,7 +53,7 @@ python transformers_int4/llm_math.py -m <path_to_model> [-q <your_question>]
 
 ### Example: Voice Assistant
 
-The voice assistant example ([voiceassistant.py](./transformers_int4/voiceassistant.py)) showcases how to use langchain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. Whisper[https://huggingface.co/openai/whisper-medium]) to turn speech into text, and then feed the text into large language model to get response.  
+The voice assistant example ([voiceassistant.py](./transformers_int4/voiceassistant.py)) showcases how to use langchain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
 
 To run the exmaple, execute the following command in the current directory:
 
