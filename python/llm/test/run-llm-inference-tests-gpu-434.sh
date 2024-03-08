@@ -18,7 +18,9 @@ start=$(date "+%s")
 # fi
 # export OMP_NUM_THREADS=$THREAD_NUM
 export BIGDL_LLM_XMX_DISABLED=1
+pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s -k "Mistral"
 pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s -k "Mistral"
+pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s -k "Mistral"
 unset BIGDL_LLM_XMX_DISABLED
 
 now=$(date "+%s")
