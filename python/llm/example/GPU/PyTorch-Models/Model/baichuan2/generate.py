@@ -21,8 +21,12 @@ import argparse
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from bigdl.llm import optimize_model
 
-# you could tune the prompt based on your own model,
-BAICHUAN2_PROMPT_FORMAT = "<human>{prompt} <bot>"
+# prompt format referred from https://github.com/baichuan-inc/Baichuan2/issues/227 
+# and https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat/blob/main/generation_utils.py#L7-L49
+# Though this is the official prompt format, we found it has problem generating English answers
+# If you want to ask English question,
+# you might need to change the format like adding "Please answer in English"
+BAICHUAN_PROMPT_FORMAT = "<reserved_106> {prompt} <reserved_107>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan2 model')
