@@ -106,12 +106,12 @@ model = AutoModelForCausalLM.from_pretrained(model_path,
 
 *Currently verified with [main branch of IPEX](https://github.com/intel/intel-extension-for-pytorch/tree/main)*
 
-Need to generate IPEX INT4 model (GPTQ formatted) and IPEX Quant model by following commands refering to [here](https://github.com/intel/intel-extension-for-pytorch/tree/main/examples/cpu/inference/python/llm#4116-run-in-weight-only-quantization-int4-with-ipexllm):
+Need to generate IPEX INT4 model (GPTQ formatted) by following commands refering to [IPEX's run_gptq.py](https://github.com/intel/intel-extension-for-pytorch/blob/main/examples/cpu/inference/python/llm/utils/run_gptq.py):
 ```bash
-python ./run.py -m <your_model_path> --max-new-tokens 128 --ipex-weight-only-quantization --benchmark --input-tokens 1024 --num-warmup 1 --num-iter 3 --token-latency --greedy --weight-dtype INT4 --gptq --quant-with-amp --output-dir <your_output_path> --batch-size 1
+python run_gptq.py --model <your_model_path>
 ```
 
-You will find `gptq_checkpoint_g128.pt` for param `ipex_gptq_int4_model_path` and `best_model.pt` for param `ipex_best_model_path` in `<your_output_path>`. Then you can do generation with model configured like:
+You will find `gptq_checkpoint_g128.pt` for param `ipex_gptq_int4_model_path` in `./saved_results`. Param `ipex_best_model_path` is the path to save jit-optimized `best_model.pt` during the convert process. Then you can do generation with model configured like:
 
 ```python
 model = AutoModelForCausalLM.from_pretrained(model_path,
@@ -121,7 +121,7 @@ model = AutoModelForCausalLM.from_pretrained(model_path,
                                             load_in_low_bit='sym_int4',
                                             torchscript=True,
                                             trust_remote_code=True,
-                                            ipex_gptq_int4_model_path=args.ipex_gptq_int4_model_path,
-                                            ipex_best_model_path=args.ipex_best_model_path,
+                                            ipex_gptq_int4_model_path='./saved_results/gptq_checkpoint_g128.pt',
+                                            ipex_best_model_path='./saved_results/best_model.pt',
                                             use_cache=True)
 ```
