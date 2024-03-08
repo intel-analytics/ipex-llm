@@ -91,3 +91,21 @@ python chat.py -m MODEL_PATH -q QUESTION
 arguments info:
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
+
+
+#### 5.2 Low Bit
+
+### Example: Low Bit
+
+The low_bit example ([low_bit.py](./transformers_int4/low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+By `save_low_bit` we save the weights of low_bit model into the target folder.
+> Note: `save_low_bit` only saves the weights of the model. 
+> Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
+
+```bash
+python transformers_int4/low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
+```
+**Runtime Arguments Explained**:
+- `-m MODEL_PATH`: **Required**, the path to the model
+- `-t TARGET_PATH`: **Required**, the path to save the low_bit model
+- `-q QUESTION`: the question
