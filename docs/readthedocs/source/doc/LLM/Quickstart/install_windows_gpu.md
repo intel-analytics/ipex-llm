@@ -22,6 +22,17 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
 * To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below) :
     >  <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=70%; />
 
+## Install oneAPI 
+
+<!-- * With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
+  ```cmd
+  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
+  ``` -->
+
+* Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=90%; />
+  
 ## Setup Python Environment
 
 * Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
@@ -29,36 +40,24 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=50%; />
 
 * After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
-  ```bash
+  ```cmd
   conda create -n llm python=3.9 libuv
   ```
 * Activate the newly created environment `llm`:
-  ```bash
+  ```cmd
   conda activate llm
   ```
- 
-## Install oneAPI 
-
-<!-- * With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
-  ```bash
-  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
-  ``` -->
-
-* Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
-
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=90%; />
-
   
 ## Install `bigdl-llm`
 
 * With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU:
   Choose either US or CN website for `extra-index-url`:
   * US: 
-     ```bash
+     ```cmd
      pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
      ```
   * CN:
-     ```bash
+     ```cmd
      pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
      ```
   > Note: If you encounter network issues while installing IPEX, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel) for troubleshooting advice. 
@@ -73,18 +72,21 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
 Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
-   ```bash
+   ```cmd
    conda activate llm
    ```
-* Step 2: If you're running on iGPU, set some environment variables by running below commands:
-  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
-  ```bash
+* Step 2: Set some environment variables by running the below command:
+  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
+  ```cmd
   "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+  ```
+  If you're running on iGPU, set additional environment variables by running the below commands:
+  ```cmd
   set SYCL_CACHE_PERSISTENT=1
   set BIGDL_LLM_XMX_DISABLED=1
   ```
 * Step 3: To ensure compatibility with `phi-1.5`, update the transformers library to version 4.37.0:
-   ```bash
+   ```cmd
    pip install -U transformers==4.37.0 
    ```
 * Step 4: Create a new file named `demo.py` and insert the code snippet below.
@@ -117,7 +119,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
 * Step 5. Run `demo.py` within the activated Python environment using the following command:
-  ```bash
+  ```cmd
   python demo.py
   ```
    
