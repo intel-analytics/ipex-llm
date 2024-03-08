@@ -7,7 +7,7 @@
 @REM     del .\python-3.12.2-embed-amd64.zip
 @REM )
 
-@REM powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.11.8/python-3.11.8-embed-amd64.zip -Destination python-3.11.8-embed-amd64.zip"
+powershell -Command "Start-BitsTransfer -Source https://www.python.org/ftp/python/3.11.8/python-3.11.8-embed-amd64.zip -Destination python-3.11.8-embed-amd64.zip"
 powershell -Command "Expand-Archive .\python-3.11.8-embed-amd64.zip -DestinationPath .\python-embed"
 del .\python-3.12.2-embed-amd64.zip
 
