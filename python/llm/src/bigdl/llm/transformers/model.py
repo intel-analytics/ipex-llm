@@ -43,7 +43,7 @@ from .utils import extract_local_archive_file, \
     load_state_dict, \
     get_local_shard_files, load_imatrix_data
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-from bigdl.llm.utils.common import invalidInputError, invalidOperationError
+from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.gguf.api import load_gguf_model
 import torch
 import warnings
@@ -145,11 +145,10 @@ class _BaseAutoModelClass:
         invalidInputError(model_hub in ["huggingface", "modelscope"],
                           "The parameter `model_hub` is supposed to be `huggingface` or "
                           f"`modelscope`, but got {model_hub}.")
-        if 'device_map' in kwargs and 'xpu' in kwargs['device_map']:
-            invalidOperationError(condition=0,
-                                  errMsg=("Please do not use 'device_map'"
-                                          "with 'xpu' value as an argument. "
-                                          "Use model.to('xpu') instead."))
+        invalidInputError(not ('device_map' in kwargs and 'xpu' in kwargs['device_map']),
+                          "Please do not use `device_map` "
+                          "with `xpu` value as an argument. "
+                          "Use model.to('xpu') instead.")
         if model_hub == "huggingface":
             config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         elif model_hub == "modelscope":
