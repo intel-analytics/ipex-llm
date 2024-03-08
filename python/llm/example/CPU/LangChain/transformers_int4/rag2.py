@@ -39,10 +39,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from bigdl.llm.langchain.llms import TransformersLLM
 
-# Constants and paths
-PATH = "./Papers/Callifusion.pdf"
-OUTPUT_FILE_PATH = "timing_results.txt"
-MODEL_ID = '/mnt/disk1/models/vicuna-7b-v1.5'
 
 # Helper class
 class Element(BaseModel):

@@ -14,13 +14,14 @@ pip install -U chromadb==0.3.25
 pip install -U pandas==2.0.3
 sudo apt-get update
 sudo apt-get install tesseract-ocr
+pip install gpt4all
 ```
 
 ## Run the examples
 
 ### Semi Structured Multi Modal RAG
 
-Before running the example, please download `punkt` by:
+Before running the example, please download `punkt` in Python console panel:
 ```python
 import nltk
 nltk.download('punkt')
