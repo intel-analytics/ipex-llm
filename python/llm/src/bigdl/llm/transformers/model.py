@@ -167,8 +167,6 @@ class _BaseAutoModelClass:
         user_quantization_config = kwargs.pop("quantization_config", None)
         speculative = kwargs.pop("speculative", False)
         torch_dtype = kwargs.pop("torch_dtype", None)
-        ipex_gptq_int4_model_path = kwargs.pop("ipex_gptq_int4_model_path", None)
-        ipex_best_model_path = kwargs.pop("ipex_best_model_path", None)
         embedding_qtype = kwargs.pop("embedding_qtype", None)
 
         if user_quantization_config is not None and \
@@ -300,8 +298,6 @@ class _BaseAutoModelClass:
                 kwargs["imatrix_data"] = imatrix_data
             kwargs["embedding_qtype"] = embedding_qtype
             
-            kwargs["ipex_gptq_int4_model_path"] = ipex_gptq_int4_model_path
-            kwargs["ipex_best_model_path"] = ipex_best_model_path
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
@@ -364,8 +360,6 @@ class _BaseAutoModelClass:
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
         enable_xetla = kwargs.pop("enable_xetla", False)
-        ipex_gptq_int4_model_path = kwargs.pop("ipex_gptq_int4_model_path", None)
-        ipex_best_model_path = kwargs.pop("ipex_best_model_path", None)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -432,8 +426,6 @@ class _BaseAutoModelClass:
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
-                                     ipex_gptq_int4_model_path=ipex_gptq_int4_model_path,
-                                     ipex_best_model_path=ipex_best_model_path,
                                      enable_xetla=enable_xetla,)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 

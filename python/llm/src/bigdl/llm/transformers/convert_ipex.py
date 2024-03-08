@@ -128,14 +128,12 @@ def _ipex_optimize_model(model, rms_classes, qtype):
     
     is_tpp = _using_tpp()
 
-    if not is_quantization:
-        _ipex_optimize_rmsnorm(model, rms_classes, is_tpp=is_tpp, is_woq=is_woq)
-    
+    _ipex_optimize_rmsnorm(model, rms_classes, is_tpp=is_tpp, is_woq=is_woq)
     _ipex_optimize_attention(model, is_tpp=is_tpp, is_woq=is_woq)
     _ipex_optimize_decoder(model, is_tpp=is_tpp, is_woq=is_woq)
 
-    if not is_quantization:
-        model.register_forward_hook(output_hook, with_kwargs=True)
+    model.register_forward_hook(output_hook, with_kwargs=True)
+    return model
 
 
 def _ipex_jit(model):
