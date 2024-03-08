@@ -667,7 +667,7 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
     from transformers.modeling_attn_mask_utils import AttentionMaskConverter
     from bigdl.llm.transformers.convert_ipex import (
         _ipex_optimize_model, _ipex_jit, _make_causal_mask,
-        _llama_model_forward_4_35, convert_function, GLM_get_masks, ipex_int4_opt
+        _llama_model_forward_4_35, convert_function, GLM_get_masks,
     )
 
     model = model_convert_reference(model)
