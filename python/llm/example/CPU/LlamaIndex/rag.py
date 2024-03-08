@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-# TODO: fix tokenizer
+
+import torch
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from sqlalchemy import make_url
 from llama_index.vector_stores.postgres import PGVectorStore
@@ -168,7 +169,7 @@ def main(args):
         model_name=args.model_path,
         tokenizer_name=args.model_path,
         context_window=512,
-        max_new_tokens=32,
+        max_new_tokens=args.n_predict,
         generate_kwargs={"temperature": 0.7, "do_sample": False},
         model_kwargs={},
         messages_to_prompt=messages_to_prompt,
@@ -243,6 +244,8 @@ if __name__ == "__main__":
                         help="the password of the user in the database")
     parser.add_argument('-e','--embedding-model-path',default="BAAI/bge-small-en",
                         help="the path to embedding model path")
+    parser.add_argument('-n','--n-predict', type=int, default=32,
+                        help='max number of predict tokens')
     args = parser.parse_args()
     
     main(args)
