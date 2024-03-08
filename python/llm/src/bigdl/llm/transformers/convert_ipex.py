@@ -48,6 +48,13 @@ from intel_extension_for_pytorch.cpu._auto_kernel_selection import (
 )
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 import intel_extension_for_pytorch as ipex
+import os
+
+
+def get_enable_ipex():
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    return _enable_ipex
 
 
 def _ipex_optimize_rmsnorm(_model, supported_classes, is_tpp=False, is_woq=False):
@@ -165,106 +172,6 @@ def _ipex_jit(model):
     return model
 
 
-from enum import IntEnum
-class EXAMPLE_INPUTS_MODE(IntEnum):
-    MASK_KV = 1
-    KV_MASK = 2
-    MASK_POS_KV = 3
-    MASK_KV_POS = 4
-    MASK_KV_ENC = 5
-    MASK_KV_PIXEL = 6
-    
-
-def get_example_inputs(model):
-    batch_size = 1
-    beam_idx_tmp = torch.zeros(
-        (2048, int(batch_size * 1)), dtype=torch.long
-    ).contiguous()
-    def _get_target_nums(names):
-        for n in names:
-            if hasattr(model.config, n):
-                return getattr(model.config, n)
-        print(f"Not found target {names[0]}")
-        exit(0)
-    num_heads_names = ["num_attention_heads", "n_head", "num_heads", "n_heads"]
-    num_layers_names = ["num_hidden_layers", "n_layer", "num_layers", "n_layers"]
-    hidden_size_names = ["hidden_size", "n_embd"]
-    n_heads = _get_target_nums(num_heads_names)
-    n_layers = _get_target_nums(num_layers_names)
-    hidden_size = _get_target_nums(hidden_size_names)
-    head_dim = int(hidden_size / n_heads)
-    
-    global global_past_key_value
-    global_past_key_value = [
-        (
-            torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
-            torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
-            torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
-            beam_idx_tmp,
-        )
-        for i in range(n_layers)
-    ]
-    example_inputs_mode = EXAMPLE_INPUTS_MODE.MASK_KV_POS # for llama
-    
-    example_inputs = None
-    input_ids = torch.ones(32).to(torch.long)
-    attention_mask = torch.ones(len(input_ids))
-    if example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_POS_KV:
-        position_ids = torch.arange(len(input_ids))
-        example_inputs = (
-            input_ids.unsqueeze(0),
-            attention_mask.unsqueeze(0),
-            position_ids.unsqueeze(0),
-            tuple(global_past_key_value),
-        )
-    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_POS:
-        position_ids = torch.arange(len(input_ids))
-        example_inputs = (
-            input_ids.unsqueeze(0),
-            attention_mask.unsqueeze(0),
-            tuple(global_past_key_value),
-            position_ids.unsqueeze(0),
-        )
-    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.KV_MASK:
-        example_inputs = (
-            input_ids.unsqueeze(0),
-            tuple(global_past_key_value),
-            attention_mask.unsqueeze(0),
-        )
-    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV:
-        example_inputs = (
-            input_ids.unsqueeze(0),
-            attention_mask.unsqueeze(0),
-            tuple(global_past_key_value),
-        )
-    elif example_inputs_mode == EXAMPLE_INPUTS_MODE.MASK_KV_ENC:
-        last_hidden_state = torch.rand([1, 32, 2048])
-        global_past_key_value = [
-            (
-                torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
-                torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
-                torch.zeros([1, n_heads, 1, head_dim]).contiguous(),
-                beam_idx_tmp,
-                torch.zeros(1, 0, 0, 1, dtype=torch.long).contiguous(),
-                torch.zeros([32, 1, n_heads, head_dim]).contiguous(),
-                torch.zeros([32, 1, n_heads, head_dim]).contiguous(),
-                beam_idx_tmp,
-            )
-            for i in range(n_layers)
-        ]
-        example_inputs = (
-            torch.ones(1).to(torch.long).unsqueeze(0),
-            attention_mask.unsqueeze(0),
-            tuple(global_past_key_value),
-            (last_hidden_state,),
-        )
-    else:
-        raise RuntimeError("Your model does not match existing example inputs used in ipex quantization, exiting...")
-    if hasattr(model, "extra_inputs"):
-        example_inputs = example_inputs + model.extra_inputs
-    return example_inputs
-
-
 def convert_function(m, func_name, new_function):
     bound_method = new_function.__get__(m, m.__class__)
     setattr(m, func_name, bound_method)
@@ -283,9 +190,7 @@ def GLM_get_masks(self, input_ids, past_key_values, padding_mask=None):
         else:  # discrete kv cache
             past_length = past_key_values[0][0].shape[-2]
 
-    import os
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = get_enable_ipex()
     # always call for jit
     if past_length or _enable_ipex:
         full_attention_mask = torch.cat(
@@ -323,8 +228,7 @@ def _make_causal_mask(
     mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
 
     import os
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = get_enable_ipex()
     if _enable_ipex or past_key_values_length > 0:
         mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)  # noqa
 

@@ -297,7 +297,6 @@ class _BaseAutoModelClass:
                 imatrix_data = load_imatrix_data(imatrix_file)
                 kwargs["imatrix_data"] = imatrix_data
             kwargs["embedding_qtype"] = embedding_qtype
-            
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
@@ -409,8 +408,14 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
-                import intel_extension_for_pytorch as ipex
-                with ipex.OnDevice(dtype=torch.float, device="meta"):
+                
+                from bigdl.llm.transformers.convert_ipex import get_enable_ipex
+                _enable_ipex = get_enable_ipex()
+                if _enable_ipex:
+                    import intel_extension_for_pytorch as ipex
+                    with ipex.OnDevice(dtype=torch.float, device="meta"):
+                        model = cls.HF_Model.from_pretrained(*args, **kwargs)
+                else:
                     model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
                 logger.info("Failed to load models with `low_cpu_mem_usage` specified, "

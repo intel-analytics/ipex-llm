@@ -485,8 +485,9 @@ def speculative_generate(self,
     past_key_values = None
     past_key_values_storage = []
 
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    from bigdl.llm.transformers.convert_ipex import get_enable_ipex
+    _enable_ipex = get_enable_ipex()
+
     if _enable_ipex:
         if not ((self.config.model_type == 'baichuan') or
                 ('llama' in self.config.model_type) or
