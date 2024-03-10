@@ -116,7 +116,7 @@ jobs:
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
           ref: "ipex-llm-20240308-action"
-          token: ${{ env.github_access_token }}
+          token: ${GITHUB_ACCESS_TOKEN}
           submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
