@@ -112,12 +112,11 @@ jobs:
       - name: Set access token
         run: |
           echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-          Get-ChildItem Env:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
           ref: "ipex-llm-20240308-action"
-          token: ${GITHUB_ACCESS_TOKEN}
+          token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
