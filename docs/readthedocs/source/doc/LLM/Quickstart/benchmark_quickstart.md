@@ -106,6 +106,53 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
 
       Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` to install essential dependencies for Intel Data Center GPU Max.
 
+   .. tab:: Intel SPR
+
+      For Intel SPR machine, we recommend:
+
+      .. code-block:: bash
+
+         ./run-spr.sh
+
+      The scipt uses a default numactl strategy. If you want to customize it, please use ``lscpu`` or ``numactl -H`` to check how cpu indexs are assigned to numa node, and make sure the run command is binded to only one socket.
+
+   .. tab:: Intel HBM
+
+      For Intel HBM machine, we recommend:
+
+      .. code-block:: bash
+
+         ./run-hbm.sh
+
+       The scipt uses a default numactl strategy. If you want to customize it, please use ``numactl -H`` to check how the index of hbm node and cpu are assigned.
+      
+      For example:
+
+
+      .. code-block:: bash
+
+         node   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+            0:  10  12  12  12  21  21  21  21  13  14  14  14  23  23  23  23
+            1:  12  10  12  12  21  21  21  21  14  13  14  14  23  23  23  23
+            2:  12  12  10  12  21  21  21  21  14  14  13  14  23  23  23  23
+            3:  12  12  12  10  21  21  21  21  14  14  14  13  23  23  23  23
+            4:  21  21  21  21  10  12  12  12  23  23  23  23  13  14  14  14
+            5:  21  21  21  21  12  10  12  12  23  23  23  23  14  13  14  14
+            6:  21  21  21  21  12  12  10  12  23  23  23  23  14  14  13  14
+            7:  21  21  21  21  12  12  12  10  23  23  23  23  14  14  14  13
+            8:  13  14  14  14  23  23  23  23  10  14  14  14  23  23  23  23
+            9:  14  13  14  14  23  23  23  23  14  10  14  14  23  23  23  23
+            10:  14  14  13  14  23  23  23  23  14  14  10  14  23  23  23  23
+            11:  14  14  14  13  23  23  23  23  14  14  14  10  23  23  23  23
+            12:  23  23  23  23  13  14  14  14  23  23  23  23  10  14  14  14
+            13:  23  23  23  23  14  13  14  14  23  23  23  23  14  10  14  14
+            14:  23  23  23  23  14  14  13  14  23  23  23  23  14  14  10  14
+            15:  23  23  23  23  14  14  14  13  23  23  23  23  14  14  14  10
+
+      here hbm node is the node whose distance from the checked node is 13, node 8 is node 0's hbm node.
+
+      And make sure the run command is binded to only one socket.
+
 ```
 
 ## Result
