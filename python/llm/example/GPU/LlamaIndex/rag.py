@@ -249,6 +249,7 @@ if __name__ == "__main__":
                         help='max number of predict tokens')
     parser.add_argument('-t','--tokenizer-path',type=str,required=True,
                         help='the path to transformers tokenizer')
+
     args = parser.parse_args()
     
     main(args)
