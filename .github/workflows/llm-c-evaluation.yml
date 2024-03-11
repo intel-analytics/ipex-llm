@@ -101,6 +101,7 @@ jobs:
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
+        date: ${{ fromJson(needs.set-matrix.outputs.date) }}
         device: [xpu]
 
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
@@ -229,7 +230,7 @@ jobs:
 
   llm-ceval-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [llm-c-evaluation, llm-ceval-summary, set-matrix]
+    needs: [set-matrix, llm-c-evaluation, llm-ceval-summarys]
     strategy:
       fail-fast: false
       matrix:
