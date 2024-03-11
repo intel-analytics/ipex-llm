@@ -72,7 +72,7 @@ def should_use_fuse_rope(self, query_states):
     return use_fuse_rope
 
 
-def qwen_attention_forward_origin(
+def qwen_attention_forward(
         self,
         hidden_states: Optional[Tuple[torch.FloatTensor]],
         rotary_pos_emb_list: Optional[List[torch.Tensor]] = None,
@@ -85,9 +85,9 @@ def qwen_attention_forward_origin(
         use_cache: Optional[bool] = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     if use_quantize_kv_cache(self.q_proj, hidden_states):
-        forward_function = qwen_attention_forward_original
-    else:
         forward_function = qwen_attention_forward_quantized
+    else:
+        forward_function = qwen_attention_forward_original
     return forward_function(
         self,
         hidden_states,
@@ -331,8 +331,6 @@ def qwen_attention_forward_quantized(
                     # Slice the pos emb for current inference
                     query = apply_rotary_pos_emb(query, q_pos_emb)
                     key = apply_rotary_pos_emb(key, k_pos_emb)
-                    from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb as rotary_pos_emb
-                    q, k = rotary_pos_emb()
             else:
                 query_list = []
                 key_list = []
