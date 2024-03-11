@@ -164,7 +164,7 @@ def main(args):
     embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
     
     # Use custom LLM in BigDL
-    # If the model is low_bit model like INT4, please set `load_low_bit=True` 
+    # If the model is low_bit model like INT4, please set `load_low_bit=True`.
     from bigdl.llm.llamaindex.llms import BigdlLLM
     llm = BigdlLLM(
         model_name=args.model_path,
