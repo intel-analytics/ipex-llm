@@ -145,7 +145,7 @@ class _BaseAutoModelClass:
         invalidInputError(model_hub in ["huggingface", "modelscope"],
                           "The parameter `model_hub` is supposed to be `huggingface` or "
                           f"`modelscope`, but got {model_hub}.")
-        invalidInputError(not ('device_map' in kwargs and 'xpu' in list(kwargs['device_map'])),
+        invalidInputError(not (kwargs.get('device_map') and 'xpu' in kwargs['device_map']),
                           "Please do not use `device_map` "
                           "with `xpu` value as an argument. "
                           "Use model.to('xpu') instead.")
