@@ -494,7 +494,7 @@ def speculative_generate(self,
                 ("mistral" in self.config.model_type) or
                 ("qwen" in self.config.model_type) or
                 ("chatglm" in self.config.model_type)):
-            invalidInputError(False, "BigDL Speculative Decoding with IPEX BF16 only supports \
+            invalidInputError(False, "BigDL Speculative Decoding with IPEX only supports \
                               Llama, Baichuan2, Mistral, ChatGLM and Qwen models currently.")
         if "chatglm" in self.config.model_type:
             global query_group_size
@@ -605,10 +605,10 @@ def speculative_generate(self,
                     forward_args["position_ids"] = position_ids
 
                 if _enable_ipex:
-                    if "llama" in self.config.model_type:
+                    if any(keyword in self.config.model_type
+                            for keyword in ["llama", "chatglm", "mistral"]):
                         past_key_value_len = draft_past_key_values[0][0].shape[2]
                         position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
-                        # position_ids = draft_attention_mask.long().cumsum(-1) - 1
                         position_ids = position_ids[:, :-draft_current_input_ids.size(0)]
                         draft_output = draft_model.trace_graph(
                             input_ids=draft_current_input_ids,
@@ -616,8 +616,37 @@ def speculative_generate(self,
                             position_ids=position_ids,
                             past_key_values=draft_past_key_values,
                         )
+                    elif self.config.model_type == "baichuan":
+                        if self.config.hidden_size == 4096:
+                            past_key_value_len = draft_past_key_values[0][0].shape[2]
+                            seq_len = draft_current_input_ids.shape[1]
+                            seq_len_with_past = seq_len + past_key_value_len
+                            position_ids = torch.arange(past_key_value_len,
+                                                        seq_len_with_past,
+                                                        dtype=torch.long,
+                                                        device=draft_current_input_ids.device)
+                            position_ids = position_ids.unsqueeze(0).view(-1, seq_len)
+                            draft_output = draft_model.trace_graph(
+                                input_ids=draft_current_input_ids,
+                                attention_mask=draft_attention_mask,
+                                position_ids=position_ids,
+                                past_key_values=draft_past_key_values,
+                            )
+                        elif self.config.hidden_size == 5120:
+                            draft_output = draft_model.trace_graph(
+                                input_ids=draft_current_input_ids,
+                                attention_mask=draft_attention_mask,
+                                past_key_values=draft_past_key_values,
+                            )
+                    elif "qwen" in self.config.model_type:
+                        draft_output = draft_model.trace_graph(
+                            input_ids=draft_current_input_ids,
+                            attention_mask=draft_attention_mask,
+                            past_key_values=draft_past_key_values,
+                        )
                     else:
-                        invalidInputError(False, "Only support Llama yet.")
+                        invalidInputError(False, "BigDL Speculative Decoding with IPEX only supports \
+                              Llama, Baichuan2, Mistral, ChatGLM and Qwen models currently.")
 
                     draft_output = CausalLMOutputWithPast(
                         logits=draft_output[0],
