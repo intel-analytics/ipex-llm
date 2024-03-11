@@ -171,6 +171,10 @@ class BigdlLLM(CustomLLM):
             "`messages_to_prompt` that does so."
         ),
     )
+    load_low_bit: bool = Field(
+        default=False,
+        description="The model is low_bit model or not"
+    )
 
     _model: Any = PrivateAttr()
     _tokenizer: Any = PrivateAttr()
@@ -198,6 +202,7 @@ class BigdlLLM(CustomLLM):
         completion_to_prompt: Optional[Callable[[str], str]]=None,
         pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
+        load_low_bit: bool = False
     ) -> None:
         """
         Construct BigdlLLM.
@@ -229,6 +234,7 @@ class BigdlLLM(CustomLLM):
             completion_to_prompt: Function to convert messages to prompt.
             pydantic_program_mode: DEFAULT.
             output_parser: BaseOutputParser.
+            low_low_bit: The model is low bit or not.
 
         Returns:
             None.
@@ -238,15 +244,24 @@ class BigdlLLM(CustomLLM):
         if model:
             self._model = model
         else:
-            try:
-                self._model = AutoModelForCausalLM.from_pretrained(
-                    model_name, load_in_4bit=True, use_cache=True,
-                    trust_remote_code=True, **model_kwargs
-                )
-            except:
-                from bigdl.llm.transformers import AutoModel
-                self._model = AutoModel.from_pretrained(model_name,
-                                                        load_in_4bit=True, **model_kwargs)
+            if not load_low_bit:
+                try:
+                    self._model = AutoModelForCausalLM.from_pretrained(
+                        model_name, load_in_4bit=True, use_cache=True,
+                        trust_remote_code=True, **model_kwargs
+                    )
+                except:
+                    from bigdl.llm.transformers import AutoModel
+                    self._model = AutoModel.from_pretrained(model_name,
+                                                            load_in_4bit=True, **model_kwargs)
+            else:
+                try:
+                    self._model = AutoModelForCausalLM.load_low_bit(
+                        model_name, use_cache=True,
+                        trust_remote_code=True, **model_kwargs)
+                except:
+                    from bigdl.llm.transformers import AutoModel
+                    self._model = AutoModel.load_low_bit(model_name,  **model_kwargs)
 
         if 'xpu' in device_map:
             self._model = self._model.to(device_map)

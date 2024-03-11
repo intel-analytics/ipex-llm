@@ -145,10 +145,11 @@ There is no need to set further environment variables.
 In the current directory, run the example with command:
 
 ```bash
-python rag.py -m <path_to_model>
+python rag.py -m <path_to_model> -t <path_to_tokenizer>
 ```
 **Additional Parameters for Configuration**:
 - `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-t TOKENIZER_PATH`: **Required**, path to the tokenizer model
 - `-e EMBEDDING_MODEL_PATH`: path to the embedding model
 - `-u USERNAME`: username in the PostgreSQL database
 - `-p PASSWORD`: password in the PostgreSQL database
