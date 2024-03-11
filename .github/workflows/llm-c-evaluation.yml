@@ -235,13 +235,12 @@ jobs:
       
       - name: Set output path
         shell: bash
-        run: |    
-          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        run: |
           if ${{github.event_name == 'pull_request'}}; then
-            echo 'ACC_FOLDER=/home/arda/ceval-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/ceval/pr-accuracy-data' >> $GITHUB_ENV
           fi
           if ${{github.event_name == 'schedule'}}; then
-            echo 'ACC_FOLDER=/home/arda/ceval-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/ceval/nightly-accuracy-data' >> $GITHUB_ENV
           fi
 
       - name: Create ceval results directory if not exists
@@ -263,5 +262,5 @@ jobs:
         run: |
           python ceval_csv_to_html.py -f $ACC_FOLDER
           if ${{github.event_name == 'schedule'}}; then
-            python update_html_in_parent_folder.py -f $ACC_FOLDER
+            python ../harness/update_html_in_parent_folder.py -f $ACC_FOLDER
           fi
