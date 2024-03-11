@@ -29,7 +29,7 @@ Open **Anaconda Prompt** and activate the conda environment you have created in 
 conda activate llm
 ```
 Then, change to the directory of WebUI (e.g.,`C:\text-generation-webui`) and install the necessary dependencies:
-```bash
+```cmd
 cd C:\text-generation-webui
 pip install -r requirements_cpu_only.txt
 ```
@@ -37,23 +37,27 @@ pip install -r requirements_cpu_only.txt
 ## 3 Start the WebUI Server
 
 ### Set Environment Variables
-If you're running on iGPUs, set some environment variables by running below commands in **Anaconda Prompt**:
-  > Note: For more details about runtime configurations, refer to [this link](../Overview/install_gpu.html#runtime-configuration): 
-  ```bash
-  set SYCL_CACHE_PERSISTENT=1
-  set BIGDL_LLM_XMX_DISABLED=1
-  ```
+Configure oneAPI variables by running the following command in **Anaconda Prompt**:
+> Note: For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
+```cmd
+call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+```
+If you're running on iGPU, set additional environment variables by running the following commands:
+```cmd
+set SYCL_CACHE_PERSISTENT=1
+set BIGDL_LLM_XMX_DISABLED=1
+```
 
 ### Launch the Server
 In **Anaconda Prompt** with the conda environment `llm` activated, navigate to the text-generation-webui folder and start the server using the following command:
   > Note: with `--load-in-4bit` option, the models will be optimized and run at 4-bit precision. For configuration for other formats and precisions, refer to [this link](https://github.com/intel-analytics/text-generation-webui?tab=readme-ov-file#32-optimizations-for-other-percisions).
-   ```bash
+   ```cmd
    python server.py --load-in-4bit
    ```
 
 ### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 
-  <!-- ```bash
+  <!-- ```cmd
   Running on local URL:  http://127.0.0.1:7860
   ``` -->
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" width=80%; />

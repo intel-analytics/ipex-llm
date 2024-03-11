@@ -76,10 +76,10 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
          set SYCL_CACHE_PERSISTENT=1
          python run.py
 
-   .. tab:: Other Intel dGPU Series(e.g. Arc™ A770)
+   .. tab:: Other Intel dGPU Series
 
       .. code-block:: bash
-
+         # e.g. Arc™ A770
          python run.py
 
 ```

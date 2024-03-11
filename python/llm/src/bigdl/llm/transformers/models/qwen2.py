@@ -262,7 +262,8 @@ def qwen2_attention_forward_origin(
         import linear_q4_0
         args = [hidden_states, self.q_proj.weight, self.k_proj.weight, self.v_proj.weight,
                 self.q_proj.bias, self.k_proj.bias, self.v_proj.bias, position_ids, cache_k,
-                cache_v, self.q_proj.weight.qtype, kv_seq_len, self.head_dim, self.rotary_emb.base]
+                cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len,
+                self.head_dim, self.rotary_emb.base]
         query_states, key_states, value_states = linear_q4_0.forward_qkv_bias(*args)
         kv_seq_len += 1
         if self.layer_idx == 0:

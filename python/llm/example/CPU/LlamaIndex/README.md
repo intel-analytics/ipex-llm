@@ -64,6 +64,7 @@ python rag.py -m <path_to_model>
 - `-p PASSWORD`: password in the PostgreSQL database
 - `-q QUESTION`: question you want to ask
 - `-d DATA`: path to source data used for retrieval (in pdf format)
+- `-n N_PREDICT`: max predict tokens
 
 ### Example Output
 
