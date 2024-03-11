@@ -132,7 +132,7 @@ def _ipex_optimize_model(model, rms_classes, qtype):
             group_size=-1,
         )
         model = ipex_quantization_flow(model, torch.bfloat16, None, qconfig, None)
-    
+
     is_tpp = _using_tpp()
 
     _ipex_optimize_rmsnorm(model, rms_classes, is_tpp=is_tpp, is_woq=is_woq)

@@ -603,23 +603,22 @@ def speculative_generate(self,
                     past_length = draft_past_key_values[0][0].size(2)
                     position_ids = torch.Tensor([[past_length]]).long().to(self.device)
                     forward_args["position_ids"] = position_ids
-                
+
                 if _enable_ipex:
                     if "llama" in self.config.model_type:
                         past_key_value_len = draft_past_key_values[0][0].shape[2]
                         position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                         # position_ids = draft_attention_mask.long().cumsum(-1) - 1
                         position_ids = position_ids[:, :-draft_current_input_ids.size(0)]
-                        # import pdb
-                        # pdb.set_trace()
-                        draft_output = draft_model.trace_graph(input_ids=draft_current_input_ids,
-                                                attention_mask=draft_attention_mask,
-                                                position_ids=position_ids,
-                                                past_key_values=draft_past_key_values,
-                                                )
+                        draft_output = draft_model.trace_graph(
+                            input_ids=draft_current_input_ids,
+                            attention_mask=draft_attention_mask,
+                            position_ids=position_ids,
+                            past_key_values=draft_past_key_values,
+                        )
                     else:
                         invalidInputError(False, "Only support Llama yet.")
-                    
+
                     draft_output = CausalLMOutputWithPast(
                         logits=draft_output[0],
                         past_key_values=draft_output[1],
