@@ -588,7 +588,9 @@ def _optimize_pre(model):
         from bigdl.llm.transformers.models.bert import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "qwen":
-        position_ids = torch.arange(0, 2048)
+        position_ids = torch.arange(0, model.config.max_position_embeddings)
+        rope_base = model.config.rotary_emb_base
+
         def split_qkv_proj_func(module):
             if "QWenAttention" in module.__class__.__name__:
                 c_attn_weight = module.c_attn.weight.data
@@ -608,7 +610,8 @@ def _optimize_pre(model):
                 module.k_proj = k_proj
                 module.v_proj = v_proj
                 module.position_ids = position_ids
-                #del module.c_attn
+                module.rope_base = rope_base
+                del module.c_attn
         model.apply(split_qkv_proj_func)
     return model
 
