@@ -271,7 +271,6 @@ class BigdlLLM(CustomLLM):
         if tokenizer:
             self._tokenizer = tokenizer
         else:
-            print(f"load tokenizer: {tokenizer_name}")
             try:
                 self._tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
             except:

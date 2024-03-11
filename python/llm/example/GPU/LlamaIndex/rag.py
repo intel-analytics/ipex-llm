@@ -164,7 +164,7 @@ def main(args):
     
     # Use custom LLM in BigDL
     from bigdl.llm.llamaindex.llms import BigdlLLM
-    llm = BigdlLLM(
+    llm = BigdlLLM.from_model_id_low_bit(
         model_name=args.model_path,
         tokenizer_name=args.model_path,
         context_window=512,
