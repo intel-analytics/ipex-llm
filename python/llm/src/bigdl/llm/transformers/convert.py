@@ -555,17 +555,27 @@ def _optimize_pre(model):
                 head_dim = module.head_dim
                 hidden_size = module.hidden_size
 
-                merged_qk_proj = torch.nn.Linear(0, 0, False)
-                weight = torch.cat([
+                weight_q = torch.cat([
                     q_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
                     k_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
+                ], dim=0).view(num_heads * head_dim, hidden_size)
+
+                weight_k = torch.cat([
                     q_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
                     k_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
-                ], dim=0).view(num_heads * head_dim * 2, hidden_size)
-                merged_qk_proj.weight = torch.nn.Parameter(weight, requires_grad=False)
-                merged_qk_proj.in_features = hidden_size
-                merged_qk_proj.out_features = num_heads * head_dim * 2
-                module.merged_qk_proj = merged_qk_proj
+                ], dim=0).view(num_heads * head_dim, hidden_size)
+
+                merged_q_proj = torch.nn.Linear(0, 0, False)
+                merged_q_proj.weight = torch.nn.Parameter(weight_q, requires_grad=False)
+                merged_q_proj.in_features = hidden_size
+                merged_q_proj.out_features = num_heads * head_dim
+                module.merged_q_proj = merged_q_proj
+
+                merged_k_proj = torch.nn.Linear(0, 0, False)
+                merged_k_proj.weight = torch.nn.Parameter(weight_k, requires_grad=False)
+                merged_k_proj.in_features = hidden_size
+                merged_k_proj.out_features = num_heads * head_dim
+                module.merged_k_proj = merged_k_proj
 
                 del module.q_proj
                 del module.k_proj
@@ -733,10 +743,15 @@ def _optimize_post(model, lightweight_bmm=False):
         if version.parse(trans_version) >= version.parse("4.36.0"):
             # transformers version >= 4.36.0
             from bigdl.llm.transformers.models.llama import llama_attention_forward_4_36
+            from bigdl.llm.transformers.models.llama import llama_model_forward_4_36
             convert_forward(
                 model,
                 transformers.models.llama.modeling_llama.LlamaAttention,
                 llama_attention_forward_4_36, )
+            convert_forward(
+                model,
+                transformers.models.llama.modeling_llama.LlamaModel,
+                llama_model_forward_4_36)
         else:
             # transformers version between 4.31.0 - 4.35.2
             convert_forward(
@@ -1107,6 +1122,7 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.gemma import gemma_attention_forward
         from bigdl.llm.transformers.models.gemma import gemma_rms_norm_forward
+        from bigdl.llm.transformers.models.gemma import gemma_mlp_forward
         convert_forward(model,
                         module.GemmaAttention,
                         gemma_attention_forward,
@@ -1114,6 +1130,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.GemmaRMSNorm,
                         gemma_rms_norm_forward)
+        convert_forward(model,
+                        module.GemmaMLP,
+                        gemma_mlp_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1195,13 +1214,14 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.yuan import yuan_attention_forward
-        from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
+        # from bigdl.llm.transformers.models.yuan import yuan_mlp_forward
         convert_forward(model,
                         module.YuanAttention,
                         yuan_attention_forward
                         )
-        convert_forward(model,
-                        module.YuanMLP,
-                        yuan_mlp_forward
-                        )
+        # disable able mlp_forward for quantize_kv on mtl.
+        # convert_forward(model,
+        #                 module.YuanMLP,
+        #                 yuan_mlp_forward
+        #                 )
     return model

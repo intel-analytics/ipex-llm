@@ -50,7 +50,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_cache_freq_xpu, is_enough_kv_cache_room_4_36
 from bigdl.llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
-from bigdl.llm.transformers.models.utils import mlp_fusion_check
+from bigdl.llm.transformers.models.utils import mlp_fusion_check, SILU
 from bigdl.llm.transformers.low_bit_linear import IQ2_XXS
 
 
@@ -171,7 +171,8 @@ def mixtral_attention_forward(
                                                                          self.q_proj.weight.qtype,
                                                                          self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
@@ -371,7 +372,7 @@ def mixtral_mlp_forward(
         return self.w2(linear_q4_0.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,
             x.shape[0], x.shape[1], self.w1.out_len,
-            qtype,
+            SILU, qtype,
         )) * routing_weights
     else:
         current_hidden_states = self.act_fn(self.w1(x)) * self.w3(x)

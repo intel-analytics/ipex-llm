@@ -7,6 +7,7 @@ This folder contains examples of running BigDL-LLM on Intel GPU:
 - [LLM-Finetuning](LLM-Finetuning): running ***finetuning*** (such as LoRA, QLoRA, QA-LoRA, etc) using BigDL-LLM on Intel GPUs
 - [vLLM-Serving](vLLM-Serving): running ***vLLM*** serving framework on intel GPUs (with BigDL-LLM low-bit optimized models)
 - [Deepspeed-AutoTP](Deepspeed-AutoTP): running distributed inference using ***DeepSpeed AutoTP*** (with BigDL-LLM low-bit optimized models) on Intel GPUs
+- [LangChain](LangChain): running ***LangChain*** applications on BigDL-LLM
 - [PyTorch-Models](PyTorch-Models): running any PyTorch model on BigDL-LLM (with "one-line code change")
 - [Speculative-Decoding](Speculative-Decoding): running any ***Hugging Face Transformers*** model with ***self-speculative decoding*** on Intel GPUs
 - [ModelScope-Models](ModelScope-Models): running ***ModelScope*** model with BigDL-LLM on Intel GPUs

@@ -47,7 +47,6 @@ from intel_extension_for_pytorch.cpu._auto_kernel_selection import (
     _disable_tpp
 )
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
-import intel_extension_for_pytorch as ipex
 import os
 
 
@@ -107,6 +106,7 @@ def _ipex_optimize_attention(model, is_tpp=False, is_woq=False):
 
 
 def _ipex_optimize_model(model, rms_classes, qtype):
+    import intel_extension_for_pytorch as ipex
     from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
     from intel_extension_for_pytorch.transformers.optimize import ipex_quantization_flow
 
