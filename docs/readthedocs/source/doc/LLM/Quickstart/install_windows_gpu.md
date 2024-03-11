@@ -117,7 +117,7 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
   ```
   torch.Size([1, 1, 40, 40])
   ```
-* To exit the Python interactive shell, simply press Ctrl+Z and then press Enter.
+* To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
 
 ## A Quick Example
