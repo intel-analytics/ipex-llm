@@ -230,7 +230,7 @@ jobs:
 
   llm-ceval-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [set-matrix, llm-c-evaluation, llm-ceval-summarys]
+    needs: [set-matrix, llm-c-evaluation, llm-ceval-summary]
     strategy:
       fail-fast: false
       matrix:
