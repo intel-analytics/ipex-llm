@@ -42,3 +42,5 @@ runs:
           pip install pytest
           bash python/llm/test/run-llm-install-tests.sh
         fi
+        pip uninstall -y bigdl-llm
+        pip install --pre --upgrade ipex-llm[all]

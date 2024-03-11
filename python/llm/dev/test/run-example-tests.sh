@@ -3,6 +3,10 @@ if [ -z "$THREAD_NUM" ]; then
 fi
 export OMP_NUM_THREADS=$THREAD_NUM
 
+# using ipex_llm to test bigdl-llm example
+find "python/llm/example" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
+export BIGDL_COMPATIBLE_MODE=true
+
 ######## LLAMA2
 # transformers
 export ORIGINAL_LLAMA2_PATH=./llm/Llama-2-7b-chat-hf/
