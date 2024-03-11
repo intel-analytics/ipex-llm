@@ -130,9 +130,10 @@ def qwen_attention_forward_original(
         position_ids = self.position_ids[kv_seq_len].to('xpu')
         base = self.rope_base
 
-        args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data, self.v_proj.weight.data,
-                self.q_proj.bias.data, self.k_proj.bias.data, self.v_proj.bias.data, position_ids, cache_k,
-                cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len, self.head_dim, base]
+        args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
+                self.v_proj.weight.data, self.q_proj.bias.data, self.k_proj.bias.data,
+                self.v_proj.bias.data, position_ids, cache_k, cache_v, self.q_proj.weight.qtype,
+                self.v_proj.weight.qtype, kv_seq_len, self.head_dim, base]
         import linear_q4_0
         query, key, value = linear_q4_0.forward_qkv_bias(*args)
         kv_seq_len += 1
@@ -173,7 +174,8 @@ def qwen_attention_forward_original(
                         cos, sin = rotary_pos_emb
                         cos = cos.to(query.dtype)
                         sin = sin.to(query.dtype)
-                        query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
+                        query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key,
+                                                                         sin, cos, "qwen")
                         query_list += [query]
                         key_list += [key]
                     else:
@@ -280,7 +282,8 @@ def qwen_attention_forward_quantized(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
-    decoding_fast_path = (use_fuse_rope and bsz * q_len == 1)
+    # TODO: use when decoding_fast_path = (use_fuse_rope and bsz * q_len == 1)
+    decoding_fast_path = False
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
@@ -293,13 +296,13 @@ def qwen_attention_forward_quantized(
             device=device
         )
 
-        kv_seq_len = self.kv_seq_len
-        position_ids = self.position_ids[kv_seq_len].to('xpu')
+        position_ids = self.position_ids[self.kv_seq_len].to('xpu')
         base = self.rope_base
 
-        args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data, self.v_proj.weight.data,
-                self.q_proj.bias.data, self.k_proj.bias.data, self.v_proj.bias.data, position_ids, tmp_cache_k,
-                tmp_cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, 0, self.head_dim, base]
+        args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
+                self.v_proj.weight.data, self.q_proj.bias.data, self.k_proj.bias.data,
+                self.v_proj.bias.data, position_ids, tmp_cache_k, tmp_cache_v,
+                self.q_proj.weight.qtype, self.v_proj.weight.qtype, 0, self.head_dim, base]
         import linear_q4_0
         query, key, value = linear_q4_0.forward_qkv_bias(*args)
         self.kv_seq_len += 1
@@ -341,7 +344,8 @@ def qwen_attention_forward_quantized(
                         cos, sin = rotary_pos_emb
                         cos = cos.to(query.dtype)
                         sin = sin.to(query.dtype)
-                        query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key, sin, cos, "qwen")
+                        query, key = apply_rotary_pos_emb_cache_freq_xpu(query, key,
+                                                                         sin, cos, "qwen")
                         query_list += [query]
                         key_list += [key]
                     else:
@@ -366,14 +370,15 @@ def qwen_attention_forward_quantized(
             torch.ones((kv_seq_len, kv_seq_len), dtype=torch.bool, device=query.device)
         ).view(1, 1, kv_seq_len, kv_seq_len)
         causal_mask = causal_mask[
-                      :, :, kv_seq_len - query_size:kv_seq_len, :kv_seq_len
-                      ]
+            :, :, kv_seq_len - query_size:kv_seq_len, :kv_seq_len
+        ]
     else:
         causal_mask = None
 
     if layer_past is None:
         query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
         # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
+
         # save kv seq len for decoding_fast_path
         self.kv_seq_len = key.shape[-2]
         # For first token, use original attn

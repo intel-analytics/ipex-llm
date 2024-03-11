@@ -596,16 +596,17 @@ def _optimize_pre(model):
                 c_attn_weight = module.c_attn.weight.data
                 c_attn_bias = module.c_attn.bias.data
                 projection_size = module.projection_size
-                hidden_size = module.hidden_size
-                q_proj = torch.nn.Linear(hidden_size, projection_size)
-                k_proj = torch.nn.Linear(hidden_size, projection_size)
-                v_proj = torch.nn.Linear(hidden_size, projection_size)
-                q_proj.weight.data = c_attn_weight[:projection_size, :]
-                q_proj.bias.data = c_attn_bias[:projection_size]
-                k_proj.weight.data = c_attn_weight[projection_size: 2 * projection_size, :]
-                k_proj.bias.data = c_attn_bias[projection_size: 2 * projection_size]
-                v_proj.weight.data = c_attn_weight[2 * projection_size:, :]
-                v_proj.bias.data = c_attn_bias[2 * projection_size:]
+                hid_size = module.hidden_size
+                if not model.config.to_dict().get("bigdl_transformers_low_bit", False):
+                    q_proj = torch.nn.Linear(hid_size, projection_size)
+                    k_proj = torch.nn.Linear(hid_size, projection_size)
+                    v_proj = torch.nn.Linear(hid_size, projection_size)
+                    q_proj.weight.data = c_attn_weight[:projection_size, :]
+                    q_proj.bias.data = c_attn_bias[:projection_size]
+                    k_proj.weight.data = c_attn_weight[projection_size: 2 * projection_size, :]
+                    k_proj.bias.data = c_attn_bias[projection_size: 2 * projection_size]
+                    v_proj.weight.data = c_attn_weight[2 * projection_size:, :]
+                    v_proj.bias.data = c_attn_bias[2 * projection_size:]
                 module.q_proj = q_proj
                 module.k_proj = k_proj
                 module.v_proj = v_proj
