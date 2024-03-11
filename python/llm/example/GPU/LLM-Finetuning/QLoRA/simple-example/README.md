@@ -36,19 +36,19 @@ python ./qlora_finetuning.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 
 #### Sample Output
 ```log
-{'loss': 1.6134, 'learning_rate': 0.0002, 'epoch': 0.03}                                                                                 
-{'loss': 1.3038, 'learning_rate': 0.00017777777777777779, 'epoch': 0.06}                                                                 
-{'loss': 1.2634, 'learning_rate': 0.00015555555555555556, 'epoch': 0.1}                                                                  
-{'loss': 1.2389, 'learning_rate': 0.00013333333333333334, 'epoch': 0.13}                                                                 
-{'loss': 1.0399, 'learning_rate': 0.00011111111111111112, 'epoch': 0.16}                                                                 
-{'loss': 1.0406, 'learning_rate': 8.888888888888889e-05, 'epoch': 0.19}                                                                  
-{'loss': 1.3114, 'learning_rate': 6.666666666666667e-05, 'epoch': 0.22}                                                                  
-{'loss': 0.9876, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.26}                                                                 
-{'loss': 1.1406, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.29}                                                                 
-{'loss': 1.1728, 'learning_rate': 0.0, 'epoch': 0.32}                                                                                    
-{'train_runtime': 225.8005, 'train_samples_per_second': 3.543, 'train_steps_per_second': 0.886, 'train_loss': 1.211241865158081, 'epoch': 0.32}
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [03:45<00:00,  1.13s/it]
-TrainOutput(global_step=200, training_loss=1.211241865158081, metrics={'train_runtime': 225.8005, 'train_samples_per_second': 3.543, 'train_steps_per_second': 0.886, 'train_loss': 1.211241865158081, 'epoch': 0.32})
+{'loss': 1.7093, 'learning_rate': 2e-05, 'epoch': 0.02}
+{'loss': 1.6595, 'learning_rate': 1.7777777777777777e-05, 'epoch': 0.03}
+{'loss': 1.5172, 'learning_rate': 1.555555555555556e-05, 'epoch': 0.05}
+{'loss': 1.3666, 'learning_rate': 1.3333333333333333e-05, 'epoch': 0.06}
+{'loss': 1.2738, 'learning_rate': 1.1111111111111113e-05, 'epoch': 0.08}
+{'loss': 1.2199, 'learning_rate': 8.888888888888888e-06, 'epoch': 0.09}
+{'loss': 1.1703, 'learning_rate': 6.666666666666667e-06, 'epoch': 0.11}
+{'loss': 1.108, 'learning_rate': 4.444444444444444e-06, 'epoch': 0.12}
+{'loss': 1.1199, 'learning_rate': 2.222222222222222e-06, 'epoch': 0.14}
+{'loss': 1.0668, 'learning_rate': 0.0, 'epoch': 0.15}
+{'train_runtime': 279.3049, 'train_samples_per_second': 2.864, 'train_steps_per_second': 0.716, 'train_loss': 1.321143569946289, 'epoch': 0.15}
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [04:39<00:00,  1.40s/it]
+TrainOutput(global_step=200, training_loss=1.321143569946289, metrics={'train_runtime': 279.3049, 'train_samples_per_second': 2.864, 'train_steps_per_second': 0.716, 'train_loss': 1.321143569946289, 'epoch': 0.15})
 ```
 
 ### 4. Merge the adapter into the original model

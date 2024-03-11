@@ -27,20 +27,37 @@ from datasets import load_dataset
 from trl import SFTTrainer
 import argparse
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+common_util_path = os.path.join(current_dir, '..', '..')
+import sys
+sys.path.append(common_util_path)
+from common.utils import Prompter, get_train_val_data
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Simple example of how to qlora finetune llama2 model using bigdl-llm and TRL')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--dataset', type=str, default="Abirate/english_quotes")
+    parser.add_argument('--dataset', type=str, default="yahma/alpaca-cleaned")
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     dataset_path = args.dataset
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    data = load_dataset(dataset_path, split="train")
+    if dataset_path.endswith(".json") or dataset_path.endswith(".jsonl"):
+        data = load_dataset("json", data_files=dataset_path)
+    else:
+        data = load_dataset(dataset_path)
+    
+    # For illustration purpose, only use part of data to train
+    data = data["train"].train_test_split(train_size=0.1, shuffle=False)
+
+    # Data processing
+    prompter = Prompter("alpaca")
+    train_data, _ = get_train_val_data(data, tokenizer, prompter, train_on_inputs=True,
+                                       add_eos_token=False, cutoff_len=256, val_set_size=0, seed=42)
 
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -73,7 +90,7 @@ if __name__ == "__main__":
 
     trainer = SFTTrainer(
         model=model,
-        train_dataset=data,
+        train_dataset=train_data,
         args=transformers.TrainingArguments(
             per_device_train_batch_size=4,
             gradient_accumulation_steps= 1,
@@ -87,7 +104,7 @@ if __name__ == "__main__":
             optim="adamw_hf", # paged_adamw_8bit is not supported yet
             gradient_checkpointing=True, # can further reduce memory but slower
         ),
-        dataset_text_field="quote",
+        dataset_text_field="instruction",
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
     result = trainer.train()
