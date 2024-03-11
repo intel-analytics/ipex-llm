@@ -256,6 +256,8 @@ class ModelWorker(BaseModelWorker):
                 self.context_len,
                 self.stream_interval,
             ):
+                if self.device == "xpu":
+                    torch.xpu.empty_cache()
                 ret = {
                     "text": output["text"],
                     "error_code": 0,
