@@ -93,14 +93,20 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
    conda activate llm
    ```
 * Step 2: Configure oneAPI variables by running the following command:
-  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  If you're running on iGPU, set additional environment variables by running the following commands:
-  ```cmd
-  set SYCL_CACHE_PERSISTENT=1
-  set BIGDL_LLM_XMX_DISABLED=1
+  * If you're running on iGPU, set additional environment variables by running the following commands:
+    ```cmd
+    set SYCL_CACHE_PERSISTENT=1
+    set BIGDL_LLM_XMX_DISABLED=1
+    ```
+  * If you're running on Intel Arc™ A770, there is no need to set further environment variables.
+  
+  ```eval_rst
+  .. note::
+  
+    For more details about runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
   ```
 * Step 3: Launch the Python interactive shell by typing `python` in the terminal window and then press Enter.
 * Step 4: Copy following code to terminal **line by line** and press Enter **after copying each line**.
@@ -129,14 +135,20 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
    conda activate llm
    ```
 * Step 2: Configure oneAPI variables by running the following command:
-  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration):
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  If you're running on iGPU, set additional environment variables by running the following commands:
-  ```cmd
-  set SYCL_CACHE_PERSISTENT=1
-  set BIGDL_LLM_XMX_DISABLED=1
+  * If you're running on iGPU, set additional environment variables by running the following commands:
+    ```cmd
+    set SYCL_CACHE_PERSISTENT=1
+    set BIGDL_LLM_XMX_DISABLED=1
+    ```
+  * If you're running on Intel Arc™ A770, there is no need to set further environment variables.
+  
+  ```eval_rst
+  .. note::
+  
+    For more details about runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
   ```
 * Step 3: Install additional package required for Qwen-1.8B-Chat to conduct:
    ```cmd
@@ -152,14 +164,18 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
    
    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat", trust_remote_code=True)
    # load Model using bigdl-llm and load it to GPU
-   # 
    model = AutoModelForCausalLM.from_pretrained(
        "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
    model = model.to('xpu')
 
+   print('--------------------------------------Note--------------------------------------')
+   print('| When running LLMs on GPU for first time, warm-up may take about 5~10 minutes.|')
+   print('| Please be patient until it finishes warm-up...                               |')
+   print('--------------------------------------------------------------------------------')
+
    # Format the prompt
    question = "What is AI?"
-   prompt = " Question:{prompt}\n\n Answer:".format(prompt=question)
+   prompt = "user:{prompt}\n\nassistant:".format(prompt=question)
    # Generate predicted tokens
    with torch.inference_mode():
        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
@@ -173,13 +189,13 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   .. note::
   
      ``from_pretrained`` will download model from huggingface by default. For users in Chinese Mainland, set ``model_hub='modelscope'`` in ``from_pretrained`` to achieve faster download speed.
-     If you set ``model_hub='modelscope'`` in ``from_pretrained``, please first run ``pip install modelscope`` in Anaconda Prompt to install modelscope.
+     If you set ``model_hub='modelscope'`` in ``from_pretrained``, please first run ``pip install pip install modelscope==1.11.0`` in Anaconda Prompt to install modelscope.
   ```
 
   ```eval_rst
   .. note::
   
-     when running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
+     When running LLMs on Intel iGPUs with limited memory size, we recommend setting ``cpu_embedding=True`` in the `from_pretrained` function.
      This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
   ```
 
