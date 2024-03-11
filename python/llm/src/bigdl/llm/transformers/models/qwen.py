@@ -303,7 +303,7 @@ def qwen_attention_forward_quantized(
         import linear_q4_0
         query, key, value = linear_q4_0.forward_qkv_bias(*args)
         self.kv_seq_len += 1
-        kv_seq_len += self.kv_seq_len
+        kv_seq_len = self.kv_seq_len
         query_size, key_size = 1, 1
     else:
         query = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
