@@ -333,7 +333,7 @@ class _BaseAutoModelClass:
         from bigdl.llm.optimize import optimize_model as optimize_model_fn
 
         model, tokenizer, low_bit = load_gguf_model(fpath, dtype=torch.half)
-        model = optimize_model_fn(model, low_bit=low_bit, optimize_llm=optimize_model,
+        model = optimize_model_fn(model, low_bit="sym_int4", optimize_llm=optimize_model,
                                   cpu_embedding=cpu_embedding)
         return model, tokenizer
 
