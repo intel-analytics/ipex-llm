@@ -408,14 +408,7 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
-                from bigdl.llm.transformers.convert import get_enable_ipex
-                _enable_ipex = get_enable_ipex()
-                if _enable_ipex:
-                    import intel_extension_for_pytorch as ipex
-                    with ipex.OnDevice(dtype=torch.float, device="meta"):
-                        model = cls.HF_Model.from_pretrained(*args, **kwargs)
-                else:
-                    model = cls.HF_Model.from_pretrained(*args, **kwargs)
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
                 logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
                             "will fall to traditional load method with higher memory consumption.")
