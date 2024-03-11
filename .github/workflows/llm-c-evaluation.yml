@@ -58,7 +58,7 @@ jobs:
             echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
             echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
-            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+            echo "date='[$(date +%Y-%m-%d)]'" >> $GITHUB_ENV
 
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
@@ -70,7 +70,7 @@ jobs:
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
             echo "runner=$PR_LABELS" >> $GITHUB_ENV
-            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+            echo "date='[$(date +%Y-%m-%d)]'" >> $GITHUB_ENV
 
       - name: set-manual-env
         if: ${{github.event_name == 'workflow_dispatch'}}
@@ -82,7 +82,7 @@ jobs:
             echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
             echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
-            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+            echo "date='[$(date +%Y-%m-%d)]'" >> $GITHUB_ENV
 
       - name: set-matrix
         id: set-matrix
@@ -101,7 +101,7 @@ jobs:
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
-        date: ${{ needs.set-matrix.outputs.date }}
+        date: ${{ fromJson(needs.set-matrix.outputs.date) }}
         device: [xpu]
 
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
