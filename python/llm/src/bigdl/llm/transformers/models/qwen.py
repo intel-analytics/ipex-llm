@@ -117,6 +117,7 @@ def qwen_attention_forward_original(
     invalidInputError(not self.use_flash_attn and not self.use_cache_quantization,
                       "flash attn and kv_cache quantization are not supported")
     bsz, q_len, _ = hidden_states.size()
+    device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
     decoding_fast_path = (use_fuse_rope and bsz * q_len == 1)
@@ -127,7 +128,7 @@ def qwen_attention_forward_original(
         cache_v = cache_v.transpose(1, 2)
 
         kv_seq_len = cache_k.shape[-2]
-        position_ids = self.position_ids[kv_seq_len].to('xpu')
+        position_ids = self.position_ids[kv_seq_len].to(device)
         base = self.rope_base
 
         args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
@@ -296,7 +297,7 @@ def qwen_attention_forward_quantized(
             device=device
         )
 
-        position_ids = self.position_ids[self.kv_seq_len].to('xpu')
+        position_ids = self.position_ids[self.kv_seq_len].to(device)
         base = self.rope_base
 
         args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
