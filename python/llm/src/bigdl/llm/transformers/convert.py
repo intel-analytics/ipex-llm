@@ -1071,7 +1071,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralBLockSparseTop2MLP,
                         mixtral_mlp_forward)
-    elif model.config.model_type == "phi-msft":
+    elif model.config.model_type == "phi-msft" and \
+            hasattr(model.config, "num_local_experts"):
+        # For phixtral, limit the condition to avoid applying on phi-2 hosted by ModelScope
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.phixtral import phixtral_moeblock_forward, \
