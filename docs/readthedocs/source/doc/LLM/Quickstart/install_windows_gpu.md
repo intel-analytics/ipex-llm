@@ -6,12 +6,22 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
 
 ## Install Visual Studio 2022
 
-* Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
+Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
    
-    > Note: The installation could take around 15 minutes, and requires at least 7GB of free disk space.  
-    > If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on [this Microsoft guide](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)  to update your installation.
-    > 
-    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
+```eval_rst
+.. note::
+
+   The installation could take around 15 minutes, and requires at least 7GB of free disk space.
+   If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on [this Microsoft guide](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads)  to update your installation.
+```
+
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
+
+```eval_rst
+.. note::
+
+   If the oneAPI installation hangs at the final step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
+```
 
 ## Install GPU Driver
 
@@ -31,24 +41,24 @@ It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as 
   pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
   ``` -->
 
-* Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
+Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=90%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=90%; />
 
 ## Setup Python Environment
 
-* Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
+Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=50%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=50%; />
 
-* After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
-  ```cmd
-  conda create -n llm python=3.9 libuv
-  ```
-* Activate the newly created environment `llm`:
-  ```cmd
-  conda activate llm
-  ```
+After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
+```cmd
+conda create -n llm python=3.9 libuv
+```
+Activate the newly created environment `llm`:
+```cmd
+conda activate llm
+```
   
 ## Install `bigdl-llm`
 
