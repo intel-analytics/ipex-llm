@@ -408,7 +408,7 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
-                from bigdl.llm.transformers.convert_ipex import get_enable_ipex
+                from bigdl.llm.transformers.convert import get_enable_ipex
                 _enable_ipex = get_enable_ipex()
                 if _enable_ipex:
                     import intel_extension_for_pytorch as ipex

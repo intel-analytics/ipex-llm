@@ -47,13 +47,8 @@ from intel_extension_for_pytorch.cpu._auto_kernel_selection import (
     _disable_tpp
 )
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.convert import get_enable_ipex
 import os
-
-
-def get_enable_ipex():
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
-    return _enable_ipex
 
 
 def _ipex_optimize_rmsnorm(_model, supported_classes, is_tpp=False, is_woq=False):
@@ -227,7 +222,6 @@ def _make_causal_mask(
     mask_cond = torch.arange(mask.size(-1), device=device)
     mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
 
-    import os
     _enable_ipex = get_enable_ipex()
     if _enable_ipex or past_key_values_length > 0:
         mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)  # noqa

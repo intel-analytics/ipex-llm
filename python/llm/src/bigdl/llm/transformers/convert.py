@@ -596,7 +596,6 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
     # using ipex optimizer before changing to bigdl linear
-    from bigdl.llm.transformers.convert_ipex import get_enable_ipex
     _enable_ipex = get_enable_ipex()
 
     if device == "cpu":
@@ -669,6 +668,12 @@ def replace_func(m, target_m, func_name, new_func):
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
+
+
+def get_enable_ipex():
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    return _enable_ipex
 
 
 def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):

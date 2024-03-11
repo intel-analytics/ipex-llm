@@ -485,7 +485,7 @@ def speculative_generate(self,
     past_key_values = None
     past_key_values_storage = []
 
-    from bigdl.llm.transformers.convert_ipex import get_enable_ipex
+    from bigdl.llm.transformers.convert import get_enable_ipex
     _enable_ipex = get_enable_ipex()
 
     if _enable_ipex:
