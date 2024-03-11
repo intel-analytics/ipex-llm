@@ -303,6 +303,7 @@ def qwen_attention_forward_quantized(
         import linear_q4_0
         query, key, value = linear_q4_0.forward_qkv_bias(*args)
         self.kv_seq_len += 1
+        kv_seq_len += self.kv_seq_len
         query_size, key_size = 1, 1
     else:
         query = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
@@ -370,10 +371,9 @@ def qwen_attention_forward_quantized(
     else:
         causal_mask = None
 
-    query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
-    # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
-
     if layer_past is None:
+        query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
+        # query, key, value's shape: [bs, num_heads, seq_len, head_dim]
         # save kv seq len for decoding_fast_path
         self.kv_seq_len = key.shape[-2]
         # For first token, use original attn
@@ -388,16 +388,30 @@ def qwen_attention_forward_quantized(
             )
             key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
     else:
-        k_cache, v_cache = layer_past[0], layer_past[1]
-        k_cache = k_cache.transpose(1, 2)
-        v_cache = v_cache.transpose(1, 2)
-        # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
+        if decoding_fast_path:
+            k_cache, v_cache = layer_past[0], layer_past[1]
+            k_cache = k_cache.transpose(1, 2)
+            v_cache = v_cache.transpose(1, 2)
+            # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
 
-        key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
 
-        attn_output, attn_weight = core_attn(
-            self, query, key, value, causal_mask, attention_mask, head_mask
-        )
+            attn_output, attn_weight = core_attn(
+                self, query, key, value, causal_mask, attention_mask, head_mask
+            )
+
+        else:
+            query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
+            k_cache, v_cache = layer_past[0], layer_past[1]
+            k_cache = k_cache.transpose(1, 2)
+            v_cache = v_cache.transpose(1, 2)
+            # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
+
+            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+
+            attn_output, attn_weight = core_attn(
+                self, query, key, value, causal_mask, attention_mask, head_mask
+            )
 
     context_layer = self._merge_heads(
         attn_output, self.num_heads, self.head_dim
