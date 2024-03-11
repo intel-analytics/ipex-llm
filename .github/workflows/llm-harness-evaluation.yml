@@ -185,7 +185,7 @@ jobs:
           
           # set --limit if it's pr-triggered to accelerate pr action
           if ${{github.event_name == 'pull_request'}}; then
-            export LIMIT="--limit 4"
+            export LIMIT="--limit 6"
           fi
 
           python run_llb.py \
