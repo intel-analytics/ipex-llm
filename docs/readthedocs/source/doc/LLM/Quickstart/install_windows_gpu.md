@@ -296,9 +296,11 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
                output_str = tokenizer.decode(output[0], skip_special_tokens=True)
                print(output_str)
       
+      
         .. note::
-  
+
            Please note that the repo id on ModelScope may be difference from Hugging Face for some models.
+
   ```
 
   ```eval_rst
