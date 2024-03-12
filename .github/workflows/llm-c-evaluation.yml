@@ -119,6 +119,7 @@ jobs:
           pip install einops
           pip install thefuzz
           pip install tiktoken
+          pip install --upgrade numpy
           pip install transformers==4.31.0
           pip install transformers_stream_generator
 
