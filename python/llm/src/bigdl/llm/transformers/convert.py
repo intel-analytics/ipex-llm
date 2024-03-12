@@ -669,7 +669,7 @@ def convert_bigdl_other_module(model, dtype):
                 module.to(dtype)
 
 
-def convert_forward(m, target_m, new_forward, replace_sub_module = True):
+def convert_forward(m, target_m, new_forward, replace_sub_module=True):
     for _, sub_m in m.named_children():
         if isinstance(sub_m, target_m):
             bound_method = new_forward.__get__(sub_m, sub_m.__class__)
