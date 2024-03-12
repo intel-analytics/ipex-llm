@@ -104,6 +104,42 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
 
          ./run-max-gpu.sh
 
+   .. tab:: Intel SPR
+
+      For Intel SPR machine, we recommend:
+
+      .. code-block:: bash
+
+         ./run-spr.sh
+
+      The scipt uses a default numactl strategy. If you want to customize it, please use ``lscpu`` or ``numactl -H`` to check how cpu indexs are assigned to numa node, and make sure the run command is binded to only one socket.
+
+   .. tab:: Intel HBM
+
+      For Intel HBM machine, we recommend:
+
+      .. code-block:: bash
+
+         ./run-hbm.sh
+
+       The scipt uses a default numactl strategy. If you want to customize it, please use ``numactl -H`` to check how the index of hbm node and cpu are assigned.
+      
+      For example:
+
+
+      .. code-block:: bash
+
+         node   0   1   2   3
+            0:  10  21  13  23
+            1:  21  10  23  13
+            2:  13  23  10  23
+            3:  23  13  23  10
+
+
+      here hbm node is the node whose distance from the checked node is 13, node 2 is node 0's hbm node.
+
+      And make sure the run command is binded to only one socket.
+
 ```
 
 ## Result
