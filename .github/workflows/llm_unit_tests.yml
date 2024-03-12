@@ -237,7 +237,7 @@ jobs:
         shell: bash
         run: |
           echo "DATASET_DIR=${ORIGIN_DIR}/../datasets" >> "$GITHUB_ENV"
-          echo "ABIRATE_ENGLISH_QUOTES_PATH=${ORIGIN_DIR}/../datasets/abirate_english_quotes" >> "$GITHUB_ENV"
+          echo "YAHMA_ALPACA_CLEANED_PATH=${ORIGIN_DIR}/../datasets/yahma_alpaca_cleaned" >> "$GITHUB_ENV"
           echo "SPEECH_DATASET_PATH=${ORIGIN_DIR}/../datasets/librispeech_asr_dummy" >> "$GITHUB_ENV"
 
           echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
@@ -308,9 +308,9 @@ jobs:
           if [ ! -d $DATASET_DIR ]; then
             mkdir -p $DATASET_DIR
           fi
-          if [ ! -d $ABIRATE_ENGLISH_QUOTES_PATH ]; then
-            echo "Directory $ABIRATE_ENGLISH_QUOTES_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/abirate_english_quotes -P $DATASET_DIR
+          if [ ! -d $YAHMA_ALPACA_CLEANED_PATH ]; then
+            echo "Directory $YAHMA_ALPACA_CLEANED_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/yahma_alpaca_cleaned -P $DATASET_DIR
           fi
           if [ ! -d $SPEECH_DATASET_PATH ]; then
             echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."

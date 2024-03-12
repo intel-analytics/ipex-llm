@@ -12,7 +12,7 @@ sed -i 's/max_steps=200/max_steps=2/; s/save_steps=100/save_steps=2/; s/logging_
 
 python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py \
 --repo-id-or-model-path ${LLAMA2_7B_ORIGIN_PATH} \
---dataset ${ABIRATE_ENGLISH_QUOTES_PATH}
+--dataset ${YAHMA_ALPACA_CLEANED_PATH}
 
 python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/export_merged_model.py \
 --repo-id-or-model-path ${LLAMA2_7B_ORIGIN_PATH} \
