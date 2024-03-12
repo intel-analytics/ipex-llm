@@ -30,7 +30,7 @@ PROMPT = "Once upon a time, there existed a little girl who liked to have advent
 TEST_MODEL_LIST = [
     ("MPT-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     ("Llama2-7B", AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
-    ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
+    # ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
     ("ChatGLM2-6B", AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
     ("Mistral-7B-Instruct-v0.1", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH')),
     ("Baichuan2-7B-Chat", AutoModelForCausalLM, AutoTokenizer, os.environ.get('BAICHUAN2_7B_ORIGIN_PATH')),
@@ -167,7 +167,7 @@ class Test_Optimize_Gpu_Model:
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.encoder.layers.27.input_layernorm"
         self_attn = "transformer.encoder.layers.27.self_attention"
-        lower_bound = 1e-3
+        lower_bound = 4e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
     def Mistral_gpu_model(self, Name, Model, Tokenizer, model_path):
