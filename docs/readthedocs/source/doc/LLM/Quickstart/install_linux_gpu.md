@@ -21,6 +21,11 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
   conda --version
   # rm Miniconda3-latest-Linux-x86_64.sh # if you don't need this file any longer
   ```
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda1.png" alt="image-20240221102252569" width=100%; />
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda2.png" alt="image-20240221102252568" width=100%; />
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda3.png" alt="image-20240221102252567" width=100%; />
 
 * Update and install packages
   ```
@@ -28,33 +33,20 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
   conda clean --all --yes
   conda install pip -y
   ```
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda4.png" alt="image-20240221102252566" width=100%; />
 
-* Create a new python environment `llm`:
-  ```bash
-  conda create -n llm python=3.9
-  ```
 
-* Activate the newly created environment `llm`:
-  ```bash
-  conda activate llm
-  ```
-
-  <!-- > <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=50%; /> -->
 
 ## Install oneAPI 
-
-* With the `llm` environment active, install oneAPI in a user-defined folder, e.g. `~/intel/oneapi`.:
-  ```bash
-  export PYTHONUSERBASE=~/intel/oneapi
-  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 --user
   ```
+  wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+  sudo apt update
 
-  > Note: The oneAPI packages are visible in pip list only if PYTHONUSERBASE is properly set.
-
-* Configure your working conda environment (e.g. with name llm) to append oneAPI path (e.g. ~/intel/oneapi/lib) to the environment variable LD_LIBRARY_PATH.
-  ```bash
-  conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
+  sudo apt install intel-basekit
   ```
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/install_oneapi_1.png" alt="image-20240221102252565" width=100%; />
+
 
 ## Install `bigdl-llm`
 
@@ -70,12 +62,22 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
   pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl1.png" alt="image-20240221102252564" width=100%; />
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl2.png" alt="image-20240221102252563" width=100%; />
+
+
 * You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, execute the following import command in terminal:
   ```bash
+  source /opt/intel/oneapi/setvars.sh
+
   python
 
   > from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
   ```
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl5.png" alt="image-20240221102252562" width=100%; />
+
 
 ## Runtime Configuration
 
@@ -91,6 +93,9 @@ To use GPU acceleration on Linux, several environment variables are required or 
   export USE_XETLA=OFF
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl4.png" alt="image-20240221102252561" width=100%; />
+
 
 * For Intel Data Center GPU Max Series, we recommend:
   ```bash
