@@ -25,10 +25,10 @@ from ..gguf import GGUFFileLoader
 from .model_implement.yuan2.yuan_hf_model import YuanForCausalLM
 from .model_implement.yuan2.configuration_yuan import YuanConfig
 
+
 def load_gguf_yuan(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
-                    low_bit='sym_int4'):
+                   low_bit='sym_int4'):
     config = loader.config
-    
     yuan_config = YuanConfig(
         vocab_size=len(config['tokenizer.ggml.tokens']),
         hidden_size=config['llama.embedding_length'],
@@ -95,7 +95,6 @@ def load_gguf_yuan(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
             ckpt[f'blk.{i}.conv1.bias']
         state_dict[f'model.layers.{i}.self_attn.lf_gate.conv2.bias'] = \
             ckpt[f'blk.{i}.conv2.bias']
-            
 
     with init_empty_weights():
         model = YuanForCausalLM(yuan_config).eval()
@@ -124,7 +123,8 @@ def load_gguf_yuan(loader: GGUFFileLoader, dtype: torch.dtype = torch.float,
     tokenizer.add_eos_token = False
     tokenizer.add_bos_token = False
     tokenizer.eos_token = '<eod>'
-    tokenizer.add_tokens(['<sep>', '<pad>', '<mask>', '<predict>', '<FIM_SUFFIX>', '<FIM_PREFIX>', '<FIM_MIDDLE>','<commit_before>',
-                         '<commit_msg>','<commit_after>','<jupyter_start>','<jupyter_text>','<jupyter_code>','<jupyter_output>','<empty_output>'], special_tokens=True)
+
+    tokenizer.add_tokens(['<sep>', '<pad>', '<mask>', '<predict>', '<FIM_SUFFIX>', '<FIM_PREFIX>', '<FIM_MIDDLE>', '<commit_before>',  # noqa
+                         '<commit_msg>', '<commit_after>', '<jupyter_start>', '<jupyter_text>', '<jupyter_code>', '<jupyter_output>', '<empty_output>'], special_tokens=True)  # noqa
 
     return model, tokenizer
