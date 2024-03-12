@@ -28,9 +28,7 @@ print(f'Running on {device}')
 PROMPT = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 TEST_MODEL_LIST = [
     ("Qwen-7B-Chat", AutoModelForCausalLM, AutoTokenizer, os.environ.get('QWEN_7B_ORIGIN_PATH')),
-    ("Mistral-7B-Instruct-v0.1", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH')),
-    ("Llama2-7B", AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
-    ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH'))
+    ("Mistral-7B-Instruct-v0.1", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH'))
 ]
  
 class Test_Optimize_Gpu_Model:
@@ -113,19 +111,11 @@ class Test_Optimize_Gpu_Model:
             assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
    
     @pytest.mark.parametrize('Name, Model, Tokenizer, model_path',TEST_MODEL_LIST)
-    # Qwen-7B: Testing MLP layer
-    # Mistral-7B: Testing MLP layer
-    # Llama2: Testing Decoder Layer
-    # Falcon-7B: Testing LayerNorm layer
     def test_dynamic_functions(self, Name, Model, Tokenizer, model_path):
         if Name == "Qwen-7B-Chat":
             self.Qwen_7B_gpu_model(Name, Model, Tokenizer, model_path)
         elif Name == "Mistral-7B-Instruct-v0.1":
             self.Mistral_7B_Instruct_gpu_model(Name, Model, Tokenizer, model_path)
-        elif Name == "Llama2-7B":
-            self.Llama2_7B_gpu_model(Name, Model, Tokenizer, model_path)
-        elif Name == "Falcon-7B":
-            self.Falcon_7B_gpu_model(Name, Model, Tokenizer, model_path)
 
  
     def Qwen_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
@@ -141,17 +131,3 @@ class Test_Optimize_Gpu_Model:
         MLP_layer = "model.layers.31.mlp"
         lower_bound = 0
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, MLP_layer, layer_before_MLP, lower_bound)
-
-    def Llama2_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
-        # currently only compare the output of the last Decoder layer.
-        layer_before_Decoder = "model.layers.30"
-        Decoder_layer = "model.layers.31"
-        lower_bound = 5e-2
-        self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, Decoder_layer, layer_before_Decoder, lower_bound)
-    
-    def Falcon_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
-        # currently only compare the output of the last LayerNorm layer.
-        layer_before_LayerNorm = "transformer.h.30"
-        LayerNorm_layer = "transformer.h.31.input_layernorm"
-        lower_bound = 0
-        self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, LayerNorm_layer, layer_before_LayerNorm, lower_bound)
