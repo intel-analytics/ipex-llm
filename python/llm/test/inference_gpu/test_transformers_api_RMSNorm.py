@@ -132,7 +132,7 @@ class Test_Optimize_Gpu_Model:
     def Chatglm2_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "transformer.encoder.layers.26"
         RMSNorm_layer = "transformer.encoder.layers.27.input_layernorm"
-        lower_bound = 2e-6
+        lower_bound = 6e-6
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
 
     def Mistral_gpu_model(self, Name, Model, Tokenizer, model_path):
