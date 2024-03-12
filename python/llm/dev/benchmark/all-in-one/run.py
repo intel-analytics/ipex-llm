@@ -1099,16 +1099,18 @@ def run_bigdl_ipex_bf16(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit='bf16', trust_remote_code=True, torch_dtype=torch.bfloat16,
-                                          use_cache=True, torchscript=True).eval()
+                                          use_cache=True, torchscript=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='bf16', trust_remote_code=True, torch_dtype=torch.bfloat16,
-                                                     use_cache=True, torchscript=True).eval()
+                                                     use_cache=True, torchscript=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='bf16', trust_remote_code=True, torch_dtype=torch.bfloat16,
-                                                     use_cache=True, torchscript=True).eval()
+                                                     use_cache=True, torchscript=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    if not hasattr(model.config, "token_latency"):
+        model.config.token_latency = True
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
@@ -1168,16 +1170,18 @@ def run_bigdl_ipex_int4(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit='sym_int4', trust_remote_code=True, torch_dtype='auto',
-                                          use_cache=True, torchscript=True).eval()
+                                          use_cache=True, torchscript=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='sym_int4', trust_remote_code=True, torch_dtype='auto',
-                                                     use_cache=True, torchscript=True).eval()
+                                                     use_cache=True, torchscript=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='sym_int4', trust_remote_code=True, torch_dtype='auto',
-                                                     use_cache=True, torchscript=True).eval()
+                                                     use_cache=True, torchscript=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    if not hasattr(model.config, "token_latency"):
+        model.config.token_latency = True
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
