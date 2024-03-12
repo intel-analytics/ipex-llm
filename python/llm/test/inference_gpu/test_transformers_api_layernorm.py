@@ -16,6 +16,7 @@
  
 import os
 import pytest
+import gc
  
 import torch
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
@@ -96,7 +97,10 @@ class Test_Optimize_Gpu_Model:
  
             max_diff_tensor = [torch.max(item).item() for item in LayerNorm_output_diff]
             print(max_diff_tensor)
-           
+            torch.xpu.empty_cache()
+            del model
+            del opt_model
+            gc.collect()
             assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
    
     @pytest.mark.parametrize('Name, Model, Tokenizer, model_path',TEST_MODEL_LIST)
