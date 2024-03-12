@@ -72,6 +72,19 @@ def should_use_fuse_rope(self, query_states):
     return use_fuse_rope
 
 
+def is_enough_kv_cache_room(layer_past, kv_seq_len=1):
+    # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
+    # seq_len for current seq len
+    # For llama like kv cache, i.e., [bs, n_head, seq_len, head_dim]
+    if layer_past is None:
+        return False
+    else:
+        cache_k, cache_v = layer_past[0], layer_past[1]
+        cache_k = cache_k.transpose(1, 2)
+        cache_v = cache_v.transpose(1, 2)
+        return cache_k.stride(1) < (kv_seq_len + 1) * cache_k.size(3)
+
+
 def qwen_attention_forward(
         self,
         hidden_states: Optional[Tuple[torch.FloatTensor]],
@@ -130,6 +143,18 @@ def qwen_attention_forward_original(
         kv_seq_len = cache_k.shape[-2]
         position_ids = self.position_ids[kv_seq_len].to(device)
         base = self.rope_base
+        if is_enough_kv_cache_room(layer_past, kv_seq_len):
+            new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                       self.num_heads,
+                                                       self.head_dim,
+                                                       cache_k.size(2),
+                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                       dtype=cache_k.dtype,
+                                                       device=hidden_states.device)
+            new_cache_k[:] = cache_k
+            new_cache_v[:] = cache_v
+            cache_k = new_cache_k
+            cache_v = new_cache_v
 
         args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
                 self.v_proj.weight.data, self.q_proj.bias.data, self.k_proj.bias.data,
