@@ -124,7 +124,7 @@ def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = linear_q4_0.rms_norm(self.weight, x_2d, self.eps)
+        output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
         if 1 < x_2d.size(0) < 64:   # may use XMX, need copy
             output = output.clone()
         return output.reshape(hidden_states.shape)
