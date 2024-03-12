@@ -17,7 +17,7 @@ if [ "${numa_nodes}" -eq 4 ]; then
     numactl -C 0-$last_cpu_index -p 2 python $(dirname "$0")/run.py
 elif [ "${numa_nodes}" -eq 2 ]; then
     #SPR or hbm only or hbm cache Quad-mode, Confirm that there are 2 DRAM memory nodes through "nuamctl -H"
-    echo "SPR Quad mode"
+    echo "Warning: SPR Quad mode, hbm usage is default off, please check if HBM can be on."
     export OMP_NUM_THREADS=$((${cores_per_numa} / 2))
     echo "OMP_NUM_THREADS: $((${cores_per_numa} / 2))"
     last_cpu_index=$(($OMP_NUM_THREADS - 1))
@@ -30,5 +30,5 @@ elif [ "${numa_nodes}" -eq 1 ]; then
     last_cpu_index=$(($OMP_NUM_THREADS - 1))
     numactl -C 0-$last_cpu_index -p 0 python $(dirname "$0")/run.py
 else
-    Error "Please double check the memory nodes"
+    echo "Warning: The number of nodes in this machine is ${numa_nodes}. You may try run-spr.sh."
 fi
