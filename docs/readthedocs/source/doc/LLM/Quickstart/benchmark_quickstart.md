@@ -29,7 +29,6 @@ repo_id:
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
-num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
 in_out_pairs:
@@ -79,6 +78,7 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
    .. tab:: Other Intel dGPU Series
 
       .. code-block:: bash
+
          # e.g. Arc™ A770
          python run.py
 
@@ -98,13 +98,11 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
 
    .. tab:: Intel Data Center GPU Max
 
-      For Intel Data Center GPU Max Series, we recommend:
+      Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` before running the benchmark script on Intel Data Center GPU Max Series.
 
       .. code-block:: bash
 
          ./run-max-gpu.sh
-
-      Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` to install essential dependencies for Intel Data Center GPU Max.
 
 ```
 
