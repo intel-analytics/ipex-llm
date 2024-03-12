@@ -18,6 +18,8 @@ test_api:
   - "optimize_model"
   - "pytorch_autocast_bf16"
   # - "transformer_autocast_bf16"
+  # - "bigdl_ipex_bf16"
+  # - "bigdl_ipex_int4"
   # - "ipex_fp16_gpu" # on Intel GPU
   # - "bigdl_fp16_gpu" # on Intel GPU
   # - "transformer_int4_gpu"  # on Intel GPU
