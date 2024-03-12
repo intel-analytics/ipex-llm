@@ -1,6 +1,6 @@
-# Finetuning with BigDL-LLM through patch function
+# Finetuning on Intel GPU using Hugging Face PEFT code
 
-This example demonstrates how to easily run LLM finetuning application of PEFT use BigDL-LLM 4bit optimizations using [Intel GPUs](../../../README.md). By applying BigDL-LLM patch, you could run CUDA code on Intel GPUs using BigDL-LLM optimization without changing any other code.
+This example demonstrates how to easily run LLM finetuning application of PEFT use BigDL-LLM 4bit optimizations using [Intel GPUs](../../../README.md). By applying BigDL-LLM patch, you could run Hugging Face PEFT code on Intel GPUs using BigDL-LLM optimization without modification.
 
 Note, this example is just used for illustrating related usage and don't guarantee convergence of training.
 
@@ -28,8 +28,10 @@ source /opt/intel/oneapi/setvars.sh
 
 ### 3. Finetune
 
-This example shows how to apply bigdl-llm patch on [bnb-4bit-training](https://colab.research.google.com/drive/1VoYNfYDKcKRQRor98Zbf2-9VQTtGJ24k?usp=sharing).
+This example shows how to run [Alpaca LoRA Training](https://github.com/tloen/alpaca-lora/tree/main) directly on Intel GPU.
 
 ```
-python ./finetune.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
+cd alpaca-lora
+python ./finetune.py --base_model "meta-llama/Llama-2-7b-hf" \
+                     --data_path "yahma/alpaca-cleaned"
 ```
