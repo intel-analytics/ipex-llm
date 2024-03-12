@@ -1,0 +1,15 @@
+# TODO: move this to a different repo
+repo_id:
+  # - 'THUDM/chatglm-6b'
+  # - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+  - 'baichuan-inc/Baichuan2-7B-Chat'
+  - 'Qwen/Qwen-7B-Chat'
+  # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
+local_model_hub: 'path to your local model hub'
+low_bit:
+  - 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+  - 'bf16'
+device:
+  - 'cpu'
+  # - 'xpu'

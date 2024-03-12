@@ -590,6 +590,14 @@ def _optimize_pre(model):
     return model
 
 
+def get_enable_ipex(low_bit):
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    qtype = ggml_tensor_qtype[low_bit]
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    return _enable_ipex
+
+
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None, cpu_embedding=False,
@@ -1071,7 +1079,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralBLockSparseTop2MLP,
                         mixtral_mlp_forward)
-    elif model.config.model_type == "phi-msft":
+    elif model.config.model_type == "phi-msft" and \
+            hasattr(model.config, "num_local_experts"):
+        # For phixtral, limit the condition to avoid applying on phi-2 hosted by ModelScope
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.phixtral import phixtral_moeblock_forward, \

@@ -1,0 +1,207 @@
+name: LLM Whisper Models Evaluation
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm-whisper-evaluation.yml"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'Model names, separated by comma and must be quoted.'
+        required: true
+        type: string
+      precision:
+        description: 'Precisions, separated by comma and must be quoted.'
+        required: true
+        type: string
+      task:
+        description: 'Tasks, separated by comma and must be quoted.'
+        required: true
+        type: string
+      runs-on:
+        description: 'Labels to filter the runners, separated by comma and must be quoted.'
+        default: "accuracy"
+        required: false
+        type: string
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-cpp-build: # please uncomment it for PR tests
+    uses: ./.github/workflows/llm-binary-build.yml
+
+  # Set the testing matrix based on the event (schedule, PR, or manual dispatch)
+  set-matrix:
+    runs-on: ubuntu-latest
+
+    outputs:
+      model_name: ${{ steps.set-matrix.outputs.model_name }}
+      precision: ${{ steps.set-matrix.outputs.precision }}
+      task: ${{ steps.set-matrix.outputs.task }}
+      runner: ${{ steps.set-matrix.outputs.runner }}
+
+    steps:
+      - name: set-env
+        env:
+          MATRIX_MODEL_NAME: '["whisper-tiny", "whisper-small", "whisper-medium", "whisper-base"]'
+          MATRIX_TASK: '["librispeech"]'
+          MATRIX_PRECISION: '["sym_int4", "fp8_e5m2"]'
+          LABELS: '["self-hosted", "llm", "perf"]'
+        run: |
+            echo "model_name=$MATRIX_MODEL_NAME" >> $GITHUB_ENV
+            echo "task=$MATRIX_TASK" >> $GITHUB_ENV
+            echo "precision=$MATRIX_PRECISION" >> $GITHUB_ENV
+            echo "runner=$LABELS" >> $GITHUB_ENV
+
+      - name: set-matrix
+        id: set-matrix
+        run: |
+            echo "model_name=$model_name" >> $GITHUB_OUTPUT
+            echo "task=$task" >> $GITHUB_OUTPUT
+            echo "precision=$precision" >> $GITHUB_OUTPUT
+            echo "runner=$runner" >> $GITHUB_OUTPUT
+
+  llm-whisper-evaluation:
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-whisper-evaluation' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    needs: [llm-cpp-build, set-matrix] # please uncomment it for PR tests
+    # needs: [set-matrix] # please comment it for PR tests
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
+        task: ${{ fromJson(needs.set-matrix.outputs.task) }}
+        precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
+        device: [xpu]
+    runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
+    env:
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      ORIGIN_DIR: /mnt/disk1/models
+
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade pandas
+          python -m pip install --upgrade datasets
+          python -m pip install --upgrade evaluate
+          python -m pip install --upgrade soundfile
+          python -m pip install --upgrade librosa
+          python -m pip install --upgrade jiwer
+
+      # please uncomment it and comment the "Install BigDL-LLM from Pypi" part for PR tests
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu_2.1"
+
+      # - name: Install BigDL-LLM from Pypi
+      #   shell: bash
+      #   run: |
+      #     pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+
+      # - name: Test installed xpu version
+      #   shell: bash
+      #   run: |
+      #     source /opt/intel/oneapi/setvars.sh
+      #     bash python/llm/test/run-llm-install-tests.sh
+
+      - name: Run whisper evaluation
+        shell: bash
+        run: |
+
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+
+          echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
+          MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
+          export LIBRISPEECH_DATASET_PATH=/mnt/disk1/datasets/librispeech
+
+          cd python/llm/dev/benchmark/whisper
+          python run_whisper.py --model_path ${MODEL_PATH} --data_type other --device xpu --load_in_low_bit ${{ matrix.precision }} --save_result
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: whisper_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/whisper/results/**
+
+  llm-whisper-summary:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [set-matrix, llm-whisper-evaluation]
+    runs-on: ["self-hosted", "llm", "perf"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Set output path
+        shell: bash
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          OUTPUT_PATH="results_$DATE"
+          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
+          NIGHTLY_FOLDER="/mnt/disk1/whisper_nightly_gpu"
+          echo "NIGHTLY_FOLDER=$NIGHTLY_FOLDER" >> $GITHUB_ENV
+          PR_FOLDER="/mnt/disk1/whisper_pr_gpu"
+          echo "PR_FOLDER=$PR_FOLDER" >> $GITHUB_ENV
+
+      - name: Download all results for nightly run
+        if: github.event_name == 'schedule'
+        uses: actions/download-artifact@v3
+        with:
+          name: whisper_results
+          path: ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
+
+      - name: Download all results for pr run
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v3
+        with:
+          name: whisper_results
+          path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}
+
+      - name: Summarize the results for nightly run
+        if: github.event_name == 'schedule'
+        shell: bash
+        run: |
+          cp -r /mnt/disk1/datasets/whisper_fp16_results/* /mnt/disk1/whisper_nightly_gpu/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_concat_csv.py -i ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }} -o ${{ env.NIGHTLY_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.NIGHTLY_FOLDER}}
+
+      - name: Summarize the results for pull request
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          cp -r /mnt/disk1/datasets/whisper_fp16_results/* /mnt/disk1/whisper_pr_gpu/${{ env.OUTPUT_PATH }}
+          pip install pandas==1.5.3
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_concat_csv.py -i ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }} -o ${{ env.PR_FOLDER}}
+          python ${{ github.workspace }}/python/llm/dev/benchmark/whisper/whisper_csv_to_html.py -f ${{ env.PR_FOLDER}}

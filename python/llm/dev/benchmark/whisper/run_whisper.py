@@ -21,12 +21,20 @@ import torch
 from evaluate import load
 import time
 import argparse
+import pandas as pd
+import os
+import csv
+from datetime import date
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
  
 def get_args():
     parser = argparse.ArgumentParser(description="Evaluate Whisper performance and accuracy")
     parser.add_argument('--model_path', required=True, help='pretrained model path')
     parser.add_argument('--data_type', required=True, help='clean, other')
     parser.add_argument('--device', required=False, help='cpu, xpu')
+    parser.add_argument('--load_in_low_bit', default='sym_int4', help='Specify whether to load data in low bit format (e.g., 4-bit)')
+    parser.add_argument('--save_result', action='store_true', help='Save the results to a CSV file')
  
     args = parser.parse_args()
     return args
@@ -40,7 +48,7 @@ if __name__ == '__main__':
     processor = WhisperProcessor.from_pretrained(args.model_path)
     forced_decoder_ids = processor.get_decoder_prompt_ids(language='en', task='transcribe')
    
-    model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path, load_in_low_bit="sym_int4", optimize_model=True).eval().to(args.device)
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(args.model_path, load_in_low_bit=args.load_in_low_bit, optimize_model=True).eval().to(args.device)
     model.config.forced_decoder_ids = None
    
     def map_to_pred(batch):
@@ -67,6 +75,24 @@ if __name__ == '__main__':
     wer = load("./wer")
     speech_length = sum(result["length"][1:])
     prc_time = sum(result["time"][1:])
-    print("Realtime Factor(RTF) is : %.4f" % (prc_time/speech_length))
-    print("Realtime X(RTX) is : %.2f" % (speech_length/prc_time))
-    print(f'WER is {100 * wer.compute(references=result["reference"], predictions=result["prediction"])}')
+
+    MODEL = args.model_path.split('/')[-2]
+    RTF = prc_time/speech_length
+    RTX = speech_length/prc_time
+    WER = 100 * wer.compute(references=result["reference"], predictions=result["prediction"])
+
+    today = date.today()
+    if args.save_result:
+        csv_name = f'{current_dir}/results/{MODEL}-{args.data_type}-{args.device}-{args.load_in_low_bit}-{today}.csv'
+        os.makedirs(os.path.dirname(csv_name), exist_ok=True)
+        with open(csv_name, mode='a', newline='') as file:
+            csv_writer = csv.writer(file)
+            file.seek(0, os.SEEK_END)
+            if file.tell() == 0:
+                csv_writer.writerow(["models","precision","WER","RTF"])
+            csv_writer.writerow([MODEL, args.load_in_low_bit, WER, RTF])
+        print(f'Results saved to {csv_name}')
+
+    print("Realtime Factor(RTF) is : %.4f" % RTF)
+    print("Realtime X(RTX) is : %.2f" % RTX)
+    print(f'WER is {WER}')
