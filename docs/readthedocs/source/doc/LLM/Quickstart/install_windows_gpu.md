@@ -176,7 +176,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   ```
 * Step 4: Install additional package required for Qwen-1.8B-Chat to conduct:
    ```cmd
-   pip install tiktoken transformers_stream_generator
+   pip install tiktoken transformers_stream_generator einops
    ```
 * Step 5: Create code file. BigDL-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
   ```eval_rst
