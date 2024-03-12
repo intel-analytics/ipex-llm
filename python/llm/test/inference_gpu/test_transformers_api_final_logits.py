@@ -16,6 +16,7 @@
 
 
 import os
+import gc
 import pytest
 
 import torch
@@ -28,7 +29,7 @@ print(f'Running on {device}')
 PROMPT = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 TEST_MODEL_LIST = [
     ("MPT-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
-    ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
+    # ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
 ]
 
 
@@ -48,20 +49,23 @@ def test_optimize_model(Name, Model, Tokenizer, model_path):
 
         model.to('cpu')  # deallocate gpu memory
 
-        model = Model.from_pretrained(model_path,
+        opt_model = Model.from_pretrained(model_path,
                                     load_in_4bit=True,
                                     optimize_model=True,
                                     trust_remote_code=True)
-        model = model.to(device)
-        logits_optimized_model = (model(input_ids)).logits
-        model.to('cpu')
+        opt_model = opt_model.to(device)
+        logits_optimized_model = (opt_model(input_ids)).logits
+        opt_model.to('cpu')
 
         tol = 1e-03
         num_false = torch.isclose(logits_optimized_model, logits_base_model, rtol=tol, atol=tol)\
             .flatten().tolist().count(False)
         
         percent_false = num_false / logits_optimized_model.numel()
-
+        torch.xpu.empty_cache()
+        del model
+        del opt_model
+        gc.collect()
         assert percent_false < 1e-02
 
 

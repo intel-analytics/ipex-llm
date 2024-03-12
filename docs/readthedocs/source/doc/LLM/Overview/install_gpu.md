@@ -25,7 +25,7 @@ Intel® oneAPI Base Toolkit 2024.0 installation methods:
 ```eval_rst
 .. tabs::
    .. tab:: Offline installer
-      Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.htm?operatingsystem=window&distributions=offline>`_ version 2024.0 through Offline Installer. 
+      Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline>`_ version 2024.0 through Offline Installer.
       
       During installation, you could just continue with "Recommended Installation". If you would like to continue with "Custom Installation", please note that oneAPI Deep Neural Network Library, oneAPI Math Kernel Library, and oneAPI DPC++/C++ Compiler are required, the other components are optional.
 

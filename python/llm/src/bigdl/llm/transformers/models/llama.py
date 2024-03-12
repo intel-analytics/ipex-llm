@@ -53,6 +53,10 @@ from transformers.models.llama.modeling_llama import LlamaModel
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+try:
+    from transformers.cache_utils import Cache
+except ImportError:
+    Cache = Tuple[torch.Tensor]
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -934,11 +938,11 @@ def llama_attention_forward_4_36(
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    past_key_value: Optional[Cache] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
     if use_quantize_kv_cache(self.q_proj, hidden_states):
         forward_function = llama_attention_forward_4_36_quantized
     else:
@@ -960,11 +964,11 @@ def llama_attention_forward_4_36_quantized(
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    past_key_value: Optional[Cache] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -999,8 +1003,10 @@ def llama_attention_forward_4_36_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -1140,11 +1146,11 @@ def llama_attention_forward_4_36_original(
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    past_key_value: Optional[Cache] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "

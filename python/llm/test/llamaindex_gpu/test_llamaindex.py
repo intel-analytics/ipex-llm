@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import torch
 import pytest
 from unittest import TestCase
 import os
@@ -59,7 +60,7 @@ class Test_LlamaIndex_Transformers_API(TestCase):
             generate_kwargs={"temperature": 0.7, "do_sample": False},
             messages_to_prompt=self.messages_to_prompt,
             completion_to_prompt=self.completion_to_prompt,
-            device_map="cpu",
+            device_map="xpu",
         )
         res = llm.complete("What is AI?")
         assert res!=None

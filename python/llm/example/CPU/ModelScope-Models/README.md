@@ -14,7 +14,8 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install --pre --upgrade bigdl-llm[all] # install bigdl-llm with 'all' option
-pip install modelscope
+# Refer to https://github.com/modelscope/modelscope/issues/765, please make sure you are using 1.11.0 version
+pip install modelscope==1.11.0
 ```
 
 ### 2. Run

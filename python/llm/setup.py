@@ -53,7 +53,7 @@ CONVERT_DEP = ['numpy >= 1.22', 'torch',
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
-SERVING_DEP = ['fschat[model_worker, webui] == 0.2.28', 'protobuf']
+SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",

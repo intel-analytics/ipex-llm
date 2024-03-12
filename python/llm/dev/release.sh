@@ -71,7 +71,15 @@ if [ -d "${BIGDL_DIR}/python/llm/build" ]; then
 fi
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl"
-    echo "Please manually upload with this command: $upload_command"
-    $upload_command
+    # upload to pypi
+    upload_to_pypi_command="twine upload dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl"
+    echo "Please manually upload with this command: $upload_to_pypi_command"
+    $upload_to_pypi_command
+
+    # upload to sourceforge
+    rsync -avzr -e \
+    "sshpass -p '${SOURCEFORGE_PW}' ssh -o StrictHostKeyChecking=no" \
+    ./dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl \
+    intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/bigdl-llm-whl/bigdl-llm/${bigdl_version}/
+
 fi

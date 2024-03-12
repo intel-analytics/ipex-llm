@@ -580,7 +580,22 @@ def _optimize_pre(model):
                 del module.q_proj
                 del module.k_proj
         model.apply(merge_qk_proj_func)
+    # for bge-large
+    if model.config.model_type == 'bert' and (
+        not model.config.is_decoder and
+        model.config.position_embedding_type == "absolute"
+    ):
+        from bigdl.llm.transformers.models.bert import merge_qkv
+        model.apply(merge_qkv)
     return model
+
+
+def get_enable_ipex(low_bit):
+    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
+    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    qtype = ggml_tensor_qtype[low_bit]
+    _enable_ipex = _enable_ipex and (qtype == ggml_tensor_qtype["bf16"])
+    return _enable_ipex
 
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
@@ -1070,7 +1085,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MixtralBLockSparseTop2MLP,
                         mixtral_mlp_forward)
-    elif model.config.model_type == "phi-msft":
+    elif model.config.model_type == "phi-msft" and \
+            hasattr(model.config, "num_local_experts"):
+        # For phixtral, limit the condition to avoid applying on phi-2 hosted by ModelScope
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.phixtral import phixtral_moeblock_forward, \
@@ -1098,9 +1115,14 @@ def _optimize_post(model, lightweight_bmm=False):
                 modeling_module_name = model.__class__.__module__
                 module = importlib.import_module(modeling_module_name)
                 from bigdl.llm.transformers.models.mistral import mistral_attention_forward_4_36
+                from bigdl.llm.transformers.models.mistral import mistral_model_forward_4_36
                 convert_forward(model,
                                 module.MistralAttention,
                                 mistral_attention_forward_4_36
+                                )
+                convert_forward(model,
+                                module.MistralModel,
+                                mistral_model_forward_4_36
                                 )
                 convert_forward(model,
                                 module.MistralRMSNorm,
@@ -1229,4 +1251,19 @@ def _optimize_post(model, lightweight_bmm=False):
         #                 module.YuanMLP,
         #                 yuan_mlp_forward
         #                 )
+    elif model.config.model_type == 'bert' and (
+        not model.config.is_decoder and
+        model.config.position_embedding_type == "absolute"
+    ):
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from bigdl.llm.transformers.models.bert import self_attention_forward
+        from bigdl.llm.transformers.models.bert import encoder_forward
+        convert_forward(model,
+                        module.BertSelfAttention,
+                        self_attention_forward)
+        convert_forward(model,
+                        module.BertEncoder,
+                        encoder_forward)
+
     return model
