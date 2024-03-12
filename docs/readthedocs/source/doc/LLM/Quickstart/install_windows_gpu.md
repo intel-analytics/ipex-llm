@@ -86,7 +86,7 @@ Choose either US or CN website for `extra-index-url`:
   If you encounter network issues while installing IPEX, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel>`_ for troubleshooting advice.
 ```
 
-You can verfy if bigdl-llm is successfully by simply running a few lines of code:
+You can verify if bigdl-llm is successfully by simply running a few lines of code:
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
    ```cmd
@@ -118,8 +118,8 @@ You can verfy if bigdl-llm is successfully by simply running a few lines of code
 
     For more details about BigDL-LLM runtime configurations of other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
   ```
-* Step 4: Launch the Python interactive shell by typing `python` in the terminal window and then press Enter.
-* Step 5: Copy following code to terminal **line by line** and press Enter **after copying each line**.
+* Step 4: Launch the Python interactive shell by typing `python` in the Anaconda prompt window and then press Enter.
+* Step 5: Copy following code to Anaconda prompt **line by line** and press Enter **after copying each line**.
   ```python
   import torch 
   from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM    
@@ -296,7 +296,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
                output_str = tokenizer.decode(output[0], skip_special_tokens=True)
                print(output_str)
       
-      
+
         .. note::
 
            Please note that the repo id on ModelScope may be difference from Hugging Face for some models.
