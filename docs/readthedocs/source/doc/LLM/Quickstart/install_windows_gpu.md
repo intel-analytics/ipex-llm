@@ -20,7 +20,7 @@ Download and Install Visual Studio 2022 Community Edition from the [official Mic
 ```eval_rst
 .. note::
 
-   If the oneAPI installation hangs at the final step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
+   If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
 ```
 
 ## Install GPU Driver
@@ -116,7 +116,7 @@ You can verfy if bigdl-llm is successfully by simply running a few lines of code
   ```eval_rst
   .. seealso::
 
-    For more details about Intel dGPU series runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
+    For more details about BigDL-LLM runtime configurations of other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
   ```
 * Step 4: Launch the Python interactive shell by typing `python` in the terminal window and then press Enter.
 * Step 5: Copy following code to terminal **line by line** and press Enter **after copying each line**.
@@ -182,7 +182,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   ```eval_rst
   .. tabs::
      .. tab:: Hugging Face
-        Create a new file named ``demo.py`` and insert the code snippet below.
+        Create a new file named ``demo.py`` and insert the code snippet below to run `Qwen-1.8B-Chat <https://huggingface.co/Qwen/Qwen-1_8B-Chat>`_ model with BigDL-LLM optimizations.
   
         .. code-block:: python
   
@@ -190,19 +190,24 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
            import torch
            from bigdl.llm.transformers import AutoModelForCausalLM
            from transformers import AutoTokenizer, GenerationConfig
-           generation_config = GenerationConfig(use_cache = True)
+           generation_config = GenerationConfig(use_cache=True)
            
            print('Now start loading Tokenizer and optimizing Model...')
-           tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat", trust_remote_code=True)
-           # load Model using bigdl-llm and load it to GPU
-           model = AutoModelForCausalLM.from_pretrained(
-               "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
+           tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat",
+                                                      trust_remote_code=True)
+
+           # Load Model using bigdl-llm and load it to GPU
+           model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-1_8B-Chat",
+                                                        load_in_4bit=True,
+                                                        cpu_embedding=True,
+                                                        trust_remote_code=True)
            model = model.to('xpu')
            print('Successfully loaded Tokenizer and optimized Model!')
         
            # Format the prompt
            question = "What is AI?"
            prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
+
            # Generate predicted tokens
            with torch.inference_mode():
                input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
@@ -215,11 +220,17 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
         
                # To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks.
                # If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
-               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config) # warm-up
+               output = model.generate(input_ids,
+                                       do_sample=False,
+                                       max_new_tokens=32,
+                                       generation_config=generation_config) # warm-up
         
                print('Successfully finished warm-up, now start generation...')
         
-               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
+               output = model.generate(input_ids,
+                                       do_sample=False,
+                                       max_new_tokens=32,
+                                       generation_config=generation_config).cpu()
                output_str = tokenizer.decode(output[0], skip_special_tokens=True)
                print(output_str)
      
@@ -231,7 +242,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
            pip install modelscope==1.11.0
 
-        Create a new file named ``demo.py`` and insert the code snippet below.
+        Create a new file named ``demo.py`` and insert the code snippet below to run `Qwen-1.8B-Chat <https://www.modelscope.cn/models/qwen/Qwen-1_8B-Chat/summary>`_ model with BigDL-LLM optimizations.
 
         .. code-block:: python
 
@@ -240,20 +251,25 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
            from bigdl.llm.transformers import AutoModelForCausalLM
            from transformers import GenerationConfig
            from modelscope import AutoTokenizer
-           generation_config = GenerationConfig(use_cache = True)
+           generation_config = GenerationConfig(use_cache=True)
            
            print('Now start loading Tokenizer and optimizing Model...')
-           tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat", trust_remote_code=True)
-           # load Model using bigdl-llm and load it to GPU
-           # please note that the repo id on ModelScope may be difference from Hugging Face for some models
-           model = AutoModelForCausalLM.from_pretrained(
-               "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True, model_hub='modelscope')
+           tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat",
+                                                      trust_remote_code=True)
+
+           # Load Model using bigdl-llm and load it to GPU
+           model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-1_8B-Chat",
+                                                        load_in_4bit=True,
+                                                        cpu_embedding=True,
+                                                        trust_remote_code=True,
+                                                        model_hub='modelscope')
            model = model.to('xpu')
            print('Successfully loaded Tokenizer and optimized Model!')
         
            # Format the prompt
            question = "What is AI?"
            prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
+
            # Generate predicted tokens
            with torch.inference_mode():
                input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
@@ -266,13 +282,23 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
         
                # To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks.
                # If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
-               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config) # warm-up
+               output = model.generate(input_ids,
+                                       do_sample=False,
+                                       max_new_tokens=32,
+                                       generation_config=generation_config) # warm-up
         
                print('Successfully finished warm-up, now start generation...')
         
-               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
+               output = model.generate(input_ids,
+                                       do_sample=False,
+                                       max_new_tokens=32,
+                                       generation_config=generation_config).cpu()
                output_str = tokenizer.decode(output[0], skip_special_tokens=True)
                print(output_str)
+      
+      .. note::
+
+         Please note that the repo id on ModelScope may be difference from Hugging Face for some models.
   ```
 
   ```eval_rst
