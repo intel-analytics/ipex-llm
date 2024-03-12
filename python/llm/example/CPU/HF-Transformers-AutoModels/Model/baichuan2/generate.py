@@ -22,9 +22,8 @@ import numpy as np
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# prompt format referred from https://github.com/baichuan-inc/Baichuan2/issues/227 
-# and https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat/blob/main/generation_utils.py#L7-L49
-BAICHUAN_PROMPT_FORMAT = "<reserved_106> {prompt} <reserved_107>"
+# you could tune the prompt based on your own model,
+BAICHUAN_PROMPT_FORMAT = "<human>{prompt} <bot>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan model')
