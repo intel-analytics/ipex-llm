@@ -8,7 +8,7 @@ To run this example with BigDL-LLM on Intel GPUs, we have some recommended requi
 
 ## Example: Finetune llama2-7b using qlora
 
-The `export_merged_model.py` is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/export_hf_checkpoint.py).
+This example utilizes a subset of [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) for training. And the `export_merged_model.py` is ported from [alpaca-lora](https://github.com/tloen/alpaca-lora/blob/main/export_hf_checkpoint.py).
 
 ### 1. Install
 
