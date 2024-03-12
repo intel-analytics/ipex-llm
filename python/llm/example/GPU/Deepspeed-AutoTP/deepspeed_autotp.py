@@ -55,9 +55,12 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low-bit', type=str, default='sym_int4',
+                        help='The quantization type the model will convert to.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    low_bit = args.low_bit
 
     # First use CPU as accelerator
     # Convert to deepspeed model and apply bigdl-llm optimization on CPU to decrease GPU memory usage
@@ -79,7 +82,7 @@ if __name__ == '__main__':
 
     # Use bigdl-llm `optimize_model` to convert the model into optimized low bit format
     # Convert the rest of the model into float16 to reduce allreduce traffic
-    model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4').to(torch.float16)
+    model = optimize_model(model.module.to(f'cpu'), low_bit=low_bit).to(torch.float16)
 
     # Next, use XPU as accelerator to speed up inference
     current_accel = XPU_Accelerator()

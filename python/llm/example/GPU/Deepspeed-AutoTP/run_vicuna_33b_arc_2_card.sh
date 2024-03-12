@@ -30,4 +30,4 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
 
 mpirun -np $NUM_GPUS --prepend-rank \
-    python deepspeed_autotp.py --repo-id-or-model-path 'lmsys/vicuna-33b-v1.3'
+    python deepspeed_autotp.py --repo-id-or-model-path 'lmsys/vicuna-33b-v1.3' --low-bit 'sym_int4'
