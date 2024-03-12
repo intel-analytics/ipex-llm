@@ -113,7 +113,6 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          echo "${{ needs.set-matrix.outputs.date }}"
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
@@ -185,11 +184,6 @@ jobs:
   llm-ceval-summary:
     if: ${{ always() }}
     needs: [set-matrix, llm-c-evaluation]
-    strategy:
-      fail-fast: false
-      matrix:
-        date: ${{ fromJson(needs.set-matrix.outputs.date) }}
-      
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -217,20 +211,16 @@ jobs:
           python ${{ github.workspace }}/python/llm/dev/benchmark/ceval/organize_results.py results/ results/
 
       - name: Set artifact file path
-        run: echo "ARTIFACT_PATH=results/results_${{ matrix.date }}.csv" >> $GITHUB_ENV
+        run: echo "ARTIFACT_PATH=results/results_${{ needs.set-matrix.outputs.date }}.csv" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v3
         with:
-          name: results_${{ matrix.date }}
+          name: results_${{ needs.set-matrix.outputs.date }}
           path: ${{ env.ARTIFACT_PATH }}
 
   llm-ceval-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
     needs: [set-matrix, llm-c-evaluation, llm-ceval-summary]
-    strategy:
-      fail-fast: false
-      matrix:
-        date: ${{ fromJson(needs.set-matrix.outputs.date) }}
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -265,9 +255,9 @@ jobs:
       - name: Download ceval results
         uses: actions/download-artifact@v3
         with:
-          name: results_${{ matrix.date }}
+          name: results_${{ needs.set-matrix.outputs.date }}
           path:  ${{ env.ACC_FOLDER }}
-          rename: results_${{ matrix.date }}.csv
+          rename: results_${{ needs.set-matrix.outputs.date }}.csv
 
       - name: Update HTML
         working-directory: ${{ github.workspace }}/python/llm/test/benchmark/ceval/
