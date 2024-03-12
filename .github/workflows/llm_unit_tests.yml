@@ -364,7 +364,7 @@ jobs:
           pip install -U langchain==0.0.184
           pip install -U chromadb==0.3.25
           pip install -U pandas==2.0.3
-          pip install -qU langchain langchain-community
+          pip install -U langchain-community==0.027
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
