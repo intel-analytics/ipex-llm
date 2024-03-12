@@ -49,6 +49,9 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float, low_bit: str =
             elif "mistral" in general_name:
                 from .models.mistral import load_gguf_mistral
                 model, tokenizer = load_gguf_mistral(loader, dtype)
+            elif "yuan" in general_name:
+                from .models.yuan2 import load_gguf_yuan
+                model, tokenizer = load_gguf_yuan(loader, dtype)
             else:
                 from .models.llama import load_gguf_llama
                 model, tokenizer = load_gguf_llama(loader, dtype)
@@ -61,13 +64,10 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float, low_bit: str =
         elif model_family == "falcon":
             from .models.falcon import load_gguf_falcon
             model, tokenizer = load_gguf_falcon(loader, dtype)
-        elif "yuan" in general_name:
-            from .models.yuan2 import load_gguf_yuan
-            model, tokenizer = load_gguf_yuan(loader, dtype)
         elif model_family == "mpt":
             from .models.mpt import load_gguf_mpt
             model, tokenizer = load_gguf_mpt(loader, dtype)
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
-        return model, tokenizer, low_bit
+        return model, tokenizer
