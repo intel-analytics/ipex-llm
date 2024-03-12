@@ -17,12 +17,6 @@ Download and Install Visual Studio 2022 Community Edition from the [official Mic
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
 
-```eval_rst
-.. note::
-
-   If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
-```
-
 ## Install GPU Driver
 
 Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
@@ -50,6 +44,12 @@ Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/c
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=100%; />
 
+```eval_rst
+.. tip::
+
+   If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
+```
+
 ## Setup Python Environment
 
 Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
@@ -71,14 +71,21 @@ conda activate llm
 
 With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU:
 Choose either US or CN website for `extra-index-url`:
-* US: 
-   ```cmd
-   pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-   ```
-* CN:
-   ```cmd
-   pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-   ```
+
+```eval_rst
+.. tabs::
+   .. tab:: US
+
+      .. code-block:: cmd
+
+         pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+   .. tab:: CN
+
+      .. code-block:: cmd
+
+         pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+```
 
 ```eval_rst
 .. note::
@@ -86,12 +93,13 @@ Choose either US or CN website for `extra-index-url`:
   If you encounter network issues while installing IPEX, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel>`_ for troubleshooting advice.
 ```
 
-You can verify if bigdl-llm is successfully by simply running a few lines of code:
+## Verify Installation
+You can verify if `bigdl-llm` is successfully installed by simply running a few lines of code:
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
-   ```cmd
-   conda activate llm
-   ```
+  ```cmd
+  conda activate llm
+  ```
 * Step 2: Configure oneAPI variables by running the following command:
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -116,9 +124,10 @@ You can verify if bigdl-llm is successfully by simply running a few lines of cod
   ```eval_rst
   .. seealso::
 
-    For more details about BigDL-LLM runtime configurations of other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
+     For other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
   ```
 * Step 4: Launch the Python interactive shell by typing `python` in the Anaconda prompt window and then press Enter.
+
 * Step 5: Copy following code to Anaconda prompt **line by line** and press Enter **after copying each line**.
   ```python
   import torch 
@@ -135,7 +144,7 @@ You can verify if bigdl-llm is successfully by simply running a few lines of cod
   ```eval_rst
   .. seealso::
 
-    If you encountered any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
+    If you encounter any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
   ```
 * To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
@@ -172,7 +181,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   ```eval_rst
   .. seealso::
 
-    For more details about Intel dGPU series runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
+     For other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
   ```
 * Step 4: Install additional package required for Qwen-1.8B-Chat to conduct:
    ```cmd
@@ -297,7 +306,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
                print(output_str)
       
 
-        .. note::
+        .. tip::
 
            Please note that the repo id on ModelScope may be difference from Hugging Face for some models.
 
