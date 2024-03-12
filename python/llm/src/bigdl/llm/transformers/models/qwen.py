@@ -141,7 +141,8 @@ def qwen_attention_forward_original(
         cache_v = cache_v.transpose(1, 2)
 
         kv_seq_len = cache_k.shape[-2]
-        position_ids = self.position_ids[kv_seq_len].to(device)
+        self.position_ids = self.position_ids.to(device)
+        position_ids = self.position_ids[kv_seq_len]
         base = self.rope_base
         if is_enough_kv_cache_room(layer_past, kv_seq_len):
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
