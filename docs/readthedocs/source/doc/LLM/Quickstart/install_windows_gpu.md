@@ -96,25 +96,41 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  * If you're running on iGPU, set additional environment variables by running the following commands:
-    ```cmd
-    set SYCL_CACHE_PERSISTENT=1
-    set BIGDL_LLM_XMX_DISABLED=1
-    ```
-  * If you're running on Intel Arc™ A770, there is no need to set further environment variables.
+* (Optional) Step 3:
+  Please also set the following environment variable according to your device:
+
+  ```eval_rst
+  .. tabs::
+     .. tab:: Intel iGPU
+  
+        .. code-block:: cmd
+  
+           set SYCL_CACHE_PERSISTENT=1
+           set BIGDL_LLM_XMX_DISABLED=1
+  
+     .. tab:: Intel Arc™ A300-Series or Pro A60
+  
+        .. code-block:: cmd
+  
+           set SYCL_CACHE_PERSISTENT=1
+  
+     .. tab:: Intel Arc™ A770 or Other Intel dGPU Series
+  
+        There is no need to set further environment variables.
+  ```
   
   ```eval_rst
   .. note::
   
     For more details about runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
+
+    If you encountered any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
   ```
-* Step 3: Launch the Python interactive shell by typing `python` in the terminal window and then press Enter.
-* Step 4: Copy following code to terminal **line by line** and press Enter **after copying each line**.
+* Step 4: Launch the Python interactive shell by typing `python` in the terminal window and then press Enter.
+* Step 5: Copy following code to terminal **line by line** and press Enter **after copying each line**.
   ```python
   import torch 
-  from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
-  import linear_q4_0 
-    
+  from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM    
   tensor_1 = torch.randn(1, 1, 40, 128).to('xpu') 
   tensor_2 = torch.randn(1, 1, 128, 40).to('xpu') 
   print(torch.matmul(tensor_1, tensor_2).size()) 
@@ -175,7 +191,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
    # Format the prompt
    question = "What is AI?"
-   prompt = "user:{prompt}\n\nassistant:".format(prompt=question)
+   prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
    # Generate predicted tokens
    with torch.inference_mode():
        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
