@@ -97,7 +97,7 @@ jobs:
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
-        date: [${{ needs.set-matrix.outputs.date }}]
+        date: 
         device: [xpu]
 
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
@@ -114,6 +114,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          echo "${{ needs.set-matrix.outputs.date }}"
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
