@@ -86,7 +86,7 @@ Choose either US or CN website for `extra-index-url`:
   If you encounter network issues while installing IPEX, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel>`_ for troubleshooting advice.
 ```
 
-You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. 
+You can verfy if bigdl-llm is successfully by simply running a few lines of code:
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
    ```cmd
@@ -108,13 +108,7 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
            set SYCL_CACHE_PERSISTENT=1
            set BIGDL_LLM_XMX_DISABLED=1
   
-     .. tab:: Intel Arc™ A300-Series or Pro A60
-  
-        .. code-block:: cmd
-  
-           set SYCL_CACHE_PERSISTENT=1
-  
-     .. tab:: Intel Arc™ A770 or Other Intel dGPU Series
+     .. tab:: Intel Arc™ A770
   
         There is no need to set further environment variables.
   ```
@@ -122,7 +116,7 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
   ```eval_rst
   .. seealso::
 
-    If you encountered any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
+    For more details about Intel dGPU series runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
   ```
 * Step 4: Launch the Python interactive shell by typing `python` in the terminal window and then press Enter.
 * Step 5: Copy following code to terminal **line by line** and press Enter **after copying each line**.
@@ -136,6 +130,12 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
   It will output following content at the end:
   ```
   torch.Size([1, 1, 40, 40])
+  ```
+
+  ```eval_rst
+  .. seealso::
+
+    If you encountered any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
   ```
 * To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
@@ -164,13 +164,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
            set SYCL_CACHE_PERSISTENT=1
            set BIGDL_LLM_XMX_DISABLED=1
   
-     .. tab:: Intel Arc™ A300-Series or Pro A60
-  
-        .. code-block:: cmd
-  
-           set SYCL_CACHE_PERSISTENT=1
-  
-     .. tab:: Intel Arc™ A770 or Other Intel dGPU Series
+     .. tab:: Intel Arc™ A770
   
         There is no need to set further environment variables.
   ```
@@ -178,54 +172,107 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   ```eval_rst
   .. seealso::
 
-    If you encountered any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
+    For more details about Intel dGPU series runtime configurations, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_
   ```
 * Step 4: Install additional package required for Qwen-1.8B-Chat to conduct:
    ```cmd
    pip install tiktoken transformers_stream_generator
    ```
-* Step 5: Create a new file named `demo.py` and insert the code snippet below.
-   ```python
-   # Copy/Paste the contents to a new file demo.py
-   import torch
-   from bigdl.llm.transformers import AutoModelForCausalLM
-   from transformers import AutoTokenizer, GenerationConfig
-   generation_config = GenerationConfig(use_cache = True)
-   
-   print('Now start loading Tokenizer and Model...')
-   tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat", trust_remote_code=True)
-   # load Model using bigdl-llm and load it to GPU
-   model = AutoModelForCausalLM.from_pretrained(
-       "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
-   model = model.to('xpu')
-   print('Successfully loaded Tokenizer and Model!')
-
-   print('--------------------------------------Note----------------------------------------')
-   print('| When running LLMs on iGPU or Intel Arc™ A300-Series or Pro A60 for first time, |')
-   print('| it may take several minutes for GPU kernels to compile and initialize.         |')
-   print('| Please be patient until it finishes warm-up...                                 |')
-   print('----------------------------------------------------------------------------------')
-
-   # Format the prompt
-   question = "What is AI?"
-   prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
-   # Generate predicted tokens
-   with torch.inference_mode():
-       input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-       
-       # To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks.
-       # If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
-       output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config) # warm-up
-
-       output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
-       output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-       print(output_str)
-   ```
+* Step 5: Create code file. BigDL-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
   ```eval_rst
-  .. note::
+  .. tabs::
+     .. tab:: Hugging Face
+        Create a new file named ``demo.py`` and insert the code snippet below.
   
-     ``from_pretrained`` will download model from Hugging Face by default; You may also set ``model_hub='modelscope'`` in ``from_pretrained`` to use ModelScope.
-     If you set ``model_hub='modelscope'`` in ``from_pretrained``, please first run ``pip install modelscope==1.11.0`` in Anaconda Prompt to install ModelScope.
+        .. code-block:: python
+  
+           # Copy/Paste the contents to a new file demo.py
+           import torch
+           from bigdl.llm.transformers import AutoModelForCausalLM
+           from transformers import AutoTokenizer, GenerationConfig
+           generation_config = GenerationConfig(use_cache = True)
+           
+           print('Now start loading Tokenizer and optimizing Model...')
+           tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat", trust_remote_code=True)
+           # load Model using bigdl-llm and load it to GPU
+           model = AutoModelForCausalLM.from_pretrained(
+               "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
+           model = model.to('xpu')
+           print('Successfully loaded Tokenizer and optimized Model!')
+        
+           # Format the prompt
+           question = "What is AI?"
+           prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
+           # Generate predicted tokens
+           with torch.inference_mode():
+               input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        
+               print('--------------------------------------Note-----------------------------------------')
+               print('| For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or |')
+               print('| Pro A60, it may take several minutes for GPU kernels to compile and initialize. |')
+               print('| Please be patient until it finishes warm-up...                                  |')
+               print('-----------------------------------------------------------------------------------')
+        
+               # To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks.
+               # If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
+               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config) # warm-up
+        
+               print('Successfully finished warm-up, now start generation...')
+        
+               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
+               output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+               print(output_str)
+     
+     .. tab:: ModelScope
+  
+        Please first run following command in Anaconda Prompt to install ModelScope:
+
+        .. code-block:: cmd
+
+           pip install modelscope==1.11.0
+
+        Create a new file named `demo.py` and insert the code snippet below.
+
+        .. code-block:: python
+
+           # Copy/Paste the contents to a new file demo.py
+           import torch
+           from bigdl.llm.transformers import AutoModelForCausalLM
+           from transformers import GenerationConfig
+           from modelscope import AutoTokenizer
+           generation_config = GenerationConfig(use_cache = True)
+           
+           print('Now start loading Tokenizer and optimizing Model...')
+           tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat", trust_remote_code=True)
+           # load Model using bigdl-llm and load it to GPU
+           # please note that the repo id on ModelScope may be difference from Hugging Face for some models
+           model = AutoModelForCausalLM.from_pretrained(
+               "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True, model_hub='modelscope)
+           model = model.to('xpu')
+           print('Successfully loaded Tokenizer and optimized Model!')
+        
+           # Format the prompt
+           question = "What is AI?"
+           prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
+           # Generate predicted tokens
+           with torch.inference_mode():
+               input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        
+               print('--------------------------------------Note-----------------------------------------')
+               print('| For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or |')
+               print('| Pro A60, it may take several minutes for GPU kernels to compile and initialize. |')
+               print('| Please be patient until it finishes warm-up...                                  |')
+               print('-----------------------------------------------------------------------------------')
+        
+               # To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks.
+               # If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
+               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config) # warm-up
+        
+               print('Successfully finished warm-up, now start generation...')
+        
+               output = model.generate(input_ids, do_sample=False, max_new_tokens=32, generation_config = generation_config).cpu()
+               output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+               print(output_str)
   ```
 
   ```eval_rst
@@ -248,3 +295,8 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
    Answer: Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception
    ```
+
+## Tips & Troubleshooting
+
+### Warm-up for optimial performance on first run
+When running LLMs on GPU for the first time, you might notice the performance is lower than expected, with delays up to several minutes before the first token is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU models. To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks. If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
