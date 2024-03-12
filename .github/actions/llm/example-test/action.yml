@@ -12,3 +12,6 @@ runs:
       
       run: |
         bash python/llm/dev/test/run-example-tests.sh
+        pip install -U langchain
+        bash python/llm/dev/test/run-example-ipynb-tests.sh
+        pip install -U langchain==0.0.184
