@@ -37,7 +37,7 @@ We provide example usages on different models and different hardwares as followi
 bash run_llama2_70b_pvc_1550_1_card.sh
 ```
 
-> **Note**: You could change `ZE_AFFINITY_MASK` and `NUM_GPUS` according to your requirements.
+> **Note**: You could change `ZE_AFFINITY_MASK` and `NUM_GPUS` according to your requirements. And you could also specify other low bit optimizations through `--low-bit`.
 
 - Run Vicuna-33B on two Intel Arc A770
 
@@ -45,7 +45,7 @@ bash run_llama2_70b_pvc_1550_1_card.sh
 bash run_vicuna_33b_arc_2_card.sh
 ```
 
-> **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine.
+> **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
 
 ### 3. Sample Output
 

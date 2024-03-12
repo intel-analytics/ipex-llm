@@ -30,4 +30,4 @@ export OMP_NUM_THREADS=$((56/$NUM_GPUS))
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=1
 mpirun -np $NUM_GPUS --prepend-rank \
-    python deepspeed_autotp.py --repo-id-or-model-path 'meta-llama/Llama-2-70b-chat-hf'
+    python deepspeed_autotp.py --repo-id-or-model-path 'meta-llama/Llama-2-70b-chat-hf' --low-bit 'sym_int4'
