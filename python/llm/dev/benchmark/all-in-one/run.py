@@ -1165,8 +1165,7 @@ def run_bigdl_ipex_int4(repo_id,
     os.environ["BIGDL_OPT_IPEX"] = "true"
 
     model_path = get_model_path(repo_id, local_model_hub)
-    # Load model in bf16,
-    # which convert the relevant layers in the model into BF16 format
+
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit='sym_int4', trust_remote_code=True, torch_dtype='auto',
