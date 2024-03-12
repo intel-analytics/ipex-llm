@@ -30,5 +30,9 @@ elif [ "${numa_nodes}" -eq 1 ]; then
     last_cpu_index=$(($OMP_NUM_THREADS - 1))
     numactl -C 0-$last_cpu_index -p 0 python $(dirname "$0")/run.py
 else
-    echo "Warning: The number of nodes in this machine is ${numa_nodes}. You may try run-spr.sh."
+    echo "Warning: The number of nodes in this machine is ${numa_nodes}. Node 0 will be used for run. "
+    export OMP_NUM_THREADS=${cores_per_numa}
+    echo "OMP_NUM_THREADS: ${cores_per_numa}"
+    last_cpu_index=$(($OMP_NUM_THREADS - 1))
+    numactl -C 0-$last_cpu_index -p 0 python $(dirname "$0")/run.py
 fi
