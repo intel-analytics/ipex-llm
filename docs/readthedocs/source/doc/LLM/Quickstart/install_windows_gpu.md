@@ -247,7 +247,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
            # load Model using bigdl-llm and load it to GPU
            # please note that the repo id on ModelScope may be difference from Hugging Face for some models
            model = AutoModelForCausalLM.from_pretrained(
-               "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True, model_hub='modelscope)
+               "Qwen/Qwen-1_8B-Chat", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True, model_hub='modelscope')
            model = model.to('xpu')
            print('Successfully loaded Tokenizer and optimized Model!')
         
@@ -291,9 +291,9 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   
    Example output on a system equipped with an Intel Core Ultra 5 125H CPU and Intel Arc Graphics iGPU:
    ```
-   Question:What is AI?
+   user: What is AI?
 
-   Answer: Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception
+   assistant: AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition,
    ```
 
 ## Tips & Troubleshooting
