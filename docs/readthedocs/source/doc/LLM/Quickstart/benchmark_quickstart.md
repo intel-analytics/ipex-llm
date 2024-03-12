@@ -98,11 +98,10 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
 
    .. tab:: Intel Data Center GPU Max
 
-      For Intel Data Center GPU Max Series, we recommend:
+      Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` before running the benchmark script on Intel Data Center GPU Max Series.
 
       .. code-block:: bash
 
-         # Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` to install essential dependencies for Intel Data Center GPU Max.
          ./run-max-gpu.sh
 
 ```
