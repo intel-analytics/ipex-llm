@@ -97,7 +97,6 @@ jobs:
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
-        date: 
         device: [xpu]
 
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
