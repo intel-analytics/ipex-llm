@@ -46,10 +46,8 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     rm -r BigDL && \
     chown -R mpiuser /bigdl
 
-# for docker directly run example
+# for standalone
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
-# for k8s
-COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl/bigdl-qlora-finetuing-entrypoint.sh
 
 USER mpiuser
 

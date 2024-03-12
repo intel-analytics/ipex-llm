@@ -43,6 +43,8 @@ spec:
                value: "{{ .Values.httpProxy }}"
              - name: https_proxy
                value: "{{ .Values.httpsProxy }}"
+             - name: OMP_NUM_THREADS
+               value: "{{ .Values.omp_num_threads}}"
              - name: LOCAL_POD_NAME
                valueFrom:
                  fieldRef:
