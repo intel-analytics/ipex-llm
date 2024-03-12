@@ -669,12 +669,13 @@ def convert_bigdl_other_module(model, dtype):
                 module.to(dtype)
 
 
-def convert_forward(m, target_m, new_forward):
+def convert_forward(m, target_m, new_forward, replace_sub_module = True):
     for _, sub_m in m.named_children():
         if isinstance(sub_m, target_m):
             bound_method = new_forward.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, "forward", bound_method)
-        convert_forward(sub_m, target_m, new_forward)
+        if replace_sub_module:
+            convert_forward(sub_m, target_m, new_forward)
 
 
 def replace_func(m, target_m, func_name, new_func):
@@ -1045,8 +1046,8 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_model_forward)
         convert_forward(model,
                         module.Qwen2Attention,
-                        qwen2_attention_forward
-                        )
+                        qwen2_attention_forward,
+                        False)
         convert_forward(model,
                         module.Qwen2RMSNorm,
                         llama_rms_norm_forward)
