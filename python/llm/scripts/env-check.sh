@@ -62,14 +62,21 @@ check_cpu_info()
 {
   echo "-----------------------------------------------------------------"
   echo "CPU Information: "
-  lscpu | head -n 17
-  
+  lscpu | grep -E "Model name|CPU(s)|MHz|Architecture|CPU\(s\):" | grep -v "NUMA node0 CPU(s):"
+}
+
+check_cpu_type()
+{
+  echo "-----------------------------------------------------------------"
+  echo "CPU type: "
+  sudo dmidecode -t 17 | grep DDR
+
 }
 
 check_mem_info()
 {
   echo "-----------------------------------------------------------------"
-  cat /proc/meminfo | grep MemTotal
+  cat /proc/meminfo | grep "MemTotal" | awk '{print "Total Memory: " $2/1024/1024 " GB"}'
   
 }
 
@@ -125,6 +132,42 @@ check_ipex()
   fi
 }
 
+check_xpu_info()
+{
+  echo "-----------------------------------------------------------------"
+  lspci -v | grep -i vga -A 8
+}
+
+check_linux_kernel_version()
+{
+  echo "-----------------------------------------------------------------"
+  uname -a
+}
+
+check_xpu_driver()
+{
+  echo "-----------------------------------------------------------------"
+  xpu-smi -v
+}
+
+check_OpenCL_driver()
+{
+  echo "-----------------------------------------------------------------"
+  sudo clinfo | fgrep Driver
+}
+
+check_igpu()
+{
+  echo "-----------------------------------------------------------------"
+  sycl_ls_output=$(sycl-ls)
+  if echo "$sycl_ls_output" | grep -q "Intel(R) UHD Graphics"; then
+      echo "igpu detected"
+      echo "$sycl_ls_output" | grep "Intel(R) UHD Graphics"
+  else
+      echo "igpu not detected"
+  fi
+}
+
 main()
 {
   # first guarantee correct python is installed. 
@@ -144,9 +187,14 @@ main()
   # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
   check_cpu_info
   check_mem_info
-  check_ulimit
+  # check_ulimit
   check_os
-  check_env
+  # check_env
+  check_xpu_info
+  check_linux_kernel_version
+  check_xpu_driver
+  check_OpenCL_driver
+  check_igpu
 
   # check if xpu-smi and GPU is available. 
   check_xpu_smi_install
