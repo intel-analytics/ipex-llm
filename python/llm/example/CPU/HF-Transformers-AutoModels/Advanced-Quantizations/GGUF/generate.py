@@ -45,7 +45,7 @@ if __name__ == '__main__':
     model_path = args.model
 
     # Load gguf model and vocab, then convert them to bigdl-llm model and huggingface tokenizer
-    model, tokenizer = AutoModelForCausalLM.from_gguf(model_path)
+    model, tokenizer = AutoModelForCausalLM.from_gguf(model_path, low_bit = args.low_bit,)
 
     # Generate predicted tokens
     with torch.inference_mode():
@@ -53,7 +53,6 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
         output = model.generate(input_ids,
-                                low_bit = args.low_bit,
                                 max_new_tokens=args.n_predict)
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
