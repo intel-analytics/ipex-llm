@@ -36,6 +36,9 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low_bit', type=str, default="sym_int4",
+                        help='what low_bit to run bigdl-llm')
+
 
     args = parser.parse_args()
 
@@ -50,6 +53,7 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
         output = model.generate(input_ids,
+                                low_bit = args.low_bit,
                                 max_new_tokens=args.n_predict)
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)

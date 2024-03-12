@@ -19,7 +19,7 @@ from bigdl.llm.utils.common import invalidInputError
 
 
 qtype_map = {
-    1: "f16",           # float16
+    1: "fp16",           # float16
     2: "sym_int4",      # q4_0
     3: "asym_int4",     # q4_1
     7: "sym_int8",      # q8_0
@@ -28,7 +28,7 @@ qtype_map = {
 }
 
 
-def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
+def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float, low_bit: str = "sym_int4"):
     from .gguf import GGUFFileLoader
 
     loader = GGUFFileLoader(fpath)
