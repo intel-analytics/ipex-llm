@@ -231,7 +231,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
            pip install modelscope==1.11.0
 
-        Create a new file named `demo.py` and insert the code snippet below.
+        Create a new file named ``demo.py`` and insert the code snippet below.
 
         .. code-block:: python
 
@@ -298,5 +298,5 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
 ## Tips & Troubleshooting
 
-### Warm-up for optimial performance on first run
+### Warm-up for optimal performance on first run
 When running LLMs on GPU for the first time, you might notice the performance is lower than expected, with delays up to several minutes before the first token is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU models. To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks. If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
