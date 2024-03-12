@@ -44,10 +44,14 @@ from intel_extension_for_pytorch.transformers.optimize import (
 from intel_extension_for_pytorch.cpu._auto_kernel_selection import (
     _enable_tpp,
     _using_tpp,
+    _disable_tpp
 )
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.transformers.convert import get_enable_ipex
+import os
 
 
-def _ipex_optimize_rmsnorm(_model, supported_classes):
+def _ipex_optimize_rmsnorm(_model, supported_classes, is_tpp=False, is_woq=False):
     from intel_extension_for_pytorch.transformers.models.cpu.fusions.mha_fusion import _IPEXRMSNorm
     for supported_class in supported_classes:
         lowering_class_cpu(
@@ -55,12 +59,12 @@ def _ipex_optimize_rmsnorm(_model, supported_classes):
             supported_class,
             _IPEXRMSNorm,
             _model.config,
-            tpp=False,
-            woq=False,
+            tpp=is_tpp,
+            woq=is_woq,
         )
 
 
-def _ipex_optimize_decoder(model):
+def _ipex_optimize_decoder(model, is_tpp=False, is_woq=False):
     from intel_extension_for_pytorch.transformers.models.reference.modules.decoder import (
         _IPEXDecoderLayerRef
     )
@@ -73,12 +77,12 @@ def _ipex_optimize_decoder(model):
             supported_mlp_class,
             _IPEXDecoderLayerCPU,
             model.config,
-            tpp=True if _using_tpp() else False,
-            woq=False,
+            tpp=is_tpp,
+            woq=is_woq,
         )
 
 
-def _ipex_optimize_attention(model):
+def _ipex_optimize_attention(model, is_tpp=False, is_woq=False):
     from intel_extension_for_pytorch.transformers.models.reference.modules.attentions import (
         _IPEXAttentionRef
     )
@@ -91,18 +95,47 @@ def _ipex_optimize_attention(model):
             supported_mha_class,
             _IPEXAttentionCPU,
             model.config,
-            tpp=True if _using_tpp() else False,
-            woq=False,
+            tpp=is_tpp,
+            woq=is_woq,
         )
 
 
-def _ipex_optimize_model(model, rms_classes):
-    _enable_tpp()
+def _ipex_optimize_model(model, rms_classes, qtype):
     import intel_extension_for_pytorch as ipex
-    ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
-    _ipex_optimize_rmsnorm(model, rms_classes)
-    _ipex_optimize_attention(model)
-    _ipex_optimize_decoder(model)
+    from intel_extension_for_pytorch.transformers.models.reference.models import output_hook
+    from intel_extension_for_pytorch.transformers.optimize import ipex_quantization_flow
+
+    is_woq = False
+    is_quantization = False
+    _disable_tpp()
+    if qtype == ggml_tensor_qtype["bf16"]:
+        _enable_tpp()
+        model = ipex.optimize(model.eval(), dtype=torch.bfloat16, inplace=True).eval()
+    elif qtype == ggml_tensor_qtype["sym_int4"]:
+        is_quantization = True
+        is_woq = True
+        act_quant_mode_dict = {
+            "PER_TENSOR": ipex.quantization.WoqActQuantMode.PER_TENSOR,
+            "PER_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_IC_BLOCK,
+            "PER_BATCH": ipex.quantization.WoqActQuantMode.PER_BATCH,
+            "PER_BATCH_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_BATCH_IC_BLOCK,
+        }
+        qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+            weight_dtype=torch.quint4x2,  # INT4
+            lowp_mode=ipex.quantization.WoqLowpMode.INT8,
+            act_quant_mode=act_quant_mode_dict["PER_IC_BLOCK"],
+            group_size=-1,
+        )
+        model = ipex_quantization_flow(model, torch.bfloat16, None, qconfig, None)
+
+    is_tpp = _using_tpp()
+
+    _ipex_optimize_rmsnorm(model, rms_classes, is_tpp=is_tpp, is_woq=is_woq)
+    _ipex_optimize_attention(model, is_tpp=is_tpp, is_woq=is_woq)
+    _ipex_optimize_decoder(model, is_tpp=is_tpp, is_woq=is_woq)
+
+    model.register_forward_hook(output_hook, with_kwargs=True)
+    return model
 
 
 def _ipex_jit(model):
@@ -152,9 +185,7 @@ def GLM_get_masks(self, input_ids, past_key_values, padding_mask=None):
         else:  # discrete kv cache
             past_length = past_key_values[0][0].shape[-2]
 
-    import os
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = get_enable_ipex()
     # always call for jit
     if past_length or _enable_ipex:
         full_attention_mask = torch.cat(
@@ -191,9 +222,7 @@ def _make_causal_mask(
     mask_cond = torch.arange(mask.size(-1), device=device)
     mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
 
-    import os
-    _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
-    _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
+    _enable_ipex = get_enable_ipex()
     if _enable_ipex or past_key_values_length > 0:
         mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)  # noqa
 
