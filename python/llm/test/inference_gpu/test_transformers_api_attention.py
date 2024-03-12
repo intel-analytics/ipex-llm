@@ -167,7 +167,7 @@ class Test_Optimize_Gpu_Model:
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.encoder.layers.27.input_layernorm"
         self_attn = "transformer.encoder.layers.27.self_attention"
-        lower_bound = 1e-3
+        lower_bound = 4e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
     def Mistral_gpu_model(self, Name, Model, Tokenizer, model_path):

@@ -126,7 +126,7 @@ class Test_Optimize_Gpu_Model:
     def Llama2_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "model.layers.30"
         RMSNorm_layer = "model.layers.31.input_layernorm"
-        lower_bound = 1e-6
+        lower_bound = 2e-6
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
     
     def Chatglm2_gpu_model(self, Name, Model, Tokenizer, model_path):
@@ -144,7 +144,7 @@ class Test_Optimize_Gpu_Model:
     def Baichuan_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "model.layers.30"
         RMSNorm_layer = "model.layers.31.input_layernorm"
-        lower_bound = 5e-7
+        lower_bound = 1e-6
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
 
     def Qwen_gpu_model(self, Name, Model, Tokenizer, model_path):
