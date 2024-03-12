@@ -587,6 +587,41 @@ def _optimize_pre(model):
     ):
         from bigdl.llm.transformers.models.bert import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "qwen":
+        position_ids = torch.arange(0, model.config.max_position_embeddings)
+        rope_base = model.config.rotary_emb_base
+        from accelerate.big_modeling import init_empty_weights
+
+        def split_qkv_proj_func(module):
+            if "QWenAttention" in module.__class__.__name__:
+                c_attn_weight = module.c_attn.weight.data
+                c_attn_bias = module.c_attn.bias.data
+                projection_size = module.projection_size
+                hid_size = module.hidden_size
+                with init_empty_weights():
+                    q_proj = torch.nn.Linear(hid_size, projection_size)
+                    k_proj = torch.nn.Linear(hid_size, projection_size)
+                    v_proj = torch.nn.Linear(hid_size, projection_size)
+                if not model.config.to_dict().get("bigdl_transformers_low_bit", False):
+                    q_proj.weight = torch.nn.Parameter(
+                        c_attn_weight[:projection_size, :], requires_grad=False)
+                    q_proj.bias = torch.nn.Parameter(
+                        c_attn_bias[:projection_size], requires_grad=False)
+                    k_proj.weight = torch.nn.Parameter(
+                        c_attn_weight[projection_size: 2 * projection_size, :], requires_grad=False)
+                    k_proj.bias = torch.nn.Parameter(
+                        c_attn_bias[projection_size: 2 * projection_size], requires_grad=False)
+                    v_proj.weight = torch.nn.Parameter(
+                        c_attn_weight[2 * projection_size:, :], requires_grad=False)
+                    v_proj.bias = torch.nn.Parameter(
+                        c_attn_bias[2 * projection_size:], requires_grad=False)
+                module.q_proj = q_proj
+                module.k_proj = k_proj
+                module.v_proj = v_proj
+                module.position_ids = position_ids
+                module.rope_base = rope_base
+                del module.c_attn
+        model.apply(split_qkv_proj_func)
     return model
 
 
