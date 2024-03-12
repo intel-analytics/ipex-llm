@@ -1188,7 +1188,6 @@ def run_deepspeed_optimize_model_gpu(repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                            actual_in_len, actual_out_len, load_time])
-    deepspeed.comm.destroy_process_group()
     del model
     torch.xpu.empty_cache()
     return result
