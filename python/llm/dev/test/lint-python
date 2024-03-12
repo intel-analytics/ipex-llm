@@ -21,7 +21,7 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
 echo $PYTHON_ROOT_DIR
 PATHS_TO_CHECK="$SCRIPT_DIR/../../src"
-PATTERNS_TO_EXCLUDE="__init__.py,log4Error.py,$SCRIPT_DIR/../../src/bigdl/llm/langchain/*,/home/wangjian/project/BigDL/python/llm/dev/test/../../src/bigdl/llm/transformers/gguf/models/model_implement/yuan2/*"
+PATTERNS_TO_EXCLUDE="__init__.py,log4Error.py,$SCRIPT_DIR/../../src/bigdl/llm/langchain/*,$SCRIPT_DIR/../../src/bigdl/llm/transformers/gguf/models/model_implement/yuan2/*"
 PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/test/pep8-report.txt"
 PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/test/pylint-report.txt"
 PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/test/pylint-info.txt"
