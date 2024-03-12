@@ -128,7 +128,7 @@ You can verfy if bigdl-llm is successfully by simply importing a few classes fro
 
 ## A Quick Example
 
-Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model, a 1.8 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
+Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model, a 1.8 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
    ```cmd
@@ -188,8 +188,8 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   ```eval_rst
   .. note::
   
-     ``from_pretrained`` will download model from huggingface by default. For users in Chinese Mainland, set ``model_hub='modelscope'`` in ``from_pretrained`` to achieve faster download speed.
-     If you set ``model_hub='modelscope'`` in ``from_pretrained``, please first run ``pip install pip install modelscope==1.11.0`` in Anaconda Prompt to install modelscope.
+     ``from_pretrained`` will download model from Hugging Face by default; You may also set ``model_hub='modelscope'`` in ``from_pretrained`` to use ModelScope.
+     If you set ``model_hub='modelscope'`` in ``from_pretrained``, please first run ``pip install pip install modelscope==1.11.0`` in Anaconda Prompt to install ModelScope.
   ```
 
   ```eval_rst
