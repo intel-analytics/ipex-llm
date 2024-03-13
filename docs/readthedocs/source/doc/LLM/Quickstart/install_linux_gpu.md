@@ -55,7 +55,7 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
   conda create -n llm python=3.9
   conda activate llm
 
-  pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+  pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl1.png" alt="image-20240221102252564" width=100%; />
