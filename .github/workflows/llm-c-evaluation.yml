@@ -46,6 +46,7 @@ jobs:
       model_name: ${{ steps.set-matrix.outputs.model_name }}
       precision: ${{ steps.set-matrix.outputs.precision }}
       runner: ${{ steps.set-matrix.outputs.runner }}
+      date: ${{ steps.set-matrix.outputs.date }}
     steps:
       - name: set-nightly-env        
         if: ${{github.event_name == 'schedule'}}
@@ -68,6 +69,7 @@ jobs:
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
             echo "runner=$PR_LABELS" >> $GITHUB_ENV
+
       - name: set-manual-env
         if: ${{github.event_name == 'workflow_dispatch'}}
         env:
@@ -78,12 +80,14 @@ jobs:
             echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
             echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
+
       - name: set-matrix
         id: set-matrix
         run: |
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
+            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
   llm-c-evaluation:
     timeout-minutes: 1200
@@ -113,11 +117,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-          pip install einops
-          pip install thefuzz
-          pip install tiktoken
-          pip install transformers==4.31.0
-          pip install transformers_stream_generator
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -157,6 +156,16 @@ jobs:
           unzip -o "$CEVAL_HF_HOME/data/ceval-exam.zip" -d "$CEVAL_HF_HOME/data"
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
 
+      - name: Install New Dependencies
+        shell: bash
+        run: |
+          pip install einops
+          pip install thefuzz
+          pip install tiktoken
+          pip install numpy==1.26.3
+          pip install pandas==1.5.3
+          pip install transformers_stream_generator
+
       - name: Run C-Eval
         shell: bash
         working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/ceval
@@ -180,7 +189,7 @@ jobs:
 
   llm-ceval-summary:
     if: ${{ always() }}
-    needs: llm-c-evaluation
+    needs: [set-matrix, llm-c-evaluation]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -208,16 +217,16 @@ jobs:
           python ${{ github.workspace }}/python/llm/dev/benchmark/ceval/organize_results.py results/ results/
 
       - name: Set artifact file path
-        run: echo "ARTIFACT_PATH=results/results_${{ env.DATE }}.csv" >> $GITHUB_ENV
+        run: echo "ARTIFACT_PATH=results/results_${{ needs.set-matrix.outputs.date }}.csv" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v3
         with:
-          name: results_${{ env.DATE }}
+          name: results_${{ needs.set-matrix.outputs.date }}
           path: ${{ env.ARTIFACT_PATH }}
 
   llm-ceval-html:
     if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
-    needs: [llm-c-evaluation, llm-ceval-summary]
+    needs: [set-matrix, llm-c-evaluation, llm-ceval-summary]
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -232,16 +241,15 @@ jobs:
           pip install numpy
           pip install pandas==1.5.3
           pip install jsonlines pytablewriter regex
-      
+
       - name: Set output path
         shell: bash
-        run: |    
-          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        run: |
           if ${{github.event_name == 'pull_request'}}; then
-            echo 'ACC_FOLDER=/home/arda/ceval-action-runners/pr-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/ceval/pr-accuracy-data' >> $GITHUB_ENV
           fi
           if ${{github.event_name == 'schedule'}}; then
-            echo 'ACC_FOLDER=/home/arda/ceval-action-runners/nightly-accuracy-data' >> $GITHUB_ENV
+            echo 'ACC_FOLDER=/home/arda/action-runners/ceval/nightly-accuracy-data' >> $GITHUB_ENV
           fi
 
       - name: Create ceval results directory if not exists
@@ -253,9 +261,9 @@ jobs:
       - name: Download ceval results
         uses: actions/download-artifact@v3
         with:
-          name: results_${{ env.DATE }}
+          name: results_${{ needs.set-matrix.outputs.date }}
           path:  ${{ env.ACC_FOLDER }}
-          rename: results_${{ env.DATE }}.csv
+          rename: results_${{ needs.set-matrix.outputs.date }}.csv
 
       - name: Update HTML
         working-directory: ${{ github.workspace }}/python/llm/test/benchmark/ceval/
@@ -263,5 +271,5 @@ jobs:
         run: |
           python ceval_csv_to_html.py -f $ACC_FOLDER
           if ${{github.event_name == 'schedule'}}; then
-            python update_html_in_parent_folder.py -f $ACC_FOLDER
+            python ../harness/update_html_in_parent_folder.py -f $ACC_FOLDER
           fi
