@@ -55,8 +55,40 @@ jobs:
           fi
           list=$(echo ${python_version} | jq -c)
           echo "python-version=${list}" >> "$GITHUB_OUTPUT"
-  llm-unit-test:
+
+
+llm-unit-test:
     needs: [setup-python-version]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows, ubuntu-20.04-lts]
+        python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
+        include:
+          - os: windows
+            instruction: AVX-VNNI-UT
+          - os: ubuntu-20.04-lts
+            instruction: avx512
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
+    env:
+      THREAD_NUM: 24
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    steps:
+      - name: Test GITHUB_ACCESS_TOKEN on Windows
+        if: matrix.os == 'windows'
+        shell: powershell
+        run: |
+          $token = "${GITHUB_ACCESS_TOKEN}"
+          $headers = @{Authorization = "token $token"}
+          $user = Invoke-RestMethod -Uri https://api.github.com/user -Method Get -Headers $headers
+          if ($user.login) {
+              Write-Output "Token is valid. User login: $($user.login)"
+          } else {
+              Write-Output "Token is invalid or not set."
+          }
+
+  llm-unit-test:
+    needs: [setup-python-version, xxx]
     strategy:
       fail-fast: false
       matrix:
