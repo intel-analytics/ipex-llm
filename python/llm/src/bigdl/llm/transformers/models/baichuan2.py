@@ -485,7 +485,7 @@ def baichuan_attention_forward_13b_origin(
         attn_output = attn_output.transpose(1, 2)
     else:
         attn_weights = torch.matmul(
-            query_states, key_states.transpose(2, 3)
+            query_states.to(dtype=key_states.dtype), key_states.transpose(2, 3)
         ) / math.sqrt(self.head_dim)
 
         if attention_mask is not None:
