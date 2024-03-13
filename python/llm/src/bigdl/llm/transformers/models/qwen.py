@@ -277,6 +277,7 @@ def qwen_attention_forward_original(
                                                     key,
                                                     value)
         attn_output = attn_output.view(query.shape)
+        attn_output = attn_output.transpose(1, 2)
         attn_weight = None
     else:
         attn_output, attn_weight = self._attn(
