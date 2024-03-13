@@ -4,10 +4,6 @@
 This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `bigdl-llm`.
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
-## Prerequisites
-
-Ensure `bigdl-llm` is installed by following the [BigDL-LLM Installation Guide](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install) before proceeding with the examples provided here. 
-
 
 ## Retrieval-Augmented Generation (RAG) Example
 The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
@@ -20,6 +16,9 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     ```bash
     pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
     ```
+
+* **Install BigDL**
+Ensure `bigdl-llm` is installed by following the [BigDL-LLM Installation Guide](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install) before proceeding with the examples provided here. 
 
 * **Database Setup (using PostgreSQL)**:
     * Installation: 
