@@ -8,7 +8,7 @@ BigDL-LLM currently supports the Ubuntu 20.04 operating system and later, and su
 ## Install Intel GPU Driver
 Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
 
-  > Note: Please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
+  > Note: Please refer to our [driver installation](install_linux_driver.md) detailed instruction in driver installation.
 
 ## Setup Python Environment
 
