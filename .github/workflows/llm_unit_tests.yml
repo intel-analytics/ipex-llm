@@ -349,7 +349,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[all]
+          pip install --pre --upgrade ipex-llm[xpu]
           find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
