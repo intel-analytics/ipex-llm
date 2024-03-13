@@ -53,17 +53,16 @@ from transformers.models.llama.modeling_llama import LlamaModel
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
-<<<<<<< HEAD
+
 try:
     from transformers.cache_utils import Cache
 except ImportError:
     Cache = Tuple[torch.Tensor]
-=======
 import logging
+from transformers import logging
 
 
 logger = logging.get_logger(__name__)
->>>>>>> 9f7d677c73 (support pipeline parallel inference)
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
