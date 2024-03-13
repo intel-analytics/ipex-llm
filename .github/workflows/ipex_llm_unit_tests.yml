@@ -117,12 +117,12 @@ jobs:
       - name: Set access token for Ubuntu
         if: matrix.os == 'ubuntu-20.04-lts'
         run: |
-          echo "github_access_token=${{ secrets.GITHUB_ACCESS_TOKEN }}" >> "$GITHUB_ENV"
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
 
       - name: Set access token for Windows
         if: matrix.os == 'windows'
         run: |
-          echo "github_access_token=${{ secrets.GITHUB_ACCESS_TOKEN }}" | Out-File -FilePath $Env:GITHUB_ENV -Append
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" | Out-File -FilePath $Env:GITHUB_ENV -Append
         shell: powershell
 
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
