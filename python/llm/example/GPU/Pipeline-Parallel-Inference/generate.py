@@ -82,9 +82,6 @@ if __name__ == '__main__':
         offload_dir=None,
         skip_keys=["past_key_value", "past_key_values"],
     )
-    
-    from benchmark_util import BenchmarkWrapper
-    model = BenchmarkWrapper(model, do_print=True)
 
     # Load tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
