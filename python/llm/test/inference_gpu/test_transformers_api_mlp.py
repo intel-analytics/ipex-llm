@@ -92,10 +92,13 @@ class Test_Optimize_Gpu_Model:
             opt_layer_tensor = self.layer_outputs[0]
             opt_model.to('cpu')
  
- 
             MLP_output_diff = []
             for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
-                MLP_output_diff.append(t1 - t2)
+                if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
+                    MLP_output_diff.append(t1 - t2)
+                else:
+                    for i, (t3, t4) in enumerate(zip(t1, t2)):
+                        MLP_output_diff.append(t3 - t4)
  
             max_diff_tensor = [torch.max(item).item() for item in MLP_output_diff]
             print(max_diff_tensor)
