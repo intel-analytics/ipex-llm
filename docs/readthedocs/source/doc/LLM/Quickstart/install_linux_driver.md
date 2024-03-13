@@ -1,8 +1,7 @@
 # Install GPU Driver on Linux
 
-This guide demonstrates how to install Intel GPU driver on linux with kernel version 5.19/
+This guide demonstrates how to install Intel GPU driver on linux with **kernel version 5.19** on Intel Arc Series GPU. We assume that you have the 5.19 kernel on your linux machine.
 
-It applies to Intel Arc Series GPU.
 
 * install arc driver
     ```bash
@@ -12,30 +11,6 @@ It applies to Intel Arc Series GPU.
     echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
     sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
     ```
-
-* downgrade kernel
-    ```bash
-    sudo apt-get update && sudo apt-get install  -y --install-suggests  linux-image-5.19.0-41-generic
-
-    sudo sed -i "s/GRUB_DEFAULT=.*/GRUB_DEFAULT=\"1> $(echo $(($(awk -F\' '/menuentry / {print $2}' /boot/grub/grub.cfg \
-    | grep -no '5.19.0-41' | sed 's/:/\n/g' | head -n 1)-2)))\"/" /etc/default/grub
-
-    sudo  update-grub
-
-    sudo reboot
-    # As 5.19's kernel doesn't has any arc graphic driver. The machine may not start the desktop correctly, but we can use the ssh to login. 
-    # Or you can select 5.19's recovery mode in the grub, then choose resume to resume the normal boot directly.
-
-    sudo apt autoremove
-
-    sudo reboot
-    ```
-
-    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/driver_install1.png" width=100%; />
-
-    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/driver_install3.png" width=100%; />
-
-    > <img src="https://llm-assets.readthedocs.io/en/latest/_images/driver_install4.png" width=100%; />
 
 * install drivers
 
