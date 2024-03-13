@@ -93,27 +93,23 @@ There is no need to set further environment variables.
 
 > Note: For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
-
+#### 4.1 Using simple prompt
 ```
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --low-bit sym_int4
 ```
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--low-bit`: argument defining the low bit precision option for optimization. It is default to be `sym_int4`. The choices for this argument are `sym_int4` or `fp8`.
 
-#### 4.1 Running example with 4k input size
-
+#### 4.2 Using 2k/4k input size prompt
+You can set the `prompt` argument to be a `.txt` file path containing the 2k/4k size prompt text. A possible command using the 4k input size prompt we provided is given below as an example.
 ```
-python ./generate_4k_input.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PATH/TO/PROMPT/FILE --low-bit sym_int4 --n-predict N_PREDICT
+python ./generate.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --prompt 4k.txt --low-bit sym_int4
 ```
 
-Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`. You can either enter a prompt text or a txt file path containing the prompt.
-- `--low-bit`: argument defining the low bit precision option for optimization. It is default to be sym_int4. The choices for this argument are sym_int4 or fp8.
-- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
