@@ -321,7 +321,8 @@ def setup_package():
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
                         "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
-                        "serving": serving_requires},
+                        "serving": serving_requires,
+                        "llama_cpp": ["bigdl-core-cpp==" + VERSION + ";platform_system=='Linux'"]},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
