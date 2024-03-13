@@ -77,7 +77,7 @@ jobs:
       - name: Test SSH_SOCKS_PROXY on Windows
         if: matrix.os == 'windows'
         run: |
-          echo ("BRANCH_NAME=${SSH_SOCKS_PROXY}") >> $env:GITHUB_ENV
+          echo "BRANCH_NAME=xxx" >> $env:GITHUB_ENV
       - run: echo "${{ env.BRANCH_NAME }}"
       - run: echo $env:BRANCH_NAME
 
