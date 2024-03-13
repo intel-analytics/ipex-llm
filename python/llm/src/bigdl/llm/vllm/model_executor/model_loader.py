@@ -43,6 +43,7 @@ from bigdl.llm.vllm.model_executor.models.bigdl_llama import BigDLLlamaForCausal
 from bigdl.llm.vllm.model_executor.models.bigdl_mixtral import BigDLMixtralForCausalLM
 from bigdl.llm.vllm.model_executor.models.bigdl_mistral import BigDLMistralForCausalLM
 from bigdl.llm.vllm.model_executor.models.bigdl_chatglm import BigDLChatGLMForCausalLM
+from bigdl.llm.vllm.model_executor.models.bigdl_baichuan import BigDLBaichuanForCausalLM
 
 from bigdl.llm.utils.common import invalidInputError
 
@@ -54,7 +55,7 @@ from bigdl.llm.utils.common import invalidInputError
 _MODEL_REGISTRY = {
     # "AquilaModel": AquilaForCausalLM,
     # "BaiChuanForCausalLM": BaiChuanForCausalLM,  # baichuan-7b
-    # "BaichuanForCausalLM": BaichuanForCausalLM,  # baichuan-13b
+    "BaichuanForCausalLM": BigDLBaichuanForCausalLM,  # baichuan2-13b
     # "BloomForCausalLM": BloomForCausalLM,
     # "FalconForCausalLM": FalconForCausalLM,
     # "GPT2LMHeadModel": GPT2LMHeadModel,
