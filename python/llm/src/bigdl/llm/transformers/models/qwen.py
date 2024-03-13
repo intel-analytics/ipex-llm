@@ -271,13 +271,13 @@ def qwen_attention_forward_original(
     if not decoding_fast_path:
         query = query.transpose(1, 2)
 
-    if use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query):
+    if use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query,
                                                     key,
                                                     value)
         attn_output = attn_output.view(query.shape)
-        attn_weights = None
+        attn_weight = None
     else:
         attn_output, attn_weight = self._attn(
             query.to(key.dtype), key, value, causal_mask, attention_mask, head_mask
