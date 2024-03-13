@@ -1,4 +1,4 @@
-name: LLM Nightly Tests
+name: NEW LLM Nightly Tests
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
