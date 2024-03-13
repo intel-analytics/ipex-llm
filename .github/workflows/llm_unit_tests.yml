@@ -93,6 +93,7 @@ jobs:
       - name: Set environment variables
         shell: bash
         run: |
+          echo "BIGDL_COMPATIBLE_MODE=True" >> "$GITHUB_ENV"
           echo "SPEECH_DATASET_PATH=${DATASET_DIR}/librispeech_asr_dummy" >> "$GITHUB_ENV"
           echo "COMMON_VOICE_PATH=${DATASET_DIR}/common_voice" >> "$GITHUB_ENV"
 
@@ -210,6 +211,9 @@ jobs:
       - name: Run LLM inference test
         shell: bash
         run: |
+          pip uninstall -y bigdl-llm
+          pip install --pre --upgrade ipex-llm[all]
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           python -m pip install einops datasets librosa openai-whisper
           bash python/llm/test/run-llm-inference-tests.sh
       - name: Run LLM langchain test
@@ -241,6 +245,7 @@ jobs:
       - name: Set environment variables
         shell: bash
         run: |
+          echo "BIGDL_COMPATIBLE_MODE=True" >> "$GITHUB_ENV"
           echo "DATASET_DIR=${ORIGIN_DIR}/../datasets" >> "$GITHUB_ENV"
           echo "YAHMA_ALPACA_CLEANED_PATH=${ORIGIN_DIR}/../datasets/yahma_alpaca_cleaned" >> "$GITHUB_ENV"
           echo "SPEECH_DATASET_PATH=${ORIGIN_DIR}/../datasets/librispeech_asr_dummy" >> "$GITHUB_ENV"
@@ -343,6 +348,9 @@ jobs:
       - name: Run LLM inference test
         shell: bash
         run: |
+          pip uninstall -y bigdl-llm
+          pip install --pre --upgrade ipex-llm[all]
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             source /opt/intel/oneapi/setvars.sh
