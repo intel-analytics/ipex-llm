@@ -170,6 +170,9 @@ jobs:
           SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
           source /opt/intel/oneapi/setvars.sh
+          pip show numpy
+          pip show bigdl-llm
+          pip show pandas
           python eval.py \
           --model_path ${MODEL_PATH} \
           --eval_type validation \
