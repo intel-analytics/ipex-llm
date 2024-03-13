@@ -953,7 +953,7 @@ def _optimize_post(model, lightweight_bmm=False):
 
     elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
         # baichuan2
-        if model.config.hidden_size == 4096:
+        if model.config.hidden_size in [4096, 2048]:
             # baichuan2-7B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
