@@ -57,7 +57,7 @@ jobs:
           echo "python-version=${list}" >> "$GITHUB_OUTPUT"
 
 
-llm-unit-test:
+  token-test:
     needs: [setup-python-version]
     strategy:
       fail-fast: false
