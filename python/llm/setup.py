@@ -49,7 +49,8 @@ VERSION = open(os.path.join(BIGDL_PYTHON_HOME,
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-CONVERT_DEP = ['numpy >= 1.22', 'torch',
+CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
+               'torch',
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
@@ -321,7 +322,8 @@ def setup_package():
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
                         "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
-                        "serving": serving_requires},
+                        "serving": serving_requires,
+                        "cpp": ["bigdl-core-cpp==" + VERSION + ";platform_system=='Linux'"]},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
