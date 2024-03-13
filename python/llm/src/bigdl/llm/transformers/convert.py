@@ -1092,7 +1092,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MLP,
                         llama_mlp_forward)
-        if model.device == "cpu":
+        if model.device.type == 'cpu':
             from bigdl.llm.transformers.models.qwen2 import qwen2_sdpa_attention_forward
             convert_forward(model,
                             module.Qwen2SdpaAttention,
