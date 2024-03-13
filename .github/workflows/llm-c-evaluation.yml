@@ -63,7 +63,7 @@ jobs:
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_MODEL_NAME: '["Qwen-7B-Chat"]'
-          PR_MATRIX_PRECISION: '["sym_int4"]'
+          PR_MATRIX_PRECISION: '["sym_int4", "fp8_e5m2"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
