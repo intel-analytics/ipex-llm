@@ -66,7 +66,7 @@ jobs:
         python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
         include:
           - os: windows
-            instruction: AVX-VNNI-UT
+            instruction: AVX-VNNI-Build
           - os: ubuntu-20.04-lts
             instruction: avx512
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
