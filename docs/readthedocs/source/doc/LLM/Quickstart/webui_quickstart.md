@@ -127,7 +127,7 @@ To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** termina
 
 ### Potentially slower first response
 
-The first response to user prompt might be slower than expected, with delays of up to several minutes before the response is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU models.
+The first response to user prompt might be slower than expected, with delays of up to several minutes before the response is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU types.
 
 ### Missing Required Dependencies
 
