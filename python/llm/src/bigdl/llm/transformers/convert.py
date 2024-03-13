@@ -634,7 +634,7 @@ def _optimize_pre(model):
     return model
 
 
-def get_enable_ipex(low_bit):
+def get_enable_ipex_low_bit(low_bit):
     _enable_ipex = os.getenv("BIGDL_OPT_IPEX")
     _enable_ipex = (_enable_ipex is not None) and (_enable_ipex.lower() == "true")
     qtype = ggml_tensor_qtype[low_bit]

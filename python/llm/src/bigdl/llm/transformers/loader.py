@@ -17,7 +17,7 @@
 
 import torch
 
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel, get_enable_ipex
+from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel, get_enable_ipex_low_bit
 import time
 from datetime import date
 import argparse
@@ -65,7 +65,7 @@ def load_model(
     # Load tokenizer
     tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
     model = model_cls.from_pretrained(model_path, **model_kwargs)
-    if not get_enable_ipex(low_bit):
+    if not get_enable_ipex_low_bit(low_bit):
         model = model.eval()
 
     if device == "xpu":
