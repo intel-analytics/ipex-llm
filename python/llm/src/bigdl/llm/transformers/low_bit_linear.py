@@ -532,12 +532,16 @@ class LowBitLinear(nn.Linear):
         self.compute_dtype = None  # only for training
         self.enable_xetla = enable_xetla
         self.optimize_lm_head = optimize_lm_head
-        # empty_cache (by default on arc) for models with large vocabulary (e.g. baichuan/qwen)
-        # for long input sequences.
         self.device = None  # detected only once in the first forward
+        # empty cache before and after lm_head at first token (by default on arc) for models
+        # with large vocabulary (e.g. baichuan/qwen) when given long input at inference time.
+        # The condition makes sure that empty cache only takes effect if this layer is lm_head.
+        # TODO: may modify the value constraints for other models.
         self.low_memory_mode = self.in_len * self.out_len >= 70000*4096
 
     def forward(self, x: torch.Tensor):
+        # empty cache before and after lm_head at first token when input > 1024
+        # on arc or BIGDL_LOW_MEMORY_MODE is set to 1 at inference time.
         if self.device is None:
             self.device = get_xpu_device_type(self.weight.data)
             self.low_memory_mode = \
@@ -608,6 +612,7 @@ class LowBitLinear(nn.Linear):
                 # current workaround to reduce first token latency of fp32 input
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
+                # TODO: may modify the input length condition for empty cache.
                 do_empty_cache = self.low_memory_mode and x_2d.shape[0] >= 1024
                 if do_empty_cache:
                     torch.xpu.empty_cache()
