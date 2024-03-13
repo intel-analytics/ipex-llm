@@ -8,7 +8,7 @@ This folder contains examples of running different training mode with BigDL-LLM 
 - [ReLora](ReLora): examples of running ReLora finetuning
 - [DPO](DPO): examples of running DPO finetuning
 - [common](common): common templates and utility classes in finetuning examples
-- [HF-PEFT](PEFT): run finetuning on Intel GPU using Hugging Face PEFT code without modification
+- [HF-PEFT](HF-PEFT): run finetuning on Intel GPU using Hugging Face PEFT code without modification
 
 
 ## Troubleshooting
