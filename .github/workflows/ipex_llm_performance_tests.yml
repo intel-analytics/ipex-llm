@@ -13,8 +13,8 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
-  #   branches: [main]
+  pull_request:
+    branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -264,7 +264,7 @@ jobs:
     steps:
       - name: Set access token
         run: |
-          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $Env:GITHUB_ENV
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
@@ -339,7 +339,7 @@ jobs:
     steps:
       - name: Set access token
         run: |
-          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $Env:GITHUB_ENV
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
