@@ -383,15 +383,6 @@ def llama_attention_forward_4_31_quantized(
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids, "llama")
 
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
-
     if past_key_value is None:
         kv_seq_len = key_states.shape[-2]
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
