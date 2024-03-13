@@ -106,7 +106,7 @@ Arguments info:
 #### 4.1 Running example with 4k input size
 
 ```
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PATH/TO/PROMPT/FILE --low-bit sym_int4 --n-predict N_PREDICT
+python ./generate_4k_input.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PATH/TO/PROMPT/FILE --low-bit sym_int4 --n-predict N_PREDICT
 ```
 
 Arguments info:
