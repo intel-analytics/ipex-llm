@@ -1,0 +1,174 @@
+# Running GGUF models using BigDL-LLM on Intel GPU
+
+You can use BigDL-LLM to run GGUF models from [llama.cpp](https://github.com/ggerganov/llama.cpp) on your laptops with Intel GPUs. This README contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source GGUF models in the community.
+
+## 0. Requirements
+To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+
+BigDL-LLM's support for llama.cpp is only avaliable on Linux system now, with oneapi version equals to 2024.0 .
+
+### 1. Install on Linux
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.9
+conda activate llm
+pip install --pre --upgrade bigdl-llm[cpp]
+```
+
+With above command, BigDL-LLM optimized llama.cpp's executable files are already been downloaded in your conda environment.
+
+### 2. Configures OneAPI environment variables
+```
+source /opt/intel/oneapi/setvars.sh
+```
+
+### 3. Runtime Configurations
+To use related executable files, you should setup several environment variables first:
+```bash
+export CONDA_ROOT={YOUR_CONDA_ROOT} # like ~/anaconda3/envs/llm
+export CPP_LIBS_PATH=$CONDA_ROOT/lib/python3.9/site-packages/bigdl-core-cpp/libs
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CPP_LIBS_PATH
+```
+
+### 4. Running GGUF models
+
+Note, only Q-series GGUF models are supported now, IQ-series are not supported yet.
+
+Here we take `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main) for example, after downloading this GGUF model into current directory, you can use `main` in `CPP_LIBS_PATH` to do inference:
+
+```
+${CPP_LIBS_PATH}/main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color --no-mmap
+```
+
+#### Sample Output
+```bash
+Log start
+main: build = 1 (38bcbd4)
+main: built with Intel(R) oneAPI DPC++/C++ Compiler 2024.0.0 (2024.0.0.20231017) for x86_64-unknown-linux-gnu
+main: seed  = 1710359960
+ggml_init_sycl: GGML_SYCL_DEBUG: 0
+ggml_init_sycl: GGML_SYCL_F16: no
+found 8 SYCL devices:
+|ID| Name                                        |compute capability|Max compute units|Max work group|Max sub group|Global mem size|
+|--|---------------------------------------------|------------------|-----------------|--------------|-------------|---------------|
+| 0|               Intel(R) Arc(TM) A770 Graphics|               1.3|              512|          1024|           32|    16225243136|
+| 1|               Intel(R) FPGA Emulation Device|               1.2|               32|      67108864|           64|    67181625344|
+| 2|         13th Gen Intel(R) Core(TM) i9-13900K|               3.0|               32|          8192|           64|    67181625344|
+| 3|               Intel(R) Arc(TM) A770 Graphics|               3.0|              512|          1024|           32|    16225243136|
+| 4|               Intel(R) Arc(TM) A770 Graphics|               3.0|              512|          1024|           32|    16225243136|
+| 5|                    Intel(R) UHD Graphics 770|               3.0|               32|           512|           32|    53745299456|
+| 6|               Intel(R) Arc(TM) A770 Graphics|               1.3|              512|          1024|           32|    16225243136|
+| 7|                    Intel(R) UHD Graphics 770|               1.3|               32|           512|           32|    53745299456|
+detect 2 SYCL GPUs: [0,6] with Max compute units:512
+llama_model_loader: loaded meta data with 20 key-value pairs and 291 tensors from ~/Mistral-7B-Instruct-v0.1-GGUF/mistral-7b-instruct-v0.1.Q4_K_M.gguf (version GGUF V2)
+llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
+llama_model_loader: - kv   0:                       general.architecture str              = llama
+llama_model_loader: - kv   1:                               general.name str              = mistralai_mistral-7b-instruct-v0.1
+llama_model_loader: - kv   2:                       llama.context_length u32              = 32768
+llama_model_loader: - kv   3:                     llama.embedding_length u32              = 4096
+llama_model_loader: - kv   4:                          llama.block_count u32              = 32
+llama_model_loader: - kv   5:                  llama.feed_forward_length u32              = 14336
+llama_model_loader: - kv   6:                 llama.rope.dimension_count u32              = 128
+llama_model_loader: - kv   7:                 llama.attention.head_count u32              = 32
+llama_model_loader: - kv   8:              llama.attention.head_count_kv u32              = 8
+llama_model_loader: - kv   9:     llama.attention.layer_norm_rms_epsilon f32              = 0.000010
+llama_model_loader: - kv  10:                       llama.rope.freq_base f32              = 10000.000000
+llama_model_loader: - kv  11:                          general.file_type u32              = 15
+llama_model_loader: - kv  12:                       tokenizer.ggml.model str              = llama
+llama_model_loader: - kv  13:                      tokenizer.ggml.tokens arr[str,32000]   = ["<unk>", "<s>", "</s>", "<0x00>", "<...
+llama_model_loader: - kv  14:                      tokenizer.ggml.scores arr[f32,32000]   = [0.000000, 0.000000, 0.000000, 0.0000...
+llama_model_loader: - kv  15:                  tokenizer.ggml.token_type arr[i32,32000]   = [2, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, ...
+llama_model_loader: - kv  16:                tokenizer.ggml.bos_token_id u32              = 1
+llama_model_loader: - kv  17:                tokenizer.ggml.eos_token_id u32              = 2
+llama_model_loader: - kv  18:            tokenizer.ggml.unknown_token_id u32              = 0
+llama_model_loader: - kv  19:               general.quantization_version u32              = 2
+llama_model_loader: - type  f32:   65 tensors
+llama_model_loader: - type q4_K:  193 tensors
+llama_model_loader: - type q6_K:   33 tensors
+llm_load_vocab: special tokens definition check successful ( 259/32000 ).
+llm_load_print_meta: format           = GGUF V2
+llm_load_print_meta: arch             = llama
+llm_load_print_meta: vocab type       = SPM
+llm_load_print_meta: n_vocab          = 32000
+llm_load_print_meta: n_merges         = 0
+llm_load_print_meta: n_ctx_train      = 32768
+llm_load_print_meta: n_embd           = 4096
+llm_load_print_meta: n_head           = 32
+llm_load_print_meta: n_head_kv        = 8
+llm_load_print_meta: n_layer          = 32
+llm_load_print_meta: n_rot            = 128
+llm_load_print_meta: n_embd_head_k    = 128
+llm_load_print_meta: n_embd_head_v    = 128
+llm_load_print_meta: n_gqa            = 4
+llm_load_print_meta: n_embd_k_gqa     = 1024
+llm_load_print_meta: n_embd_v_gqa     = 1024
+llm_load_print_meta: f_norm_eps       = 0.0e+00
+llm_load_print_meta: f_norm_rms_eps   = 1.0e-05
+llm_load_print_meta: f_clamp_kqv      = 0.0e+00
+llm_load_print_meta: f_max_alibi_bias = 0.0e+00
+llm_load_print_meta: n_ff             = 14336
+llm_load_print_meta: n_expert         = 0
+llm_load_print_meta: n_expert_used    = 0
+llm_load_print_meta: causal attm      = 1
+llm_load_print_meta: pooling type     = 0
+llm_load_print_meta: rope type        = 0
+llm_load_print_meta: rope scaling     = linear
+llm_load_print_meta: freq_base_train  = 10000.0
+llm_load_print_meta: freq_scale_train = 1
+llm_load_print_meta: n_yarn_orig_ctx  = 32768
+llm_load_print_meta: rope_finetuned   = unknown
+llm_load_print_meta: ssm_d_conv       = 0
+llm_load_print_meta: ssm_d_inner      = 0
+llm_load_print_meta: ssm_d_state      = 0
+llm_load_print_meta: ssm_dt_rank      = 0
+llm_load_print_meta: model type       = 7B
+llm_load_print_meta: model ftype      = Q4_K - Medium
+llm_load_print_meta: model params     = 7.24 B
+llm_load_print_meta: model size       = 4.07 GiB (4.83 BPW) 
+llm_load_print_meta: general.name     = mistralai_mistral-7b-instruct-v0.1
+llm_load_print_meta: BOS token        = 1 '<s>'
+llm_load_print_meta: EOS token        = 2 '</s>'
+llm_load_print_meta: UNK token        = 0 '<unk>'
+llm_load_print_meta: LF token         = 13 '<0x0A>'
+get_memory_info: [warning] ext_intel_free_memory is not supported (export/set ZES_ENABLE_SYSMAN=1 to support), use total memory as free memory
+get_memory_info: [warning] ext_intel_free_memory is not supported (export/set ZES_ENABLE_SYSMAN=1 to support), use total memory as free memory
+llm_load_tensors: ggml ctx size =    0.33 MiB
+llm_load_tensors: offloading 32 repeating layers to GPU
+llm_load_tensors: offloading non-repeating layers to GPU
+llm_load_tensors: offloaded 33/33 layers to GPU
+llm_load_tensors:      SYCL0 buffer size =  2113.28 MiB
+llm_load_tensors:      SYCL6 buffer size =  1981.77 MiB
+llm_load_tensors:  SYCL_Host buffer size =    70.31 MiB
+...............................................................................................
+llama_new_context_with_model: n_ctx      = 512
+llama_new_context_with_model: freq_base  = 10000.0
+llama_new_context_with_model: freq_scale = 1
+llama_kv_cache_init:      SYCL0 KV buffer size =    34.00 MiB
+llama_kv_cache_init:      SYCL6 KV buffer size =    30.00 MiB
+llama_new_context_with_model: KV self size  =   64.00 MiB, K (f16):   32.00 MiB, V (f16):   32.00 MiB
+llama_new_context_with_model:  SYCL_Host input buffer size   =    10.01 MiB
+llama_new_context_with_model:      SYCL0 compute buffer size =    73.00 MiB
+llama_new_context_with_model:      SYCL6 compute buffer size =    73.00 MiB
+llama_new_context_with_model:  SYCL_Host compute buffer size =     8.00 MiB
+llama_new_context_with_model: graph splits (measure): 3
+
+system_info: n_threads = 8 / 32 | AVX = 1 | AVX_VNNI = 1 | AVX2 = 1 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | FMA = 1 | NEON = 0 | ARM_FMA = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 1 | SSE3 = 1 | SSSE3 = 1 | VSX = 0 | MATMUL_INT8 = 0 | 
+sampling: 
+        repeat_last_n = 64, repeat_penalty = 1.100, frequency_penalty = 0.000, presence_penalty = 0.000
+        top_k = 40, tfs_z = 1.000, top_p = 0.950, min_p = 0.050, typical_p = 1.000, temp = 0.800
+        mirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000
+sampling order: 
+CFG -> Penalties -> top_k -> tfs_z -> typical_p -> top_p -> min_p -> temperature 
+generate: n_ctx = 512, n_batch = 512, n_predict = 32, n_keep = 1
+
+
+ Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun exploring the world around her. Her parents were kind and let her do what she wanted, as long as she stayed safe.
+
+One day, the little
+llama_print_timings:        load time =   10096.78 ms
+llama_print_timings:      sample time =     x.xx ms /    32 runs   (   xx.xx ms per token,  xx.xx tokens per second)
+llama_print_timings: prompt eval time =    xx.xx ms /    31 tokens (   xx.xx ms per token,  xx.xx tokens per second)
+llama_print_timings:        eval time =    xx.xx ms /    31 runs   (   xx.xx ms per token,  xx.xx tokens per second)
+llama_print_timings:       total time =    xx.xx ms /    62 tokens
+Log end
+```
