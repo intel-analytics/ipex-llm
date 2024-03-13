@@ -380,6 +380,7 @@ def qwen2_attention_forward_origin(
 
     return attn_output, attn_weights, past_key_value
 
+
 def qwen2_sdpa_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -509,14 +510,13 @@ def qwen2_sdpa_attention_forward(
 
         attn_weights = attn_weights + attention_mask
 
-    attn_output = torch.nn.functional.scaled_dot_product_attention(
-            query_states,
-            key_states,
-            value_states,
-            attn_mask=attention_mask,
-            dropout_p=self.attention_dropout if self.training else 0.0,
-            is_causal=self.is_causal and attention_mask is None and q_len > 1,
-        )
+    from torch.nn.functional import scaled_dot_product_attention as sdpa
+    attn_output = sdpa(query_states,
+                       key_states,
+                       value_states,
+                       attn_mask=attention_mask,
+                       dropout_p=self.attention_dropout if self.training else 0.0,
+                       is_causal=self.is_causal and attention_mask is None and q_len > 1)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.view(bsz, q_len, self.hidden_size)
