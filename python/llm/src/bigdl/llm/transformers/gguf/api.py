@@ -19,6 +19,7 @@ from bigdl.llm.utils.common import invalidInputError
 
 
 qtype_map = {
+    1: "fp16",           # float16
     2: "sym_int4",      # q4_0
     3: "asym_int4",     # q4_1
     7: "sym_int8",      # q8_0
@@ -27,7 +28,7 @@ qtype_map = {
 }
 
 
-def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
+def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float, low_bit: str = "sym_int4"):
     from .gguf import GGUFFileLoader
 
     loader = GGUFFileLoader(fpath)
@@ -48,6 +49,9 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
             elif "mistral" in general_name:
                 from .models.mistral import load_gguf_mistral
                 model, tokenizer = load_gguf_mistral(loader, dtype)
+            elif "yuan" in general_name:
+                from .models.yuan2 import load_gguf_yuan
+                model, tokenizer = load_gguf_yuan(loader, dtype)
             else:
                 from .models.llama import load_gguf_llama
                 model, tokenizer = load_gguf_llama(loader, dtype)
@@ -66,4 +70,4 @@ def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float):
         else:
             invalidInputError(False, f"Unsupported model family: {model_family}")
 
-        return model, tokenizer, low_bit
+        return model, tokenizer

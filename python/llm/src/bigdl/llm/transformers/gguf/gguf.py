@@ -268,7 +268,7 @@ class GGUFTensorLoader:
         return tensor.view(torch.float)
 
     def convert_f16_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
-        return tensor.view(torch.half)
+        return tensor.view(torch.half).reshape(dims)
 
     def convert_q4_0_tensor(self, tensor: torch.Tensor, size: int, ndims: int, dims: int):
         # see https://github.com/ggerganov/llama.cpp/blob
