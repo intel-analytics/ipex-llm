@@ -6,8 +6,9 @@ This quickstart guide walks you through setting up and using the [Text Generatio
 
 A preview of the WebUI in action is shown below:
 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=100%; />
-
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=100%; />
+</a>
 
 
 ## 1 Install BigDL-LLM
@@ -69,24 +70,26 @@ In **Anaconda Prompt** with the conda environment `llm` activated, navigate to t
 
 ### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 
-  <!-- ```cmd
-  Running on local URL:  http://127.0.0.1:7860
-  ``` -->
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" width=100%; />
 
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" width=100%; />
+</a>
 
 ## 4. Using the WebUI
 
 ### Model Download
 
-Place Huggingface models in `C:\text-generation-webui\models` by either copying locally or downloading via the WebUI. To download, navigate to the **Model** tab, enter the model's huggingface id (for instance, `Qwen/Qwen-7B-Chat`) in the **Download model or LoRA** section, and click **Download**, as illustrated below. 
+Place Huggingface models in `C:\text-generation-webui\models` by either copying locally or downloading via the WebUI. To download, navigate to the **Model** tab, enter the model's huggingface id (for instance, `microsoft/phi-1_5`) in the **Download model or LoRA** section, and click **Download**, as illustrated below. 
 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" width=100%; />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" width=100%; />
+</a>
 
 After copying or downloading the models, click on the blue **refresh** button to update the **Model** drop-down menu. Then, choose your desired model from the newly updated list.  
 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png" width=100%; />
-
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png" width=100%; />
+</a>
 
 ### Load Model
 
@@ -94,9 +97,9 @@ Default settings are recommended for most users. Click **Load** to activate the 
 
 If everything goes well, you will get a message as shown below.
 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=100%; />
-
-
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=100%; />
+</a>
 
 ### Chat with the Model
 
@@ -104,7 +107,9 @@ In the **Chat** tab, start new conversations with **New chat**.
 
 Enter prompts into the textbox at the bottom and press the **Generate** button to receive responses.
 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=100%; />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=100%; />
+</a>
 
 <!-- Notes:
 * Multi-turn conversations may consume GPU memory. You may specify the `Truncate the prompt up to this length` value in `Parameters` tab to reduce the GPU memory usage.
@@ -120,6 +125,10 @@ To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** termina
 
 ## Troubleshooting
 
+### Potentially slower first response
+
+The first response to user prompt might be slower than expected, with delays of up to several minutes before the response is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU types.
+
 ### Missing Required Dependencies
 
 During model loading, you may encounter an **ImportError** like `ImportError: This modeling file requires the following packages that were not found in your environment`. This indicates certain packages required by the model are absent from your environment. Detailed instructions for installing these necessary packages can be found at the bottom of the error messages. Take the following steps to fix these errors:
@@ -132,6 +141,8 @@ If there are still errors on missing packages, repeat the installation process f
 
 
 ### Compatiblity issues
-If you encounter **AttributeError** errors like shown below, it may be due to some models being incompatible with the current version of the transformers package because they are outdated. In such instances, using a more recent model is recommended.
-
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png" width=100%; />
+If you encounter **AttributeError** errors like `AttributeError: 'BaichuanTokenizer' object has no attribute 'sp_model'`, it may be due to some models being incompatible with the current version of the transformers package because the models are outdated. In such instances, using a more recent model is recommended.
+<!-- 
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_error.png" width=100%; />
+</a> -->
