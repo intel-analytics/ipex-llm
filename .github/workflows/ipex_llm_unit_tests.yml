@@ -116,7 +116,7 @@ jobs:
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
           ref: "ipex-llm-20240308-action"
-          token: ${{ env.github_access_token }}
+          token: "xxxxxx"
           submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -234,7 +234,7 @@ jobs:
           pip install transformers==4.31.0
           bash python/llm/test/run-llm-llamaindex-tests.sh
   llm-unit-test-on-arc:
-    needs: [setup-python-version]
+    needs: [setup-python-version, llm-unit-test]
     strategy:
       fail-fast: false
       matrix:
