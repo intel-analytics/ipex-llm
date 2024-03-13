@@ -617,11 +617,11 @@ def speculative_generate(self,
                     if step == 1:
                         past_key_values_storage = \
                             _prepare_past_key_values_storage_cpu(self, past_key_values,
-                                                                max_new_tokens, _enable_ipex)
+                                                                 max_new_tokens, _enable_ipex)
                     # each iter cut off cur_len kv_cache from past_key_values1
                     draft_past_key_values = \
                         _prepare_draft_past_key_values_cpu(self, past_key_values,
-                                                        past_key_values_storage,  _enable_ipex)
+                                                           past_key_values_storage,  _enable_ipex)
                     original_draft_past_key_values = draft_past_key_values
             else:
                 past_key_values, extend_kv = _check_and_extend_kv_cache(past_key_values,
