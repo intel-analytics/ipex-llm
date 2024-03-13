@@ -13,8 +13,8 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
-  #   branches: [main]
+  pull_request:
+    branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -28,7 +28,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -36,6 +36,7 @@ jobs:
         python-version: ["3.9"]
     runs-on: [self-hosted, llm, perf]
     env:
+      BIGDL_COMPATIBLE_MODE: True
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -90,6 +91,10 @@ jobs:
       - name: Test on xpu(transformers==4.31.0)
         shell: bash
         run: |
+          pip uninstall -y bigdl-llm
+          pip install --pre --upgrade ipex-llm[all]
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
+
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
@@ -158,7 +163,7 @@ jobs:
           fi
           
   llm-performance-test-on-spr:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -166,6 +171,7 @@ jobs:
         python-version: ["3.9"]
     runs-on: [self-hosted, llm, spr01-perf]
     env:
+      BIGDL_COMPATIBLE_MODE: True
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -208,6 +214,10 @@ jobs:
       - name: Test on cpu
         shell: bash
         run: |
+          pip uninstall -y bigdl-llm
+          pip install --pre --upgrade ipex-llm[all]
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
+
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
@@ -230,7 +240,7 @@ jobs:
           done
 
   llm-performance-test-on-core:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -244,6 +254,7 @@ jobs:
           #   python-version: "3.9"
     runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-core, "${{ matrix.platform }}"]
     env:
+      BIGDL_COMPATIBLE_MODE: True
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       CSV_SAVE_PATH: ${{ github.event.schedule && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
     steps:
@@ -282,6 +293,10 @@ jobs:
       - name: Test on core ${{ matrix.platform }}
         shell: bash
         run: |
+          pip uninstall -y bigdl-llm
+          pip install --pre --upgrade ipex-llm[all]
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
+
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
@@ -302,7 +317,7 @@ jobs:
           fi
 
   llm-performance-test-on-igpu:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -312,6 +327,7 @@ jobs:
             python-version: "3.9"
     runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-igpu]
     env:
+      BIGDL_COMPATIBLE_MODE: True
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -413,6 +429,9 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
+          pip uninstall -y bigdl-llm
+          pip install --pre --upgrade ipex-llm[all]
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
