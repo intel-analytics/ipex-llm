@@ -399,11 +399,6 @@ jobs:
           pip install --upgrade tiktoken einops transformers_stream_generator
 
           pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-          # pip show bigdl-llm | findstr %TEST_VERSION_DATE%
-          # if %ERRORLEVEL% neq 0 (
-          #   echo "Did not install bigdl-llm with excepted version %TEST_VERSION_DATE%"
-          #   exit /b 1
-          # )
           pip list
 
           call conda deactivate

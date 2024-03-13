@@ -135,10 +135,6 @@ jobs:
           echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_7b_q4_0.bin" >> "$GITHUB_ENV"
           echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
           echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/chatglm2-6b-q4_0.bin" >> "$GITHUB_ENV"
-      # - name: Set access token
-      #   run: |
-      #     echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-
 
       - name: Set access token for Ubuntu
         if: matrix.os == 'ubuntu-20.04-lts'
@@ -272,7 +268,7 @@ jobs:
           pip install transformers==4.31.0
           bash python/llm/test/run-llm-llamaindex-tests.sh
   llm-unit-test-on-arc:
-    needs: [setup-python-version, llm-unit-test]
+    needs: [setup-python-version]
     strategy:
       fail-fast: false
       matrix:
