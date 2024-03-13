@@ -26,10 +26,6 @@ It applies to Intel Arc Series GPU.
     # As 5.19's kernel doesn't has any arc graphic driver. The machine may not start the desktop correctly, but we can use the ssh to login. 
     # Or you can select 5.19's recovery mode in the grub, then choose resume to resume the normal boot directly.
 
-    # remove latest kernel
-
-    sudo apt purge linux-image-6.2.0-*
-
     sudo apt autoremove
 
     sudo reboot
@@ -52,8 +48,8 @@ It applies to Intel Arc Series GPU.
         linux-headers-$(uname -r) \
         libc6-dev
         
-    #sudo apt-get install -y intel-platform-vsec-dkms intel-platform-cse-dkms intel-i915-dkms intel-fw-gpu
-    sudo apt install intel-i915-dkms=1.23.5.19.230406.21.5.17.0.1034+i38-1 intel-platform-vsec-dkms intel-platform-cse-dkms intel-fw-gpu
+    # install the latest intel-i915-dkms
+    sudo apt-get install -y intel-platform-vsec-dkms intel-platform-cse-dkms intel-i915-dkms intel-fw-gpu
 
     sudo apt-get install -y gawk libc6-dev udev\
     intel-opencl-icd intel-level-zero-gpu level-zero \
