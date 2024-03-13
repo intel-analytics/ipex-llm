@@ -532,8 +532,17 @@ class LowBitLinear(nn.Linear):
         self.compute_dtype = None  # only for training
         self.enable_xetla = enable_xetla
         self.optimize_lm_head = optimize_lm_head
+        # empty_cache (by default on arc) for models with large vocabulary (e.g. baichuan/qwen)
+        # for long input sequences.
+        self.device = None  # detected only once in the first forward
+        self.low_memory_mode = self.in_len * self.out_len >= 70000*4096
 
     def forward(self, x: torch.Tensor):
+        if self.device is None:
+            self.device = get_xpu_device_type(self.weight.data)
+            self.low_memory_mode = \
+                self.low_memory_mode and\
+                (self.device == "arc" or os.environ.get("BIGDL_LOW_MEMORY_MODE", None) == "1")
         # Due to inconsistent training status in some models like Baichuan-7b-Chat,
         # we should check both self.training and torch.is_inference_mode_enabled().
         is_training = self.training and not torch.is_inference_mode_enabled()
@@ -599,6 +608,9 @@ class LowBitLinear(nn.Linear):
                 # current workaround to reduce first token latency of fp32 input
                 # sometimes fp16 cause nan and training instability
                 # disable the conversion when training
+                do_empty_cache = self.low_memory_mode and x_2d.shape[0] >= 1024
+                if do_empty_cache:
+                    torch.xpu.empty_cache()
                 if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
                         not use_xmx(x_2d, self.weight.qtype):
                     x_2d = x_2d.half()
@@ -608,6 +620,8 @@ class LowBitLinear(nn.Linear):
                 else:
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
                                                      input_seq_size)
+                if do_empty_cache:
+                    torch.xpu.empty_cache()
             result = result.view(new_shape)
             if self.mp_group is not None:
                 from deepspeed import comm as dist
