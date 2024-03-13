@@ -122,7 +122,7 @@ Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/i
 
          ./run-hbm.sh
 
-       The scipt uses a default numactl strategy. If you want to customize it, please use ``numactl -H`` to check how the index of hbm node and cpu are assigned.
+      The scipt uses a default numactl strategy. If you want to customize it, please use ``numactl -H`` to check how the index of hbm node and cpu are assigned.
       
       For example:
 
