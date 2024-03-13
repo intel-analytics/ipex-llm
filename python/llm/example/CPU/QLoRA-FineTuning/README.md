@@ -60,29 +60,3 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
-
-### 4. Use BigDL-LLM to verify the fine-tuning effect
-Train more steps and try input sentence like `['quote'] -> [?]` to verify. For example, using `“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: ` to inference.
-BigDL-LLM llama2 example [link](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2). Update the `LLAMA2_PROMPT_FORMAT = "{prompt}"`.
-```bash
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt "“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:"  --n-predict 20
-```
-
-#### Sample Output
-Base_model output
-```log
-Inference time: xxx s
--------------------- Prompt --------------------
-“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:
--------------------- Output --------------------
-“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: 💻 Fine-tuning a language model on a powerful device like an Intel CPU
-```
-Merged_model output
-```log
-Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
-Inference time: xxx s
--------------------- Prompt --------------------
-“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->:
--------------------- Output --------------------
-“QLoRA fine-tuning using BigDL-LLM 4bit optimizations on Intel CPU is Efficient and convenient” ->: ['bigdl'] ['deep-learning'] ['distributed-computing'] ['intel'] ['optimization'] ['training'] ['training-speed']
-```
