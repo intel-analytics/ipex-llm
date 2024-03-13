@@ -74,18 +74,12 @@ jobs:
       THREAD_NUM: 24
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
-      - name: Test GITHUB_ACCESS_TOKEN on Windows
+      - name: Test SSH_SOCKS_PROXY on Windows
         if: matrix.os == 'windows'
-        shell: powershell
         run: |
-          $token = "${GITHUB_ACCESS_TOKEN}"
-          $headers = @{Authorization = "token $token"}
-          $user = Invoke-RestMethod -Uri https://api.github.com/user -Method Get -Headers $headers
-          if ($user.login) {
-              Write-Output "Token is valid. User login: $($user.login)"
-          } else {
-              Write-Output "Token is invalid or not set."
-          }
+          echo ("BRANCH_NAME=${SSH_SOCKS_PROXY}") >> $env:GITHUB_ENV
+      - run: echo "${{ env.BRANCH_NAME }}"
+      - run: echo $env:BRANCH_NAME
 
   llm-unit-test:
     needs: [setup-python-version, token-test]
