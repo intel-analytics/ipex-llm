@@ -424,6 +424,7 @@ jobs:
           # sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{api}-results-{today}.csv/32-32-{api}-results-{today}_test1.csv/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32.yaml
+          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
 
       - name: Test on igpu (32-32)
         shell: cmd
@@ -431,7 +432,6 @@ jobs:
           call conda activate igpu-perf
           pip uninstall -y bigdl-llm
           pip install --pre --upgrade ipex-llm
-          find "python\llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
