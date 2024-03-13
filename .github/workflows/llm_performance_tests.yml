@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[all]
+          pip install --pre --upgrade ipex-llm[xpu]
           find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
 
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -225,7 +225,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          source bigdl-llm-init -t
+          source ipex-llm-init -t
           export OMP_NUM_THREADS=48
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
