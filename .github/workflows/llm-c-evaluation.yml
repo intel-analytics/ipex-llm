@@ -46,7 +46,7 @@ jobs:
       model_name: ${{ steps.set-matrix.outputs.model_name }}
       precision: ${{ steps.set-matrix.outputs.precision }}
       runner: ${{ steps.set-matrix.outputs.runner }}
-      date: '$(date +%Y-%m-%d)'
+      date: ${{ steps.set-matrix.outputs.date }}
     steps:
       - name: set-nightly-env        
         if: ${{github.event_name == 'schedule'}}
@@ -87,6 +87,7 @@ jobs:
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
+            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
   llm-c-evaluation:
     timeout-minutes: 1200
@@ -244,7 +245,7 @@ jobs:
           pip install numpy
           pip install pandas==1.5.3
           pip install jsonlines pytablewriter regex
-      
+
       - name: Set output path
         shell: bash
         run: |
