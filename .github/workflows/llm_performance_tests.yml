@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[xpu]
+          pip install --pre --upgrade ipex-llm
           find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
 
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -215,7 +215,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[all]
+          pip install --pre --upgrade ipex-llm
           find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
 
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -294,7 +294,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[all]
+          pip install --pre --upgrade ipex-llm
           find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
 
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -430,7 +430,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[all]
+          pip install --pre --upgrade ipex-llm
           find "python\llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1

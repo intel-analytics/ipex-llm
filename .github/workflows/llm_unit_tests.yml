@@ -212,7 +212,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall -y bigdl-llm
-          pip install --pre --upgrade ipex-llm[all]
+          pip install --pre --upgrade ipex-llm
           find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           python -m pip install einops datasets librosa openai-whisper
           bash python/llm/test/run-llm-inference-tests.sh
