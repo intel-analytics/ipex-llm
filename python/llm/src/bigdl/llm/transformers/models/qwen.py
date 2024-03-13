@@ -42,7 +42,7 @@ from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv
 from bigdl.llm.transformers.models.utils import rotate_half, SILU
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
-from bigdl.llm.transformers.models.utils import use_esimd_sdp
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 
@@ -271,7 +271,8 @@ def qwen_attention_forward_original(
     if not decoding_fast_path:
         query = query.transpose(1, 2)
 
-    if use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
+    if use_fuse_rope and use_flash_attention(query, key, attention_mask) and \
+            use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query,
                                                     key,
