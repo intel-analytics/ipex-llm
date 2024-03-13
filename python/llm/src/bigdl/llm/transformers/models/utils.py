@@ -83,32 +83,36 @@ def kv_cache_device_check(x: torch.Tensor) -> bool:
         (get_xpu_device_type(x) == "arc" and 1 < x.size(0) and x.size(0) < 8)
 
 
-def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device):
+def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device, new_layout=False):
     max_length = current_length + FP8_KV_ALLOC_LENGTH
 
     k_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
                                   dtype=torch.uint8, device=device)
-
-    v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
-                                  dtype=torch.uint8, device=device)
-
     k_cache = k_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
                                          k_cache_storage.stride(), storage_offset=0)
 
-    v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, 0),
-                                         v_cache_storage.stride(), storage_offset=0)
+    if new_layout:
+        v_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
+                                      dtype=torch.uint8, device=device)
+        v_cache = v_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
+                                             v_cache_storage.stride(), storage_offset=0)
+        return k_cache, v_cache
+    else:
+        v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
+                                      dtype=torch.uint8, device=device)
+        v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, 0),
+                                             v_cache_storage.stride(), storage_offset=0)
+        return k_cache, v_cache.transpose(-1, -2)
 
-    return k_cache, v_cache.transpose(-1, -2)
 
-
-def append_fp8_kv_cache(k_cache, v_cache, key, value):
+def append_fp8_kv_cache(k_cache, v_cache, key, value, new_layout=False):
     batch_size, num_heads, cur_length, head_dim = k_cache.shape
     new_length = cur_length + key.size(2)
     new_size = (batch_size, num_heads, new_length, head_dim)
 
     if k_cache.stride(1) < new_length * k_cache.size(3):
         new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, new_length,
-                                                     head_dim, key.device)
+                                                     head_dim, key.device, new_layout)
         new_k_cache = new_k_cache.as_strided(new_size, new_k_cache.stride(), storage_offset=0)
         new_v_cache = new_v_cache.as_strided(new_size, new_v_cache.stride(), storage_offset=0)
         new_k_cache[:, :, :cur_length, :] = k_cache
