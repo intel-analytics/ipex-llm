@@ -431,7 +431,7 @@ jobs:
           call conda activate igpu-perf
           pip uninstall -y bigdl-llm
           pip install --pre --upgrade ipex-llm[all]
-          find "python/llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
+          find "python\llm" -type f -name "*.py" -exec sed -i '1s/^/import ipex_llm\n/' {} +
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
