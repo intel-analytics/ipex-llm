@@ -164,7 +164,6 @@ jobs:
           pip install tiktoken
           pip install numpy==1.26.3
           pip install pandas==1.5.3
-          pip install transformers==4.31.0
           pip install transformers_stream_generator
 
       - name: Run C-Eval
