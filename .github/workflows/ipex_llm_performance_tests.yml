@@ -13,8 +13,8 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
-  #   branches: [main]
+  pull_request:
+    branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
@@ -230,7 +230,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          source bigdl-llm-init -t
+          source ipex-llm-init -t
           export OMP_NUM_THREADS=48
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
