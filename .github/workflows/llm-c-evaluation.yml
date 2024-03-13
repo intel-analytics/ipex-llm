@@ -116,13 +116,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-          pip install einops
-          pip install thefuzz
-          pip install tiktoken
-          pip install numpy==1.26.3
-          pip install pandas==1.5.3
-          pip install transformers==4.31.0
-          pip install transformers_stream_generator
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -161,6 +154,17 @@ jobs:
           DATA_PATH=$CEVAL_HF_HOME/data
           unzip -o "$CEVAL_HF_HOME/data/ceval-exam.zip" -d "$CEVAL_HF_HOME/data"
           wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
+
+      - name: Install New Dependencies
+        shell: bash
+        run: |
+          pip install einops
+          pip install thefuzz
+          pip install tiktoken
+          pip install numpy==1.26.3
+          pip install pandas==1.5.3
+          pip install transformers==4.31.0
+          pip install transformers_stream_generator
 
       - name: Run C-Eval
         shell: bash
