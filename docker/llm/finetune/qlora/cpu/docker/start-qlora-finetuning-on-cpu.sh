@@ -11,9 +11,9 @@ then
   MODEL_PARAM="--repo-id-or-model-path ./model"  # otherwise, default to download from HF repo
 fi
 
-if [ -d "./data/english_quotes" ];
+if [ -d "./data/alpaca-cleaned" ];
 then
-  DATA_PARAM="--dataset ./data/english_quotes" # otherwise, default to download from HF dataset
+  DATA_PARAM="--dataset ./data/alpaca-cleaned" # otherwise, default to download from HF dataset
 fi
 
 if [ "$STANDALONE_DOCKER" = "TRUE" ]
