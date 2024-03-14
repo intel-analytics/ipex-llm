@@ -24,8 +24,8 @@ subtrees:
       title: "LLM"
       subtrees:
         - entries:
-          - file: doc/LLM/Overview/llm
-            title: "LLM in 5 minutes"
+          # - file: doc/LLM/Overview/llm
+          #   title: "LLM in 5 minutes"
           - file: doc/LLM/Overview/install
             title: "Installation"
             subtrees:
@@ -47,10 +47,10 @@ subtrees:
               - entries:
                 - file: doc/LLM/Overview/KeyFeatures/optimize_model
                 - file: doc/LLM/Overview/KeyFeatures/transformers_style_api
-                  subtrees:
-                    - entries:
-                      - file: doc/LLM/Overview/KeyFeatures/hugging_face_format
-                      - file: doc/LLM/Overview/KeyFeatures/native_format
+                - file: doc/LLM/Overview/KeyFeatures/hugging_face_format
+                  # subtrees:
+                  #   - entries:
+                  #     - file: doc/LLM/Overview/KeyFeatures/native_format
                 - file: doc/LLM/Overview/KeyFeatures/langchain_api
                 # - file: doc/LLM/Overview/KeyFeatures/cli
                 - file: doc/LLM/Overview/KeyFeatures/gpu_supports
@@ -59,14 +59,14 @@ subtrees:
                       - file: doc/LLM/Overview/KeyFeatures/inference_on_gpu
                       - file: doc/LLM/Overview/KeyFeatures/finetune
                       - file: doc/LLM/Overview/KeyFeatures/multi_gpus_selection
-          - file: doc/LLM/Overview/examples
-            title: "Examples"
-            subtrees:
-              - entries:
-                - file: doc/LLM/Overview/examples_cpu
-                  title: "CPU"
-                - file: doc/LLM/Overview/examples_gpu
-                  title: "GPU"
+          # - file: doc/LLM/Overview/examples
+          #   title: "Examples"
+          #   subtrees:
+          #     - entries:
+          #       - file: doc/LLM/Overview/examples_cpu
+          #         title: "CPU"
+          #       - file: doc/LLM/Overview/examples_gpu
+          #         title: "GPU"
           # - file: doc/LLM/Overview/known_issues
           #   title: "Tips and Known Issues"
           - file: doc/PythonAPI/LLM/index
