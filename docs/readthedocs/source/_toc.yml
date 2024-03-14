@@ -46,7 +46,7 @@ subtrees:
             subtrees:
               - entries:
                 - file: doc/LLM/Overview/KeyFeatures/optimize_model
-                - file: doc/LLM/Overview/KeyFeatures/transformers_style_api
+                # - file: doc/LLM/Overview/KeyFeatures/transformers_style_api
                 - file: doc/LLM/Overview/KeyFeatures/hugging_face_format
                   # subtrees:
                   #   - entries:
