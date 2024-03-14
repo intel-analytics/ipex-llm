@@ -27,24 +27,33 @@ Configure oneAPI variables by running the following command in bash:
 source source /opt/intel/oneapi/setvars.sh
 ```
 
+### Initialization
+```cmd
+init-cpp
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PWD}
+```
+
+**After `init-cpp`, you should see many soft links of llama.cpp executable files in current directory.**
+
+```eval_rst
+.. note::
+
+   ``init-cpp`` will create soft links of llama.cpp executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
+```
+
 ### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
 
 ### Run the quantized model
-```eval_rst
-.. note::
-
-   BigDL-LLM provides almost the same usage as llama.cpp except you should add ``llama-cpp`` before running any executable file.
-```
 
 ```cmd
-llama-cpp main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt \"Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun\" -t 8 -e -ngl 33 --color
+./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
 ```
 
 ```eval_rst
 .. note::
 
-   For more details about meaning of each parameter, you can use ``llama-cpp main -h``.
+   For more details about meaning of each parameter, you can use ``./main -h``.
 ```
 
 ### Sample Output
@@ -189,30 +198,30 @@ For a Huggingface model, you need to convert it to ggml FP16 format first:
 ```eval_rst
 .. note::
 
-   BigDL-LLM provides ``llama-convert`` command to convert Huggingface model to ggml format, which is the same as ``python3 convert.py`` in llama.cpp .
+   BigDL-LLM provides ``convert`` command to convert Huggingface model to ggml format, which is the same as ``python3 convert.py`` in llama.cpp .
 ```
 
 ```cmd
-llama-convert ./Mistral-7B-v0.1
+convert ./Mistral-7B-v0.1
 ```
 With above command, a `ggml-model-f16.gguf` file is generated in the same model directroy.
 
 Then you can quantize it to any precision you like use `llama-cpp quantize`, for instance
 
 ```cmd
-llama-cpp quantize ./Mistral-7B-v0.1/ggml-model-f16.gguf ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf Q4_K
+./quantize ./Mistral-7B-v0.1/ggml-model-f16.gguf ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf Q4_K
 ```
 
 ```eval_rst
 .. note::
 
-   For more details about each quantization type, you can use ``llama-cpp quantize -h``.
+   For more details about each quantization type, you can use ``./quantize -h``.
 ```
 
 ### Run Quantized Model
 
 ```cmd
-llama-cpp main -m ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf -n 32 --prompt \"Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun\" -t 8 -e -ngl 33 --color
+./main -m ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf -n 32 --prompt \"Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun\" -t 8 -e -ngl 33 --color
 ```
 
 ## Troubleshooting
