@@ -106,7 +106,7 @@ def qwen2_attention_forward(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     if use_quantize_kv_cache(self.q_proj, hidden_states):
         forward_function = qwen2_attention_forward_quantized
-    elif self.q_proj.device.type == "cpu":
+    elif hidden_states.device.type == "cpu":
         forward_function = qwen2_sdpa_attention_forward
     else:
         forward_function = qwen2_attention_forward_origin
