@@ -20,7 +20,7 @@ BigDL-LLM
         Documents in these sections helps you getting started quickly with BigDL-LLM.
 
         +++
-        :bdg-link:`BigDL-LLM in 5 minutes <./Overview/llm.html>` |
+        :bdg-link:`Quickstart <./Quickstart/index.html>` |
         :bdg-link:`Installation <./Overview/install.html>`
 
     .. grid-item-card::
@@ -33,7 +33,7 @@ BigDL-LLM
         +++
 
         :bdg-link:`PyTorch <./Overview/KeyFeatures/optimize_model.html>` |
-        :bdg-link:`transformers-style <./Overview/KeyFeatures/transformers_style_api.html>` |
+        :bdg-link:`Hugging Face transformers Format <./Overview/KeyFeatures/hugging_face_format.html>` |
         :bdg-link:`LangChain <./Overview/KeyFeatures/langchain_api.html>` |
         :bdg-link:`GPU <./Overview/KeyFeatures/gpu_supports.html>`
 
@@ -46,7 +46,8 @@ BigDL-LLM
 
         +++
 
-        :bdg-link:`Examples <./Overview/examples.html>`
+        :bdg-link:`Examples <./Overview/examples.html>` |
+        :bdg-link:`Tutorials <https://github.com/intel-analytics/bigdl-llm-tutorial>`
 
     .. grid-item-card::
 
