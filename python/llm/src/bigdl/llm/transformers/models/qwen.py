@@ -270,10 +270,10 @@ def qwen_attention_forward_original(
 
     if not decoding_fast_path:
         query = query.transpose(1, 2)
-     
+
     fsdp_flag = not self.training and not hidden_states.requires_grad and \
         use_flash_attention(query_states, key_states)
-    
+
     if fsdp_flag:
         attn_output = F.scaled_dot_product_attention(query.to(device, dtype=torch.float16),
                                                      key.to(device, dtype=torch.float16),
