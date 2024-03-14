@@ -1083,6 +1083,7 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from bigdl.llm.transformers.models.qwen2 import qwen2_model_forward
+        from bigdl.llm.transformers.models.qwen2 import qwen2_attention_forward
         convert_forward(model,
                         module.Qwen2Model,
                         qwen2_model_forward)
@@ -1092,16 +1093,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MLP,
                         llama_mlp_forward)
-        if model.device.type == 'cpu':
-            from bigdl.llm.transformers.models.qwen2 import qwen2_sdpa_attention_forward
-            convert_forward(model,
-                            module.Qwen2SdpaAttention,
-                            qwen2_sdpa_attention_forward)
-        else:
-            from bigdl.llm.transformers.models.qwen2 import qwen2_attention_forward
-            convert_forward(model,
-                            module.Qwen2Attention,
-                            qwen2_attention_forward)
+        convert_forward(model,
+                        module.Qwen2Attention,
+                        qwen2_attention_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
