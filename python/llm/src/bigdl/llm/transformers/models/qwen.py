@@ -132,6 +132,8 @@ def qwen_attention_forward_original(
                       "flash attn and kv_cache quantization are not supported")
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
+    # for flash attention
+    original_dtype = hidden_states.dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
     decoding_fast_path = (use_fuse_rope and bsz * q_len == 1)
@@ -272,13 +274,15 @@ def qwen_attention_forward_original(
         query = query.transpose(1, 2)
 
     fsdp_flag = not self.training and not hidden_states.requires_grad and \
-        use_flash_attention(query_states, key_states)
+        use_flash_attention(query, key)
 
     if fsdp_flag:
         attn_output = F.scaled_dot_product_attention(query.to(device, dtype=torch.float16),
                                                      key.to(device, dtype=torch.float16),
                                                      value.to(device, dtype=torch.float16),
                                                      is_causal=True)
+        attn_output = attn_output.view(query.shape)
+        attn_output = attn_output.transpose(1, 2)
         attn_weights = None
     elif use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
         import linear_fp16_esimd
@@ -297,7 +301,7 @@ def qwen_attention_forward_original(
         attn_output, self.num_heads, self.head_dim
     )
 
-    attn_output = self.c_proj(context_layer)
+    attn_output = self.c_proj(context_layer).to(original_dtype)
 
     if use_cache:
         outputs = (attn_output, (key.transpose(1, 2), value.transpose(1, 2)))
