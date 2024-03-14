@@ -30,6 +30,14 @@ After setting up the Python environment, you could run the example by following 
 >
 > Please select the appropriate size of the DeepSeek-MoE model based on the capabilities of your machine.
 
+> **Note**: Turn off flash-attention before running the example. 
+> Some modifications are made in the `modeling_deepseek.py` under the model folder after download the model from https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat. 
+> * comment `is_flash_attn_2_available` in L45 and also comment corresponding definition in L54-L56
+> * comment `is_flash_attn_greater_or_equal_2_10` in L46
+> * set ` _supports_flash_attn_2 = False` in the definition of DeepseekPreTrainedModel in L999
+> * set `self._use_flash_attention_2 = False` in L1107 in the initialization of DeepseekModel. 
+> 
+
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
