@@ -110,8 +110,9 @@ Arguments info:
 #### 4.2 Using 2k/4k input size prompt
 You can set the `prompt` argument to be a `.txt` file path containing the 2k/4k size prompt text. A possible command using the 4k input size prompt we provided is given below as an example.
 ```
-python ./generate.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --prompt 4k.txt --low-bit sym_int4
-
+python ./generate.py --repo-id-or-model-path THUDM/chatglm2-6b --prompt 4k.txt --low-bit sym_int4
+python ./generate.py --repo-id-or-model-path THUDM/chatglm2-6b --prompt 2k.txt --low-bit fp8
+```
 #### Sample Output
 #### [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b)
 ```log
