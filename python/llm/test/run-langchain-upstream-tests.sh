@@ -1,8 +1,6 @@
-if [ -z "$THREAD_NUM" ]; then
-  THREAD_NUM=2
-fi
-export OMP_NUM_THREADS=$THREAD_NUM
-export LLM_INFERENCE_TEST_DIR=./llm/test/langchain_gpu
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
+export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/langchain_gpu
 
 echo ">>> Testing LangChain upstream unit test"
 mkdir ${LLM_INFERENCE_TEST_DIR}/langchain_upstream

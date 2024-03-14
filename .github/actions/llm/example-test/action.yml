@@ -12,6 +12,3 @@ runs:
       
       run: |
         bash python/llm/dev/test/run-example-tests.sh
-        pip install -U langchain
-        pip install -U langchain-community
-        bash python/llm/dev/test/run-langchain-upstream-tests.sh

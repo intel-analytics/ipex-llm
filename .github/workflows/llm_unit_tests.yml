@@ -375,6 +375,10 @@ jobs:
             source /home/arda/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-langchain-tests-gpu.sh
+          
+          pip install -U langchain
+          pip install -U langchain-community
+          bash python/llm/dev/test/run-langchain-upstream-tests.sh
 
       - name: Run LLM llamaindex GPU test
         shell: bash
