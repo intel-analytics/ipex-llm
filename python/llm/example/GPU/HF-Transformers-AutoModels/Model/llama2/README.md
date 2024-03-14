@@ -105,9 +105,10 @@ Arguments info:
 - `--low-bit`: argument defining the low bit precision option for optimization. It is default to be `sym_int4`. The choices for this argument are `sym_int4` or `fp8`.
 
 #### 4.2 Using 2k/4k input size prompt
-You can set the `prompt` argument to be a `.txt` file path containing the 2k/4k size prompt text. A possible command using the 4k input size prompt we provided is given below as an example.
+You can set the `prompt` argument to be a `.txt` file path containing the 2k/4k size prompt text. The commands below are examples of how you can run with 2k/4k input. We suggest using `sym_int4` to run 4k input and using `fp8` to run 2k input.
 ```
 python ./generate.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --prompt 4k.txt --low-bit sym_int4
+python ./generate.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --prompt 2k.txt --low-bit fp8
 ```
 
 

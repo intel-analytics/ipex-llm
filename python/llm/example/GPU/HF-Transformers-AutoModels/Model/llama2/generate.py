@@ -28,21 +28,22 @@ DEFAULT_SYSTEM_PROMPT = """\
 
 def get_prompt(message: str, chat_history: list[tuple[str, str]],
                system_prompt: str) -> str:
-    if message.endswith('.txt'): # message is a txt file path
+    texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
+    # The first user input is _not_ stripped
+    do_strip = False
+    for user_input, response in chat_history:
+        user_input = user_input.strip() if do_strip else user_input
+        do_strip = True
+        texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
+    
+    if message.endswith('.txt'):
         with open(message, 'r') as f:
-            texts = f.read()
-            return texts
-    else: # message is a piece of text
-        texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
-        # The first user input is _not_ stripped
-        do_strip = False
-        for user_input, response in chat_history:
-            user_input = user_input.strip() if do_strip else user_input
-            do_strip = True
-            texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
-        message = message.strip() if do_strip else message
-        texts.append(f'{message} [/INST]')
-        return ''.join(texts)
+            data = f.read()
+    else:
+        data = message.strip() if do_strip else message
+        
+    texts.append(f'{data} [/INST]')
+    return ''.join(texts)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
