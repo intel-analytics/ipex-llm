@@ -710,7 +710,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/str(end - st)/"xxxxxx"/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/32-32/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{api}-results-{today}.csv/1024-128-{api}-results-{today}_test1.csv/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit.yaml
 
           # sed -i 's/2048-256/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
@@ -732,7 +732,7 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
+          python run.py 
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -756,7 +756,7 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit_434.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
+          python run.py 
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -780,7 +780,7 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit_437.yaml config.yaml
           set PYTHONIOENCODING=utf-8
-          python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
+          python run.py 
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
