@@ -275,9 +275,9 @@ def qwen_attention_forward_original(
         use_flash_attention(query_states, key_states)
     
     if fsdp_flag:
-        attn_output = F.scaled_dot_product_attention(query.to(dtype=torch.float16),
-                                                     key.to(dtype=torch.float16),
-                                                     value.to(dtype=torch.float16),
+        attn_output = F.scaled_dot_product_attention(query.to(device, dtype=torch.float16),
+                                                     key.to(device, dtype=torch.float16),
+                                                     value.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
     elif use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):

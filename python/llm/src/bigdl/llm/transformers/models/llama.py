@@ -673,9 +673,9 @@ def llama_attention_forward_4_31_original(
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
     if fsdp_flag:
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
-                                                     key_states.to(dtype=torch.float16),
-                                                     value_states.to(dtype=torch.float16),
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
     elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
