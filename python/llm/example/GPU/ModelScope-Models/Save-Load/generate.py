@@ -40,11 +40,13 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
     load_path = args.load_path
     if load_path:
-        # Fast and low cost by loading model on meta device
         model = AutoModelForCausalLM.load_low_bit(load_path, trust_remote_code=True)
         tokenizer = AutoTokenizer.from_pretrained(load_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                     load_in_4bit=True,
+                                                     trust_remote_code=True,
+                                                     model_hub='modelscope')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     save_path = args.save_path

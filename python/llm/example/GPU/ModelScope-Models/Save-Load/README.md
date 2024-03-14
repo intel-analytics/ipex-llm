@@ -1,6 +1,6 @@
 # Save/Load Low-Bit Models with BigDL-LLM Optimizations
 
-In this directory, you will find example on how you could save/load model with BigDL-LLM INT4 optimizations on ModelScope models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://modelscope.cn/models/baichuan-inc/Baichuan2-7B-Chat/summary) as a reference ModelScope model.
+In this directory, you will find example on how you could save/load ModelScope models with BigDL-LLM INT4 optimizations on ModelScope models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://modelscope.cn/models/baichuan-inc/Baichuan2-7B-Chat/summary) as a reference ModelScope model.
 
 ## 0. Requirements
 To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
