@@ -14,5 +14,5 @@ runs:
         bash python/llm/dev/test/run-example-tests.sh
         pip install -U langchain
         pip install -U langchain-community
-        bash python/llm/dev/test/run-example-ipynb-tests.sh
+        bash python/llm/dev/test/run-langchain-upstream-tests.sh
         pip install -U langchain==0.0.184
