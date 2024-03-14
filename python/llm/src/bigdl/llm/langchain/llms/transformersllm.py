@@ -90,6 +90,7 @@ class TransformersLLM(LLM):
         model_id: str,
         model_kwargs: Optional[dict] = None,
         device_map: str = 'cpu',
+        cpu_embedding: bool = False, 
         **kwargs: Any,
     ) -> LLM:
         """
@@ -118,6 +119,8 @@ class TransformersLLM(LLM):
                 "Could not import transformers python package. "
                 "Please install it with `pip install transformers`."
             )
+        
+        model_kwargs['cpu_embedding'] = cpu_embedding
 
         _model_kwargs = model_kwargs or {}
         # TODO: may refactore this code in the future

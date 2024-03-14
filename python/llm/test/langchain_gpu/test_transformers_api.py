@@ -43,6 +43,15 @@ class Test_Langchain_Transformers_API(TestCase):
         output = bigdl_llm(texts)
         res = "Paris" in output
         self.assertTrue(res)
+    
+    def test_cpu_embedding(self):
+        texts = 'What is the capital of France?\n\n'
+        bigdl_llm = TransformersLLM.from_model_id(model_id=self.llama_model_path, 
+                                                  model_kwargs={'trust_remote_code': True}, device_map=device, cpu_embedding=True)
+        
+        output = bigdl_llm(texts)
+        res = "Paris" in output
+        self.assertTrue(res)
 
 if __name__ == '__main__':
     pytest.main([__file__])
