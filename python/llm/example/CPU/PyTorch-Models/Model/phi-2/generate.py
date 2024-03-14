@@ -52,6 +52,7 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = PHI_2_V1_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        model.generation_config.pad_token_id = model.generation_config.eos_token_id
         st = time.time()
         output = model.generate(input_ids, max_new_tokens=args.n_predict, generation_config = generation_config)
         end = time.time()

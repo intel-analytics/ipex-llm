@@ -55,7 +55,8 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = PHI_2_V1_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        
+
+        model.generation_config.pad_token_id = model.generation_config.eos_token_id
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict, generation_config = generation_config)
         # start inference
