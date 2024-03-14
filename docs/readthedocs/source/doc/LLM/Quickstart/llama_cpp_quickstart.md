@@ -5,7 +5,7 @@ This quickstart guide walks you through setting up and using the [llama.cpp](htt
 ## 1 Requirements
 BigDL-LLM's support for llama.cpp requires:
 - Linux system, Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
-- [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
+- [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html)
 
 ## 2 Install BigDL-LLM
 
@@ -189,7 +189,7 @@ For a Huggingface model, you need to convert it to ggml FP16 format first:
 ```eval_rst
 .. note::
 
-   BigDL-LLM provides `llama-convert` command to convert Huggingface model to ggml format, which is the same as `python3 convert.py` in llama.cpp .
+   BigDL-LLM provides ``llama-convert`` command to convert Huggingface model to ggml format, which is the same as ``python3 convert.py`` in llama.cpp .
 ```
 
 ```cmd
@@ -206,7 +206,7 @@ llama-cpp quantize ./Mistral-7B-v0.1/ggml-model-f16.gguf ./Mistral-7B-v0.1/ggml-
 ```eval_rst
 .. note::
 
-   For more details about each quantization type, you can use `llama-cpp quantize -h`.
+   For more details about each quantization type, you can use ``llama-cpp quantize -h``.
 ```
 
 ### Run Quantized Model
