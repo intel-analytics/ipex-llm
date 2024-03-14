@@ -33,7 +33,7 @@ BigDL-LLM
         +++
 
         :bdg-link:`PyTorch <./Overview/KeyFeatures/optimize_model.html>` |
-        :bdg-link:`Hugging Face transformers Format <./Overview/KeyFeatures/hugging_face_format.html>` |
+        :bdg-link:`transformers <./Overview/KeyFeatures/hugging_face_format.html>` |
         :bdg-link:`LangChain <./Overview/KeyFeatures/langchain_api.html>` |
         :bdg-link:`GPU <./Overview/KeyFeatures/gpu_supports.html>`
 
@@ -46,7 +46,7 @@ BigDL-LLM
 
         +++
 
-        :bdg-link:`Examples <./Overview/examples.html>` |
+        :bdg-link:`Examples <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example>` |
         :bdg-link:`Tutorials <https://github.com/intel-analytics/bigdl-llm-tutorial>`
 
     .. grid-item-card::
