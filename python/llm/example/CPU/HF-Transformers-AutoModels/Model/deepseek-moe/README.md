@@ -36,7 +36,10 @@ After setting up the Python environment, you could run the example by following 
 > * comment `is_flash_attn_greater_or_equal_2_10` in L46
 > * set ` _supports_flash_attn_2 = False` in the definition of DeepseekPreTrainedModel in L999
 > * set `self._use_flash_attention_2 = False` in L1107 in the initialization of DeepseekModel. 
-> 
+> You can also use the modeling_deepseek we provide here to replace the original one. 
+> If you encounter transformers.cache_utils related problems, please refer https://stackoverflow.com/questions/77920734/modulenotfounderror-no-module-named-transformers-utils to solve. 
+
+
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
