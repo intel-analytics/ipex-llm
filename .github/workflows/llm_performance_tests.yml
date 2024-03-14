@@ -140,6 +140,9 @@ jobs:
       - name: Concat csv and generate html
         shell: bash
         run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/concat_csv.py
           for file in *.csv; do
@@ -154,6 +157,9 @@ jobs:
       - name: Check and upload results to ftp
         shell: bash
         run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
@@ -499,6 +505,9 @@ jobs:
         run: |
           call conda activate html-gen
 
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -592,7 +601,9 @@ jobs:
         shell: cmd
         run: |
           call conda activate html-gen
-
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -686,6 +697,9 @@ jobs:
         run: |
           call conda activate html-gen
 
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -779,6 +793,9 @@ jobs:
         run: |
           call conda activate html-gen
 
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
