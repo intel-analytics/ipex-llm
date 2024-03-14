@@ -123,6 +123,43 @@ Enter prompts into the textbox at the bottom and press the **Generate** button t
 To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** terminal where the WebUI Server is runing, then close your browser tab.
 
 
+## 5. Advanced Usage
+### Using Instruct Chat Mode
+Instruction-following models are models that are fine-tuned with specific prompt formats. 
+<!-- Models with names that contain `instruct` or `chat` could be instruction-following models. -->
+For these models, you should ideally use the `instruct` chat mode.
+Under this mode, the model receives user prompts that are formatted according to prompt formats it was trained with.
+
+To use `instruct` chat mode, select `chat` tab, scroll down the page, and then select `instruct` under `Mode`.
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat_mode_instruct.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat_mode_instruct.png" width=100%; />
+</a>
+
+When a model is loaded, its corresponding instruction template, which contains prompt formatting, is automatically loaded.
+
+If chat responses are poor, the loaded instruction template might be incorrect.
+In this case, go to `Parameters` tab and then `Instruction template` tab.
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_instruction_template.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_instruction_template.png" width=100%; />
+</a>
+
+You can verify and edit the loaded instruction template in the `Instruction template` field.
+You can also manually select an instruction template from `Saved instruction templates` and click `load` to load it into `Instruction template`.
+You can add custom template files to this list in `/instruction-templates/` folder.
+<!-- For instance, the automatically loaded instruction template for `chatGLM3` model is incorrect, and you should manually select the `chatGLM3` instruction template. -->
+
+### Tested models
+|Models|Notes|
+|------|-----|
+| llama-2-7b-chat-hf |     |
+| chatglm3-6b | For Instruct chat mode, manually load 'ChatGLM3' template      |
+| Mistral-7B-v0.1 |     |
+| Falcon-7b-instruct-with-patch     |     |
+| qwen-7B-Chat   | For Instruct chat mode, manually load 'Qwen' template      |
+
+
 ## Troubleshooting
 
 ### Potentially slower first response
