@@ -1,11 +1,13 @@
 # Running GGUF models using BigDL-LLM on Intel GPU
 
-You can use BigDL-LLM to run GGUF models from [llama.cpp](https://github.com/ggerganov/llama.cpp) on your laptops with Intel GPUs. This README contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source GGUF models in the community.
+BigDL-LLM now supports GPU optimizations for [llama.cpp](https://github.com/ggerganov/llama.cpp) backend and directly provides compiled binary files of [llama.cpp](https://github.com/ggerganov/llama.cpp) sycl backend for users to use. You can use BigDL-LLM to run GGUF models from [llama.cpp](https://github.com/ggerganov/llama.cpp) on your laptops with Intel GPUs. This README contains example scripts to help you quickly get started using BigDL-LLM to run some popular open-source GGUF models in the community.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-BigDL-LLM's support for llama.cpp is only avaliable on Linux system now, with oneapi version equals to 2024.0 .
+BigDL-LLM's support for llama.cpp requires:
+- Linux system, Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
+- Intel® oneAPI Base Toolkit 2024.0.
 
 ### 1. Install on Linux
 We suggest using conda to manage environment:
@@ -32,9 +34,9 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CPP_LIBS_PATH
 
 ### 4. Running GGUF models
 
-Note, only Q-series GGUF models are supported now, IQ-series are not supported yet.
+> [llama.cpp](https://github.com/ggerganov/llama.cpp) now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported now, IQ-series are not supported yet.
 
-Here we take `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main) for example, after downloading this GGUF model into current directory, you can use `main` in `CPP_LIBS_PATH` to do inference:
+Here we take `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main) for example, after downloading this GGUF model into current directory, you can use `main` in `CPP_LIBS_PATH` to do inference directly:
 
 ```
 ${CPP_LIBS_PATH}/main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color --no-mmap
