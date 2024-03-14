@@ -404,7 +404,7 @@ jobs:
         run: |
           call conda create -n html-gen python=3.9 -y
           call conda activate html-gen
-
+          pip install --pre --upgrade ipex-llm
           pip install pandas==1.5.3
           pip install Jinja2
 
