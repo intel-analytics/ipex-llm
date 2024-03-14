@@ -1065,6 +1065,7 @@ def _optimize_post(model, lightweight_bmm=False):
             from bigdl.llm.transformers.models.qwen import qwen_attention_forward
             from bigdl.llm.transformers.models.qwen import qwen_mlp_forward
             from bigdl.llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+            from bigdl.llm.transformers.models.qwen import qwen_model_forward
             convert_forward(model,
                             module.QWenAttention,
                             qwen_attention_forward
@@ -1075,6 +1076,9 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.QWenMLP,
                             qwen_mlp_forward)
+            convert_forward(model,
+                            module.QWenModel,
+                            qwen_model_forward)
     elif model.config.model_type == "qwen2":
         # for Qwen1.5-7B
         modeling_module_name = model.__class__.__module__
