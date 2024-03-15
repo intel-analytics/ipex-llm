@@ -4,7 +4,9 @@ This guide demonstrates how to install BigDL-LLM in Docker on Windows with Intel
 
 It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc Series GPU.
 
->Note: WSL2 support is required during the installation process.
+> Note: 
+> - WSL2 support is required during the installation process.
+> - This installation method requires at least 35GB of free disk space on C drive.
 
 
 ## Install Docker on Windows
