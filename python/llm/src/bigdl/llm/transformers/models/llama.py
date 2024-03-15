@@ -1250,10 +1250,8 @@ def llama_attention_forward_4_36_original(
                 past_key_value.value_cache[self.layer_idx] = value_states
 
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                     dtype=attention_dtype)
-    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                         dtype=attention_dtype)
+    key_states = repeat_kv(key_states, self.num_key_value_groups)
+    value_states = repeat_kv(value_states, self.num_key_value_groups)
 
     if not self.training and not hidden_states.requires_grad and \
         use_flash_attention(query_states, key_states, attention_mask):
