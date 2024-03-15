@@ -108,7 +108,7 @@ root@docker-desktop:/# sycl-ls
 **Chat Interface**: Use `chat.py` for conversational AI. For example, enter below command in docker container:
   ```bash
   cd /llm
-  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+  python chat.py --model-path /llm/llm-models/chatglm2-6b
   ``` 
   The output is similar like this:
 ```bash
