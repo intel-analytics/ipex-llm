@@ -1,6 +1,7 @@
 name: Manually Build
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       artifact:
@@ -54,7 +55,8 @@ on:
         type: string
 
 env:
-  TAG: ${{ github.event.inputs.tag }}
+  # TAG: ${{ github.event.inputs.tag }}
+  TAG: 2.5.0-SNAPSHOT
 
 permissions:
   contents: read
@@ -88,7 +90,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-llm-finetune-qlora-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:

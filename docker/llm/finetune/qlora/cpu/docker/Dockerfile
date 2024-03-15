@@ -33,22 +33,24 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
     # install huggingface dependencies
-    pip install datasets transformers==4.35.0 && \
+    pip install datasets && \
+    # Fix Trivy CVE Issues
+    pip install transformers==4.36.2 Jinja2==3.1.3 && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     # install basic dependencies
-    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
+    apt-get update && \
+    apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd /bigdl && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv BigDL/python/llm/example/CPU/QLoRA-FineTuning/* . && \
-    rm -r BigDL && \
-    chown -R mpiuser /bigdl
+    rm -r BigDL
 
 # for standalone
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
 
+RUN chown -R mpiuser /bigdl
 USER mpiuser
-
 ENTRYPOINT ["/bin/bash"]
