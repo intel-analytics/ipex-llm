@@ -386,10 +386,10 @@ def qwen2_attention_forward_origin(
                                              training=self.training)
         attn_output = torch.matmul(attn_weights, value_states)
 
-        invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
-                          "`attn_output` should be of size "
-                          f"{(bsz, self.num_heads, q_len, self.head_dim)},"
-                          f" but is {attn_output.size()}")
+    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
+                      "`attn_output` should be of size "
+                      f"{(bsz, self.num_heads, q_len, self.head_dim)},"
+                      f" but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

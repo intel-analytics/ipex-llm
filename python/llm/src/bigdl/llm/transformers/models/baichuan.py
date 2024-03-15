@@ -269,25 +269,41 @@ def baichuan_attention_forward_7b_origin(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
+                                                     is_causal=True)
+        attn_weights = None
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
+        attn_weights = None
+    else:
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        invalidInputError(False,
-                          f"Attention weights should be of size "
-                          f"{(bsz, self.num_heads, q_len, kv_seq_len)}"
-                          f", but is {attn_weights.size()}")
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            invalidInputError(False,
+                              f"Attention weights should be of size "
+                              f"{(bsz, self.num_heads, q_len, kv_seq_len)}"
+                              f", but is {attn_weights.size()}")
 
-    if attention_mask is not None:
-        invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                          f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
-                          f"but is {attention_mask.size()}")
-        attn_weights = attn_weights + attention_mask
-        attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
+        if attention_mask is not None:
+            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                              f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                              f"but is {attention_mask.size()}")
+            attn_weights = attn_weights + attention_mask
+            attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
 
-    # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                         dtype=torch.float32).to(query_states.dtype)
-    attn_output = torch.matmul(attn_weights, value_states)
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                             dtype=torch.float32).to(query_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                       f"`attn_output` should be of size "
