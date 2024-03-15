@@ -4,10 +4,10 @@ BigDL-LLM Key Features
 You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
 
 * `PyTorch API <./optimize_model.html>`_
-* |transformers_style_api|_
+.. * |transformers_style_api|_
 
-  * |hugging_face_transformers_format|_
-  * `Native Format <./native_format.html>`_
+* |hugging_face_transformers_format|_
+  .. * `Native Format <./native_format.html>`_
 
 * `LangChain API <./langchain_api.html>`_
 * |gpu_supports|_
