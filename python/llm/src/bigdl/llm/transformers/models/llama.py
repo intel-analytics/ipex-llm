@@ -418,7 +418,8 @@ def llama_attention_forward_4_31_quantized(
                                                    self.head_dim, self.num_heads)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states)
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
             attn_weights = None
 
     attn_output = attn_output.transpose(1, 2).contiguous()
