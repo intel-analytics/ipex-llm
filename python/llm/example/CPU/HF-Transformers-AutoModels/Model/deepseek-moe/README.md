@@ -30,15 +30,7 @@ After setting up the Python environment, you could run the example by following 
 >
 > Please select the appropriate size of the DeepSeek-MoE model based on the capabilities of your machine.
 
-> **Note**: Turn off flash-attention before running the example. 
-> Some modifications are made in the `modeling_deepseek.py` under the model folder after download the model from https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat. 
-> * comment `is_flash_attn_2_available` in L45 and also comment corresponding definition in L54-L56
-> * comment `is_flash_attn_greater_or_equal_2_10` in L46
-> * set ` _supports_flash_attn_2 = False` in the definition of DeepseekPreTrainedModel in L999
-> * set `self._use_flash_attention_2 = False` in L1107 in the initialization of DeepseekModel. 
-> You can also use the modeling_deepseek we provide here to replace the original one. 
-> If you encounter transformers.cache_utils related problems, please refer https://stackoverflow.com/questions/77920734/modulenotfounderror-no-module-named-transformers-utils to solve. 
-
+You need to disable flash attention to run this model. To do this, simply replace the file deepseek-moe-16b-chat/modeling_deepseek.py(the original file can be found [here](https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat/blob/main/modeling_deepseek.py)) in the downloaded model path with the file ./modeling_deepseek.py we provided in the current directory.
 
 
 #### 2.1 Client
