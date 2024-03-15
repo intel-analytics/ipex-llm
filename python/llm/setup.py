@@ -311,7 +311,7 @@ def setup_package():
         packages=get_llm_packages(),
         package_dir={"": "src"},
         package_data={
-            "bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"]},
+            "bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"] + ["transformers/gguf/models/model_implement/*/*.json"]},
         include_package_data=True,
         entry_points={
             "console_scripts": [
