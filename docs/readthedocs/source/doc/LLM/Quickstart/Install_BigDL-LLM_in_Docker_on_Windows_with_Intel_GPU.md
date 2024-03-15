@@ -118,3 +118,19 @@ Human: What is AI?
 BigDL-LLM:
 AI, or Artificial Intelligence, refers to the development of computer systems or machines that can perform tasks that typically require human intelligence. These systems are designed to learn from data and make decisions, or take actions, based on that data.
 ``` 
+
+If your machine has both an integrated GPU (iGPU) and a dedicated GPU (dGPU) like ARC, you may encounter the following issue:
+```bash
+Abort was called at 62 line in file:
+./shared/source/os_interface/os_interface.h
+LIBXSMM_VERSION: main_stable-1.17-3651 (25693763)
+LIBXSMM_TARGET: adl [Intel(R) Core(TM) i7-14700K]
+Registry and code: 13 MB
+Command: python chat.py --model-path /llm/llm-models/chatglm2-6b/
+Uptime: 29.349235 s
+Aborted
+```
+Disabling the iGPU in Device Manager can resolve this problem.
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/disable_iGPU.png">
+ <img src="https://llm-assets.readthedocs.io/en/latest/_images/disable_iGPU.png" width=100%; />
+</a>
