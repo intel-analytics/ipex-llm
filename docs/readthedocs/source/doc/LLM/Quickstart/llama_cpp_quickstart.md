@@ -9,7 +9,7 @@ BigDL-LLM's support for llama.cpp requires:
 
 ## 2 Install BigDL-LLM
 
-To use llama.cpp with BigDL-LLM, first ensure that BigDL-LLM is installed.
+To use `llama.cpp` with BigDL-LLM, first ensure that BigDL-LLM is installed.
 ```cmd
 conda create -n llm-cpp python=3.9
 conda activate llm-cpp
@@ -27,18 +27,17 @@ Configure oneAPI variables by running the following command in bash:
 source source /opt/intel/oneapi/setvars.sh
 ```
 
-### Initialization
+### Soft link executable files
 ```cmd
-init-cpp
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PWD}
+init-llama-cpp
 ```
 
-**After `init-cpp`, you should see many soft links of llama.cpp executable files in current directory.**
+**After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files in current directory.**
 
 ```eval_rst
 .. note::
 
-   ``init-cpp`` will create soft links of llama.cpp executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
+   ``init-llama-cpp`` will create soft links of llama.cpp's executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
 ```
 
 ### Model Download
@@ -206,7 +205,7 @@ convert ./Mistral-7B-v0.1
 ```
 With above command, a `ggml-model-f16.gguf` file is generated in the same model directroy.
 
-Then you can quantize it to any precision you like use `llama-cpp quantize`, for instance
+Then you can quantize it to any precision you like use `quantize`, for instance
 
 ```cmd
 ./quantize ./Mistral-7B-v0.1/ggml-model-f16.gguf ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf Q4_K
@@ -221,7 +220,7 @@ Then you can quantize it to any precision you like use `llama-cpp quantize`, for
 ### Run Quantized Model
 
 ```cmd
-./main -m ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf -n 32 --prompt \"Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun\" -t 8 -e -ngl 33 --color
+./main -m ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
 ```
 
 ## Troubleshooting
