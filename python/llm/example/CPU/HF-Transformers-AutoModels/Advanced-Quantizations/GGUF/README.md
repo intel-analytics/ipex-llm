@@ -61,6 +61,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--model`: path to GGUF model, it should be a file with name like `llama-2-7b-chat.Q4_0.gguf`
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--low_bit`: use what low_bit to run, default is `sym_int4`.
 
 #### 2.4 Sample Output
 #### [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
