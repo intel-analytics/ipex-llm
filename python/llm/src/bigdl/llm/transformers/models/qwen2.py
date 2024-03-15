@@ -346,16 +346,15 @@ def qwen2_attention_forward_origin(
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-
     if not self.training and not hidden_states.requires_grad and \
-        use_flash_attention(query_states, key_states, attention_mask):
+            use_flash_attention(query_states, key_states, attention_mask):
         attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
                                                      key_states.to(device, dtype=torch.float16),
                                                      value_states.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-        use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
@@ -363,7 +362,8 @@ def qwen2_attention_forward_origin(
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
                           ("Attention weights should be of size "
