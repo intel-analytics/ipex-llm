@@ -273,10 +273,9 @@ def qwen_attention_forward_original(
     if not decoding_fast_path:
         query = query.transpose(1, 2)
 
-    fsdp_flag = not self.training and not hidden_states.requires_grad and \
-        use_flash_attention(query, key)
 
-    if fsdp_flag:
+    if not self.training and not hidden_states.requires_grad and \
+        use_flash_attention(query, key):
         attn_output = F.scaled_dot_product_attention(query.to(device, dtype=torch.float16),
                                                      key.to(device, dtype=torch.float16),
                                                      value.to(device, dtype=torch.float16),
@@ -284,7 +283,8 @@ def qwen_attention_forward_original(
         attn_output = attn_output.view(query.shape)
         attn_output = attn_output.transpose(1, 2)
         attn_weights = None
-    elif use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
+    elif not self.training and not hidden_states.requires_grad and \
+        use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query,
                                                     key,
