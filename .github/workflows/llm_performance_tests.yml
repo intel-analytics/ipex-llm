@@ -457,6 +457,8 @@ jobs:
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_434.yaml
+          sed -i '1s/^import ipex_llm.*$//' python/llm/test/benchmark/concat_csv.py
+          sed -i '1s/^import ipex_llm.*$//' python/llm/test/benchmark/csv_to_html.py
 
       - name: Test on igpu for Mistral (32-32)
         shell: cmd
@@ -505,9 +507,6 @@ jobs:
         run: |
           call conda activate html-gen
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_CACHE_PERSISTENT=1
-          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -601,9 +600,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate html-gen
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_CACHE_PERSISTENT=1
-          set BIGDL_LLM_XMX_DISABLED=1
+
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -697,9 +694,6 @@ jobs:
         run: |
           call conda activate html-gen
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_CACHE_PERSISTENT=1
-          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
@@ -793,9 +787,6 @@ jobs:
         run: |
           call conda activate html-gen
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-          set SYCL_CACHE_PERSISTENT=1
-          set BIGDL_LLM_XMX_DISABLED=1
           cd python\llm\dev\benchmark\all-in-one
           python ..\..\..\test\benchmark\concat_csv.py
           if %ERRORLEVEL% neq 0 (exit /b 1)
