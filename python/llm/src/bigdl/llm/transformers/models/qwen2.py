@@ -43,6 +43,7 @@ from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from bigdl.llm.transformers.models.llama import repeat_kv
 from bigdl.llm.transformers.models.utils import extend_kv_cache, append_kv_cache
@@ -347,13 +348,6 @@ def qwen2_attention_forward_origin(
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
     if not self.training and not hidden_states.requires_grad and \
-            use_flash_attention(query_states, key_states, attention_mask):
-        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
-                                                     key_states.to(device, dtype=torch.float16),
-                                                     value_states.to(device, dtype=torch.float16),
-                                                     is_causal=True)
-        attn_weights = None
-    elif not self.training and not hidden_states.requires_grad and \
             use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
