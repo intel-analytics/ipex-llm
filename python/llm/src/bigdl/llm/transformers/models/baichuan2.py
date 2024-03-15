@@ -28,6 +28,7 @@ from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv
     restore_fp8_kv_cache, use_quantize_kv_cache
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
     append_kv_cache, is_enough_kv_cache_room_4_31
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb, SILU
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from bigdl.llm.transformers.models.utils import mlp_fusion_check
@@ -271,16 +272,32 @@ def baichuan_attention_forward_7b_origin(
             query_states, key_states, value_states, attn_bias=xops.LowerTriangularMask()
         )
     else:
-        if attention_mask is not None:
-            if attention_mask.dtype == torch.bool:
-                attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
+        if not self.training and not hidden_states.requires_grad and \
+                use_flash_attention(query_states, key_states, attention_mask):
+            attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                         key_states.to(device, dtype=torch.float16),
+                                                         value_states.to(device, dtype=torch.float16),
+                                                         is_causal=True)
+            attn_weights = None
+        elif not self.training and not hidden_states.requires_grad and \
+                use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            import linear_fp16_esimd
+            attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                        key_states,
+                                                        value_states)
+            attn_output = attn_output.view(query_states.shape)
+            attn_weights = None
+        else:
+            if attention_mask is not None:
+                if attention_mask.dtype == torch.bool:
+                    attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
 
-        scaling_factor = 1 / math.sqrt(query_states.size(-1))
-        attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
-        if attention_mask is not None:
-            attn_output += attention_mask
-        attn_output = torch.softmax(attn_output, -1)
-        attn_output = torch.matmul(attn_output, value_states)
+            scaling_factor = 1 / math.sqrt(query_states.size(-1))
+            attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
+            if attention_mask is not None:
+                attn_output += attention_mask
+            attn_output = torch.softmax(attn_output, -1)
+            attn_output = torch.matmul(attn_output, value_states)
 
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.num_heads * self.head_dim)
@@ -289,7 +306,7 @@ def baichuan_attention_forward_7b_origin(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output, attn_weights, past_key_value
+    return attn_output.to(hidden_states.dtype), attn_weights, past_key_value
 
 
 def baichuan_attention_forward_13b(
@@ -484,32 +501,48 @@ def baichuan_attention_forward_13b_origin(
                                                          attn_mask=attention_mask)
         attn_output = attn_output.transpose(1, 2)
     else:
-        attn_weights = torch.matmul(
-            query_states.to(dtype=key_states.dtype), key_states.transpose(2, 3)
-        ) / math.sqrt(self.head_dim)
+        if not self.training and not hidden_states.requires_grad and \
+                use_flash_attention(query_states, key_states, attention_mask):
+            attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                         key_states.to(device, dtype=torch.float16),
+                                                         value_states.to(device, dtype=torch.float16),
+                                                         is_causal=True)
+            attn_weights = None
+        elif not self.training and not hidden_states.requires_grad and \
+                use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            import linear_fp16_esimd
+            attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                        key_states,
+                                                        value_states)
+            attn_output = attn_output.view(query_states.shape)
+            attn_weights = None
+        else:
+            attn_weights = torch.matmul(
+                query_states.to(dtype=key_states.dtype), key_states.transpose(2, 3)
+            ) / math.sqrt(self.head_dim)
 
-        if attention_mask is not None:
-            if q_len == 1:  # inference with cache
-                if len(attention_mask.size()) == 4:
-                    attention_mask = attention_mask[:, :, -1:, :]
+            if attention_mask is not None:
+                if q_len == 1:  # inference with cache
+                    if len(attention_mask.size()) == 4:
+                        attention_mask = attention_mask[:, :, -1:, :]
+                    else:
+                        attention_mask = attention_mask[:, -1:, :]
+                if attention_mask.shape[-2] == attn_weights.shape[-2]:
+                    attn_weights = attn_weights + attention_mask
                 else:
-                    attention_mask = attention_mask[:, -1:, :]
-            if attention_mask.shape[-2] == attn_weights.shape[-2]:
-                attn_weights = attn_weights + attention_mask
-            else:
-                # support for Baichuan/Baichuan2 13B Chat running speculative decoding
-                # split attention mask on dim -2
-                split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2],
-                               attn_weights.shape[-2]]
-                # the last chunk of splited is the new attention mask
-                attention_mask = attention_mask.split(split_sizes, dim=-2)[-1]
-                attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(
-                attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min)
-            )
+                    # support for Baichuan/Baichuan2 13B Chat running speculative decoding
+                    # split attention mask on dim -2
+                    split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2],
+                                   attn_weights.shape[-2]]
+                    # the last chunk of splited is the new attention mask
+                    attention_mask = attention_mask.split(split_sizes, dim=-2)[-1]
+                    attn_weights = attn_weights + attention_mask
+                attn_weights = torch.max(
+                    attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min)
+                )
 
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-        attn_output = torch.matmul(attn_weights.to(dtype=value_states.dtype), value_states)
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+            attn_output = torch.matmul(attn_weights.to(dtype=value_states.dtype), value_states)
 
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
@@ -518,7 +551,7 @@ def baichuan_attention_forward_13b_origin(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output, attn_weights, past_key_value
+    return attn_output.to(hidden_states.dtype), attn_weights, past_key_value
 
 
 def _get_interleave(n):
