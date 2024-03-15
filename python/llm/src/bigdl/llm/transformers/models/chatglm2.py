@@ -254,6 +254,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
             context_layer = F.scaled_dot_product_attention(query_layer, key, value, is_causal=True)
         else:
             context_layer = F.scaled_dot_product_attention(query_layer, key, value, attention_mask)
+        context_layer = context_layer.to(query_layer.dtype)
 
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(batch_size,
