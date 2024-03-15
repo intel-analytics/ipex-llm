@@ -378,7 +378,7 @@ jobs:
           
           pip install -U langchain
           pip install -U langchain-community
-          bash python/llm/dev/test/run-langchain-upstream-tests.sh
+          bash python/llm/test/run-langchain-upstream-tests.sh
 
       - name: Run LLM llamaindex GPU test
         shell: bash
