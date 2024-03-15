@@ -1,4 +1,4 @@
-# Install BigDL-LLM on Windows with Intel GPU
+# Install BigDL-LLM on Windows
 
 This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
 
