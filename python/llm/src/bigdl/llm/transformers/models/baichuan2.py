@@ -274,9 +274,9 @@ def baichuan_attention_forward_7b_origin(
     else:
         if not self.training and not hidden_states.requires_grad and \
                 use_flash_attention(query_states, key_states, attention_mask):
-            attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
-                                                         key_states.to(device, dtype=torch.float16),
-                                                         value_states.to(device, dtype=torch.float16),
+            attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
+                                                         key_states.to(dtype=torch.float16),
+                                                         value_states.to(dtype=torch.float16),
                                                          is_causal=True)
             attn_weights = None
         elif not self.training and not hidden_states.requires_grad and \
@@ -503,9 +503,9 @@ def baichuan_attention_forward_13b_origin(
     else:
         if not self.training and not hidden_states.requires_grad and \
                 use_flash_attention(query_states, key_states, attention_mask):
-            attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
-                                                         key_states.to(device, dtype=torch.float16),
-                                                         value_states.to(device, dtype=torch.float16),
+            attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
+                                                         key_states.to(dtype=torch.float16),
+                                                         value_states.to(dtype=torch.float16),
                                                          is_causal=True)
             attn_weights = None
         elif not self.training and not hidden_states.requires_grad and \

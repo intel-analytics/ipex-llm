@@ -285,7 +285,8 @@ def baichuan_attention_forward_7b_origin(
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
             invalidInputError(False,
@@ -298,7 +299,8 @@ def baichuan_attention_forward_7b_origin(
                               f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
                               f"but is {attention_mask.size()}")
             attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
+            attn_weights = torch.max(attn_weights,
+                                     torch.tensor(torch.finfo(attn_weights.dtype).min))
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
@@ -514,7 +516,8 @@ def baichuan_attention_forward_13b_origin(
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attention_mask is not None:
             if q_len == 1:  # inference with cache
@@ -523,7 +526,8 @@ def baichuan_attention_forward_13b_origin(
                 else:
                     attention_mask = attention_mask[:, -1:, :]
             attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
+            attn_weights = torch.max(attn_weights,
+                                     torch.tensor(torch.finfo(attn_weights.dtype).min))
 
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
 
