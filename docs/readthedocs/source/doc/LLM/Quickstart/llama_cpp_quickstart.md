@@ -1,43 +1,52 @@
 # Use llama.cpp with BigDL-LLM on Intel GPU
 
-This quickstart guide walks you through setting up and using the [llama.cpp](https://github.com/ggerganov/llama.cpp) with `bigdl-llm`. 
+Now you can use BigDL-LLM as an Intel GPU accelerated frontend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `bigdl-llm` on Intel GPU (both iGPU and dGPU). 
 
-## 1 Requirements
-BigDL-LLM's support for llama.cpp requires:
-- Linux system, Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
-- [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html)
+```eval_rst
+.. note::
 
-## 2 Install BigDL-LLM
+   [llama.cpp](https://github.com/ggerganov/llama.cpp) now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in BigDL-LLM now, support for IQ-series is still work in progress.
+```
 
-To use `llama.cpp` with BigDL-LLM, first ensure that BigDL-LLM is installed.
+## 0 Prerequisites
+BigDL-LLM's support for `llama.cpp` now is only avaliable for Linux system, Ubuntu 20.04 or later (Ubuntu 22.04 is preferred). Support for Windows system is still work in progress.
+
+### Linux
+To running on Intel GPU, there are two prerequisites: Intel GPU dervier and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) installation. For more details, please refer to [this installation guide](../Overview/install_gpu.md/Linux)
+
+## 1 Install BigDL-LLM for llama.cpp
+
+To use `llama.cpp` with BigDL-LLM, first ensure that `bigdl-llm[cpp]` is installed.
 ```cmd
 conda create -n llm-cpp python=3.9
 conda activate llm-cpp
-pip install --pre --upgrade bigdl-llm[cpp] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade bigdl-llm[cpp]
 ```
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with BigDL-LLM.**
 
-## 3 Running community GGUF models with BigDL-LLM
+## 2 Setup for running llama.cpp
 
-### Set Environment Variables
-Configure oneAPI variables by running the following command in bash:
-
-```cmd
-source source /opt/intel/oneapi/setvars.sh
-```
-
-### Soft link executable files
+### Initialize llama.cpp with BigDL-LLM
 ```cmd
 init-llama-cpp
 ```
 
-**After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files in current directory.**
+**After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files and a `convert.py` in current directory.**
 
 ```eval_rst
 .. note::
 
    ``init-llama-cpp`` will create soft links of llama.cpp's executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
+```
+
+## 3 Example: Running community GGUF models with BigDL-LLM
+
+### Set Environment Variables
+Configure oneAPI variables by running the following command in bash:
+
+```cmd
+source /opt/intel/oneapi/setvars.sh
 ```
 
 ### Model Download
@@ -184,50 +193,7 @@ llama_print_timings:       total time =    xx.xx ms /    62 tokens
 Log end
 ```
 
-## 4 Prepare and Quantize GGUF models with BigDL-LLM
-
-Rather than directly running community GGUF models, you can quantize any model to any precision by yourself with BigDL-LLM.
-
-### Model Download
-First you should download or copy the Huggingface model you want to quantize to current directroy, for instance, [Mistral-7B-v0.1](`https://huggingface.co/mistralai/Mistral-7B-v0.1`).
-
-### Convert and Quantize Model
-For a Huggingface model, you need to convert it to ggml FP16 format first:
-
-```eval_rst
-.. note::
-
-   BigDL-LLM provides ``convert`` command to convert Huggingface model to ggml format, which is the same as ``python3 convert.py`` in llama.cpp .
-```
-
-```cmd
-convert ./Mistral-7B-v0.1
-```
-With above command, a `ggml-model-f16.gguf` file is generated in the same model directroy.
-
-Then you can quantize it to any precision you like use `quantize`, for instance
-
-```cmd
-./quantize ./Mistral-7B-v0.1/ggml-model-f16.gguf ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf Q4_K
-```
-
-```eval_rst
-.. note::
-
-   For more details about each quantization type, you can use ``./quantize -h``.
-```
-
-### Run Quantized Model
-
-```cmd
-./main -m ./Mistral-7B-v0.1/ggml-model-Q4_K.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
-```
-
 ## Troubleshooting
 
 ### Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
-
-### Why I failed to run IQ-series GGUF models?
-
-[llama.cpp](https://github.com/ggerganov/llama.cpp) now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in BigDL-LLM now.
