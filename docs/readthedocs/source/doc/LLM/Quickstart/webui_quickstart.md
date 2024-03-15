@@ -126,7 +126,6 @@ To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** termina
 ## 5. Advanced Usage
 ### Using Instruct Chat Mode
 Instruction-following models are models that are fine-tuned with specific prompt formats. 
-<!-- Models with names that contain `instruct` or `chat` could be instruction-following models. -->
 For these models, you should ideally use the `instruct` chat mode.
 Under this mode, the model receives user prompts that are formatted according to prompt formats it was trained with.
 
@@ -137,7 +136,6 @@ To use `instruct` chat mode, select `chat` tab, scroll down the page, and then s
 </a>
 
 When a model is loaded, its corresponding instruction template, which contains prompt formatting, is automatically loaded.
-
 If chat responses are poor, the loaded instruction template might be incorrect.
 In this case, go to `Parameters` tab and then `Instruction template` tab.
 
@@ -151,13 +149,14 @@ You can add custom template files to this list in `/instruction-templates/` fold
 <!-- For instance, the automatically loaded instruction template for `chatGLM3` model is incorrect, and you should manually select the `chatGLM3` instruction template. -->
 
 ### Tested models
-|Models|Notes|
-|------|-----|
-| llama-2-7b-chat-hf |     |
-| chatglm3-6b | For Instruct chat mode, manually load 'ChatGLM3' template      |
-| Mistral-7B-v0.1 |     |
-| Falcon-7b-instruct-with-patch     |     |
-| qwen-7B-Chat   | For Instruct chat mode, manually load 'Qwen' template      |
+
+| Model | Notes |
+|-------|-------|
+| llama-2-7b-chat-hf |          |
+| chatglm3-6b        | Manually load ChatGLM3 template for Instruct chat mode |
+| Mistral-7B-v0.1    |          |
+| Falcon-7b-instruct-with-patch |     |
+| qwen-7B-Chat       | Manually load Qwen template for Instruct chat mode |
 
 
 ## Troubleshooting
