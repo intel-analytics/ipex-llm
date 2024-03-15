@@ -5,14 +5,14 @@ Now you can use BigDL-LLM as an Intel GPU accelerated frontend of [llama.cpp](ht
 ```eval_rst
 .. note::
 
-   [llama.cpp](https://github.com/ggerganov/llama.cpp) now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in BigDL-LLM now, support for IQ-series is still work in progress.
+   ``llama.cpp`` now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in BigDL-LLM now, support for IQ-series is still work in progress.
 ```
 
 ## 0 Prerequisites
 BigDL-LLM's support for `llama.cpp` now is only avaliable for Linux system, Ubuntu 20.04 or later (Ubuntu 22.04 is preferred). Support for Windows system is still work in progress.
 
 ### Linux
-To running on Intel GPU, there are two prerequisites: Intel GPU dervier and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) installation. For more details, please refer to [this installation guide](../Overview/install_gpu.md/Linux)
+To running on Intel GPU, there are two prerequisites: Intel GPU dervier and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) installation. For more details, please refer to [this installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id1).
 
 ## 1 Install BigDL-LLM for llama.cpp
 
@@ -27,12 +27,25 @@ pip install --pre --upgrade bigdl-llm[cpp]
 
 ## 2 Setup for running llama.cpp
 
+First you should create a directory to use `llama.cpp`, for instance, use following command to create a `~/llama-cpp-bigdl` directory and enter it in Linux system.
+```cmd
+cd ~
+mkdir llama-cpp-bigdl
+cd llama-cpp-bigdl
+```
+
 ### Initialize llama.cpp with BigDL-LLM
+
+Then you can use following command to initialize `llama.cpp` with BigDL-LLM:
 ```cmd
 init-llama-cpp
 ```
 
 **After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files and a `convert.py` in current directory.**
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png" width=100%; />
+</a>
 
 ```eval_rst
 .. note::
@@ -40,7 +53,11 @@ init-llama-cpp
    ``init-llama-cpp`` will create soft links of llama.cpp's executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
 ```
 
+**Now you can use these executable files by standard llama.cpp's usage.**
+
 ## 3 Example: Running community GGUF models with BigDL-LLM
+
+Here we provide a simple example to show how to run a community GGUF model with BigDL-LLM.
 
 ### Set Environment Variables
 Configure oneAPI variables by running the following command in bash:
