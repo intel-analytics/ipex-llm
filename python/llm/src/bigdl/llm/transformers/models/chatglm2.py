@@ -97,7 +97,7 @@ def repeat_kv(key: torch.Tensor, value: torch.Tensor, n_head: int) -> (torch.Ten
 def chatglm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
-        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).to(self.weight.dtype).contiguous()
+        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
         output = linear_q4_0.rms_norm(self.weight, x_2d, self.eps)
         if 1 < x_2d.size(0) <= 64:   # may use XMX, need copy
             output = output.clone()
