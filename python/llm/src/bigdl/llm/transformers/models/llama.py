@@ -604,20 +604,19 @@ def llama_attention_forward_4_31_original(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    fsdp_flag = not self.training and not hidden_states.requires_grad and \
-        use_flash_attention(query_states, key_states, attention_mask)
-
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    if fsdp_flag:
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
         attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
                                                      key_states.to(device, dtype=torch.float16),
                                                      value_states.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
@@ -1249,29 +1248,20 @@ def llama_attention_forward_4_36_original(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states, attention_mask)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
-
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                     dtype=attention_dtype)
-    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                         dtype=attention_dtype)
+    key_states = repeat_kv(key_states, self.num_key_value_groups)
+    value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    if fsdp_flag:
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
         # now only use flash attention for first token
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
-                                                     key_states,
-                                                     value_states,
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
