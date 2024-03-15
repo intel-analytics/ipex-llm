@@ -35,8 +35,14 @@ def get_prompt(message: str, chat_history: list[tuple[str, str]],
         user_input = user_input.strip() if do_strip else user_input
         do_strip = True
         texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
-    message = message.strip() if do_strip else message
-    texts.append(f'{message} [/INST]')
+    
+    if message.endswith('.txt'):
+        with open(message, 'r') as f:
+            data = f.read()
+    else:
+        data = message.strip() if do_strip else message
+        
+    texts.append(f'{data} [/INST]')
     return ''.join(texts)
 
 if __name__ == '__main__':
@@ -48,16 +54,19 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low-bit', type=str, default='sym_int4', choices=['sym_int4', 'fp8'],
+                        help='The low bit precision option for optimization')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    low_bit = args.low_bit
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
+    # Load model in specified precision,
+    # which convert the relevant layers in the model into low bit format
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
+                                                 load_in_low_bit=low_bit,
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
@@ -68,7 +77,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+        prompt = get_prompt(args.prompt, [], DEFAULT_SYSTEM_PROMPT)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
@@ -87,7 +96,5 @@ if __name__ == '__main__':
         output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
-        print('-'*20, 'Prompt', '-'*20)
-        print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
