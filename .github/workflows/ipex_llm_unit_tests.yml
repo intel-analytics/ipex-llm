@@ -149,7 +149,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
-          ref: "ipex-llm-20240308"
+          ref: "ipex-llm-20240315"
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
@@ -302,7 +302,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
-          ref: "ipex-llm-20240308"
+          ref: "ipex-llm-20240315"
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
