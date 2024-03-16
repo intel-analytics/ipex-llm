@@ -71,6 +71,7 @@ jobs:
     env:
       THREAD_NUM: 24
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      BIGDL_COMPATIBLE_MODE: false
     steps:
       - name: Set model directories
         shell: bash
@@ -257,6 +258,7 @@ jobs:
       # OMP_NUM_THREADS: 16
       # THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      BIGDL_COMPATIBLE_MODE: false
     steps:
       - name: Set environment variables
         shell: bash

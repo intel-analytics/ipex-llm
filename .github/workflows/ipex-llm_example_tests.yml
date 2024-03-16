@@ -44,6 +44,7 @@ jobs:
     runs-on: [ self-hosted, llm,"${{matrix.instruction}}", ubuntu-20.04-lts ]
     env:
       THREAD_NUM: 24
+      BIGDL_COMPATIBLE_MODE: false
     steps:
       - name: Set access token
         run: |
