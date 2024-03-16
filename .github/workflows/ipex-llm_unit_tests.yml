@@ -1,4 +1,4 @@
-name: LLM Unit Tests
+name: NEW LLM Unit Tests
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
