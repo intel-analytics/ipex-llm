@@ -228,10 +228,11 @@ def qwen2_model_forward_internal(
             )
         else:
             # bigdl-llm changes
+            curr_device = decoder_layer.input_layernorm.weight.device
             if attention_mask is not None:
-                attention_mask = attention_mask.to(hidden_states.device)
+                attention_mask = attention_mask.to(curr_device)
             if position_ids is not None:
-                position_ids = position_ids.to(hidden_states.device)
+                position_ids = position_ids.to(curr_device)
             # bigdl-llm changes end
             layer_outputs = decoder_layer(
                 hidden_states,

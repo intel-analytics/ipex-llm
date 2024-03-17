@@ -1795,8 +1795,11 @@ def llama_model_forward_4_36_internal(
             )
         else:
             # bigdl-llm changes:
-            attention_mask = attention_mask.to(hidden_states.device)
-            position_ids = position_ids.to(hidden_states.device)
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
             # bigdl-llm changes end
             layer_outputs = decoder_layer(
                 hidden_states,
@@ -1950,11 +1953,14 @@ def llama_model_forward(
             # decoder layer not in device:0.
             #
             # To avoid this, we move `attention_mask` and `position_ids` to the device of
-            # `hidden_states` before the forward call, so that the moving is only done once
+            # the current layer before the forward call, so that the moving is only done once
             # for each devices other than devie:0.
             #
-            attention_mask = attention_mask.to(hidden_states.device)
-            position_ids = position_ids.to(hidden_states.device)
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
             # bigdl-llm changes end
             layer_outputs = decoder_layer(
                 hidden_states,

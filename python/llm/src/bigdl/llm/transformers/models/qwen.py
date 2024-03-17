@@ -679,18 +679,19 @@ def qwen_model_forward(
             )
         else:
             # bigdl-llm changes
+            curr_device = block.ln_1.weight.device
             from accelerate.utils.operations import send_to_device
             if rotary_pos_emb_list is not None:
-                rotary_pos_emb_list = send_to_device(rotary_pos_emb_list, hidden_states.device)
+                rotary_pos_emb_list = send_to_device(rotary_pos_emb_list, curr_device)
             if attention_mask is not None:
-                attention_mask = send_to_device(attention_mask, hidden_states.device)
+                attention_mask = send_to_device(attention_mask, curr_device)
             if head_mask[i] is not None:
-                head_mask[i] = send_to_device(head_mask[i], hidden_states.device)
+                head_mask[i] = send_to_device(head_mask[i], curr_device)
             if encoder_hidden_states is not None:
-                encoder_hidden_states = send_to_device(encoder_hidden_states, hidden_states.device)
+                encoder_hidden_states = send_to_device(encoder_hidden_states, curr_device)
             if encoder_attention_mask is not None:
                 encoder_attention_mask = send_to_device(encoder_attention_mask,
-                                                        hidden_states.device)
+                                                        curr_device)
             # bigdl-llm changes ends
 
             outputs = block(
