@@ -1702,9 +1702,11 @@ def llama_model_forward_4_36_internal(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+    output_attentions = output_attentions if output_attentions is not None else \
+        self.config.output_attentions
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
 
@@ -1712,13 +1714,14 @@ def llama_model_forward_4_36_internal(
 
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
     elif input_ids is not None:
         batch_size, seq_length = input_ids.shape[:2]
     elif inputs_embeds is not None:
         batch_size, seq_length = inputs_embeds.shape[:2]
     else:
-        raise ValueError("You have to specify either input_ids or inputs_embeds")
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
 
     past_key_values_length = 0
     if use_cache:
@@ -1730,7 +1733,8 @@ def llama_model_forward_4_36_internal(
     if position_ids is None:
         device = input_ids.device if input_ids is not None else inputs_embeds.device
         position_ids = torch.arange(
-            past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
         )
         position_ids = position_ids.unsqueeze(0)
 
@@ -1739,11 +1743,13 @@ def llama_model_forward_4_36_internal(
 
     if self._use_flash_attention_2:
         # 2d mask is passed through the layers
-        attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) else None
+        attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) \
+            else None
     elif self._use_sdpa and not output_attentions:
         # output_attentions=True can not be supported when using SDPA, and we fall back on
         # the manual implementation that requires a 4D causal mask in all cases.
-        from transformers.models.llama.modeling_llama import _prepare_4d_causal_attention_mask_for_sdpa
+        from transformers.models.llama.modeling_llama import \
+            _prepare_4d_causal_attention_mask_for_sdpa
         attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
             attention_mask,
             (batch_size, seq_length),
@@ -1763,7 +1769,8 @@ def llama_model_forward_4_36_internal(
     if self.gradient_checkpointing and self.training:
         if use_cache:
             logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                " Setting `use_cache=False`..."
             )
             use_cache = False
 
@@ -1816,9 +1823,11 @@ def llama_model_forward_4_36_internal(
 
     next_cache = None
     if use_cache:
-        next_cache = next_decoder_cache.to_legacy_cache() if use_legacy_cache else next_decoder_cache
+        next_cache = next_decoder_cache.to_legacy_cache() if use_legacy_cache \
+            else next_decoder_cache
     if not return_dict:
-        return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
+        return tuple(v for v in [hidden_states, next_cache,
+                                 all_hidden_states, all_self_attns] if v is not None)
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
         past_key_values=next_cache,
@@ -1839,9 +1848,11 @@ def llama_model_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+    output_attentions = output_attentions if output_attentions is not None \
+        else self.config.output_attentions
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
 
@@ -1849,13 +1860,14 @@ def llama_model_forward(
 
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
     elif input_ids is not None:
         batch_size, seq_length = input_ids.shape
     elif inputs_embeds is not None:
         batch_size, seq_length, _ = inputs_embeds.shape
     else:
-        raise ValueError("You have to specify either input_ids or inputs_embeds")
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
 
     seq_length_with_past = seq_length
     past_key_values_length = 0
@@ -1867,7 +1879,8 @@ def llama_model_forward(
     if position_ids is None:
         device = input_ids.device if input_ids is not None else inputs_embeds.device
         position_ids = torch.arange(
-            past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
         )
         position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
     else:
@@ -1896,7 +1909,8 @@ def llama_model_forward(
     if self.gradient_checkpointing and self.training:
         if use_cache:
             logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                " Setting `use_cache=False`..."
             )
             use_cache = False
 

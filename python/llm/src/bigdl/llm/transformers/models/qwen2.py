@@ -118,9 +118,11 @@ def qwen2_model_forward_internal(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+    output_attentions = output_attentions if output_attentions is not None else \
+        self.config.output_attentions
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
 
@@ -128,18 +130,21 @@ def qwen2_model_forward_internal(
 
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError("You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
+        invalidInputError(False,
+                          "You cannot specify both decoder_input_ids and "
+                          "decoder_inputs_embeds at the same time")
     elif input_ids is not None:
         batch_size, seq_length = input_ids.shape
     elif inputs_embeds is not None:
         batch_size, seq_length, _ = inputs_embeds.shape
     else:
-        raise ValueError("You have to specify either decoder_input_ids or decoder_inputs_embeds")
+        invalidInputError("You have to specify either decoder_input_ids or decoder_inputs_embeds")
 
     if self.gradient_checkpointing and self.training:
         if use_cache:
             logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                "`use_cache=True` is incompatible with gradient checkpointing. "
+                "Setting `use_cache=False`..."
             )
             use_cache = False
 
@@ -154,7 +159,8 @@ def qwen2_model_forward_internal(
     if position_ids is None:
         device = input_ids.device if input_ids is not None else inputs_embeds.device
         position_ids = torch.arange(
-            past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
         )
         position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
     else:
@@ -163,18 +169,23 @@ def qwen2_model_forward_internal(
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
 
-    if attention_mask is not None and self._attn_implementation == "flash_attention_2" and use_cache:
+    flash_attn_2 = self._attn_implementation == "flash_attention_2"
+    if attention_mask is not None and flash_attn_2 and use_cache:
+
         is_padding_right = attention_mask[:, -1].sum().item() != batch_size
         if is_padding_right:
-            raise ValueError(
+            invalidInputError(
+                False,
                 "You are attempting to perform batched generation with padding_side='right'"
-                " this may lead to unexpected behaviour for Flash Attention version of Qwen2. Make sure to "
-                " call `tokenizer.padding_side  = 'left'` before tokenizing the input. "
+                " this may lead to unexpected behaviour for Flash Attention version of Qwen2."
+                " Make sure to  call `tokenizer.padding_side  = 'left'` before tokenizing "
+                "the input. "
             )
 
     if self._attn_implementation == "flash_attention_2":
         # 2d mask is passed through the layers
-        attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) else None
+        attention_mask = attention_mask if (attention_mask is not None and
+                                            0 in attention_mask) else None
     elif self._attn_implementation == "sdpa" and not output_attentions:
         # output_attentions=True can not be supported when using SDPA, and we fall back on
         # the manual implementation that requires a 4D causal mask in all cases.
@@ -218,7 +229,7 @@ def qwen2_model_forward_internal(
         else:
             # bigdl-llm changes
             if attention_mask is not None:
-                attention_mask = attention_mask.to(hidden_states.device)            
+                attention_mask = attention_mask.to(hidden_states.device)
             if position_ids is not None:
                 position_ids = position_ids.to(hidden_states.device)
             # bigdl-llm changes end
@@ -247,10 +258,12 @@ def qwen2_model_forward_internal(
 
     next_cache = None
     if use_cache:
-        next_cache = next_decoder_cache.to_legacy_cache() if use_legacy_cache else next_decoder_cache
+        next_cache = next_decoder_cache.to_legacy_cache() if use_legacy_cache else \
+            next_decoder_cache
 
     if not return_dict:
-        return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
+        return tuple(v for v in [hidden_states, next_cache,
+                                 all_hidden_states, all_self_attns] if v is not None)
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
         past_key_values=next_cache,

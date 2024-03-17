@@ -557,7 +557,8 @@ def qwen_model_forward(
     )
 
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError(
+        invalidInputError(
+            False,
             "You cannot specify both input_ids and inputs_embeds at the same time"
         )
     elif input_ids is not None:
@@ -568,7 +569,7 @@ def qwen_model_forward(
         input_shape = inputs_embeds.size()[:-1]
         batch_size = inputs_embeds.shape[0]
     else:
-        raise ValueError("You have to specify either input_ids or inputs_embeds")
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
 
     device = input_ids.device if input_ids is not None else inputs_embeds.device
 
@@ -596,7 +597,7 @@ def qwen_model_forward(
 
     if attention_mask is not None:
         if batch_size <= 0:
-            raise ValueError("batch_size has to be defined and > 0")
+            invalidInputError(False, "batch_size has to be defined and > 0")
         attention_mask = attention_mask.view(batch_size, -1)
         attention_mask = attention_mask[:, None, None, :]
         attention_mask = attention_mask.to(dtype=self.dtype)
@@ -624,7 +625,8 @@ def qwen_model_forward(
     else:
         ntk_alpha_list = []
         if attention_mask is not None and kv_seq_len > self.seq_length:
-            true_seq_lens = attention_mask.squeeze(1).squeeze(1).eq(0).sum(dim=-1, dtype=torch.int32)
+            true_seq_lens = attention_mask.squeeze(1).squeeze(1).eq(0).sum(dim=-1,
+                                                                           dtype=torch.int32)
             for i in range(hidden_states.size()[0]):
                 true_seq_len = true_seq_lens[i].item()
                 ntk_alpha = self.get_ntk_alpha(true_seq_len)
@@ -643,7 +645,8 @@ def qwen_model_forward(
     if self.gradient_checkpointing and self.training:
         if use_cache:
             logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                "`use_cache=True` is incompatible with gradient checkpointing. "
+                "Setting `use_cache=False`..."
             )
             use_cache = False
 
@@ -675,7 +678,7 @@ def qwen_model_forward(
                 encoder_attention_mask,
             )
         else:
-            # bigdl-llm changes 
+            # bigdl-llm changes
             from accelerate.utils.operations import send_to_device
             if rotary_pos_emb_list is not None:
                 rotary_pos_emb_list = send_to_device(rotary_pos_emb_list, hidden_states.device)
@@ -686,7 +689,8 @@ def qwen_model_forward(
             if encoder_hidden_states is not None:
                 encoder_hidden_states = send_to_device(encoder_hidden_states, hidden_states.device)
             if encoder_attention_mask is not None:
-                encoder_attention_mask = send_to_device(encoder_attention_mask, hidden_states.device)
+                encoder_attention_mask = send_to_device(encoder_attention_mask,
+                                                        hidden_states.device)
             # bigdl-llm changes ends
 
             outputs = block(

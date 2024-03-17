@@ -26,16 +26,11 @@ conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 ```bash
 conda activate llm
 source /opt/intel/oneapi/setvars.sh
-git clone https://github.com/yangw1234/intel-extension-for-pytorch.git
+git clone https://github.com/intel/intel-extension-for-pytorch.git
 cd intel-extension-for-pytorch
-git checkout fix-cache
+git checkout v2.1.10+xpu
 git submodule update --init --recursive
-export USE_STATIC_MKL=1
-export _GLIBCXX_USE_CXX11_ABI=1
-export USE_NUMA=0
-export USE_CUDA=0
-export USE_XETLA=OFF
-export BUILD_WITH_CPU=OFF
+git cherry-pick be8ea24078d8a271e53d2946ac533383f7a2aa78
 export USE_AOT_DEVLIST='ats-m150,pvc'
 python setup.py install
 ```
