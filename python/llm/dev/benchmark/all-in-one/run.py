@@ -113,7 +113,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
                             round(result[in_out_pair][-1][5], 2),
-                            result[in_out_pair][-1][6] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api else 'N/A',
+                            result[in_out_pair][-1][6] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api or "fp16_gpu" in test_api else 'N/A',
                             streaming if 'win' in test_api else 'N/A'],
                             ) 
 
@@ -708,7 +708,7 @@ def run_bigdl_fp16_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len, load_time])
+                                           actual_in_len, actual_out_len, load_time, model.peak_memory])
     del model
     torch.xpu.empty_cache()
     return result

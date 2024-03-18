@@ -262,7 +262,7 @@ def use_flash_attention(query, key, attention_mask=None):
     bsz, _, q_len, _ = query.size()
     k_len = key.size()[2]
     # check whether ipex flash attention can be used
-    if q_len != k_len:
+    if q_len != k_len and q_len != 1:
         # now only use flash attention for first token
         # as it seems have no performance benifit for rest token now
         return False
