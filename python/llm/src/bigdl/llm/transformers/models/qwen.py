@@ -45,6 +45,7 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from transformers.modeling_outputs import BaseModelOutputWithPast
 
 apply_rotary_emb_func = None
 
@@ -544,3 +545,210 @@ def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
             SILU, qtype
         ))
     return self.c_proj(F.silu(self.w2(x)) * self.w1(x))
+
+
+def qwen_model_forward(
+    self,
+    input_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[Tuple[Tuple[torch.Tensor]]] = None,
+    attention_mask: Optional[torch.FloatTensor] = None,
+    token_type_ids: Optional[torch.LongTensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    head_mask: Optional[torch.FloatTensor] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    encoder_hidden_states: Optional[torch.Tensor] = None,
+    encoder_attention_mask: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+):
+    output_attentions = (
+        output_attentions
+        if output_attentions is not None
+        else self.config.output_attentions
+    )
+    output_hidden_states = (
+        output_hidden_states
+        if output_hidden_states is not None
+        else self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    return_dict = (
+        return_dict if return_dict is not None else self.config.use_return_dict
+    )
+
+    if input_ids is not None and inputs_embeds is not None:
+        invalidInputError(
+            False,
+            "You cannot specify both input_ids and inputs_embeds at the same time"
+        )
+    elif input_ids is not None:
+        input_shape = input_ids.size()
+        input_ids = input_ids.view(-1, input_shape[-1])
+        batch_size = input_ids.shape[0]
+    elif inputs_embeds is not None:
+        input_shape = inputs_embeds.size()[:-1]
+        batch_size = inputs_embeds.shape[0]
+    else:
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
+
+    device = input_ids.device if input_ids is not None else inputs_embeds.device
+
+    if token_type_ids is not None:
+        token_type_ids = token_type_ids.view(-1, input_shape[-1])
+    if position_ids is not None:
+        position_ids = position_ids.view(-1, input_shape[-1])
+
+    if past_key_values is None:
+        past_length = 0
+        past_key_values = tuple([None] * len(self.h))
+    else:
+        if self.use_cache_quantization:
+            past_length = past_key_values[0][0][0].size(2)
+        else:
+            past_length = past_key_values[0][0].size(-2)
+    if position_ids is None:
+        position_ids = torch.arange(
+            past_length,
+            input_shape[-1] + past_length,
+            dtype=torch.long,
+            device=device,
+        )
+        position_ids = position_ids.unsqueeze(0).view(-1, input_shape[-1])
+
+    if attention_mask is not None:
+        if batch_size <= 0:
+            invalidInputError(False, "batch_size has to be defined and > 0")
+        attention_mask = attention_mask.view(batch_size, -1)
+        attention_mask = attention_mask[:, None, None, :]
+        attention_mask = attention_mask.to(dtype=self.dtype)
+        attention_mask = (1.0 - attention_mask) * torch.finfo(self.dtype).min
+
+    encoder_attention_mask = None
+    head_mask = self.get_head_mask(head_mask, self.config.num_hidden_layers)
+
+    if inputs_embeds is None:
+        inputs_embeds = self.wte(input_ids)
+    hidden_states = inputs_embeds
+
+    kv_seq_len = hidden_states.size()[1]
+    if past_key_values[0] is not None:
+        # past key values[0][0] shape: bs * seq_len * head_num * dim
+        if self.use_cache_quantization:
+            kv_seq_len += past_key_values[0][0][0].shape[2]
+        else:
+            kv_seq_len += past_key_values[0][0].shape[1]
+
+    if self.training or not self.use_dynamic_ntk:
+        ntk_alpha_list = [1.0]
+    elif kv_seq_len != hidden_states.size()[1]:
+        ntk_alpha_list = self.rotary_emb._ntk_alpha_cached_list
+    else:
+        ntk_alpha_list = []
+        if attention_mask is not None and kv_seq_len > self.seq_length:
+            true_seq_lens = attention_mask.squeeze(1).squeeze(1).eq(0).sum(dim=-1,
+                                                                           dtype=torch.int32)
+            for i in range(hidden_states.size()[0]):
+                true_seq_len = true_seq_lens[i].item()
+                ntk_alpha = self.get_ntk_alpha(true_seq_len)
+                ntk_alpha_list.append(ntk_alpha)
+        else:
+            ntk_alpha = self.get_ntk_alpha(kv_seq_len)
+            ntk_alpha_list.append(ntk_alpha)
+    self.rotary_emb._ntk_alpha_cached_list = ntk_alpha_list
+    rotary_pos_emb_list = [
+        self.rotary_emb(kv_seq_len, ntk_alpha=ntk_alpha) for ntk_alpha in ntk_alpha_list
+    ]
+
+    hidden_states = self.drop(hidden_states)
+    output_shape = input_shape + (hidden_states.size(-1),)
+
+    if self.gradient_checkpointing and self.training:
+        if use_cache:
+            logger.warning_once(
+                "`use_cache=True` is incompatible with gradient checkpointing. "
+                "Setting `use_cache=False`..."
+            )
+            use_cache = False
+
+    presents = () if use_cache else None
+    all_self_attentions = () if output_attentions else None
+    all_hidden_states = () if output_hidden_states else None
+    for i, (block, layer_past) in enumerate(zip(self.h, past_key_values)):
+
+        if output_hidden_states:
+            all_hidden_states = all_hidden_states + (hidden_states,)
+
+        if self.gradient_checkpointing and self.training:
+
+            def create_custom_forward(module):
+                def custom_forward(*inputs):
+                    # None for past_key_value
+                    return module(*inputs, use_cache, output_attentions)
+
+                return custom_forward
+
+            outputs = torch.utils.checkpoint.checkpoint(
+                create_custom_forward(block),
+                hidden_states,
+                rotary_pos_emb_list,
+                None,
+                attention_mask,
+                head_mask[i],
+                encoder_hidden_states,
+                encoder_attention_mask,
+            )
+        else:
+            # bigdl-llm changes
+            curr_device = block.ln_1.weight.device
+            from accelerate.utils.operations import send_to_device
+            if rotary_pos_emb_list is not None:
+                rotary_pos_emb_list = send_to_device(rotary_pos_emb_list, curr_device)
+            if attention_mask is not None:
+                attention_mask = send_to_device(attention_mask, curr_device)
+            if head_mask[i] is not None:
+                head_mask[i] = send_to_device(head_mask[i], curr_device)
+            if encoder_hidden_states is not None:
+                encoder_hidden_states = send_to_device(encoder_hidden_states, curr_device)
+            if encoder_attention_mask is not None:
+                encoder_attention_mask = send_to_device(encoder_attention_mask,
+                                                        curr_device)
+            # bigdl-llm changes ends
+
+            outputs = block(
+                hidden_states,
+                layer_past=layer_past,
+                rotary_pos_emb_list=rotary_pos_emb_list,
+                attention_mask=attention_mask,
+                head_mask=head_mask[i],
+                encoder_hidden_states=encoder_hidden_states,
+                encoder_attention_mask=encoder_attention_mask,
+                use_cache=use_cache,
+                output_attentions=output_attentions,
+            )
+
+        hidden_states = outputs[0]
+        if use_cache is True:
+            presents = presents + (outputs[1],)
+
+        if output_attentions:
+            all_self_attentions = all_self_attentions + (outputs[2 if use_cache else 1],)
+
+    hidden_states = self.ln_f(hidden_states)
+    hidden_states = hidden_states.view(output_shape)
+    # Add last hidden state
+    if output_hidden_states:
+        all_hidden_states = all_hidden_states + (hidden_states,)
+
+    if not return_dict:
+        return tuple(
+            v for v in [hidden_states, presents, all_hidden_states] if v is not None
+        )
+
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=presents,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attentions,
+    )
