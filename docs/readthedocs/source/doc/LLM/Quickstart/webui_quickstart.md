@@ -155,8 +155,7 @@ You can add custom template files to this list in `/instruction-templates/` fold
 | llama-2-7b-chat-hf |          |
 | chatglm3-6b        | Manually load ChatGLM3 template for Instruct chat mode |
 | Mistral-7B-v0.1    |          |
-| Falcon-7b-instruct-with-patch |     |
-| qwen-7B-Chat       | Manually load Qwen template for Instruct chat mode |
+| qwen-7B-Chat       |          |
 
 
 ## Troubleshooting
