@@ -6,46 +6,91 @@ BigDL-LLM currently supports the Ubuntu 20.04 operating system and later, and su
 
 
 ## Install Intel GPU Driver
-Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
 
-  > Note: Please refer to our [driver installation](install_linux_driver.md) detailed instruction in driver installation.
+This guide demonstrates how to install driver on linux with **kernel version 6.2** on Intel GPU.
+We assume that you have the 6.2 kernel on your linux machine.
+
+
+* Install arc driver
+    ```bash
+    sudo apt-get install -y gpg-agent wget
+    wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+    sudo gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
+    sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+    ```
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/driver_install1.png" width=100%; />
+
+* Install drivers
+
+    ```bash
+    sudo apt-get update
+
+    sudo apt-get -y install \
+        gawk \
+        dkms \
+        linux-headers-$(uname -r) \
+        libc6-dev
+        
+    sudo apt install intel-i915-dkms  intel-fw-gpu
+
+    sudo apt-get install -y gawk libc6-dev udev\
+        intel-opencl-icd intel-level-zero-gpu level-zero \
+        intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
+        libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
+        libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers \
+        mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo
+    
+    sudo reboot
+    ```
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/driver_install2.png" width=100%; />
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/driver_install3.png" width=100%; />
+
+
+* Configure permissions
+    ```bash
+    sudo gpasswd -a ${USER} render
+    newgrp render
+
+    # Verify the device is working with i915 driver
+    sudo apt-get install -y hwinfo
+    hwinfo --display
+    ```
+
 
 ## Setup Python Environment
 
 * Install the Miniconda as follows
   ```bash
   wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
   bash Miniconda3-latest-Linux-x86_64.sh
+
   source ~/.bashrc
+
   # Verify the installation
   conda --version
   # rm Miniconda3-latest-Linux-x86_64.sh # if you don't need this file any longer
   ```
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda1.png" alt="image-20240221102252569" width=100%; />
-
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda2.png" alt="image-20240221102252568" width=100%; />
-
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda3.png" alt="image-20240221102252567" width=100%; />
-
-* Update and install packages
-  ```
-  conda update -n base conda -y
-  conda clean --all --yes
-  conda install pip -y
-  ```
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/pythonenv_install_conda4.png" alt="image-20240221102252566" width=100%; />
-
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/python_env1.png" alt="image-20240221102252569" width=100%; />
 
 
 ## Install oneAPI 
   ```
   wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
   echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+  
   sudo apt update
 
   sudo apt install intel-basekit
   ```
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/install_oneapi_1.png" alt="image-20240221102252565" width=100%; />
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/install_oneapi_2.png" alt="image-20240221102252565" width=100%; />
 
 
 ## Install `bigdl-llm`
@@ -58,9 +103,9 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
   pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl1.png" alt="image-20240221102252564" width=100%; />
-
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl2.png" alt="image-20240221102252563" width=100%; />
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/big_dl1.png" alt="image-20240221102252564" width=100%; />
+  
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/big_dl2.png" alt="image-20240221102252564" width=100%; />
 
 
 * You can verfy if bigdl-llm is successfully by simply importing a few classes from the library. For example, execute the following import command in terminal:
@@ -72,7 +117,7 @@ Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend 
   > from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
   ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl5.png" alt="image-20240221102252562" width=100%; />
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/big_dl3.png" alt="image-20240221102252562" width=100%; />
 
 
 ## Runtime Configuration
@@ -89,8 +134,6 @@ To use GPU acceleration on Linux, several environment variables are required or 
   export USE_XETLA=OFF
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
-
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/bigd_dl4.png" alt="image-20240221102252561" width=100%; />
 
 
 * For Intel Data Center GPU Max Series, we recommend:
@@ -125,11 +168,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
   export USE_XETLA=OFF
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
-* Step 3: To ensure compatibility with `phi-1.5`, update the transformers library to version 4.37.0:
-   ```bash
-   pip install -U transformers==4.37.0 
-   ```
-* Step 4: Create a new file named `demo.py` and insert the code snippet below.
+* Step 3: Create a new file named `demo.py` and insert the code snippet below.
    ```python
    # Copy/Paste the contents to a new file demo.py
    import torch
@@ -137,10 +176,10 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    from transformers import AutoTokenizer, GenerationConfig
    generation_config = GenerationConfig(use_cache = True)
    
-   tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-1_5", trust_remote_code=True)
+   tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b", trust_remote_code=True)
    # load Model using bigdl-llm and load it to GPU
    model = AutoModelForCausalLM.from_pretrained(
-       "microsoft/phi-1_5", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
+       "tiiuae/falcon-7b", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
    model = model.to('xpu')
 
    # Format the prompt
