@@ -34,6 +34,9 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
     pip install peft==0.5.0 datasets accelerate==0.23.0 && \
     pip install bitsandbytes scipy && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    mv BigDL/python/llm/example/GPU/LLM-Finetuning/common /common && \
+    rm -r BigDL && \
     wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py
 
 COPY ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh

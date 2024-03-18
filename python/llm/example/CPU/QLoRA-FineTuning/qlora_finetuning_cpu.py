@@ -27,25 +27,37 @@ from datasets import load_dataset
 import argparse
 from bigdl.llm.utils.isa_checker import ISAChecker
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+common_util_path = os.path.join(current_dir, '..', '..', 'GPU', 'LLM-Finetuning')
+import sys
+sys.path.append(common_util_path)
+from common.utils import Prompter, get_train_val_data
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--dataset', type=str, default="Abirate/english_quotes")
+    parser.add_argument('--dataset', type=str, default="yahma/alpaca-cleaned")
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     dataset_path = args.dataset
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    data = load_dataset(dataset_path)
-    def merge(row):
-        row['prediction'] = row['quote'] + ' ->: ' + str(row['tags'])
-        return row
-    data['train'] = data['train'].map(merge)
-    # use the max_length to reduce memory usage, should be adjusted by different datasets
-    data = data.map(lambda samples: tokenizer(samples["prediction"], max_length=256), batched=True)
+    if dataset_path.endswith(".json") or dataset_path.endswith(".jsonl"):
+        data = load_dataset("json", data_files=dataset_path)
+    else:
+        data = load_dataset(dataset_path)
+
+    # For illustration purpose, only use part of data to train
+    data = data["train"].train_test_split(train_size=0.1, shuffle=False)
+
+    # Data processing
+    prompter = Prompter("alpaca")
+    train_data, _ = get_train_val_data(data, tokenizer, prompter, train_on_inputs=True,
+                                       add_eos_token=False, cutoff_len=256, val_set_size=0, seed=42)
+
 
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -85,7 +97,7 @@ if __name__ == "__main__":
     
     trainer = transformers.Trainer(
         model=model,
-        train_dataset=data["train"],
+        train_dataset=train_data,
         args=transformers.TrainingArguments(
             per_device_train_batch_size=4,
             gradient_accumulation_steps=1,
@@ -100,7 +112,9 @@ if __name__ == "__main__":
             # gradient_checkpointing=True, # can further reduce memory but slower
         ),
         # Inputs are dynamically padded to the maximum length of a batch
-        data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
+        data_collator=transformers.DataCollatorForSeq2Seq(
+            tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
+        ),
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
     result = trainer.train()
