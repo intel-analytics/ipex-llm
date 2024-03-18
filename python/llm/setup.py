@@ -323,7 +323,7 @@ def setup_package():
                         "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
-                        "cpp": ["bigdl-core-cpp==" + VERSION + ";platform_system=='Linux'"]},
+                        "cpp": ["bigdl-core-cpp==" + VERSION]},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
