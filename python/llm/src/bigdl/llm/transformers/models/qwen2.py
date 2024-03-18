@@ -348,6 +348,13 @@ def qwen2_attention_forward_origin(
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
     if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
+                                                     is_causal=True)
+        attn_weights = None
+    elif not self.training and not hidden_states.requires_grad and \
             use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
@@ -379,12 +386,12 @@ def qwen2_attention_forward_origin(
                                              training=self.training)
         attn_output = torch.matmul(attn_weights, value_states)
 
-        invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
-                          "`attn_output` should be of size "
-                          f"{(bsz, self.num_heads, q_len, self.head_dim)},"
-                          f" but is {attn_output.size()}")
+    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
+                      "`attn_output` should be of size "
+                      f"{(bsz, self.num_heads, q_len, self.head_dim)},"
+                      f" but is {attn_output.size()}")
 
-        attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
     attn_output = self.o_proj(attn_output)
