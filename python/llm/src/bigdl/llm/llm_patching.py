@@ -42,12 +42,11 @@ def llm_patch(train=False):
         return
 
     # Initial version of patch for llm finetuning, inference support TBD
+    from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+    replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "AutoModel", AutoModel)
     if train:
-        from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-        replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
-        replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
-        replace_attr(transformers, "AutoModel", AutoModel)
-
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
         invalidInputError(not import_peft_check,
