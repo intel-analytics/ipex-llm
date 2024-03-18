@@ -211,7 +211,6 @@ def qwen2_attention_forward_quantized(
 
         attn_output = torch.matmul(attn_weights, value)
 
-
     invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                       "`attn_output` should be of size "
                       f"{(bsz, self.num_heads, q_len, self.head_dim)},"
