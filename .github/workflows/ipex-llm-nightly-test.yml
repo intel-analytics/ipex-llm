@@ -1,0 +1,32 @@
+name: NEW LLM Nightly Tests
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [main]
+    # paths:
+    #   - ".github/workflows/llm-nightly-test.yml"
+    #   - ".github/actions/llm/setup-llm-env/action.yml"
+    #   - ".github/actions/llm/remove-llm-env/action.yml"
+    #   - ".github/actions/llm/convert-test/action.yml"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-unit-tests:
+    # needs: llm-cpp-build
+    uses: ./.github/workflows/ipex_llm_unit_tests.yml
+  llm-example-test:
+    # needs: llm-cpp-build
+    uses: ./.github/workflows/ipex_llm_example_tests.yml
