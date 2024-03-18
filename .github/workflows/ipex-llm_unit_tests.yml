@@ -71,7 +71,7 @@ jobs:
     env:
       THREAD_NUM: 24
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      # BIGDL_COMPATIBLE_MODE: false
+      BIGDL_COMPATIBLE_MODE: false
     steps:
       - name: Set model directories
         shell: bash
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
-          ref: "ipex-llm-20240315"
+          ref: "ipex-llm-20240318"
           token: ${{ env.github_access_token }}
           submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
@@ -282,7 +282,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "analytics-zoo/bigdl-llm-internal"
-          ref: "ipex-llm-20240315-action"
+          ref: "ipex-llm-20240318"
           token: ${{ env.github_access_token }}
           submodules: "recursive"
 
