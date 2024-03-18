@@ -501,48 +501,32 @@ def baichuan_attention_forward_13b_origin(
                                                          attn_mask=attention_mask)
         attn_output = attn_output.transpose(1, 2)
     else:
-        if not self.training and not hidden_states.requires_grad and \
-                use_flash_attention(query_states, key_states, attention_mask):
-            attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
-                                                         key_states.to(dtype=torch.float16),
-                                                         value_states.to(dtype=torch.float16),
-                                                         is_causal=True)
-            attn_weights = None
-        elif not self.training and not hidden_states.requires_grad and \
-                use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-            import linear_fp16_esimd
-            attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                        key_states,
-                                                        value_states)
-            attn_output = attn_output.view(query_states.shape)
-            attn_weights = None
-        else:
-            attn_weights = torch.matmul(
-                query_states.to(dtype=key_states.dtype), key_states.transpose(2, 3)
-            ) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(
+            query_states.to(dtype=key_states.dtype), key_states.transpose(2, 3)
+        ) / math.sqrt(self.head_dim)
 
-            if attention_mask is not None:
-                if q_len == 1:  # inference with cache
-                    if len(attention_mask.size()) == 4:
-                        attention_mask = attention_mask[:, :, -1:, :]
-                    else:
-                        attention_mask = attention_mask[:, -1:, :]
-                if attention_mask.shape[-2] == attn_weights.shape[-2]:
-                    attn_weights = attn_weights + attention_mask
+        if attention_mask is not None:
+            if q_len == 1:  # inference with cache
+                if len(attention_mask.size()) == 4:
+                    attention_mask = attention_mask[:, :, -1:, :]
                 else:
-                    # support for Baichuan/Baichuan2 13B Chat running speculative decoding
-                    # split attention mask on dim -2
-                    split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2],
-                                   attn_weights.shape[-2]]
-                    # the last chunk of splited is the new attention mask
-                    attention_mask = attention_mask.split(split_sizes, dim=-2)[-1]
-                    attn_weights = attn_weights + attention_mask
-                attn_weights = torch.max(
-                    attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min)
-                )
+                    attention_mask = attention_mask[:, -1:, :]
+            if attention_mask.shape[-2] == attn_weights.shape[-2]:
+                attn_weights = attn_weights + attention_mask
+            else:
+                # support for Baichuan/Baichuan2 13B Chat running speculative decoding
+                # split attention mask on dim -2
+                split_sizes = [attention_mask.shape[-2] - attn_weights.shape[-2],
+                               attn_weights.shape[-2]]
+                # the last chunk of splited is the new attention mask
+                attention_mask = attention_mask.split(split_sizes, dim=-2)[-1]
+                attn_weights = attn_weights + attention_mask
+            attn_weights = torch.max(
+                attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min)
+            )
 
-            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-            attn_output = torch.matmul(attn_weights.to(dtype=value_states.dtype), value_states)
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+        attn_output = torch.matmul(attn_weights.to(dtype=value_states.dtype), value_states)
 
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
