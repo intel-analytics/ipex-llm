@@ -649,8 +649,6 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     # using ipex optimizer before changing to bigdl linear
     _enable_ipex = get_enable_ipex()
 
-    if torch.__version__.endswith('cpu'):
-        logger.info(f"BIGDL_OPT_IPEX: {_enable_ipex}")
     if _enable_ipex:
         model = _optimize_ipex(model, qtype)
         return model
