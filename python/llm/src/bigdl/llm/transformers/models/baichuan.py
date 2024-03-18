@@ -500,8 +500,7 @@ def baichuan_attention_forward_13b_origin(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    attn_weights = torch.matmul(query_states,
-                                key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
     if attention_mask is not None:
         if q_len == 1:  # inference with cache
@@ -510,8 +509,7 @@ def baichuan_attention_forward_13b_origin(
             else:
                 attention_mask = attention_mask[:, -1:, :]
         attn_weights = attn_weights + attention_mask
-        attn_weights = torch.max(attn_weights,
-                                 torch.tensor(torch.finfo(attn_weights.dtype).min))
+        attn_weights = torch.max(attn_weights, torch.tensor(torch.finfo(attn_weights.dtype).min))
 
     attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
 

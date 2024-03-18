@@ -535,7 +535,7 @@ def baichuan_attention_forward_13b_origin(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output.to(hidden_states.dtype), attn_weights, past_key_value
+    return attn_output, attn_weights, past_key_value
 
 
 def _get_interleave(n):
