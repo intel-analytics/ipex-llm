@@ -467,7 +467,7 @@ docker build \
 
 ### 2. Prepare Base Model, Data and Container
 
-Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [English Quotes](https://huggingface.co/datasets/Abirate/english_quotes) dataset, and please download them and start a docker container with files mounted like below:
+Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
 ```bash
 export BASE_MODE_PATH=your_downloaded_base_model_path
@@ -483,7 +483,7 @@ docker run -itd \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
-   -v $DATA_PATH:/data/english_quotes \
+   -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
    intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
@@ -524,17 +524,17 @@ bash start-qlora-finetuning-on-xpu.sh
 After minutes, it is expected to get results like:
 
 ```bash
-{'loss': 2.256, 'learning_rate': 0.0002, 'epoch': 0.03}
-{'loss': 1.8869, 'learning_rate': 0.00017777777777777779, 'epoch': 0.06}
-{'loss': 1.5334, 'learning_rate': 0.00015555555555555556, 'epoch': 0.1}
-{'loss': 1.4975, 'learning_rate': 0.00013333333333333334, 'epoch': 0.13}
-{'loss': 1.3245, 'learning_rate': 0.00011111111111111112, 'epoch': 0.16}
-{'loss': 1.2622, 'learning_rate': 8.888888888888889e-05, 'epoch': 0.19}
-{'loss': 1.3944, 'learning_rate': 6.666666666666667e-05, 'epoch': 0.22}
-{'loss': 1.2481, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.26}
-{'loss': 1.3442, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.29}
-{'loss': 1.3256, 'learning_rate': 0.0, 'epoch': 0.32}
-{'train_runtime': 204.4633, 'train_samples_per_second': 3.913, 'train_steps_per_second': 0.978, 'train_loss': 1.5072882556915284, 'epoch': 0.32}
-100%|██████████████████████████████████████████████████████████████████████████████████████| 200/200 [03:24<00:00,  1.02s/it]
-TrainOutput(global_step=200, training_loss=1.5072882556915284, metrics={'train_runtime': 204.4633, 'train_samples_per_second': 3.913, 'train_steps_per_second': 0.978, 'train_loss': 1.5072882556915284, 'epoch': 0.32})
+{'loss': 2.0251, 'learning_rate': 0.0002, 'epoch': 0.02}
+{'loss': 1.2389, 'learning_rate': 0.00017777777777777779, 'epoch': 0.03}
+{'loss': 1.032, 'learning_rate': 0.00015555555555555556, 'epoch': 0.05}
+{'loss': 0.9141, 'learning_rate': 0.00013333333333333334, 'epoch': 0.06}
+{'loss': 0.8505, 'learning_rate': 0.00011111111111111112, 'epoch': 0.08}
+{'loss': 0.8713, 'learning_rate': 8.888888888888889e-05, 'epoch': 0.09}
+{'loss': 0.8635, 'learning_rate': 6.666666666666667e-05, 'epoch': 0.11}
+{'loss': 0.8853, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.12}
+{'loss': 0.859, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.14}
+{'loss': 0.8608, 'learning_rate': 0.0, 'epoch': 0.15}
+{'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15}
+100%|███████████████████████████████████████████████████████████████████████████████████| 200/200 [07:16<00:00,  2.18s/it]
+TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15})
 ```
