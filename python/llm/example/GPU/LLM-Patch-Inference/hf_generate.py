@@ -30,6 +30,8 @@ from typing import Dict, Union
 import numpy as np
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from bigdl.llm.llm_patching import llm_patch
+llm_patch()
 
 import prompt_files as utils
 
