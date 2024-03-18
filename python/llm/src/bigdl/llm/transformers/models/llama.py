@@ -53,10 +53,15 @@ from transformers.models.llama.modeling_llama import LlamaModel
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+
 try:
-    from transformers.cache_utils import Cache
+    from transformers.cache_utils import Cache, DynamicCache
 except ImportError:
     Cache = Tuple[torch.Tensor]
+from transformers import logging
+
+
+logger = logging.get_logger(__name__)
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -106,7 +111,7 @@ def llama_model_forward_4_36(
     if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):
         if not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-    return LlamaModel.forward(
+    return llama_model_forward_4_36_internal(
         self=self,
         input_ids=input_ids,
         attention_mask=attention_mask,
@@ -1605,3 +1610,311 @@ def llama_attention_fast_forward(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
+
+
+def llama_model_forward_4_36_internal(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    output_attentions = output_attentions if output_attentions is not None else \
+        self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # retrieve input_ids and inputs_embeds
+    if input_ids is not None and inputs_embeds is not None:
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
+    elif input_ids is not None:
+        batch_size, seq_length = input_ids.shape[:2]
+    elif inputs_embeds is not None:
+        batch_size, seq_length = inputs_embeds.shape[:2]
+    else:
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
+
+    past_key_values_length = 0
+    if use_cache:
+        use_legacy_cache = not isinstance(past_key_values, Cache)
+        if use_legacy_cache:
+            past_key_values = DynamicCache.from_legacy_cache(past_key_values)
+        past_key_values_length = past_key_values.get_usable_length(seq_length)
+
+    if position_ids is None:
+        device = input_ids.device if input_ids is not None else inputs_embeds.device
+        position_ids = torch.arange(
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
+        )
+        position_ids = position_ids.unsqueeze(0)
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+
+    if self._use_flash_attention_2:
+        # 2d mask is passed through the layers
+        attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) \
+            else None
+    elif self._use_sdpa and not output_attentions:
+        # output_attentions=True can not be supported when using SDPA, and we fall back on
+        # the manual implementation that requires a 4D causal mask in all cases.
+        from transformers.models.llama.modeling_llama import \
+            _prepare_4d_causal_attention_mask_for_sdpa
+        attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
+            attention_mask,
+            (batch_size, seq_length),
+            inputs_embeds,
+            past_key_values_length,
+        )
+    else:
+        # 4d mask is passed through the layers
+        from transformers.models.llama.modeling_llama import _prepare_4d_causal_attention_mask
+        attention_mask = _prepare_4d_causal_attention_mask(
+            attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+        )
+
+    # embed positions
+    hidden_states = inputs_embeds
+
+    if self.gradient_checkpointing and self.training:
+        if use_cache:
+            logger.warning_once(
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                " Setting `use_cache=False`..."
+            )
+            use_cache = False
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = None
+
+    for decoder_layer in self.layers:
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        if self.gradient_checkpointing and self.training:
+            layer_outputs = self._gradient_checkpointing_func(
+                decoder_layer.__call__,
+                hidden_states,
+                attention_mask,
+                position_ids,
+                past_key_values,
+                output_attentions,
+                use_cache,
+            )
+        else:
+            # bigdl-llm changes:
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
+            # bigdl-llm changes end
+            layer_outputs = decoder_layer(
+                hidden_states,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                past_key_value=past_key_values,
+                output_attentions=output_attentions,
+                use_cache=use_cache,
+            )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = None
+    if use_cache:
+        next_cache = next_decoder_cache.to_legacy_cache() if use_legacy_cache \
+            else next_decoder_cache
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache,
+                                 all_hidden_states, all_self_attns] if v is not None)
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
+    )
+
+
+def llama_model_forward(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    output_attentions = output_attentions if output_attentions is not None \
+        else self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # retrieve input_ids and inputs_embeds
+    if input_ids is not None and inputs_embeds is not None:
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
+    elif input_ids is not None:
+        batch_size, seq_length = input_ids.shape
+    elif inputs_embeds is not None:
+        batch_size, seq_length, _ = inputs_embeds.shape
+    else:
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
+
+    seq_length_with_past = seq_length
+    past_key_values_length = 0
+
+    if past_key_values is not None:
+        past_key_values_length = past_key_values[0][0].shape[2]
+        seq_length_with_past = seq_length_with_past + past_key_values_length
+
+    if position_ids is None:
+        device = input_ids.device if input_ids is not None else inputs_embeds.device
+        position_ids = torch.arange(
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
+        )
+        position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    else:
+        position_ids = position_ids.view(-1, seq_length).long()
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+    # embed positions
+    if attention_mask is None:
+        attention_mask = torch.ones(
+            (batch_size, seq_length_with_past), dtype=torch.bool, device=inputs_embeds.device
+        )
+        padding_mask = None
+    else:
+        if 0 in attention_mask:
+            padding_mask = attention_mask
+        else:
+            padding_mask = None
+
+    attention_mask = self._prepare_decoder_attention_mask(
+        attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+    )
+
+    hidden_states = inputs_embeds
+
+    if self.gradient_checkpointing and self.training:
+        if use_cache:
+            logger.warning_once(
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                " Setting `use_cache=False`..."
+            )
+            use_cache = False
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = () if use_cache else None
+
+    for idx, decoder_layer in enumerate(self.layers):
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        past_key_value = past_key_values[idx] if past_key_values is not None else None
+
+        if self.gradient_checkpointing and self.training:
+
+            def create_custom_forward(module):
+                def custom_forward(*inputs):
+                    # None for past_key_value
+                    return module(*inputs, past_key_value, output_attentions,
+                                  padding_mask=padding_mask)
+
+                return custom_forward
+
+            layer_outputs = torch.utils.checkpoint.checkpoint(
+                create_custom_forward(decoder_layer), hidden_states, attention_mask, position_ids
+            )
+        else:
+            # bigdl-llm changes:
+            #
+            # Avoid moving `attention_mask`` and `position_ids`` to other devices multiple times.
+            #
+            # When the model is partitioned on two different devices using
+            # `accelerate`'s `dispatch``, a hook to move inputs to the correct device is
+            # added to each layer's `forward``, which will result in moving `attention_mask`
+            # and `position_ids`, which allocated on device:0, to other devices for each
+            # decoder layer not in device:0.
+            #
+            # To avoid this, we move `attention_mask` and `position_ids` to the device of
+            # the current layer before the forward call, so that the moving is only done once
+            # for each devices other than devie:0.
+            #
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
+            # bigdl-llm changes end
+            layer_outputs = decoder_layer(
+                hidden_states,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                past_key_value=past_key_value,
+                output_attentions=output_attentions,
+                use_cache=use_cache,
+                padding_mask=padding_mask,
+            )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache += (layer_outputs[2 if output_attentions else 1],)
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = next_decoder_cache if use_cache else None
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache,
+                                 all_hidden_states, all_self_attns] if v is not None)
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
+    )
