@@ -45,6 +45,7 @@
 # THE SOFTWARE.
 
 """Wrapper around BigdlLLM embedding models."""
+import torch
 from typing import Any, Dict, List, Optional
 import numpy as np
 
@@ -181,3 +182,14 @@ class TransformersEmbeddings(BaseModel, Embeddings):
         text = text.replace("\n", " ")
         embedding = self.embed(text, **self.encode_kwargs)
         return embedding.tolist()
+
+# fit specific encode method for langchain.embeddings.HuggingFaceBgeEmbeddings
+# TODO: directly support HuggingFaceBgeEmbeddings
+class TransformersBgeEmbeddings(TransformersEmbeddings):
+
+    def embed(self, text: str, **kwargs):
+        input_ids = self.tokenizer.encode(text, return_tensors="pt", **kwargs)
+        input_ids = input_ids.to(self.model.device)
+        embeddings = self.model(input_ids, return_dict=False)[0].cpu()
+        embeddings = torch.nn.functional.normalize(embeddings[:, 0], p=2, dim=1)
+        return embeddings[0]
