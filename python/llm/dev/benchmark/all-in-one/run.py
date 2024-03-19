@@ -1553,7 +1553,7 @@ def run_speculative_gpu(repo_id,
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='fp16', trust_remote_code=True, torch_dtype=torch.float16,
-                                                     use_cache=True,  speculative=True)
+                                                     use_cache=True, speculative=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     end = time.perf_counter()
@@ -1561,7 +1561,7 @@ def run_speculative_gpu(repo_id,
     print(">> loading of model costs {}s".format(load_time))
 
     result = {}
-    with torch.inference_mode(), torch.autocast("cpu"):
+    with torch.inference_mode():
         for in_out in in_out_pairs:
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
@@ -1579,7 +1579,7 @@ def run_speculative_gpu(repo_id,
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
-            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+            input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to(model.device)
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
