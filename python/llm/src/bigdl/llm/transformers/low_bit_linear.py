@@ -546,7 +546,8 @@ class LowBitLinear(nn.Linear):
             self.device = get_xpu_device_type(self.weight.data)
             self.low_memory_mode = \
                 self.low_memory_mode and\
-                (self.device == "arc" or os.environ.get("BIGDL_LOW_MEMORY_MODE", None) == "1")
+                (self.device == "arc" or self.device == "mtl" or
+                 os.environ.get("BIGDL_LOW_MEMORY_MODE", None) == "1")
         # Due to inconsistent training status in some models like Baichuan-7b-Chat,
         # we should check both self.training and torch.is_inference_mode_enabled().
         is_training = self.training and not torch.is_inference_mode_enabled()
