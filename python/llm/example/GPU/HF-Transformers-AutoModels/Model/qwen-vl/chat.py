@@ -43,7 +43,8 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path, 
                                                  load_in_4bit=True, 
                                                  trust_remote_code=True, 
-                                                 modules_to_not_convert=['c_fc', 'out_proj'])
+                                                 modules_to_not_convert=['c_fc', 'out_proj'],
+                                                 torch_dtype=torch.float32)
     model = model.to('xpu')
 
     # Specify hyperparameters for generation (No need to do this if you are using transformers>=4.32.0)
