@@ -22,7 +22,9 @@ warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
-batch_size: 2 # default to 1
+batch_size: 
+  - 1 # default to 1
+  - 2 # default to 1
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -35,3 +37,4 @@ exclude:
   - 'fnlp/moss-moon-003-sft-4bit:2048'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
+  - 'bigcode/starcoder-15.5b-4bit:2048:2' # format: model_name:in_out_pair:batch_size
