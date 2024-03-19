@@ -62,7 +62,11 @@ def main(args):
     texts = text_splitter.split_text(input_doc)
 
     # create embeddings and store into vectordb
-    embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
+    embeddings = TransformersEmbeddings.from_model_id(
+        model_id=model_path, 
+        model_kwargs={"trust_remote_code": True},
+        device_map='xpu'
+        )
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
     #get relavant texts
