@@ -48,6 +48,7 @@ test_api:
   # - "optimize_model_gpu"  # on Intel GPU
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
   # - "transformer_int4_gpu_win" # on Intel GPU for Windows
+  # - "transformer_int4_fp16_gpu_win" # on Intel GPU for Windows, use fp16 for non-linear layer
   # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
