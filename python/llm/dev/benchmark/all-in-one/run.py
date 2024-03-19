@@ -115,7 +115,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
                             round(result[in_out_pair][-1][5], 2),
-                            result[in_out_pair][-1][6] if 'int4_gpu' in test_api or 'int4_loadlowbit_gpu' in test_api else 'N/A',
+                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu' ]) else 'N/A',
                             streaming if 'win' in test_api else 'N/A'],
                             ) 
 
