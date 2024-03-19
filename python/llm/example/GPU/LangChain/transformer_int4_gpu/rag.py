@@ -23,6 +23,7 @@
 import time
 import uuid
 import argparse
+import torch
 from contextlib import contextmanager
 from typing import Any, List
 
@@ -128,10 +129,21 @@ def main(model_path, file_path, question):
     # Initialize and configure the model
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_model_id function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+    # Set your memory limits and device mapping here
+    device_map = {0: "8GB", "cpu": "64GB"}  # For example, allocate 8GB memory to GPU (device 0), 64GB to CPU
+    model_kwargs = {
+        "temperature": 0,
+        "max_length": 3000,
+        "trust_remote_code": True,
+        "max_memory": device_map,  # Apply the device mapping to model parameters optionally
+        "torch_dtype": torch.bfloat16 # You need to set the torch_dtype to torch.bfloat16 when using arc a770
+    }
+
+    # Create the model instance
     model = TransformersLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 1500, "trust_remote_code": True},
-        device_map='xpu'
+        model_kwargs=model_kwargs,
+        device_map='xpu'  # Apply the device mapping to the model
     )
 
     output_file_path = "timing_results.txt"
