@@ -43,18 +43,9 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path, 
                                                  load_in_4bit=True, 
                                                  trust_remote_code=True, 
-                                                 modules_to_not_convert=['c_fc', 'out_proj'])
+                                                 modules_to_not_convert=['c_fc', 'out_proj'],
+                                                 torch_dtype=torch.float32)
     model = model.to('xpu')
-    # Due to issue https://github.com/intel/intel-extension-for-pytorch/issues/454,
-    # currently put interpolation execution into cpu
-    def to_cpu(module, input, output):
-        return output.to("cpu")
-
-    def to_xpu(module, input):
-        return (input[0].to("xpu"),)
-
-    model.transformer.visual.ln_pre.register_forward_hook(to_cpu)
-    model.transformer.visual.transformer.register_forward_pre_hook(to_xpu)
 
     # Specify hyperparameters for generation (No need to do this if you are using transformers>=4.32.0)
     model.generation_config = GenerationConfig.from_pretrained(model_path, trust_remote_code=True)

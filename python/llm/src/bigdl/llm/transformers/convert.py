@@ -689,6 +689,23 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
 
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
+
+    if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
+        # for Qwen-VL-Chat
+        # Due to issue https://github.com/intel/intel-extension-for-pytorch/issues/454,
+        # currently put interpolation execution into cpu
+        visual_module_name = model.transformer.visual.__class__.__module__
+        visual_module = importlib.import_module(visual_module_name)
+        from bigdl.llm.transformers.models.qwen_vl import qwen_vl_vision_transformer_forward
+        from bigdl.llm.transformers.models.qwen_vl import qwen_vl_resampler_forward
+        convert_forward(model,
+                        visual_module.VisionTransformer,
+                        qwen_vl_vision_transformer_forward
+                        )
+        convert_forward(model,
+                        visual_module.Resampler,
+                        qwen_vl_resampler_forward
+                        )
     return model
 
 
