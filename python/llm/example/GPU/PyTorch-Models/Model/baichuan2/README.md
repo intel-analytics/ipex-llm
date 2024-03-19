@@ -114,13 +114,8 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat)
 ```log
 Inference time: xxxx s
+-------------------- Prompt --------------------
+<reserved_106> AI是什么？ <reserved_107>
 -------------------- Output --------------------
-<human>AI是什么？ <bot>
-AI是人工智能（Artificial Intelligence）的缩写，它是指让计算机或机器模拟、扩展和辅助人类的智能。AI技术已经广泛应用于各个领域
-```
-
-```log
-Inference time: xxxx s
--------------------- Output --------------------
-<human>What is AI? <bot>Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that would typically require human intelligence. These tasks include learning, reasoning, problem
+<reserved_106> AI是什么？ <reserved_107>AI是人工智能（Artificial Intelligence）的缩写，它是指让计算机或其他设备模拟人类智能的技术。通过使用大量数据和算法，AI可以学习、
 ```
