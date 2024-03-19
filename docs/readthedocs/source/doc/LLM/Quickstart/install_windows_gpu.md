@@ -4,12 +4,14 @@ This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs.
 
 It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
-## Install Visual Studio 2022
+## Install Prerequisites
+
+### Install Visual Studio 2022
 
 Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
    
 ```eval_rst
-.. note::
+.. tip::
 
    The installation could take around 15 minutes, and requires at least 7GB of free disk space.
    If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on `this Microsoft guide <https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads>`_  to update your installation.
@@ -17,7 +19,7 @@ Download and Install Visual Studio 2022 Community Edition from the [official Mic
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
 
-## Install GPU Driver
+### Install GPU Driver
 
 Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
 
@@ -29,11 +31,8 @@ Download and install the latest GPU driver from the [official Intel download pag
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=100%; />
 
-To monitor your GPU's performance and status, you can use either the **Windows Task Manager** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below)
 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=100%; />
-
-## Install oneAPI 
+### Install oneAPI 
 
 <!-- * With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
   ```cmd
@@ -50,7 +49,7 @@ Download and install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/c
    If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
 ```
 
-## Setup Python Environment
+### Setup Python Environment
 
 Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
@@ -148,6 +147,10 @@ You can verify if `bigdl-llm` is successfully installed by simply running a few 
   ```
 * To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
+## Monitor GPU Status
+To monitor your GPU's performance and status (e.g. memory consumption, utilization, etc.), you can use either the **Windows Task Manager (in `Performance` Tab)** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below)
+
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=100%; />
 
 ## A Quick Example
 
@@ -308,7 +311,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
         .. tip::
 
-           Please note that the repo id on ModelScope may be difference from Hugging Face for some models.
+           Please note that the repo id on ModelScope may be different from Hugging Face for some models.
 
   ```
 
