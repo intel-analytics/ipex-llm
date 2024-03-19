@@ -35,7 +35,9 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    # Fix Trivy CVE Issues
+    pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \

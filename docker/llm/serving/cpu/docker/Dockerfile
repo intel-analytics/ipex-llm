@@ -13,7 +13,9 @@ ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbi
 # Install Serving Dependencies
 RUN cd /llm && \
     pip install --pre --upgrade bigdl-llm[serving] && \
-# Fix Qwen model adpater in fastchat
+    # Fix Trivy CVE Issues
+    pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
+    # Fix Qwen model adpater in fastchat
     patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py < /llm/model_adapter.py.patch && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
