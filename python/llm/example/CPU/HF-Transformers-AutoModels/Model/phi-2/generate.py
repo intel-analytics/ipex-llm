@@ -60,6 +60,7 @@ if __name__ == '__main__':
         # it is important to set `use_cache=True` explicitly in the `generate` function
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
 
+        model.generation_config.pad_token_id = model.generation_config.eos_token_id
         # Note that phi-2 uses GenerationConfig to enable 'use_cache'
         output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict, generation_config = generation_config)
 
