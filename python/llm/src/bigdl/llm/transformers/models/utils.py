@@ -299,7 +299,7 @@ def use_flash_attention(query, key, attention_mask=None):
     return True
 
 
-def use_esimd_sdp(q_len, k_len, head_dim, query_states):
+def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
@@ -315,10 +315,15 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states):
     elif query_states.dtype != torch.float16:
         # esimd_sdp only has optimization for FP16 now
         return False
+    elif query_states.shape[0] > 1 and attention_mask is not None:
+        # for batched input, can't accept attention_mask
+        if len(torch.nonzero(attention_mask, as_tuple=True)) > 1:
+            return False
     else:
         device_name = torch.xpu.get_device_name(query_states.device.index)
         if device_name.startswith("Intel(R) Arc(TM) A") or \
-                device_name.startswith("Intel(R) Data Center GPU Flex"):
+                device_name.startswith("Intel(R) Data Center GPU Flex") or \
+                device_name.startswith("Intel(R) Data Center GPU Max"):
             import linear_fp16_esimd
             if hasattr(linear_fp16_esimd, "sdp_forward"):
                 return True
