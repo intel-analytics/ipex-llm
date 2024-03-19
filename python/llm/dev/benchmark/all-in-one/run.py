@@ -102,6 +102,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_deepspeed_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'speculative_cpu':
         result = run_speculative_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
+    elif test_api == 'speculative_gpu':
+        result = run_speculative_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
