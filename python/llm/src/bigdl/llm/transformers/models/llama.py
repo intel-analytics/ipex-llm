@@ -619,7 +619,7 @@ def llama_attention_forward_4_31_original(
         attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
                                                      key_states.to(device, dtype=torch.float16),
                                                      value_states.to(device, dtype=torch.float16),
-                                                     is_causal=True)
+                                                     is_causal=True if q_len > 1 else False)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
