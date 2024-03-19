@@ -311,7 +311,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
         .. tip::
 
-           Please note that the repo id on ModelScope may be difference from Hugging Face for some models.
+           Please note that the repo id on ModelScope may be different from Hugging Face for some models.
 
   ```
 
