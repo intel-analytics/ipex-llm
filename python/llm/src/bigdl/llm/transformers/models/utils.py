@@ -325,7 +325,7 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
                 device_name.startswith("Intel(R) Data Center GPU Flex") or \
                 device_name.startswith("Intel(R) Data Center GPU Max"):
             import linear_fp16_esimd
-            if not hasattr(linear_fp16_esimd, "sdp_forward"):
+            if hasattr(linear_fp16_esimd, "sdp_forward"):
                 return True
             else:
                 return False
