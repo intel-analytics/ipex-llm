@@ -49,9 +49,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL && \
 # Fix vllm service 
-    pip install pydantic==1.10.11
+    pip install pydantic==1.10.11 && \
 # Install bigdl-llm
-RUN cd /llm && \
+    cd /llm && \
     pip install --pre --upgrade bigdl-llm[all] && \
     # Fix CVE-2024-22195
     pip install Jinja2==3.1.3 && \
