@@ -212,7 +212,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             optimize_lm_head = False
             if name == "lm_head":
                 if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
-                                                                        None) == "1":
+                                                                      None) == "1":
                     optimize_lm_head = True
             with init_empty_weights():
                 new_linear = None
@@ -232,16 +232,16 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     )
                     device = module.qweight.data.device
                     invalidInputError(device.type != "meta",
-                                        "converting from meta device is not supported")
+                                      "converting from meta device is not supported")
                     # Copy the weights
                     paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq,
-                                                                llm_awq=is_llm_awq),
-                                                requires_grad=False,
-                                                quantized=True,
-                                                _shape=(out_features, in_features),
-                                                convert_shape_only=convert_shape_only,
-                                                qtype=qtype,
-                                                enable_xetla=enable_xetla).to(device)
+                                                               llm_awq=is_llm_awq),
+                                             requires_grad=False,
+                                             quantized=True,
+                                             _shape=(out_features, in_features),
+                                             convert_shape_only=convert_shape_only,
+                                             qtype=qtype,
+                                             enable_xetla=enable_xetla).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if has_bias:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -260,9 +260,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         optimize_lm_head=optimize_lm_head
                     )
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
-                                                                        full_module_name,
-                                                                        imatrix_data,
-                                                                        model_type)
+                                                                       full_module_name,
+                                                                       imatrix_data,
+                                                                       model_type)
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
