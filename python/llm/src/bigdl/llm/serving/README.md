@@ -68,7 +68,7 @@ Then we can run model workers
 # On CPU
 python3 -m bigdl.llm.serving.model_worker --model-path PATH/TO/bigdl-7b --device cpu
 
-# On XPU
+# On GPU
 python3 -m bigdl.llm.serving.model_worker --model-path PATH/TO/bigdl-7b --device xpu
 ```
 
@@ -90,7 +90,7 @@ To run using the `vLLM_worker`, just simply uses the following command:
 # On CPU
 python3 -m bigdl.llm.serving.vllm_worker --model-path PATH/TO/bigdl-7b --device cpu
 
-# On XPU
+# On GPU
 python3 -m bigdl.llm.serving.vllm_worker --model-path PATH/TO/bigdl-7b --device xpu
 ```
 
