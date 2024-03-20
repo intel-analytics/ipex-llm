@@ -124,7 +124,7 @@ To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** termina
 
 
 ## 5. Advanced Usage
-### Using Instruct Chat Mode
+### Using Instruct mode for Chat
 Instruction-following models are models that are fine-tuned with specific prompt formats. 
 For these models, you should ideally use the `instruct` chat mode.
 Under this mode, the model receives user prompts that are formatted according to prompt formats it was trained with.
@@ -145,10 +145,11 @@ In this case, go to `Parameters` tab and then `Instruction template` tab.
 
 You can verify and edit the loaded instruction template in the `Instruction template` field.
 You can also manually select an instruction template from `Saved instruction templates` and click `load` to load it into `Instruction template`.
-You can add custom template files to this list in `/instruction-templates/` folder.
+You can add custom template files to this list in `/instruction-templates/` [folder](https://github.com/intel-analytics/text-generation-webui/tree/bigdl-llm/instruction-templates).
 <!-- For instance, the automatically loaded instruction template for `chatGLM3` model is incorrect, and you should manually select the `chatGLM3` instruction template. -->
 
 ### Tested models
+We have tested the following models with `bigdl-llm` using Text Generation WebUI.
 
 | Model | Notes |
 |-------|-------|
