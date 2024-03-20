@@ -21,7 +21,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 
 RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     apt-get update && \
-    apt install -y --no-install-recommends openssh-server openssh-client libcap2-bin gnupg2 ca-certificates \ 
+    apt install -y --no-install-recommends openssh-server openssh-client libcap2-bin ca-certificates \ 
     python3-pip python3.9-dev python3-wheel python3.9-distutils git software-properties-common && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
@@ -52,7 +52,7 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     # install basic dependencies
     apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # Install Intel oneAPI keys.
-    apt remove -y gnupg2 ca-certificates && \
+    apt remove -y ca-certificates && \
     apt autoremove -y && \
     apt update && \
     apt install -y --no-install-recommends dnsutils intel-oneapi-mpi && \

@@ -15,7 +15,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # update dependencies
     apt-get update && \
     # install basic dependencies
-    apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
+    apt-get install -y curl wget git software-properties-common libunwind8-dev vim less && \
     # install Intel GPU driver
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # install python 3.9
