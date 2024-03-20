@@ -1479,14 +1479,15 @@ def run_speculative_cpu(repo_id,
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit='bf16', trust_remote_code=True, torch_dtype=torch.bfloat16,
                                                      use_cache=True, torchscript=True, speculative=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    if _enable_ipex and not hasattr(model.config, "token_latency"):
-        model.config.token_latency = True
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
 
     result = {}
-    with torch.inference_mode(), torch.autocast("cpu"):
+    with torch.inference_mode():
         for in_out in in_out_pairs:
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
@@ -1504,14 +1505,16 @@ def run_speculative_cpu(repo_id,
             input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
-            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+            inputs = tokenizer(input_list, return_tensors="pt")
+            input_ids = inputs.input_ids
+            attention_mask = inputs.attention_mask
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 if _enable_ipex:
-                    output_ids, total_list = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                    output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                            num_beams=num_beams, attention_mask=attention_mask)
                 else:
                     output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
                                             num_beams=num_beams)
