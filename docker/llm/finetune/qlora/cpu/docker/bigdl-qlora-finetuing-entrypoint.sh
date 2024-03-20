@@ -20,7 +20,7 @@ then
     -f /home/mpiuser/hostfile \
     -iface eth0 \
     --bind-to socket \
-    -genv OMP_NUM_THREADS=48 \
+    -genv OMP_NUM_THREADS=$OMP_NUM_THREADS \
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \

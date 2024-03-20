@@ -8,13 +8,13 @@ The BigDL Project
 ------
 
 ************************************************
-BigDL-LLM: low-Bit LLM library
+BigDL-LLM
 ************************************************
 
 .. raw:: html
 
    <p>
-      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4/FP4/INT8/FP8</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+      <a href="https://github.com/intel-analytics/BigDL/"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4/FP4/INT8/FP8</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
    </p>
 
 .. note::
@@ -24,6 +24,10 @@ BigDL-LLM: low-Bit LLM library
 ============================================
 Latest update 🔥
 ============================================
+- [2024/03] **LangChain** added support for ``bigdl-llm``; see the details `here <https://python.langchain.com/docs/integrations/llms/bigdl>`_.
+- [2024/02] ``bigdl-llm`` now supports directly loading model from `ModelScope <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/ModelScope-Models>`_ (`魔搭 <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/ModelScope-Models>`_).
+- [2024/02] ``bigdl-llm`` added inital **INT2** support (based on llama.cpp `IQ2 <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_ mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
+- [2024/02] Users can now use ``bigdl-llm`` through `Text-Generation-WebUI <https://github.com/intel-analytics/text-generation-webui>`_ GUI.
 - [2024/02] ``bigdl-llm`` now supports `Self-Speculative Decoding <doc/LLM/Inference/Self_Speculative_Decoding.html>`_, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel `GPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/Speculative-Decoding>`_ and `CPU <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding>`_ respectively.
 - [2024/02] ``bigdl-llm`` now supports a comprehensive list of LLM finetuning on Intel GPU (including `LoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/LoRA>`_, `QLoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_, `DPO <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>`_, `QA-LoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/QA-LoRA>`_ and `ReLoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/ReLora>`_).
 - [2024/01] Using ``bigdl-llm`` `QLoRA <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_, we managed to finetune LLaMA2-7B in **21 minutes** and LLaMA2-70B in **3.14 hours** on 8 Intel Max 1550 GPU for `Standford-Alpaca <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora>`_ (see the blog `here <https://www.intel.com/content/www/us/en/developer/articles/technical/finetuning-llms-on-intel-gpus-using-bigdl-llm.html>`_).
@@ -79,8 +83,11 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 ``bigdl-llm`` quickstart
 ============================================
 
-- `CPU <#cpu-quickstart>`_
-- `GPU <#gpu-quickstart>`_
+- `Windows GPU installation <doc/LLM/Quickstart/install_windows_gpu.html>`_
+- `Run BigDL-LLM in Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_
+- `Run BigDL-LLM using Docker <https://github.com/intel-analytics/BigDL/tree/main/docker/llm>`_
+- `CPU quickstart <#cpu-quickstart>`_
+- `GPU quickstart <#gpu-quickstart>`_
 
 --------------------------------------------
 CPU Quickstart
@@ -88,13 +95,17 @@ CPU Quickstart
 
 You may install ``bigdl-llm`` on Intel CPU as follows as follows:
 
+.. note::
+
+   See the `CPU installation guide <doc/LLM/Overview/install_cpu.html>`_ for more details.
+
 .. code-block:: console
 
    pip install --pre --upgrade bigdl-llm[all]
 
 .. note::
 
-   ``bigdl-llm`` has been tested on Python 3.9.
+   ``bigdl-llm`` has been tested on Python 3.9, 3.10 and 3.11
 
 You can then apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
 
@@ -119,7 +130,7 @@ You may install ``bigdl-llm`` on Intel GPU as follows as follows:
 
 .. note::
 
-   See the `GPU installation guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html>`_ for more details.
+   See the `GPU installation guide <doc/LLM/Overview/install_gpu.html>`_ for more details.
 
 .. code-block:: console
 
@@ -128,7 +139,7 @@ You may install ``bigdl-llm`` on Intel GPU as follows as follows:
 
 .. note::
 
-   ``bigdl-llm`` has been tested on Python 3.9.
+   ``bigdl-llm`` has been tested on Python 3.9, 3.10 and 3.11
 
 You can then apply INT4 optimizations to any Hugging Face *Transformers* models on Intel GPU as follows.
 

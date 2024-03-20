@@ -17,7 +17,7 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install datasets soundfile # additional package required for SpeechT5 to conduct generation
+pip install "datasets<2.18" soundfile # additional package required for SpeechT5 to conduct generation
 ```
 
 #### 1.2 Installation on Windows
@@ -28,7 +28,7 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install datasets soundfile # additional package required for SpeechT5 to conduct generation
+pip install "datasets<2.18" soundfile # additional package required for SpeechT5 to conduct generation
 ```
 
 ### 2. Configures OneAPI environment variables

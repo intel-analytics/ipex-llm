@@ -23,7 +23,8 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-
+    with:
+      platform: 'Linux'
   llm-perf-regression-test-on-arc:
     needs: llm-cpp-build
     strategy:
@@ -60,6 +61,8 @@ jobs:
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
+        with:
+          platform: 'Linux'
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env

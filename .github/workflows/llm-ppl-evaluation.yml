@@ -1,4 +1,4 @@
-name: LLM Perplexity Evalution
+name: LLM Perplexity Evaluation
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
@@ -11,7 +11,7 @@ permissions:
 # Controls when the action will run.
 on:
   schedule:
-    - cron: "00 14 * * *" # GMT time, 14:00 GMT == 22:00 China
+    - cron: "00 12 * * *" # GMT time, 12:00 GMT == 20:00 China
   pull_request:
     branches: [main]
     paths:
@@ -24,19 +24,15 @@ on:
         required: true
         type: string      
       model_name:
-        description: 'Model names, seperated by comma and must be quoted.'
+        description: 'Model names, separated by comma and must be quoted.'
         required: true
         type: string
       precision:
-        description: 'Precisions, seperated by comma and must be quoted.'
-        required: true
-        type: string
-      language:
-        description: 'language, can be en, zh, or all and must be quoted.'
+        description: 'Precisions, separated by comma and must be quoted.'
         required: true
         type: string
       runs-on:
-        description: 'Labels to filter the runners, seperated by comma and must be quoted.'
+        description: 'Labels to filter the runners, separated by comma and must be quoted.'
         default: "accuracy"
         required: false
         type: string
@@ -46,13 +42,14 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
+    with:
+      platform: 'Linux'
   set-matrix:
     runs-on: ubuntu-latest
     outputs:
       seq_len: ${{ steps.set-matrix.outputs.seq_len }}
       model_name: ${{ steps.set-matrix.outputs.model_name }}
       precision: ${{ steps.set-matrix.outputs.precision }}
-      language: ${{ steps.set-matrix.outputs.language }}
       runner: ${{ steps.set-matrix.outputs.runner }}
     steps:
       - name: set-nightly-env
@@ -60,44 +57,39 @@ jobs:
         env:
           NIGHTLY_MATRIX_SEQ_LEN: '["512"]'
           NIGHTLY_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "mpt-7b-chat", 
-                        "falcon-7b-instruct-with-patch", "Mistral-7B-v0.1"]'
-          NIGHTLY_MATRIX_LANGUAGE: '["en"]'
-          NIGHTLY_MATRIX_PRECISION: '["sym_int4 fp8"]'
+                        "falcon-7b-instruct-with-patch", "Mistral-7B-v0.1",
+                        "chatglm2-6b", "chatglm3-6b", "Baichuan2-7B-Chat"]'
+          NIGHTLY_MATRIX_PRECISION: '["sym_int4", "fp8"]'
           NIGHTLY_LABELS: '["self-hosted", "llm", "accuracy-nightly"]'
         run: |
             echo "seq_len=$NIGHTLY_MATRIX_SEQ_LEN" >> $GITHUB_ENV
             echo "model_name=$NIGHTLY_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$NIGHTLY_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "language=$NIGHTLY_MATRIX_LANGUAGE" >> $GITHUB_ENV
             echo "runner=$NIGHTLY_LABELS" >> $GITHUB_ENV
 
       - name: set-pr-env
         if: ${{github.event_name == 'pull_request'}}
         env:
           PR_MATRIX_SEQ_LEN: '["512"]'
-          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf"]'
-          PR_MATRIX_LANGUAGE: '["en"]'
+          PR_MATRIX_MODEL_NAME: '["Llama-2-7b-chat-hf", "chatglm3-6b"]'
           PR_MATRIX_PRECISION: '["sym_int4"]'
           PR_LABELS: '["self-hosted", "llm", "temp-arc01"]'
         run: |
             echo "seq_len=$PR_MATRIX_SEQ_LEN" >> $GITHUB_ENV
             echo "model_name=$PR_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$PR_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "language=$PR_MATRIX_LANGUAGE" >> $GITHUB_ENV
             echo "runner=$PR_LABELS" >> $GITHUB_ENV
       - name: set-manual-env
         if: ${{github.event_name == 'workflow_dispatch'}}
         env:
           MANUAL_MATRIX_SEQ_LEN: ${{format('[ {0} ]', inputs.seq_len)}}
           MANUAL_MATRIX_MODEL_NAME: ${{format('[ {0} ]', inputs.model_name)}}
-          MANUAL_MATRIX_LANGUAGE: ${{format('[ {0} ]', inputs.language)}}
           MANUAL_MATRIX_PRECISION: ${{format('[ {0} ]', inputs.precision)}}
           MANUAL_LABELS: ${{format('["self-hosted", "llm", {0}]', inputs.runs-on)}}
         run: |
             echo "seq_len=$MANUAL_MATRIX_SEQ_LEN" >> $GITHUB_ENV
             echo "model_name=$MANUAL_MATRIX_MODEL_NAME" >> $GITHUB_ENV
             echo "precision=$MANUAL_MATRIX_PRECISION" >> $GITHUB_ENV
-            echo "language=$MANUAL_MATRIX_LANGUAGE" >> $GITHUB_ENV
             echo "runner=$MANUAL_LABELS" >> $GITHUB_ENV
       - name: set-matrix
         id: set-matrix
@@ -105,44 +97,18 @@ jobs:
             echo "seq_len=$seq_len" >> $GITHUB_OUTPUT
             echo "model_name=$model_name" >> $GITHUB_OUTPUT
             echo "precision=$precision" >> $GITHUB_OUTPUT
-            echo "language=$language" >> $GITHUB_OUTPUT
             echo "runner=$runner" >> $GITHUB_OUTPUT
-  llm-ppl-evalution:
+  llm-ppl-evaluation:
     timeout-minutes: 1000
     needs: [llm-cpp-build, set-matrix]
     strategy:
       fail-fast: false
       matrix:
-        # include:
-        #   python-version: "3.9"
-        #   model_name: "stablelm-3b-4e1t"
-        #   task: "arc"
-        #   precision: "sym_int4" #options: sym_int4, fp4, mixed_fp4, sym_int8, fp8, mixed_fp8
         python-version: ["3.9"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
-        language: ${{ fromJson(needs.set-matrix.outputs.language) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
         seq_len: ${{ fromJson(needs.set-matrix.outputs.seq_len) }}
         device: [xpu]
-        include:
-          - python-version: "3.9"
-            model_name: "chatglm2-6b"
-            language: "zh"
-            precision: "sym_int4 fp8"
-            seq_len: "512"
-            device: "xpu"
-          - python-version: "3.9"
-            model_name: "chatglm3-6b"
-            language: "zh"
-            precision: "sym_int4 fp8"
-            seq_len: "512"
-            device: "xpu"
-          - python-version: "3.9"
-            model_name: "Baichuan2-7B-Chat"
-            language: "zh"
-            precision: "sym_int4 fp8"
-            seq_len: "512"
-            device: "xpu"
         
     runs-on: ${{ fromJson(needs.set-matrix.outputs.runner) }}
     env:
@@ -164,6 +130,8 @@ jobs:
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
+        with:
+          platform: 'Linux'
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
@@ -182,9 +150,9 @@ jobs:
         run: |
           pip install --upgrade datasets==2.14.6 
           if [ "${{ matrix.model_name }}" = "Mistral-7B-v0.1" ]; then
-          pip install --upgrade transformers==4.36
+            pip install --upgrade transformers==4.36
           else
-          pip install --upgrade transformers==4.31
+            pip install --upgrade transformers==4.31
           fi
 
       - name: Run perplexity
@@ -195,10 +163,117 @@ jobs:
           SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: 1
         run: |
           source /opt/intel/oneapi/setvars.sh
+          if [[ "${{ matrix.model_name }}" == *"chatglm"* || "${{ matrix.model_name }}" == *"Baichuan"* ]]; then
+            LANGUAGE="zh"
+          else
+            LANGUAGE="en"
+          fi
           python run.py \
           --seq_len ${{ matrix.seq_len }} \
           --model_path ${MODEL_PATH} \
           --precisions ${{ matrix.precision }} \
           --device ${{ matrix.device }} \
           --dataset_path ${DATASET_DIR} \
-          --language ${{ matrix.language }}
+          --language ${LANGUAGE} \
+          --output_path results
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ppl_results
+          path:
+            ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/**
+
+      - name: echo single result
+        shell: bash
+            
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/results/
+        run: |
+          if [[ "${{ matrix.model_name }}" == *"chatglm"* || "${{ matrix.model_name }}" == *"Baichuan"* ]]; then
+            LANGUAGE="zh"
+          else
+            LANGUAGE="en"
+          fi
+          cat ${{ matrix.model_name }}/${{ matrix.device }}/${{ matrix.precision }}/${LANGUAGE}/result.json
+
+  llm-ppl-summary:
+    if: ${{ always() }}
+    needs: llm-ppl-evaluation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+      - name: Download all results
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: results        
+      - name: Summarize the results
+        shell: bash
+        run: |
+          ls results
+          python ${{ github.workspace }}/python/llm/dev/benchmark/perplexity/make_table.py results
+
+  llm-ppl-html:
+    if: ${{github.event_name == 'schedule' || github.event_name == 'pull_request'}}
+    needs: [llm-ppl-evaluation]
+    runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip
+          pip install jsonlines  pytablewriter regex
+          pip install pandas==1.5.3
+      
+      - name: Set output path
+        shell: bash
+        run: |    
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          if ${{github.event_name == 'pull_request'}}; then
+            echo 'ACC_FOLDER=/home/arda/action-runners/ppl/pr-accuracy-data' >> $GITHUB_ENV
+          fi
+          if ${{github.event_name == 'schedule'}}; then
+            echo 'ACC_FOLDER=/home/arda/action-runners/ppl/nightly-accuracy-data' >> $GITHUB_ENV
+          fi
+  
+      - name: Download ppl results
+        uses: actions/download-artifact@v3
+        with:
+          name: ppl_results
+          path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}
+
+      # Save fp16.csv in the parent folder of env.nightly_folder
+      - name: Download fp16.results
+        shell: bash
+        run: |
+          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/perplexity/fp16.csv -O $ACC_FOLDER/../fp16.csv
+          ls $ACC_FOLDER/..
+
+      - name: Write to CSV
+        working-directory: ${{ github.workspace }}/python/llm/dev/benchmark/perplexity
+        shell: bash
+        run: |
+          ls $ACC_FOLDER/$DATE
+          python make_csv.py $ACC_FOLDER/$DATE $ACC_FOLDER
+
+      - name: Update HTML
+        working-directory: ${{ github.workspace }}/python/llm/test/benchmark/perplexity
+        shell: bash
+        run: |
+          python ppl_csv_to_html.py -f $ACC_FOLDER
+          if ${{github.event_name == 'schedule'}}; then
+            python update_html_in_parent_folder.py -f $ACC_FOLDER
+          fi

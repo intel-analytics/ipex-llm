@@ -281,7 +281,7 @@
                 </p>
             </summary>
             <img src="../../../_images/GitHub-Mark-32px.png"><a href="https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/onnx">View source on GitHub</a>
-            <p>This example will demonstrate how to use ONNX to speed up the inferencing(prediction/evalution) on forecasters and AutoTSEstimator. In this example, onnx speed up the inferencing for ~4X.</p>
+            <p>This example will demonstrate how to use ONNX to speed up the inferencing(prediction/evaluation) on forecasters and AutoTSEstimator. In this example, onnx speed up the inferencing for ~4X.</p>
         </details>
         <hr>
 

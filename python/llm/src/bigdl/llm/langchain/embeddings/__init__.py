@@ -20,7 +20,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .bigdlllm import *
-from .transformersembeddings import TransformersEmbeddings
+from .transformersembeddings import TransformersEmbeddings, TransformersBgeEmbeddings
 
 __all__ = [
     "BigdlNativeEmbeddings",
@@ -28,5 +28,6 @@ __all__ = [
     "BloomEmbeddings",
     "GptneoxEmbeddings",
     "StarcoderEmbeddings",
-    "TransformersEmbeddings"
+    "TransformersEmbeddings",
+    "TransformersBgeEmbeddings"
 ]

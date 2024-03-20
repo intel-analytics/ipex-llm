@@ -44,12 +44,12 @@
         <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-jackson_${scala.major.version}</artifactId>
-            <version>3.7.0-M5</version>
+            <version>${json4s.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.19.6</version>
+            <version>3.25.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -328,7 +328,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.21</version>
+            <version>1.26.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.calcite.avatica</groupId>

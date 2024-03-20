@@ -37,6 +37,8 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low_bit', type=str, default="sym_int4",
+                        help='what low_bit to run bigdl-llm')
 
     args = parser.parse_args()
 

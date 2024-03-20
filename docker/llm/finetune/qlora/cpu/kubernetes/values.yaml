@@ -6,5 +6,6 @@ nfsServerIp: your_nfs_server_ip
 nfsPath: a_nfs_shared_folder_path_on_the_server
 dataSubPath: alpaca_data_cleaned_archive.json # a subpath of the data file under nfs directory
 modelSubPath: Llama-2-7b-chat-hf # a subpath of the model file (dir) under nfs directory
+omp_num_threads: 48 # configure this value based on the number of CPU cores
 httpProxy: "your_http_proxy_like_http://xxx:xxxx_if_needed_else_empty"
 httpsProxy: "your_https_proxy_like_http://xxx:xxxx_if_needed_else_empty"

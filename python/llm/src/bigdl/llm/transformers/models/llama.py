@@ -40,6 +40,7 @@ import math
 import os
 import torch.nn.functional as F
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from bigdl.llm.transformers.models.utils import SILU
 from bigdl.llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
@@ -48,9 +49,19 @@ from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xp
 from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
+from transformers.models.llama.modeling_llama import LlamaModel
+from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
+
+try:
+    from transformers.cache_utils import Cache, DynamicCache
+except ImportError:
+    Cache = Tuple[torch.Tensor]
+from transformers import logging
+
+
+logger = logging.get_logger(__name__)
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -83,19 +94,46 @@ def get_ipex_version():
     return _ipex_version
 
 
+def llama_model_forward_4_36(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    from bigdl.llm.transformers.kv import DynamicFp8Cache
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):
+        if not isinstance(past_key_values, DynamicFp8Cache):
+            past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    return llama_model_forward_4_36_internal(
+        self=self,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+    )
+
+
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
-        result = linear_q4_0.fused_rms_norm(hidden_states,
-                                            [self.weight.size(0)],
-                                            self.weight,
-                                            None,
-                                            self.variance_epsilon)
-        # if nelement == 0, means fused norm failed, go back to python implement.
-        if result.nelement != 0:
-            # We should copy this result to avoid <unk> by unknown reason on Arc GPUs.
-            result = result.clone()
-            return result
+        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
+        output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        if 1 < x_2d.size(0) <= 64:   # may use XMX, need copy
+            output = output.clone()
+        return output.reshape(hidden_states.shape)
+
     input_dtype = hidden_states.dtype
     hidden_states = hidden_states.to(torch.float32)
     variance = hidden_states.pow(2).mean(-1, keepdim=True)
@@ -111,14 +149,14 @@ def llama_mlp_forward(
     x_2d = x.view(-1, x.shape[-1])
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training):
+    if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
         import linear_q4_0
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
         out = self.down_proj(linear_q4_0.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
-            qtype
+            SILU, qtype
         ))
         if residual is not None:
             return out + residual
@@ -216,6 +254,35 @@ def llama_decoder_forward(
     return outputs
 
 
+def fuse_qkv_weight(q_proj, k_proj, v_proj):
+    weight_size = q_proj.out_len * q_proj.in_len // 2
+    zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
+    zeros_end = weight_size + zeros_size
+    weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
+    zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
+    scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
+    qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                            ], dim=-1).reshape(-1)
+    qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                           ], dim=-1).reshape(-1)
+    qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                            ], dim=-1).reshape(-1)
+    q_proj.weight.data = torch.empty(0)
+    k_proj.weight.data = torch.empty(0)
+    v_proj.weight.data = torch.empty(0)
+    return torch.cat([qweight, qzeros, qscales], dim=0)
+
+
+def should_use_mm_int4_qkv(self, device):
+    return device.type == "xpu" and self.q_proj.qtype == SYM_INT4 and self.q_proj.enable_xetla
+
+
 def llama_attention_forward_4_31(
     self,
     hidden_states: torch.Tensor,
@@ -263,7 +330,7 @@ def llama_attention_forward_4_31_quantized(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
@@ -291,8 +358,10 @@ def llama_attention_forward_4_31_quantized(
                                                                          position_ids,
                                                                          tmp_cache_k, tmp_cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          0,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -319,46 +388,18 @@ def llama_attention_forward_4_31_quantized(
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                             cos, sin, position_ids, "llama")
 
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
-
-    # otherwise, use native attention
-    kv_seq_len = key_states.shape[-2]
     if past_key_value is None:
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size "
-                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
-
-        if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                invalidInputError(
-                    False,
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                    f" but is {attention_mask.size()}"
-                )
-            attn_weights = attn_weights + attention_mask
-
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                             dtype=torch.float32).to(query_states.dtype)
-        attn_output = torch.matmul(attn_weights, value_states)
+        kv_seq_len = key_states.shape[-2]
+        repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
+        repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
+        attn_output, attn_weights = native_sdp(query_states, repeated_key_states,
+                                               repeated_value_states, attention_mask,
+                                               bsz, q_len, kv_seq_len,
+                                               self.head_dim, self.num_heads)
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
                 bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
-                device=query_states.device
+                device=query_states.device, new_layout=True
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                            key_states, value_states)
@@ -366,7 +407,7 @@ def llama_attention_forward_4_31_quantized(
     else:
         k_cache, v_cache = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                       key_states, value_states)
+                                                       key_states, value_states, new_layout=True)
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
@@ -374,49 +415,17 @@ def llama_attention_forward_4_31_quantized(
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
-            key_states = repeat_kv(key_states,
-                                   self.num_key_value_groups).to(device, dtype=attention_dtype)
-            value_states = repeat_kv(value_states,
-                                     self.num_key_value_groups).to(device, dtype=attention_dtype)
-            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
+            key_states = repeat_kv(key_states, self.num_key_value_groups)
+            value_states = repeat_kv(value_states, self.num_key_value_groups)
+            attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                                   attention_mask,
+                                                   bsz, q_len, kv_seq_len,
+                                                   self.head_dim, self.num_heads)
         else:
             import linear_q4_0
-            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
-
-        attn_weights = attn_weights / math.sqrt(self.head_dim)
-
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size "
-                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
-
-        if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                invalidInputError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                    f" but is {attention_mask.size()}"
-                )
-            attn_weights = attn_weights + attention_mask
-
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                             dtype=torch.float32).to(query_states.dtype)
-
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
-            attn_output = torch.matmul(attn_weights, value_states)
-        else:
-            import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
-
-    attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
-    if attn_output.size() != attn_output_size:
-        invalidInputError(False,
-                          f"`attn_output` should be of size {attn_output_size},"
-                          f" but is {attn_output.size()}")
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
+            attn_weights = None
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
@@ -455,10 +464,11 @@ def llama_attention_forward_4_31_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -477,8 +487,10 @@ def llama_attention_forward_4_31_original(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
         kv_seq_len += 1
 
     else:
@@ -524,9 +536,20 @@ def llama_attention_forward_4_31_original(
                     query_states, key_states, value_states
                 )
             else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+                if should_use_mm_int4_qkv(self, device):
+                    if not hasattr(self, "qkv_proj_qweight"):
+                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                                                                self.k_proj,
+                                                                self.v_proj)
+                    import linear_q4_0
+                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    query_states = qkv_states[:, :, :hidden_size]
+                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
+                    value_states = qkv_states[:, :, 2*hidden_size:]
+                else:
+                    query_states = self.q_proj(hidden_states)
+                    key_states = self.k_proj(hidden_states)
+                    value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -587,28 +610,19 @@ def llama_attention_forward_4_31_original(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
-
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                     dtype=attention_dtype)
-    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                         dtype=attention_dtype)
+    key_states = repeat_kv(key_states, self.num_key_value_groups)
+    value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    if fsdp_flag:
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
-                                                     key_states,
-                                                     value_states,
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
@@ -678,10 +692,12 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: decoding fast path
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = past_key_value is not None and is_enough_kv_cache_room_4_31(past_key_value[0])
-    is_q4_0 = self.q_proj.qtype == SYM_INT4
+    qtype = getattr(self.q_proj, "qtype", None)
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     updated_past_key_values = []
     # single batch decoding fast path
@@ -714,8 +730,11 @@ def llama_attention_selective_batching_forward_4_31(
                                                                          position_ids,
                                                                          past_k, past_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,
+                                                                         )
         kv_seq_len += 1
     else:
         if self.config.pretraining_tp > 1:
@@ -851,11 +870,219 @@ def llama_attention_forward_4_36(
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    past_key_value: Optional[Cache] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+    if use_quantize_kv_cache(self.q_proj, hidden_states):
+        forward_function = llama_attention_forward_4_36_quantized
+    else:
+        forward_function = llama_attention_forward_4_36_original
+    return forward_function(
+        self=self,
+        hidden_states=hidden_states,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_value=past_key_value,
+        output_attentions=output_attentions,
+        use_cache=use_cache,
+        kwargs=kwargs
+    )
+
+
+def llama_attention_forward_4_36_quantized(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Cache] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    **kwargs
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+    if "padding_mask" in kwargs:
+        warnings.warn(
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. "
+            "Please make sure use `attention_mask` instead.`"
+        )
+
+    bsz, q_len, _ = hidden_states.size()
+    device = hidden_states.device
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
+    qtype = getattr(self.q_proj, "qtype", None)
+    qtype_check = qtype in [SYM_INT4, FP8E5]
+    no_tp = not self.config.pretraining_tp > 1
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
+                          and enough_kv_room and bsz * q_len == 1)
+    if decoding_fast_path:
+        hidden_states = hidden_states.view(1, -1)
+        tmp_cache_k, tmp_cache_v = init_kv_cache(
+            bsz,
+            self.num_key_value_heads,
+            self.head_dim,
+            0,
+            1,
+            dtype=hidden_states.dtype,
+            device=device
+        )
+        import linear_q4_0
+        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
+                                                                         self.q_proj.weight,
+                                                                         self.k_proj.weight,
+                                                                         self.v_proj.weight,
+                                                                         position_ids,
+                                                                         tmp_cache_k, tmp_cache_v,
+                                                                         self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
+                                                                         0,
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
+    else:
+        query_states = self.q_proj(hidden_states)
+        key_states = self.k_proj(hidden_states)
+        value_states = self.v_proj(hidden_states)
+
+        query_states = query_states.view(bsz, q_len,
+                                         self.num_heads, self.head_dim).transpose(1, 2)
+        key_states = key_states.view(bsz, q_len,
+                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        value_states = value_states.view(bsz, q_len,
+                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
+
+        kv_seq_len = key_states.shape[-2]
+        if past_key_value is not None:
+            if self.layer_idx is None:
+                invalidInputError(
+                    False,
+                    f"The cache structure has changed since version v4.36."
+                    f" If you are using {self.__class__.__name__} "
+                    f"for auto-regressive decoding with k/v caching,"
+                    f" please make sure to initialize the attention class "
+                    "with a layer index."
+                )
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+        if use_fuse_rope:
+            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
+                                                                         key_states,
+                                                                         position_ids,
+                                                                         "llama")
+        else:
+            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                            cos, sin, position_ids, "llama")
+    kv_seq_len = key_states.shape[-2]
+
+    if len(past_key_value.key_cache) <= self.layer_idx:
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            invalidInputError(
+                False,
+                f"Attention weights should be of size "
+                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                invalidInputError(
+                    False,
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
+                )
+            attn_weights = attn_weights + attention_mask
+
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                             dtype=torch.float32).to(query_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
+        if use_cache:
+            cache_kwargs = None
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, cache_kwargs)
+    else:
+        cache_kwargs = None  # Specific to RoPE models
+        key_states, value_states = past_key_value.update(key_states, value_states,
+                                                         self.layer_idx, cache_kwargs)
+        kv_seq_len = key_states.shape[-2]
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
+                                                            query_states.dtype)
+            key_states = repeat_kv(key_states, self.num_key_value_groups)\
+                .to(device, dtype=query_states.dtype)
+            value_states = repeat_kv(value_states, self.num_key_value_groups)\
+                .to(device, dtype=query_states.dtype)
+            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
+        else:
+            import linear_q4_0
+            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+        attn_weights = attn_weights / math.sqrt(self.head_dim)
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            invalidInputError(
+                False,
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
+                f" but is {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                invalidInputError(
+                    False,
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
+                )
+            attn_weights = attn_weights + attention_mask
+
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights,
+                                             dim=-1, dtype=torch.float32).to(query_states.dtype)
+
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            attn_output = torch.matmul(attn_weights, value_states)
+        else:
+            import linear_q4_0
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
+                                                            value_states.transpose(-1, -2))
+
+    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+        invalidInputError(
+            False,
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
+            f" but is {attn_output.size()}"
+        )
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+
+    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+
+    if self.config.pretraining_tp > 1:
+        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
+        o_proj_slices = self.o_proj.weight.split(self.hidden_size
+                                                 // self.config.pretraining_tp, dim=1)
+        attn_output = sum([F.linear(attn_output[i],
+                                    o_proj_slices[i]) for i in range(self.config.pretraining_tp)])
+    else:
+        attn_output = self.o_proj(attn_output)
+
+    if not output_attentions:
+        attn_weights = None
+
+    return attn_output, attn_weights, past_key_value
+
+
+def llama_attention_forward_4_36_original(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Cache] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    **kwargs
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -870,10 +1097,11 @@ def llama_attention_forward_4_36(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     qtype = getattr(self.q_proj, "qtype", None)
-    is_q4_0 = qtype == SYM_INT4
+    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and is_q4_0 and use_fuse_rope and
+    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -892,8 +1120,10 @@ def llama_attention_forward_4_36(
                                                                          position_ids,
                                                                          cache_k, cache_v,
                                                                          self.q_proj.weight.qtype,
+                                                                         self.v_proj.weight.qtype,
                                                                          kv_seq_len,
-                                                                         self.head_dim)
+                                                                         self.head_dim,
+                                                                         self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
@@ -944,9 +1174,20 @@ def llama_attention_forward_4_36(
                     query_states, key_states, value_states
                 )
             else:
-                query_states = self.q_proj(hidden_states)
-                key_states = self.k_proj(hidden_states)
-                value_states = self.v_proj(hidden_states)
+                if should_use_mm_int4_qkv(self, device):
+                    if not hasattr(self, "qkv_proj_qweight"):
+                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                                                                self.k_proj,
+                                                                self.v_proj)
+                    import linear_q4_0
+                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    query_states = qkv_states[:, :, :hidden_size]
+                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
+                    value_states = qkv_states[:, :, 2*hidden_size:]
+                else:
+                    query_states = self.q_proj(hidden_states)
+                    key_states = self.k_proj(hidden_states)
+                    value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1013,29 +1254,20 @@ def llama_attention_forward_4_36(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
-    if not self.training and not hidden_states.requires_grad:
-        fsdp_flag = use_flash_attention(query_states, key_states)
-    else:
-        fsdp_flag = False
-    if fsdp_flag:
-        attention_dtype = torch.float16  # use fp16 for flash attention
-    else:
-        attention_dtype = original_dtype
-
     # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
-                                                                     dtype=attention_dtype)
-    value_states = repeat_kv(value_states, self.num_key_value_groups).to(device,
-                                                                         dtype=attention_dtype)
+    key_states = repeat_kv(key_states, self.num_key_value_groups)
+    value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    if fsdp_flag:
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
         # now only use flash attention for first token
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=attention_dtype),
-                                                     key_states,
-                                                     value_states,
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
@@ -1378,3 +1610,311 @@ def llama_attention_fast_forward(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
+
+
+def llama_model_forward_4_36_internal(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    output_attentions = output_attentions if output_attentions is not None else \
+        self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # retrieve input_ids and inputs_embeds
+    if input_ids is not None and inputs_embeds is not None:
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
+    elif input_ids is not None:
+        batch_size, seq_length = input_ids.shape[:2]
+    elif inputs_embeds is not None:
+        batch_size, seq_length = inputs_embeds.shape[:2]
+    else:
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
+
+    past_key_values_length = 0
+    if use_cache:
+        use_legacy_cache = not isinstance(past_key_values, Cache)
+        if use_legacy_cache:
+            past_key_values = DynamicCache.from_legacy_cache(past_key_values)
+        past_key_values_length = past_key_values.get_usable_length(seq_length)
+
+    if position_ids is None:
+        device = input_ids.device if input_ids is not None else inputs_embeds.device
+        position_ids = torch.arange(
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
+        )
+        position_ids = position_ids.unsqueeze(0)
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+
+    if self._use_flash_attention_2:
+        # 2d mask is passed through the layers
+        attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) \
+            else None
+    elif self._use_sdpa and not output_attentions:
+        # output_attentions=True can not be supported when using SDPA, and we fall back on
+        # the manual implementation that requires a 4D causal mask in all cases.
+        from transformers.models.llama.modeling_llama import \
+            _prepare_4d_causal_attention_mask_for_sdpa
+        attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
+            attention_mask,
+            (batch_size, seq_length),
+            inputs_embeds,
+            past_key_values_length,
+        )
+    else:
+        # 4d mask is passed through the layers
+        from transformers.models.llama.modeling_llama import _prepare_4d_causal_attention_mask
+        attention_mask = _prepare_4d_causal_attention_mask(
+            attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+        )
+
+    # embed positions
+    hidden_states = inputs_embeds
+
+    if self.gradient_checkpointing and self.training:
+        if use_cache:
+            logger.warning_once(
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                " Setting `use_cache=False`..."
+            )
+            use_cache = False
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = None
+
+    for decoder_layer in self.layers:
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        if self.gradient_checkpointing and self.training:
+            layer_outputs = self._gradient_checkpointing_func(
+                decoder_layer.__call__,
+                hidden_states,
+                attention_mask,
+                position_ids,
+                past_key_values,
+                output_attentions,
+                use_cache,
+            )
+        else:
+            # bigdl-llm changes:
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
+            # bigdl-llm changes end
+            layer_outputs = decoder_layer(
+                hidden_states,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                past_key_value=past_key_values,
+                output_attentions=output_attentions,
+                use_cache=use_cache,
+            )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = None
+    if use_cache:
+        next_cache = next_decoder_cache.to_legacy_cache() if use_legacy_cache \
+            else next_decoder_cache
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache,
+                                 all_hidden_states, all_self_attns] if v is not None)
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
+    )
+
+
+def llama_model_forward(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    output_attentions = output_attentions if output_attentions is not None \
+        else self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # retrieve input_ids and inputs_embeds
+    if input_ids is not None and inputs_embeds is not None:
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
+    elif input_ids is not None:
+        batch_size, seq_length = input_ids.shape
+    elif inputs_embeds is not None:
+        batch_size, seq_length, _ = inputs_embeds.shape
+    else:
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
+
+    seq_length_with_past = seq_length
+    past_key_values_length = 0
+
+    if past_key_values is not None:
+        past_key_values_length = past_key_values[0][0].shape[2]
+        seq_length_with_past = seq_length_with_past + past_key_values_length
+
+    if position_ids is None:
+        device = input_ids.device if input_ids is not None else inputs_embeds.device
+        position_ids = torch.arange(
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
+        )
+        position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    else:
+        position_ids = position_ids.view(-1, seq_length).long()
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+    # embed positions
+    if attention_mask is None:
+        attention_mask = torch.ones(
+            (batch_size, seq_length_with_past), dtype=torch.bool, device=inputs_embeds.device
+        )
+        padding_mask = None
+    else:
+        if 0 in attention_mask:
+            padding_mask = attention_mask
+        else:
+            padding_mask = None
+
+    attention_mask = self._prepare_decoder_attention_mask(
+        attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+    )
+
+    hidden_states = inputs_embeds
+
+    if self.gradient_checkpointing and self.training:
+        if use_cache:
+            logger.warning_once(
+                "`use_cache=True` is incompatible with gradient checkpointing."
+                " Setting `use_cache=False`..."
+            )
+            use_cache = False
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = () if use_cache else None
+
+    for idx, decoder_layer in enumerate(self.layers):
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        past_key_value = past_key_values[idx] if past_key_values is not None else None
+
+        if self.gradient_checkpointing and self.training:
+
+            def create_custom_forward(module):
+                def custom_forward(*inputs):
+                    # None for past_key_value
+                    return module(*inputs, past_key_value, output_attentions,
+                                  padding_mask=padding_mask)
+
+                return custom_forward
+
+            layer_outputs = torch.utils.checkpoint.checkpoint(
+                create_custom_forward(decoder_layer), hidden_states, attention_mask, position_ids
+            )
+        else:
+            # bigdl-llm changes:
+            #
+            # Avoid moving `attention_mask`` and `position_ids`` to other devices multiple times.
+            #
+            # When the model is partitioned on two different devices using
+            # `accelerate`'s `dispatch``, a hook to move inputs to the correct device is
+            # added to each layer's `forward``, which will result in moving `attention_mask`
+            # and `position_ids`, which allocated on device:0, to other devices for each
+            # decoder layer not in device:0.
+            #
+            # To avoid this, we move `attention_mask` and `position_ids` to the device of
+            # the current layer before the forward call, so that the moving is only done once
+            # for each devices other than devie:0.
+            #
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if attention_mask is not None:
+                attention_mask = attention_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
+            # bigdl-llm changes end
+            layer_outputs = decoder_layer(
+                hidden_states,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                past_key_value=past_key_value,
+                output_attentions=output_attentions,
+                use_cache=use_cache,
+                padding_mask=padding_mask,
+            )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache += (layer_outputs[2 if output_attentions else 1],)
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = next_decoder_cache if use_cache else None
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache,
+                                 all_hidden_states, all_self_attns] if v is not None)
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
+    )

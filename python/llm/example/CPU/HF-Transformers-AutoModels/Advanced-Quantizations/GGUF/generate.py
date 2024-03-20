@@ -36,13 +36,16 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low_bit', type=str, default="sym_int4",
+                        help='what low_bit to run bigdl-llm')
+
 
     args = parser.parse_args()
 
     model_path = args.model
 
     # Load gguf model and vocab, then convert them to bigdl-llm model and huggingface tokenizer
-    model, tokenizer = AutoModelForCausalLM.from_gguf(model_path)
+    model, tokenizer = AutoModelForCausalLM.from_gguf(model_path, low_bit = args.low_bit,)
 
     # Generate predicted tokens
     with torch.inference_mode():

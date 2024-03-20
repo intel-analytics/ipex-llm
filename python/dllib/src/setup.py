@@ -35,7 +35,7 @@ dllib_src_path = os.path.abspath(__file__ + "/..")
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
-PYSPARK_VERSION = '2.4.6'
+PYSPARK_VERSION = '3.4.1'
 
 building_error_msg = """
 If you are packing python API from BigDL source, you should use the release script:
@@ -102,7 +102,7 @@ def setup_package():
         packages=get_bigdl_packages(),
         scripts=scripts,
         install_requires=[
-            'numpy>=1.19.5', 'pyspark=='+PYSPARK_VERSION , 'conda-pack==0.3.1',
+            'numpy>=1.19.5,<=1.26.4', 'pyspark=='+PYSPARK_VERSION , 'conda-pack==0.3.1',
             'six>=1.10.0', 'bigdl-core==2.4.0.dev0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,

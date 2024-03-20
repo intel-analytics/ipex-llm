@@ -27,7 +27,7 @@ echo $BIGDL_DIR
 
 if (( $# < 4)); then
   echo "Usage: release_default_spark.sh platform version quick_build upload spark_version suffix mvn_parameters"
-  echo "Usage example: bash release_default_spark.sh linux default false true 3.1.3 true"
+  echo "Usage example: bash release_default_spark.sh linux default false true 3.4.1 true"
   echo "Usage example: bash release_default_spark.sh linux 0.14.0.dev1 false false 2.4.6 true"
   echo "Usage example: bash release_default_spark.sh mac 0.14.0.dev1 false false 2.4.6 false -Ddata-store-url=.."
   exit -1
@@ -44,7 +44,7 @@ spark_first_version=${array[0]}
 
 re='^[2-3]+$'
 if ! [[ $spark_first_version =~ $re ]] ; then
-   echo "error: Spark version is not a number like 3.1.3"
+   echo "error: Spark version is not a number like 3.4.1"
    exit 1
 fi
 

@@ -15,7 +15,7 @@
 #
 
 ARG SPARK_VERSION=2.4.6
-ARG HADOOP_VERSION=2.7
+ARG HADOOP_VERSION=3
 ARG PY4J_VERSION=0.10.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
@@ -62,7 +62,7 @@ RUN apt-get update --fix-missing && \
 COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 COPY ./spark-defaults.conf ${SPARK_HOME}/conf/spark-defaults.conf
 SHELL ["/bin/bash", "-c"]
-RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
+RUN if [ $SPARK_VERSION = "3.4.1" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
         wget --no-check-certificate -qP $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
     elif [ $SPARK_VERSION = "2.4.6" ]; then \

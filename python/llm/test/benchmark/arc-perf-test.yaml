@@ -6,7 +6,7 @@ repo_id:
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
   - 'redpajama/gptneox-7b-redpajama-bf16'
-  - 'bigcode/starcoder-15.5b'
+  - 'bigcode/starcoder-15.5b-4bit'
   - 'databricks/dolly-v1-6b'
   - 'databricks/dolly-v2-7b'
   - 'databricks/dolly-v2-12b'
@@ -14,9 +14,9 @@ repo_id:
   - 'Qwen/Qwen-7B-Chat'
   - 'BAAI/AquilaChat-7B'
   - 'baichuan-inc/Baichuan2-7B-Chat'
-  - 'baichuan-inc/Baichuan2-13B-Chat'
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
   - 'bigscience/bloomz-7b1'
-  - 'fnlp/moss-moon-003-sft'
+  - 'fnlp/moss-moon-003-sft-4bit'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -31,8 +31,7 @@ test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
-  - 'fnlp/moss-moon-003-sft:1024'
-  - 'fnlp/moss-moon-003-sft:2048'
-  - 'baichuan-inc/Baichuan2-13B-Chat:1024'
-  - 'baichuan-inc/Baichuan2-13B-Chat:2048'
+  - 'fnlp/moss-moon-003-sft-4bit:1024'
+  - 'fnlp/moss-moon-003-sft-4bit:2048'
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'

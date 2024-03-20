@@ -49,11 +49,12 @@ VERSION = open(os.path.join(BIGDL_PYTHON_HOME,
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-CONVERT_DEP = ['numpy >= 1.22', 'torch',
+CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
+               'torch',
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
-SERVING_DEP = ['fschat[model_worker, webui] == 0.2.28', 'protobuf']
+SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
 windows_binarys = [
     "llama.dll",
     "gptneox.dll",
@@ -268,7 +269,9 @@ def setup_package():
                 f'Could not find package dependency file: {file_path}')
 
     all_requires = ['py-cpuinfo', 'protobuf',
-                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                    "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                    'mpmath==1.3.0' # fix AttributeError: module 'mpmath' has no attribute 'rational'
+                    ]
     all_requires += CONVERT_DEP
 
     # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
@@ -308,7 +311,7 @@ def setup_package():
         packages=get_llm_packages(),
         package_dir={"": "src"},
         package_data={
-            "bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"]},
+            "bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"] + ["transformers/gguf/models/model_implement/*/*.json"]},
         include_package_data=True,
         entry_points={
             "console_scripts": [
@@ -319,7 +322,8 @@ def setup_package():
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
                         "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
-                        "serving": serving_requires},
+                        "serving": serving_requires,
+                        "cpp": ["bigdl-core-cpp==" + VERSION]},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

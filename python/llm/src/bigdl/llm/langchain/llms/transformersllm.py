@@ -64,7 +64,7 @@ class TransformersLLM(LLM):
     Example:
         .. code-block:: python
 
-            from langchain.llms import TransformersLLM
+            from bigdl.llm.langchain.llms import TransformersLLM
             llm = TransformersLLM.from_model_id(model_id="THUDM/chatglm-6b")
     """
 
@@ -89,6 +89,7 @@ class TransformersLLM(LLM):
         cls,
         model_id: str,
         model_kwargs: Optional[dict] = None,
+        device_map: str = 'cpu',
         **kwargs: Any,
     ) -> LLM:
         """
@@ -131,6 +132,10 @@ class TransformersLLM(LLM):
         except:
             model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
 
+        # TODO: may refactore this code in the future
+        if 'xpu' in device_map:
+            model = model.to(device_map)
+
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
                 k: v for k, v in _model_kwargs.items() if k != "trust_remote_code"
@@ -149,6 +154,7 @@ class TransformersLLM(LLM):
         cls,
         model_id: str,
         model_kwargs: Optional[dict] = None,
+        device_map: str = 'cpu',
         **kwargs: Any,
     ) -> LLM:
         """
@@ -188,6 +194,10 @@ class TransformersLLM(LLM):
             model = AutoModelForCausalLM.load_low_bit(model_id, **_model_kwargs)
         except:
             model = AutoModel.load_low_bit(model_id, **_model_kwargs)
+        
+        # TODO: may refactore this code in the future
+        if 'xpu' in device_map:
+            model = model.to(device_map)
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
@@ -224,6 +234,7 @@ class TransformersLLM(LLM):
         if self.streaming:
             from transformers import TextStreamer
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            input_ids = input_ids.to(self.model.device)
             streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
             if stop is not None:
                 from transformers.generation.stopping_criteria import StoppingCriteriaList
@@ -240,6 +251,7 @@ class TransformersLLM(LLM):
             return text
         else:
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            input_ids = input_ids.to(self.model.device)
             if stop is not None:
                 from transformers.generation.stopping_criteria import StoppingCriteriaList
                 from transformers.tools.agents import StopSequenceCriteria

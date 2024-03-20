@@ -36,6 +36,7 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     pip install datasets transformers==4.35.0 && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
+    pip install bitsandbytes && \
     # install basic dependencies
     apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
@@ -43,13 +44,13 @@ RUN mkdir -p /bigdl/data && mkdir -p /bigdl/model && \
     cd /bigdl && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     mv BigDL/python/llm/example/CPU/QLoRA-FineTuning/* . && \
+    mkdir -p /GPU/LLM-Finetuning && \
+    mv BigDL/python/llm/example/GPU/LLM-Finetuning/common /GPU/LLM-Finetuning/common && \
     rm -r BigDL && \
     chown -R mpiuser /bigdl
 
-# for docker directly run example
+# for standalone
 COPY ./start-qlora-finetuning-on-cpu.sh /bigdl/start-qlora-finetuning-on-cpu.sh
-# for k8s
-COPY ./bigdl-qlora-finetuing-entrypoint.sh /bigdl/bigdl-qlora-finetuing-entrypoint.sh
 
 USER mpiuser
 

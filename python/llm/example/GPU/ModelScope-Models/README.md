@@ -15,7 +15,8 @@ conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
-pip install modelscope
+# Refer to https://github.com/modelscope/modelscope/issues/765, please make sure you are using 1.11.0 version
+pip install modelscope==1.11.0
 ```
 
 #### 1.2 Installation on Windows

@@ -48,28 +48,16 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Copy vLLM-Serving
     cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./BigDL && \
-# Copy speculative.py
-    cp ./BigDL/python/llm/example/CPU/Speculative-Decoding/speculative.py ./ && \
-# Install miniconda
-    curl -LO "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b && \
-    rm -f Miniconda3-latest-Linux-x86_64.sh && \
-# Install environment for speculative
-    /root/miniconda3/condabin/conda init bash && \
-    /bin/bash -c "source /root/.bashrc" && \
-    /root/miniconda3/condabin/conda create -n bigdl-speculative-py39 -y python=3.9
-SHELL ["/root/miniconda3/condabin/conda", "run", "-n", "bigdl-speculative-py39", "/bin/bash", "-c"]
-RUN cd /llm && \
-    pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
+# Fix vllm service 
+    pip install pydantic==1.10.11 && \
+# Install bigdl-llm
+    cd /llm && \
     pip install --pre --upgrade bigdl-llm[all] && \
-    wget https://raw.githubusercontent.com/intel/intel-extension-for-pytorch/0c63936d7a6740679987920367ae2e0cdb375b2e/scripts/compile_bundle.sh && \
-    sed -i 's/VER_IPEX=main/VER_IPEX=0c63936d7a6740679987920367ae2e0cdb375b2e/g' "compile_bundle.sh" && \
-    bash compile_bundle.sh && \
-    cd ./intel-extension-for-pytorch && \
-    pip install -r requirements.txt && \
-    pip install transformers==4.36.2 && \
-    pip install transformers_stream_generator && \
-    rm -rf llvm-project llvm-release intel-extension-for-pytorch compile_bundle.sh && \
-    echo "conda deactivate" >> /root/.bashrc
-
+    # Fix CVE-2024-22195
+    pip install Jinja2==3.1.3 && \
+    pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install intel-extension-for-pytorch==2.2.0 && \
+    pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
+    pip install transformers==4.36.2
+    
 ENTRYPOINT ["/bin/bash"]

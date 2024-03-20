@@ -9,6 +9,7 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 - [Bloomz-7b1-GGUF](https://huggingface.co/hzjane/bloomz-7b1-gguf)
 - [falcon-7b-quantized-gguf](https://huggingface.co/xaviviro/falcon-7b-quantized-gguf/tree/main)
 - [mpt-7b-chat-gguf](https://huggingface.co/maddes8cht/mosaicml-mpt-7b-chat-gguf/tree/main)
+- [Yuan2-2B-Februa-hf-GGUF](https://huggingface.co/IEITYuan/Yuan2-2B-Februa-hf-GGUF/tree/main)
 
 ## Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
@@ -60,6 +61,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--model`: path to GGUF model, it should be a file with name like `llama-2-7b-chat.Q4_0.gguf`
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--low_bit`: use what low_bit to run, default is `sym_int4`.
 
 #### 2.4 Sample Output
 #### [llama-2-7b-chat.Q4_0.gguf](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
