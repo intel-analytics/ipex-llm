@@ -48,6 +48,8 @@ python3 -m fastchat.serve.controller
 
 ### Launch model worker(s) and load models
 
+#### BigDL model worker
+
 Using BigDL-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
 FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using BigDL-LLM, you need to make some modifications to the model's name.
@@ -61,8 +63,6 @@ Then we will use `bigdl-7b` as model-path.
 A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `BigDL-LLM` backend will be used automatically.
 
 Then we can run model workers
-
-#### BigDL model worker
 
 ```bash
 # On CPU
@@ -84,14 +84,14 @@ INFO - Converting the current model to sym_int4 format......
 
 We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
 
-To run using the `vLLM_worker`, just simply uses the following command:
+To run using the `vLLM_worker`,  we don't need to change model name, just simply uses the following command:
 
 ```bash
 # On CPU
-python3 -m bigdl.llm.serving.vllm_worker --model-path PATH/TO/bigdl-7b --device cpu
+python3 -m bigdl.llm.serving.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
 
 # On GPU
-python3 -m bigdl.llm.serving.vllm_worker --model-path PATH/TO/bigdl-7b --device xpu
+python3 -m bigdl.llm.serving.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
 ```
 
 ### Launch Gradio web server
