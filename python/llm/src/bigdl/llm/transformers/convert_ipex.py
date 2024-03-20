@@ -127,6 +127,22 @@ def _ipex_optimize_model(model, rms_classes, qtype):
             group_size=-1,
         )
         model = ipex_quantization_flow(model, torch.bfloat16, None, qconfig, None)
+    elif qtype == ggml_tensor_qtype["sym_int8"]:
+        is_quantization = True
+        is_woq = True
+        act_quant_mode_dict = {
+            "PER_TENSOR": ipex.quantization.WoqActQuantMode.PER_TENSOR,
+            "PER_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_IC_BLOCK,
+            "PER_BATCH": ipex.quantization.WoqActQuantMode.PER_BATCH,
+            "PER_BATCH_IC_BLOCK": ipex.quantization.WoqActQuantMode.PER_BATCH_IC_BLOCK,
+        }
+        qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
+            weight_dtype=torch.qint8,  # INT8
+            lowp_mode=ipex.quantization.WoqLowpMode.INT8,
+            act_quant_mode=act_quant_mode_dict["PER_IC_BLOCK"],
+            group_size=-1,
+        )
+        model = ipex_quantization_flow(model, torch.bfloat16, None, qconfig, None)
 
     is_tpp = _using_tpp()
 
