@@ -691,7 +691,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
 
-    if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
+    if hasattr(model, "config") and \
+            model.config.model_type == "qwen" and hasattr(model.config, "visual"):
         # for Qwen-VL-Chat
         # Due to issue https://github.com/intel/intel-extension-for-pytorch/issues/454,
         # currently put interpolation execution into cpu
