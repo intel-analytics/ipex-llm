@@ -65,10 +65,10 @@ Then we can run model workers
 #### BigDL model worker
 
 ```bash
-# In CPU
+# On CPU
 python3 -m bigdl.llm.serving.model_worker --model-path PATH/TO/bigdl-7b --device cpu
 
-# In XPU
+# On XPU
 python3 -m bigdl.llm.serving.model_worker --model-path PATH/TO/bigdl-7b --device xpu
 ```
 
@@ -87,10 +87,10 @@ We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel
 To run using the `vLLM_worker`, just simply uses the following command:
 
 ```bash
-# In CPU
+# On CPU
 python3 -m bigdl.llm.serving.vllm_worker --model-path PATH/TO/bigdl-7b --device cpu
 
-# In XPU
+# On XPU
 python3 -m bigdl.llm.serving.vllm_worker --model-path PATH/TO/bigdl-7b --device xpu
 ```
 
