@@ -1021,7 +1021,8 @@ def llama_attention_forward_4_36_quantized(
             if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
                 invalidInputError(
                     False,
-                    f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
+                    f"Attention weights should be of size"
+                    f" {(bsz, self.num_heads, q_len, kv_seq_len)},"
                     f" but is {attn_weights.size()}"
                 )
 
