@@ -20,6 +20,7 @@ test_api:
   # - "transformer_autocast_bf16"
   # - "bigdl_ipex_bf16"
   # - "bigdl_ipex_int4"
+  # - "bigdl_ipex_int8"
   # - "ipex_fp16_gpu" # on Intel GPU
   # - "bigdl_fp16_gpu" # on Intel GPU
   # - "transformer_int4_gpu"  # on Intel GPU
