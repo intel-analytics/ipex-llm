@@ -203,7 +203,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         is_linear, linear_args = is_linear_module(module)
         full_module_name = prefix_name + '.' + name if prefix_name != '' else name
 
-        # use sub-string to match, it may convert `10` if user only pass a number like `0`
+        # use sub-string to match, it may match `10` if user only pass a number like `0`
         if any(key in full_module_name for key in modules_to_not_convert):
             continue
 
