@@ -6,7 +6,7 @@ This quickstart guide walks you through setting up and using the [Text Generatio
 
 A preview of the WebUI in action is shown below:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=100%; />
 </a>
 
@@ -71,7 +71,7 @@ In **Anaconda Prompt** with the conda environment `llm` activated, navigate to t
 ### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_launch_server.png" width=100%; />
 </a>
 
@@ -81,13 +81,13 @@ Upon successful launch, URLs to access the WebUI will be displayed in the termin
 
 Place Huggingface models in `C:\text-generation-webui\models` by either copying locally or downloading via the WebUI. To download, navigate to the **Model** tab, enter the model's huggingface id (for instance, `microsoft/phi-1_5`) in the **Download model or LoRA** section, and click **Download**, as illustrated below. 
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_download_model.png" width=100%; />
 </a>
 
 After copying or downloading the models, click on the blue **refresh** button to update the **Model** drop-down menu. Then, choose your desired model from the newly updated list.  
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_select_model.png" width=100%; />
 </a>
 
@@ -97,7 +97,7 @@ Default settings are recommended for most users. Click **Load** to activate the 
 
 If everything goes well, you will get a message as shown below.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=100%; />
 </a>
 
@@ -107,7 +107,7 @@ In the **Chat** tab, start new conversations with **New chat**.
 
 Enter prompts into the textbox at the bottom and press the **Generate** button to receive responses.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" width=100%; />
 </a>
 
@@ -124,14 +124,14 @@ To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** termina
 
 
 ## 5. Advanced Usage
-### Using Instruct mode for Chat
+### Using Instruct mode
 Instruction-following models are models that are fine-tuned with specific prompt formats. 
 For these models, you should ideally use the `instruct` chat mode.
 Under this mode, the model receives user prompts that are formatted according to prompt formats it was trained with.
 
 To use `instruct` chat mode, select `chat` tab, scroll down the page, and then select `instruct` under `Mode`.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat_mode_instruct.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat_mode_instruct.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat_mode_instruct.png" width=100%; />
 </a>
 
@@ -139,7 +139,7 @@ When a model is loaded, its corresponding instruction template, which contains p
 If chat responses are poor, the loaded instruction template might be incorrect.
 In this case, go to `Parameters` tab and then `Instruction template` tab.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_instruction_template.png">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_instruction_template.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_instruction_template.png" width=100%; />
 </a>
 
