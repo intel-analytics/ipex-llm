@@ -1035,7 +1035,7 @@ def llama_attention_forward_4_36_quantized(
                 )
             attn_weights = attn_weights + attention_mask
 
-            # at inference time, for memory considerations, may not need to upcast attention to fp32
+        # at inference time, for memory considerations, may not need to upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
 
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
