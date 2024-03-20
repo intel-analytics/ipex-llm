@@ -4,6 +4,20 @@ FastChat is an open platform for training, serving, and evaluating large languag
 
 BigDL-LLM can be easily integrated into FastChat so that user can use `BigDL-LLM` as a serving backend in the deployment.
 
+<details>
+<summary>Table of contents</summary>
+
+- [Install](#install)
+- [Start the service](#start-the-service)
+  - [Launch controller](#launch-controller)
+  - [Launch model worker(s) and load models](#launch-model-workers-and-load-models)
+    - [Bigdl model worker](#bigdl-model-worker)
+    - [vllm model worker](#vllm-model-worker)
+  - [Launch Gradio web server](#launch-gradio-web-server)
+  - [Launch RESTful API server](#launch-restful-api-server)
+
+</details>
+
 ## Install
 
 You may install **`bigdl-llm`** with `FastChat` as follows:
