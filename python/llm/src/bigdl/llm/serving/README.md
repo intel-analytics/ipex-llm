@@ -11,8 +11,8 @@ BigDL-LLM can be easily integrated into FastChat so that user can use `BigDL-LLM
 - [Start the service](#start-the-service)
   - [Launch controller](#launch-controller)
   - [Launch model worker(s) and load models](#launch-model-workers-and-load-models)
-    - [Bigdl model worker](#bigdl-model-worker)
-    - [vllm model worker](#vllm-model-worker)
+    - [BigDL model worker](#bigdl-model-worker)
+    - [BigDL vLLM model worker](#vllm-model-worker)
   - [Launch Gradio web server](#launch-gradio-web-server)
   - [Launch RESTful API server](#launch-restful-api-server)
 
@@ -62,7 +62,7 @@ A special case is `ChatGLM` models. For these models, you do not need to do any 
 
 Then we can run model workers
 
-#### Bigdl model worker
+#### BigDL model worker
 
 ```bash
 # In CPU
@@ -80,11 +80,11 @@ INFO - Converting the current model to sym_int4 format......
 
 > note: We currently only support int4 quantization.
 
-#### vllm model worker
+#### BigDL vLLM model worker
 
 We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
 
-To run using the `vllm_worker`, just simply uses the following command:
+To run using the `vLLM_worker`, just simply uses the following command:
 
 ```bash
 # In CPU
