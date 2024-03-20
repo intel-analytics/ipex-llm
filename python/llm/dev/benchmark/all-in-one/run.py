@@ -932,14 +932,14 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        model = model.half()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.half()
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        model = model.half()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.half()
         model = model.to('xpu')
     elif repo_id in LLAVA_IDS:
         llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
@@ -947,14 +947,14 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        model = model.half()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.half()
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
-        model = model.half()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.half()
         model = model.to('xpu')
         if isinstance(model, GPTJForCausalLM):
             # For gpt-j model family, this optimization can provide a better performance.
