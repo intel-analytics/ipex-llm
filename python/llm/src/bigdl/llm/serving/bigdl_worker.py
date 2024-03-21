@@ -61,7 +61,8 @@ class BigDLLLMWorker(BaseModelWorker):
 
         self.load_in_low_bit = load_in_low_bit
         logger.info(
-            f"Loading the model {self.model_names} on worker {worker_id}, worker type: BigDLLLM worker..."
+            f"Loading the model {self.model_names} on worker {worker_id},"
+            f" worker type: BigDLLLM worker..."
         )
 
         logger.info(f"Using low bit format: {self.load_in_low_bit}, device: {device}")
@@ -125,7 +126,8 @@ class BigDLLLMWorker(BaseModelWorker):
             new_max_new_tokens = min(self.context_len - input_echo_len, max_new_tokens)
             if new_max_new_tokens < max_new_tokens:
                 logger.info(
-                    f"Warning: max_new_tokens[{max_new_tokens}] + prompt[{input_echo_len}] greater than context_length[{self.context_len}]"
+                    f"Warning: max_new_tokens[{max_new_tokens}] + prompt[{input_echo_len}] greater "
+                    f"than context_length[{self.context_len}]"
                 )
                 logger.info(f"Reset max_new_tokens to {new_max_new_tokens}")
                 max_new_tokens = new_max_new_tokens
