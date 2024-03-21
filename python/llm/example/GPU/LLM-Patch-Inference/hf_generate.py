@@ -227,11 +227,11 @@ def main(args: Namespace) -> None:
                                                      device_map=device_map,
                                                      **from_pretrained_kwargs)
         model.eval()
+        model.to(model_dtype)
         print(f'n_params={sum(p.numel() for p in model.parameters())}')
         if device is not None:
             print(f'Placing model on {device=}...')
             model.to(device)
-        model.to(model_dtype)
     except Exception as e:
         raise RuntimeError(
             'Unable to load HF model. ' +
