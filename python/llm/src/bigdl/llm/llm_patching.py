@@ -25,6 +25,15 @@ bigdl_patched = None  # None or 'Train' or 'Inference'
 attrs = []
 
 
+def _parse_automodel(am_fn, map={'device_map': None}):
+    def mocked_am(self, *args, **kwargs):
+        device_map = kwargs.get('device_map', None)
+        if 'cuda' in device_map:
+            kwargs['device_map'] = map['device_map']
+        return am_fn(self, *args, **kwargs)
+    return mocked_am
+
+
 def _parse_to(to_fn, map={'device': 'xpu'}):
     def mocked_to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
@@ -57,9 +66,9 @@ def llm_patch(train=False, device=None):
 
     # Initial version of patch for llm finetuning, inference support TBD
     from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-    replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
-    replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
-    replace_attr(transformers, "AutoModel", AutoModel)
+    replace_attr(transformers, "AutoModelForCausalLM", _parse_automodel(AutoModelForCausalLM))
+    replace_attr(transformers, "LlamaForCausalLM", _parse_automodel(AutoModelForCausalLM))
+    replace_attr(transformers, "AutoModel", _parse_automodel(AutoModel))
     if hasattr(torch, "xpu"):
         replace_attr(torch, "cuda", getattr(torch, "xpu"))
         replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
