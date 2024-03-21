@@ -50,6 +50,8 @@ import warnings
 import copy
 from .utils import logger
 
+patched_training_mode = None
+
 
 def save_low_bit(self, *args, **kwargs):
     invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
@@ -212,6 +214,20 @@ class _BaseAutoModelClass:
                 warnings.warn(
                     "torch_dtype is None, use default float32", FutureWarning)
                 kwargs["torch_dtype"] = torch.float32
+            optimize_model = False
+            kwargs["modules_to_not_convert"] = ["lm_head"]
+
+        load_in_8bit = kwargs.pop("load_in_8bit", False)
+        from bigdl.llm.llm_patching import bigdl_patched
+        if bigdl_patched == 'Train':
+            global patched_training_mode
+            if load_in_low_bit == "nf4" or load_in_low_bit == "sym_int4" or load_in_4bit:
+                # qlora
+                patched_training_mode = 'qlora'
+            else:
+                # lora
+                patched_training_mode = 'lora'
+                load_in_low_bit = "bf16"
             optimize_model = False
             kwargs["modules_to_not_convert"] = ["lm_head"]
 
@@ -413,6 +429,8 @@ class _BaseAutoModelClass:
         else:
             _load_pre()
             try:
+                # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
+                kwargs.pop('device_map', None)
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
             except NotImplementedError:
                 logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
