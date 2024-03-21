@@ -1,6 +1,6 @@
 # Use llama.cpp with BigDL-LLM on Intel GPU
 
-Now you can use BigDL-LLM as an Intel GPU accelerated frontend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `bigdl-llm` on Intel GPU (both iGPU and dGPU). 
+Now you can use BigDL-LLM as an Intel GPU accelerated backend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `bigdl-llm` on Intel GPU (both iGPU and dGPU). 
 
 ```eval_rst
 .. note::
@@ -101,7 +101,7 @@ found 8 SYCL devices:
 | 6|               Intel(R) Arc(TM) A770 Graphics|               1.3|              512|          1024|           32|    16225243136|
 | 7|                    Intel(R) UHD Graphics 770|               1.3|               32|           512|           32|    53745299456|
 detect 2 SYCL GPUs: [0,6] with Max compute units:512
-llama_model_loader: loaded meta data with 20 key-value pairs and 291 tensors from ~/Mistral-7B-Instruct-v0.1-GGUF/mistral-7b-instruct-v0.1.Q4_K_M.gguf (version GGUF V2)
+llama_model_loader: loaded meta data with 20 key-value pairs and 291 tensors from ~/mistral-7b-instruct-v0.1.Q4_K_M.gguf (version GGUF V2)
 llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
 llama_model_loader: - kv   0:                       general.architecture str              = llama
 llama_model_loader: - kv   1:                               general.name str              = mistralai_mistral-7b-instruct-v0.1
