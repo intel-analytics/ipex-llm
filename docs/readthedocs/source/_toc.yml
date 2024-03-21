@@ -38,6 +38,7 @@ subtrees:
             title: "Quickstart"
             subtrees:
               - entries:
+                - file: doc/LLM/Quickstart/install_linux_gpu
                 - file: doc/LLM/Quickstart/install_windows_gpu
                 - file: doc/LLM/Quickstart/webui_quickstart
                 - file: doc/LLM/Quickstart/benchmark_quickstart
