@@ -74,7 +74,7 @@ def llm_patch(train=False, device=None):
         replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
         if not device:
             device = "xpu"
-    replace_attr(torch.nn.Module, "to", _parse_to(torch.nn.Module.to))
+    replace_attr(torch.nn.Module, "to", _parse_to(torch.nn.Module.to, map={'device': 'xpu'}))
     if train:
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
