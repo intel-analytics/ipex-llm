@@ -21,8 +21,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This patch should be at the very first of the script
+
 from bigdl.llm.llm_patching import llm_patch
-llm_patch()
+llm_patch(load_in_low_bit="sym_int4")
 
 import itertools
 import random
