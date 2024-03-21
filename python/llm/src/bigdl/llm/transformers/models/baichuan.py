@@ -363,15 +363,17 @@ def baichuan_attention_forward_13b_quantized(
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
 
+    if attention_mask is not None:
+        if q_len == 1:  # inference with cache
+            if len(attention_mask.size()) == 4:
+                attention_mask = attention_mask[:, :, -1:, :]
+            else:
+                attention_mask = attention_mask[:, -1:, :]
+
     if past_key_value is None:
         attn_weights = torch.matmul(query_states,
                                     key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
         if attention_mask is not None:
-            if q_len == 1:  # inference with cache
-                if len(attention_mask.size()) == 4:
-                    attention_mask = attention_mask[:, :, -1:, :]
-                else:
-                    attention_mask = attention_mask[:, -1:, :]
             attn_weights = attn_weights + attention_mask
             attn_weights = torch.max(attn_weights,
                                      torch.tensor(torch.finfo(attn_weights.dtype).min))
@@ -402,11 +404,6 @@ def baichuan_attention_forward_13b_quantized(
             attn_weights = attn_weights / math.sqrt(self.head_dim)
 
             if attention_mask is not None:
-                if q_len == 1:  # inference with cache
-                    if len(attention_mask.size()) == 4:
-                        attention_mask = attention_mask[:, :, -1:, :]
-                    else:
-                        attention_mask = attention_mask[:, -1:, :]
                 attn_weights = attn_weights + attention_mask
                 attn_weights = torch.max(attn_weights,
                                          torch.tensor(torch.finfo(attn_weights.dtype).min))

@@ -368,6 +368,12 @@ def baichuan_attention_forward_13b_quantized(
                                                    key_states, value_states, new_layout=True)
     past_key_value = (key_states, value_states)
 
+    if attention_mask is not None:
+        if q_len == 1:  # inference with cache
+            if len(attention_mask.size()) == 4:
+                attention_mask = attention_mask[:, :, -1:, :]
+            else:
+                attention_mask = attention_mask[:, -1:, :]
     if query_states.size(2) != 1 or device.type != 'xpu':
         key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                         query_states.dtype)
@@ -376,11 +382,6 @@ def baichuan_attention_forward_13b_quantized(
         attn_weights = attn_weights / math.sqrt(self.head_dim)
 
         if attention_mask is not None:
-            if q_len == 1:  # inference with cache
-                if len(attention_mask.size()) == 4:
-                    attention_mask = attention_mask[:, :, -1:, :]
-                else:
-                    attention_mask = attention_mask[:, -1:, :]
             attn_weights = attn_weights + attention_mask
             attn_weights = torch.max(attn_weights,
                                      torch.tensor(torch.finfo(attn_weights.dtype).min))
