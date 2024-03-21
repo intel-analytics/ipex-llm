@@ -93,7 +93,6 @@ def llm_patch(train=False, device=None):
         bigdl_patched = 'Train'
 
 
-
 def llm_unpatch():
     '''
     llm_unpatch is an reverse function to llm_patch.
