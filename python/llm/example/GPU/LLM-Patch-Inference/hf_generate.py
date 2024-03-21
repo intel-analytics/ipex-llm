@@ -19,6 +19,11 @@
 #
 # Copyright 2022 MosaicML LLM Foundry authors
 # SPDX-License-Identifier: Apache-2.0
+
+# This patch should be at the very first of the script
+from bigdl.llm.llm_patching import llm_patch
+llm_patch()
+
 import itertools
 import random
 import time
