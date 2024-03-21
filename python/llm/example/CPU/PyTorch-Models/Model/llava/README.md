@@ -22,7 +22,6 @@ git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
 git checkout tags/v1.2.0 -b 1.2.0
- # change the working directory to the LLaVA folder
 ```
 
 ### 2. Run
