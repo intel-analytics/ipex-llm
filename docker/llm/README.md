@@ -441,6 +441,7 @@ Then, start QLoRA fine-tuning:
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
 ```bash
+cd /bigdl
 bash start-qlora-finetuning-on-cpu.sh
 ```
 
