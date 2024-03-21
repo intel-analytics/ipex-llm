@@ -357,88 +357,121 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 
 ## Docker installation guide for BigDL LLM Fine Tuning on CPU
 
-### 1. Prepare BigDL image for Lora Finetuning
+### 1. Prepare Docker Image
 
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
+# For standalone
+docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+
+# For k8s
+docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
 
 ```bash
+# For standalone
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
+  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
+
+# For k8s
+export HTTP_PROXY=your_http_proxy
+export HTTPS_PROXY=your_https_proxy
+
+docker build \
+  --build-arg http_proxy=${HTTP_PROXY} \
+  --build-arg https_proxy=${HTTPS_PROXY} \
+  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
+  -f ./Dockerfile.k8s .
 ```
 
 ### 2. Prepare Base Model, Data and Container
 
-Here, we try to finetune [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [Cleaned alpaca data](https://raw.githubusercontent.com/tloen/alpaca-lora/main/alpaca_data_cleaned_archive.json), which contains all kinds of general knowledge and has already been cleaned. And please download them and start a docker container with files mounted like below:
+Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
-```
+```bash
+export BASE_MODE_PATH=your_downloaded_base_model_path
+export DATA_PATH=your_downloaded_data_path
+export HTTP_PROXY=your_http_proxy
+export HTTPS_PROXY=your_https_proxy
+
 docker run -itd \
- --name=bigdl-llm-fintune-lora-cpu \
- --cpuset-cpus="your_expected_range_of_cpu_numbers" \
- -e STANDALONE_DOCKER=TRUE \
- -e WORKER_COUNT_DOCKER=your_worker_count \
- -v your_downloaded_base_model_path:/bigdl/model \
- -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
- intelanalytics/bigdl-llm-finetune-cpu:2.5.0-SNAPSHOT \
- bash
+   --net=host \
+   --name=bigdl-llm-fintune-qlora-cpu \
+   -e http_proxy=${HTTP_PROXY} \
+   -e https_proxy=${HTTPS_PROXY} \
+   -v $BASE_MODE_PATH:/bigdl/model \
+   -v $DATA_PATH:/bigdl/data/alpaca-cleaned \
+   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
-You can adjust the configuration according to your own environment. After our testing, we recommend you set worker_count=1, and then allocate 80G memory to Docker.
+The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
 
-### 3. Start Finetuning
+```bash
+export HTTP_PROXY=your_http_proxy
+export HTTPS_PROXY=your_https_proxy
+
+docker run -itd \
+   --net=host \
+   --name=bigdl-llm-fintune-qlora-cpu \
+   -e http_proxy=${HTTP_PROXY} \
+   -e https_proxy=${HTTPS_PROXY} \
+   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+```
+
+However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
+
+### 3. Start Fine-Tuning (Local Mode)
 
 Enter the running container:
 
-```
-docker exec -it bigdl-llm-fintune-lora-cpu bash
+```bash
+docker exec -it bigdl-llm-fintune-qlora-cpu bash
 ```
 
-Then, run the script to start finetuning:
+Then, start QLoRA fine-tuning:
+If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
-```
-bash /bigdl/bigdl-lora-finetuing-entrypoint.sh
+```bash
+cd /bigdl
+bash start-qlora-finetuning-on-cpu.sh
 ```
 
 After minutes, it is expected to get results like:
 
-```
-Training Alpaca-LoRA model with params:
-...
-Related params
-...
-world_size: 2!!
-PMI_RANK(local_rank): 1
-Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.28s/it]
-Loading checkpoint shards: 100%|██████████| 2/2 [00:05<00:00,  2.62s/it]
-trainable params: 4194304 || all params: 6742609920 || trainable%: 0.06220594176090199
-[INFO] spliting and shuffling dataset...
-[INFO] shuffling and tokenizing train data...
-Map:   2%|▏         | 1095/49759 [00:00<00:30, 1599.00 examples/s]trainable params: 4194304 || all params: 6742609920 || trainable%: 0.06220594176090199
-[INFO] spliting and shuffling dataset...
-[INFO] shuffling and tokenizing train data...
-Map: 100%|██████████| 49759/49759 [00:29<00:00, 1678.89 examples/s]
-[INFO] shuffling and tokenizing test data...
-Map: 100%|██████████| 49759/49759 [00:29<00:00, 1685.42 examples/s]
-[INFO] shuffling and tokenizing test data...
-Map: 100%|██████████| 2000/2000 [00:01<00:00, 1573.61 examples/s]
-Map: 100%|██████████| 2000/2000 [00:01<00:00, 1578.71 examples/s]
-[INFO] begining the training of transformers...
-[INFO] Process rank: 0, device: cpudistributed training: True
-  0%|          | 1/1164 [02:42<52:28:24, 162.43s/it]
+```bash
+{'loss': 2.0251, 'learning_rate': 0.0002, 'epoch': 0.02}
+{'loss': 1.2389, 'learning_rate': 0.00017777777777777779, 'epoch': 0.03}
+{'loss': 1.032, 'learning_rate': 0.00015555555555555556, 'epoch': 0.05}
+{'loss': 0.9141, 'learning_rate': 0.00013333333333333334, 'epoch': 0.06}
+{'loss': 0.8505, 'learning_rate': 0.00011111111111111112, 'epoch': 0.08}
+{'loss': 0.8713, 'learning_rate': 8.888888888888889e-05, 'epoch': 0.09}
+{'loss': 0.8635, 'learning_rate': 6.666666666666667e-05, 'epoch': 0.11}
+{'loss': 0.8853, 'learning_rate': 4.4444444444444447e-05, 'epoch': 0.12}
+{'loss': 0.859, 'learning_rate': 2.2222222222222223e-05, 'epoch': 0.14}
+{'loss': 0.8608, 'learning_rate': 0.0, 'epoch': 0.15}
+{'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15}
+100%|███████████████████████████████████████████████████████████████████████████████████| 200/200 [07:16<00:00,  2.18s/it]
+TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15})
 ```
 
-You can run BF16-Optimized lora finetuning on kubernetes with OneCCL. So for kubernetes users, please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/lora/cpu#run-bf16-optimized-lora-finetuning-on-kubernetes-with-oneccl).
+### 4. Merge the adapter into the original model
+
+Using the [export_merged_model.py](../../../../../../python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge.
+
+```
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+```
+
+Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
 ## Docker installation guide for BigDL LLM Fine Tuning on XPU
 
