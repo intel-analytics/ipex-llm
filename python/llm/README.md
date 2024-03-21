@@ -88,6 +88,7 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | Yuan2 | [link](example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](example/GPU/HF-Transformers-AutoModels/Model/yuan2) |
 | DeciLM-7B | [link](example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b) |
 | Deepseek | [link](example/CPU/HF-Transformers-AutoModels/Model/deepseek) | [link](example/GPU/HF-Transformers-AutoModels/Model/deepseek) |
+| VisualGLM | [link](example/CPU/HF-Transformers-AutoModels/Model/visualglm) | |
 
 ### Working with `bigdl-llm`
 
