@@ -11,7 +11,7 @@ conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can u
 conda activate bigdl
 pip install torch
 pip install torchvision
-pip install albumentations
+pip install 'albumentations<=1.4.0'
 pip install scikit-learn
 pip install opencv-python
 pip install matplotlib

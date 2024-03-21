@@ -371,25 +371,6 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-  Orca-ExampleTest-Ray-Py39-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py39-basic
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-exampletest-ray-py39-spark3-action/nightly-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env/remove-env-py39
-
   Orca-Pytest-Openvino-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest-openvino == 'true' }}
