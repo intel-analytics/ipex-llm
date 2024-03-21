@@ -15,6 +15,7 @@
 #
 
 import transformers
+import torch
 import importlib
 import sys
 from bigdl.llm.utils.common import invalidInputError
@@ -30,7 +31,7 @@ def replace_attr(obj, name: str, value):
     attrs.append((obj, name, original_attr))
 
 
-def llm_patch(train=False):
+def llm_patch(train=False, device=None):
     '''
     llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
     with only one-line code patch.
@@ -46,6 +47,10 @@ def llm_patch(train=False):
     replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
     replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
     replace_attr(transformers, "AutoModel", AutoModel)
+    if hasattr(torch, "xpu"):
+        replace_attr(torch, "cuda", getattr(torch, "xpu"))
+        if not device:
+            device = "xpu"
     if train:
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
@@ -62,6 +67,7 @@ def llm_patch(train=False):
         replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
         replace_attr(peft, "LoraConfig", LoraConfig)
         bigdl_patched = 'Train'
+
 
 
 def llm_unpatch():
