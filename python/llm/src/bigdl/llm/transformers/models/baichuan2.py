@@ -407,7 +407,6 @@ def baichuan_attention_forward_13b_quantized(
     return attn_output, attn_weights, past_key_value
 
 
-
 def baichuan_attention_forward_13b_origin(
     self,
     hidden_states: torch.Tensor,
