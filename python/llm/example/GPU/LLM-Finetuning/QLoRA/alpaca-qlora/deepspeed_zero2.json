@@ -7,10 +7,10 @@
       "contiguous_gradients": true,
       "overlap_comm": true
     },  
-    "bp16": {
+    "bf16": {
       "enabled": true
     },
     "train_micro_batch_size_per_gpu": "auto",
     "gradient_accumulation_steps": "auto"
-  }
+}
   
