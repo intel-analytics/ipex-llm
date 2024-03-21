@@ -71,10 +71,10 @@ Then we can run model workers
 
 ```bash
 # On CPU
-python3 -m bigdl.llm.serving.model_worker --model-path PATH/TO/bigdl-7b --device cpu
+python3 -m bigdl.llm.serving.fastchat.model_worker --model-path PATH/TO/bigdl-7b --device cpu
 
 # On GPU
-python3 -m bigdl.llm.serving.model_worker --model-path PATH/TO/bigdl-7b --device xpu
+python3 -m bigdl.llm.serving.fastchat.model_worker --model-path PATH/TO/bigdl-7b --device xpu
 ```
 
 If you run successfully using `BigDL` backend, you can see the output in log like this:
@@ -94,14 +94,14 @@ To run the `bigdl_worker` on CPU, using the following code:
 source bigdl-llm-init -t
 
 # Available low_bit format including sym_int4, sym_int8, bf16 etc.
-python3 -m bigdl.llm.serving.bigdl_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
+python3 -m bigdl.llm.serving.fastchat.bigdl_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
 ```
 
 
 For GPU example:
 ```bash
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
-python3 -m bigdl.llm.serving.bigdl_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+python3 -m bigdl.llm.serving.fastcaht.bigdl_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
 For a full list of accepted arguments, you can refer to the main method of the `bigdl_worker.py`
@@ -114,10 +114,10 @@ To run using the `vLLM_worker`,  we don't need to change model name, just simply
 
 ```bash
 # On CPU
-python3 -m bigdl.llm.serving.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
+python3 -m bigdl.llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
 
 # On GPU
-python3 -m bigdl.llm.serving.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
+python3 -m bigdl.llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
 ```
 
 ### Launch Gradio web server
