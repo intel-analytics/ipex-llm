@@ -40,6 +40,7 @@ subtrees:
               - entries:
                 - file: doc/LLM/Quickstart/install_linux_gpu
                 - file: doc/LLM/Quickstart/install_windows_gpu
+                - file: doc/LLM/Quickstart/docker_windows_gpu
                 - file: doc/LLM/Quickstart/webui_quickstart
                 - file: doc/LLM/Quickstart/benchmark_quickstart
                 - file: doc/LLM/Quickstart/llama_cpp_quickstart
