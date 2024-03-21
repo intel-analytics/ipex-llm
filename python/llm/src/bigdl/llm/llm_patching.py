@@ -49,6 +49,7 @@ def llm_patch(train=False, device=None):
     replace_attr(transformers, "AutoModel", AutoModel)
     if hasattr(torch, "xpu"):
         replace_attr(torch, "cuda", getattr(torch, "xpu"))
+        replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
         if not device:
             device = "xpu"
     if train:
