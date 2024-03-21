@@ -25,6 +25,19 @@ bigdl_patched = None  # None or 'Train' or 'Inference'
 attrs = []
 
 
+def _parse_to(to_fn, map={'device': 'xpu'}):
+    def mocked_to(self, *args, **kwargs):
+        device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
+        if device.type == 'cuda':
+            if kwargs.get('device', None):
+                kwargs['device'] = map['device']
+            else:
+                args = list(args)
+                args[0] = map['device']
+        return to_fn(self, *args, **kwargs)
+    return mocked_to
+
+
 def replace_attr(obj, name: str, value):
     original_attr = getattr(obj, name)
     setattr(obj, name, value)
@@ -52,6 +65,7 @@ def llm_patch(train=False, device=None):
         replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
         if not device:
             device = "xpu"
+    replace_attr(torch.nn.Module, "to", _parse_to(torch.nn.Module.to))
     if train:
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
