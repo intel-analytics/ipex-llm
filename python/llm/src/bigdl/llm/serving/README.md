@@ -48,10 +48,10 @@ python3 -m fastchat.serve.controller
 
 ### Launch model worker(s) and load models
 
-#### BigDL model worker
-
 Using BigDL-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
+
+#### BigDL model worker (deprecated...)
 FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using BigDL-LLM, you need to make some modifications to the model's name.
 
 For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `BigDL-LLM` as backend, you need to change name from `llama-7b-hf` to `bigdl-7b`.The key point here is that the model's path should include "bigdl" and **should not include paths matched by other model adapters**.
@@ -78,7 +78,27 @@ If you run successfully using `BigDL` backend, you can see the output in log lik
 INFO - Converting the current model to sym_int4 format......
 ```
 
-> note: We currently only support int4 quantization.
+> note: We currently only support int4 quantization for this method.
+
+#### BigDL-LLM worker
+To integrate BigDL-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `bigdl_worker.py`.
+
+To run the `bigdl_worker` on CPU, using the following code:
+```bash
+source bigdl-llm-init -t
+
+# Available low_bit format including sym_int4, sym_int8, bf16 etc.
+python3 -m bigdl.llm.serving.bigdl_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
+```
+
+
+For GPU example:
+```bash
+# Available low_bit format including sym_int4, sym_int8, fp16 etc.
+python3 -m bigdl.llm.serving.bigdl_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+```
+
+For a full list of accepted arguments, you can refer to the main method of the `bigdl_worker.py`
 
 #### BigDL vLLM model worker
 
