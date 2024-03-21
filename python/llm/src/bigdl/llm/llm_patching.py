@@ -27,9 +27,8 @@ attrs = []
 
 def _parse_pretrained(am_fn, map={'device_map': None}):
     def mocked_am(self, *args, **kwargs):
-        device_map = kwargs.get('device_map', None)
-        if 'cuda' in device_map:
-            kwargs['device_map'] = map['device_map']
+        kwargs['device_map'] = map.pop('device_map', None)
+        kwargs.update(map)
         return am_fn(self, *args, **kwargs)
     return mocked_am
 
@@ -68,11 +67,11 @@ def llm_patch(train=False, device=None, load_in_low_bit=None):
     from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 
     # patch bigdl pretrained
-    am_map = dict(device_map=None, load_in_low_bit=None)
+    am_map = dict(device_map=None, load_in_low_bit=load_in_low_bit)
     replace_attr(AutoModelForCausalLM, "from_pretrained",
-                 _parse_pretrained(AutoModelForCausalLM.from_pretrained))
+                 _parse_pretrained(AutoModelForCausalLM.from_pretrained, am_map))
     replace_attr(AutoModel, "from_pretrained",
-                 _parse_pretrained(AutoModel.from_pretrained))
+                 _parse_pretrained(AutoModel.from_pretrained, am_map))
     
     # patch transformers with bigdl
     replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
