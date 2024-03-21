@@ -511,13 +511,12 @@ def core_attn(self, query, key, value, causal_mask=None, attention_mask=None, he
 
         # We have no CPU fp8 matmul implementation for now, so just upscale to fp32
         attn_output = torch.matmul(attn_weights, value)
-
-        attn_output = attn_output.transpose(1, 2)
     else:
         import linear_q4_0
         attn_output = linear_q4_0.sdp_fp8(query, key, value,
                                           attention_mask)
         attn_weights = None
+    attn_output = attn_output.transpose(1, 2)
 
     return attn_output, attn_weights
 
