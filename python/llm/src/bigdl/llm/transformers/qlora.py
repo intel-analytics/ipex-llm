@@ -234,12 +234,38 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
 
 from peft.tuners.lora import LoraModel
 from peft.tuners.lora import LoraConfig as LoraConfigBase
+from transformers import TrainingArguments as TrainingArgumentsBase
+from transformers.training_args import OptimizerNames
 from dataclasses import dataclass, field
 
 
 @dataclass
 class LoraConfig(LoraConfigBase):
     training_mode: str = field(default="qlora", metadata={"help": "determine training mode"})
+
+    def __init__(self, *args, **kwargs):
+        self.training_mode = kwargs.pop("training_mode", "qlora")
+        super().__init__(*args, **kwargs)
+        from bigdl.llm.llm_patching import bigdl_patched
+        if bigdl_patched == 'Train':
+            from .model import patched_training_mode
+            self.training_mode = patched_training_mode
+
+
+supported_optim = ["adamw_hf", "adamw_torch", "adafactor", "sgd", "adagrad", "rmsprop"]
+
+
+@dataclass
+class TrainingArguments(TrainingArgumentsBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["fp16"] = False
+        kwargs["bf16"] = True
+        for optim in supported_optim.copy():
+            supported_optim.append(OptimizerNames(optim))
+        if kwargs["optim"] not in supported_optim:
+            LOG.info(f"{self.optim} is not supported yet and adamw_torch optimizer is used.")
+            kwargs["optim"] = "adamw_torch"
+        super().__init__(*args, **kwargs)
 
 
 def get_peft_model(*args, **kwargs):
@@ -248,7 +274,11 @@ def get_peft_model(*args, **kwargs):
                                                                   old_create_new_module))
 
     try:
-        from peft import get_peft_model as get_peft_model_original
+        from bigdl.llm.llm_patching import bigdl_patched
+        if bigdl_patched == 'Train':
+            from peft import get_peft_model_original
+        else:
+            from peft import get_peft_model as get_peft_model_original
         model = get_peft_model_original(*args, **kwargs)
     finally:
         LoraModel._create_new_module = old_create_new_module
