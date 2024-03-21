@@ -72,12 +72,12 @@ def llm_patch(train=False, device=None, load_in_low_bit=None):
                  _parse_pretrained(AutoModelForCausalLM.from_pretrained, am_map))
     replace_attr(AutoModel, "from_pretrained",
                  _parse_pretrained(AutoModel.from_pretrained, am_map))
-    
+
     # patch transformers with bigdl
     replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
     replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
     replace_attr(transformers, "AutoModel", AutoModel)
-    
+
     # patch cuda with xpu
     if hasattr(torch, "xpu"):
         replace_attr(torch, "cuda", getattr(torch, "xpu"))
