@@ -53,7 +53,7 @@ def replace_attr(obj, name: str, value):
     attrs.append((obj, name, original_attr))
 
 
-def llm_patch(train=False, device=None):
+def llm_patch(train=False, device=None, load_in_low_bit=None):
     '''
     llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
     with only one-line code patch.
@@ -66,9 +66,10 @@ def llm_patch(train=False, device=None):
 
     # Initial version of patch for llm finetuning, inference support TBD
     from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-    replace_attr(transformers, "AutoModelForCausalLM", _parse_automodel(AutoModelForCausalLM))
-    replace_attr(transformers, "LlamaForCausalLM", _parse_automodel(AutoModelForCausalLM))
-    replace_attr(transformers, "AutoModel", _parse_automodel(AutoModel))
+    am_map = dict(device_map=None, load_in_low_bit=None)
+    replace_attr(transformers, "AutoModelForCausalLM", _parse_automodel(AutoModelForCausalLM, am_map))
+    replace_attr(transformers, "LlamaForCausalLM", _parse_automodel(AutoModelForCausalLM, am_map))
+    replace_attr(transformers, "AutoModel", _parse_automodel(AutoModel, am_map))
     if hasattr(torch, "xpu"):
         replace_attr(torch, "cuda", getattr(torch, "xpu"))
         replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
