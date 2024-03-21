@@ -16,7 +16,7 @@ ARG PIP_NO_CACHE_DIR=false
 RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list && \
     apt-get update && \
-    apt-get install -y curl wget git gnupg gpg-agent && \
+    apt-get install -y wget git && \
     wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
     echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     rm /etc/apt/sources.list.d/intel-graphics.list && \
@@ -25,7 +25,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 git curl wget && \
+    apt-get install -y python3.9&& \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \

@@ -13,7 +13,7 @@ COPY ./start-notebook.sh /llm/start-notebook.sh
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 git curl wget && \
+    apt-get install -y python3.9 git curl && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
@@ -23,8 +23,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --pre --upgrade bigdl-llm[all] && \
 # Download bigdl-llm-tutorial
     cd /llm && \
     pip install --upgrade jupyterlab && \
