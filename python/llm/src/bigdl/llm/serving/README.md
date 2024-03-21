@@ -12,6 +12,7 @@ BigDL-LLM can be easily integrated into FastChat so that user can use `BigDL-LLM
   - [Launch controller](#launch-controller)
   - [Launch model worker(s) and load models](#launch-model-workers-and-load-models)
     - [BigDL model worker](#bigdl-model-worker)
+    - [BigDL worker](#bigdl-llm-worker)
     - [BigDL vLLM model worker](#vllm-model-worker)
   - [Launch Gradio web server](#launch-gradio-web-server)
   - [Launch RESTful API server](#launch-restful-api-server)
@@ -50,8 +51,8 @@ python3 -m fastchat.serve.controller
 
 Using BigDL-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-
-#### BigDL model worker (deprecated...)
+<details>
+<summary>BigDL model worker (deprecated)</summary>
 FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using BigDL-LLM, you need to make some modifications to the model's name.
 
 For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `BigDL-LLM` as backend, you need to change name from `llama-7b-hf` to `bigdl-7b`.The key point here is that the model's path should include "bigdl" and **should not include paths matched by other model adapters**.
@@ -79,6 +80,7 @@ INFO - Converting the current model to sym_int4 format......
 ```
 
 > note: We currently only support int4 quantization for this method.
+</details>
 
 #### BigDL-LLM worker
 To integrate BigDL-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `bigdl_worker.py`.
