@@ -32,10 +32,11 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
-git clone -b v1.1.1 --depth=1 https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 pip install einops # install dependencies required by llava
+git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
+git checkout tags/v1.2.0 -b 1.2.0
 ```
 
 ### 2. Configures OneAPI environment variables
