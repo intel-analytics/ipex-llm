@@ -126,53 +126,49 @@ def baichuan_attention_forward_7b_quantized(
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
                 bsz, self.num_heads, kv_seq_len, self.head_dim,
-                device=device
+                device=device, new_layout=True
             )
             key_states, value_states = append_kv_cache(k_cache, v_cache, key_states, value_states)
             past_key_value = (key_states, value_states)
     else:
         k_cache, v_cache = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                       key_states, value_states)
+                                                       key_states, value_states, new_layout=True)
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
-        else:
-            import linear_q4_0
-            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+            attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-        attn_weights = attn_weights / math.sqrt(self.head_dim)
+            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+                invalidInputError(
+                    False,
+                    f"Attention weights should be of size "
+                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}"
+                    f", but is {attn_weights.size()}"
+                )
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size "
-                f"{(bsz, self.num_heads, q_len, kv_seq_len)}"
-                f", but is {attn_weights.size()}"
-            )
+            if attention_mask is not None:
+                invalidInputError(
+                    attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                    f"but is {attention_mask.size()}"
+                )
+                attn_weights = attn_weights + attention_mask
+                attn_weights = torch.max(attn_weights,
+                                         torch.tensor(torch.finfo(attn_weights.dtype).min))
 
-        if attention_mask is not None:
-            invalidInputError(
-                attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
-                f"but is {attention_mask.size()}"
-            )
-            attn_weights = attn_weights + attention_mask
-            attn_weights = torch.max(attn_weights,
-                                     torch.tensor(torch.finfo(attn_weights.dtype).min))
-
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                             dtype=torch.float32).to(query_states.dtype)
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
+            attn_weights = None
 
     invalidInputError(
         attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
