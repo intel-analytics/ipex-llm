@@ -21,6 +21,7 @@
 
 # Code is adapted from https://python.langchain.com/docs/modules/chains/additional/question_answering.html
 
+import torch
 import argparse
 
 from langchain.vectorstores import Chroma
@@ -38,7 +39,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 LLM: Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
 Orca: Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 Nano: Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
-DLlib: “Equivalent of Spark MLlib” for Deep Learning
+DLlib: "Equivalent of Spark MLlib" for Deep Learning
 Chronos: Scalable Time Series Analysis using AutoML
 Friesian: End-to-End Recommendation Systems
 PPML: Secure Big Data and AI (with SGX Hardware Security)
@@ -63,7 +64,8 @@ def main(args):
     # create embeddings and store into vectordb
     embeddings = TransformersEmbeddings.from_model_id(
         model_id=model_path, 
-        model_kwargs={"trust_remote_code": True}
+        model_kwargs={"trust_remote_code": True},
+        device_map='xpu'
         )
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
@@ -73,6 +75,7 @@ def main(args):
     bigdl_llm = TransformersLLM.from_model_id(
         model_id=model_path,
         model_kwargs={"temperature": 0, "max_length": 1024, "trust_remote_code": True},
+        device_map='xpu'
     )
 
     doc_chain = load_qa_chain(
