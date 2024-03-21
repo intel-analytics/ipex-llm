@@ -32,7 +32,7 @@
 
 import os
 from typing import List
-
+os.environ["ACCELERATE_USE_XPU"] = "true"
 import fire
 import torch
 import transformers
