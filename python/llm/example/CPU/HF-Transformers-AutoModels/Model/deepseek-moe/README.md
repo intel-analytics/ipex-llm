@@ -30,6 +30,9 @@ After setting up the Python environment, you could run the example by following 
 >
 > Please select the appropriate size of the DeepSeek-MoE model based on the capabilities of your machine.
 
+You need to disable flash attention to run this model. To do this, simply replace the file deepseek-moe-16b-chat/modeling_deepseek.py(the original file can be found [here](https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat/blob/main/modeling_deepseek.py)) in the downloaded model path with the file ./modeling_deepseek.py we provided in the current directory.
+
+
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```powershell
