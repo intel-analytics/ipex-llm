@@ -143,12 +143,12 @@ def baichuan_attention_forward_7b_quantized(
         kv_seq_len = key_states.shape[-2]
         k_cache, v_cache = init_fp8_kv_cache(
             bsz, self.num_heads, kv_seq_len, self.head_dim,
-            device=device
+            device=device, new_layout=True
         )
     else:
         k_cache, v_cache = past_key_value
     key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                   key_states, value_states)
+                                                   key_states, value_states, new_layout=True)
 
     past_key_value = (key_states, value_states) if use_cache else None
 
@@ -161,20 +161,17 @@ def baichuan_attention_forward_7b_quantized(
         key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                         query_states.dtype)
         attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
-    else:
-        import linear_q4_0
-        attn_output = linear_q4_0.query_key_fp8_matmul(query_states * scaling_factor, key_states)
 
-    if attention_mask is not None:
-        attn_output += attention_mask
-    attn_output = torch.softmax(attn_output, -1)
-    attn_output = attn_output.to(hidden_states.dtype)
-    if query_states.size(2) != 1 or device.type != 'xpu':
+        if attention_mask is not None:
+            attn_output += attention_mask
+        attn_output = torch.softmax(attn_output, -1)
+        attn_output = attn_output.to(hidden_states.dtype)
         attn_output = torch.matmul(attn_output, value_states)
     else:
         import linear_q4_0
-        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_output,
-                                                        value_states.transpose(-1, -2))
+        attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                          attention_mask)
+        attn_weights = None
     attn_output = attn_output.transpose(1, 2)
 
     attn_output = attn_output.reshape(bsz, q_len, self.num_heads * self.head_dim)

@@ -439,34 +439,26 @@ def qwen_attention_forward_quantized(
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             k_cache, v_cache = init_fp8_kv_cache(
                 query.size(0), self.num_heads, kv_seq_len, self.head_dim,
-                device=query.device,
+                device=query.device, new_layout=True
             )
             key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
     else:
         if decoding_fast_path:
             k_cache, v_cache = layer_past[0], layer_past[1]
-            k_cache = k_cache.transpose(1, 2)
-            v_cache = v_cache.transpose(1, 2)
             # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
-
-            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
-
-            attn_output, attn_weight = core_attn(
-                self, query, key, value, causal_mask, attention_mask, head_mask
-            )
-
         else:
             query, key, value = query.transpose(1, 2), key.transpose(1, 2), value.transpose(1, 2)
             k_cache, v_cache = layer_past[0], layer_past[1]
-            k_cache = k_cache.transpose(1, 2)
-            v_cache = v_cache.transpose(1, 2)
-            # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
 
-            key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
+        k_cache = k_cache.transpose(1, 2)
+        v_cache = v_cache.transpose(1, 2)
+        # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
 
-            attn_output, attn_weight = core_attn(
-                self, query, key, value, causal_mask, attention_mask, head_mask
-            )
+        key, value = append_fp8_kv_cache(k_cache, v_cache, key, value, new_layout=True)
+
+        attn_output, attn_weight = core_attn(
+            self, query, key, value, causal_mask, attention_mask, head_mask
+        )
 
     context_layer = self._merge_heads(
         attn_output, self.num_heads, self.head_dim
@@ -489,44 +481,41 @@ def core_attn(self, query, key, value, causal_mask=None, attention_mask=None, he
         # We have no CPU fp8 matmul implementation for now, so just upscale to fp32
         key, value = restore_fp8_kv_cache(key, value, query.dtype)
         attn_weights = torch.matmul(query, key.transpose(-1, -2))
-    else:
-        import linear_q4_0
-        attn_weights = linear_q4_0.query_key_fp8_matmul(query, key)
 
-    if self.scale_attn_weights:
-        if self.use_cache_quantization:
-            size_temp = value[0].size(-1)
+        if self.scale_attn_weights:
+            if self.use_cache_quantization:
+                size_temp = value[0].size(-1)
+            else:
+                size_temp = value.size(-1)
+            attn_weights = attn_weights / (size_temp ** 0.5)
+
+        mask_value = torch.finfo(attn_weights.dtype).min
+        if causal_mask is not None:
+            attn_weights = torch.where(
+                causal_mask, attn_weights.to(attn_weights.dtype), mask_value
+            )
+
+        if attention_mask is not None:
+            attn_weights = attn_weights + attention_mask
+
+        if self.softmax_in_fp32:
+            attn_weights = torch.nn.functional.softmax(attn_weights.float(), dim=-1)
         else:
-            size_temp = value.size(-1)
-        attn_weights = attn_weights / (size_temp ** 0.5)
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
 
-    mask_value = torch.finfo(attn_weights.dtype).min
-    if causal_mask is not None:
-        attn_weights = torch.where(
-            causal_mask, attn_weights.to(attn_weights.dtype), mask_value
-        )
+        attn_weights = attn_weights.type(query.dtype)
+        attn_weights = self.attn_dropout(attn_weights)
 
-    if attention_mask is not None:
-        attn_weights = attn_weights + attention_mask
+        if head_mask is not None:
+            attn_weights = attn_weights * head_mask
 
-    if self.softmax_in_fp32:
-        attn_weights = torch.nn.functional.softmax(attn_weights.float(), dim=-1)
-    else:
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-
-    attn_weights = attn_weights.type(query.dtype)
-    attn_weights = self.attn_dropout(attn_weights)
-
-    if head_mask is not None:
-        attn_weights = attn_weights * head_mask
-
-    if query.size(2) != 1 or query.device.type != 'xpu':
         # We have no CPU fp8 matmul implementation for now, so just upscale to fp32
         attn_output = torch.matmul(attn_weights, value)
     else:
         import linear_q4_0
-        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value.transpose(-1, -2))
-
+        attn_output = linear_q4_0.sdp_fp8(query, key, value,
+                                          attention_mask)
+        attn_weights = None
     attn_output = attn_output.transpose(1, 2)
 
     return attn_output, attn_weights

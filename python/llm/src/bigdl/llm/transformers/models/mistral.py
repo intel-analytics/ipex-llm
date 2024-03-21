@@ -295,7 +295,7 @@ def mistral_attention_forward_quantized(
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
                 bsz, self.num_heads, kv_seq_len, self.head_dim,
-                device=query_states.device
+                device=query_states.device, new_layout=True
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                            key_states, value_states)
@@ -303,7 +303,7 @@ def mistral_attention_forward_quantized(
     else:
         k_cache, v_cache = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                       key_states, value_states)
+                                                       key_states, value_states, new_layout=True)
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
@@ -311,38 +311,35 @@ def mistral_attention_forward_quantized(
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
-        else:
-            import linear_q4_0
-            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
 
-        attn_weights = attn_weights / math.sqrt(self.head_dim)
+            attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size "
-                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
-
-        if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
                 invalidInputError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                    f" but is {attention_mask.size()}"
+                    False,
+                    f"Attention weights should be of size "
+                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                    f" {attn_weights.size()}"
                 )
-            attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                             dtype=torch.float32).to(query_states.dtype)
+            if attention_mask is not None:
+                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                    invalidInputError(
+                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                        f" but is {attention_mask.size()}"
+                    )
+                attn_weights = attn_weights + attention_mask
 
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
+
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
+            attn_weights = None
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
@@ -658,48 +655,47 @@ def mistral_attention_forward_4_36_quantized(
         if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs)
+                                                             self.layer_idx, cache_kwargs,
+                                                             new_layout=True)
     else:
         cache_kwargs = None  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs)
+                                                         self.layer_idx, cache_kwargs,
+                                                         new_layout=True)
         kv_seq_len = key_states.shape[-2]
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
-        else:
-            import linear_q4_0
-            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
 
-        attn_weights = attn_weights / math.sqrt(self.head_dim)
+            attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size "
-                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
-
-        if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
                 invalidInputError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                    f" but is {attention_mask.size()}"
+                    False,
+                    f"Attention weights should be of size "
+                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                    f" {attn_weights.size()}"
                 )
-            attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                             dtype=torch.float32).to(query_states.dtype)
+            if attention_mask is not None:
+                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                    invalidInputError(
+                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                        f" but is {attention_mask.size()}"
+                    )
+                attn_weights = attn_weights + attention_mask
 
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
+
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
+            attn_weights = None
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
