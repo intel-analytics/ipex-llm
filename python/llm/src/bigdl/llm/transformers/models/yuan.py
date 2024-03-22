@@ -394,7 +394,7 @@ def yuan_attention_forward_origin(
                                                        self.head_dim,
                                                        cache_k.size(2),
                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.d_type,
+                                                       dtype=cache_k.dtype,
                                                        device=device)
             new_cache_k[:] = cache_k
             new_cache_v[:] = cache_v
