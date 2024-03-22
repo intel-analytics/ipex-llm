@@ -36,7 +36,7 @@ def _parse_pretrained(am_fn, map={'device_map': None}):
 def _parse_to(to_fn, map={'device': 'xpu'}):
     def mocked_to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
-        if device and device.type == 'cuda':
+        if device and 'cuda' in device.type:
             if kwargs.get('device', None):
                 kwargs['device'] = map['device']
             else:
