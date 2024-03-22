@@ -16,7 +16,7 @@ runs:
         mvn -version
         
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca
-        pip install albumentations
+        pip install 'albumentations<=1.4.0'
         pip install xgboost==1.5.1
         GLOO_SOCKET_IFNAME=en0 
         chmod a+x python/orca/dev/example/run-example-test-ray.sh
