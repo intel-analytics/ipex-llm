@@ -8,6 +8,7 @@ concurrency:
 permissions:
   contents: read
 
+
 # Controls when the action will run.
 on:
   schedule:
