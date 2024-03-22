@@ -1,0 +1,89 @@
+name: NEW LLM Example Test
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-example-tests-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Controls when the action will run. 
+on:
+  # schedule:
+  #   - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/llm_example_tests.yml'
+      - '.github/workflows/llm-binary-build.yml'
+      - '.github/actions/llm/example-test/action.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
+      - 'python/llm/dev/test/run-example-tests.sh'
+      - 'python/llm/example/**'
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  INT4_CKPT_DIR: ./llm/ggml-actions/stable
+  LLM_DIR: ./llm
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # llm-cpp-build:
+  #   uses: ./.github/workflows/llm-binary-build.yml
+  llm-example-test:
+    # needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        instruction: ["AVX512"]
+    runs-on: [ self-hosted, llm,"${{matrix.instruction}}", ubuntu-20.04-lts ]
+    env:
+      THREAD_NUM: 24
+      BIGDL_COMPATIBLE_MODE: false
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
+        with:
+          repository: "analytics-zoo/bigdl-llm-internal"
+          ref: "ipex-llm-20240318"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
+
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
+      #   env:
+      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Install IPEX-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade ipex-llm[all]
+
+      - name: Run LLM example test
+        uses: ./.github/actions/llm/example-test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      # - name: Clean up test environment
+      #   uses: ./.github/actions/llm/remove-llm-env
+      #   env:
+      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

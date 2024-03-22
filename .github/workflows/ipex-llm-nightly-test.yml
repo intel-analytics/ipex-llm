@@ -1,0 +1,136 @@
+name: NEW LLM Nightly Tests
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-nightly-test-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [main]
+    # paths:
+    #   - ".github/workflows/llm-nightly-test.yml"
+    #   - ".github/actions/llm/setup-llm-env/action.yml"
+    #   - ".github/actions/llm/remove-llm-env/action.yml"
+    #   - ".github/actions/llm/convert-test/action.yml"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # llm-cpp-build:
+  #   uses: ./.github/workflows/llm-binary-build.yml
+  llm-nightly-convert-test:
+    # needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+            instruction: AVX-VNNI-UT
+            python-version: "3.9"
+          - os: ubuntu-20.04-lts
+            instruction: avx512
+            python-version: "3.9"
+    runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
+    env:
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      BIGDL_COMPATIBLE_MODE: false
+    steps:
+      - name: Set model directories
+        shell: bash
+        run: |
+          echo "ORIGIN_DIR=$(pwd)/../llm/origin-models" >> "$GITHUB_ENV"
+          echo "INT4_CKPT_DIR=$(pwd)/../llm/nightly-converted-models" >> "$GITHUB_ENV"
+      - name: Create model directories
+        shell: bash
+        run: |
+          if [ ! -d $ORIGIN_DIR ]; then
+            mkdir -p $ORIGIN_DIR
+          fi
+          if [ ! -d $INT4_CKPT_DIR ]; then
+            mkdir -p $INT4_CKPT_DIR
+          fi
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf" >> "$GITHUB_ENV"
+          echo "GPTNEOX_ORIGIN_PATH=${ORIGIN_DIR}/gptneox-7b-redpajama-bf16" >> "$GITHUB_ENV"
+          echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloomz-7b1" >> "$GITHUB_ENV"
+          echo "STARCODER_ORIGIN_PATH=${ORIGIN_DIR}/gpt_bigcode-santacoder" >> "$GITHUB_ENV"
+
+          echo "LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_q4_0.bin" >> "$GITHUB_ENV"
+          echo "GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_gptneox_q4_0.bin" >> "$GITHUB_ENV"
+          echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin" >> "$GITHUB_ENV"
+          echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_starcoder_q4_0.bin" >> "$GITHUB_ENV"
+      
+      - name: Set access token for Ubuntu
+        if: matrix.os == 'ubuntu-20.04-lts'
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+
+      - name: Set access token for Windows
+        if: matrix.os == 'windows'
+        run: |
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $Env:GITHUB_ENV
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: "analytics-zoo/bigdl-llm-internal"
+          ref: "ipex-llm-20240318"
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
+
+      # - name: Install BigDL-LLM
+      #   uses: ./.github/actions/llm/setup-llm-env
+
+      - name: Install BigDL-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade ipex-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+
+      - name: Download original models & convert
+        uses: ./.github/actions/llm/convert-test
+
+      - name: Upload ckpt to ftp
+        shell: bash
+        if: runner.os == 'Linux' && github.event_name == 'schedule'
+        run: |
+          curl -T $LLAMA_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_llama_7b_q4_0.bin
+          curl -T $GPTNEOX_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_redpajama_7b_q4_0.bin
+          curl -T $BLOOM_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_bloom_7b_q4_0.bin
+          curl -T $STARCODER_INT4_CKPT_PATH ${LLM_FTP_URL}/llm/ggml-actions/nightly/bigdl_llm_santacoder_1b_q4_0.bin
+      - name: Delete ckpt
+        shell: bash
+        run: |
+          rm -rf $LLAMA_INT4_CKPT_PATH
+          rm -rf $GPTNEOX_INT4_CKPT_PATH
+          rm -rf $BLOOM_INT4_CKPT_PATH
+          rm -rf $STARCODER_INT4_CKPT_PATH
+
+  llm-unit-tests:
+    # needs: llm-cpp-build
+    uses: ./.github/workflows/ipex-llm_unit_tests.yml
+  llm-example-test:
+    # needs: llm-cpp-build
+    uses: ./.github/workflows/ipex-llm_example_tests.yml
