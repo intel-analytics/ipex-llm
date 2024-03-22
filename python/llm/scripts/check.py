@@ -50,10 +50,10 @@ def check_torch_version():
     except:
         print("PyTorch is not installed.")
 
-def check_bigdl_version():
+def check_ipex_llm_version():
     import os
-    if os.system("pip show bigdl-llm")!=0:
-        print("BigDL is not installed")
+    if os.system("pip show ipex-llm")!=0:
+        print("ipex-llm is not installed")
 
 
 def check_ipex_version():
@@ -71,7 +71,7 @@ def main():
     print("-----------------------------------------------------------------")
     check_torch_version()
     print("-----------------------------------------------------------------")
-    check_bigdl_version()
+    check_ipex_llm_version()
     print("-----------------------------------------------------------------")
     check_ipex_version()
 

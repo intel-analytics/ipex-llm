@@ -1,0 +1,43 @@
+name: "BigDL-LLM convert tests"
+description: "BigDL-LLM convert test, including downloading original models"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download original models (LLaMA)
+      shell: bash
+      run: |
+        if [ ! -d $LLAMA_ORIGIN_PATH ]; then
+          echo "Directory $LLAMA_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/llama-7b-hf -P $ORIGIN_DIR
+        fi
+
+    - name: Download original models (GPT-NeoX)
+      shell: bash
+      run: |
+        if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
+          echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
+        fi
+
+    - name: Download original models (BLOOM)
+      shell: bash
+      run: |
+        if [ ! -d $BLOOM_ORIGIN_PATH ]; then
+          echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/bloomz-7b1 -P $ORIGIN_DIR
+        fi
+
+    - name: Download original models (StarCoder)
+      shell: bash
+      run: |
+        if [ ! -d $STARCODER_ORIGIN_PATH ]; then
+          echo "Directory $STARCODER_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gpt_bigcode-santacoder -P $ORIGIN_DIR
+        fi
+
+    - name: Convert test
+      shell: bash
+      run: |
+        echo "Running the convert models tests..."
+        python -m pytest -s python/llm/test/convert/test_convert_model.py

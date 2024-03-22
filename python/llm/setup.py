@@ -39,16 +39,16 @@ import copy
 from setuptools import setup
 
 long_description = '''
-    BigDL LLM
+    IPEX LLM
 '''
 
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
-BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VERSION = open(os.path.join(BIGDL_PYTHON_HOME,
-               'version.txt'), 'r').read().strip()
+IPEX_LLM_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VERSION = open(os.path.join(IPEX_LLM_PYTHON_HOME,
+               './llm/version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
-libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
+libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
                'torch',
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
@@ -145,7 +145,7 @@ ext_libs = [
 
 def get_llm_packages():
     llm_packages = []
-    for dirpath, _, _ in os.walk(os.path.join(llm_home, "bigdl")):
+    for dirpath, _, _ in os.walk(os.path.join(llm_home, "ipex_llm")):
         print(dirpath)
         package = dirpath.split(llm_home + os.sep)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
@@ -299,7 +299,7 @@ def setup_package():
 
 
     metadata = dict(
-        name='bigdl-llm',
+        name='ipex_llm',
         version=VERSION,
         description='Large Language Model Develop Toolkit',
         long_description=long_description,
@@ -330,8 +330,8 @@ def setup_package():
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
-            'Linux': ['src/bigdl/llm/cli/llm-cli', 'src/bigdl/llm/cli/llm-chat', 'scripts/bigdl-llm-init'],
-            'Windows': ['src/bigdl/llm/cli/llm-cli.ps1', 'src/bigdl/llm/cli/llm-chat.ps1'],
+            'Linux': ['src/ipex_llm/cli/llm-cli', 'src/ipex_llm/cli/llm-chat', 'scripts/ipex-llm-init'],
+            'Windows': ['src/ipex_llm/cli/llm-cli.ps1', 'src/ipex_llm/cli/llm-chat.ps1'],
         }[platform_name],
         platforms=['windows']
     )
