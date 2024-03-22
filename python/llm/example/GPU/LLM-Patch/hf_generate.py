@@ -31,7 +31,7 @@ import numpy as np
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
-from . import prompt_files as utils
+import prompt_files as utils
 
 
 def get_dtype(dtype: str):
@@ -304,7 +304,7 @@ def main(args: Namespace) -> None:
             input_tokens = torch.sum(
                 encoded_inp['input_ids'] !=
                 tokenizer.pad_token_id,  # type: ignore
-                axis=1).numpy(force=True)
+                axis=1).cpu().numpy()
 
             # Warmup
             if args.warmup and (not done_warmup):
@@ -326,7 +326,7 @@ def main(args: Namespace) -> None:
             maybe_synchronize()
             decode_end = time.time()
             gen_tokens = torch.sum(encoded_gen != tokenizer.pad_token_id,
-                                   axis=1).numpy(force=True)  # type: ignore
+                                   axis=1).cpu().numpy()  # type: ignore
 
             # Print generations
             delimiter = '#' * 100
