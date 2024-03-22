@@ -131,7 +131,7 @@ jobs:
 
   llm-unit-tests:
     # needs: llm-cpp-build
-    uses: ./.github/workflows/ipex-llm_unit_tests.yml
+    uses: ./.github/workflows/ipex-llm-ut.yml
   llm-example-test:
     # needs: llm-cpp-build
-    uses: ./.github/workflows/ipex-llm_example_tests.yml
+    uses: ./.github/workflows/ipex-llm-example.yml
