@@ -9,10 +9,15 @@ Now you can use BigDL-LLM as an Intel GPU accelerated backend of [llama.cpp](htt
 ```
 
 ## 0 Prerequisites
-BigDL-LLM's support for `llama.cpp` now is only avaliable for Linux system, Ubuntu 20.04 or later (Ubuntu 22.04 is preferred). Support for Windows system is still work in progress.
+BigDL-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
 
 ### Linux
-To running on Intel GPU, there are two prerequisites: Intel GPU dervier and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) installation. For more details, please refer to [this installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id1).
+For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
+
+Visit the [Install BigDL-LLM on Linux with Intel GPU](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
+
+### Windows
+Visit the [Install BigDL-LLM on Windows with Intel GPU Guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
 
 ## 1 Install BigDL-LLM for llama.cpp
 
@@ -27,25 +32,40 @@ pip install --pre --upgrade bigdl-llm[cpp]
 
 ## 2 Setup for running llama.cpp
 
-First you should create a directory to use `llama.cpp`, for instance, use following command to create a `~/llama-cpp-bigdl` directory and enter it in Linux system.
+First you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
 ```cmd
-cd ~
-mkdir llama-cpp-bigdl
-cd llama-cpp-bigdl
+mkdir llama-cpp
+cd llama-cpp
 ```
 
 ### Initialize llama.cpp with BigDL-LLM
 
 Then you can use following command to initialize `llama.cpp` with BigDL-LLM:
-```cmd
-init-llama-cpp
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+      
+         init-llama-cpp
+
+      After ``init-llama-cpp``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
+
+      .. image:: https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png
+
+   .. tab:: Windows
+
+      Please run the following command with **administrator privilege in Anaconda Prompt**.
+
+      .. code-block:: bash
+      
+         init-llama-cpp.bat
+
+      After ``init-llama-cpp.bat``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
+
+      .. image:: https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image_windows.png
+
 ```
-
-**After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files and a `convert.py` in current directory.**
-
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png" width=100%; />
-</a>
 
 ```eval_rst
 .. note::
@@ -60,10 +80,21 @@ init-llama-cpp
 Here we provide a simple example to show how to run a community GGUF model with BigDL-LLM.
 
 ### Set Environment Variables
-Configure oneAPI variables by running the following command in bash:
+Configure oneAPI variables by running the following command:
 
-```cmd
-source /opt/intel/oneapi/setvars.sh
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         source /opt/intel/oneapi/setvars.sh
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+
+         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 ```
 
 ### Model Download
@@ -71,14 +102,27 @@ Before running, you should download or copy community GGUF model to your current
 
 ### Run the quantized model
 
-```cmd
-./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
-```
-
 ```eval_rst
-.. note::
+.. tabs::
+   .. tab:: Linux
 
-   For more details about meaning of each parameter, you can use ``./main -h``.
+      .. code-block:: bash
+      
+         ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+      
+      .. note::
+
+      For more details about meaning of each parameter, you can use ``./main -h``.
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+
+         main.exe -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+
+      .. note::
+
+      For more details about meaning of each parameter, you can use ``main.exe -h``.
 ```
 
 ### Sample Output
