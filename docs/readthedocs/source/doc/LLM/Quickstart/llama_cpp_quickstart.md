@@ -32,11 +32,10 @@ pip install --pre --upgrade bigdl-llm[cpp]
 
 ## 2 Setup for running llama.cpp
 
-First you should create a directory to use `llama.cpp`, for instance, use following command to create a `~/llama-cpp-bigdl` directory and enter it.
+First you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
 ```cmd
-cd ~
-mkdir llama-cpp-bigdl
-cd llama-cpp-bigdl
+mkdir llama-cpp
+cd llama-cpp
 ```
 
 ### Initialize llama.cpp with BigDL-LLM
@@ -50,18 +49,21 @@ Then you can use following command to initialize `llama.cpp` with BigDL-LLM:
       
          init-llama-cpp
 
-      **After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files and a `convert.py` in current directory.**
+      After ``init-llama-cpp``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
 
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png">
-      <img src="https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png" width=100%; />
-      </a>
+      .. image:: https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png
 
    .. tab:: Windows
+
       Note, please run the following command with administrator privilege in Anaconda Prompt.
+
       .. code-block:: bash
       
          init-llama-cpp.bat
 
+      After ``init-llama-cpp``, you should see many soft links of `llama.cpp`'s executable files and a ``convert.py`` in current directory.
+
+```
 
 ```eval_rst
 .. note::
@@ -91,15 +93,27 @@ Configure oneAPI variables by running the following command:
       .. code-block:: bash
 
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-
+```
 
 ### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
 
 ### Run the quantized model
 
-```cmd
-./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+      
+         ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+
+         main.exe -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+
 ```
 
 ```eval_rst
