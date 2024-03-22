@@ -61,7 +61,7 @@ Then you can use following command to initialize `llama.cpp` with BigDL-LLM:
       
          init-llama-cpp.bat
 
-      After ``init-llama-cpp``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
+      After ``init-llama-cpp.bat``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
 
       .. image:: https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image_windows.png
 
