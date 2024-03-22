@@ -63,7 +63,6 @@ def llm_patch(train=False, device=None, load_in_low_bit=None):
     if bigdl_patched:
         return
 
-    # Initial version of patch for llm finetuning, inference support TBD
     from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 
     # patch bigdl pretrained
