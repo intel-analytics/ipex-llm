@@ -18,7 +18,7 @@ import torch, transformers
 import sys, os, time
 import argparse
 from transformers import LlamaTokenizer
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
 # Refer to https://huggingface.co/IEITYuan/Yuan2-2B-hf#Usage
 YUAN2_PROMPT_FORMAT = """

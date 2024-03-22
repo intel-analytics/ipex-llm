@@ -13,7 +13,7 @@ BigDL-LLM provides ``TransformersLLM`` and ``TransformersPipelineLLM``, which im
 
     .. tab:: AutoModel
 
-        .. automodule:: bigdl.llm.langchain.llms.transformersllm
+        .. automodule:: ipex_llm.langchain.llms.transformersllm
             :members:
             :undoc-members:
             :show-inheritance:
@@ -21,7 +21,7 @@ BigDL-LLM provides ``TransformersLLM`` and ``TransformersPipelineLLM``, which im
 
     .. tab:: pipeline
 
-        .. automodule:: bigdl.llm.langchain.llms.transformerspipelinellm
+        .. automodule:: ipex_llm.langchain.llms.transformerspipelinellm
             :members:
             :undoc-members:
             :show-inheritance:
@@ -37,7 +37,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Llama
 
-        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.LlamaLLM
+        .. autoclass:: ipex_llm.langchain.llms.bigdlllm.LlamaLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -49,7 +49,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: ChatGLM
 
-        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.ChatGLMLLM
+        .. autoclass:: ipex_llm.langchain.llms.bigdlllm.ChatGLMLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -61,7 +61,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Bloom
 
-        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.BloomLLM
+        .. autoclass:: ipex_llm.langchain.llms.bigdlllm.BloomLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -73,7 +73,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Gptneox
 
-        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.GptneoxLLM
+        .. autoclass:: ipex_llm.langchain.llms.bigdlllm.GptneoxLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -85,7 +85,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Starcoder
 
-        .. autoclass:: bigdl.llm.langchain.llms.bigdlllm.StarcoderLLM
+        .. autoclass:: ipex_llm.langchain.llms.bigdlllm.StarcoderLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -102,7 +102,7 @@ Embeddings Wrapper of LangChain
 Hugging Face ``transformers`` AutoModel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: bigdl.llm.langchain.embeddings.transformersembeddings
+.. automodule:: ipex_llm.langchain.embeddings.transformersembeddings
     :members:
     :undoc-members:
     :show-inheritance:
@@ -117,7 +117,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Llama
 
-        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.LlamaEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.bigdlllm.LlamaEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
@@ -129,7 +129,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Bloom
 
-        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.BloomEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.bigdlllm.BloomEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
@@ -141,7 +141,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Gptneox
 
-        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.GptneoxEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.bigdlllm.GptneoxEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
@@ -153,7 +153,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Starcoder
 
-        .. autoclass:: bigdl.llm.langchain.embeddings.bigdlllm.StarcoderEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.bigdlllm.StarcoderEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:

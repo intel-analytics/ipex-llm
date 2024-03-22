@@ -71,11 +71,11 @@ conda activate autogen
 cd autogen
 
 # load the local model with xpu with your downloaded model
-python -m bigdl.llm.serving.model_worker --model-path ... --device xpu
+python -m ipex_llm.serving.model_worker --model-path ... --device xpu
 ```
 
 Model Name Note:
-> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device xpu`. This ensures the proper usage of the BigDL-adapted FastChat.
+> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m ipex_llm.serving.model_worker --model-path ... --device xpu`. This ensures the proper usage of the BigDL-adapted FastChat.
 
 Device Note:
 > Please set `--device` to `xpu` to enable the Intel GPU usage.

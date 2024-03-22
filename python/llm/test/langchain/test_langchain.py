@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.llm.langchain.embeddings import *
-from bigdl.llm.langchain.llms import *
+from ipex_llm.langchain.embeddings import *
+from ipex_llm.langchain.llms import *
 import pytest
 from unittest import TestCase
 import os

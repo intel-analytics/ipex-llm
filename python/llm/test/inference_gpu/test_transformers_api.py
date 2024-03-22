@@ -20,7 +20,7 @@ import pytest
 import tempfile
 
 import torch
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel, AutoModelForSpeechSeq2Seq
+from ipex_llm.transformers import AutoModelForCausalLM, AutoModel, AutoModelForSpeechSeq2Seq
 from transformers import LlamaTokenizer, AutoTokenizer
 
 device = os.environ['DEVICE']

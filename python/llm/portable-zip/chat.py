@@ -51,7 +51,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 from colorama import Fore
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from kv_cache import StartRecentKVCache
 
 HUMAN_ID = "<human>"

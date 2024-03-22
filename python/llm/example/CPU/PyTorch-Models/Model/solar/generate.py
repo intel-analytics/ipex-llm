@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # you could tune the prompt based on your own model,
 # prompt format is tuned based on the output example in this link:

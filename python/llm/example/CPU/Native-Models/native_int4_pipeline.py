@@ -16,11 +16,11 @@
 
 import time
 import argparse
-from bigdl.llm.transformers import *
+from ipex_llm.transformers import *
 
 
 def convert(repo_id_or_model_path, model_family, tmp_path):
-    from bigdl.llm import llm_convert
+    from ipex_llm import llm_convert
     original_llm_path = repo_id_or_model_path
     bigdl_llm_path = llm_convert(
         model=original_llm_path,

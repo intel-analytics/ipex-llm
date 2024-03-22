@@ -141,9 +141,9 @@ def get_train_val_data(data, tokenizer, prompter, train_on_inputs,
 def merge_adapter(base_model, tokenizer, adapter_path, output_path):
     """Merge the adapter into the original model and save"""
     import torch
-    from bigdl.llm.transformers.qlora import PeftModel, LoraConfig
-    from bigdl.llm.transformers import AutoModelForCausalLM
-    from bigdl.llm.transformers.low_bit_linear import get_block_size
+    from ipex_llm.transformers.qlora import PeftModel, LoraConfig
+    from ipex_llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers.low_bit_linear import get_block_size
     import tempfile
     import shutil
 

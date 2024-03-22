@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 import intel_extension_for_pytorch as ipex
 import numpy as np
 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModelForCausalLM
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,

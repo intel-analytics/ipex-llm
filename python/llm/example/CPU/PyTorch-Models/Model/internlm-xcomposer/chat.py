@@ -20,7 +20,7 @@ import torch
 import time
 import os
 import argparse
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for InternLM-XComposer model')

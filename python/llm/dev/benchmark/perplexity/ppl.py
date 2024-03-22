@@ -20,7 +20,7 @@ from torch.nn import CrossEntropyLoss
 from tqdm import tqdm
 import gc
 
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
 
 class BigDLPPL:
     def __init__(self, model_path, device, **model_kwargs) -> None:

@@ -21,7 +21,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 torch.manual_seed(1234)
 

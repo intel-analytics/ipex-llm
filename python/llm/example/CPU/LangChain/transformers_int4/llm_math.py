@@ -25,7 +25,7 @@
 import argparse
 
 from langchain.chains import LLMMathChain
-from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
+from ipex_llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
 
 
 def main(args):

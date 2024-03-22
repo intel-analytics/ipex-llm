@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM, GenerationConfig
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/microsoft/phi-2

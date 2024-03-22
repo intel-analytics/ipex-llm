@@ -22,7 +22,7 @@ from thefuzz import process
 from transformers import AutoTokenizer
 
 from evaluators.evaluator import Evaluator
-from bigdl.llm.transformers import AutoModel
+from ipex_llm.transformers import AutoModel
 from transformers.generation.utils import LogitsProcessorList
 from transformers.generation.logits_process import LogitsProcessor
 

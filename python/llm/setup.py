@@ -311,11 +311,11 @@ def setup_package():
         packages=get_llm_packages(),
         package_dir={"": "src"},
         package_data={
-            "bigdl.llm": package_data[platform_name] + ["cli/prompts/*.txt"] + ["transformers/gguf/models/model_implement/*/*.json"]},
+            "ipex_llm": package_data[platform_name] + ["cli/prompts/*.txt"] + ["transformers/gguf/models/model_implement/*/*.json"]},
         include_package_data=True,
         entry_points={
             "console_scripts": [
-                'llm-convert=bigdl.llm.convert_model:main'
+                'llm-convert=ipex_llm.convert_model:main'
             ]
         },
         extras_require={"all": all_requires,

@@ -21,7 +21,7 @@
 
 import argparse
 
-from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
+from ipex_llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
 from langchain import PromptTemplate, LLMChain
 from langchain import HuggingFacePipeline
 

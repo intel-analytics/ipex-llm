@@ -15,7 +15,7 @@
 #
 
 from transformers import LlamaTokenizer
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 import torch
 import argparse
 

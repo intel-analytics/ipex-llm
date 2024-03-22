@@ -15,7 +15,7 @@
 #
 
 
-import bigdl.llm
+import ipex_llm
 import pytest
 from unittest import TestCase
 
@@ -23,8 +23,8 @@ from unittest import TestCase
 class Test_LLM_Basics(TestCase):
 
     def test_naive(self):
-        from bigdl.llm.ggml import quantize
-        from bigdl.llm.utils.common import invalidInputError
+        from ipex_llm.ggml import quantize
+        from ipex_llm.utils.common import invalidInputError
         pass
 
 

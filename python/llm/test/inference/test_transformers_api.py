@@ -22,7 +22,7 @@ import time
 import torch
 import pytest
 
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq
+from ipex_llm.transformers import AutoModel, AutoModelForCausalLM, AutoModelForSpeechSeq2Seq
 from transformers import AutoTokenizer, LlamaTokenizer
 
 class TestTransformersAPI(unittest.TestCase):
@@ -93,7 +93,7 @@ class TestTransformersAPI(unittest.TestCase):
         self.assertTrue(res)
 
     def test_transformers_chatglm_for_causallm(self):
-        from bigdl.llm.transformers import ChatGLMForCausalLM
+        from ipex_llm.transformers import ChatGLMForCausalLM
         model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         model = ChatGLMForCausalLM.from_pretrained(model_path, native=False, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)

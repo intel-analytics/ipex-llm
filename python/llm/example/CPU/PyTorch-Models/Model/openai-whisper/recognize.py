@@ -19,7 +19,7 @@ import whisper
 import time
 import librosa
 import argparse
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':

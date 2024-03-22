@@ -15,7 +15,7 @@
 #
 
 import argparse
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer, TextGenerationPipeline
 
 if __name__ == '__main__':
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         model = AutoModelForCausalLM.load_low_bit(load_path)
         tokenizer = LlamaTokenizer.from_pretrained(load_path)
     else:
-        # load_in_low_bit in bigdl.llm.transformers will convert
+        # load_in_low_bit in ipex_llm.transformers will convert
         # the relevant layers in the model into corresponding int X format
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)

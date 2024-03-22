@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoTokenizer
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/Deci/DeciLM-7B-instruct#prompt-template

@@ -28,7 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import AutoTokenizer
 # from transformers import AutoModelForCausalLM, AutoModel
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers.generation import GenerationConfig, TextIteratorStreamer
 from transformers import StoppingCriteriaList, StoppingCriteria
 from sse_starlette.sse import EventSourceResponse

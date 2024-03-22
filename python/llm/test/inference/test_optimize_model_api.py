@@ -19,7 +19,7 @@ import os
 import pytest
 import time
 import torch
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
         
 class TestOptimizeAPI(unittest.TestCase):
 

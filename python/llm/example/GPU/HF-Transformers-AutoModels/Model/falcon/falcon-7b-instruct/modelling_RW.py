@@ -301,7 +301,7 @@ class Attention(nn.Module):
             # resize qk to 4D to match apply_rotary_pos_emb_no_cache_xpu's requirements.
             query_layer = query_layer.reshape(batch_size, self.num_heads, q_length, self.head_dim)
             key_layer = key_layer.reshape(batch_size, self.num_kv, q_length, self.head_dim)
-            from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+            from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
             query_layer, key_layer = apply_rotary_pos_emb_no_cache_xpu(query_layer,
                                                                        key_layer,
                                                                        position_ids,

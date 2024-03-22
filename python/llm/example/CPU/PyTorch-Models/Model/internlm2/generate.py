@@ -19,7 +19,7 @@ import time
 import argparse
 import numpy as np
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
 
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True)

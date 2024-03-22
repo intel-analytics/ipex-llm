@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # prompt format referred from https://github.com/baichuan-inc/Baichuan2/issues/227 
 # and https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat/blob/main/generation_utils.py#L7-L49

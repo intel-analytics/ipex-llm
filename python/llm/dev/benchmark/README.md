@@ -7,7 +7,7 @@ Just put this file into your benchmark directory, and then wrap your transformer
 Take `chatglm-6b` as an example:
 ```python
 import torch
-from bigdl.llm.transformers import AutoModel
+from ipex_llm.transformers import AutoModel
 from transformers import AutoTokenizer
 from benchmark_util import BenchmarkWrapper
 
@@ -35,7 +35,7 @@ Take `chatglm-6b` as an example:
 ```python
 import torch
 import intel_extension_for_pytorch as ipex
-from bigdl.llm.transformers import AutoModel
+from ipex_llm.transformers import AutoModel
 from transformers import AutoTokenizer
 from benchmark_util import BenchmarkWrapper
 

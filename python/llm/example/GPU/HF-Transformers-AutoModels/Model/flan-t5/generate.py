@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForSeq2SeqLM
+from ipex_llm.transformers import AutoModelForSeq2SeqLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,

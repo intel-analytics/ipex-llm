@@ -19,7 +19,7 @@ import time
 import argparse
 import numpy as np
 
-from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM
+from ipex_llm.transformers import AutoModel,AutoModelForCausalLM
 from transformers import AutoTokenizer, GenerationConfig
 
 # you could tune the prompt based on your own model,

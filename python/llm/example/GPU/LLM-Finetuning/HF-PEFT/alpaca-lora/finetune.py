@@ -30,7 +30,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bigdl.llm import llm_patch
+from ipex_llm import llm_patch
 llm_patch(train=True)
 
 # The following is the original LLM finetuning code using PEFT (without BigDL-LLM)

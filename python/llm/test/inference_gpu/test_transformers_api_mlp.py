@@ -19,7 +19,7 @@ import gc
 import pytest
  
 import torch
-from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
+from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
  
 device = os.environ['DEVICE']

@@ -73,7 +73,7 @@ To fully utilize the continuous batching feature of the `vLLM`, you can send req
 #!/bin/bash
 # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
 # of batched prompt length the server will accept
-python -m bigdl.llm.vllm.entrypoints.openai.api_server \
+python -m ipex_llm.vllm.entrypoints.openai.api_server \
         --model /MODEL_PATH/Llama-2-7b-chat-hf/ --port 8000  \
         --load-format 'auto' --device xpu --dtype bfloat16 \
         --load-in-low-bit sym_int4 \

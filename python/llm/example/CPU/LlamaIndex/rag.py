@@ -164,7 +164,7 @@ def main(args):
     embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
     
     # Use custom LLM in BigDL
-    from bigdl.llm.llamaindex.llms import BigdlLLM
+    from ipex_llm.llamaindex.llms import BigdlLLM
     llm = BigdlLLM(
         model_name=args.model_path,
         tokenizer_name=args.model_path,

@@ -20,7 +20,7 @@ import argparse
 import numpy as np
 
 from transformers import AutoTokenizer, GenerationConfig
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to  # TODO: https://huggingface.co/microsoft/phi-1_5/blob/main/modeling_mixformer_sequential.py
 PHI1_5_PROMPT_FORMAT = " Question:{prompt}\n\n Answer:"

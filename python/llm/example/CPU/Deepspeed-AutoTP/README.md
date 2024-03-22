@@ -39,7 +39,7 @@ Distributed model managed by deepspeed can be further optimized with BigDL low-b
 
 ```python
 # Apply BigDL-LLM INT4 optimizations on transformers
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
 model = model.to(f'cpu:{local_rank}') # move partial model to local rank

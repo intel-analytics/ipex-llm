@@ -23,7 +23,7 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from bigdl.llm.langchain.llms import *
+from ipex_llm.langchain.llms import *
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler

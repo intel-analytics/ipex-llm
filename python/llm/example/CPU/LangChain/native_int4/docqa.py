@@ -31,8 +31,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from bigdl.llm.langchain.llms import *
-from bigdl.llm.langchain.embeddings import *
+from ipex_llm.langchain.llms import *
+from ipex_llm.langchain.embeddings import *
 
 
 def main(args):

@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
+from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers import WhisperProcessor
 from datasets import load_dataset
 

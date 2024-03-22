@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
 from transformers import AutoTokenizer, LlamaTokenizer
 from transformers.generation import GenerationConfig
 import torch
 import time
 import os
 import argparse
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 torch.manual_seed(1234)
 
 if __name__ == '__main__':

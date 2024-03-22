@@ -21,7 +21,7 @@ import torch
 import json
 from tqdm import tqdm
 
-from bigdl.llm.utils.common.log4Error import invalidInputError
+from ipex_llm.utils.common.log4Error import invalidInputError
 from evaluators.qwen import QwenEvaluator
 from evaluators.llama import LlamaEvaluator
 from evaluators.chatglm import ChatGLMEvaluator

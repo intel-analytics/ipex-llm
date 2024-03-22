@@ -47,11 +47,11 @@ from peft import (
 from utils.prompter import Prompter
 
 from transformers import BitsAndBytesConfig
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
-# import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
-from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
-from bigdl.llm.utils.isa_checker import ISAChecker
+# import them from ipex_llm.transformers.qlora to get a BigDL-LLM compatible Peft model
+from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
+from ipex_llm.utils.isa_checker import ISAChecker
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""

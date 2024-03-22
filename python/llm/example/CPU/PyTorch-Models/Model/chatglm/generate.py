@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoModel, AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/THUDM/chatglm-6b/blob/294cb13118a1e08ad8449ca542624a5c6aecc401/modeling_chatglm.py#L1281

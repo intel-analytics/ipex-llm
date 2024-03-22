@@ -20,7 +20,7 @@ import argparse
 import numpy as np
 
 from transformers import AutoModel, AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':

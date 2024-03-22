@@ -19,7 +19,7 @@ import intel_extension_for_pytorch as ipex
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,

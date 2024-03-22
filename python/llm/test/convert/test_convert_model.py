@@ -20,9 +20,9 @@ import tempfile
 from unittest import TestCase
 import shutil
 
-from bigdl.llm import llm_convert
-from bigdl.llm.transformers import AutoModelForCausalLM
-from bigdl.llm.optimize import optimize_model, load_low_bit, low_memory_init
+from ipex_llm import llm_convert
+from ipex_llm.transformers import AutoModelForCausalLM
+from ipex_llm.optimize import optimize_model, load_low_bit, low_memory_init
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')

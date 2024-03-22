@@ -30,7 +30,7 @@ from transformers.models.llama.modeling_llama import LlamaRotaryEmbedding
 from transformers.models.llama.modeling_llama import (
     apply_rotary_pos_emb as apply_rotary_pos_emb_llama,
 )
-from bigdl.llm.transformers.layers.rope_embedding import apply_fast_rope_embedding
+from ipex_llm.transformers.layers.rope_embedding import apply_fast_rope_embedding
 
 device = os.environ['DEVICE']
 print(f'Running on {device}')

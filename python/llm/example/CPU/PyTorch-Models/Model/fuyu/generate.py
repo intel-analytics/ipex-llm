@@ -19,7 +19,7 @@ import torch
 import argparse
 import time
 from PIL import Image
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Fuyu model')

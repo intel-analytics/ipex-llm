@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model,

@@ -15,7 +15,7 @@
 #
 
 import torch
-from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
 from transformers import AutoTokenizer
 import argparse
 import time

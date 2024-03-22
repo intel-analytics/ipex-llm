@@ -14,7 +14,7 @@ model = LlamaForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', torch_
 
 Then, just need to call `optimize_model` to optimize the loaded model and INT4 optimization is applied on model by default: 
 ```python
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # With only one line to enable BigDL-LLM INT4 optimization
 model = optimize_model(model)
@@ -31,7 +31,7 @@ Currently, ``low_bit`` supports options 'sym_int4', 'asym_int4', 'sym_int5', 'as
 You may apply symmetric INT8 optimization as follows:
 
 ```python
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # Apply symmetric INT8 optimization
 model = optimize_model(model, low_bit="sym_int8")
@@ -51,7 +51,7 @@ model.save_low_bit(saved_dir)
 
 We recommend to use the context manager `low_memory_init` to quickly initiate a model instance with low cost, and then use `load_low_bit` to load the optimized low-bit model as follows:
 ```python
-from bigdl.llm.optimize import low_memory_init, load_low_bit
+from ipex_llm.optimize import low_memory_init, load_low_bit
 with low_memory_init(): # Fast and low cost by loading model on meta device
    model = LlamaForCausalLM.from_pretrained(saved_dir,
                                             torch_dtype="auto",

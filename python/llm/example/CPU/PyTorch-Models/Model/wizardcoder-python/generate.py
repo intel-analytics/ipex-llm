@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoModelForCausalLM, LlamaTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 WIZARDCODERPYTHON_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 

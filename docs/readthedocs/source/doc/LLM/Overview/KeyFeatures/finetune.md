@@ -21,7 +21,7 @@ To help you better understand the finetuning process, here we use model [Llama-2
 First, load model using `transformers`-style API and **set it to `to('xpu')`**. We specify `load_in_low_bit="nf4"` here to apply 4-bit NormalFloat optimization. According to the [QLoRA paper](https://arxiv.org/pdf/2305.14314.pdf), using `"nf4"` could yield better model quality than `"int4"`.
 
 ```python
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf",
                                              load_in_low_bit="nf4",
@@ -33,14 +33,14 @@ model = model.to('xpu')
 
 Then, we have to apply some preprocessing to the model to prepare it for training.
 ```python
-from bigdl.llm.transformers.qlora import prepare_model_for_kbit_training
+from ipex_llm.transformers.qlora import prepare_model_for_kbit_training
 model.gradient_checkpointing_enable()
 model = prepare_model_for_kbit_training(model)
 ```
 
 Next, we can obtain a Peft model from the optimized model and a configuration object containing the parameters as follows:
 ```python
-from bigdl.llm.transformers.qlora import get_peft_model
+from ipex_llm.transformers.qlora import get_peft_model
 from peft import LoraConfig
 config = LoraConfig(r=8, 
                     lora_alpha=32, 
@@ -54,7 +54,7 @@ model = get_peft_model(model, config)
 ```eval_rst
 .. important::
 
-   Instead of ``from peft import prepare_model_for_kbit_training, get_peft_model`` as we did for regular QLoRA using bitandbytes and cuda, we import them from ``bigdl.llm.transformers.qlora`` here to get a BigDL-LLM compatible Peft model. And the rest is just the same as regular LoRA finetuning process using ``peft``.
+   Instead of ``from peft import prepare_model_for_kbit_training, get_peft_model`` as we did for regular QLoRA using bitandbytes and cuda, we import them from ``ipex_llm.transformers.qlora`` here to get a BigDL-LLM compatible Peft model. And the rest is just the same as regular LoRA finetuning process using ``peft``.
 ```
 
 ```eval_rst

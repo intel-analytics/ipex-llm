@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     model = optimize_model(model)
     
     prompt = args.prompt

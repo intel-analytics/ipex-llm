@@ -18,7 +18,7 @@ import argparse
 import time
 import torch
 import intel_extension_for_pytorch as ipex
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from transformers import AutoTokenizer
 
 from model import MambaLMHeadModel

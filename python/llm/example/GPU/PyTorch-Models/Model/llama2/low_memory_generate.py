@@ -32,8 +32,8 @@ from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationMixin
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
-from bigdl.llm import optimize_model
-from bigdl.llm.transformers.low_bit_linear import FP4Params, LowBitLinear
+from ipex_llm import optimize_model
+from ipex_llm.transformers.low_bit_linear import FP4Params, LowBitLinear
 
 MAX_LENGTH = 4096
 # you could tune the prompt based on your own model,

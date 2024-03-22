@@ -23,9 +23,9 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from bigdl.llm.langchain.llms import TransformersLLM
+from ipex_llm.langchain.llms import TransformersLLM
 from langchain.memory import ConversationBufferWindowMemory
-from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
+from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers import WhisperProcessor
 import speech_recognition as sr
 import numpy as np

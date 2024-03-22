@@ -49,7 +49,7 @@ import urllib.request
 import os
 import json
 # code change to import from bigdl-llm API instead of using transformers API
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 import intel_extension_for_pytorch as ipex
 

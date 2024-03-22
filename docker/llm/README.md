@@ -223,7 +223,7 @@ This controller manages the distributed workers.
 
 ##### Launch the model worker(s)
 ```bash
-python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
+python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
 ```
 Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
@@ -252,7 +252,7 @@ python3 -m fastchat.serve.controller
 Then, launch the model worker(s):
 
 ```bash
-python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
+python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
 ```
 
 Finally, launch the RESTful API server
@@ -319,7 +319,7 @@ This controller manages the distributed workers.
 
 ##### Launch the model worker(s)
 ```bash
-python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
+python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
 ```
 Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
@@ -346,7 +346,7 @@ python3 -m fastchat.serve.controller
 Then, launch the model worker(s):
 
 ```bash
-python3 -m bigdl.llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
+python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
 ```
 
 Finally, launch the RESTful API server

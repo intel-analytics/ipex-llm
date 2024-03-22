@@ -17,8 +17,8 @@
 import torch
 import time
 import argparse
-from bigdl.llm import optimize_model
-from bigdl.llm.optimize import low_memory_init, load_low_bit
+from ipex_llm import optimize_model
+from ipex_llm.optimize import low_memory_init, load_low_bit
 from transformers import AutoModelForCausalLM, LlamaTokenizer
 
 # you could tune the prompt based on your own model,

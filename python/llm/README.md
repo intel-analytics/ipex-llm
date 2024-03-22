@@ -146,7 +146,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* model on Int
 
 ```python
 #load Hugging Face Transformers model with INT4 optimizations
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
 #run the optimized model on Intel CPU
@@ -164,7 +164,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* model on Int
 
 ```python
 #load Hugging Face Transformers model with INT4 optimizations
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 import intel_extension_for_pytorch
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
@@ -206,13 +206,13 @@ You may also convert Hugging Face *Transformers* models into native INT4 model f
   
 ```python
 #convert the model
-from bigdl.llm import llm_convert
+from ipex_llm import llm_convert
 bigdl_llm_path = llm_convert(model='/path/to/model/',
         outfile='/path/to/output/', outtype='int4', model_family="llama")
 
 #load the converted model
 #switch to ChatGLMForCausalLM/GptneoxForCausalLM/BloomForCausalLM/StarcoderForCausalLM to load other models
-from bigdl.llm.transformers import LlamaForCausalLM
+from ipex_llm.transformers import LlamaForCausalLM
 llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", native=True, ...)
   
 #run the converted model
@@ -231,8 +231,8 @@ You may run the models using the LangChain API in `bigdl-llm`.
   You may run any Hugging Face *Transformers* model (with INT4 optimiztions applied) using the LangChain API as follows:
 
   ```python
-  from bigdl.llm.langchain.llms import TransformersLLM
-  from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+  from ipex_llm.langchain.llms import TransformersLLM
+  from ipex_llm.langchain.embeddings import TransformersEmbeddings
   from langchain.chains.question_answering import load_qa_chain
 
   embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
@@ -250,8 +250,8 @@ You may run the models using the LangChain API in `bigdl-llm`.
   >**Notes**:* Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face `transformers` model format as described above).
 
   ```python
-  from bigdl.llm.langchain.llms import LlamaLLM
-  from bigdl.llm.langchain.embeddings import LlamaEmbeddings
+  from ipex_llm.langchain.llms import LlamaLLM
+  from ipex_llm.langchain.embeddings import LlamaEmbeddings
   from langchain.chains.question_answering import load_qa_chain
 
   #switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models

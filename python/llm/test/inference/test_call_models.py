@@ -15,8 +15,8 @@
 #
 
 
-from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
-from bigdl.llm.transformers import LlamaForCausalLM, BloomForCausalLM, \
+from ipex_llm.models import Llama, Bloom, Gptneox, Starcoder
+from ipex_llm.transformers import LlamaForCausalLM, BloomForCausalLM, \
     GptneoxForCausalLM, StarcoderForCausalLM
 import pytest
 from unittest import TestCase

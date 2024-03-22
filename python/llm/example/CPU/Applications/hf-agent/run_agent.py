@@ -19,7 +19,7 @@ import argparse
 from PIL import Image
 from transformers import AutoTokenizer, LocalAgent
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run agent using vicuna model")

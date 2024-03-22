@@ -21,7 +21,7 @@
 
 import argparse
 
-from bigdl.llm.langchain.llms import *
+from ipex_llm.langchain.llms import *
 from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler

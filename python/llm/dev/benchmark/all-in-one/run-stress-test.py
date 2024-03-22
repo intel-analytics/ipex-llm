@@ -31,7 +31,7 @@ benchmark_util_path = os.path.join(current_dir, '..')
 import sys
 sys.path.append(benchmark_util_path)
 from benchmark_util import BenchmarkWrapper
-from bigdl.llm.utils.common.log4Error import invalidInputError
+from ipex_llm.utils.common.log4Error import invalidInputError
 
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
@@ -85,7 +85,7 @@ def run_transformer_int4(repo_id,
                          num_trials,
                          num_beams,
                          low_bit):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
@@ -149,7 +149,7 @@ def run_transformer_int4_gpu(repo_id,
                              num_trials,
                              num_beams,
                              low_bit):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
     reserved_mem_list = []

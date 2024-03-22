@@ -23,7 +23,7 @@ import fire
 from llama import Llama
 from typing import List
 
-from bigdl.llm.optimize import optimize_model
+from ipex_llm.optimize import optimize_model
 
 def main(
     ckpt_dir: str,

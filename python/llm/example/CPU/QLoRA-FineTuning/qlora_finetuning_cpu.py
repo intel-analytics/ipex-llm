@@ -21,11 +21,11 @@ import transformers
 from transformers import LlamaTokenizer
 
 from transformers import BitsAndBytesConfig
-from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
+from ipex_llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
 import argparse
-from bigdl.llm.utils.isa_checker import ISAChecker
+from ipex_llm.utils.isa_checker import ISAChecker
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 common_util_path = os.path.join(current_dir, '..', '..', 'GPU', 'LLM-Finetuning')

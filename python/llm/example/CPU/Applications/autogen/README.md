@@ -69,11 +69,11 @@ conda activate autogen
 cd autogen
 
 # load the local model with cpu with your downloaded model
-python -m bigdl.llm.serving.model_worker --model-path ... --device cpu
+python -m ipex_llm.serving.model_worker --model-path ... --device cpu
 ```
 
 Change the Model Name:
-> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m bigdl.llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL-adapted FastChat.
+> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m ipex_llm.serving.model_worker --model-path ... --device cpu`. This ensures the proper usage of the BigDL-adapted FastChat.
 
 Potential Error Note:
 > If you get `RuntimeError: Error register to Controller` in the worker terminal, please set `export no_proxy='localhost'` to ensure the registration

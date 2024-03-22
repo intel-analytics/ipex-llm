@@ -18,7 +18,7 @@ import torch
 import pytest
 from unittest import TestCase
 import os
-from bigdl.llm.llamaindex.llms import BigdlLLM
+from ipex_llm.llamaindex.llms import BigdlLLM
 
 class Test_LlamaIndex_Transformers_API(TestCase):
     def setUp(self):

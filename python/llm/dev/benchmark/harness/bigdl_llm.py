@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
 import inspect
 from lm_eval.models.huggingface import AutoCausalLM

@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
 
 WIZARDCODERPYTHON_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.

@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 from transformers.generation import GenerationConfig
 import torch
 import time
 import os
 import argparse
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for InternLM-XComposer model')

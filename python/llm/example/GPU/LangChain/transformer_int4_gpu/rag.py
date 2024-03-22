@@ -31,8 +31,8 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks.manager import CallbackManager
 
-from bigdl.llm.langchain.llms import TransformersLLM
-from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+from ipex_llm.langchain.llms import TransformersLLM
+from ipex_llm.langchain.embeddings import TransformersEmbeddings
 
 text_doc = '''
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:

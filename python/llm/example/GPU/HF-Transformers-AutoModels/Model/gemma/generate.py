@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # The instruction-tuned models use a chat template that must be adhered to for conversational use.

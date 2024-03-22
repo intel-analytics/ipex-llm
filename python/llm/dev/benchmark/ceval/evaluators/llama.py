@@ -22,7 +22,7 @@ import numpy as np
 import torch
 from transformers import LlamaTokenizer, GenerationConfig
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from evaluators.evaluator import Evaluator
 
 

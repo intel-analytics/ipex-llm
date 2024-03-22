@@ -34,7 +34,7 @@
 import json
 import os.path as osp
 from typing import Union
-from bigdl.llm.utils.common import invalidInputError
+from ipex_llm.utils.common import invalidInputError
 
 
 class Prompter(object):

@@ -135,9 +135,9 @@ else
   done
 
   if [ "$worker_type" == "model_worker" ]; then
-      worker_type="bigdl.llm.serving.model_worker"
+      worker_type="ipex_llm.serving.model_worker"
   elif [ "$worker_type" == "vllm_worker" ]; then
-      worker_type="bigdl.llm.serving.vllm_worker"
+      worker_type="ipex_llm.serving.vllm_worker"
   fi
 
   if [[ -n $CONTROLLER_HOST ]]; then
@@ -220,9 +220,9 @@ else
     echo "Worker type: $worker_type"
     echo "Worker address: $worker_address"
     echo "Controller address: $controller_address"
-    if [ "$worker_type" == "bigdl.llm.serving.model_worker" ]; then
+    if [ "$worker_type" == "ipex_llm.serving.model_worker" ]; then
       python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address --stream-interval $stream_interval
-    elif [ "$worker_type" == "bigdl.llm.serving.vllm_worker" ]; then
+    elif [ "$worker_type" == "ipex_llm.serving.vllm_worker" ]; then
       python3 -m "$worker_type" --model-path $model_path --device cpu --host $worker_host --port $worker_port --worker-address $worker_address --controller-address $controller_address
     fi
   fi

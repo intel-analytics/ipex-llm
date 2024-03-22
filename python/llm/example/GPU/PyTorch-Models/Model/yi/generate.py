@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # you could tune the prompt based on your own model

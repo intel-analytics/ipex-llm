@@ -43,7 +43,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from transformers import SpeechT5Processor, SpeechT5HifiGan, SpeechT5ForTextToSpeech
 from datasets import load_dataset
 import soundfile as sf

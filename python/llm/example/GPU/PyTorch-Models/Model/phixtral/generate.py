@@ -21,7 +21,7 @@ import numpy as np
 
 from transformers import AutoTokenizer, GenerationConfig
 import intel_extension_for_pytorch as ipex
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 
 # you could tune the prompt based on your own model,

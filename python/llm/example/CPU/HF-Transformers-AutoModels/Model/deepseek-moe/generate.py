@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True).eval()
     model.generation_config = GenerationConfig.from_pretrained(model_path)
     model.generation_config.pad_token_id = model.generation_config.eos_token_id

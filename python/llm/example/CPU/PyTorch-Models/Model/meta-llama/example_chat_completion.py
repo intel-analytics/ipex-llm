@@ -24,7 +24,7 @@ import fire
 
 from llama import Llama, Dialog
 
-from bigdl.llm.optimize import optimize_model
+from ipex_llm.optimize import optimize_model
 
 
 def main(

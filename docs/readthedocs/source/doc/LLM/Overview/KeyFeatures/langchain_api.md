@@ -7,8 +7,8 @@ You may run the models using the LangChain API in `bigdl-llm`.
 You may run any Hugging Face *Transformers* model (with INT4 optimiztions applied) using the LangChain API as follows:
 
 ```python
-from bigdl.llm.langchain.llms import TransformersLLM
-from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+from ipex_llm.langchain.llms import TransformersLLM
+from ipex_llm.langchain.embeddings import TransformersEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 
 embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
@@ -37,8 +37,8 @@ You may also convert Hugging Face *Transformers* models into native INT4 format,
 ```
 
 ```python
-from bigdl.llm.langchain.llms import LlamaLLM
-from bigdl.llm.langchain.embeddings import LlamaEmbeddings
+from ipex_llm.langchain.llms import LlamaLLM
+from ipex_llm.langchain.embeddings import LlamaEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 
 # switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models

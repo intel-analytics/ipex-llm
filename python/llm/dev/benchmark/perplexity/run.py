@@ -21,7 +21,7 @@ from datasets import concatenate_datasets, load_dataset
 from transformers import AutoTokenizer
 
 from ppl import BigDLPPL
-from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.ggml.quantize import ggml_tensor_qtype
 
 import os
 import json

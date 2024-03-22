@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoModelForCausalLM, CodeLlamaTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/docs/transformers/v4.34.1/model_doc/code_llama

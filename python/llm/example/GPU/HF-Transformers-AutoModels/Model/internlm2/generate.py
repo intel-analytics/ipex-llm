@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 import intel_extension_for_pytorch as ipex
 
 # you could tune the prompt based on your own model,
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True,

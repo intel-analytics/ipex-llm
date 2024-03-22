@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, \
+from ipex_llm.langchain.llms import TransformersLLM, TransformersPipelineLLM, \
     LlamaLLM, BloomLLM
-from bigdl.llm.langchain.embeddings import TransformersEmbeddings, LlamaEmbeddings, \
+from ipex_llm.langchain.embeddings import TransformersEmbeddings, LlamaEmbeddings, \
     BloomEmbeddings
 
 import pytest

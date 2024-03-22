@@ -20,7 +20,7 @@ import argparse
 
 from TTS.tts.configs.bark_config import BarkConfig
 from TTS.tts.models.bark import Bark
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':

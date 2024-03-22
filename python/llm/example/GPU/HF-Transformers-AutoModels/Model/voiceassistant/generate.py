@@ -24,8 +24,8 @@ import inquirer
 # For Windows users, please remove `import sounddevice`
 import sounddevice
 
-from bigdl.llm.transformers import AutoModelForCausalLM
-from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
+from ipex_llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers import LlamaTokenizer
 from transformers import WhisperProcessor
 from transformers import TextStreamer

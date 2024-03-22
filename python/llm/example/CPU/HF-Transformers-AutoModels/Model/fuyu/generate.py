@@ -19,7 +19,7 @@ import torch
 import argparse
 import time
 from PIL import Image
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Fuyu model')

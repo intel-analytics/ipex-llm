@@ -10,13 +10,13 @@ You may also convert Hugging Face *Transformers* models into native INT4 format 
 
 ```python
 # convert the model
-from bigdl.llm import llm_convert
+from ipex_llm import llm_convert
 bigdl_llm_path = llm_convert(model='/path/to/model/',
        outfile='/path/to/output/', outtype='int4', model_family="llama")
 
 # load the converted model
 # switch to ChatGLMForCausalLM/GptneoxForCausalLM/BloomForCausalLM/StarcoderForCausalLM to load other models
-from bigdl.llm.transformers import LlamaForCausalLM
+from ipex_llm.transformers import LlamaForCausalLM
 llm = LlamaForCausalLM.from_pretrained("/path/to/output/model.bin", native=True, ...)
 
 # run the converted model

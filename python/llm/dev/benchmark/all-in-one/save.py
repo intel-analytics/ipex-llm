@@ -30,7 +30,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 def save_model_in_low_bit(repo_id,
                           local_model_hub,
                           low_bit):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,

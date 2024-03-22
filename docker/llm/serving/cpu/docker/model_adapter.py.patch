@@ -9,7 +9,7 @@
          generation_config = GenerationConfig.from_pretrained(
              model_path, trust_remote_code=True
          )
-+        from bigdl.llm.transformers import AutoModelForCausalLM
++        from ipex_llm.transformers import AutoModelForCausalLM
          model = AutoModelForCausalLM.from_pretrained(
              model_path,
              config=config,

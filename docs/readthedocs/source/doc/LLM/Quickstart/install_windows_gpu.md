@@ -130,7 +130,7 @@ You can verify if `bigdl-llm` is successfully installed by simply running a few 
 * Step 5: Copy following code to Anaconda prompt **line by line** and press Enter **after copying each line**.
   ```python
   import torch 
-  from bigdl.llm.transformers import AutoModel,AutoModelForCausalLM    
+  from ipex_llm.transformers import AutoModel,AutoModelForCausalLM    
   tensor_1 = torch.randn(1, 1, 40, 128).to('xpu') 
   tensor_2 = torch.randn(1, 1, 128, 40).to('xpu') 
   print(torch.matmul(tensor_1, tensor_2).size()) 
@@ -200,7 +200,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   
            # Copy/Paste the contents to a new file demo.py
            import torch
-           from bigdl.llm.transformers import AutoModelForCausalLM
+           from ipex_llm.transformers import AutoModelForCausalLM
            from transformers import AutoTokenizer, GenerationConfig
            generation_config = GenerationConfig(use_cache=True)
            
@@ -260,7 +260,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
            # Copy/Paste the contents to a new file demo.py
            import torch
-           from bigdl.llm.transformers import AutoModelForCausalLM
+           from ipex_llm.transformers import AutoModelForCausalLM
            from transformers import GenerationConfig
            from modelscope import AutoTokenizer
            generation_config = GenerationConfig(use_cache=True)

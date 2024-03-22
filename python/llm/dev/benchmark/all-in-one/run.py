@@ -32,7 +32,7 @@ benchmark_util_path = os.path.join(current_dir, '..')
 import sys
 sys.path.append(benchmark_util_path)
 from benchmark_util import BenchmarkWrapper
-from bigdl.llm.utils.common.log4Error import invalidInputError
+from ipex_llm.utils.common.log4Error import invalidInputError
 
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
@@ -143,8 +143,8 @@ def run_native_int4(repo_id,
                     warm_up,
                     num_trials):
     model_path = get_model_path(repo_id, local_model_hub)
-    from bigdl.llm.transformers import BigdlNativeForCausalLM
-    from bigdl.llm import llm_convert
+    from ipex_llm.transformers import BigdlNativeForCausalLM
+    from ipex_llm import llm_convert
     if "chatglm" in repo_id.lower():
         family = "chatglm"
     elif "llama" in repo_id.lower():
@@ -184,7 +184,7 @@ def run_transformer_int4(repo_id,
                          num_beams,
                          low_bit,
                          batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
@@ -319,7 +319,7 @@ def run_optimize_model(repo_id,
                        low_bit,
                        batch_size):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
 
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
@@ -389,7 +389,7 @@ def run_transformer_int4_gpu(repo_id,
                              num_beams,
                              low_bit,
                              batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
@@ -495,7 +495,7 @@ def run_optimize_model_gpu(repo_id,
                            low_bit,
                            batch_size):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
@@ -651,7 +651,7 @@ def run_bigdl_fp16_gpu(repo_id,
                        num_trials,
                        num_beams,
                        batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
@@ -731,7 +731,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
                          batch_size):
     from transformers import AutoModelForCausalLM, LlamaTokenizer, AutoTokenizer
     import deepspeed
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     import argparse
     # parser is for deepspeed subprocesses' inline parameter
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
@@ -822,7 +822,7 @@ def run_transformer_int4_gpu_win(repo_id,
                                  cpu_embedding,
                                  batch_size,
                                  streaming):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
@@ -928,7 +928,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                       cpu_embedding,
                                       batch_size,
                                       streaming):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
@@ -1038,7 +1038,7 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                                             cpu_embedding,
                                             batch_size,
                                             streaming):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
     import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
@@ -1140,7 +1140,7 @@ def run_transformer_autocast_bf16( repo_id,
                     num_trials,
                     num_beams,
                     batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
@@ -1209,7 +1209,7 @@ def run_bigdl_ipex_bf16(repo_id,
                     num_trials,
                     num_beams,
                     batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     os.environ["BIGDL_OPT_IPEX"] = "true"
@@ -1280,7 +1280,7 @@ def run_bigdl_ipex_int4(repo_id,
                     num_trials,
                     num_beams,
                     batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     os.environ["BIGDL_OPT_IPEX"] = "true"
@@ -1350,7 +1350,7 @@ def run_bigdl_ipex_int8(repo_id,
                     num_trials,
                     num_beams,
                     batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     os.environ["BIGDL_OPT_IPEX"] = "true"
@@ -1434,7 +1434,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
     os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     import intel_extension_for_pytorch as ipex
     import deepspeed
     from deepspeed.accelerator.cpu_accelerator import CPU_Accelerator
@@ -1535,9 +1535,9 @@ def run_speculative_cpu(repo_id,
                     num_trials,
                     num_beams,
                     batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
-    from bigdl.llm.transformers.convert import get_enable_ipex
+    from ipex_llm.transformers.convert import get_enable_ipex
 
     _enable_ipex = get_enable_ipex()
 
@@ -1615,7 +1615,7 @@ def run_speculative_gpu(repo_id,
                     num_trials,
                     num_beams,
                     batch_size):
-    from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)

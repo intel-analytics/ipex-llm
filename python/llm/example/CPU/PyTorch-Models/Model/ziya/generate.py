@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     
     from transformers import AutoModelForCausalLM
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     # enabling `use_cache=True` allows the model to utilize the previous
     # key/values attentions to speed up decoding;
     # to obtain optimal performance with BigDL-LLM `optimization_model` API optimizations,

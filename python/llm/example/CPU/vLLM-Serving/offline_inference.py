@@ -31,8 +31,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bigdl.llm.vllm.entrypoints.llm import LLM
-from bigdl.llm.vllm.sampling_params import SamplingParams
+from ipex_llm.vllm.entrypoints.llm import LLM
+from ipex_llm.vllm.sampling_params import SamplingParams
 
 # Sample prompts.
 prompts = [

@@ -18,7 +18,7 @@ import time
 import argparse
 
 from transformers import pipeline
-from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
+from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers.models.whisper import WhisperFeatureExtractor, WhisperTokenizer
 from datasets import load_dataset
 

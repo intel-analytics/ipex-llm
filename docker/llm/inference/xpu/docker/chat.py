@@ -23,7 +23,7 @@ from transformers import TextIteratorStreamer
 from transformers.tools.agents import StopSequenceCriteria
 from transformers.generation.stopping_criteria import StoppingCriteriaList
 from colorama import Fore
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 SYSTEM_PROMPT = "A chat between a curious human <human> and an artificial intelligence assistant <bot>.\
 The assistant gives helpful, detailed, and polite answers to the human's questions."
 HUMAN_ID = "<human>"

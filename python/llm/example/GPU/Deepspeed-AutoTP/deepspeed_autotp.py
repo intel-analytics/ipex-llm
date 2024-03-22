@@ -34,7 +34,7 @@ os.environ["WORLD_SIZE"] = str(world_size)
 os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 import torch
 import time

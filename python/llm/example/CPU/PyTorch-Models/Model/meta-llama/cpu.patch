@@ -36,7 +36,7 @@ index acedf44..df4e5d6 100644
  
  from llama import Llama, Dialog
  
--from bigdl.llm.optimize import optimize_model
+-from ipex_llm.optimize import optimize_model
 -
  
  def main(
@@ -67,7 +67,7 @@ index 1f63bb0..0d60b9c 100755
  from llama import Llama
  from typing import List
  
--from bigdl.llm.optimize import optimize_model
+-from ipex_llm.optimize import optimize_model
 -
  def main(
      ckpt_dir: str,

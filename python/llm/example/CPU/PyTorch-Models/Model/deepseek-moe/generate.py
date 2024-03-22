@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
 
     from transformers import AutoModelForCausalLM
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype = torch.bfloat16, device_map = "auto", attn_implementation="eager")
     model.generation_config = GenerationConfig.from_pretrained(model_path)
     model.generation_config.pad_token_id = model.generation_config.eos_token_id

@@ -112,7 +112,7 @@ Install the Miniconda as follows if you don't have conda installed on your machi
 
   python
 
-  > from bigdl.llm.transformers import AutoModel, AutoModelForCausalLM
+  > from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
   ```
 
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/verify_bigdl_import.png" alt="image-20240221102252562" width=100%; />
@@ -170,7 +170,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    ```python
    # Copy/Paste the contents to a new file demo.py
    import torch
-   from bigdl.llm.transformers import AutoModelForCausalLM
+   from ipex_llm.transformers import AutoModelForCausalLM
    from transformers import AutoTokenizer, GenerationConfig
    generation_config = GenerationConfig(use_cache = True)
    

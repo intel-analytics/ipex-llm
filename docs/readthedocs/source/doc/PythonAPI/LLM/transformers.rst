@@ -10,7 +10,7 @@ You can apply BigDL-LLM optimizations on any Hugging Face Transformers models by
 AutoModelForCausalLM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: bigdl.llm.transformers.AutoModelForCausalLM
+.. autoclass:: ipex_llm.transformers.AutoModelForCausalLM
     :members:
     :undoc-members:
     :show-inheritance:
@@ -22,7 +22,7 @@ AutoModelForCausalLM
 AutoModel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: bigdl.llm.transformers.AutoModel
+.. autoclass:: ipex_llm.transformers.AutoModel
     :members:
     :undoc-members:
     :show-inheritance:
@@ -34,7 +34,7 @@ AutoModel
 AutoModelForSpeechSeq2Seq
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: bigdl.llm.transformers.AutoModelForSpeechSeq2Seq
+.. autoclass:: ipex_llm.transformers.AutoModelForSpeechSeq2Seq
     :members:
     :undoc-members:
     :show-inheritance:
@@ -46,7 +46,7 @@ AutoModelForSpeechSeq2Seq
 AutoModelForSeq2SeqLM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: bigdl.llm.transformers.AutoModelForSeq2SeqLM
+.. autoclass:: ipex_llm.transformers.AutoModelForSeq2SeqLM
     :members:
     :undoc-members:
     :show-inheritance:
@@ -67,7 +67,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Llama
 
-        .. autoclass:: bigdl.llm.transformers.LlamaForCausalLM
+        .. autoclass:: ipex_llm.transformers.LlamaForCausalLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -77,7 +77,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: ChatGLM
 
-        .. autoclass:: bigdl.llm.transformers.ChatGLMForCausalLM
+        .. autoclass:: ipex_llm.transformers.ChatGLMForCausalLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -87,7 +87,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Gptneox
 
-        .. autoclass:: bigdl.llm.transformers.GptneoxForCausalLM
+        .. autoclass:: ipex_llm.transformers.GptneoxForCausalLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -96,7 +96,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
             .. automethod:: from_pretrained
 
     .. tab:: Bloom
-        .. autoclass:: bigdl.llm.transformers.BloomForCausalLM
+        .. autoclass:: ipex_llm.transformers.BloomForCausalLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -106,7 +106,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Starcoder
 
-        .. autoclass:: bigdl.llm.transformers.StarcoderForCausalLM
+        .. autoclass:: ipex_llm.transformers.StarcoderForCausalLM
             :members:
             :undoc-members:
             :show-inheritance:

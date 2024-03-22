@@ -20,7 +20,7 @@ import argparse
 import numpy as np
 
 from transformers import AutoTokenizer, GenerationConfig
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to  # TODO: https://huggingface.co/microsoft/phi-1_5/blob/main/modeling_mixformer_sequential.py
 PHI1_5_PROMPT_FORMAT = " Question:{prompt}\n\n Answer:"
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True)

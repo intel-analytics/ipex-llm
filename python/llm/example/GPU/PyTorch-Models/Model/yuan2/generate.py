@@ -19,7 +19,7 @@ import sys, os, time
 import intel_extension_for_pytorch as ipex
 import argparse
 from transformers import LlamaTokenizer, AutoModelForCausalLM
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # Refer to https://huggingface.co/IEITYuan/Yuan2-2B-hf#Usage
 YUAN2_PROMPT_FORMAT = """

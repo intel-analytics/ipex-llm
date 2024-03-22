@@ -29,7 +29,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          # Take Llama-2-7b-chat-hf as an example
          from transformers import LlamaForCausalLM
-         from bigdl.llm import optimize_model
+         from ipex_llm import optimize_model
 
          model = LlamaForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', torch_dtype='auto', low_cpu_mem_usage=True)
          model = optimize_model(model) # With only one line to enable BigDL-LLM INT4 optimization
@@ -40,14 +40,14 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          When running LLMs on Intel iGPUs for Windows users, we recommend setting ``cpu_embedding=True`` in the ``optimize_model`` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
          
-         See the `API doc <../../../PythonAPI/LLM/optimize.html#bigdl.llm.optimize_model>`_ for ``optimize_model`` to find more information.
+         See the `API doc <../../../PythonAPI/LLM/optimize.html#ipex_llm.optimize_model>`_ for ``optimize_model`` to find more information.
 
       Especially, if you have saved the optimized model following setps `here <./optimize_model.html#save>`_, the loading process on Intel GPUs maybe as follows:
 
       .. code-block:: python
 
          from transformers import LlamaForCausalLM
-         from bigdl.llm.optimize import low_memory_init, load_low_bit
+         from ipex_llm.optimize import low_memory_init, load_low_bit
 
          saved_dir='./llama-2-bigdl-llm-4-bit'
          with low_memory_init(): # Fast and low cost by loading model on meta device
@@ -65,7 +65,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
       .. code-block:: python
 
          # Take Llama-2-7b-chat-hf as an example
-         from bigdl.llm.transformers import AutoModelForCausalLM
+         from ipex_llm.transformers import AutoModelForCausalLM
 
          # Load model in 4 bit, which convert the relevant layers in the model into INT4 format
          model = AutoModelForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', load_in_4bit=True)
@@ -82,7 +82,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
       .. code-block:: python
 
-         from bigdl.llm.transformers import AutoModelForCausalLM
+         from ipex_llm.transformers import AutoModelForCausalLM
 
          saved_dir='./llama-2-bigdl-llm-4-bit'
          model = AutoModelForCausalLM.load_low_bit(saved_dir) # Load the optimized model

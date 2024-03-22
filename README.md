@@ -86,7 +86,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* models as fo
 
 ```python
 #load Hugging Face Transformers model with INT4 optimizations
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
 #run the optimized model on CPU
@@ -113,7 +113,7 @@ You may apply INT4 optimizations to any Hugging Face *Transformers* models as fo
 
 ```python
 #load Hugging Face Transformers model with INT4 optimizations
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
 #run the optimized model on Intel GPU

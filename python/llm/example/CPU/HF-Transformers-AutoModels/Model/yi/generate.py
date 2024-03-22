@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # Refer to https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model

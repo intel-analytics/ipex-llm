@@ -39,7 +39,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModelForCausalLM
     # enabling `use_cache=True` allows the model to utilize the previous
     # key/values attentions to speed up decoding;
     # to obtain optimal performance with BigDL-LLM INT4 optimizations,

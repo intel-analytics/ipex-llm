@@ -52,11 +52,11 @@ sys.path.append(common_util_path)
 from common.utils import Prompter, get_int_from_env, wandb_check, get_train_val_data
 
 from transformers import BitsAndBytesConfig
-from bigdl.llm.transformers import AutoModelForCausalLM
-# import them from bigdl.llm.transformers.qlora to get a BigDL-LLM compatible Peft model
-from bigdl.llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
+from ipex_llm.transformers import AutoModelForCausalLM
+# import them from ipex_llm.transformers.qlora to get a BigDL-LLM compatible Peft model
+from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
     LoraConfig
-from bigdl.llm.utils.common import invalidInputError
+from ipex_llm.utils.common import invalidInputError
  
 local_rank = get_int_from_env(["LOCAL_RANK","MPI_LOCALRANKID"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")

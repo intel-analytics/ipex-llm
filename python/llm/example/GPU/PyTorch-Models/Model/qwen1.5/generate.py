@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import AutoTokenizer
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 import intel_extension_for_pytorch as ipex
 import numpy as np
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     
     from transformers import AutoModelForCausalLM
-    from bigdl.llm import optimize_model
+    from ipex_llm import optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True,
                                                  torch_dtype = torch.float16,

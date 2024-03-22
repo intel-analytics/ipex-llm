@@ -19,7 +19,7 @@ import time
 import argparse
 
 from transformers import BertTokenizer, BertModel
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':

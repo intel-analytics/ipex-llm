@@ -19,7 +19,7 @@ import time
 import argparse
 import numpy as np
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # prompt format referred from https://github.com/baichuan-inc/Baichuan2/issues/227 

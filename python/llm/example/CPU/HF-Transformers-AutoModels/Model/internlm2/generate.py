@@ -39,7 +39,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     
-    from bigdl.llm.transformers import AutoModelForCausalLM
+    from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True)

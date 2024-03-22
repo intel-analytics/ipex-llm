@@ -45,7 +45,7 @@ import os
 import torch
 from transformers import AutoModelForCausalLM, LlamaTokenizer, AutoTokenizer
 import deepspeed
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 import torch
 import intel_extension_for_pytorch as ipex
 import time

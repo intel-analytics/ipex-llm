@@ -17,7 +17,7 @@
 import argparse
 import time
 import torch
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from transformers import AutoTokenizer
 
 from model import MambaLMHeadModel

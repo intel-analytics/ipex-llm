@@ -20,7 +20,7 @@ import scipy
 import time
 import argparse
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 from transformers import AutoProcessor, BarkModel
 
 
