@@ -59,5 +59,3 @@ subtrees:
           - file: doc/LLM/Overview/FAQ/faq
             title: "FAQ"
 
-  - entries:
-    - file: doc/Application/blogs

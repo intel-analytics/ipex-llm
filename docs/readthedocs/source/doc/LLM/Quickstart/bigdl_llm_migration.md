@@ -20,12 +20,18 @@ pip install --pre --upgrade ipex-llm[all] # for cpu
 ### For GPU
 ```eval_rst
 .. tabs::
+
    .. tab:: US
+
       .. code-block:: cmd
+
          pip uninstall -y bigdl-llm
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
    .. tab:: CN
+
       .. code-block:: cmd
+
          pip uninstall -y bigdl-llm
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
