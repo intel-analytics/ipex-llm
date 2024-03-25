@@ -37,11 +37,11 @@ sys.path.insert(0, os.path.abspath("../../../python/llm/src/"))
 # -- Project information -----------------------------------------------------
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-  "header_links_before_dropdown": 3,
+  "header_links_before_dropdown": 1,
   "icon_links": [
         {
-            "name": "GitHub Repository for BigDL",
-            "url": "https://github.com/intel-analytics/BigDL",
+            "name": "GitHub Repository for IPEX-LLM",
+            "url": "https://github.com/intel-analytics/ipex-llm",
             "icon": "fa-brands fa-square-github",
             "type": "fontawesome",
         }
@@ -63,7 +63,7 @@ html_context = {
     "default_mode": "light" 
 }
 
-html_logo = "../image/bigdl_logo.png"
+html_logo = "../image/ipex-llm_logo_temp.png"
 
 # hard code it for now, may change it to read from installed bigdl
 release = "latest"
@@ -76,9 +76,9 @@ source_suffix = {'.rst': 'restructuredtext',
 
 master_doc = 'index'
 
-project = 'BigDL'
-copyright = '2020, BigDL Authors'
-author = 'BigDL Authors'
+project = 'IPEX-LLM'
+copyright = '2024, IPEX-LLM Authors'
+author = 'IPEX-LLM Authors'
 
 # The short X.Y version
 #version = ''
