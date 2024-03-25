@@ -85,7 +85,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 - Low bit inference
   - [INT4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/Model): **INT4** LLM inference on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model)
   - [FP8/FP4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types): **FP8** and **FP4** LLM inference on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types)
-  - [INT8 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types): **INT8** LLM inference on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) and [CPU](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types)
+  - [INT8 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types): **INT8** LLM inference on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types)
   - [INT2 inference](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2): **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2)
 - FP16/BF16 inference
   - **FP16** LLM inference on Intel [GPU](python/llm/example/GPU/Speculative-Decoding), with possible [self-speculative decoding](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html) optimization
@@ -94,7 +94,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
   - [Low-bit models](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load): saving and loading `ipex-llm` low-bit models
   - [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF): directly loading GGUF models into `ipex-llm`
   - [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ): directly loading AWQ models into `ipex-llm`
-  - [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/QPTQ): directly loading GPTQ models into `ipex-llm`
+  - [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ): directly loading GPTQ models into `ipex-llm`
 - Finetuning
   - LLM finetuning on Intel [GPU](python/llm/example/GPU/LLM-Finetuning), including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)
   - QLoRA finetuning on Intel [CPU](python/llm/example/CPU/QLoRA-FineTuning)
