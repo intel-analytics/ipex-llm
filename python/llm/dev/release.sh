@@ -35,10 +35,10 @@ upload=$3  # Whether to upload the whl to pypi
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
-    echo $version > $BIGDL_DIR/python/version.txt
+    echo $version > $BIGDL_DIR/python/llm/version.txt
 fi
 
-ipex_llm_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
+ipex_llm_version=$(cat $BIGDL_DIR/python/llm/version.txt | head -1)
 echo "The effective version is: ${ipex_llm_version}"
 
 if [ "$platform" == "linux" ]; then
