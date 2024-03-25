@@ -40,8 +40,8 @@ html_theme_options = {
   "header_links_before_dropdown": 1,
   "icon_links": [
         {
-            "name": "GitHub Repository for BigDL",
-            "url": "https://github.com/intel-analytics/BigDL",
+            "name": "GitHub Repository for IPEX-LLM",
+            "url": "https://github.com/intel-analytics/ipex-llm",
             "icon": "fa-brands fa-square-github",
             "type": "fontawesome",
         }
@@ -77,8 +77,8 @@ source_suffix = {'.rst': 'restructuredtext',
 master_doc = 'index'
 
 project = 'BigDL'
-copyright = '2020, BigDL Authors'
-author = 'BigDL Authors'
+copyright = '2020, IPEX-LLM Authors'
+author = 'IPEX-LLM Authors'
 
 # The short X.Y version
 #version = ''
