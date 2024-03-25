@@ -601,8 +601,7 @@ def qwen2_sdpa_attention_forward(
     device = hidden_states.device
 
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
     if decoding_fast_path:
