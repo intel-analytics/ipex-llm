@@ -130,19 +130,19 @@ Code Examples
 ============================================
 * Low bit inference
 
-  * `INT4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model>`_: **INT4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPUHF-Transformers-AutoModels/Model>`_
+  * `INT4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model>`_: **INT4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model>`_
   * `FP8/FP4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_: **FP8** and **FP4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_
-  * `INT8 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_: **INT8** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPUHF-Transformers-AutoModels/More-Data-Types>`_
+  * `INT8 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_: **INT8** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types>`_
   * `INT2 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_: **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_
 
 * FP16/BF16 inference
 
-  * **FP16** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Speculative-Decoding>`_, with possible `self-speculative decoding <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html>`_ optimization
-  * **BF16** LLM inference on Intel `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPUSpeculative-Decoding>`_, with possible `self-speculative decoding <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html>`_ optimization 
+  * **FP16** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Speculative-Decoding>`_, with possible `self-speculative decoding <doc/LLM/Inference/Self_Speculative_Decoding.html>`_ optimization
+  * **BF16** LLM inference on Intel `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Speculative-Decoding>`_, with possible `self-speculative decoding <doc/LLM/Inference/Self_Speculative_Decoding.html>`_ optimization 
 
 * Save and load
 
-  * `Low-bit models <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPUHF-Transformers-AutoModels/Save-Load>`_: saving and loading ``ipex-llm`` low-bit models
+  * `Low-bit models <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load>`_: saving and loading ``ipex-llm`` low-bit models
   * `GGUF <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF>`_: directly loading GGUF models into ``ipex-llm``
   * `AWQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ>`_: directly loading AWQ models into ``ipex-llm``
   * `GPTQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ>`_: directly loading GPTQ models into ``ipex-llm``
@@ -150,7 +150,7 @@ Code Examples
 * Finetuning
 
   * LLM finetuning on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>`_, including `LoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/LoRA>`_, `QLoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_, `DPO <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>`_, `QA-LoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QA-LoRA>`_ and `ReLoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/ReLora>`_
-  * QLoRA finetuning on Intel `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPUQLoRA-FineTuning>`_
+  * QLoRA finetuning on Intel `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/QLoRA-FineTuning>`_
 
 * Integration with community libraries
 
@@ -161,7 +161,7 @@ Code Examples
   * `HuggingFace TRL <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>`_
   * `LangChain <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain>`_
   * `LlamaIndex <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex>`_
-  * `AutoGen <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPUApplications/autogen>`_
+  * `AutoGen <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen>`_
   * `ModeScope <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models>`_
 
 * `Tutorials <https://github.com/intel-analytics/bigdl-llm-tutorial>`_
