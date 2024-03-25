@@ -1,19 +1,45 @@
 .. meta::
    :google-site-verification: S66K6GAclKw1RroxU0Rka_2d1LZFVe27M0gRneEsIVI
 
+.. important::
+   
+   .. raw:: html
+
+      <p>
+         <strong><em>
+            <code><span>bigdl-llm</span></code> has now become <code><span>ipex-llm</span></code> (see the migration guide <a href="doc/LLM/Quickstart/bigdl_llm_migration.html">here</a>); you may you may find the original <code><span>BigDL</span></code> project <a href="https://github.com/intel-analytics/BigDL-2.x">here</a>.
+         </em></strong>
+      </p>
+
+------
+
 ################################################
-IPEX-LLM
+💫 IPEX-LLM
 ################################################
 
 .. raw:: html
 
    <p>
-      <a href="https://github.com/intel-analytics/ipex-llm/"><code><span>ipex-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4/FP4/INT8/FP8</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+      <strong><code><span>IPEX-LLM</span></code></strong> is a PyTorch library for running <strong>LLM</strong> on Intel CPU and GPU <em>(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)</em> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup>.
    </p>
 
 .. note::
 
-   It is built on top of the excellent work of `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, `qlora <https://github.com/artidoro/qlora>`_, etc.
+   .. raw:: html
+
+       <p>
+         <ul>
+            <li><em>
+               It is built on top of <strong>Intel Extension for PyTorch</strong> (<strong>IPEX</strong>), as well as the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
+            </li></em>
+            <li><em>
+               It provides seamless integration with <a href=doc/LLM/Quickstart/llama_cpp_quickstart.html>llama.cpp</a>, <a href=doc/LLM/Quickstart/webui_quickstart.html>Text-Generation-WebUI</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>HuggingFace tansformers</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>HuggingFace PEFT</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain >LangChain</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex >LlamaIndex</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP >DeepSpeed-AutoTP</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving >vLLM</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>FastChat</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>HuggingFace TRL</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen >AutoGen</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models >ModeScope</a>, etc.
+            </li></em>
+            <li><em>
+               <strong>50+ models</strong> have been optimized/verified on <code><span>ipex-llm</span></code> (including LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, and more); see the complete list <a href="#verified-models">here</a>.
+            </li></em>
+         </ul>
+      </p>
 
 ************************************************
 Latest update 🔥
@@ -39,7 +65,7 @@ Latest update 🔥
 - Over 30 models have been verified on ``ipex-llm``, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS* and more; see the complete list `here <https://github.com/intel-analytics/ipex#verified-models>`_.
 
 ************************************************
-``ipex-llm`` demos
+``ipex-llm`` Demos
 ************************************************
 
 See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
@@ -153,3 +179,15 @@ You can then apply INT4 optimizations to any Hugging Face *Transformers* models 
    output = tokenizer.batch_decode(output_ids.cpu())
 
 **For more details, please refer to the ipex-llm** `Document <doc/LLM/index.html>`_, `Readme <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm>`_, `Tutorial <https://github.com/intel-analytics/ipex-llm-tutorial>`_ and `API Doc <doc/PythonAPI/LLM/index.html>`_.
+
+------
+
+.. raw:: html
+
+    <div>
+        <p>
+            <sup><a href="#ref-perf" id="footnote-perf">[1]</a>
+               Performance varies by use, configuration and other factors. <code><span>ipex-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="https://www.Intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>.
+            </sup>
+        </p>
+    </div>
