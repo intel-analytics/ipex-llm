@@ -77,7 +77,7 @@ source_suffix = {'.rst': 'restructuredtext',
 master_doc = 'index'
 
 project = 'IPEX-LLM'
-copyright = '2020, IPEX-LLM Authors'
+copyright = '2024, IPEX-LLM Authors'
 author = 'IPEX-LLM Authors'
 
 # The short X.Y version
