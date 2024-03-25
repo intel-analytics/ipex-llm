@@ -155,7 +155,7 @@ def mixtral_attention_forward(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-    decoding_fast_path = use_decoding_fast_path(self.q_proj.qtype,
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
