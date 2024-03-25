@@ -103,14 +103,16 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
    </table>
 
 ************************************************
-``ipex-llm`` quickstart
+``ipex-llm`` Quickstart
 ************************************************
 
-- `Windows GPU installation <doc/LLM/Quickstart/install_windows_gpu.html>`_
-- `Run IPEX-LLM in Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_
-- `Run IPEX-LLM using Docker <https://github.com/intel-analytics/ipex-llm/tree/main/docker/llm>`_
-- `CPU quickstart <#cpu-quickstart>`_
-- `GPU quickstart <#gpu-quickstart>`_
+- `Windows GPU <doc/LLM/Quickstart/install_windows_gpu.html>`_: installing ``ipex-llm`` on Windows with Intel GPU
+- `Linux GPU <doc/LLM/Quickstart/install_linux_gpu.html>`_: installing ``ipex-llm`` on Linux with Intel GPU
+- `Docker <https://github.com/intel-analytics/ipex-llm/tree/main/docker/llm>`_: using ``ipex-llm`` dockers on Intel CPU and GPU
+
+.. seealso::
+
+   For more details, please refer to the `installation guide <doc/LLM/Overview/install.html>`_*
 
 ============================================
 CPU Quickstart
