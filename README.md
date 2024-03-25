@@ -7,7 +7,7 @@
 **`IPEX-LLM`** is a PyTorch library for running **LLM** on Intel CPU and GPU *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)* with very low latency[^1]. 
 > [!NOTE]
 > - *It is built on top of **Intel Extension for PyTorch** (**`IPEX`**), as well as the excellent work of **`llama.cpp`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`**, etc.*
-> - *It provides seamless integration with [llama.cpp](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), [Text-Generation-WebUI](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [HuggingFace tansformers](python/llm/example/GPU/HF-Transformers-AutoModels), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [vLLM](python/llm/example/GPU/vLLM-Serving), [FastChat](python/llm/src/ipex_llm/llm/serving), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models), etc.* 
+> - *It provides seamless integration with [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [HuggingFace tansformers](python/llm/example/GPU/HF-Transformers-AutoModels), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [vLLM](python/llm/example/GPU/vLLM-Serving), [FastChat](python/llm/src/ipex_llm/llm/serving), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models), etc.* 
 > - ***50+ models** have been optimized/verified on `ipex-llm` (including LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, and more); see the complete list [here](#verified-models).*
 
 ## Latest Update 🔥 
@@ -15,7 +15,7 @@
 - [2024/02] `ipex-llm` now supports directly loading model from [ModelScope](python/llm/example/GPU/ModelScope-Models) ([魔搭](python/llm/example/CPU/ModelScope-Models)).
 - [2024/02] `ipex-llm` added inital **INT2** support (based on llama.cpp [IQ2](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2) mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
 - [2024/02] Users can now use `ipex-llm` through [Text-Generation-WebUI](https://github.com/intel-analytics/text-generation-webui) GUI.
-- [2024/02] `ipex-llm` now supports *[Self-Speculative Decoding](https://bigdl.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html)*, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel [GPU](python/llm/example/GPU/Speculative-Decoding) and [CPU](python/llm/example/CPU/Speculative-Decoding) respectively.
+- [2024/02] `ipex-llm` now supports *[Self-Speculative Decoding](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html)*, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel [GPU](python/llm/example/GPU/Speculative-Decoding) and [CPU](python/llm/example/CPU/Speculative-Decoding) respectively.
 - [2024/02] `ipex-llm` now supports a comprehensive list of LLM **finetuning** on Intel GPU (including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)).
 - [2024/01] Using `ipex-llm` [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), we managed to finetune LLaMA2-7B in **21 minutes** and LLaMA2-70B in **3.14 hours** on 8 Intel Max 1550 GPU for [Standford-Alpaca](python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora) (see the blog [here](https://www.intel.com/content/www/us/en/developer/articles/technical/finetuning-llms-on-intel-gpus-using-bigdl-llm.html)).
 <details><summary>More updates</summary>
@@ -68,18 +68,18 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 
 ## `ipex-llm` Quickstart
 ### Install `ipex-llm`
-- [Windows GPU](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html): installing `ipex-llm` on Windows with Intel GPU
-- [Linux GPU](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html): installing `ipex-llm` on Linux with Intel GPU
+- [Windows GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html): installing `ipex-llm` on Windows with Intel GPU
+- [Linux GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html): installing `ipex-llm` on Linux with Intel GPU
 - [Docker](docker/llm): using `ipex-llm` dockers on Intel CPU and GPU
-- *For more details, please refer to the [installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html)*
+- *For more details, please refer to the [installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html)*
 
 ### Run `ipex-llm`
-- [llama.cpp](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html): running **ipex-llm for llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp` on Intel GPU*)
+- [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html): running **ipex-llm for llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp` on Intel GPU*)
 - [vLLM](python/llm/example/GPU/vLLM-Serving): running `ipex-llm` in `vLLM` on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
 - [FastChat](python/llm/src/bigdl/llm/serving): running `ipex-llm` in `FastChat` serving on on both Intel GPU and CPU
 - [LangChain-Chatchat RAG](https://github.com/intel-analytics/Langchain-Chatchat): running `ipex-llm` in `LangChain-Chatchat` (*Knowledge Base QA using **RAG** pipeline*)
-- [Text-Generation-WebUI](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html): running `ipex-llm` in `oobabooga` **WebUI**
-- [Benchmarking](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html): running  (latency and throughput) benchmarks for `ipex-llm` on Intel CPU and GPU
+- [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html): running `ipex-llm` in `oobabooga` **WebUI**
+- [Benchmarking](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html): running  (latency and throughput) benchmarks for `ipex-llm` on Intel CPU and GPU
 
 ### Code Examples
 - Low bit inference
@@ -88,8 +88,8 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
   - [INT8 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types): **INT8** LLM inference on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) and [CPU](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types)
   - [INT2 inference](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2): **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2)
 - FP16/BF16 inference
-  - **FP16** LLM inference on Intel [GPU](python/llm/example/GPU/Speculative-Decoding), with possible [self-speculative decoding](https://bigdl.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html) optimization
-  - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](https://bigdl.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html) optimization 
+  - **FP16** LLM inference on Intel [GPU](python/llm/example/GPU/Speculative-Decoding), with possible [self-speculative decoding](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html) optimization
+  - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Inference/Self_Speculative_Decoding.html) optimization 
 - Save and load
   - [Low-bit models](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load): saving and loading `ipex-llm` low-bit models
   - [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF): directly loading GGUF models into `ipex-llm`
@@ -110,7 +110,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
   - [ModeScope](python/llm/example/GPU/ModelScope-Models)
 - [Tutorials](https://github.com/intel-analytics/bigdl-llm-tutorial)
 
-*For more details, please refer to the `ipex-llm` document [website](https://bigdl-llm.readthedocs.io/en/main/doc/LLM/index.html).*
+*For more details, please refer to the `ipex-llm` document [website](https://ipex-llm.readthedocs.io/en/main/doc/LLM/index.html).*
 
 ## Verified Models
 Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM* and more; see the list below.
