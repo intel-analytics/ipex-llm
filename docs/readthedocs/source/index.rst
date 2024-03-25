@@ -2,14 +2,8 @@
    :google-site-verification: S66K6GAclKw1RroxU0Rka_2d1LZFVe27M0gRneEsIVI
 
 ################################################
-The IPEX-LLM Project
-################################################
-
-------
-
-************************************************
 IPEX-LLM
-************************************************
+################################################
 
 .. raw:: html
 
@@ -21,9 +15,9 @@ IPEX-LLM
 
    It is built on top of the excellent work of `llama.cpp <https://github.com/ggerganov/llama.cpp>`_, `gptq <https://github.com/IST-DASLab/gptq>`_, `bitsandbytes <https://github.com/TimDettmers/bitsandbytes>`_, `qlora <https://github.com/artidoro/qlora>`_, etc.
 
-============================================
+************************************************
 Latest update 🔥
-============================================
+************************************************
 - [2024/03] **LangChain** added support for ``ipex-llm``; see the details `here <https://python.langchain.com/docs/integrations/llms/ipex>`_.
 - [2024/02] ``ipex-llm`` now supports directly loading model from `ModelScope <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models>`_ (`魔搭 <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/ModelScope-Models>`_).
 - [2024/02] ``ipex-llm`` added inital **INT2** support (based on llama.cpp `IQ2 <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_ mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
@@ -44,9 +38,9 @@ Latest update 🔥
 - [2023/09] ``ipex-llm`` `tutorial <https://github.com/intel-analytics/ipex-llm-tutorial>`_ is released.
 - Over 30 models have been verified on ``ipex-llm``, including *LLaMA/LLaMA2, ChatGLM2/ChatGLM3, Mistral, Falcon, MPT, LLaVA, WizardCoder, Dolly, Whisper, Baichuan/Baichuan2, InternLM, Skywork, QWen/Qwen-VL, Aquila, MOSS* and more; see the complete list `here <https://github.com/intel-analytics/ipex#verified-models>`_.
 
-============================================
+************************************************
 ``ipex-llm`` demos
-============================================
+************************************************
 
 See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
 
@@ -79,9 +73,9 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
       </tr>
    </table>
 
-============================================
+************************************************
 ``ipex-llm`` quickstart
-============================================
+************************************************
 
 - `Windows GPU installation <doc/LLM/Quickstart/install_windows_gpu.html>`_
 - `Run IPEX-LLM in Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_
@@ -89,9 +83,9 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 - `CPU quickstart <#cpu-quickstart>`_
 - `GPU quickstart <#gpu-quickstart>`_
 
---------------------------------------------
+============================================
 CPU Quickstart
---------------------------------------------
+============================================
 
 You may install ``ipex-llm`` on Intel CPU as follows as follows:
 
@@ -122,9 +116,9 @@ You can then apply INT4 optimizations to any Hugging Face *Transformers* models 
    output_ids = model.generate(input_ids, ...)
    output = tokenizer.batch_decode(output_ids)
 
---------------------------------------------
+============================================
 GPU Quickstart
---------------------------------------------
+============================================
 
 You may install ``ipex-llm`` on Intel GPU as follows as follows:
 
