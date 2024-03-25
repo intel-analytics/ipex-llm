@@ -22,7 +22,7 @@ jobs:
 
   ipex-llm-build:
     # python build can only be published once a day, please do not publish it manually
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'all'}} 
+    # if: ${{ github.event.schedule }} 
     runs-on: [self-hosted, Bree]
     needs: llm-cpp-build
     steps:
