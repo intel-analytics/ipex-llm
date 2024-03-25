@@ -63,7 +63,7 @@ html_context = {
     "default_mode": "light" 
 }
 
-html_logo = "../image/bigdl_logo.png"
+html_logo = "../image/ipex-llm_logo_temp.png"
 
 # hard code it for now, may change it to read from installed bigdl
 release = "latest"
