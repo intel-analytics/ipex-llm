@@ -4,10 +4,11 @@ This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It app
 
 IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux) page for more details.
 
+## Install Prerequisites
 
-## Install Intel GPU Driver
+### Install GPU Driver
 
-### For Linux kernel 6.2
+#### For Linux kernel 6.2
 
 * Install arc driver
     ```bash
@@ -24,15 +25,12 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
     ```bash
     sudo apt-get update
-
     sudo apt-get -y install \
         gawk \
         dkms \
         linux-headers-$(uname -r) \
         libc6-dev
-        
     sudo apt install intel-i915-dkms  intel-fw-gpu
-
     sudo apt-get install -y gawk libc6-dev udev\
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
@@ -59,24 +57,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     ```
 
 
-## Setup Python Environment
-
-Install the Miniconda as follows if you don't have conda installed on your machine:
-  ```bash
-  wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-
-  bash Miniconda3-latest-Linux-x86_64.sh
-
-  source ~/.bashrc
-
-  # Verify the installation
-  conda --version
-  # rm Miniconda3-latest-Linux-x86_64.sh # if you don't need this file any longer
-  ```
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/install_conda.png" alt="image-20240221102252569" width=100%; />
-
-
-## Install oneAPI 
+### Install oneAPI 
   ```
   wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 
@@ -90,23 +71,36 @@ Install the Miniconda as follows if you don't have conda installed on your machi
 
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
 
+### Setup Python Environment
+
+Download and install the Miniconda as follows if you don't have conda installed on your machine:
+  ```bash
+  wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  bash Miniconda3-latest-Linux-x86_64.sh
+  source ~/.bashrc
+  ```
+
+You can use `conda --version` to verify you conda installation.
+
+After installation, create a new python environment `llm`:
+```cmd
+conda create -n llm python=3.9 libuv
+```
+Activate the newly created environment `llm`:
+```cmd
+conda activate llm
+```
+
 
 ## Install `ipex-llm`
 
 * With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
   ```
-  conda create -n llm python=3.9
-  conda activate llm
-
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/create_conda_env.png" alt="image-20240221102252564" width=100%; />
-  
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/create_conda_env.png" alt="image-20240221102252564" width=100%; />
-
-
-* You can verify if ipex-llm is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
+## Verify Installation
+* You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
   ```bash
   source /opt/intel/oneapi/setvars.sh
 
@@ -115,38 +109,44 @@ Install the Miniconda as follows if you don't have conda installed on your machi
   > from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
   ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/verify_ipex_import.png" alt="image-20240221102252562" width=100%; />
-
-
 ## Runtime Configurations
 
 To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example.
 
-* For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
-  ```bash
-  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-  source /opt/intel/oneapi/setvars.sh
+```eval_rst
+.. tabs::
+   .. tab:: Intel Arc™ A-Series and Intel Data Center GPU Flex
 
-  # Recommended Environment Variables for optimal performance
-  export USE_XETLA=OFF
-  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-  ```
+      For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
+      .. code-block:: bash
 
-* For Intel Data Center GPU Max Series, we recommend:
-  ```bash
-  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-  source /opt/intel/oneapi/setvars.sh
+         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+         source /opt/intel/oneapi/setvars.sh
 
-  # Recommended Environment Variables for optimal performance
-  export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-  export ENABLE_SDP_FUSION=1
-  ```
-  Please note that `libtcmalloc.so` can be installed by ```conda install -c conda-forge -y gperftools=2.10```.
+         # Recommended Environment Variables for optimal performance
+         export USE_XETLA=OFF
+         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
+   .. tab:: Intel Data Center GPU Max
+
+      For Intel Data Center GPU Max Series, we recommend:
+
+      .. code-block:: bash
+
+         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+         source /opt/intel/oneapi/setvars.sh
+
+         # Recommended Environment Variables for optimal performance
+         export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         export ENABLE_SDP_FUSION=1
+
+      Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``
+
+```
 
 ## A Quick Example
 
@@ -156,16 +156,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    ```bash
    conda activate llm
    ```
-* Step 2: If you're running on iGPU, set some environment variables by running below commands:
-  > For more details about runtime configurations, refer to [this guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
-  ```bash
-  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-  source /opt/intel/oneapi/setvars.sh
-
-  # Recommended Environment Variables for optimal performance
-  export USE_XETLA=OFF
-  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-  ```
+* Step 2: Follow [Runtime Configurations Section](#runtime-configurations) above to prepare your runtime environment.  
 * Step 3: Create a new file named `demo.py` and insert the code snippet below.
    ```python
    # Copy/Paste the contents to a new file demo.py

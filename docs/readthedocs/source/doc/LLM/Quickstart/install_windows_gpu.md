@@ -93,18 +93,18 @@ Choose either US or CN website for `extra-index-url`:
 ```
 
 ## Verify Installation
-You can verify if `ipex-llm` is successfully installed by simply running a few lines of code:
+You can verify if `ipex-llm` is successfully installed following below steps.
 
-* Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
-  ```cmd
-  conda activate llm
-  ```
-* Step 2: Configure oneAPI variables by running the following command:
-  ```cmd
-  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-  ```
-* Step 3:
-  Please also set the following environment variable according to your device:
+### Step 1: Runtime Configurations
+ * Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
+   ```cmd
+   conda activate llm
+   ```
+ * Configure oneAPI variables by running the following command:
+   ```cmd
+   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+   ```
+* Set the following environment variables according to your device:
 
   ```eval_rst
   .. tabs::
@@ -125,9 +125,12 @@ You can verify if `ipex-llm` is successfully installed by simply running a few l
 
      For other Intel dGPU Series, please refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
   ```
-* Step 4: Launch the Python interactive shell by typing `python` in the Anaconda prompt window and then press Enter.
 
-* Step 5: Copy following code to Anaconda prompt **line by line** and press Enter **after copying each line**.
+### Step 2: Run Python Code
+
+*  Launch the Python interactive shell by typing `python` in the Anaconda prompt window and then press Enter.
+
+* Copy following code to Anaconda prompt **line by line** and press Enter **after copying each line**.
   ```python
   import torch 
   from ipex_llm.transformers import AutoModel,AutoModelForCausalLM    
@@ -156,41 +159,12 @@ To monitor your GPU's performance and status (e.g. memory consumption, utilizati
 
 Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model, a 1.8 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
-* Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
-   ```cmd
-   conda activate llm
-   ```
-* Step 2: Configure oneAPI variables by running the following command:
-  ```cmd
-  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-  ```
-* Step 3:
-  Please also set the following environment variable according to your device:
-
-  ```eval_rst
-  .. tabs::
-     .. tab:: Intel iGPU
-  
-        .. code-block:: cmd
-  
-           set SYCL_CACHE_PERSISTENT=1
-           set BIGDL_LLM_XMX_DISABLED=1
-  
-     .. tab:: Intel Arc™ A770
-  
-        There is no need to set further environment variables.
-  ```
-  
-  ```eval_rst
-  .. seealso::
-
-     For other Intel dGPU Series, please refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
-  ```
-* Step 4: Install additional package required for Qwen-1.8B-Chat to conduct:
+* Step 1: Follow [Runtime Configurations Section](#step-1-runtime-configurations) above to prepare your runtime environment.  
+* Step 2: Install additional package required for Qwen-1.8B-Chat to conduct:
    ```cmd
    pip install tiktoken transformers_stream_generator einops
    ```
-* Step 5: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
+* Step 3: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
   ```eval_rst
   .. tabs::
      .. tab:: Hugging Face
@@ -322,7 +296,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
      This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
   ```
 
-* Step 5. Run `demo.py` within the activated Python environment using the following command:
+* Step 4. Run `demo.py` within the activated Python environment using the following command:
   ```cmd
   python demo.py
   ```
