@@ -12,17 +12,17 @@ permissions:
 on:
   # schedule:
   #   - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
-  # pull_request:
-  #   branches: [ main ]
-  #   paths:
-  #     - '.github/workflows/llm_example_tests.yml'
-  #     - '.github/workflows/llm-binary-build.yml'
-  #     - '.github/actions/llm/example-test/action.yml'
-  #     - '.github/actions/llm/setup-llm-env/action.yml'
-  #     - '.github/actions/llm/remove-llm-env/action.yml'
-  #     - '.github/actions/llm/download-llm-binary/action.yml'
-  #     - 'python/llm/dev/test/run-example-tests.sh'
-  #     - 'python/llm/example/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/llm_example_tests.yml'
+      - '.github/workflows/llm-binary-build.yml'
+      - '.github/actions/llm/example-test/action.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
+      - 'python/llm/dev/test/run-example-tests.sh'
+      - 'python/llm/example/**'
   workflow_dispatch:
   workflow_call:
 

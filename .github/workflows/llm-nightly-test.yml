@@ -12,13 +12,13 @@ permissions:
 on:
   schedule:
     - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm-nightly-test.yml"
-  #     - ".github/actions/llm/setup-llm-env/action.yml"
-  #     - ".github/actions/llm/remove-llm-env/action.yml"
-  #     - ".github/actions/llm/convert-test/action.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm-nightly-test.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/convert-test/action.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

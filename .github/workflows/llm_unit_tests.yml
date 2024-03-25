@@ -22,17 +22,17 @@ on:
       - ".github/actions/llm/cli-test-linux/action.yml"
       - ".github/actions/llm/cli-test-windows/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - "python/llm/**"
-  #     - ".github/workflows/llm_unit_tests.yml"
-  #     - ".github/workflows/llm-binary-build.yml"
-  #     - ".github/actions/llm/setup-llm-env/action.yml"
-  #     - ".github/actions/llm/remove-llm-env/action.yml"
-  #     - ".github/actions/llm/cli-test-linux/action.yml"
-  #     - ".github/actions/llm/cli-test-windows/action.yml"
-  #     - ".github/actions/llm/download-llm-binary/action.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "python/llm/**"
+      - ".github/workflows/llm_unit_tests.yml"
+      - ".github/workflows/llm-binary-build.yml"
+      - ".github/actions/llm/setup-llm-env/action.yml"
+      - ".github/actions/llm/remove-llm-env/action.yml"
+      - ".github/actions/llm/cli-test-linux/action.yml"
+      - ".github/actions/llm/cli-test-windows/action.yml"
+      - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
   workflow_call:
 
