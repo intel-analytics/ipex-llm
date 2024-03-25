@@ -74,7 +74,7 @@ if [ ${upload} == true ]; then
     # upload to pypi
     upload_to_pypi_command="twine upload dist/ipex_llm-${ipex_llm_version}-*-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_to_pypi_command"
-    $upload_to_pypi_command
+    # $upload_to_pypi_command
 
     # upload to sourceforge
     rsync -avzr -e \

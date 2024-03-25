@@ -1,0 +1,84 @@
+name: Nightly Build
+
+on:
+  pull_request:
+    branches: [ main ]
+  #   paths:
+  #     - '.github/workflows/nightly_build.yml'
+  schedule:
+    - cron: '30 11 * * *'  # GMT time, 11:30 GMT == 19:30 China
+  workflow_dispatch:
+
+env:
+  GIST_ID: 48dbd87983219d4fe264adfea701815a
+
+permissions:
+  contents: read
+
+jobs:
+  
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+
+  ipex-llm-build:
+    # python build can only be published once a day, please do not publish it manually
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'all'}} 
+    runs-on: [self-hosted, Bree]
+    needs: llm-cpp-build
+    steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.15'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+
+    - name: Download llm binary
+      uses: ./.github/actions/llm/download-llm-binary
+
+    - name: Build package
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d'`
+        # export TIMESTAMP=20240323
+        export PYPI_VERSION=2.1.0
+        nb_version=${PYPI_VERSION}b${TIMESTAMP}
+        echo ${nb_version}
+
+        ## windows ##
+        bash python/llm/dev/release_default_windows.sh ${nb_version} true
+
+        ## linux ##
+        bash python/llm/dev/release_default_linux.sh ${nb_version} true
+
+    - name: Create Job Badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: nb-python-build.json
+        type: job
+        job-name: python-build
+        runner-hosted-on: 'Shanghai'
+
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        file-name: nightly-build.json
+        type: workflow
