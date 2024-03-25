@@ -37,7 +37,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Llama
 
-        .. autoclass:: ipex_llm.langchain.llms.ipexllm.LlamaLLM
+        .. autoclass:: ipex_llm.langchain.llms.LlamaLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -49,7 +49,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: ChatGLM
 
-        .. autoclass:: ipex_llm.langchain.llms.ipexllm.ChatGLMLLM
+        .. autoclass:: ipex_llm.langchain.llms.ChatGLMLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -61,7 +61,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Bloom
 
-        .. autoclass:: ipex_llm.langchain.llms.ipexllm.BloomLLM
+        .. autoclass:: ipex_llm.langchain.llms.BloomLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -73,7 +73,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Gptneox
 
-        .. autoclass:: ipex_llm.langchain.llms.ipexllm.GptneoxLLM
+        .. autoclass:: ipex_llm.langchain.llms.GptneoxLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -85,7 +85,7 @@ For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, yo
 
     .. tab:: Starcoder
 
-        .. autoclass:: ipex_llm.langchain.llms.ipexllm.StarcoderLLM
+        .. autoclass:: ipex_llm.langchain.llms.StarcoderLLM
             :members:
             :undoc-members:
             :show-inheritance:
@@ -117,7 +117,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Llama
 
-        .. autoclass:: ipex_llm.langchain.embeddings.ipexllm.LlamaEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.LlamaEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
@@ -129,7 +129,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Bloom
 
-        .. autoclass:: ipex_llm.langchain.embeddings.ipexllm.BloomEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.BloomEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
@@ -141,7 +141,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Gptneox
 
-        .. autoclass:: ipex_llm.langchain.embeddings.ipexllm.GptneoxEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.GptneoxEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
@@ -153,7 +153,7 @@ For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also
 
     .. tab:: Starcoder
 
-        .. autoclass:: ipex_llm.langchain.embeddings.ipexllm.StarcoderEmbeddings
+        .. autoclass:: ipex_llm.langchain.embeddings.StarcoderEmbeddings
             :members:
             :undoc-members:
             :show-inheritance:
