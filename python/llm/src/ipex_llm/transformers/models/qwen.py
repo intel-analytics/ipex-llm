@@ -334,7 +334,8 @@ def qwen_attention_forward_quantized(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
-    # TODO: use when decoding_fast_path = (use_fuse_rope and bsz * q_len == 1)
+    # qtype_check = decoding_fast_path_qtype_check(self.q_proj)
+    # TODO: use when decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
     decoding_fast_path = False
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
