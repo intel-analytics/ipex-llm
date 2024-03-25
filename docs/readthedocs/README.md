@@ -1,15 +1,16 @@
-# BigDL Documentation
-This is the repository for BigDL documentation, which is hosted at https://bigdl.readthedocs.io/en/latest/
+# IPEX-LLM Documentation
+This is the repository for IPEX-LLM documentation, which is hosted at https://ipex-llm.readthedocs.io/en/latest/
+
 ## Local build
 ### 1. Set up environment
-To build BigDL documentation locally for testing purposes, it is recommended to create a conda environment with specified Python version:
+To build IPEX-LLM documentation locally for testing purposes, it is recommended to create a conda environment with specified Python version:
 
 ```bash
 conda create -n docs python=3.7
 conda activate docs
 ```
 
-Then inside [`BigDL/docs/readthedocs`](.) folder, install required packages:
+Then inside [`ipex-llm/docs/readthedocs`](.) folder, install required packages:
 
 ```bash
 cd docs/readthedocs
