@@ -2,7 +2,7 @@
    :google-site-verification: S66K6GAclKw1RroxU0Rka_2d1LZFVe27M0gRneEsIVI
 
 ################################################
-The IPEX Project
+The IPEX LLM Project
 ################################################
 
 ------
