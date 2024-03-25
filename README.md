@@ -110,7 +110,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
   - [ModeScope](python/llm/example/GPU/ModelScope-Models)
 - [Tutorials](https://github.com/intel-analytics/bigdl-llm-tutorial)
 
-*For more details, please refer to the `ipex-llm` document [website](https://ipex-llm.readthedocs.io/en/main/doc/LLM/index.html).*
+*For more details, please refer to the `ipex-llm` document [website](https://ipex-llm.readthedocs.io/).*
 
 ## Verified Models
 Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM* and more; see the list below.
