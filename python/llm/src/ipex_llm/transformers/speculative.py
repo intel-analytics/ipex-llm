@@ -57,7 +57,7 @@ def generate(
         _enable_ipex = get_enable_ipex()
         if _enable_ipex and inputs.size(1) < 256:
             logger.warning(
-                "IPEX optimized models have issues for speculative decoding with short prompts"
+                "IPEX_CPU optimized models have issues for speculative decoding with short prompts"
                 "(length < 256). Using normal generate() method instead."
             )
             for var in ['max_step_draft', 'th_stop_draft', 'hf_adjust',
