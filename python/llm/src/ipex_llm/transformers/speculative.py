@@ -64,6 +64,7 @@ def generate(
                         'auto_th_stop_draft', 'auto_parameters', 'min_step_draft',
                         'th_batch_num']:
                 value = kwargs.pop(var, None)
+            del self.draft_model
             return original_generate(self,
                                      inputs=inputs,
                                      generation_config=generation_config,
