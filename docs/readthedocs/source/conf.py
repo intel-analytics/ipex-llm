@@ -76,7 +76,7 @@ source_suffix = {'.rst': 'restructuredtext',
 
 master_doc = 'index'
 
-project = 'BigDL'
+project = 'IPEX-LLM'
 copyright = '2020, IPEX-LLM Authors'
 author = 'IPEX-LLM Authors'
 
