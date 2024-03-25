@@ -1,8 +1,8 @@
 apiVersion: kubeflow.org/v2beta1
 kind: MPIJob
 metadata:
-  name: bigdl-qlora-finetuning-job
-  namespace: bigdl-qlora-finetuning
+  name: ipex-llm-qlora-finetuning-job
+  namespace: ipex-llm-qlora-finetuning
 spec:
   slotsPerWorker: 1
   runPolicy:
@@ -20,10 +20,10 @@ spec:
                claimName: nfs-pvc
            containers:
            - image: {{ .Values.imageName }}
-             name: bigdl-qlora-finetuning-launcher
+             name: ipex-llm-qlora-finetuning-launcher
              securityContext:
               runAsUser: 1000
-             command: ['sh' , '-c', 'bash /bigdl/bigdl-qlora-finetuing-entrypoint.sh']
+             command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-qlora-finetuing-entrypoint.sh']
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -34,7 +34,7 @@ spec:
              - name: MASTER_PORT
                value: "42679"
              - name: MASTER_ADDR
-               value: "bigdl-qlora-finetuning-job-worker-0.bigdl-qlora-finetuning-job-worker"
+               value: "ipex-llm-qlora-finetuning-job-worker-0.ipex-llm-qlora-finetuning-job-worker"
              - name: DATA_SUB_PATH
                value: "{{ .Values.dataSubPath }}"
              - name: ENABLE_GRADIENT_CHECKPOINT
@@ -52,10 +52,10 @@ spec:
              volumeMounts:
              - name: nfs-storage
                subPath: {{ .Values.modelSubPath }}
-               mountPath: /bigdl/model
+               mountPath: /ipex_llm/model
              - name: nfs-storage
                subPath: {{ .Values.dataSubPath }}
-               mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
+               mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
     Worker:
       replicas: {{ .Values.trainerNum }}
       template:
@@ -74,10 +74,10 @@ spec:
                     topologyKey: kubernetes.io/hostname
           containers:
           - image: {{ .Values.imageName }}
-            name: bigdl-qlora-finetuning-worker
+            name: ipex-llm-qlora-finetuning-worker
             securityContext:
               runAsUser: 1000
-            command: ['sh' , '-c', 'bash /bigdl/bigdl-qlora-finetuing-entrypoint.sh']
+            command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-qlora-finetuing-entrypoint.sh']
             env:
             - name: WORKER_ROLE
               value: "trainer"
@@ -88,7 +88,7 @@ spec:
             - name: MASTER_PORT
               value: "42679"
             - name: MASTER_ADDR
-              value: "bigdl-qlora-finetuning-job-worker-0.bigdl-qlora-finetuning-job-worker"
+              value: "ipex-llm-qlora-finetuning-job-worker-0.ipex-llm-qlora-finetuning-job-worker"
             - name: ENABLE_GRADIENT_CHECKPOINT
               value: "{{ .Values.enableGradientCheckpoint }}"
             - name: http_proxy
@@ -102,10 +102,10 @@ spec:
             volumeMounts:
             - name: nfs-storage
               subPath: {{ .Values.modelSubPath }}
-              mountPath: /bigdl/model
+              mountPath: /ipex_llm/model
             - name: nfs-storage
               subPath: {{ .Values.dataSubPath }}
-              mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
+              mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
             resources:
               requests:
                 cpu: 48

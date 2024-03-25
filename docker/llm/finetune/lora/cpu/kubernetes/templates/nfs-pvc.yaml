@@ -2,7 +2,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: nfs-pvc
-  namespace: bigdl-lora-finetuning
+  namespace: ipex-llm-lora-finetuning
 spec:
   accessModes:
   - ReadWriteOnce

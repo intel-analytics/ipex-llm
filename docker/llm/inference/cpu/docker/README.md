@@ -1,4 +1,4 @@
-## Build/Use BigDL-LLM cpu image
+## Build/Use IPEX-LLM cpu image
 
 ### Build Image
 ```bash
@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT .
 ```
 
 
@@ -16,7 +16,7 @@ docker build \
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -31,7 +31,7 @@ sudo docker run -itd \
 
 After the container is booted, you could get into the container through `docker exec`.
 
-To run inference using `BigDL-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm#cpu-int4).
+To run inference using `IPEX-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX-LLM/tree/main/python/llm#cpu-int4).
 
 ### Use chat.py
 
@@ -41,7 +41,7 @@ You can download models and bind the model directory from host machine to contai
 
 Here is an example:
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 export MODEL_PATH=/home/llm/models
 
 sudo docker run -itd \

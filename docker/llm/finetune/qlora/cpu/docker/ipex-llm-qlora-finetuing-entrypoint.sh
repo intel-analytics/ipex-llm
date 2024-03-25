@@ -3,8 +3,8 @@
 set -x
 source /opt/intel/oneapi/setvars.sh
 export CCL_WORKER_COUNT=$WORLD_SIZE
-source bigdl-llm-init -t
-cd /bigdl/alpaca-qlora
+source ipex-llm-init -t
+cd /ipex_llm/alpaca-qlora
 if [ "$WORKER_ROLE" = "launcher" ]
 then
   sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
@@ -24,9 +24,9 @@ then
     -genv KMP_AFFINITY="granularity=fine,none" \
     -genv KMP_BLOCKTIME=1 \
     -genv TF_ENABLE_ONEDNN_OPTS=1 \
-    python /bigdl/alpaca-qlora/alpaca_qlora_finetuning_cpu.py \
-      --base_model '/bigdl/model'  \
-      --data_path "/bigdl/data" \
+    python /ipex_llm/alpaca-qlora/alpaca_qlora_finetuning_cpu.py \
+      --base_model '/ipex_llm/model'  \
+      --data_path "/ipex_llm/data" \
       --output_dir "/home/mpiuser/finetuned_model" \
       --batch_size 128 \
       --micro_batch_size $MICRO_BATCH_SIZE \

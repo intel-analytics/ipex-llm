@@ -1,4 +1,4 @@
-## Build/Use BigDL-LLM-serving xpu image
+## Build/Use IPEX-LLM-serving xpu image
 
 ### Build Image
 ```bash
@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/bigdl-llm-serving-xpu:2.5.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT .
 ```
 
 
@@ -18,7 +18,7 @@ To map the `xpu` into the container, you need to specify `--device=/dev/dri` whe
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-xpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -43,4 +43,4 @@ root@arda-arc12:/# sycl-ls
 ```
 After the container is booted, you could get into the container through `docker exec`.
 
-To run model-serving using `BigDL-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/BigDL/tree/main/python/llm/src/bigdl/llm/serving).
+To run model-serving using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/IPEX-LLM/tree/main/python/llm/src/ipex_llm/serving).

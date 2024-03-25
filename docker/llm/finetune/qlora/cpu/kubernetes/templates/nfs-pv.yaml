@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-pv-bigdl-qlora-finetuning
-  namespace: bigdl-qlora-finetuning
+  name: nfs-pv-ipex-llm-qlora-finetuning
+  namespace: ipex-llm-qlora-finetuning
 spec:
   capacity:
     storage: 15Gi

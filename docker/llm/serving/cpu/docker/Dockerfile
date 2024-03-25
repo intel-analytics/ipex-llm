@@ -1,4 +1,4 @@
-FROM intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+FROM intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 
 ARG http_proxy
 ARG https_proxy
@@ -12,7 +12,7 @@ COPY ./model_adapter.py.patch /llm/model_adapter.py.patch
 ADD  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 # Install Serving Dependencies
 RUN cd /llm && \
-    pip install --pre --upgrade bigdl-llm[serving] && \
+    pip install --pre --upgrade ipex-llm[serving] && \
     # Fix Trivy CVE Issues
     pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
     # Fix Qwen model adpater in fastchat

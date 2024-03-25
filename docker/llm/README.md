@@ -1,18 +1,18 @@
-# Getting started with BigDL-LLM in Docker
+# Getting started with IPEX-LLM in Docker
 
 ### Index
-- [Docker installation guide for BigDL-LLM on CPU](#docker-installation-guide-for-bigdl-llm-on-cpu)
-    - [BigDL-LLM on Windows](#bigdl-llm-on-windows)
-    - [BigDL-LLM on Linux/MacOS](#bigdl-llm-on-linuxmacos)
-- [Docker installation guide for BigDL LLM on XPU](#docker-installation-guide-for-bigdl-llm-on-xpu) 
-- [Docker installation guide for BigDL LLM Serving on CPU](#docker-installation-guide-for-bigdl-llm-serving-on-cpu) 
-- [Docker installation guide for BigDL LLM Serving on XPU](#docker-installation-guide-for-bigdl-llm-serving-on-xpu) 
-- [Docker installation guide for BigDL LLM Fine Tuning on CPU](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-cpu) 
-- [Docker installation guide for BigDL LLM Fine Tuning on XPU](#docker-installation-guide-for-bigdl-llm-fine-tuning-on-xpu) 
+- [Docker installation guide for IPEX-LLM on CPU](#docker-installation-guide-for-ipex-llm-on-cpu)
+    - [IPEX-LLM on Windows](#ipex-llm-on-windows)
+    - [IPEX-LLM on Linux/MacOS](#ipex-llm-on-linuxmacos)
+- [Docker installation guide for IPEX LLM on XPU](#docker-installation-guide-for-ipex-llm-on-xpu) 
+- [Docker installation guide for IPEX LLM Serving on CPU](#docker-installation-guide-for-ipex-llm-serving-on-cpu) 
+- [Docker installation guide for IPEX LLM Serving on XPU](#docker-installation-guide-for-ipex-llm-serving-on-xpu) 
+- [Docker installation guide for IPEX LLM Fine Tuning on CPU](#docker-installation-guide-for-ipex-llm-fine-tuning-on-cpu) 
+- [Docker installation guide for IPEX LLM Fine Tuning on XPU](#docker-installation-guide-for-ipex-llm-fine-tuning-on-xpu) 
 
-## Docker installation guide for BigDL-LLM on CPU
+## Docker installation guide for IPEX-LLM on CPU
 
-### BigDL-LLM on Windows
+### IPEX-LLM on Windows
 
 #### Install docker
 
@@ -23,26 +23,26 @@ The instructions for installing can be accessed from
 [here](https://docs.docker.com/desktop/install/windows-install/).
 
 
-#### Pull bigdl-llm-cpu image
+#### Pull ipex-llm-cpu image
 
 To pull image from hub, you can execute command on console:
 ```bash
-docker pull intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 ```
 to check if the image is successfully downloaded, you can use:
 ```powershell
-docker images | sls intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+docker images | sls intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 ```
 
 
-#### Start bigdl-llm-cpu container
+#### Start ipex-llm-cpu container
 
 To run the image and do inference, you could create and run a bat script on Windows.
 
 An example on Windows could be:
 ```bat
 @echo off
-set DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+set DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 set CONTAINER_NAME=my_container
 set MODEL_PATH=D:/llm/models[change to your model path]
 
@@ -62,7 +62,7 @@ After the container is booted, you could get into the container through `docker 
 docker exec -it my_container bash
 ```
 
-To run inference using `BigDL-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm#cpu-int4).
+To run inference using `IPEX-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm#cpu-int4).
 
 
 #### Getting started with chat
@@ -89,7 +89,7 @@ Here is a demostration:
 
 #### Getting started with tutorials
 
-You could start a jupyter-lab serving to explore bigdl-llm-tutorial which can help you build a more sophisticated Chatbo.
+You could start a jupyter-lab serving to explore ipex-llm-tutorial which can help you build a more sophisticated Chatbo.
 
 To start serving,  run the script under '/llm':
 ```bash
@@ -107,12 +107,12 @@ Here is a demostration of how to use tutorial in explorer:
 
 </a>
 
-### BigDL-LLM on Linux/MacOS
+### IPEX-LLM on Linux/MacOS
 
 To run container on Linux/MacOS:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -126,23 +126,23 @@ docker run -itd \
     $DOCKER_IMAGE
 ```
 
-Also, you could use chat.py and bigdl-llm-tutorial for development.
+Also, you could use chat.py and ipex-llm-tutorial for development.
 
 [Getting started with chat](#getting-started-with-chat)
 
 [Getting started with tutorials](#getting-started-with-tutorials)
 
-## Docker installation guide for BigDL LLM on XPU
+## Docker installation guide for IPEX LLM on XPU
 
 First, pull docker image from docker hub:
 ```
-docker pull intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
 ```
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -168,20 +168,20 @@ root@arda-arc12:/# sycl-ls
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
-To run inference using `BigDL-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU).
+To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm/example/GPU).
 
-## Docker installation guide for BigDL LLM Serving on CPU
+## Docker installation guide for IPEX LLM Serving on CPU
 
 ### Boot container
 
 Pull image:
 ```
-docker pull intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
 ```
 
 You could use the following bash script to start the container. Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -198,14 +198,11 @@ After the container is booted, you could get into the container through `docker 
 
 ### Models
 
-Using BigDL-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
+Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using BigDL-LLM, you need to make some modifications to the model's name.
+FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
 
-For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `BigDL-LLM` as backend, you need to change name from `llama-7b-hf` to `bigdl-7b`.
-The key point here is that the model's path should include "bigdl" and should not include paths matched by other model adapters.
-
-A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `BigDL-LLM` backend will be used automatically.
+A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `IPEX-LLM` backend will be used automatically.
 
 
 ### Start the service
@@ -237,11 +234,11 @@ python3 -m fastchat.serve.gradio_web_server
 
 This is the user interface that users will interact with.
 
-By following these steps, you will be able to serve your models using the web UI with `BigDL-LLM` as the backend. You can open your browser and chat with a model now.
+By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
 
 #### Serving with OpenAI-Compatible RESTful APIs
 
-To start an OpenAI API server that provides compatible APIs using `BigDL-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
+To start an OpenAI API server that provides compatible APIs using `IPEX-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
 First, launch the controller
 
@@ -262,13 +259,13 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
 
-## Docker installation guide for BigDL LLM Serving on XPU
+## Docker installation guide for IPEX LLM Serving on XPU
 
 ### Boot container
 
 Pull image:
 ```
-docker pull intelanalytics/bigdl-llm-serving-xpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT
 ```
 
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
@@ -276,7 +273,7 @@ To map the `xpu` into the container, you need to specify `--device=/dev/dri` whe
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 export SERVICE_MODEL_PATH=/llm/models/chatglm2-6b[a specified model path for running service]
@@ -331,11 +328,11 @@ python3 -m fastchat.serve.gradio_web_server
 
 This is the user interface that users will interact with.
 
-By following these steps, you will be able to serve your models using the web UI with `BigDL-LLM` as the backend. You can open your browser and chat with a model now.
+By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
 
 #### Serving with OpenAI-Compatible RESTful APIs
 
-To start an OpenAI API server that provides compatible APIs using `BigDL-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
+To start an OpenAI API server that provides compatible APIs using `IPEX-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
 First, launch the controller
 
@@ -355,7 +352,7 @@ Finally, launch the RESTful API server
 python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
-## Docker installation guide for BigDL LLM Fine Tuning on CPU
+## Docker installation guide for IPEX LLM Fine Tuning on CPU
 
 ### 1. Prepare Docker Image
 
@@ -363,10 +360,10 @@ You can download directly from Dockerhub like:
 
 ```bash
 # For standalone
-docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 
 # For k8s
-docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -379,7 +376,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 
 # For k8s
@@ -389,7 +386,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
   -f ./Dockerfile.k8s .
 ```
 
@@ -405,12 +402,12 @@ export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
-   --name=bigdl-llm-fintune-qlora-cpu \
+   --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   -v $BASE_MODE_PATH:/bigdl/model \
-   -v $DATA_PATH:/bigdl/data/alpaca-cleaned \
-   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   -v $BASE_MODE_PATH:/ipex_llm/model \
+   -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -421,10 +418,10 @@ export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
-   --name=bigdl-llm-fintune-qlora-cpu \
+   --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -434,14 +431,14 @@ However, we do recommend you to handle them manually, because the automatical do
 Enter the running container:
 
 ```bash
-docker exec -it bigdl-llm-fintune-qlora-cpu bash
+docker exec -it ipex-llm-fintune-qlora-cpu bash
 ```
 
 Then, start QLoRA fine-tuning:
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
 ```bash
-cd /bigdl
+cd /ipex_llm
 bash start-qlora-finetuning-on-cpu.sh
 ```
 
@@ -473,16 +470,16 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
-## Docker installation guide for BigDL LLM Fine Tuning on XPU
+## Docker installation guide for IPEX LLM Fine Tuning on XPU
 
-The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
+The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
 ### 1. Prepare Docker Image
 
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -494,7 +491,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -512,13 +509,13 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=bigdl-llm-fintune-qlora-xpu \
+   --name=ipex-llm-fintune-qlora-xpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -531,11 +528,11 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=bigdl-llm-fintune-qlora-xpu \
+   --name=ipex-llm-fintune-qlora-xpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -545,7 +542,7 @@ However, we do recommend you to handle them manually, because the automatical do
 Enter the running container:
 
 ```bash
-docker exec -it bigdl-llm-fintune-qlora-xpu bash
+docker exec -it ipex-llm-fintune-qlora-xpu bash
 ```
 
 Then, start QLoRA fine-tuning:

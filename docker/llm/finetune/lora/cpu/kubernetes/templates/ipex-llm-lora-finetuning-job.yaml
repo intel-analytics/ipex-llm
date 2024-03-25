@@ -1,8 +1,8 @@
 apiVersion: kubeflow.org/v2beta1
 kind: MPIJob
 metadata:
-  name: bigdl-lora-finetuning-job
-  namespace: bigdl-lora-finetuning
+  name: ipex-llm-lora-finetuning-job
+  namespace: ipex-llm-lora-finetuning
 spec:
   slotsPerWorker: 1
   runPolicy:
@@ -20,10 +20,10 @@ spec:
                claimName: nfs-pvc
            containers:
            - image: {{ .Values.imageName }}
-             name: bigdl-ppml-finetuning-launcher
+             name: ipex-llm-lora-finetuning-launcher
              securityContext:
               runAsUser: 1000
-             command: ['sh' , '-c', 'bash /bigdl/bigdl-lora-finetuing-entrypoint.sh']
+             command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-lora-finetuing-entrypoint.sh']
              env:
              - name: WORKER_ROLE
                value: "launcher"
@@ -34,7 +34,7 @@ spec:
              - name: MASTER_PORT
                value: "42679"
              - name: MASTER_ADDR
-               value: "bigdl-lora-finetuning-job-worker-0.bigdl-lora-finetuning-job-worker"
+               value: "ipex-llm-lora-finetuning-job-worker-0.ipex-llm-lora-finetuning-job-worker"
              - name: DATA_SUB_PATH
                value: "{{ .Values.dataSubPath }}"
              - name: OMP_NUM_THREADS
@@ -46,20 +46,20 @@ spec:
              volumeMounts:
              - name: nfs-storage
                subPath: {{ .Values.modelSubPath }}
-               mountPath: /bigdl/model
+               mountPath: /ipex_llm/model
              - name: nfs-storage
                subPath: {{ .Values.dataSubPath }}
-               mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
+               mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
     Worker:
       replicas: {{ .Values.trainerNum }}
       template:
         spec:
           containers:
           - image: {{ .Values.imageName }}
-            name: bigdl-ppml-finetuning-worker
+            name: ipex-llm-lora-finetuning-worker
             securityContext:
               runAsUser: 1000
-            command: ['sh' , '-c', 'bash /bigdl/bigdl-lora-finetuing-entrypoint.sh']
+            command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-lora-finetuing-entrypoint.sh']
             env:
             - name: WORKER_ROLE
               value: "trainer"
@@ -70,7 +70,7 @@ spec:
             - name: MASTER_PORT
               value: "42679"
             - name: MASTER_ADDR
-              value: "bigdl-lora-finetuning-job-worker-0.bigdl-lora-finetuning-job-worker"
+              value: "ipex-llm-lora-finetuning-job-worker-0.ipex-llm-lora-finetuning-job-worker"
             - name: LOCAL_POD_NAME
               valueFrom:
                 fieldRef:
@@ -78,10 +78,10 @@ spec:
             volumeMounts:
             - name: nfs-storage
               subPath: {{ .Values.modelSubPath }}
-              mountPath: /bigdl/model
+              mountPath: /ipex_llm/model
             - name: nfs-storage
               subPath: {{ .Values.dataSubPath }}
-              mountPath: "/bigdl/data/{{ .Values.dataSubPath }}"
+              mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
             resources:
               requests:
                 cpu: {{ .Values.cpuPerPod }}

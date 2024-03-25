@@ -12,13 +12,13 @@ FROM mpioperator/intel as builder
 ARG http_proxy
 ARG https_proxy
 ENV PIP_NO_CACHE_DIR=false
-COPY ./requirements.txt /bigdl/requirements.txt
+COPY ./requirements.txt /ipex_llm/requirements.txt
 
 # add public key
 COPY --from=key-getter /root/intel-oneapi-archive-keyring.gpg /usr/share/keyrings/intel-oneapi-archive-keyring.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list
 
-RUN mkdir /bigdl/data && mkdir /bigdl/model && \
+RUN mkdir /ipex_llm/data && mkdir /ipex_llm/model && \
 # install pytorch 2.0.1
     apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
@@ -29,12 +29,12 @@ RUN mkdir /bigdl/data && mkdir /bigdl/model && \
     pip install intel_extension_for_pytorch==2.0.100 && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
 # install transformers etc.
-    cd /bigdl && \
+    cd /ipex_llm && \
     git clone https://github.com/huggingface/transformers.git && \
     cd transformers && \
     git reset --hard 057e1d74733f52817dc05b673a340b4e3ebea08c && \
     pip install . && \
-    pip install -r /bigdl/requirements.txt && \
+    pip install -r /ipex_llm/requirements.txt && \
 # install python
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3.9 && \
@@ -56,9 +56,9 @@ RUN mkdir /bigdl/data && mkdir /bigdl/model && \
     echo "    UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config && \
     sed -i 's/#\(StrictModes \).*/\1no/g' /etc/ssh/sshd_config
 
-COPY ./bigdl-lora-finetuing-entrypoint.sh /bigdl/bigdl-lora-finetuing-entrypoint.sh
-COPY ./lora_finetune.py /bigdl/lora_finetune.py
+COPY ./ipex-llm-lora-finetuing-entrypoint.sh /ipex_llm/ipex-llm-lora-finetuing-entrypoint.sh
+COPY ./lora_finetune.py /ipex_llm/lora_finetune.py
 
-RUN chown -R mpiuser /bigdl
+RUN chown -R mpiuser /ipex_llm
 USER mpiuser
 ENTRYPOINT ["/bin/bash"]

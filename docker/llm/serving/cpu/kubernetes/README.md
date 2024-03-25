@@ -1,8 +1,8 @@
-## Deployment bigdl-llm serving service in K8S environment
+## Deployment ipex-llm serving service in K8S environment
 
 ## Image
 
-To deploy BigDL-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT`
+To deploy IPEX-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT`
 
 ## Before deployment
 
@@ -10,11 +10,9 @@ To deploy BigDL-LLM-serving cpu in Kubernetes environment, please use this image
 
 In this document, we will use `vicuna-7b-v1.5` as the deployment model.
 
-After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna-7b-v1.5-bigdl` to use `bigdl-llm` as the backend. The `bigdl-llm` backend will be used if model path contains `bigdl`. Otherwise, the original transformer-backend will be used.
+After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna-7b-v1.5-ipex` to use `ipex-llm` as the backend. The `ipex-llm` backend will be used if model path contains `ipex-llm`. Otherwise, the original transformer-backend will be used.
 
 You can download the model from [here](https://huggingface.co/lmsys/vicuna-7b-v1.5).
-
-For ChatGLM models, users do not need to add `bigdl` into model path.  We have already used the `BigDL-LLM` backend for this model.
 
 ### Kubernetes config
 
@@ -67,7 +65,7 @@ We use the following yaml file for controller deployment:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: bigdl-fschat-a1234bd-controller
+  name: ipex-llm-fschat-a1234bd-controller
   labels:
     fastchat-appid: a1234bd
     fastchat-app-type: controller
@@ -75,7 +73,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+    image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -107,7 +105,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: bigdl-a1234bd-fschat-controller-service
+  name: ipex-llm-a1234bd-fschat-controller-service
 spec:
   # You may also want to change this to use the cluster's feature
   type: NodePort
@@ -133,7 +131,7 @@ We use the following deployment for worker deployment:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bigdl-fschat-a1234bd-worker-deployment
+  name: ipex-llm-fschat-a1234bd-worker-deployment
 spec:
   # Change this to the number you want
   replicas: 1
@@ -148,11 +146,11 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed
-          value: bigdl-a1234bd-fschat-controller-service
+          value: ipex-llm-a1234bd-fschat-controller-service
         - name: CONTROLLER_PORT # fixed
           value: "21005"
         - name: WORKER_HOST # fixed
@@ -162,7 +160,7 @@ spec:
         - name: WORKER_PORT # fixed
           value: "21841"
         - name: MODEL_PATH 
-          value: "/llm/models/vicuna-7b-v1.5-bigdl/" # change this to your model
+          value: "/llm/models/vicuna-7b-v1.5-ipex-llm/" # change this to your model
         - name: OMP_NUM_THREADS
           value: "16"
         resources:
@@ -190,7 +188,7 @@ You may want to change the `MODEL_PATH` variable in the yaml.  Also, please reme
 We have set port using `GRADIO_PORT` envrionment variable in `deployment.yaml`, you can use this command
 
 ```bash
-k port-forward bigdl-fschat-a1234bd-controller --address 0.0.0.0 8002:8002
+k port-forward ipex-llm-fschat-a1234bd-controller --address 0.0.0.0 8002:8002
 ```
 
 Then visit http://YOUR_HOST_IP:8002 to access ui.
@@ -209,14 +207,14 @@ First, install openai-python:
 pip install --upgrade openai
 ```
 
-Then, interact with model vicuna-7b-v1.5-bigdl:
+Then, interact with model vicuna-7b-v1.5-ipex-llm:
 
 ```python
 import openai
 openai.api_key = "EMPTY"
 openai.api_base = "http://localhost:8000/v1"
 
-model = "vicuna-7b-v1.5-bigdl"
+model = "vicuna-7b-v1.5-ipex-llm"
 prompt = "Once upon a time"
 
 # create a completion

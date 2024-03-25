@@ -24,18 +24,18 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
     pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --pre --upgrade bigdl-llm[all] && \
-# Download bigdl-llm-tutorial
+    pip install --pre --upgrade ipex-llm[all] && \
+# Download ipex-llm-tutorial
     cd /llm && \
     pip install --upgrade jupyterlab && \
-    git clone https://github.com/intel-analytics/bigdl-llm-tutorial && \
+    git clone https://github.com/intel-analytics/ipex-llm-tutorial && \
     chmod +x /llm/start-notebook.sh && \
 # Download all-in-one benchmark
-    git clone https://github.com/intel-analytics/BigDL && \
-    cp -r ./BigDL/python/llm/dev/benchmark/ ./benchmark && \
+    git clone https://github.com/intel-analytics/IPEX-LLM && \
+    cp -r ./IPEX-LLM/python/llm/dev/benchmark/ ./benchmark && \
 # Copy chat.py script
     pip install --upgrade colorama && \
-    cp -r ./BigDL/python/llm/portable-zip/ ./portable-zip && \
+    cp -r ./IPEX-LLM/python/llm/portable-zip/ ./portable-zip && \
 # Install all-in-one dependencies
     apt-get install -y numactl && \
     pip install --upgrade omegaconf && \
@@ -46,13 +46,13 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Add Qwen support
     pip install --upgrade transformers_stream_generator einops && \
 # Copy vLLM-Serving
-    cp -r ./BigDL/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./BigDL && \
+    cp -r ./IPEX-LLM/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./IPEX-LLM && \
 # Fix vllm service 
     pip install pydantic==1.10.11 && \
-# Install bigdl-llm
+# Install ipex-llm
     cd /llm && \
-    pip install --pre --upgrade bigdl-llm[all] && \
+    pip install --pre --upgrade ipex-llm[all] && \
     # Fix CVE-2024-22195
     pip install Jinja2==3.1.3 && \
     pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu && \

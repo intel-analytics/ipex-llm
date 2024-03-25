@@ -1,13 +1,13 @@
-## Fine-tune LLM with BigDL LLM Container
+## Fine-tune LLM with IPEX LLM Container
 
-The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
+The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
 ### 1. Prepare Docker Image
 
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -19,7 +19,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -37,13 +37,13 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=bigdl-llm-fintune-qlora-xpu \
+   --name=ipex-llm-fintune-qlora-xpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -56,11 +56,11 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=bigdl-llm-fintune-qlora-xpu \
+   --name=ipex-llm-fintune-qlora-xpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    --shm-size="16g" \
-   intelanalytics/bigdl-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -70,7 +70,7 @@ However, we do recommend you to handle them manually, because the automatical do
 Enter the running container:
 
 ```bash
-docker exec -it bigdl-llm-fintune-qlora-xpu bash
+docker exec -it ipex-llm-fintune-qlora-xpu bash
 ```
 
 Then, start QLoRA fine-tuning:

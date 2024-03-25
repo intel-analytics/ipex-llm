@@ -2,13 +2,13 @@
 
 [Alpaca Lora](https://github.com/tloen/alpaca-lora/tree/main) uses [low-rank adaption](https://arxiv.org/pdf/2106.09685.pdf) to speed up the finetuning process of base model [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b), and tries to reproduce the standard Alpaca, a general finetuned LLM. This is on top of Hugging Face transformers with Pytorch backend, which natively requires a number of expensive GPU resources and takes significant time.
 
-By constract, BigDL here provides a CPU optimization to accelerate the lora finetuning of Llama2-7b, in the power of mixed-precision and distributed training. Detailedly, [Intel OneCCL](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneccl.html), an available Hugging Face backend, is able to speed up the Pytorch computation with BF16 datatype on CPUs, as well as parallel processing on Kubernetes enabled by [Intel MPI](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html). 
+By constract, IPEX-LLM here provides a CPU optimization to accelerate the lora finetuning of Llama2-7b, in the power of mixed-precision and distributed training. Detailedly, [Intel OneCCL](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneccl.html), an available Hugging Face backend, is able to speed up the Pytorch computation with BF16 datatype on CPUs, as well as parallel processing on Kubernetes enabled by [Intel MPI](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html). 
 
 The architecture is illustrated in the following:
 
 ![image](https://llm-assets.readthedocs.io/en/latest/_images/llm-finetune-lora-cpu-k8s.png)
 
-As above, BigDL implements its MPI training with [Kubeflow MPI operator](https://github.com/kubeflow/mpi-operator/tree/master), which encapsulates the deployment as MPIJob CRD, and assists users to handle the construction of a MPI worker cluster on Kubernetes, such as public key distribution, SSH connection, and log collection. 
+As above, IPEX-LLM implements its MPI training with [Kubeflow MPI operator](https://github.com/kubeflow/mpi-operator/tree/master), which encapsulates the deployment as MPIJob CRD, and assists users to handle the construction of a MPI worker cluster on Kubernetes, such as public key distribution, SSH connection, and log collection. 
 
 Now, let's go to deploy a Lora finetuning to create a LLM from Llama2-7b.
 
@@ -20,7 +20,7 @@ Follow [here](https://github.com/kubeflow/mpi-operator/tree/master#installation)
 
 ### 2. Download Image, Base Model and Finetuning Data
 
-Follow [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/lora/docker#prepare-bigdl-image-for-lora-finetuning) to prepare BigDL Lora Finetuning image in your cluster.
+Follow [here](https://github.com/intel-analytics/IPEX-LLM/tree/main/docker/llm/finetune/lora/docker#prepare-ipex-llm-image-for-lora-finetuning) to prepare IPEX-LLM Lora Finetuning image in your cluster.
 
 As finetuning is from a base model, first download [Llama2-7b model from the public download site of Hugging Face](https://huggingface.co/meta-llama/Llama-2-7b). Then, download [cleaned alpaca data](https://raw.githubusercontent.com/tloen/alpaca-lora/main/alpaca_data_cleaned_archive.json), which contains all kinds of general knowledge and has already been cleaned. Next, move the downloaded files to a shared directory on your NFS server.
 
@@ -34,12 +34,12 @@ After preparing parameters in `./kubernetes/values.yaml`, submit the job as befl
 
 ```bash
 cd ./kubernetes
-helm install bigdl-lora-finetuning .
+helm install ipex-llm-lora-finetuning .
 ```
 
 ### 4. Check Deployment
 ```bash
-kubectl get all -n bigdl-lora-finetuning # you will see launcher and worker pods running
+kubectl get all -n ipex-llm-lora-finetuning # you will see launcher and worker pods running
 ```
 
 ### 5. Check Finetuning Process
@@ -47,8 +47,8 @@ kubectl get all -n bigdl-lora-finetuning # you will see launcher and worker pods
 After deploying successfully, you can find a launcher pod, and then go inside this pod and check the logs collected from all workers.
 
 ```bash
-kubectl get all -n bigdl-lora-finetuning # you will see a launcher pod
-kubectl exec -it <launcher_pod_name> bash -n bigdl-ppml-finetuning # enter launcher pod
+kubectl get all -n ipex-llm-lora-finetuning # you will see a launcher pod
+kubectl exec -it <launcher_pod_name> bash -n ipex-llm-lora-finetuning # enter launcher pod
 cat launcher.log # display logs collected from other workers
 ```
 

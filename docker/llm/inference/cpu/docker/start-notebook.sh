@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright 2016 The BigDL Authors.
+# Copyright 2016 The IPEX-LLM Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,4 +29,4 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-jupyter-lab --notebook-dir=/llm/bigdl-llm-tutorial --ip=0.0.0.0 --port=$port --no-browser --NotebookApp.token=$token --allow-root
+jupyter-lab --notebook-dir=/llm/ipex-llm-tutorial --ip=0.0.0.0 --port=$port --no-browser --NotebookApp.token=$token --allow-root

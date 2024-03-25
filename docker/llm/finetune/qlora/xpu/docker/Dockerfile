@@ -28,15 +28,15 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    # install XPU bigdl-llm
-    pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    # install XPU ipex-llm
+    pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # install huggingface dependencies
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
     pip install peft==0.5.0 datasets accelerate==0.23.0 && \
     pip install bitsandbytes scipy && \
-    git clone https://github.com/intel-analytics/BigDL.git && \
-    mv BigDL/python/llm/example/GPU/LLM-Finetuning/common /common && \
-    rm -r BigDL && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py
+    git clone https://github.com/intel-analytics/IPEX-LLM.git && \
+    mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning/common /common && \
+    rm -r IPEX-LLM && \
+    wget https://raw.githubusercontent.com/intel-analytics/IPEX-LLM/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py
 
 COPY ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh

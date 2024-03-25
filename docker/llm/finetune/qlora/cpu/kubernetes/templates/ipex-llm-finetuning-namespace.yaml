@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: bigdl-lora-finetuning
+  name: ipex-llm-qlora-finetuning

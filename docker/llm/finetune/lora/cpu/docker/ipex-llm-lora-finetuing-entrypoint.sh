@@ -15,9 +15,9 @@ then
      -genv KMP_AFFINITY="granularity=fine,none" \
      -genv KMP_BLOCKTIME=1 \
      -genv TF_ENABLE_ONEDNN_OPTS=1 \
-     python /bigdl/lora_finetune.py \
-       --base_model '/bigdl/model/'  \
-       --data_path "/bigdl/data/alpaca_data_cleaned_archive.json" \
+     python /ipex_llm/lora_finetune.py \
+       --base_model '/ipex_llm/model/'  \
+       --data_path "/ipex_llm/data/alpaca_data_cleaned_archive.json" \
        --output_dir "/home/mpiuser/finetuned_model" \
        --micro_batch_size 8 \
        --bf16 
@@ -29,7 +29,7 @@ else
   if [ "$WORKER_ROLE" = "launcher" ]
   then
     sed "s/:1/ /g" /etc/mpi/hostfile > /home/mpiuser/hostfile
-    export DATA_PATH="/bigdl/data/$DATA_SUB_PATH"
+    export DATA_PATH="/ipex_llm/data/$DATA_SUB_PATH"
     sleep 10
     mpirun \
       -n $WORLD_SIZE \
@@ -40,8 +40,8 @@ else
       -genv KMP_AFFINITY="granularity=fine,none" \
       -genv KMP_BLOCKTIME=1 \
       -genv TF_ENABLE_ONEDNN_OPTS=1 \
-      python /bigdl/lora_finetune.py \
-        --base_model '/bigdl/model/'  \
+      python /ipex_llm/lora_finetune.py \
+        --base_model '/ipex_llm/model/'  \
         --data_path "$DATA_PATH" \
         --output_dir "/home/mpiuser/finetuned_model" \
         --micro_batch_size $MICRO_BATCH_SIZE \

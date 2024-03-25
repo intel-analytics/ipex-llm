@@ -1,6 +1,6 @@
-## Fine-tune LLM with BigDL LLM Container
+## Fine-tune LLM with IPEX LLM Container
 
-The following shows how to fine-tune LLM with Quantization (QLoRA built on BigDL-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel CPU.
+The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel CPU.
 
 ### 1. Prepare Docker Image
 
@@ -8,10 +8,10 @@ You can download directly from Dockerhub like:
 
 ```bash
 # For standalone
-docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 
 # For k8s
-docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -24,7 +24,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 
 # For k8s
@@ -34,7 +34,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
   -f ./Dockerfile.k8s .
 ```
 
@@ -50,12 +50,12 @@ export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
-   --name=bigdl-llm-fintune-qlora-cpu \
+   --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   -v $BASE_MODE_PATH:/bigdl/model \
-   -v $DATA_PATH:/bigdl/data/alpaca-cleaned \
-   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   -v $BASE_MODE_PATH:/ipex_llm/model \
+   -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -66,10 +66,10 @@ export HTTPS_PROXY=your_https_proxy
 
 docker run -itd \
    --net=host \
-   --name=bigdl-llm-fintune-qlora-cpu \
+   --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -79,14 +79,14 @@ However, we do recommend you to handle them manually, because the automatical do
 Enter the running container:
 
 ```bash
-docker exec -it bigdl-llm-fintune-qlora-cpu bash
+docker exec -it ipex-llm-fintune-qlora-cpu bash
 ```
 
 Then, start QLoRA fine-tuning:
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
 
 ```bash
-cd /bigdl
+cd /ipex_llm
 bash start-qlora-finetuning-on-cpu.sh
 ```
 
@@ -120,19 +120,17 @@ Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface trans
 
 ### 4. Start Multi-Porcess Fine-Tuning in One Docker
 
-<img src="https://github.com/Uxito-Ada/BigDL/assets/60865256/f25c43b3-2b24-4476-a0fe-804c0ef3c36c" height="240px"><br>
-
-Multi-process parallelism enables higher performance for QLoRA fine-tuning, e.g. Xeon server series with multi-processor-socket architecture is suitable to run one instance on each QLoRA. This can be done by simply invoke >=2 OneCCL instances in BigDL QLoRA docker:
+Multi-process parallelism enables higher performance for QLoRA fine-tuning, e.g. Xeon server series with multi-processor-socket architecture is suitable to run one instance on each QLoRA. This can be done by simply invoke >=2 OneCCL instances in IPEX-LLM QLoRA docker:
 
 ```bash
 docker run -itd \
- --name=bigdl-llm-fintune-qlora-cpu \
+ --name=ipex-llm-fintune-qlora-cpu \
  --cpuset-cpus="your_expected_range_of_cpu_numbers" \
  -e STANDALONE_DOCKER=TRUE \
  -e WORKER_COUNT_DOCKER=your_worker_count \
- -v your_downloaded_base_model_path:/bigdl/model \
- -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
- intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+ -v your_downloaded_base_model_path:/ipex_llm/model \
+ -v your_downloaded_data_path:/ipex_llm/data/alpaca_data_cleaned_archive.json \
+ intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
 Note that `STANDALONE_DOCKER` is set to **TRUE** here.
@@ -145,4 +143,4 @@ bash start-qlora-finetuning-on-cpu.sh
 
 ### 5. Start Distributed Fine-Tuning on Kubernetes
 
-Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md).
+Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here](https://github.com/intel-analytics/IPEX-LLM/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md).

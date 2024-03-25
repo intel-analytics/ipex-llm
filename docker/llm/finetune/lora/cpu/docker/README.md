@@ -1,11 +1,11 @@
 ## Fine-tune LLM with One CPU
 
-### 1. Prepare BigDL image for Lora Finetuning
+### 1. Prepare IPEX LLM image for Lora Finetuning
 
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -17,7 +17,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -27,13 +27,13 @@ Here, we try to finetune [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7
 
 ```
 docker run -itd \
- --name=bigdl-llm-fintune-lora-cpu \
+ --name=ipex-llm-fintune-lora-cpu \
  --cpuset-cpus="your_expected_range_of_cpu_numbers" \
  -e STANDALONE_DOCKER=TRUE \
  -e WORKER_COUNT_DOCKER=your_worker_count \
- -v your_downloaded_base_model_path:/bigdl/model \
- -v your_downloaded_data_path:/bigdl/data/alpaca_data_cleaned_archive.json \
- intelanalytics/bigdl-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
+ -v your_downloaded_base_model_path:/ipex_llm/model \
+ -v your_downloaded_data_path:/ipex_llm/data/alpaca_data_cleaned_archive.json \
+ intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
  bash
 ```
 
@@ -44,21 +44,21 @@ You can adjust the configuration according to your own environment. After our te
 Enter the running container:
 
 ```
-docker exec -it bigdl-llm-fintune-lora-cpu bash
+docker exec -it ipex-llm-fintune-lora-cpu bash
 ```
 
 Then, run the script to start finetuning:
 
 ```
-bash /bigdl/bigdl-lora-finetuing-entrypoint.sh
+bash /ipex_llm/ipex-llm-lora-finetuing-entrypoint.sh
 ```
 
 After minutes, it is expected to get results like:
 
 ```
 Training Alpaca-LoRA model with params:
-base_model: /bigdl/model/
-data_path: /bigdl/data/alpaca_data_cleaned_archive.json
+base_model: /ipex_llm/model/
+data_path: /ipex_llm/data/alpaca_data_cleaned_archive.json
 output_dir: /home/mpiuser/finetuned_model
 batch_size: 128
 micro_batch_size: 8

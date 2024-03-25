@@ -20,7 +20,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
     echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     rm /etc/apt/sources.list.d/intel-graphics.list && \
-    # Install PYTHON 3.9 and BigDL-LLM[xpu]
+    # Install PYTHON 3.9 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
@@ -35,7 +35,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
     # Fix Trivy CVE Issues
     pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
@@ -48,6 +48,6 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
     # Download vLLM-Serving
-    git clone https://github.com/intel-analytics/BigDL && \
-    cp -r ./BigDL/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./BigDL
+    git clone https://github.com/intel-analytics/IPEX-LLM && \
+    cp -r ./IPEX-LLM/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./IPEX-LLM

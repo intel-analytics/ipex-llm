@@ -16,7 +16,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: bigdl-fschat-a1234bd-controller
+  name: ipex-llm-fschat-a1234bd-controller
   labels:
     fastchat-appid: a1234bd
     fastchat-app-type: controller
@@ -24,7 +24,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+    image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -56,7 +56,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: bigdl-a1234bd-fschat-controller-service
+  name: ipex-llm-a1234bd-fschat-controller-service
 spec:
   # You may also want to change this to use the cluster's feature
   type: NodePort
@@ -76,7 +76,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bigdl-fschat-a1234bd-worker-deployment
+        name: ipex-llm-fschat-a1234bd-worker-deployment
 spec:
   # Change this to the number you want
   replicas: 1
@@ -91,11 +91,11 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/bigdl-llm-serving-cpu:2.5.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed
-          value: bigdl-a1234bd-fschat-controller-service
+          value: ipex-llm-a1234bd-fschat-controller-service
         - name: CONTROLLER_PORT # fixed
           value: "21005"
         - name: WORKER_HOST # fixed
@@ -105,7 +105,7 @@ spec:
         - name: WORKER_PORT # fixed
           value: "21841"
         - name: MODEL_PATH
-          value: "/llm/models/vicuna-7b-v1.5-bigdl/" # change this to your model
+          value: "/llm/models/vicuna-7b-v1.5-ipex-llm/" # change this to your model
         - name: OMP_NUM_THREADS
           value: "16"
         resources:

@@ -196,8 +196,8 @@ else
   else
     # Logic for non-controller(worker) mode
     worker_address="http://$worker_host:$worker_port"
-    # Apply optimizations from bigdl-llm
-    source bigdl-llm-init -t
+    # Apply optimizations from ipex-llm
+    source ipex-llm-init -t
     # First check if user have set OMP_NUM_THREADS by themselves
     if [[ -n "${omp_num_threads}" ]]; then
       echo "Setting OMP_NUM_THREADS to its original value: $omp_num_threads"
