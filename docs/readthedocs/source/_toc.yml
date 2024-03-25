@@ -2,7 +2,7 @@ root: index
 subtrees:
   - entries:
     - file: doc/LLM/index
-      title: "IPEX-LLM Documentation"
+      title: "IPEX-LLM Document"
       subtrees:
         - entries:
           - file: doc/LLM/Overview/llm
