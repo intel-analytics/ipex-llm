@@ -99,6 +99,7 @@ conda activate llm
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
+## Verify Installation
 * You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
   ```bash
   source /opt/intel/oneapi/setvars.sh
@@ -108,41 +109,34 @@ conda activate llm
   > from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
   ```
 
-
 ## Runtime Configurations
 
 To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example.
 
-  ```eval_rst
-  .. tabs::
-     .. tab:: Intel Arc™ A-Series Graphics and Data Center GPU Flex 
-  
-        .. code-block:: cmd
-  
-            # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-            # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-            source /opt/intel/oneapi/setvars.sh
+```eval_rst
+.. tabs::
+   .. tab:: Intel Arc™ A-Series and Intel Data Center GPU Flex
 
-            # Recommended Environment Variables for optimal performance
-            export USE_XETLA=OFF
-            export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-  
-     .. tab:: Intel Data Center GPU Max Series
+      For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
-        .. code-block:: cmd
+      .. code-block:: bash
+         source /opt/intel/oneapi/setvars.sh
+         export USE_XETLA=OFF
+         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
-            # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-            # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-            source /opt/intel/oneapi/setvars.sh
+   .. tab:: Intel Data Center GPU Max
 
-            # Recommended Environment Variables for optimal performance
-            export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-            export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-            export ENABLE_SDP_FUSION=1
-  ```
+      For Intel Data Center GPU Max Series, we recommend:
 
-  Please note that `libtcmalloc.so` can be installed by ```conda install -c conda-forge -y gperftools=2.10```.
+      .. code-block:: bash
+         source /opt/intel/oneapi/setvars.sh
+         export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         export ENABLE_SDP_FUSION=1
 
+      Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``
+
+```
 
 ## A Quick Example
 
@@ -152,16 +146,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    ```bash
    conda activate llm
    ```
-* Step 2: If you're running on iGPU, set some environment variables by running below commands:
-  > For more details about runtime configurations, refer to [this guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
-  ```bash
-  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-  source /opt/intel/oneapi/setvars.sh
-
-  # Recommended Environment Variables for optimal performance
-  export USE_XETLA=OFF
-  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-  ```
+* Step 2: Follow [Runtime Configurations Section](#runtime-configurations) above to prepare your runtime environment.  
 * Step 3: Create a new file named `demo.py` and insert the code snippet below.
    ```python
    # Copy/Paste the contents to a new file demo.py
