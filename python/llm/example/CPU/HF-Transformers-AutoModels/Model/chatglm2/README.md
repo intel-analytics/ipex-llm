@@ -1,19 +1,19 @@
 # ChatGLM2
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on ChatGLM2 models. For illustration purposes, we utilize the [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) as a reference ChatGLM2 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on ChatGLM2 models. For illustration purposes, we utilize the [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) as a reference ChatGLM2 model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example 1: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 ```
 
 ### 2. Run
@@ -26,7 +26,7 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the ChatGLM2 model based on the capabilities of your machine.
 
@@ -41,8 +41,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
@@ -76,14 +76,14 @@ Inference time: xxxx s
 ```
 
 ## Example 2: Stream Chat using `stream_chat()` API
-In the example [streamchat.py](./streamchat.py), we show a basic use case for a ChatGLM2 model to stream chat, with BigDL-LLM INT4 optimizations.
+In the example [streamchat.py](./streamchat.py), we show a basic use case for a ChatGLM2 model to stream chat, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 ```
 
 ### 2. Run
@@ -102,7 +102,7 @@ Arguments info:
 - `--question QUESTION`: argument defining the question to ask. It is default to be `"晚上睡不着应该怎么办"`.
 - `--disable-stream`: argument defining whether to stream chat. If include `--disable-stream` when running the script, the stream chat is disabled and `chat()` API is used.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the ChatGLM2 model based on the capabilities of your machine.
 
@@ -118,8 +118,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

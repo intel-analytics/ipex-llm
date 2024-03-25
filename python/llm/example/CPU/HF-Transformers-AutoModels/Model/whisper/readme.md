@@ -1,19 +1,19 @@
 # Whisper
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper models. For illustration purposes, we utilize the [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny) as a reference Whisper model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Whisper models. For illustration purposes, we utilize the [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny) as a reference Whisper model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example 1: Recognize Tokens using `generate()` API
-In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 pip install datasets soundfile librosa # required by audio processing
 ```
 
@@ -27,7 +27,7 @@ Arguments info:
 - `--repo-id-or-data-path REPO_ID_OR_DATA_PATH`: argument defining the huggingface repo id for the audio dataset to be downloaded, or the path to the huggingface dataset folder. It is default to be `'hf-internal-testing/librispeech_asr_dummy'`.
 - `--language LANGUAGE`: argument defining language to be transcribed. It is default to be `english`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the Whisper model based on the capabilities of your machine.
 
@@ -43,8 +43,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
@@ -62,14 +62,14 @@ Inference time: xxxx s
 
 
 ## Example 2: Recognize Long Segment using `generate()` API
-In the example [long-segment-recognize.py](./long-segment-recognize.py), we show a basic use case for a Whisper model to conduct transcription using `pipeline()` API for long audio input, with BigDL-LLM INT4 optimizations.
+In the example [long-segment-recognize.py](./long-segment-recognize.py), we show a basic use case for a Whisper model to conduct transcription using `pipeline()` API for long audio input, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 pip install datasets soundfile librosa # required by audio processing
 ```
 
@@ -86,7 +86,7 @@ Arguments info:
 - `--chunk-length CHUNK_LENGTH`: argument defining the maximum number of chuncks of sampling_rate samples used to trim and pad longer or shorter audio sequences. It is default to be 30, and chunk-length should not be larger than 30s for whisper model.
 - `--batch-size`: argument defining the batch_size of pipeline inference, it usually equals of length of the audio divided by chunk-length. It is default to be 2.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the Whisper model based on the capabilities of your machine.
 
@@ -102,8 +102,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. long segment recognize for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

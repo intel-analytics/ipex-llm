@@ -1,22 +1,22 @@
 # Mamba
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Mamba models. For illustration purposes, we utilize the [state-spaces/mamba-1.4b](https://huggingface.co/state-spaces/mamba-1.4b) and [state-spaces/mamba-2.8b](https://huggingface.co/state-spaces/mamba-2.8b) as reference Mamba models.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate Mamba models. For illustration purposes, we utilize the [state-spaces/mamba-1.4b](https://huggingface.co/state-spaces/mamba-1.4b) and [state-spaces/mamba-2.8b](https://huggingface.co/state-spaces/mamba-2.8b) as reference Mamba models.
 
 ## Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Mamba model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a Mamba model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
-After installing conda, create a Python environment for BigDL-LLM:
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install einops # package required by Mamba
 ```
 

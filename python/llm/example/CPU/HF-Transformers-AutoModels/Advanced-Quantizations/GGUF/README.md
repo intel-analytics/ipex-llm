@@ -1,5 +1,5 @@
 # Loading GGUF models
-In this directory, you will find examples on how to load GGUF model into `bigdl-llm`.
+In this directory, you will find examples on how to load GGUF model into `ipex-llm`.
 
 ## Verified Models(Q4_0)
 - [Llama-2-7B-Chat-GGUF](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/tree/main)
@@ -12,23 +12,23 @@ In this directory, you will find examples on how to load GGUF model into `bigdl-
 - [Yuan2-2B-Februa-hf-GGUF](https://huggingface.co/IEITYuan/Yuan2-2B-Februa-hf-GGUF/tree/main)
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#system-support) for more information.
 
 **Important: Please make sure you have installed `transformers==4.36.0` to run the example.**
 
 
 ## Example: Load gguf model using `from_gguf()` API
-In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `bigdl-llm` using `from_gguf()` API, with BigDL-LLM optimizations.
+In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `ipex-llm` using `from_gguf()` API, with IPEX-LLM optimizations.
 
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
-After installing conda, create a Python environment for BigDL-LLM:
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
-pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 pip install transformers==4.36.0  # upgrade transformers
 ```
 ### 2. Run
@@ -46,8 +46,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

@@ -1,22 +1,22 @@
 # Mistral
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Mistral models. For illustration purposes, we utilize the [mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) and [mistralai/Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1) as reference Mistral models.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate Mistral models. For illustration purposes, we utilize the [mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) and [mistralai/Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1) as reference Mistral models.
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 **Important: According to [Mistral Troubleshooting](https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting), please make sure you have installed `transformers==4.34.0` to run the example.**
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Mistral model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a Mistral model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
-After installing conda, create a Python environment for BigDL-LLM:
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
-pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 
 # Refer to https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting, please make sure you are using a stable version of Transformers, 4.34.0 or newer.
 pip install transformers==4.34.0
@@ -37,8 +37,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

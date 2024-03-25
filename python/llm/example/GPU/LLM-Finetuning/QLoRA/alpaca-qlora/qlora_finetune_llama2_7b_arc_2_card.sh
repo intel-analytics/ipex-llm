@@ -23,4 +23,4 @@ mpirun -n 2 \
        python -u ./alpaca_qlora_finetuning.py \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./bigdl-qlora-alpaca" > training.log
+       --output_dir "./ipex-qlora-alpaca" > training.log

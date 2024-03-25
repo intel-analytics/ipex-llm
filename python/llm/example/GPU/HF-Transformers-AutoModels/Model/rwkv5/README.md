@@ -1,12 +1,12 @@
 # RWKV5
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on RWKV5 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [RWKV/HF_v5-Eagle-7B](https://huggingface.co/RWKV/HF_v5-Eagle-7B) as a reference RWKV5 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on RWKV5 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [RWKV/HF_v5-Eagle-7B](https://huggingface.co/RWKV/HF_v5-Eagle-7B) as a reference RWKV5 model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example 1: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a RWKV5 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a RWKV5 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 
 ### 1. Install
 #### 1.1 Installation on Linux
@@ -15,7 +15,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 #### 1.2 Installation on Windows
 We suggest using conda to manage environment:
@@ -23,7 +23,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 ### 2. Configures OneAPI environment variables

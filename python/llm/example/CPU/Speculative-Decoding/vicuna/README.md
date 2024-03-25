@@ -1,22 +1,22 @@
 # Vicuna
-In this directory, you will find examples on how you could run Vicuna BF16 inference with self-speculative decoding using BigDL-LLM on [Intel CPUs](../README.md). For illustration purposes, we utilize the [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3) and [lmsys/vicuna-33b-v1.3](https://huggingface.co/lmsys/vicuna-33b-v1.3) as reference Vicuna models.
+In this directory, you will find examples on how you could run Vicuna BF16 inference with self-speculative decoding using IPEX-LLM on [Intel CPUs](../README.md). For illustration purposes, we utilize the [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3) and [lmsys/vicuna-33b-v1.3](https://huggingface.co/lmsys/vicuna-33b-v1.3) as reference Vicuna models.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel CPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM on Intel CPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [speculative.py](./speculative.py), we show a basic use case for a Vicuna model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel CPUs.
+In the example [speculative.py](./speculative.py), we show a basic use case for a Vicuna model to predict the next N tokens using `generate()` API, with IPEX-LLM speculative decoding optimizations on Intel CPUs.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-pip install --pre --upgrade bigdl-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 pip install intel_extension_for_pytorch==2.1.0
 ```
 ### 2. Configures high-performing processor environment variables
 ```bash
-source bigdl-llm-init -t
+source ipex-llm-init -t
 export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
 ```
 
@@ -94,4 +94,4 @@ First token latency xx.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-BIGDL_OPT_IPEX can help to accelerate speculative decoding to some extend, and please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-bigdl_opt_ipex) for a try.
+BIGDL_OPT_IPEX can help to accelerate speculative decoding to some extend, and please refer to [here](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-ipex_opt_ipex) for a try.

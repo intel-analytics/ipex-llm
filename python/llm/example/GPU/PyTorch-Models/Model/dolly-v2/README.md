@@ -1,22 +1,22 @@
 # Dolly v2
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate Dolly v2 models. For illustration purposes, we utilize the [databricks/dolly-v2-12b](https://huggingface.co/databricks/dolly-v2-12b) and [databricks/dolly-v2-7b](https://huggingface.co/databricks/dolly-v2-7b) as reference Dolly v2 models.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate Dolly v2 models. For illustration purposes, we utilize the [databricks/dolly-v2-12b](https://huggingface.co/databricks/dolly-v2-12b) and [databricks/dolly-v2-7b](https://huggingface.co/databricks/dolly-v2-7b) as reference Dolly v2 models.
 
 ## Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Dolly v2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a Dolly v2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
-After installing conda, create a Python environment for BigDL-LLM:
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 #### 1.2 Installation on Windows
@@ -25,7 +25,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 ### 2. Configures OneAPI environment variables

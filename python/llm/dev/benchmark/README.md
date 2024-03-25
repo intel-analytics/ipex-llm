@@ -61,7 +61,7 @@ with torch.inference_mode():
 
 ### Inference on multi GPUs
 Similarly, put this file into your benchmark directory, and then wrap your optimized model with `BenchmarkWrapper` (`model = BenchmarkWrapper(model)`).
-For example, just need to apply following code patch on [Deepspeed Autotp example code](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/Deepspeed-AutoTP/deepspeed_autotp.py) to calculate 1st and the rest token performance:
+For example, just need to apply following code patch on [Deepspeed Autotp example code](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/Deepspeed-AutoTP/deepspeed_autotp.py) to calculate 1st and the rest token performance:
 ```python
  import torch
  import transformers

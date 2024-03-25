@@ -1,6 +1,6 @@
 # vLLM continuous batching on Intel GPUs (experimental support)
 
-This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel GPU (with BigDL-LLM low-bits optimizations).
+This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel GPU (with IPEX-LLM low-bits optimizations).
 
 The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
 
@@ -10,7 +10,7 @@ In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-
 
 ### 0. Environment
 
-To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit. Please check the requirements at [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU#requirements).
+To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
 
 After install the toolkit, run the following commands in your environment before starting vLLM GPU:
 ```bash
@@ -31,14 +31,14 @@ To run vLLM continuous batching on Intel GPUs, install the dependencies as follo
 
 ```bash
 # First create an conda environment
-conda create -n bigdl-vllm python==3.9
-conda activate bigdl-vllm
+conda create -n ipex-vllm python==3.9
+conda activate ipex-vllm
 # Install dependencies
 pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install numpy
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade "bigdl-llm[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade "ipex-llm[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
@@ -87,7 +87,7 @@ Then you can access the api server as follows:
  curl http://localhost:8000/v1/completions \
          -H "Content-Type: application/json" \
          -d '{
-                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf-bigdl/",
+                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf-ipex/",
                  "prompt": "San Francisco is a",
                  "max_tokens": 128,
                  "temperature": 0
@@ -100,12 +100,12 @@ Currently we have only supported LLaMA family model (including `llama`, `vicuna`
 
 #### 4.1 Add model code
 
-Create or clone the Pytorch model code to `BigDL/python/llm/src/bigdl/llm/vllm/model_executor/models`.
+Create or clone the Pytorch model code to `IPEX/python/llm/src/ipex/llm/vllm/model_executor/models`.
 
 #### 4.2 Rewrite the forward methods
 
-Refering to `BigDL/python/llm/src/bigdl/llm/vllm/model_executor/models/bigdl_llama.py`, it's necessary to maintain a `kv_cache`, which is a nested list of dictionary that maps `req_id` to a three-dimensional tensor **(the structure may vary from models)**. Before the model's actual `forward` method, you could prepare a `past_key_values` according to current `req_id`, and after that you need to update the `kv_cache` with `output.past_key_values`. The clearence will be executed when the request is finished.
+Refering to `IPEX/python/llm/src/ipex/llm/vllm/model_executor/models/ipex_llama.py`, it's necessary to maintain a `kv_cache`, which is a nested list of dictionary that maps `req_id` to a three-dimensional tensor **(the structure may vary from models)**. Before the model's actual `forward` method, you could prepare a `past_key_values` according to current `req_id`, and after that you need to update the `kv_cache` with `output.past_key_values`. The clearence will be executed when the request is finished.
 
 #### 4.3 Register new model
 
-Finally, register your `*ForCausalLM` class to the _MODEL_REGISTRY in `BigDL/python/llm/src/bigdl/llm/vllm/model_executor/model_loader.py`.
+Finally, register your `*ForCausalLM` class to the _MODEL_REGISTRY in `IPEX/python/llm/src/ipex/llm/vllm/model_executor/model_loader.py`.

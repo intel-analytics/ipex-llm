@@ -1,19 +1,19 @@
 # Whisper
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on general pytorch models, for example Openai Whisper models. For illustration purposes, we utilize the [whisper-tiny](https://github.com/openai/whisper/blob/main/model-card.md) as a reference Whisper model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on general pytorch models, for example Openai Whisper models. For illustration purposes, we utilize the [whisper-tiny](https://github.com/openai/whisper/blob/main/model-card.md) as a reference Whisper model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Recognize Tokens using `transcribe()` API
-In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `transcribe()` API, with BigDL-LLM INT4 optimizations.
+In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `transcribe()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 pip install -U openai-whisper
 pip install librosa # required by audio processing
 ```
@@ -28,7 +28,7 @@ Arguments info:
 - `--audio-file AUDIO_FILE`: argument defining the path of the audio file to be recognized.
 - `--language LANGUAGE`: argument defining language to be transcribed. It is default to be `english`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the Whisper model based on the capabilities of your machine.
 
@@ -44,8 +44,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

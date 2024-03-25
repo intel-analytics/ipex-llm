@@ -1,10 +1,10 @@
-# BigDL-LLM Transformers INT4 Optimization for HuggingFace Transformers Agent
-In this example, we apply low-bit optimizations to [HuggingFace Transformers Agents](https://huggingface.co/docs/transformers/transformers_agents) using BigDL-LLM, which allows LLMs to use tools such as image generation, image captioning, text summarization, etc.
+# IPEX-LLM Transformers INT4 Optimization for HuggingFace Transformers Agent
+In this example, we apply low-bit optimizations to [HuggingFace Transformers Agents](https://huggingface.co/docs/transformers/transformers_agents) using IPEX-LLM, which allows LLMs to use tools such as image generation, image captioning, text summarization, etc.
 
 For illustration purposes, we utilize the [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) as the reference model. We use [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) to create an agent, and then ask the agent to generate the caption for an image from coco dataset, i.e. [demo.jpg](https://cocodataset.org/#explore?id=264959)
 
 ## 0. Requirements
-To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model#recommended-requirements) for more information.
+To run this example with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model#recommended-requirements) for more information.
 
 
 ### 1. Install
@@ -13,7 +13,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 pip install pillow # additional package required for opening images
 ```
 
@@ -26,7 +26,7 @@ Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Vicuna model (e.g. `lmsys/vicuna-7b-v1.5`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'lmsys/vicuna-7b-v1.5'`.
 - `--image-path IMAGE_PATH`: argument defining the image to be infered.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the Vicuna model based on the capabilities of your machine.
 
@@ -41,8 +41,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

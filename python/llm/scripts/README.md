@@ -3,7 +3,7 @@
 
 ## Env-Check
 
-The **Env-Check** scripts  ([env-check.sh](./env-chec.sh), [env-check.bat](./env-chec.bat)) are designed to verify your `bigdl-llm` installation and runtime environment. These scripts can help you ensure your environment is correctly set up for optimal performance. You can include the script's output when reporting issues on [BigDL Github Issues](https://github.com/intel-analytics/BigDL/issues) for easier troubleshooting.
+The **Env-Check** scripts  ([env-check.sh](./env-chec.sh), [env-check.bat](./env-chec.bat)) are designed to verify your `ipex-llm` installation and runtime environment. These scripts can help you ensure your environment is correctly set up for optimal performance. You can include the script's output when reporting issues on [IPEX Github Issues](https://github.com/intel-analytics/ipex-llm/issues) for easier troubleshooting.
 
 > Note: These scripts verify python installation, check for necessary packages and environmental variables, assess hardware or operating system compatibility, and identify any XPU-related issues. 
 
@@ -17,11 +17,11 @@ sudo apt install xpu-smi
   
 ### Usage
 
-* After installing `bigdl-llm`, open a terminal (on Linux) or **Anaconda Prompt** (on Windows), and activate the conda environment you have created for running `bigdl-llm`: 
+* After installing `ipex-llm`, open a terminal (on Linux) or **Anaconda Prompt** (on Windows), and activate the conda environment you have created for running `ipex-llm`: 
   ```
   conda activate llm
   ```
-  > If you do not know how to install `bigdl-llm`, refer to [BigDL-LLM installation](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) for more details.
+  > If you do not know how to install `ipex-llm`, refer to [IPEX-LLM installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) for more details.
 *  Within the activated python environment, run below command:
     *  On Linux
         ```bash
@@ -44,7 +44,7 @@ transformers=4.37.0
 -----------------------------------------------------------------
 torch=2.1.0a0+cxx11.abi
 -----------------------------------------------------------------
-BigDL Version: 2.5.0b20240219
+IPEX Version: 2.5.0b20240219
 -----------------------------------------------------------------
 ipex=2.1.10+xpu
 -----------------------------------------------------------------

@@ -1,10 +1,10 @@
-BigDL-LLM
+IPEX-LLM
 =========================
 
 .. raw:: html
 
    <p>
-      <a href="https://github.com/intel-analytics/BigDL/tree/main/python/llm"><code><span>bigdl-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
+      <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm"><code><span>ipex-llm</span></code></a> is a library for running <strong>LLM</strong> (large language model) on Intel <strong>XPU</strong> (from <em>Laptop</em> to <em>GPU</em> to <em>Cloud</em>) using <strong>INT4</strong> with very low latency <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup> (for any <strong>PyTorch</strong> model).
    </p>
 
 -------
@@ -17,10 +17,10 @@ BigDL-LLM
         **Get Started**
         ^^^
 
-        Documents in these sections helps you getting started quickly with BigDL-LLM.
+        Documents in these sections helps you getting started quickly with IPEX-LLM.
 
         +++
-        :bdg-link:`BigDL-LLM in 5 minutes <./Overview/llm.html>` |
+        :bdg-link:`IPEX-LLM in 5 minutes <./Overview/llm.html>` |
         :bdg-link:`Installation <./Overview/install.html>`
 
     .. grid-item-card::
@@ -28,7 +28,7 @@ BigDL-LLM
         **Key Features Guide**
         ^^^
 
-        Each guide in this section provides you with in-depth information, concepts and knowledges about BigDL-LLM key features.
+        Each guide in this section provides you with in-depth information, concepts and knowledges about IPEX-LLM key features.
 
         +++
 
@@ -42,7 +42,7 @@ BigDL-LLM
         **Examples & Tutorials**
         ^^^
 
-        Examples contain scripts to help you quickly get started using BigDL-LLM to run some popular open-source models in the community.
+        Examples contain scripts to help you quickly get started using IPEX-LLM to run some popular open-source models in the community.
 
         +++
 
@@ -53,7 +53,7 @@ BigDL-LLM
         **API Document**
         ^^^
 
-        API Document provides detailed description of BigDL-LLM APIs.
+        API Document provides detailed description of IPEX-LLM APIs.
 
         +++
 
@@ -66,7 +66,7 @@ BigDL-LLM
     <div>
         <p>
             <sup><a href="#ref-perf" id="footnote-perf">[1]</a>
-               Performance varies by use, configuration and other factors. <code><span>bigdl-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="https://www.Intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>.
+               Performance varies by use, configuration and other factors. <code><span>ipex-llm</span></code> may not optimize to the same degree for non-Intel products. Learn more at <a href="https://www.Intel.com/PerformanceIndex">www.Intel.com/PerformanceIndex</a>.
             </sup>
         </p>
     </div>
@@ -74,4 +74,4 @@ BigDL-LLM
 ..  toctree::
     :hidden:
 
-    BigDL-LLM Document <self>
+    IPEX-LLM Document <self>

@@ -1,7 +1,7 @@
 GPU Supports
 ================================
 
-BigDL-LLM not only supports running large language models for inference, but also supports QLoRA finetuning on Intel GPUs.
+IPEX-LLM not only supports running large language models for inference, but also supports QLoRA finetuning on Intel GPUs.
 
 * |inference_on_gpu|_
 * `Finetune (QLoRA) <./finetune.html>`_

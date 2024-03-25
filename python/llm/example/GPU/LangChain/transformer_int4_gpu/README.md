@@ -1,9 +1,9 @@
 # Langchain examples
 
-The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `bigdl-llm` on Intel GPU.
+The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel GPU.
 
-### 1. Install bigdl-llm
-Follow the instructions in [GPU Install Guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install bigdl-llm
+### 1. Install ipex-llm
+Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm
 
 ### 2. Install Required Dependencies for langchain examples. 
 
@@ -99,5 +99,5 @@ python rag.py -m <path_to_model> [-q QUESTION] [-i INPUT_PATH]
 ```
 arguments info:
 - `-m MODEL_PATH`: **required**, path to the model.
-- `-q QUESTION`: question to ask. Default is `What is BigDL?`.
+- `-q QUESTION`: question to ask. Default is `What is IPEX?`.
 - `-i INPUT_PATH`: path to the input doc.

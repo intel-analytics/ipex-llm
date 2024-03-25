@@ -1,11 +1,11 @@
-# QLoRA Finetuning with BigDL-LLM
+# QLoRA Finetuning with IPEX-LLM
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM (using [QLoRA](https://arxiv.org/abs/2305.14314) algorithm) on [Intel GPU](../../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to IPEX-LLM (using [QLoRA](https://arxiv.org/abs/2305.14314) algorithm) on [Intel GPU](../../../README.md).
 
 > Note: You could also refer to [simple QLoRA example](../simple-example/) to try related usage.
 
 ### 0. Requirements
-To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ### 1. Install
 
@@ -13,7 +13,7 @@ To run this example with BigDL-LLM on Intel GPUs, we have some recommended requi
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0 datasets
 pip install fire peft==0.5.0
 pip install oneccl_bind_pt==2.1.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
@@ -113,7 +113,7 @@ bash qlora_finetune_llama2_13b_pvc_1550_4_card.sh
 <details>
   <summary> Show LLaMA2-70B examples </summary>
 
-Different from `LLaMA2-7B` and `LLaMA2-13B`, it is recommonded to save the model with bigdl-llm low-bit optimization first to avoid large amount of CPU memory usage. And DeepSpeed ZeRO2 technology is used during finetuning.
+Different from `LLaMA2-7B` and `LLaMA2-13B`, it is recommonded to save the model with ipex-llm low-bit optimization first to avoid large amount of CPU memory usage. And DeepSpeed ZeRO2 technology is used during finetuning.
 
 ##### Finetuning LLaMA2-70B on one Intel Data Center GPU Max 1550
 
@@ -135,8 +135,8 @@ If you fail to complete the whole finetuning process, it is suggested to resume 
 python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./bigdl-qlora-alpaca" \
-    --resume_from_checkpoint "./bigdl-qlora-alpaca/checkpoint-1100"
+    --output_dir "./ipex-qlora-alpaca" \
+    --resume_from_checkpoint "./ipex-qlora-alpaca/checkpoint-1100"
 ```
 
 ### 5. Sample Output

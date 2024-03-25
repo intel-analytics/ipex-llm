@@ -1,8 +1,8 @@
-# BigDL-LLM Portable Zip For Windows: User Guide
+# IPEX-LLM Portable Zip For Windows: User Guide
 
 ## Introduction
 
-This portable zip includes everything you need to run an LLM with BigDL-LLM optimizations (except models) . Please refer to [How to use](#how-to-use) section to get started.
+This portable zip includes everything you need to run an LLM with IPEX-LLM optimizations (except models) . Please refer to [How to use](#how-to-use) section to get started.
 
 ### 13B model running on an Intel 11-Gen Core PC (real-time screen capture)
 
@@ -22,7 +22,7 @@ This portable zip includes everything you need to run an LLM with BigDL-LLM opti
 
 1. Download the zip from link [here]().
 2. (Optional) You could also build the zip on your own. Run `setup.bat` and it will generate the zip file.
-3. Unzip `bigdl-llm.zip`.
+3. Unzip `ipex-llm.zip`.
 4. Download the model to your computer. Please ensure there is a file named `config.json` in the model folder, otherwise the script won't work.
 
 <p align="center">

@@ -1,5 +1,5 @@
 #!/bin/bash
-source bigdl-llm-init
+source ipex-llm-init
 
 sockets_num=$(lscpu | grep "Socket(s)" | awk -F ':' '{print $2}')
 cores_per_socket=$(lscpu | grep "Core(s) per socket" | awk -F ':' '{print $2}')

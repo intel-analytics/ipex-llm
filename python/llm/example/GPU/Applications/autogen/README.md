@@ -1,10 +1,10 @@
-# Running AutoGen Agent Chat with BigDL-LLM on Local Models
-This example is adapted from the [Official AutoGen Teachablility tutorial](https://github.com/microsoft/autogen/blob/main/notebook/agentchat_teachability.ipynb). We use a version of FastChat modified for BigDL to create a teachable chat agent with [AutoGen](https://microsoft.github.io/autogen/) that works with locally deployed LLMs. This special agent can remember things you tell it over time, unlike regular chatbots that forget after each conversation. It does this by saving what it learns on disk, and then bring up the learnt information in future chats. This means you can teach it lots of new things—like facts, new skills, preferences, etc.
+# Running AutoGen Agent Chat with IPEX-LLM on Local Models
+This example is adapted from the [Official AutoGen Teachablility tutorial](https://github.com/microsoft/autogen/blob/main/notebook/agentchat_teachability.ipynb). We use a version of FastChat modified for IPEX-LLM to create a teachable chat agent with [AutoGen](https://microsoft.github.io/autogen/) that works with locally deployed LLMs. This special agent can remember things you tell it over time, unlike regular chatbots that forget after each conversation. It does this by saving what it learns on disk, and then bring up the learnt information in future chats. This means you can teach it lots of new things—like facts, new skills, preferences, etc.
 
 In this example, we illustrate teaching the agent something it doesn't initially know. When we ask, `What is the Vicuna model?`, it doesn't have the answer. We then inform it, `Vicuna is a 13B-parameter language model released by Meta.` We repeat the process for the Orca model, telling the agent, `Orca is a 13B-parameter language model developed by Microsoft. It outperforms Vicuna on most tasks.` Finally, we test if the agent has learned by asking, `How does the Vicuna model compare to the Orca model?` The agent's response confirms it has retained and can use the information we taught it.
 
 
-### 1. Setup BigDL-LLM Environment
+### 1. Setup IPEX-LLM Environment
 ```bash
 # create autogen running directory
 mkdir autogen
@@ -14,9 +14,9 @@ cd autogen
 conda create -n autogen python=3.9
 conda activate autogen
 
-# install xpu-supported and fastchat-adapted bigdl-llm
-# we recommend using bigdl-llm version >= 2.5.0b20240110
-pip install --pre --upgrade bigdl-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
+# install xpu-supported and fastchat-adapted ipex-llm
+# we recommend using ipex-llm version >= 2.5.0b20240110
+pip install --pre --upgrade ipex-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 # install recommend transformers version
 pip install transformers==4.36.2
@@ -75,7 +75,7 @@ python -m ipex_llm.serving.model_worker --model-path ... --device xpu
 ```
 
 Model Name Note:
-> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/bigdl` and run `python -m ipex_llm.serving.model_worker --model-path ... --device xpu`. This ensures the proper usage of the BigDL-adapted FastChat.
+> Assume you use the model `Mistral-7B-Instruct-v0.2` and your model is downloaded to `autogen/model/Mistral-7B-Instruct-v0.2`. You should rename the model to `autogen/model/ipex-llm` and run `python -m ipex_llm.serving.model_worker --model-path ... --device xpu`. This ensures the proper usage of the IPEX-LLM-adapted FastChat.
 
 Device Note:
 > Please set `--device` to `xpu` to enable the Intel GPU usage.

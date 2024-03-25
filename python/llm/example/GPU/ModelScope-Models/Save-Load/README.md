@@ -1,9 +1,9 @@
-# Save/Load Low-Bit Models with BigDL-LLM Optimizations
+# Save/Load Low-Bit Models with IPEX-LLM Optimizations
 
-In this directory, you will find example on how you could save/load ModelScope models with BigDL-LLM INT4 optimizations on ModelScope models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://modelscope.cn/models/baichuan-inc/Baichuan2-7B-Chat/summary) as a reference ModelScope model.
+In this directory, you will find example on how you could save/load ModelScope models with IPEX-LLM INT4 optimizations on ModelScope models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://modelscope.cn/models/baichuan-inc/Baichuan2-7B-Chat/summary) as a reference ModelScope model.
 
 ## 0. Requirements
-To run this example with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
+To run this example with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information.
 
 ## Example: Save/Load Model in Low-Bit Optimization
 In the example [generate.py](./generate.py), we show a basic use case of saving/loading model in low-bit optimizations to predict the next N tokens using `generate()` API. Also, saving and loading operations are platform-independent, so you could run it on different platforms.
@@ -14,7 +14,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install modelscope==1.11.0
 ```
 
@@ -24,7 +24,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install modelscope==1.11.0
 ```
 

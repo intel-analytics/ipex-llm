@@ -1,10 +1,10 @@
-BigDL-LLM ``transformers``-style API
+IPEX-LLM ``transformers``-style API
 ====================================
 
 Hugging Face ``transformers`` AutoModel
 ------------------------------------
 
-You can apply BigDL-LLM optimizations on any Hugging Face Transformers models by using the standard AutoModel APIs.
+You can apply IPEX-LLM optimizations on any Hugging Face Transformers models by using the standard AutoModel APIs.
 
 
 AutoModelForCausalLM

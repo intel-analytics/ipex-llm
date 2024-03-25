@@ -1,22 +1,22 @@
 # SpeechT5
-In this directory, you will find examples on how you could use BigDL-LLM `optimize_model` API to accelerate SpeechT5 models. For illustration purposes, we utilize the [microsoft/speecht5_tts](https://huggingface.co/microsoft/speecht5_tts) as reference SpeechT5 models.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate SpeechT5 models. For illustration purposes, we utilize the [microsoft/speecht5_tts](https://huggingface.co/microsoft/speecht5_tts) as reference SpeechT5 models.
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Synthesize speech with the given input text
-In the example [synthesize_speech.py](./synthesize_speech.py), we show a basic use case for SpeechT5 model to synthesize speech based on the given text, with BigDL-LLM INT4 optimizations.
+In the example [synthesize_speech.py](./synthesize_speech.py), we show a basic use case for SpeechT5 model to synthesize speech based on the given text, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
-After installing conda, create a Python environment for BigDL-LLM:
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
 conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install "datasets<2.18" soundfile # additional package required for SpeechT5 to conduct generation
 ```
 
@@ -27,7 +27,7 @@ conda create -n llm python=3.9 libuv
 conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install "datasets<2.18" soundfile # additional package required for SpeechT5 to conduct generation
 ```
 

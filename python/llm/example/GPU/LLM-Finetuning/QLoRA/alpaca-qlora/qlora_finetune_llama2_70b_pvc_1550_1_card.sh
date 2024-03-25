@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# save Llama-2-70b-hf model with bigdl-llm low-bit optimization first
+# save Llama-2-70b-hf model with ipex-llm low-bit optimization first
 python save_low_bit_70b_model.py --output_path "./llama-2-70b-hf-nf4"
 
 export MASTER_ADDR=127.0.0.1
@@ -27,7 +27,7 @@ mpirun -n 2 \
        python -u ./alpaca_qlora_finetuning.py \
        --base_model "meta-llama/Llama-2-70b-hf" \
        --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./bigdl-qlora-alpaca" \
+       --output_dir "./ipex-qlora-alpaca" \
        --gradient_checkpointing True \
        --micro_batch_size 8 \
        --batch_size 128 \

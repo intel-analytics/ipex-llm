@@ -1,6 +1,6 @@
 # GGUF-IQ2
 
-This example shows how to run INT2 models using the IQ2 mechanism (first implemented by `llama.cpp`) in BigDL-LLM on Intel GPU.
+This example shows how to run INT2 models using the IQ2 mechanism (first implemented by `llama.cpp`) in IPEX-LLM on Intel GPU.
 
 ## Verified Models
 
@@ -12,11 +12,11 @@ This example shows how to run INT2 models using the IQ2 mechanism (first impleme
 
 ## Requirements
 
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 
-In the example [generate.py](./generate.py), we show a basic use case for a GGUF-IQ2 model to predict the next N tokens using `generate()` API, with BigDL-LLM optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a GGUF-IQ2 model to predict the next N tokens using `generate()` API, with IPEX-LLM optimizations.
 
 ### 1. Install
 
@@ -26,7 +26,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.35.0
 ```
 **Note: For Mixtral model, please use transformers 4.36.0:**

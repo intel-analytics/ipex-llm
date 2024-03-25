@@ -1,6 +1,6 @@
-# BigDL-LLM Transformers Low-Bit Inference Pipeline for Large Language Model
+# IPEX-LLM Transformers Low-Bit Inference Pipeline for Large Language Model
 
-In this example, we show a pipeline to apply BigDL-LLM low-bit optimizations (including INT8/INT5/INT4) to any Hugging Face Transformers model, and then run inference on the optimized low-bit model.
+In this example, we show a pipeline to apply IPEX-LLM low-bit optimizations (including INT8/INT5/INT4) to any Hugging Face Transformers model, and then run inference on the optimized low-bit model.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
@@ -8,7 +8,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 
-pip install --pre --upgrade bigdl-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 ```
 
 ## Run Example

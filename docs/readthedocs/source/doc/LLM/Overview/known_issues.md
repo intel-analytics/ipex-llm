@@ -1,1 +1,1 @@
-# BigDL-LLM Known Issues
+# IPEX-LLM Known Issues

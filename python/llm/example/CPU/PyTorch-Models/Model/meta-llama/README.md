@@ -1,12 +1,12 @@
 # LlaMA
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on general pytorch models, for example Meta Llama models. **Different from what [Huggingface LlaMA2](../llama2/) example demonstrated, This example directly brings the optimizations of BigDL-LLM to the official LLaMA implementation of which the code style is more flexible.** For illustration purposes, we utilize the [Llama2-7b-Chat](https://ai.meta.com/llama/) as a reference LlaMA model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on general pytorch models, for example Meta Llama models. **Different from what [Huggingface LlaMA2](../llama2/) example demonstrated, This example directly brings the optimizations of IPEX-LLM to the official LLaMA implementation of which the code style is more flexible.** For illustration purposes, we utilize the [Llama2-7b-Chat](https://ai.meta.com/llama/) as a reference LlaMA model.
 
 ## Requirements
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Generating text using a pretrained Llama model
-In the example [example_chat_completion.py](./example_chat_completion.py), we show a basic use case for a Llama model to engage in a conversation with an AI assistant using `chat_completion` API, with BigDL-LLM INT4 optimizations. The process for [example_text_completion.py](./example_text_completion.py) is similar.
+In the example [example_chat_completion.py](./example_chat_completion.py), we show a basic use case for a Llama model to engage in a conversation with an AI assistant using `chat_completion` API, with IPEX-LLM INT4 optimizations. The process for [example_text_completion.py](./example_text_completion.py) is similar.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -20,7 +20,7 @@ git apply < ../cpu.patch # apply cpu version patch
 pip install -e .
 
 cd -
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 ```
 
 ### 2. Run
@@ -55,8 +55,8 @@ For optimal performance on server, it is recommended to set several environment 
 
 E.g. on Linux,
 ```bash
-# set BigDL-Nano env variables
-source bigdl-nano-init
+# set IPEX-Nano env variables
+source ipex-nano-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48

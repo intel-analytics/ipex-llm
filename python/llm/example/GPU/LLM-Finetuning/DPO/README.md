@@ -1,10 +1,10 @@
-# Simple Example of DPO Finetuning with BigDL-LLM
+# Simple Example of DPO Finetuning with IPEX-LLM
 
-This simple example demonstrates how to finetune a Mistral-7B model use BigDL-LLM 4bit optimizations using [Intel GPUs](../../README.md).
+This simple example demonstrates how to finetune a Mistral-7B model use IPEX-LLM 4bit optimizations using [Intel GPUs](../../README.md).
 Note, this example is just used for illustrating related usage.
 
 ## 0. Requirements
-To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
+To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../README.md#requirements) for more information.
 
 ## Example: Finetune Mistral-7b using DPO
 
@@ -16,7 +16,7 @@ This example is ported from [Fine_tune_a_Mistral_7b_model_with_DPO](https://gith
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0 datasets
 pip install trl peft==0.5.0
 pip install accelerate==0.23.0

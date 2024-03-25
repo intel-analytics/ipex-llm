@@ -1,7 +1,7 @@
-BigDL-LLM Key Features
+IPEX-LLM Key Features
 ================================
 
-You may run the LLMs using ``bigdl-llm`` through one of the following APIs:
+You may run the LLMs using ``ipex-llm`` through one of the following APIs:
 
 * `PyTorch API <./optimize_model.html>`_
 * |transformers_style_api|_

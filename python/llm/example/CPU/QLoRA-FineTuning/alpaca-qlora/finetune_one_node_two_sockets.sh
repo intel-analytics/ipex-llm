@@ -1,7 +1,7 @@
 export MASTER_ADDR=127.0.0.1
 export SOCKET_CORES=48
 
-source bigdl-llm-init -t
+source ipex-llm-init -t
 mpirun -n 2 \
  --bind-to socket \
  -genv OMP_NUM_THREADS=$SOCKET_CORES \
@@ -14,5 +14,5 @@ mpirun -n 2 \
  --max_steps -1 \
  --base_model "meta-llama/Llama-2-7b-hf" \
  --data_path "yahma/alpaca-cleaned" \
- --output_dir "./bigdl-qlora-alpaca"
+ --output_dir "./ipex-qlora-alpaca"
 

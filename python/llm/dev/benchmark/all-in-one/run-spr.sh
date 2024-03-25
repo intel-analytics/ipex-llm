@@ -1,5 +1,5 @@
 #!/bin/bash
-source bigdl-llm-init
+source ipex-llm-init
 export OMP_NUM_THREADS=48
 
 # set following parameters according to the actual specs of the test machine

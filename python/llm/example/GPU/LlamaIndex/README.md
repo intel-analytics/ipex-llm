@@ -1,7 +1,7 @@
 # LlamaIndex Examples
 
 
-This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `bigdl-llm`.
+This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `ipex-llm`.
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
 
@@ -18,7 +18,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     ```
 * **Install Bigdl LLM**
 
-    Follow the instructions in [GPU Install Guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install bigdl-llm.
+    Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm.
 
 * **Database Setup (using PostgreSQL)**:
     * Linux

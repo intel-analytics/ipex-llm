@@ -1,7 +1,7 @@
-# Low-Bit Streaming LLM using BigDL-LLM
+# Low-Bit Streaming LLM using IPEX-LLM
 
-In this example, we apply low-bit optimizations to [Streaming-LLM](https://github.com/mit-han-lab/streaming-llm/tree/main#efficient-streaming-language-models-with-attention-sinks) using BigDL-LLM, which can deploy low-bit(including FP4/INT4/FP8/INT8) LLMs for infinite-length inputs.
-Only one code change is needed to load the model using bigdl-llm as follows:
+In this example, we apply low-bit optimizations to [Streaming-LLM](https://github.com/mit-han-lab/streaming-llm/tree/main#efficient-streaming-language-models-with-attention-sinks) using IPEX-LLM, which can deploy low-bit(including FP4/INT4/FP8/INT8) LLMs for infinite-length inputs.
+Only one code change is needed to load the model using ipex-llm as follows:
 ```python
 from ipex_llm.transformers import AutoModelForCausalLM
 model = AutoModelForCausalLM.from_pretrained(model_name_or_path, load_in_4bit=True, trust_remote_code=True, optimize_model=False)
@@ -13,7 +13,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 pip install -U transformers==4.34.0
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 ## Configures OneAPI environment variables

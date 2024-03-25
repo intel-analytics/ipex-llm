@@ -1,10 +1,10 @@
-# Example of QLoRA Finetuning with BigDL-LLM
+# Example of QLoRA Finetuning with IPEX-LLM
 
-This simple example demonstrates how to finetune a llama2-7b model use BigDL-LLM 4bit optimizations with TRL library on [Intel GPU](../../../README.md).
+This simple example demonstrates how to finetune a llama2-7b model use IPEX-LLM 4bit optimizations with TRL library on [Intel GPU](../../../README.md).
 Note, this example is just used for illustrating related usage and don't guarantee convergence of training.
 
 ## 0. Requirements
-To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Finetune llama2-7b using qlora
 
@@ -16,7 +16,7 @@ This example utilizes a subset of [yahma/alpaca-cleaned](https://huggingface.co/
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0 datasets
 pip install peft==0.5.0
 pip install accelerate==0.23.0

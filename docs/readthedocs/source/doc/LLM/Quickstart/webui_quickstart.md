@@ -1,7 +1,7 @@
 
 # Use Text Generation WebUI on Windows with Intel GPU
 
-This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) (a Gradio WebUI for running Large Language Models) with `bigdl-llm`. 
+This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) (a Gradio WebUI for running Large Language Models) with `ipex-llm`. 
 
 
 A preview of the WebUI in action is shown below:
@@ -11,21 +11,21 @@ A preview of the WebUI in action is shown below:
 </a>
 
 
-## 1 Install BigDL-LLM
+## 1 Install IPEX-LLM
 
-To use the WebUI, first ensure that BigDL-LLM is installed. Follow the instructions on the [BigDL-LLM Installation Quickstart for Windows with Intel GPU](install_windows_gpu.html). 
+To use the WebUI, first ensure that IPEX-LLM is installed. Follow the instructions on the [IPEX-LLM Installation Quickstart for Windows with Intel GPU](install_windows_gpu.html). 
 
-**After the installation, you should have created a conda environment, named `llm` for instance, for running `bigdl-llm` applications.**
+**After the installation, you should have created a conda environment, named `llm` for instance, for running `ipex-llm` applications.**
 
 ## 2 Install the WebUI
 
 
 ### Download the WebUI
-Download the `text-generation-webui` with BigDL-LLM integrations from [this link](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/bigdl-llm.zip). Unzip the content into a directory, e.g.,`C:\text-generation-webui`. 
+Download the `text-generation-webui` with IPEX-LLM integrations from [this link](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/ipex-llm.zip). Unzip the content into a directory, e.g.,`C:\text-generation-webui`. 
   
 ### Install Dependencies
 
-Open **Anaconda Prompt** and activate the conda environment you have created in [section 1](#1-install-bigdl-llm), e.g., `llm`. 
+Open **Anaconda Prompt** and activate the conda environment you have created in [section 1](#1-install-ipex-llm), e.g., `llm`. 
 ```
 conda activate llm
 ```
@@ -43,7 +43,7 @@ Configure oneAPI variables by running the following command in **Anaconda Prompt
 ```eval_rst
 .. note::
    
-   For more details about runtime configurations, `refer to this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ 
+   For more details about runtime configurations, `refer to this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ 
 ```
 
 ```cmd
@@ -145,11 +145,11 @@ In this case, go to `Parameters` tab and then `Instruction template` tab.
 
 You can verify and edit the loaded instruction template in the `Instruction template` field.
 You can also manually select an instruction template from `Saved instruction templates` and click `load` to load it into `Instruction template`.
-You can add custom template files to this list in `/instruction-templates/` [folder](https://github.com/intel-analytics/text-generation-webui/tree/bigdl-llm/instruction-templates).
+You can add custom template files to this list in `/instruction-templates/` [folder](https://github.com/intel-analytics/text-generation-webui/tree/ipex-llm/instruction-templates).
 <!-- For instance, the automatically loaded instruction template for `chatGLM3` model is incorrect, and you should manually select the `chatGLM3` instruction template. -->
 
 ### Tested models
-We have tested the following models with `bigdl-llm` using Text Generation WebUI.
+We have tested the following models with `ipex-llm` using Text Generation WebUI.
 
 | Model | Notes |
 |-------|-------|

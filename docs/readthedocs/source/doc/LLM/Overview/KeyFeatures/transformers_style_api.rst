@@ -1,7 +1,7 @@
 ``transformers``-style API
 ================================
 
-You may run the LLMs using ``transformers``-style API in ``bigdl-llm``.
+You may run the LLMs using ``transformers``-style API in ``ipex-llm``.
 
 * |hugging_face_transformers_format|_
 * `Native Format <./native_format.html>`_

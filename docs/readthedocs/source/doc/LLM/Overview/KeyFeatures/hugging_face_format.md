@@ -25,7 +25,7 @@ output = tokenizer.batch_decode(output_ids)
 ```eval_rst
 .. seealso::
 
-   See the complete CPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels>`_ and GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_.
+   See the complete CPU examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels>`_ and GPU examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_.
 
 .. note::
 
@@ -35,7 +35,7 @@ output = tokenizer.batch_decode(output_ids)
 
       model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
 
-   See the CPU example `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types>`_ and GPU example `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_.
+   See the CPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types>`_ and GPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_.
 ```
 
 ## Save & Load
@@ -50,5 +50,5 @@ new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```eval_rst
 .. seealso::
 
-   See the CPU example `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load>`_ and GPU example `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Save-Load>`_
+   See the CPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load>`_ and GPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Save-Load>`_
 ```

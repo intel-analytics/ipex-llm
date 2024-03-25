@@ -1,9 +1,9 @@
 # Langchain Native INT4 examples
 
-The examples in [native_int4](./native_int4) folder show how to use langchain with `bigdl-llm` native INT4 mode.
+The examples in [native_int4](./native_int4) folder show how to use langchain with `ipex-llm` native INT4 mode.
 
-## Install bigdl-llm
-Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
+## Install ipex-llm
+Follow the instructions in [Install](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install).
 
 ## Install Required Dependencies for langchain examples. 
 
@@ -14,8 +14,8 @@ pip install -U pandas==2.0.3
 ```
 
 
-## Convert Models using bigdl-llm
-Follow the instructions in [Convert model](https://github.com/intel-analytics/BigDL/tree/main/python/llm#convert-model).
+## Convert Models using ipex-llm
+Follow the instructions in [Convert model](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#convert-model).
 
 
 ## Run the examples

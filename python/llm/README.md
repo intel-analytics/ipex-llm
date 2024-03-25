@@ -1,5 +1,5 @@
-## BigDL-LLM
-**[`bigdl-llm`](https://bigdl.readthedocs.io/en/latest/doc/LLM/index.html)** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4** with very low latency[^1] (for any **PyTorch** model).
+## IPEX-LLM
+**[`ipex-llm`](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/index.html)** is a library for running **LLM** (large language model) on Intel **XPU** (from *Laptop* to *GPU* to *Cloud*) using **INT4** with very low latency[^1] (for any **PyTorch** model).
 
 > *It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [qlora](https://github.com/artidoro/qlora), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [chatglm.cpp](https://github.com/li-plus/chatglm.cpp), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.*
     
@@ -34,7 +34,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
 </table>
 
 ### Verified models
-Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Dolly, StarCoder, Whisper, Baichuan, InternLM, QWen, Aquila, MOSS,* and more; see the complete list below.
+Over 20 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, ChatGLM/ChatGLM2, Mistral, Falcon, MPT, Dolly, StarCoder, Whisper, Baichuan, InternLM, QWen, Aquila, MOSS,* and more; see the complete list below.
   
 | Model      | CPU Example                                                    | GPU Example                                                     |
 |------------|----------------------------------------------------------------|-----------------------------------------------------------------|
@@ -89,14 +89,14 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
 | DeciLM-7B | [link](example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b) |
 | Deepseek | [link](example/CPU/HF-Transformers-AutoModels/Model/deepseek) | [link](example/GPU/HF-Transformers-AutoModels/Model/deepseek) |
 
-### Working with `bigdl-llm`
+### Working with `ipex-llm`
 
 <details><summary>Table of Contents</summary>
 
-- [BigDL-LLM](#bigdl-llm)
+- [IPEX-LLM](#ipex-llm)
   - [Demos](#demos)
   - [Verified models](#verified-models)
-  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
+  - [Working with `ipex-llm`](#working-with-ipex-llm)
     - [Install](#install)
       - [CPU](#cpu)
       - [GPU](#gpu)
@@ -108,31 +108,31 @@ Over 20 models have been optimized/verified on `bigdl-llm`, including *LLaMA/LLa
       - [2. Native INT4 model](#2-native-int4-model)
       - [3. LangChain API](#3-langchain-api)
       - [4. CLI Tool](#4-cli-tool)
-  - [`bigdl-llm` API Doc](#bigdl-llm-api-doc)
-  - [`bigdl-llm` Dependency](#bigdl-llm-dependency)
+  - [`ipex-llm` API Doc](#ipex-llm-api-doc)
+  - [`ipex-llm` Dependency](#ipex-llm-dependency)
 
 </details>
 
 #### Install
 ##### CPU
-You may install **`bigdl-llm`** on Intel CPU as follows:
+You may install **`ipex-llm`** on Intel CPU as follows:
 ```bash
-pip install --pre --upgrade bigdl-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> Note: `ipex-llm` has been tested on Python 3.9
 
 ##### GPU
-You may install **`bigdl-llm`** on Intel GPU as follows:
+You may install **`ipex-llm`** on Intel GPU as follows:
 ```bash
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
-> Note: `bigdl-llm` has been tested on Python 3.9
+> Note: `ipex-llm` has been tested on Python 3.9
 
 #### Run Model
  
-You may run the models using **`bigdl-llm`** through one of the following APIs:
+You may run the models using **`ipex-llm`** through one of the following APIs:
 1. [Hugging Face `transformers` API](#1-hugging-face-transformers-api)
 2. [Native INT4 Model](#2-native-int4-model)
 3. [LangChain API](#3-langchain-api)
@@ -182,7 +182,7 @@ See the complete examples [here](example/GPU).
 ###### More Low-Bit Support
 - Save and load
 
-  After the model is optimized using `bigdl-llm`, you may save and load the model as follows:
+  After the model is optimized using `ipex-llm`, you may save and load the model as follows:
   ```python
   model.save_low_bit(model_path)
   new_model = AutoModelForCausalLM.load_low_bit(model_path)
@@ -207,7 +207,7 @@ You may also convert Hugging Face *Transformers* models into native INT4 model f
 ```python
 #convert the model
 from ipex_llm import llm_convert
-bigdl_llm_path = llm_convert(model='/path/to/model/',
+ipex_llm_path = llm_convert(model='/path/to/model/',
         outfile='/path/to/output/', outtype='int4', model_family="llama")
 
 #load the converted model
@@ -224,7 +224,7 @@ output = llm.batch_decode(output_ids)
 See the complete example [here](example/CPU/Native-Models/native_int4_pipeline.py). 
 
 ##### 3. LangChain API
-You may run the models using the LangChain API in `bigdl-llm`.
+You may run the models using the LangChain API in `ipex-llm`.
 
 - **Using Hugging Face `transformers` model**
 
@@ -236,9 +236,9 @@ You may run the models using the LangChain API in `bigdl-llm`.
   from langchain.chains.question_answering import load_qa_chain
 
   embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
-  bigdl_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
+  ipex_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
 
-  doc_chain = load_qa_chain(bigdl_llm, ...)
+  doc_chain = load_qa_chain(ipex_llm, ...)
   output = doc_chain.run(...)
   ```
   See the examples [here](example/CPU/LangChain/transformers_int4).
@@ -257,16 +257,16 @@ You may run the models using the LangChain API in `bigdl-llm`.
   #switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
   embeddings = LlamaEmbeddings(model_path='/path/to/converted/model.bin')
   #switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
-  bigdl_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
+  ipex_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
 
-  doc_chain = load_qa_chain(bigdl_llm, ...)
+  doc_chain = load_qa_chain(ipex_llm, ...)
   doc_chain.run(...)
   ```
 
   See the examples [here](example/CPU/LangChain/native_int4).
 
 ##### 4. CLI Tool
->**Note**: Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the Hugging Face `transformers` or LangChain APIs.
+>**Note**: Currently `ipex-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the Hugging Face `transformers` or LangChain APIs.
 
  - ##### Convert model
  
@@ -300,14 +300,14 @@ You may run the models using the LangChain API in `bigdl-llm`.
    llm-chat -m "/path/to/output/model.bin" -x llama
    ```
 
-### `bigdl-llm` API Doc
-See the inital `bigdl-llm` API Doc [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).
+### `ipex-llm` API Doc
+See the inital `ipex-llm` API Doc [here](https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).
 
-[^1]: Performance varies by use, configuration and other factors. `bigdl-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
+[^1]: Performance varies by use, configuration and other factors. `ipex-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
-### `bigdl-llm` Dependency
-The native code/lib in `bigdl-llm` has been built using the following tools.
-Note that lower  `LIBC` version on your Linux system may be incompatible with `bigdl-llm`.
+### `ipex-llm` Dependency
+The native code/lib in `ipex-llm` has been built using the following tools.
+Note that lower  `LIBC` version on your Linux system may be incompatible with `ipex-llm`.
 
 | Model family | Platform | Compiler           | GLIBC |
 | ------------ | -------- | ------------------ | ----- |

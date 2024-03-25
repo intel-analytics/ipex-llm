@@ -1,6 +1,6 @@
-# Install BigDL-LLM in Docker on Windows with Intel GPU
+# Install IPEX-LLM in Docker on Windows with Intel GPU
 
-This guide demonstrates how to install BigDL-LLM in Docker on Windows with Intel GPUs. 
+This guide demonstrates how to install IPEX-LLM in Docker on Windows with Intel GPUs. 
 
 It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc Series GPU.
 
@@ -51,20 +51,20 @@ It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc 
      >Note: During the use of Docker in WSL, Docker Desktop needs to be kept open all the time.
    
      
-## BigDL LLM Inference with XPU on Windows
-### 1. Prepare bigdl-llm-xpu Docker Image
+## IPEX LLM Inference with XPU on Windows
+### 1. Prepare ipex-llm-xpu Docker Image
 Run the following command in WSL:
 ```bash
-docker pull intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
 ```
 This step will take around 20 minutes depending on your network.
 
-### 2. Start bigdl-llm-xpu Docker Container
+### 2. Start ipex-llm-xpu Docker Container
 
 To map the xpu into the container, an example (docker_setup.sh) could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/bigdl-llm-xpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -115,7 +115,7 @@ root@docker-desktop:/# sycl-ls
   The output is similar like this:
 ```bash
 Human: What is AI?
-BigDL-LLM:
+IPEX-LLM:
 AI, or Artificial Intelligence, refers to the development of computer systems or machines that can perform tasks that typically require human intelligence. These systems are designed to learn from data and make decisions, or take actions, based on that data.
 ``` 
 

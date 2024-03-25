@@ -1,13 +1,13 @@
 # Voice Assistant
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper and Llama2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the following models: 
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Whisper and Llama2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the following models: 
 - [openai/whisper-small](https://huggingface.co/openai/whisper-small) and [openai/whisper-medium](https://huggingface.co/openai/whisper-medium) as reference whisper models.
 - [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, then use the recoginzed text as the input for Llama2 model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, then use the recoginzed text as the input for Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -15,7 +15,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install librosa soundfile datasets
 pip install accelerate
 pip install SpeechRecognition sentencepiece colorama
@@ -29,7 +29,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install librosa soundfile datasets
 pip install accelerate
 pip install SpeechRecognition sentencepiece colorama
@@ -162,8 +162,8 @@ frame_data = np.frombuffer(audio.frame_data, np.int16).flatten().astype(np.float
 
 #### Sample Output
 ```bash
-(llm) bigdl@bigdl-llm:~/Documents/voiceassistant$ python generate.py --llama2-repo-id-or-model-path /mnt/windows/demo/models/Llama-2-7b-chat-hf --whisper-repo-id-or-model-path /mnt/windows/demo/models/whisper-medium
-/home/bigdl/anaconda3/envs/llm/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: ''If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+(llm) ipex@ipex-llm:~/Documents/voiceassistant$ python generate.py --llama2-repo-id-or-model-path /mnt/windows/demo/models/Llama-2-7b-chat-hf --whisper-repo-id-or-model-path /mnt/windows/demo/models/whisper-medium
+/home/ipex/anaconda3/envs/llm/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: ''If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
   warn(
 
 [?] Which microphone do you choose?: Default
@@ -189,11 +189,11 @@ Extracting data files: 100%|█████████████████�
 Generating validation split: 73 examples [00:00, 5328.37 examples/s]
 Converting and loading models...
 Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:09<00:00,  3.04s/it]
-/home/bigdl/anaconda3/envs/yina-llm/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:362: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`. This was detected when initializing the generation config instance, which means the corresponding file may hold incorrect parameterization and should be fixed.
+/home/ipex/anaconda3/envs/yina-llm/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:362: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.9` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`. This was detected when initializing the generation config instance, which means the corresponding file may hold incorrect parameterization and should be fixed.
   warnings.warn(
-/home/bigdl/anaconda3/envs/yina-llm/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:367: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`. This was detected when initializing the generation config instance, which means the corresponding file may hold incorrect parameterization and should be fixed.
+/home/ipex/anaconda3/envs/yina-llm/lib/python3.9/site-packages/transformers/generation/configuration_utils.py:367: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.6` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`. This was detected when initializing the generation config instance, which means the corresponding file may hold incorrect parameterization and should be fixed.
   warnings.warn(
-/home/bigdl/anaconda3/envs/yina-llm/lib/python3.9/site-packages/transformers/generation/utils.py:1411: UserWarning: You have modified the pretrained model configuration to control generation. This is a deprecated strategy to control generation and will be removed soon, in a future version. Please use a generation configuration file (see https://huggingface.co/docs/transformers/main_classes/text_generation )
+/home/ipex/anaconda3/envs/yina-llm/lib/python3.9/site-packages/transformers/generation/utils.py:1411: UserWarning: You have modified the pretrained model configuration to control generation. This is a deprecated strategy to control generation and will be removed soon, in a future version. Please use a generation configuration file (see https://huggingface.co/docs/transformers/main_classes/text_generation )
   warnings.warn(
 Calibrating...
 Listening now...
@@ -202,7 +202,7 @@ Recognizing...
 Whisper : 
  What is AI?
 
-BigDL-LLM: 
+IPEX-LLM: 
  Artificial intelligence (AI) is the broader field of research and development aimed at creating machines that can perform tasks that typically require human intelligence,
 Listening now...
 Recognizing...
@@ -210,6 +210,6 @@ Recognizing...
 Whisper : 
  Tell me something about Intel
 
-BigDL-LLM: 
+IPEX-LLM: 
  Intel is a well-known technology company that specializes in designing, manufacturing, and selling computer hardware components and semiconductor products.
 ```

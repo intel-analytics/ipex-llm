@@ -1,12 +1,12 @@
 # LlamaIndex Examples
 
 
-This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `bigdl-llm`.
+This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `ipex-llm`.
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
 ## Prerequisites
 
-Ensure `bigdl-llm` is installed by following the [BigDL-LLM Installation Guide](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install) before proceeding with the examples provided here. 
+Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install) before proceeding with the examples provided here. 
 
 
 ## Retrieval-Augmented Generation (RAG) Example

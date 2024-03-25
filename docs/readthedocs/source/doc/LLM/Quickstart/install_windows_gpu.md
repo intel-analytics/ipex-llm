@@ -1,6 +1,6 @@
-# Install BigDL-LLM on Windows with Intel GPU
+# Install IPEX-LLM on Windows with Intel GPU
 
-This guide demonstrates how to install BigDL-LLM on Windows with Intel GPUs. 
+This guide demonstrates how to install IPEX-LLM on Windows with Intel GPUs. 
 
 It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
@@ -66,9 +66,9 @@ Activate the newly created environment `llm`:
 conda activate llm
 ```
   
-## Install `bigdl-llm`
+## Install `ipex-llm`
 
-With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU:
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
 Choose either US or CN website for `extra-index-url`:
 
 ```eval_rst
@@ -77,23 +77,23 @@ Choose either US or CN website for `extra-index-url`:
 
       .. code-block:: cmd
 
-         pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
    .. tab:: CN
 
       .. code-block:: cmd
 
-         pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
 
 ```eval_rst
 .. note::
 
-  If you encounter network issues while installing IPEX, refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-bigdl-llm-from-wheel>`_ for troubleshooting advice.
+  If you encounter network issues while installing IPEX, refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-ipex-llm-from-wheel>`_ for troubleshooting advice.
 ```
 
 ## Verify Installation
-You can verify if `bigdl-llm` is successfully installed by simply running a few lines of code:
+You can verify if `ipex-llm` is successfully installed by simply running a few lines of code:
 
 * Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
   ```cmd
@@ -123,7 +123,7 @@ You can verify if `bigdl-llm` is successfully installed by simply running a few 
   ```eval_rst
   .. seealso::
 
-     For other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
+     For other Intel dGPU Series, please refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
   ```
 * Step 4: Launch the Python interactive shell by typing `python` in the Anaconda prompt window and then press Enter.
 
@@ -143,7 +143,7 @@ You can verify if `bigdl-llm` is successfully installed by simply running a few 
   ```eval_rst
   .. seealso::
 
-    If you encounter any problem, please refer to `here <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
+    If you encounter any problem, please refer to `here <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#troubleshooting>`_ for help.
   ```
 * To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
@@ -184,17 +184,17 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
   ```eval_rst
   .. seealso::
 
-     For other Intel dGPU Series, please refer to `this guide <https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
+     For other Intel dGPU Series, please refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
   ```
 * Step 4: Install additional package required for Qwen-1.8B-Chat to conduct:
    ```cmd
    pip install tiktoken transformers_stream_generator einops
    ```
-* Step 5: Create code file. BigDL-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
+* Step 5: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
   ```eval_rst
   .. tabs::
      .. tab:: Hugging Face
-        Create a new file named ``demo.py`` and insert the code snippet below to run `Qwen-1.8B-Chat <https://huggingface.co/Qwen/Qwen-1_8B-Chat>`_ model with BigDL-LLM optimizations.
+        Create a new file named ``demo.py`` and insert the code snippet below to run `Qwen-1.8B-Chat <https://huggingface.co/Qwen/Qwen-1_8B-Chat>`_ model with IPEX-LLM optimizations.
   
         .. code-block:: python
   
@@ -208,7 +208,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
            tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat",
                                                       trust_remote_code=True)
 
-           # Load Model using bigdl-llm and load it to GPU
+           # Load Model using ipex-llm and load it to GPU
            model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-1_8B-Chat",
                                                         load_in_4bit=True,
                                                         cpu_embedding=True,
@@ -254,7 +254,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
            pip install modelscope==1.11.0
 
-        Create a new file named ``demo.py`` and insert the code snippet below to run `Qwen-1.8B-Chat <https://www.modelscope.cn/models/qwen/Qwen-1_8B-Chat/summary>`_ model with BigDL-LLM optimizations.
+        Create a new file named ``demo.py`` and insert the code snippet below to run `Qwen-1.8B-Chat <https://www.modelscope.cn/models/qwen/Qwen-1_8B-Chat/summary>`_ model with IPEX-LLM optimizations.
 
         .. code-block:: python
 
@@ -269,7 +269,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
            tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat",
                                                       trust_remote_code=True)
 
-           # Load Model using bigdl-llm and load it to GPU
+           # Load Model using ipex-llm and load it to GPU
            model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-1_8B-Chat",
                                                         load_in_4bit=True,
                                                         cpu_embedding=True,

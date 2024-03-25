@@ -1,6 +1,6 @@
-# Running LLM Finetuning using BigDL-LLM on Intel GPU
+# Running LLM Finetuning using IPEX-LLM on Intel GPU
 
-This folder contains examples of running different training mode with BigDL-LLM on Intel GPU:
+This folder contains examples of running different training mode with IPEX-LLM on Intel GPU:
 
 - [LoRA](LoRA): examples of running LoRA finetuning
 - [QLoRA](QLoRA): examples of running QLoRA finetuning

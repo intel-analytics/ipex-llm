@@ -1,6 +1,6 @@
 # LangChain API
 
-You may run the models using the LangChain API in `bigdl-llm`.
+You may run the models using the LangChain API in `ipex-llm`.
 
 ## Using Hugging Face `transformers` INT4 Format
 
@@ -12,16 +12,16 @@ from ipex_llm.langchain.embeddings import TransformersEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 
 embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
-bigdl_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
+ipex_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
 
-doc_chain = load_qa_chain(bigdl_llm, ...)
+doc_chain = load_qa_chain(ipex_llm, ...)
 output = doc_chain.run(...)
 ```
 
 ```eval_rst
 .. seealso::
 
-   See the examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/LangChain/transformers_int4>`_.
+   See the examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/transformers_int4>`_.
 ```
 
 ## Using Native INT4 Format
@@ -44,14 +44,14 @@ from langchain.chains.question_answering import load_qa_chain
 # switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
 embeddings = LlamaEmbeddings(model_path='/path/to/converted/model.bin')
 # switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
-bigdl_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
+ipex_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
 
-doc_chain = load_qa_chain(bigdl_llm, ...)
+doc_chain = load_qa_chain(ipex_llm, ...)
 doc_chain.run(...)
 ```
 
 ```eval_rst
 .. seealso::
 
-   See the examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/LangChain/native_int4>`_.
+   See the examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/native_int4>`_.
 ```

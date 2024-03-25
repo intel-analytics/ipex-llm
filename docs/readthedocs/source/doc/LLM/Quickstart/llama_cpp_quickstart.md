@@ -1,34 +1,34 @@
-# Use llama.cpp with BigDL-LLM on Intel GPU
+# Use llama.cpp with IPEX-LLM on Intel GPU
 
-Now you can use BigDL-LLM as an Intel GPU accelerated backend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `bigdl-llm` on Intel GPU (both iGPU and dGPU). 
+Now you can use IPEX-LLM as an Intel GPU accelerated backend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `ipex-llm` on Intel GPU (both iGPU and dGPU). 
 
 ```eval_rst
 .. note::
 
-   ``llama.cpp`` now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in BigDL-LLM now, support for IQ-series is still work in progress.
+   ``llama.cpp`` now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in IPEX-LLM now, support for IQ-series is still work in progress.
 ```
 
 ## 0 Prerequisites
-BigDL-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
+IPEX-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
 
 ### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
-Visit the [Install BigDL-LLM on Linux with Intel GPU](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
+Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
 
 ### Windows
-Visit the [Install BigDL-LLM on Windows with Intel GPU Guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://bigdl.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
+Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
 
-## 1 Install BigDL-LLM for llama.cpp
+## 1 Install IPEX-LLM for llama.cpp
 
-To use `llama.cpp` with BigDL-LLM, first ensure that `bigdl-llm[cpp]` is installed.
+To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
 ```cmd
 conda create -n llm-cpp python=3.9
 conda activate llm-cpp
-pip install --pre --upgrade bigdl-llm[cpp]
+pip install --pre --upgrade ipex-llm[cpp]
 ```
 
-**After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with BigDL-LLM.**
+**After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
 
 ## 2 Setup for running llama.cpp
 
@@ -38,9 +38,9 @@ mkdir llama-cpp
 cd llama-cpp
 ```
 
-### Initialize llama.cpp with BigDL-LLM
+### Initialize llama.cpp with IPEX-LLM
 
-Then you can use following command to initialize `llama.cpp` with BigDL-LLM:
+Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 ```eval_rst
 .. tabs::
    .. tab:: Linux
@@ -75,9 +75,9 @@ Then you can use following command to initialize `llama.cpp` with BigDL-LLM:
 
 **Now you can use these executable files by standard llama.cpp's usage.**
 
-## 3 Example: Running community GGUF models with BigDL-LLM
+## 3 Example: Running community GGUF models with IPEX-LLM
 
-Here we provide a simple example to show how to run a community GGUF model with BigDL-LLM.
+Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
 ### Set Environment Variables
 Configure oneAPI variables by running the following command:

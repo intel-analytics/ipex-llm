@@ -1,12 +1,12 @@
-# Self-Speculative Decoding for Large Language Model FP16 Inference using BigDL-LLM on Intel GPUs
-You can use BigDL-LLM to run FP16 inference for any Huggingface Transformer model with ***self-speculative decoding*** on Intel GPUs. This directory contains example scripts to help you quickly get started to run some popular open-source models using self-speculative decoding. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
+# Self-Speculative Decoding for Large Language Model FP16 Inference using IPEX-LLM on Intel GPUs
+You can use IPEX-LLM to run FP16 inference for any Huggingface Transformer model with ***self-speculative decoding*** on Intel GPUs. This directory contains example scripts to help you quickly get started to run some popular open-source models using self-speculative decoding. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
 
 ## Verified Hardware Platforms
 
 - Intel Data Center GPU Max Series
 
 ## Recommended Requirements
-To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
+To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
 
 Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
 

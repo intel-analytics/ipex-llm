@@ -1,15 +1,15 @@
-# BigDL-LLM Installation: GPU
+# IPEX-LLM Installation: GPU
 
 ## Windows
 
 ### Prerequisites
 
-BigDL-LLM on Windows supports Intel iGPU and dGPU.
+IPEX-LLM on Windows supports Intel iGPU and dGPU.
 
 ```eval_rst
 .. important::
 
-    BigDL-LLM on Windows only supports PyTorch 2.1.
+    IPEX-LLM on Windows only supports PyTorch 2.1.
 ```
 
 To apply Intel GPU acceleration, there're several prerequisite steps for tools installation and environment preparation:
@@ -40,28 +40,28 @@ Intel® oneAPI Base Toolkit 2024.0 installation methods:
          Activating your working conda environment will automatically configure oneAPI environment variables.
 ```
 
-### Install BigDL-LLM From PyPI
+### Install IPEX-LLM From PyPI
 
 We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
 ```eval_rst
 .. important::
 
-   ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
+   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
-The easiest ways to install `bigdl-llm` is the following commands:
+The easiest ways to install `ipex-llm` is the following commands:
 
 ```
 conda create -n llm python=3.9 libuv
 conda activate llm
 
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
-### Install BigDL-LLM From Wheel
+### Install IPEX-LLM From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
 Download the wheels on Windows system:
 
@@ -71,14 +71,14 @@ wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchv
 wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-win_amd64.whl
 ```
 
-You may install dependencies directly from the wheel archives and then install `bigdl-llm` using following commands:
+You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
 
 ```
 pip install torch-2.1.0a0+cxx11.abi-cp39-cp39-win_amd64.whl
 pip install torchvision-0.16.0a0+cxx11.abi-cp39-cp39-win_amd64.whl
 pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-win_amd64.whl
 
-pip install --pre --upgrade bigdl-llm[xpu]
+pip install --pre --upgrade ipex-llm[xpu]
 ```
 
 ```eval_rst
@@ -154,7 +154,7 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
 
 ### Prerequisites
 
-BigDL-LLM GPU support on Linux has been verified on:
+IPEX-LLM GPU support on Linux has been verified on:
 
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
@@ -163,7 +163,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 ```eval_rst
 .. important::
 
-    BigDL-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
+    IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
 ```
 
 ```eval_rst
@@ -176,7 +176,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 .. tabs::
    .. tab:: PyTorch 2.1
 
-      To enable BigDL-LLM for Intel GPUs with PyTorch 2.1, here are several prerequisite steps for tools installation and environment preparation:
+      To enable IPEX-LLM for Intel GPUs with PyTorch 2.1, here are several prerequisite steps for tools installation and environment preparation:
 
 
       * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
@@ -213,7 +213,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 
             .. note::
                You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
-               You can continue with your working conda environment and install ``bigdl-llm`` as guided in the next section.
+               You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
 
             .. note::
 
@@ -269,7 +269,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 
    .. tab:: PyTorch 2.0
 
-      To enable BigDL-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
+      To enable IPEX-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
 
       * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
@@ -306,7 +306,7 @@ BigDL-LLM GPU support on Linux has been verified on:
 
             .. note::
                You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
-               You can continue with your working conda environment and install ``bigdl-llm`` as guided in the next section.
+               You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
 
             .. note::
 
@@ -369,19 +369,19 @@ BigDL-LLM GPU support on Linux has been verified on:
                   sudo ./installer
 ```
 
-### Install BigDL-LLM From PyPI
+### Install IPEX-LLM From PyPI
 
 We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
 ```eval_rst
 .. important::
 
-   ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
+   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
 ```eval_rst
 .. important::
-   Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with Pytorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with Pytorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
+   Make sure you install matching versions of ipex-llm/pytorch/IPEX and oneAPI Base Toolkit. IPEX-LLM with Pytorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. IPEX-LLM with Pytorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
 ```
 
 ```eval_rst
@@ -393,15 +393,15 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
          conda create -n llm python=3.9
          conda activate llm
 
-         pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
       .. note::
 
-         The ``xpu`` option will install BigDL-LLM with PyTorch 2.1 by default, which is equivalent to
+         The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
 
          .. code-block:: bash
 
-            pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+            pip install --pre --upgrade ipex-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
             
 
    .. tab:: PyTorch 2.0
@@ -411,13 +411,13 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
          conda create -n llm python=3.9
          conda activate llm
 
-         pip install --pre --upgrade bigdl-llm[xpu_2.0] -f https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade ipex-llm[xpu_2.0] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 ```
 
-### Install BigDL-LLM From Wheel
+### Install IPEX-LLM From Wheel
 
-If you encounter network issues when installing IPEX, you can also install BigDL-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `bigdl-llm`.
+If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
 ```eval_rst
 .. tabs::
@@ -439,8 +439,8 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          pip install torchvision-0.16.0a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
          pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-linux_x86_64.whl
 
-         # install bigdl-llm for Intel GPU
-         pip install --pre --upgrade bigdl-llm[xpu]
+         # install ipex-llm for Intel GPU
+         pip install --pre --upgrade ipex-llm[xpu]
 
    .. tab:: PyTorch 2.0
 
@@ -460,8 +460,8 @@ If you encounter network issues when installing IPEX, you can also install BigDL
          pip install torchvision-0.15.2a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
          pip install intel_extension_for_pytorch-2.0.110+xpu-cp39-cp39-linux_x86_64.whl
 
-         # install bigdl-llm for Intel GPU
-         pip install --pre --upgrade bigdl-llm[xpu_2.0]
+         # install ipex-llm for Intel GPU
+         pip install --pre --upgrade ipex-llm[xpu_2.0]
 
 ```
 
@@ -543,8 +543,8 @@ OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or
 Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or directory
 ```
 
-The reason for such errors is that oneAPI has not been initialized properly before running BigDL-LLM code or before importing IPEX package.
+The reason for such errors is that oneAPI has not been initialized properly before running IPEX-LLM code or before importing IPEX package.
 
-* For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running BigDL-LLM.
+* For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running IPEX-LLM.
 * For PIP-installed oneAPI, activate your working environment and run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured for the environment. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#id1) to re-install oneAPI with PIP installer.
-* Make sure you install matching versions of BigDL-LLM/pytorch/IPEX and oneAPI Base Toolkit. BigDL-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. BigDL-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
+* Make sure you install matching versions of ipex-llm/pytorch/IPEX and oneAPI Base Toolkit. IPEX-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. IPEX-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.

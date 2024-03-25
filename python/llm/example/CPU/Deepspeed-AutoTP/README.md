@@ -1,4 +1,4 @@
-### Run Tensor-Parallel BigDL Transformers INT4 Inference with Deepspeed
+### Run Tensor-Parallel IPEX-LLM Transformers INT4 Inference with Deepspeed
 
 #### 1. Install Dependencies
 
@@ -33,23 +33,23 @@ model = deepspeed.init_inference(
 
 Then, returned model is converted into a deepspeed InferenceEnginee type.
 
-#### 3. Optimize Model with BigDL-LLM Low Bit
+#### 3. Optimize Model with IPEX-LLM Low Bit
 
-Distributed model managed by deepspeed can be further optimized with BigDL low-bit Python API, e.g. sym_int4:
+Distributed model managed by deepspeed can be further optimized with IPEX low-bit Python API, e.g. sym_int4:
 
 ```python
-# Apply BigDL-LLM INT4 optimizations on transformers
+# Apply IPEX-LLM INT4 optimizations on transformers
 from ipex_llm import optimize_model
 
 model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
 model = model.to(f'cpu:{local_rank}') # move partial model to local rank
 ```
 
-Then, a bigdl-llm transformers is returned, which in the following, can serve in parallel with native APIs.
+Then, a ipex-llm transformers is returned, which in the following, can serve in parallel with native APIs.
 
 #### 4. Start Python Code
 
-You can try deepspeed with BigDL LLM by:
+You can try deepspeed with IPEX LLM by:
 
 ```bash
 bash run.sh
@@ -59,7 +59,7 @@ If you want to run your own application, there are **necessary configurations in
 
 ```bash
 # run.sh
-source bigdl-llm-init
+source ipex-llm-init
 unset OMP_NUM_THREADS # deepspeed will set it for each instance automatically
 source /opt/intel/oneccl/env/setvars.sh
 ......

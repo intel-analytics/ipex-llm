@@ -4,10 +4,10 @@ This example demonstrates how to finetune a llama2-7b model using Big-LLM 4bit o
 
 
 ## Distributed Training Guide
-1. Single node with single socket: [simple example](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/QLoRA-FineTuning#example-finetune-llama2-7b-using-qlora)
-or [alpaca example](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/QLoRA-FineTuning/alpaca-qlora)
-2. [Single node with multiple sockets](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/QLoRA-FineTuning/alpaca-qlora#guide-to-finetuning-qlora-on-one-node-with-multiple-sockets)
-3. [multiple nodes with multiple sockets](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md)
+1. Single node with single socket: [simple example](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/QLoRA-FineTuning#example-finetune-llama2-7b-using-qlora)
+or [alpaca example](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/QLoRA-FineTuning/alpaca-qlora)
+2. [Single node with multiple sockets](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/QLoRA-FineTuning/alpaca-qlora#guide-to-finetuning-qlora-on-one-node-with-multiple-sockets)
+3. [multiple nodes with multiple sockets](https://github.com/intel-analytics/ipex-llm/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md)
 
 ## Example: Finetune llama2-7b using QLoRA
 
@@ -18,7 +18,7 @@ This example is ported from [bnb-4bit-training](https://colab.research.google.co
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-pip install --pre --upgrade bigdl-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 pip install transformers==4.34.0
 pip install peft==0.5.0
 pip install datasets
@@ -27,12 +27,12 @@ pip install bitsandbytes scipy
 ```
 
 ### 2. Finetune model
-If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/BigDL/blob/1747ffe60019567482b6976a24b05079274e7fc8/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C6-L53C6). While gradient checkpointing may improve memory efficiency, it slows training by approximately 20%.
+If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True` in [here](https://github.com/intel-analytics/ipex-llm/blob/1747ffe60019567482b6976a24b05079274e7fc8/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py#L53C6-L53C6). While gradient checkpointing may improve memory efficiency, it slows training by approximately 20%.
 We Recommend using micro_batch_size of 8 for better performance using 48cores in this example. You can refer to [this guide](https://huggingface.co/docs/transformers/perf_train_gpu_one) for more details.
-And remember to use `bigdl-llm-init` before you start finetuning, which can accelerate the job.
+And remember to use `ipex-llm-init` before you start finetuning, which can accelerate the job.
 
 ```
-source bigdl-llm-init -t
+source ipex-llm-init -t
 python ./qlora_finetuning_cpu.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --dataset DATASET
 ```
 
@@ -54,7 +54,7 @@ TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_r
 ```
 
 ### 3. Merge the adapter into the original model
-Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge.
+Using the [export_merged_model.py](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge.
 ```
 python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
 ```

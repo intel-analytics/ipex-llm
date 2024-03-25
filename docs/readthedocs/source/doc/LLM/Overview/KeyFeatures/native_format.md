@@ -11,7 +11,7 @@ You may also convert Hugging Face *Transformers* models into native INT4 format 
 ```python
 # convert the model
 from ipex_llm import llm_convert
-bigdl_llm_path = llm_convert(model='/path/to/model/',
+ipex_llm_path = llm_convert(model='/path/to/model/',
        outfile='/path/to/output/', outtype='int4', model_family="llama")
 
 # load the converted model
@@ -28,5 +28,5 @@ output = llm.batch_decode(output_ids)
 ```eval_rst
 .. seealso::
    
-   See the complete example `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Native-Models>`_
+   See the complete example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Native-Models>`_
 ```

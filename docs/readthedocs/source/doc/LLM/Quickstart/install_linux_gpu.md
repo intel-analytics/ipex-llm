@@ -1,8 +1,8 @@
-# Install BigDL-LLM on Linux with Intel GPU
+# Install IPEX-LLM on Linux with Intel GPU
 
-This guide demonstrates how to install BigDL-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU.
+This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU.
 
-BigDL-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates BigDL-LLM with PyTorch 2.1. Check the [Installation](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux) page for more details.
+IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux) page for more details.
 
 
 ## Install Intel GPU Driver
@@ -91,14 +91,14 @@ Install the Miniconda as follows if you don't have conda installed on your machi
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
 
 
-## Install `bigdl-llm`
+## Install `ipex-llm`
 
-* With the `llm` environment active, use `pip` to install `bigdl-llm` for GPU:
+* With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
   ```
   conda create -n llm python=3.9
   conda activate llm
 
-  pip install --pre --upgrade bigdl-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
   ```
 
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/create_conda_env.png" alt="image-20240221102252564" width=100%; />
@@ -106,7 +106,7 @@ Install the Miniconda as follows if you don't have conda installed on your machi
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/create_conda_env.png" alt="image-20240221102252564" width=100%; />
 
 
-* You can verify if bigdl-llm is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
+* You can verify if ipex-llm is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
   ```bash
   source /opt/intel/oneapi/setvars.sh
 
@@ -115,7 +115,7 @@ Install the Miniconda as follows if you don't have conda installed on your machi
   > from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
   ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/verify_bigdl_import.png" alt="image-20240221102252562" width=100%; />
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/verify_ipex_import.png" alt="image-20240221102252562" width=100%; />
 
 
 ## Runtime Configurations
@@ -157,7 +157,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    conda activate llm
    ```
 * Step 2: If you're running on iGPU, set some environment variables by running below commands:
-  > For more details about runtime configurations, refer to [this guide](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
+  > For more details about runtime configurations, refer to [this guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration): 
   ```bash
   # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
   source /opt/intel/oneapi/setvars.sh
@@ -175,7 +175,7 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
    generation_config = GenerationConfig(use_cache = True)
    
    tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b", trust_remote_code=True)
-   # load Model using bigdl-llm and load it to GPU
+   # load Model using ipex-llm and load it to GPU
    model = AutoModelForCausalLM.from_pretrained(
        "tiiuae/falcon-7b", load_in_4bit=True, cpu_embedding=True, trust_remote_code=True)
    model = model.to('xpu')

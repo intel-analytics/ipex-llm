@@ -1,13 +1,13 @@
 # Alpaca QLoRA Finetuning (experimental support)
 
-This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to BigDL-LLM QLoRA on [Intel CPUs](../../README.md).
+This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main) to IPEX-LLM QLoRA on [Intel CPUs](../../README.md).
 
 ### 1. Install
 
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-pip install --pre --upgrade bigdl-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 pip install datasets transformers==4.35.0
 pip install fire peft==0.5.0
 pip install accelerate==0.23.0
@@ -17,7 +17,7 @@ pip install bitsandbytes scipy
 ### 2. Configures environment variables
 
 ```bash
-source bigdl-llm-init -t
+source ipex-llm-init -t
 ```
 
 ### 3. Finetuning LLaMA-2-7B on a node:
@@ -28,7 +28,7 @@ Example usage:
 python ./alpaca_qlora_finetuning_cpu.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./bigdl-qlora-alpaca"
+    --output_dir "./ipex-qlora-alpaca"
 ```
 
 **Note**: You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file.
@@ -68,7 +68,7 @@ bash finetune_one_node_two_sockets.sh
 
 Now the prompter is for the datasets with `instruction` `input`(optional) and `output`. If you want to use different datasets,
 you can add template file xxx.json in templates. And then update utils.prompter.py's `generate_prompt` method and update `generate_and_tokenize_prompt` method to fix the dataset.
-For example, I want to train llama2-7b with [english_quotes](https://huggingface.co/datasets/Abirate/english_quotes) just like [this example](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py)
+For example, I want to train llama2-7b with [english_quotes](https://huggingface.co/datasets/Abirate/english_quotes) just like [this example](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/QLoRA-FineTuning/qlora_finetuning_cpu.py)
 
 1. add template english_quotes.json
 
@@ -109,7 +109,7 @@ def generate_and_tokenize_prompt(data_point):
 python ./quotes_qlora_finetuning_cpu.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "./english_quotes" \
-    --output_dir "./bigdl-qlora-alpaca" \
+    --output_dir "./ipex-qlora-alpaca" \
     --prompt_template_name "english_quotes"
 ```
 
@@ -143,7 +143,7 @@ lora_target_modules: List[str] = ["W_pack"]
 5. (Only for baichuan) According to this [issue](https://github.com/baichuan-inc/Baichuan2/issues/204#issuecomment-1774372008),
    need to modify the [tokenization_baichuan.py](https://huggingface.co/baichuan-inc/Baichuan-7B/blob/main/tokenization_baichuan.py#L74) to fix issue.
 6. finetune as normal
-7. Using the [export_merged_model.py](https://github.com/intel-analytics/BigDL/blob/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge. But also need to update tokenizer and model to ensure successful merge weight.
+7. Using the [export_merged_model.py](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge. But also need to update tokenizer and model to ensure successful merge weight.
 
 ```bash
 from transformers import AutoTokenizer  # noqa: F402
@@ -153,6 +153,6 @@ base_model = AutoModelForCausalLM.from_pretrained(base_model,trust_remote_code=T
 
 ### 4. Finetuning in docker and multiple nodes (k8s)
 
-If you want to run multi-process fine-tuning, or do not want to manually install the above dependencies, we provide a docker solution to quickly start a one-container finetuning. Please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/docker/llm/finetune/qlora/cpu/docker#fine-tune-llm-with-bigdl-llm-container).
+If you want to run multi-process fine-tuning, or do not want to manually install the above dependencies, we provide a docker solution to quickly start a one-container finetuning. Please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/docker/llm/finetune/qlora/cpu/docker#fine-tune-llm-with-ipex-llm-container).
 
-Moreover, for users with multiple CPU server resources e.g. Xeon series like SPR and ICX, we give a k8s distributed solution, where machines and processor sockets are allowed to collaborate by one click easily. Please refer to [here](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md) for how to run QLoRA on k8s.
+Moreover, for users with multiple CPU server resources e.g. Xeon series like SPR and ICX, we give a k8s distributed solution, where machines and processor sockets are allowed to collaborate by one click easily. Please refer to [here](https://github.com/intel-analytics/ipex-llm/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md) for how to run QLoRA on k8s.

@@ -23,7 +23,7 @@ mpirun -n 3 \
        python -u ./alpaca_qlora_finetuning.py \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./bigdl-qlora-alpaca" \
+       --output_dir "./ipex-qlora-alpaca" \
        --gradient_checkpointing False \
        --micro_batch_size 2 \
        --batch_size 128 > training.log

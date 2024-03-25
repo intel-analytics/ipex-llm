@@ -1,12 +1,12 @@
 # Whisper
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Whisper models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny) as a reference Whisper model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Whisper models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny) as a reference Whisper model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Recognize Tokens using `generate()` API
-In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -14,7 +14,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install datasets soundfile librosa # required by audio processing
 ```
 
@@ -24,7 +24,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install datasets soundfile librosa # required by audio processing
 ```
 

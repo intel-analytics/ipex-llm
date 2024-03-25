@@ -1,19 +1,19 @@
 # ChatGLM3
-In this directory, you will find examples on how you could run ChatGLM3 BF16 infernece with self-speculative decoding using BigDL-LLM on Intel CPUs. For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model.
+In this directory, you will find examples on how you could run ChatGLM3 BF16 infernece with self-speculative decoding using IPEX-LLM on Intel CPUs. For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model.
 
 
 ## Example: Predict Tokens using `generate()` API
-In the example [speculative.py](./speculative.py), we show a basic use case for a ChatGLM3 model to predict the next N tokens using `generate()` API, with BigDL-LLM speculative decoding optimizations on Intel CPUs.
+In the example [speculative.py](./speculative.py), we show a basic use case for a ChatGLM3 model to predict the next N tokens using `generate()` API, with IPEX-LLM speculative decoding optimizations on Intel CPUs.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.9
 conda activate llm
-pip install --pre --upgrade bigdl-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 ```
 ### 2. Configures OneAPI environment variables
 ```bash
-source bigdl-llm-init -t
+source ipex-llm-init -t
 export OMP_NUM_THREADS=one_socket_num
 ```
 
@@ -51,4 +51,4 @@ First token latency xx.xxxxs
 
 ### 4. Accelerate with BIGDL_OPT_IPEX
 
-BIGDL_OPT_IPEX can help to accelerate speculative decoding on chatglm3-6b, and please refer to [here](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-bigdl_opt_ipex) for a try.
+BIGDL_OPT_IPEX can help to accelerate speculative decoding on chatglm3-6b, and please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Speculative-Decoding/llama2#4-accelerate-with-ipex_opt_ipex) for a try.

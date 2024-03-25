@@ -1,10 +1,10 @@
-BigDL-LLM PyTorch API
+IPEX-LLM PyTorch API
 =====================
 
 Optimize Model
 ----------------------------------------
 
-You can run any PyTorch model with ``optimize_model`` through only one-line code change to benefit from BigDL-LLM optimization, regardless of the library or API you are using.
+You can run any PyTorch model with ``optimize_model`` through only one-line code change to benefit from IPEX-LLM optimization, regardless of the library or API you are using.
 
 .. automodule:: ipex_llm
     :members: optimize_model

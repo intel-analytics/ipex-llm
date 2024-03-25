@@ -1,10 +1,10 @@
-# BigDL-LLM Benchmarking
+# IPEX-LLM Benchmarking
 
-We can do benchmarking for BigDL-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
+We can do benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
 ## Prepare The Environment
 
-You can refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install BigDL-LLM in your environment. The following dependencies are also needed to run the benchmark scripts.
+You can refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install IPEX-LLM in your environment. The following dependencies are also needed to run the benchmark scripts.
 
 ```
 pip install pandas
@@ -13,12 +13,12 @@ pip install omegaconf
 
 ## Prepare The Scripts
 
-Navigate to your local workspace and then download BigDL from GitHub. Modify the `config.yaml` under `all-in-one` folder for your own benchmark configurations.
+Navigate to your local workspace and then download IPEX-LLM from GitHub. Modify the `config.yaml` under `all-in-one` folder for your own benchmark configurations.
 
 ```
 cd your/local/workspace
-git clone https://github.com/intel-analytics/BigDL.git
-cd BigDL/python/llm/dev/benchmark/all-in-one/
+git clone https://github.com/intel-analytics/ipex-llm.git
+cd ipex-llm/python/llm/dev/benchmark/all-in-one/
 ```
 
 ## Configure YAML File
@@ -55,7 +55,7 @@ Some parameters in the yaml file that you can configure:
 
 ## Run on Windows
 
-Please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration) to configure oneAPI environment variables.
+Please refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration) to configure oneAPI environment variables.
 
 ```eval_rst
 .. tabs::

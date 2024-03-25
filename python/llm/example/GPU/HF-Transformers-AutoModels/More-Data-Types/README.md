@@ -1,6 +1,6 @@
-# BigDL-LLM Transformers Low-Bit Inference Pipeline (FP8, FP4, INT4 and more)
+# IPEX-LLM Transformers Low-Bit Inference Pipeline (FP8, FP4, INT4 and more)
 
-In this example, we show a pipeline to apply BigDL-LLM low-bit optimizations (including **FP8/INT8/MixedFP8/FP4/INT4/MixedFP4**) to any Hugging Face Transformers model, and then run inference on the optimized low-bit model.
+In this example, we show a pipeline to apply IPEX-LLM low-bit optimizations (including **FP8/INT8/MixedFP8/FP4/INT4/MixedFP4**) to any Hugging Face Transformers model, and then run inference on the optimized low-bit model.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
@@ -9,7 +9,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 ```
 
 ## Run Example

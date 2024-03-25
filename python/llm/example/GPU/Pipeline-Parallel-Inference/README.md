@@ -1,20 +1,20 @@
-# Run BigDL-LLM on Multiple Intel GPUs in pipeline parallel fashion
+# Run IPEX-LLM on Multiple Intel GPUs in pipeline parallel fashion
 
-This example demonstrates how to run BigDL-LLM optimized low-bit model vertically partitioned on two [Intel GPUs](../README.md).
+This example demonstrates how to run IPEX-LLM optimized low-bit model vertically partitioned on two [Intel GPUs](../README.md).
 
 ## Requirements
-To run this example with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
+To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
 
 ## Example:
 
-### 1.1 Install BigDL-LLM
+### 1.1 Install IPEX-LLM
 
 ```bash
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 # you can install specific ipex/torch version for your need
-pip install --pre --upgrade bigdl-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
 # configures OneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
 

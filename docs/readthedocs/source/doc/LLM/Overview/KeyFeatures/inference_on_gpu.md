@@ -1,6 +1,6 @@
 # Inference on GPU
 
-Apart from the significant acceleration capabilites on Intel CPUs, BigDL-LLM also supports optimizations and acceleration for running LLMs (large language models) on Intel GPUs. With BigDL-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4, INT5, INT8, etc).
+Apart from the significant acceleration capabilites on Intel CPUs, IPEX-LLM also supports optimizations and acceleration for running LLMs (large language models) on Intel GPUs. With IPEX-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4, INT5, INT8, etc).
 
 Compared with running on Intel CPUs, some additional operations are required on Intel GPUs. To help you better understand the process, here we use a popular model [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as an example.
 
@@ -9,14 +9,14 @@ Compared with running on Intel CPUs, some additional operations are required on 
 ```eval_rst
 .. note::
 
-   If you are using an older version of ``bigdl-llm`` (specifically, older than 2.5.0b20240104), you need to manually add ``import intel_extension_for_pytorch as ipex`` at the beginning of your code.
+   If you are using an older version of ``ipex-llm`` (specifically, older than 2.5.0b20240104), you need to manually add ``import intel_extension_for_pytorch as ipex`` at the beginning of your code.
 ```
 
 ## Load and Optimize Model
 
 You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-style API](./transformers_style_api.html) on Intel GPUs according to your preference.
 
-**Once you have the model with BigDL-LLM low bit optimization, set it to `to('xpu')`**.
+**Once you have the model with IPEX-LLM low bit optimization, set it to `to('xpu')`**.
 
 ```eval_rst
 .. tabs::
@@ -32,7 +32,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
          from ipex_llm import optimize_model
 
          model = LlamaForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', torch_dtype='auto', low_cpu_mem_usage=True)
-         model = optimize_model(model) # With only one line to enable BigDL-LLM INT4 optimization
+         model = optimize_model(model) # With only one line to enable IPEX-LLM INT4 optimization
 
          model = model.to('xpu') # Important after obtaining the optimized model
 
@@ -49,7 +49,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
          from transformers import LlamaForCausalLM
          from ipex_llm.optimize import low_memory_init, load_low_bit
 
-         saved_dir='./llama-2-bigdl-llm-4-bit'
+         saved_dir='./llama-2-ipex-llm-4-bit'
          with low_memory_init(): # Fast and low cost by loading model on meta device
             model = LlamaForCausalLM.from_pretrained(saved_dir,
                                                      torch_dtype="auto",
@@ -84,7 +84,7 @@ You could choose to use [PyTorch API](./optimize_model.html) or [`transformers`-
 
          from ipex_llm.transformers import AutoModelForCausalLM
 
-         saved_dir='./llama-2-bigdl-llm-4-bit'
+         saved_dir='./llama-2-ipex-llm-4-bit'
          model = AutoModelForCausalLM.load_low_bit(saved_dir) # Load the optimized model
 
          model = model.to('xpu') # Important after obtaining the optimized model
@@ -124,5 +124,5 @@ with torch.inference_mode():
 ```eval_rst
 .. seealso::
 
-   See the complete examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU>`_
+   See the complete examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU>`_
 ```

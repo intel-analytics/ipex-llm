@@ -1,10 +1,10 @@
 ## Langchain Examples
 
-This folder contains examples showcasing how to use `langchain` with `bigdl`. 
+This folder contains examples showcasing how to use `langchain` with `ipex`. 
 
-### Install BigDL
+### Install IPEX
 
-Ensure `bigdl-llm` is installed by following the [BigDL-LLM Installation Guide](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install). 
+Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install). 
 
 ### Install Dependences Required by the Examples
 
@@ -36,7 +36,7 @@ To run the example, execute the following command in the current directory:
 ```bash
 python transformers_int4/rag.py -m <path_to_model> [-q <your_question>] [-i <path_to_input_txt>]
 ```
-> Note: If `-i` is not specified, it will use a short introduction to Big-DL as input by default. if `-q` is not specified, `What is BigDL?` will be used by default. 
+> Note: If `-i` is not specified, it will use a short introduction to Big-DL as input by default. if `-q` is not specified, `What is IPEX?` will be used by default. 
 
 
 ### Example: Math
@@ -70,4 +70,4 @@ python transformers_int4/voiceassistant.py -m <path_to_model> [-q <your_question
 
 ### Legacy (Native INT4 examples)
 
-BigDL also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 
+IPEX also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 

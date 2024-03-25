@@ -1,4 +1,4 @@
-BigDL-LLM API
+IPEX-LLM API
 ==================
 
 .. toctree::

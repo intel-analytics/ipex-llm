@@ -19,5 +19,5 @@ pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/o
 pip install deepspeed==0.11.1
 # 4. exclude intel deepspeed extension, which is only for XPU
 pip uninstall intel-extension-for-deepspeed
-# 5. install bigdl-llm
-pip install --pre --upgrade bigdl-llm[all]
+# 5. install ipex-llm
+pip install --pre --upgrade ipex-llm[all]

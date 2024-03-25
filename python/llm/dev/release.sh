@@ -38,8 +38,8 @@ if [ "${version}" != "default" ]; then
     echo $version > $BIGDL_DIR/python/version.txt
 fi
 
-bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
-echo "The effective version is: ${bigdl_version}"
+ipex_llm_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
+echo "The effective version is: ${ipex_llm_version}"
 
 if [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
@@ -72,14 +72,14 @@ fi
 
 if [ ${upload} == true ]; then
     # upload to pypi
-    upload_to_pypi_command="twine upload dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl"
+    upload_to_pypi_command="twine upload dist/ipex_llm-${ipex_llm_version}-*-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_to_pypi_command"
     $upload_to_pypi_command
 
     # upload to sourceforge
     rsync -avzr -e \
     "sshpass -p '${SOURCEFORGE_PW}' ssh -o StrictHostKeyChecking=no" \
-    ./dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl \
-    intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/bigdl-llm-whl/bigdl-llm/${bigdl_version}/
+    ./dist/ipex_llm-${ipex_llm_version}-*-${verbose_pname}.whl \
+    intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/ipex-llm-whl/ipex-llm/${ipex_llm_version}/
 
 fi

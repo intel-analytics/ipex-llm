@@ -1,6 +1,6 @@
 ## PyTorch API
 
-In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. With BigDL-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4, INT5, INT8, etc).
+In general, you just need one-line `optimize_model` to easily optimize any loaded PyTorch model, regardless of the library or API you are using. With IPEX-LLM, PyTorch models (in FP16/BF16/FP32) can be optimized with low-bit quantizations (supported precisions include INT4, INT5, INT8, etc).
 
 ### Optimize model
 
@@ -16,11 +16,11 @@ Then, just need to call `optimize_model` to optimize the loaded model and INT4 o
 ```python
 from ipex_llm import optimize_model
 
-# With only one line to enable BigDL-LLM INT4 optimization
+# With only one line to enable IPEX-LLM INT4 optimization
 model = optimize_model(model)
 ```
 
-After optimizing the model, BigDL-LLM does not require any change in the inference code. You can use any libraries to run the optimized model with very low latency.
+After optimizing the model, IPEX-LLM does not require any change in the inference code. You can use any libraries to run the optimized model with very low latency.
 
 ### More Precisions
 
@@ -44,7 +44,7 @@ The loading process of the original model may be time-consuming and memory-inten
 
 Continuing with the [example of Llama-2-7b-chat-hf](#optimize-model), we can save the previously optimized model as follows:
 ```python
-saved_dir='./llama-2-bigdl-llm-4-bit'
+saved_dir='./llama-2-ipex-llm-4-bit'
 model.save_low_bit(saved_dir)
 ```
 #### Load
@@ -63,7 +63,7 @@ model = load_low_bit(model, saved_dir) # Load the optimized model
 ```eval_rst
 .. seealso::
 
-   * Please refer to the `API documentation <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html>`_ for more details.
+   * Please refer to the `API documentation <https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html>`_ for more details.
 
-   * We also provide detailed examples on how to run PyTorch models (e.g., Openai Whisper, LLaMA2, ChatGLM2, Falcon, MPT, Baichuan2, etc.) using BigDL-LLM. See the complete CPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/PyTorch-Models>`_ and GPU examples `here <https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/GPU/PyTorch-Models>`_.
+   * We also provide detailed examples on how to run PyTorch models (e.g., Openai Whisper, LLaMA2, ChatGLM2, Falcon, MPT, Baichuan2, etc.) using IPEX-LLM. See the complete CPU examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/PyTorch-Models>`_ and GPU examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/PyTorch-Models>`_.
 ```

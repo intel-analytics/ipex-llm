@@ -20,4 +20,4 @@ python ./alpaca_qlora_finetuning.py \
     --batch_size 128 \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./bigdl-qlora-alpaca"
+    --output_dir "./ipex-qlora-alpaca"

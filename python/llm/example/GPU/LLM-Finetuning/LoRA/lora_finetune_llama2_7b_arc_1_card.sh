@@ -20,6 +20,6 @@ python ./alpaca_lora_finetuning.py \
     --batch_size 128 \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./bigdl-lora-alpaca" \
+    --output_dir "./ipex-lora-alpaca" \
     --gradient_checkpointing True \
     --lora_target_modules "['k_proj', 'q_proj', 'o_proj', 'v_proj']"

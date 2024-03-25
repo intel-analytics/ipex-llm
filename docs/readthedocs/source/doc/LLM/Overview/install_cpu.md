@@ -1,11 +1,11 @@
-# BigDL-LLM Installation: CPU
+# IPEX-LLM Installation: CPU
 
 ## Quick Installation
 
-Install BigDL-LLM for CPU supports using pip through:
+Install IPEX-LLM for CPU supports using pip through:
 
 ```bash
-pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
 Please refer to [Environment Setup](#environment-setup) for more information.
@@ -17,12 +17,12 @@ Please refer to [Environment Setup](#environment-setup) for more information.
 
 .. important::
 
-   ``bigdl-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.9 is recommended for best practices.
+   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.9 is recommended for best practices.
 ```
 
 ## Recommended Requirements
 
-Here list the recommended hardware and OS for smooth BigDL-LLM optimization experiences on CPU:
+Here list the recommended hardware and OS for smooth IPEX-LLM optimization experiences on CPU:
 
 * Hardware
 
@@ -37,7 +37,7 @@ Here list the recommended hardware and OS for smooth BigDL-LLM optimization expe
 
 ## Environment Setup
 
-For optimal performance with LLM models using BigDL-LLM optimizations on Intel CPUs, here are some best practices for setting up environment:
+For optimal performance with LLM models using IPEX-LLM optimizations on Intel CPUs, here are some best practices for setting up environment:
 
 First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
@@ -45,10 +45,10 @@ First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html)
 conda create -n llm python=3.9
 conda activate llm
 
-pip install --pre --upgrade bigdl-llm[all] # install the latest bigdl-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
-Then for running a LLM model with BigDL-LLM optimizations (taking an `example.py` an example):
+Then for running a LLM model with IPEX-LLM optimizations (taking an `example.py` an example):
 
 ```eval_rst	
 .. tabs::

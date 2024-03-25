@@ -1,12 +1,12 @@
 # Falcon
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Falcon models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) as a reference Falcon model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Falcon models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) as a reference Falcon model.
 
 ## 0. Requirements
-To run these examples with BigDL-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Falcon model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a Falcon model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -14,7 +14,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install einops # additional package required for falcon-7b-instruct to conduct generation
 ```
 
@@ -24,12 +24,12 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 pip install einops # additional package required for falcon-7b-instruct to conduct generation
 ```
 
 ### 2. (Optional) Download Model and Replace File
-If you select the Falcon model ([tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)), please note that their code (`modelling_RW.py`) does not support KV cache at the moment. To address issue, we have provided updated file ([falcon-7b-instruct/modelling_RW.py](./falcon-7b-instruct/modelling_RW.py)), which can be used to achieve the best performance using BigDL-LLM INT4 optimizations with KV cache support.
+If you select the Falcon model ([tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)), please note that their code (`modelling_RW.py`) does not support KV cache at the moment. To address issue, we have provided updated file ([falcon-7b-instruct/modelling_RW.py](./falcon-7b-instruct/modelling_RW.py)), which can be used to achieve the best performance using IPEX-LLM INT4 optimizations with KV cache support.
 After transformers 4.36, only transformer models are supported since remote code diverges from transformer model code, make sure set `trust_remote_code=False`.
 ```python
  model = AutoModelForCausalLM.from_pretrained(model_path,

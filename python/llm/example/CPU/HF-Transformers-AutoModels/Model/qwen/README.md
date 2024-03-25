@@ -1,14 +1,14 @@
 # Qwen
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Qwen models. For illustration purposes, we utilize the [Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) as a reference Qwen model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen models. For illustration purposes, we utilize the [Qwen-7B-Chat](https://huggingface.co/Qwen/Qwen-7B-Chat) as a reference Qwen model.
 
 ## 0. Requirements
 
-To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
 
-In the example [generate.py](./generate.py), we show a basic use case for a Qwen model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a Qwen model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 
 ### 1. Install
 
@@ -18,13 +18,13 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.9
 conda activate llm
 
-pip install bigdl-llm[all] # install bigdl-llm with 'all' option
+pip install ipex-llm[all] # install ipex-llm with 'all' option
 pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen-7B-Chat to conduct generation
 ```
 
 ### 2. Run
 
-The minimum Qwen model version currently supported by BigDL-LLM is the version on November 30, 2023.
+The minimum Qwen model version currently supported by IPEX-LLM is the version on November 30, 2023.
 
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
@@ -36,7 +36,7 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-> **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
 > Please select the appropriate size of the Qwen model based on the capabilities of your machine.
 
@@ -55,8 +55,8 @@ For optimal performance on server, it is recommended to set several environment 
 E.g. on Linux,
 
 ```bash
-# set BigDL-LLM env variables
-source bigdl-llm-init
+# set IPEX-LLM env variables
+source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
