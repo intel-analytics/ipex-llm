@@ -120,7 +120,12 @@ To use GPU acceleration on Linux, several environment variables are required or 
       For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
       .. code-block:: bash
+
+         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
          source /opt/intel/oneapi/setvars.sh
+
+         # Recommended Environment Variables for optimal performance
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
@@ -129,7 +134,12 @@ To use GPU acceleration on Linux, several environment variables are required or 
       For Intel Data Center GPU Max Series, we recommend:
 
       .. code-block:: bash
+
+         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
          source /opt/intel/oneapi/setvars.sh
+
+         # Recommended Environment Variables for optimal performance
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export ENABLE_SDP_FUSION=1
