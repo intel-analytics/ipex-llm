@@ -629,6 +629,31 @@ def _optimize_pre(model):
                 module.rope_base = rope_base
                 del module.c_attn
         model.apply(split_qkv_proj_func)
+    if model.config.architectures is not None \
+       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"] and \
+       hasattr(model.config, 'padded_vocab_size') and \
+       model.config.padded_vocab_size == 65024:
+        # chatglm2-6b
+        def split_mlp_proj_func(module):
+            if "MLP" in module.__class__.__name__:
+                dense_h_to_4h = module.dense_h_to_4h
+                print(dense_h_to_4h.bias)
+                in_features = dense_h_to_4h.weight.data.shape[1]
+                output_features = dense_h_to_4h.weight.data.shape[0] // 2
+                gate_proj = torch.nn.Linear(0, 0, False)
+                gate_proj.weight = torch.nn.Parameter(dense_h_to_4h.weight.data[:output_features, :], requires_grad=False)
+                gate_proj.in_features = in_features
+                gate_proj.out_features = output_features
+                module.gate_proj = gate_proj
+
+                up_proj = torch.nn.Linear(0, 0, False)
+                up_proj.weight = torch.nn.Parameter(dense_h_to_4h.weight.data[output_features:, :], requires_grad=False)
+                up_proj.in_features = in_features
+                up_proj.out_features = output_features
+                module.up_proj = up_proj
+
+                del module.dense_h_to_4h
+        model.apply(split_mlp_proj_func)
     return model
 
 
@@ -873,6 +898,7 @@ def _optimize_post(model, lightweight_bmm=False):
             from ipex_llm.transformers.models.chatglm2 import chatglm2_attention_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm2_model_forward
+            from ipex_llm.transformers.models.chatglm2 import chatglm2_mlp_forward
             convert_forward(model,
                             module.SelfAttention,
                             chatglm2_attention_forward)
@@ -882,6 +908,10 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.RMSNorm,
                             chatglm_rms_norm_forward)
+            convert_forward(model,
+                            module.MLP,
+                            chatglm2_mlp_forward
+                            )
         elif hasattr(model.config, 'vocab_size') and model.config.vocab_size == 130528:
             # chatglm-6b
             modeling_module_name = model.__class__.__module__

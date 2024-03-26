@@ -26,6 +26,8 @@ from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, a
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import use_esimd_sdp
+from ipex_llm.transformers.models.utils import mlp_fusion_check
+from ipex_llm.transformers.models.utils import SILU
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
@@ -203,11 +205,9 @@ def chatglm2_quantized_attention_forward_8eb45c(
 ):
     # hidden_states: [seq_len, bs, head_dim]
     mixed_x_layer = self.query_key_value(hidden_states)
-
     n_head = self.num_attention_heads_per_partition
     n_kv_head = self.num_multi_query_groups_per_partition if self.multi_query_attention else n_head
     head_dim = self.hidden_size_per_attention_head
-
     query_layer, key_layer, value_layer = mixed_x_layer.split(
         [n_head * head_dim, n_kv_head * head_dim, n_kv_head * head_dim],
         dim=-1,
@@ -220,6 +220,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
         if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
+            # print("optimize rope")
             # use_fuse_rope, see chatglm2_model_forward
             cos, sin = rotary_pos_emb
             rot_dim = cos.shape[-1]
@@ -633,3 +634,25 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
         context_layer = context_layer.view(*new_context_layer_shape)
 
     return context_layer
+
+
+def chatglm2_mlp_forward(self, x):
+    # [s, b, hp]
+    ori_shape = x.shape
+    x_2d = x.view(-1, x.shape[-1])
+    bsz, hidden_size = x_2d.shape
+    qtype = getattr(self.gate_proj, "qtype", None)
+    if mlp_fusion_check(x_2d, qtype, self.training) and not self.up_proj.enable_xetla:
+        print("enter here, x_2d is", x_2d.shape)
+        x_2d = x_2d.contiguous()
+        import linear_q4_0
+        print(self.gate_proj.out_len)
+        output = self.dense_4h_to_h(linear_q4_0.mlp_forward_xpu(
+                x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
+                x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
+                SILU, qtype
+            ))
+        output = output.reshape(*ori_shape)
+    else:
+        output = self.dense_4h_to_h(F.silu(self.gate_proj(x)) * self.up_proj(x))
+    return output
