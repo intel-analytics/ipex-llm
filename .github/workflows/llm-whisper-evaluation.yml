@@ -111,7 +111,7 @@ jobs:
           python -m pip install --upgrade librosa
           python -m pip install --upgrade jiwer
 
-      # please uncomment it and comment the "Install BigDL-LLM from Pypi" part for PR tests
+      # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
@@ -120,10 +120,10 @@ jobs:
         with:
           extra-dependency: "xpu_2.1"
 
-      # - name: Install BigDL-LLM from Pypi
+      # - name: Install IPEX-LLM from Pypi
       #   shell: bash
       #   run: |
-      #     pip install --pre --upgrade bigdl-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      #     pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
 
       # - name: Test installed xpu version
       #   shell: bash
