@@ -276,7 +276,7 @@ jobs:
       - name: Download FP16 results
         shell: bash
         run: |
-          wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/python/llm/test/benchmark/harness/fp16.csv -O $ACC_FOLDER/../fp16.csv
+          wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/test/benchmark/harness/fp16.csv -O $ACC_FOLDER/../fp16.csv
           ls $ACC_FOLDER/..
 
       - name: Write to CSV

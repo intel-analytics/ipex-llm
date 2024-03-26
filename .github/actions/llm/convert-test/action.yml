@@ -1,5 +1,5 @@
-name: "BigDL-LLM convert tests"
-description: "BigDL-LLM convert test, including downloading original models"
+name: "IPEX-LLM convert tests"
+description: "IPEX-LLM convert test, including downloading original models"
 
 runs:
   using: "composite"

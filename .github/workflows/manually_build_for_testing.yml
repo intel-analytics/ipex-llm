@@ -14,36 +14,13 @@ on:
         type: choice
         options:
         - all
-        - bigdl-llm-finetune-lora-cpu
-        - bigdl-llm-finetune-qlora-cpu
-        - bigdl-llm-finetune-qlora-xpu
-        - bigdl-llm-xpu
-        - bigdl-llm-cpu
-        - bigdl-llm-serving-xpu
-        - bigdl-llm-serving-cpu
-        - bigdl-ppml-gramine-base
-        - bigdl-ppml-trusted-bigdl-llm-gramine-base
-        - bigdl-ppml-trusted-bigdl-llm-gramine-ref
-        - bigdl-ppml-trusted-deep-learning-gramine-base
-        - bigdl-ppml-trusted-deep-learning-gramine-ref
-        - bigdl-ppml-trusted-dl-serving-gramine-base
-        - bigdl-ppml-trusted-dl-serving-gramine-ref
-        - bigdl-ppml-trusted-big-data-ml-python-gramine
-        - bigdl-ppml-trusted-big-data-ml-python-gramine-noattest
-        - bigdl-ppml-trusted-big-data-ml-python-graphene
-        - bigdl-ppml-trusted-llm-fastchat-occlum
-        - bigdl-ppml-trusted-big-data-ml-scala-occlum
-        - bigdl-ppml-trusted-big-data-ml-scala-occlum-production
-        - bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
-        - bigdl-ppml-trusted-realtime-ml-scala-graphene
-        - bigdl-ppml-trusted-realtime-ml-scala-occlum
-        - trusted-bigdl-llm-serving-tdx
-        - bigdl-ppml-trusted-fastchat-tdx
-        - bigdl-ppml-kmsutil
-        - bigdl-ppml-pccs
-        - bigdl-ppml-trusted-python-toolkit-base
-        - bigdl-ppml-trusted-python-toolkit-ref
-        - bigdl-ppml-trusted-bigdata-gramine
+        - ipex-llm-finetune-lora-cpu
+        - ipex-llm-finetune-qlora-cpu
+        - ipex-llm-finetune-qlora-xpu
+        - ipex-llm-xpu
+        - ipex-llm-cpu
+        - ipex-llm-serving-xpu
+        - ipex-llm-serving-cpu
       tag:
         description: 'docker image tag (e.g. test)'
         required: true
@@ -57,8 +34,8 @@ permissions:
   contents: read
 
 jobs:
-  bigdl-llm-finetune-lora-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-finetune-lora-cpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -68,12 +45,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-llm-finetune-lora-cpu
+    - name: ipex-llm-finetune-lora-cpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-finetune-lora-cpu ########"
+        echo "####### ipex-llm-finetune-lora-cpu ########"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-llm-finetune-lora-cpu
+        export image=intelanalytics/ipex-llm-finetune-lora-cpu
         cd docker/llm/finetune/lora/cpu/docker
         sudo docker build \
           --no-cache=true \
@@ -86,8 +63,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-llm-finetune-qlora-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-finetune-qlora-cpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -97,12 +74,12 @@ jobs:
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: bigdl-llm-finetune-qlora-cpu
+      - name: ipex-llm-finetune-qlora-cpu
         run: |
           echo "##############################################################"
-          echo "####### bigdl-llm-finetune-qlora-cpu ########"
+          echo "####### ipex-llm-finetune-qlora-cpu ########"
           echo "##############################################################"
-          export image=intelanalytics/bigdl-llm-finetune-qlora-cpu
+          export image=intelanalytics/ipex-llm-finetune-qlora-cpu
           cd docker/llm/finetune/qlora/cpu/docker
           sudo docker build \
             --no-cache=true \
@@ -115,8 +92,8 @@ jobs:
           sudo docker push 10.239.45.10/arda/${image}:${TAG}
           sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-llm-finetune-qlora-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-finetune-qlora-xpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -126,12 +103,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-llm-finetune-qlora-xpu
+    - name: ipex-llm-finetune-qlora-xpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-finetune-qlora-xpu ########"
+        echo "####### ipex-llm-finetune-qlora-xpu ########"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-llm-finetune-qlora-xpu
+        export image=intelanalytics/ipex-llm-finetune-qlora-xpu
         cd docker/llm/finetune/qlora/xpu/docker
         sudo docker build \
           --no-cache=true \
@@ -144,8 +121,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-llm-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-xpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-xpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -155,12 +132,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-llm-xpu
+    - name: ipex-llm-xpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-xpu ########"
+        echo "####### ipex-llm-xpu ########"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-llm-xpu
+        export image=intelanalytics/ipex-llm-xpu
         cd docker/llm/inference/xpu/docker
         sudo docker build \
           --no-cache=true \
@@ -173,8 +150,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-llm-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-cpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-cpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -184,12 +161,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-llm-cpu
+    - name: ipex-llm-cpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-cpu ########"
+        echo "####### ipex-llm-cpu ########"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-llm-cpu
+        export image=intelanalytics/ipex-llm-cpu
         cd docker/llm/inference/cpu/docker
         sudo docker build \
           --no-cache=true \
@@ -202,8 +179,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-llm-serving-xpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-serving-xpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -213,12 +190,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-llm-serving-xpu
+    - name: ipex-llm-serving-xpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-serving-xpu ########"
+        echo "####### ipex-llm-serving-xpu ########"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-llm-serving-xpu
+        export image=intelanalytics/ipex-llm-serving-xpu
         cd docker/llm/serving/xpu/docker
         sudo docker build \
           --no-cache=true \
@@ -231,8 +208,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-llm-serving-cpu:
-    if: ${{ github.event.inputs.artifact == 'bigdl-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-serving-cpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -242,12 +219,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-llm-serving-cpu
+    - name: ipex-llm-serving-cpu
       run: |
         echo "##############################################################"
-        echo "####### bigdl-llm-serving-cpu ########"
+        echo "####### ipex-llm-serving-cpu ########"
         echo "##############################################################"
-        export image=intelanalytics/bigdl-llm-serving-cpu
+        export image=intelanalytics/ipex-llm-serving-cpu
         cd docker/llm/serving/cpu/docker
         sudo docker build \
           --no-cache=true \
@@ -260,1002 +237,3 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-ppml-gramine-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-gramine-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-gramine-base
-      run: |
-        echo "########################################"
-        echo "####### bigdl-ppml-gramine-base ########"
-        echo "########################################"
-        export base_image=intelanalytics/bigdl-ppml-gramine-base
-        cd ppml/base
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${base_image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${base_image}:${TAG}
-        sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
-        sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
-
-  trusted-bigdl-llm-serving-tdx:
-    if: ${{ github.event.inputs.artifact == 'trusted-bigdl-llm-serving-tdx' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: trusted-bigdl-llm-serving-tdx
-      run: |
-        echo "##############################################################"
-        echo "####### trusted-bigdl-llm-serving-tdx ###########"
-        echo "##############################################################"
-        export image=intelanalytics/trusted-bigdl-llm-serving-tdx
-        export base_image=intelanalytics/bigdl-llm-serving-cpu
-        docker pull ${base_image}:${TAG}
-        cd ppml/tdx/docker/trusted-bigdl-llm/serving/docker
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${base_image}:${TAG}
-
-  bigdl-ppml-trusted-fastchat-tdx:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-fastchat-tdx' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-fastchat-tdx
-      run: |
-        echo "##############################################################"
-        echo "############## bigdl-ppml-trusted-fastchat-tdx ###############"
-        echo "##############################################################"
-        export image=intelanalytics/bigdl-ppml-trusted-fastchat-tdx
-        cd ppml/tdx/docker/trusted-bigdl-llm-fschat/
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-bigdl-llm-gramine-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-bigdl-llm-gramine-base
-      run: |
-        echo "##############################################################"
-        echo "####### bigdl-ppml-trusted-bigdl-llm-gramine-base ########"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-gramine-base
-        docker pull ${base_image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-base
-        cd ppml/trusted-bigdl-llm/base
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-bigdl-llm-gramine-ref:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-ref' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-bigdl-llm-gramine-ref
-      run: |
-        echo "##############################################################"
-        echo "####### bigdl-ppml-trusted-bigdl-llm-gramine-ref ########"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-base
-        docker pull ${base_image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref
-        cd ppml/trusted-bigdl-llm/ref
-        openssl genrsa -3 -out enclave-key.pem 3072
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-dl-serving-gramine-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-dl-serving-gramine-base
-      run: |
-        echo "##############################################################"
-        echo "####### bigdl-ppml-trusted-dl-serving-gramine-base ###########"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-gramine-base
-        export image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base
-        cd ppml/trusted-dl-serving/base
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-  bigdl-ppml-trusted-dl-serving-gramine-ref:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-ref' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-dl-serving-gramine-ref
-      run: |
-        echo "##############################################################"
-        echo "####### bigdl-ppml-trusted-dl-serving-gramine-ref ############"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base
-        export image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref
-        cd ppml/trusted-dl-serving/ref
-        openssl genrsa -3 -out enclave-key.pem 3072
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SGX_MEM_SIZE=16G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-  bigdl-ppml-trusted-deep-learning-gramine-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-deep-learning-gramine-base
-      run: |
-        echo "##############################################################"
-        echo "####### bigdl-ppml-trusted-deep-learning-gramine-base ########"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-gramine-base
-        docker pull ${base_image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base
-        cd ppml/trusted-deep-learning/base
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-  bigdl-ppml-trusted-deep-learning-gramine-ref:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning-gramine-ref' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-deep-learning-gramine-ref
-      run: |
-        echo "##############################################################"
-        echo "####### bigdl-ppml-trusted-deep-learning-gramine-ref #########"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base
-        docker pull ${base_image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref
-        cd ppml/trusted-deep-learning/ref
-        openssl genrsa -3 -out enclave-key.pem 3072
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg SGX_MEM_SIZE=64G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-  bigdl-ppml-trusted-big-data-ml-python-gramine:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-gramine' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-big-data-ml-python-gramine
-      run: |        
-        echo "########################################"
-        echo "####### big-data-ml-python-gramine ####"
-        echo "########################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
-        cd ppml/trusted-big-data-ml/python/docker-gramine/base
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${base_image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${base_image}:${TAG}
-        sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
-        cd ../bigdl-gramine
-        openssl genrsa -3 -out enclave-key.pem 3072
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=32G \
-         --build-arg SGX_LOG_LEVEL=error \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:latest
-        sudo docker push 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=64G \
-         --build-arg SGX_LOG_LEVEL=error \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g-all
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=32G \
-         --build-arg SGX_LOG_LEVEL=all \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g-all
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=64G \
-         --build-arg SGX_LOG_LEVEL=all \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
-        rm enclave-key.pem
-        
-  bigdl-ppml-trusted-big-data-ml-python-gramine-noattest:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-gramine-noattest' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-big-data-ml-python-gramine-noattest
-      run: |        
-        echo "########################################"
-        echo "####### big-data-ml-python-gramine ####"
-        echo "########################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g
-        cd ppml/trusted-big-data-ml/python/docker-gramine/bigdl-gramine
-        openssl genrsa -3 -out enclave-key.pem 3072
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=32G \
-         --build-arg SGX_LOG_LEVEL=error \
-         --build-arg ENABLE_DCAP_ATTESTATION=false \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest:latest
-        sudo docker push 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-64g
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=64G \
-         --build-arg SGX_LOG_LEVEL=error \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-32g-all
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=32G \
-         --build-arg SGX_LOG_LEVEL=all \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-noattest-64g-all
-        sudo docker build \
-         --build-arg BASE_IMAGE_NAME=${base_image} \
-         --build-arg BASE_IMAGE_TAG=${TAG} \
-         --build-arg SGX_MEM_SIZE=64G \
-         --build-arg SGX_LOG_LEVEL=all \
-         -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        rm enclave-key.pem
-
-  bigdl-ppml-trusted-big-data-ml-python-graphene:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-python-graphene' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-big-data-ml-python-graphene
-      run: |
-        echo "########################################"
-        echo "####### big-data-ml-python-graphene ####"
-        echo "########################################"
-        cd ppml/trusted-big-data-ml/python/docker-graphene
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-llm-fastchat-occlum:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-llm-fastchat-occlum' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.sha }}
-      - name: docker login
-        run: |
-          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: bigdl-ppml-trusted-llm-fastchat-occlum
-        run: |
-          echo "########################################"
-          echo "####### llm-fastchat-occlum  ######"
-          echo "########################################"
-          cd ppml/trusted-big-data-ml/scala/docker-occlum/llm
-          export image=intelanalytics/bigdl-ppml-trusted-llm-fastchat-occlum
-          pwd
-          docker build \
-            --no-cache=true \
-            --build-arg http_proxy=${HTTP_PROXY} \
-            --build-arg https_proxy=${HTTPS_PROXY} \
-            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-            --build-arg JDK_VERSION=8u192 \
-            --build-arg JDK_URL=${JDK_URL} \
-            --build-arg no_proxy=${NO_PROXY} \
-            -t ${image}:${TAG} -f ./Dockerfile .
-          sudo docker push ${image}:${TAG}
-          docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-          docker push 10.239.45.10/arda/${image}:${TAG}
-          docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-big-data-ml-scala-occlum:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-big-data-ml-scala-occlum
-      run: |
-        echo "########################################"
-        echo "####### big-data-ml-scala-occlum  ######"
-        echo "########################################"
-        cd ppml/trusted-big-data-ml/scala/docker-occlum/
-        export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum
-        pwd
-        docker build \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        docker push 10.239.45.10/arda/${image}:${TAG}
-        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-big-data-ml-scala-occlum-production:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production' || github.event.inputs.artifact == 'all' }}
-    runs-on: [ self-hosted, Shire ]
-
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-        with:
-         ref: ${{ github.event.inputs.sha }}
-      - name: docker login
-        run: |
-          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: bigdl-ppml-trusted-big-data-ml-scala-occlum-production
-        run: |
-          echo "########################################"
-          echo "####### big-data-ml-scala-occlum-production  ######"
-          echo "########################################"
-          cd ppml/trusted-big-data-ml/scala/docker-occlum
-          export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
-          pwd
-          docker build \
-            --build-arg http_proxy=${HTTP_PROXY} \
-            --build-arg https_proxy=${HTTPS_PROXY} \
-            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-            --build-arg JDK_VERSION=8u192 \
-            --build-arg JDK_URL=${JDK_URL} \
-            --build-arg no_proxy=${NO_PROXY} \
-            --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-            -t ${image}:${TAG} -f ./production/Dockerfile .
-          dir_path=$(pwd)
-          echo $dir_path
-          cd $dir_path
-          export image_name=${image}:${TAG}
-          export final_name=${image_name}-build
-          export container_name=${TAG}-container
-          sudo docker push ${image_name}
-          docker tag ${image_name} 10.239.45.10/arda/${image_name}
-          docker push 10.239.45.10/arda/${image_name}
-          bash ./production/occlum-build.sh -c $container_name -i $image_name -f $final_name
-          sudo docker push ${final_name}
-          docker tag ${final_name} 10.239.45.10/arda/${final_name}
-          docker push 10.239.45.10/arda/${final_name}
-          docker rmi -f ${image_name} 10.239.45.10/arda/${image_name}
-          docker rmi -f ${final_name} 10.239.45.10/arda/${final_name}
-  bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer' || github.event.inputs.artifact == 'all' }}
-    runs-on: [ self-hosted, Shire ]
-
-    steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.sha }}
-      - name: docker login
-        run: |
-          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer
-        run: |
-          echo "########################################"
-          echo "####### big-data-ml-scala-occlum-production-customer  ######"
-          echo "########################################"
-          cd ppml/trusted-big-data-ml/scala/docker-occlum
-          export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
-          export image_customer=${image}-customer
-          pwd
-          docker build \
-            --build-arg http_proxy=${HTTP_PROXY} \
-            --build-arg https_proxy=${HTTPS_PROXY} \
-            --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-            --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-            --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-            --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-            --build-arg JDK_VERSION=8u192 \
-            --build-arg JDK_URL=${JDK_URL} \
-            --build-arg no_proxy=${NO_PROXY} \
-            --build-arg FINAL_NAME=${image}:${TAG} \
-            --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-            -t ${image_customer}:${TAG} -f ./production/customer/Dockerfile .
-          pwd
-          sudo docker push ${image_customer}:${TAG}
-          docker tag ${image_customer}:${TAG} 10.239.45.10/arda/${image_customer}:${TAG}
-          docker push 10.239.45.10/arda/${image_customer}:${TAG}
-          docker rmi -f ${image_customer}:${TAG} 10.239.45.10/arda/${image_customer}:${TAG}
-  bigdl-ppml-trusted-realtime-ml-scala-graphene:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-realtime-ml-scala-graphene' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-realtime-ml-scala-graphene
-      run: |
-        echo "########################################"
-        echo "####### realtime-ml-scala-graphene #####"
-        echo "########################################"
-        cd ppml/trusted-realtime-ml/scala/docker-graphene/
-        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene
-        pwd
-        docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        docker push ${image}:${TAG}
-        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        docker push 10.239.45.10/arda/${image}:${TAG}
-        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-  bigdl-ppml-trusted-realtime-ml-scala-occlum:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-realtime-ml-scala-occlum' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-realtime-ml-scala-occlum
-      run: |
-        echo "########################################"
-        echo "####### realtime-ml-scala-occlum  ######"
-        echo "########################################"
-        cd ppml/trusted-realtime-ml/scala/docker-occlum/
-        export image=intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum
-        pwd
-        docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        docker push 10.239.45.10/arda/${image}:${TAG}
-        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-  bigdl-ppml-kmsutil:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-kmsutil' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker deploy kms-util
-      run: |
-        export IMAGE=intelanalytics/kms-utils
-        cd ppml/services/kms-utils/docker
-        echo "########################################"
-        echo "############## kms-utils ###############"
-        echo "########################################"
-        docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg JDK_URL=${JDK_URL} \
-          -t $IMAGE:$TAG -f ./Dockerfile .
-        docker push ${image}:${TAG}
-        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-    
-
-  bigdl-ppml-pccs:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-pccs' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker deploy pccs
-      run: |
-        export IMAGE=intelanalytics/pccs
-        cd ppml/services/pccs/docker
-        echo "########################################"
-        echo "################# PCCS #################"
-        echo "########################################"
-        docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          -t $IMAGE:$TAG -f ./Dockerfile .
-        docker push ${image}:${TAG}
-        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
-        docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-
-  bigdl-ppml-trusted-python-toolkit-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-base' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-python-toolkit-base
-      run: |
-        echo "##############################################################"
-        echo "########## bigdl-ppml-trusted-python-toolkit-base ############"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-gramine-base
-        export image=intelanalytics/bigdl-ppml-trusted-python-toolkit-base
-        cd ppml/trusted-python-toolkit
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-python-toolkit-ref:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-python-toolkit-ref' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-python-toolkit-ref
-      run: |
-        echo "##############################################################"
-        echo "########## bigdl-ppml-trusted-python-toolkit-ref #############"
-        echo "##############################################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-python-toolkit-base
-        export image=intelanalytics/bigdl-ppml-trusted-python-toolkit-ref
-        cd ppml/trusted-python-toolkit/custom-image
-        openssl genrsa -3 -out enclave-key.pem 3072
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg SGX_MEM_SIZE=64G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-
-  bigdl-ppml-trusted-bigdata-gramine:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdata-gramine' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
-
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.sha }}
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-bigdata-gramine
-      run: |
-        echo "########################################################"
-        echo "######### bigdl-ppml-trusted-bigdata-gramine ###########"
-        echo "########################################################"
-        cd ppml/trusted-bigdata
-        export base_image=intelanalytics/bigdl-ppml-gramine-base
-        export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
-        sudo docker build \
-          --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTP_PROXY_PORT=${HTTP_PROXY_PORT_2} \
-          --build-arg HTTPS_PROXY_HOST=${HTTP_PROXY_HOST_2} \
-          --build-arg HTTPS_PROXY_PORT=${HTTP_PROXY_PORT_3} \
-          --build-arg JDK_VERSION=8u192 \
-          --build-arg JDK_URL=${JDK_URL} \
-          --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg BASE_IMAGE_NAME=${base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          -t ${bigdata_base_image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${bigdata_base_image}:${TAG}
-        sudo docker tag ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_base_image}:${TAG}
-        cd custom-image
-        openssl genrsa -3 -out enclave-key.pem 3072
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-32g
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=32G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-16g
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=16G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-8g
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=8G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg no_proxy=${NO_PROXY} \
-          --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=32G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=16G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=8G \
-          --build-arg SGX_LOG_LEVEL=error \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g-all
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=32G \
-          --build-arg SGX_LOG_LEVEL=all \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=16G \
-          --build-arg SGX_LOG_LEVEL=all \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all
-        sudo docker build \
-          --no-cache=true \
-          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
-          --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=8G \
-          --build-arg SGX_LOG_LEVEL=all \
-          --build-arg no_proxy=${NO_PROXY} \
-          -t ${bigdata_custom_image}:${TAG} \
-          -f ./Dockerfile .
-        sudo docker push ${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-
-        sudo docker rmi -f ${base_image}:${TAG}
-        sudo docker rmi -f ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
