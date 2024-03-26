@@ -33,7 +33,7 @@ pip install --pre --upgrade ipex-llm[all]
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
 
 ```bash
-pip install --pre --upgrade ipex-llm[xpu, serving] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 ```
 
@@ -87,24 +87,24 @@ INFO - Converting the current model to sym_int4 format......
 </details>
 
 #### IPEX-LLM worker
-To integrate IPEX-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `ipex_worker.py`.
+To integrate IPEX-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `ipex_llm_worker.py`.
 
-To run the `ipex_worker` on CPU, using the following code:
+To run the `ipex_llm_worker` on CPU, using the following code:
 ```bash
 source ipex-llm-init -t
 
 # Available low_bit format including sym_int4, sym_int8, bf16 etc.
-python3 -m ipex_llm.serving.fastchat.ipex_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
+python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
 ```
 
 
 For GPU example:
 ```bash
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
-python3 -m ipex_llm.serving.fastcaht.ipex_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
-For a full list of accepted arguments, you can refer to the main method of the `ipex_worker.py`
+For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
 
 #### IPEX vLLM model worker
 
