@@ -11,9 +11,9 @@ IPEX-LLM can be easily integrated into FastChat so that user can use `IPEX-LLM` 
 - [Start the service](#start-the-service)
   - [Launch controller](#launch-controller)
   - [Launch model worker(s) and load models](#launch-model-workers-and-load-models)
-    - [IPEX model worker (deprecated)](#ipex-model-worker-deprecated)
-    - [IPEX worker](#ipex-llm-worker)
-    - [IPEX vLLM model worker](#vllm-model-worker)
+    - [IPEX-LLM model worker (deprecated)](#ipex-llm-model-worker-deprecated)
+    - [IPEX-LLM worker](#ipex-llm-worker)
+    - [IPEX-LLM vLLM worker](#ipex-llm-vllm-worker)
   - [Launch Gradio web server](#launch-gradio-web-server)
   - [Launch RESTful API server](#launch-restful-api-server)
 
@@ -51,7 +51,7 @@ python3 -m fastchat.serve.controller
 
 Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-#### IPEX model worker (deprecated)
+#### IPEX-LLM model worker (deprecated)
 <details>
 <summary>details</summary>
 
@@ -106,7 +106,7 @@ python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7
 
 For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
 
-#### IPEX vLLM model worker
+#### IPEX-LLM vLLM worker
 
 We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
 
