@@ -121,7 +121,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
                             round(result[in_out_pair][-1][5], 2),
-                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu' ]) else 'N/A',
+                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'fp16_gpu']) else 'N/A',
                             streaming if 'win' in test_api else 'N/A'],
                             ) 
 
@@ -408,7 +408,7 @@ def run_transformer_int4_gpu(repo_id,
         model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True).eval()
+                                                     use_cache=True, torch_dtype=torch.float16).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
@@ -716,7 +716,7 @@ def run_bigdl_fp16_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len, load_time])
+                                           actual_in_len, actual_out_len, load_time, model.peak_memory])
     del model
     torch.xpu.empty_cache()
     return result
