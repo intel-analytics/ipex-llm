@@ -57,6 +57,7 @@ from transformers.models.qwen2.modeling_qwen2 import Qwen2Model, apply_rotary_po
 from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask_for_sdpa
 from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask
 from transformers.modeling_outputs import BaseModelOutputWithPast
+from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
 
 try:
     from transformers.cache_utils import Cache, DynamicCache
@@ -431,8 +432,7 @@ def qwen2_attention_forward_origin(
     device = hidden_states.device
 
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
     if decoding_fast_path:
@@ -601,8 +601,7 @@ def qwen2_sdpa_attention_forward(
     device = hidden_states.device
 
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
     if decoding_fast_path:

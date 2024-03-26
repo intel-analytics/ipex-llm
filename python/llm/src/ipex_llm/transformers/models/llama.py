@@ -50,7 +50,7 @@ from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sd
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.models.llama.modeling_llama import LlamaModel
-from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
+from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
 
@@ -62,6 +62,12 @@ from transformers import logging
 
 
 logger = logging.get_logger(__name__)
+
+
+def llama_decoding_fast_path_qtype_check(proj): 
+    # IQ2_XXS only can be used in Llama-like model
+    qtype = getattr(proj, "qtype", None)
+    return qtype in [SYM_INT4, FP8E5, IQ2_XXS, FP4]
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
@@ -329,8 +335,7 @@ def llama_attention_forward_4_31_quantized(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
+    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
@@ -463,8 +468,7 @@ def llama_attention_forward_4_31_original(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
+    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)
@@ -692,8 +696,7 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: decoding fast path
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = past_key_value is not None and is_enough_kv_cache_room_4_31(past_key_value[0])
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
+    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           bsz * q_len == 1)
@@ -911,8 +914,7 @@ def llama_attention_forward_4_36_quantized(
     device = hidden_states.device
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5]
+    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
@@ -1093,8 +1095,7 @@ def llama_attention_forward_4_36_original(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
-    qtype = getattr(self.q_proj, "qtype", None)
-    qtype_check = qtype in [SYM_INT4, FP8E5, IQ2_XXS]
+    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
                           enough_kv_room and bsz * q_len == 1)

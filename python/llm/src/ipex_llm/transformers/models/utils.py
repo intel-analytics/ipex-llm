@@ -19,16 +19,18 @@ import torch
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
+from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4
 
 FP8_KV_ALLOC_LENGTH = 512
-SYM_INT4 = ggml_tensor_qtype["sym_int4"]
-SYM_INT8 = ggml_tensor_qtype["sym_int8"]
-FP8E4 = ggml_tensor_qtype["fp8_e4m3"]
-FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 
 # used in fused mlp forward
 SILU = 0
 GELU = 1
+
+
+def decoding_fast_path_qtype_check(proj): 
+    qtype = getattr(proj, "qtype", None)
+    return qtype in [SYM_INT4, FP8E5, FP4]
 
 
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
@@ -335,8 +337,7 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if x.device.type != 'xpu':
         return False
-    if qtype not in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["fp8_e5m2"],
-                     ggml_tensor_qtype["gguf_iq2_xxs"]]:
+    if qtype not in [SYM_INT4, FP8E5, FP4, IQ2_XXS]:
         return False
     if training or x.requires_grad:
         return False
