@@ -317,7 +317,8 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
         return False
     elif query_states.shape[0] > 1 and attention_mask is not None:
         # for batched input, can't accept attention_mask
-        if len(torch.nonzero(attention_mask, as_tuple=True)) > 1:
+        # TODO: this check needs some time
+        if not torch.all(attention_mask.eq(0)):
             return False
 
     device_name = torch.xpu.get_device_name(query_states.device.index)
