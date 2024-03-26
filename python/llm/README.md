@@ -109,7 +109,6 @@ Over 20 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
       - [3. LangChain API](#3-langchain-api)
       - [4. CLI Tool](#4-cli-tool)
   - [`ipex-llm` API Doc](#ipex-llm-api-doc)
-  - [`ipex-llm` Dependency](#ipex-llm-dependency)
 
 </details>
 
@@ -304,22 +303,3 @@ You may run the models using the LangChain API in `ipex-llm`.
 See the inital `ipex-llm` API Doc [here](https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/index.html).
 
 [^1]: Performance varies by use, configuration and other factors. `ipex-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
-
-### `ipex-llm` Dependency
-The native code/lib in `ipex-llm` has been built using the following tools.
-Note that lower  `LIBC` version on your Linux system may be incompatible with `ipex-llm`.
-
-| Model family | Platform | Compiler           | GLIBC |
-| ------------ | -------- | ------------------ | ----- |
-| llama        | Linux    | GCC 11.2.1         | 2.17  |
-| llama        | Windows  | MSVC 19.36.32532.0 |       |
-| llama        | Windows  | GCC 13.1.0         |       |
-| gptneox      | Linux    | GCC 11.2.1         | 2.17  |
-| gptneox      | Windows  | MSVC 19.36.32532.0 |       |
-| gptneox      | Windows  | GCC 13.1.0         |       |
-| bloom        | Linux    | GCC 11.2.1         | 2.29  |
-| bloom        | Windows  | MSVC 19.36.32532.0 |       |
-| bloom        | Windows  | GCC 13.1.0         |       |
-| starcoder    | Linux    | GCC 11.2.1         | 2.29  |
-| starcoder    | Windows  | MSVC 19.36.32532.0 |       |
-| starcoder    | Windows  | GCC 13.1.0         |       |
