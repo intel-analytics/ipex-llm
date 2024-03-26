@@ -11,9 +11,9 @@ IPEX-LLM can be easily integrated into FastChat so that user can use `IPEX-LLM` 
 - [Start the service](#start-the-service)
   - [Launch controller](#launch-controller)
   - [Launch model worker(s) and load models](#launch-model-workers-and-load-models)
-    - [IPEX model worker (deprecated)](#ipex-model-worker-deprecated)
-    - [IPEX worker](#ipex-llm-worker)
-    - [IPEX vLLM model worker](#vllm-model-worker)
+    - [IPEX-LLM model worker (deprecated)](#ipex-llm-model-worker-deprecated)
+    - [IPEX-LLM worker](#ipex-llm-worker)
+    - [IPEX-LLM vLLM worker](#ipex-llm-vllm-worker)
   - [Launch Gradio web server](#launch-gradio-web-server)
   - [Launch RESTful API server](#launch-restful-api-server)
 
@@ -33,7 +33,7 @@ pip install --pre --upgrade ipex-llm[all]
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
 
 ```bash
-pip install --pre --upgrade ipex-llm[xpu, serving] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
 
 ```
 
@@ -51,7 +51,7 @@ python3 -m fastchat.serve.controller
 
 Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-#### IPEX model worker (deprecated)
+#### IPEX-LLM model worker (deprecated)
 <details>
 <summary>details</summary>
 
@@ -87,26 +87,26 @@ INFO - Converting the current model to sym_int4 format......
 </details>
 
 #### IPEX-LLM worker
-To integrate IPEX-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `ipex_worker.py`.
+To integrate IPEX-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `ipex_llm_worker.py`.
 
-To run the `ipex_worker` on CPU, using the following code:
+To run the `ipex_llm_worker` on CPU, using the following code:
 ```bash
 source ipex-llm-init -t
 
 # Available low_bit format including sym_int4, sym_int8, bf16 etc.
-python3 -m ipex_llm.serving.fastchat.ipex_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
+python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
 ```
 
 
 For GPU example:
 ```bash
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
-python3 -m ipex_llm.serving.fastcaht.ipex_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
-For a full list of accepted arguments, you can refer to the main method of the `ipex_worker.py`
+For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
 
-#### IPEX vLLM model worker
+#### IPEX-LLM vLLM worker
 
 We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
 
