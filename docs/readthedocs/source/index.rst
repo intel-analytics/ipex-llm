@@ -183,9 +183,9 @@ Verified Models
 
    <table class="table">
      <colgroup>
-       <col style="width: 73%" />
-       <col style="width: 14%" />
-       <col style="width: 13%" /></colgroup>
+       <col style="width: 64%" />
+       <col style="width: 18%" />
+       <col style="width: 18%" /></colgroup>
      <thead>
        <tr>
          <th class="head">Model</th>
