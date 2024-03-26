@@ -30,7 +30,7 @@
 - [2023/10] `ipex-llm` now supports [QLoRA finetuning](python/llm/example/GPU/LLM-Finetuning/QLoRA) on both Intel [GPU](python/llm/example/GPU/LLM-Finetuning/QLoRA) and [CPU](python/llm/example/CPU/QLoRA-FineTuning).
 - [2023/10] `ipex-llm` now supports [FastChat serving](python/llm/src/ipex_llm/llm/serving) on on both Intel CPU and GPU.
 - [2023/09] `ipex-llm` now supports [Intel GPU](python/llm/example/GPU) (including iGPU, Arc, Flex and MAX).
-- [2023/09] `ipex-llm` [tutorial](https://github.com/intel-analytics/bigdl-llm-tutorial) is released.
+- [2023/09] `ipex-llm` [tutorial](https://github.com/intel-analytics/ipex-llm-tutorial) is released.
  
 </details> 
 
@@ -108,7 +108,7 @@ See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` mode
   - [LlamaIndex](python/llm/example/GPU/LlamaIndex)
   - [AutoGen](python/llm/example/CPU/Applications/autogen)
   - [ModeScope](python/llm/example/GPU/ModelScope-Models)
-- [Tutorials](https://github.com/intel-analytics/bigdl-llm-tutorial)
+- [Tutorials](https://github.com/intel-analytics/ipex-llm-tutorial)
 
 *For more details, please refer to the `ipex-llm` document [website](https://ipex-llm.readthedocs.io/).*
 

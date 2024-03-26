@@ -65,7 +65,7 @@ Latest update 🔥
    * [2023/10] ``ipex-llm`` now supports `QLoRA finetuning <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_ on both Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/QLoRA-FineTuning>`_.
    * [2023/10] ``ipex-llm`` now supports `FastChat serving <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex-llm/llm/serving>`_ on on both Intel CPU and GPU.
    * [2023/09] ``ipex-llm`` now supports `Intel GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU>`_ (including iGPU, Arc, Flex and MAX).
-   * [2023/09] ``ipex-llm`` `tutorial <https://github.com/intel-analytics/bigdl-llm-tutorial>`_ is released.
+   * [2023/09] ``ipex-llm`` `tutorial <https://github.com/intel-analytics/ipex-llm-tutorial>`_ is released.
 
 ************************************************
 ``ipex-llm`` Demos
@@ -164,7 +164,7 @@ Code Examples
   * `AutoGen <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen>`_
   * `ModeScope <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models>`_
 
-* `Tutorials <https://github.com/intel-analytics/bigdl-llm-tutorial>`_
+* `Tutorials <https://github.com/intel-analytics/ipex-llm-tutorial>`_
 
 
 .. seealso::
