@@ -305,24 +305,18 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
-    elif q_len != 1:
+    if q_len != 1:
         # esimd_sdp only support rest token now
         return False
-    elif k_len < 8:
+    if k_len < 8:
         # esimd_sdp will cause wrong output when k_len < 8
         return False
-    elif query_states.device.type != "xpu":
+    if query_states.device.type != "xpu":
         # esimd_sdp only support GPU now
         return False
-    elif query_states.dtype != torch.float16:
+    if query_states.dtype != torch.float16:
         # esimd_sdp only has optimization for FP16 now
         return False
-    elif query_states.shape[0] > 1 and attention_mask is not None:
-        # for batched input, can't accept attention_mask
-        # TODO: this check needs some time
-        if not torch.all(attention_mask.eq(0)):
-            return False
-
     device_name = torch.xpu.get_device_name(query_states.device.index)
     if device_name.startswith("Intel(R) Arc(TM) A") or \
               device_name.startswith("Intel(R) Data Center GPU Flex") or \
@@ -333,6 +327,10 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
     else:
         return False
 
+    if query_states.shape[0] > 1 and attention_mask is not None:
+        # for batched input, can't accept attention_mask
+        if attention_mask.any():
+            return False
     return True
 
 
