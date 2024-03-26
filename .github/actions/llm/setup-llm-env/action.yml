@@ -16,10 +16,10 @@ runs:
         pip uninstall bigdl-core-xe-esimd -y || true
         pip uninstall bigdl-core-xe-21 -y || true
         pip uninstall bigdl-core-xe-esimd-21 -y || true
-        sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-esimd==" + VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-esimd-21==" + VERSION + "/"bigdl-core-xe-esimd-21/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe==" + CORE_XE_VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd==" + CORE_XE_VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION + "/"bigdl-core-xe-esimd-21/g' python/llm/setup.py
 
         pip install requests
         if [[ ${{ runner.os }} == 'Linux' ]]; then
