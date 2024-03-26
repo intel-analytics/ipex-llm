@@ -204,13 +204,10 @@ def chatglm2_quantized_attention_forward_8eb45c(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
     # hidden_states: [seq_len, bs, head_dim]
-    # query_key_value: [4096, 128*(32+2+2)]
     mixed_x_layer = self.query_key_value(hidden_states)
-    # print(hidden_states.shape, mixed_x_layer.shape)
     n_head = self.num_attention_heads_per_partition
     n_kv_head = self.num_multi_query_groups_per_partition if self.multi_query_attention else n_head
     head_dim = self.hidden_size_per_attention_head
-    # print(n_head, n_kv_head, head_dim)
     query_layer, key_layer, value_layer = mixed_x_layer.split(
         [n_head * head_dim, n_kv_head * head_dim, n_kv_head * head_dim],
         dim=-1,
