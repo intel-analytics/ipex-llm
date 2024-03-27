@@ -10,7 +10,7 @@ In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-
 
 ### 0. Environment
 
-To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
+To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit 2024.0. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
 
 After install the toolkit, run the following commands in your environment before starting vLLM GPU:
 ```bash
