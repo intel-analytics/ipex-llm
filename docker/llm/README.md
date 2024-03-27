@@ -1,17 +1,21 @@
 # Getting started with IPEX-LLM in Docker
 
+This guide provides step-by-step instructions for installing and using IPEX-LLM in a Docker environment. It covers setups for both CPU and XPU (accelerated processing units) on different operating systems.
+
 ### Index
-- [Docker installation guide for IPEX-LLM on CPU](#docker-installation-guide-for-ipex-llm-on-cpu)
-    - [IPEX-LLM on Windows](#ipex-llm-on-windows)
-    - [IPEX-LLM on Linux/MacOS](#ipex-llm-on-linuxmacos)
-- [Docker installation guide for IPEX LLM on XPU](#docker-installation-guide-for-ipex-llm-on-xpu) 
-- [Docker installation guide for IPEX LLM Serving on CPU](#docker-installation-guide-for-ipex-llm-serving-on-cpu) 
-- [Docker installation guide for IPEX LLM Serving on XPU](#docker-installation-guide-for-ipex-llm-serving-on-xpu) 
-- [Docker installation guide for IPEX LLM Fine Tuning on CPU](#docker-installation-guide-for-ipex-llm-fine-tuning-on-cpu) 
-- [Docker installation guide for IPEX LLM Fine Tuning on XPU](#docker-installation-guide-for-ipex-llm-fine-tuning-on-xpu) 
+- [Docker Installation](#docker-installation)
+- [IPEX-LLM Inference](#ipex-llm-inference-on-cpu)
+    - [On CPU](#ipex-llm-inference-on-cpu)
+    - [On XPU](#ipex-llm-inference-on-xpu)
+- [IPEX-LLM Serving](#ipex-llm-serving-on-cpu)
+    - [On CPU](#ipex-llm-serving-on-cpu)
+    - [On XPU](#ipex-llm-serving-on-xpu)
+- [IPEX-LLM Fine Tuning](#ipex-llm-fine-tuning-on-cpu)
+    - [On CPU](#ipex-llm-fine-tuning-on-cpu)
+    - [On XPU](#ipex-llm-fine-tuning-on-xpu)
 
-## Docker installation guide for IPEX-LLM on CPU
 
+## Docker Installation
 ### IPEX-LLM on Windows
 
 #### Install docker
@@ -22,6 +26,7 @@ For Windows users, make sure WSL2 or Hyper-V is enabled on your computer.
 The instructions for installing can be accessed from 
 [here](https://docs.docker.com/desktop/install/windows-install/).
 
+## IPEX-LLM Inference on CPU
 
 #### Pull ipex-llm-cpu image
 
@@ -132,7 +137,7 @@ Also, you could use chat.py and ipex-llm-tutorial for development.
 
 [Getting started with tutorials](#getting-started-with-tutorials)
 
-## Docker installation guide for IPEX LLM on XPU
+## IPEX-LLM Inference on XPU
 
 First, pull docker image from docker hub:
 ```
@@ -170,7 +175,7 @@ root@arda-arc12:/# sycl-ls
 
 To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm/example/GPU).
 
-## Docker installation guide for IPEX LLM Serving on CPU
+## IPEX-LLM Serving on CPU
 
 ### Boot container
 
@@ -259,7 +264,7 @@ python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
 
-## Docker installation guide for IPEX LLM Serving on XPU
+## IPEX-LLM Serving on XPU
 
 ### Boot container
 
@@ -352,7 +357,7 @@ Finally, launch the RESTful API server
 python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```
 
-## Docker installation guide for IPEX LLM Fine Tuning on CPU
+## IPEX-LLM Fine Tuning on CPU
 
 ### 1. Prepare Docker Image
 
@@ -470,7 +475,7 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
-## Docker installation guide for IPEX LLM Fine Tuning on XPU
+## IPEX-LLM Fine Tuning on XPU
 
 The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
