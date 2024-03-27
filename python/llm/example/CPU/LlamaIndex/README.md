@@ -22,7 +22,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     ```
 
 * **Database Setup (using PostgreSQL)**:
-> Note: Database Setup is only required in RAG example.
+  > Note: Database Setup is only required in RAG example.
 
   * Installation: 
       ```bash
@@ -42,13 +42,13 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
       ALTER ROLE <user> SUPERUSER;    
         ```
 * **Pgvector Installation**:
-> Note: Database Setup is only required in RAG example.
+  > Note: Database Setup is only required in RAG example.
   
   Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
 
 
 * **Data Preparation**: 
-> Note: Database Setup is only required in RAG example.
+  > Note: Database Setup is only required in RAG example.
   
   Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
   ```bash
@@ -108,5 +108,3 @@ A query such as **"Which city has the highest population?"** using the `zephyr-7
 ```
 The city with the highest population is Tokyo, with a population of 13,960,000.
 ```
-
-

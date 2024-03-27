@@ -15,7 +15,8 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
     Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm.
 
 * **Database Setup (using PostgreSQL)**:
-> Note: Database Setup is only required in RAG example.
+  > Note: Database Setup is only required in RAG example.
+
   * Linux
       * Installation: 
           ```bash
@@ -43,18 +44,20 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
           cd C:\Program Files\PostgreSQL\14\bin
       ```   
       The exact path will vary depending on your PostgreSQL location.  
-      * Then in PowerShell:
-      ```bash
-          .\psql -U postgres    
-      ```   
-      Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
+      * Then in PowerShell:  
+          
+        ```bash
+            .\psql -U postgres    
+        ``` 
+          
+          Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
       * Create a new user role:
       ```bash
       CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
       ALTER ROLE <user> SUPERUSER;    
         ```
 * **Pgvector Installation**:
-> Note: Pgvector Installation is only required in RAG example.
+  > Note: Pgvector Installation is only required in RAG example.
 
 
   * Linux
@@ -64,13 +67,13 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
 
 
 * **Data Preparation**: 
-> Note: Data Preparation is only required in RAG example.
+  > Note: Data Preparation is only required in RAG example.
 
-Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
-  ```bash
-  mkdir data
-  wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
-  ```
+  Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
+    ```bash
+    mkdir data
+    wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
+    ```
 
 ## 2. Configures OneAPI environment variables
 ### 2.1 Configurations for Linux
