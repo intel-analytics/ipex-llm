@@ -33,7 +33,7 @@ pip install --pre --upgrade ipex-llm[all]
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
 
 ```bash
-pip install --pre --upgrade ipex-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
 
 ```
 

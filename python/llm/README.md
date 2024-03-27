@@ -125,7 +125,7 @@ You may install **`ipex-llm`** on Intel GPU as follows:
 ```bash
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
-pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
 ```
 > Note: `ipex-llm` has been tested on Python 3.9
 
