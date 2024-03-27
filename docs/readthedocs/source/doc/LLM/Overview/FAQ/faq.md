@@ -9,7 +9,7 @@ Please also refer to [here](https://github.com/intel-analytics/ipex-llm?tab=read
 
 ## How to Resolve Errors
 
-### Fail to install `ipex-llm` through `pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu`
+### Fail to install `ipex-llm` through `pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu`
 
 You could try to install IPEX-LLM dependencies for Intel XPU from source archives:
 - For Windows system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-ipex-llm-from-wheel) for the steps.
