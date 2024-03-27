@@ -140,7 +140,9 @@ There is no need to set further environment variables.
 > Note: For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 
-### 4. Running the RAG example
+### 4. Run the examples
+
+#### 4.1 RAG (Retrival Augmented Generation)
 
 In the current directory, run the example with command:
 
@@ -156,7 +158,7 @@ python rag.py -m <path_to_model>
 - `-d DATA`: path to source data used for retrieval (in pdf format)
 - `-n N_PREDICT`: max predict tokens
 
-### 5. Example Output
+**Example Output**:
 
 A query such as **"How does Llama 2 compare to other open-source models?"** with the Llama2 paper as the data source, using the `Llama-2-7b-chat-hf` model, will produce the output like below:
 
@@ -168,6 +170,26 @@ In terms of performance on the benchmarks provided in the table, Llama 2 outperf
 However, it's important to note that the performance of Llama 2 can vary depending on the specific task and dataset being used. For example, on the coding benchmarks, Llama 2 performs significantly worse than other open-source models, such as PaLM (540B) and GPT-4.
 
 In conclusion, while Llama 2 performs well on most benchmarks compared to other open-source models, its performance
+```
+
+#### 4.2 Text to SQL
+
+In the current directory, run the example with command:
+
+```bash
+python text_to_sql.py -m <path_to_model> -q <path_to_embedding_model>
+```
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-e EMBEDDING_MODEL_PATH`: **Required**, path to the embedding model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+
+**Example Output**:
+
+A query such as **"Which city has the highest population?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+The city with the highest population is Tokyo, with a population of 13,960,000.
 ```
 
 ### 6. Trouble shooting
