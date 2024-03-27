@@ -20,7 +20,11 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 3: Install Intel® oneAPI Base Toolkit 2024.0
 
-Intel® oneAPI Base Toolkit 2024.0 installation methods:
+  Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline>`_ version 2024.0 through Offline Installer.
+   
+  During installation, you could just continue with "Recommended Installation". If you would like to continue with "Custom Installation", please note that oneAPI Deep Neural Network Library, oneAPI Math Kernel Library, and oneAPI DPC++/C++ Compiler are required, the other components are optional.
+
+<!-- Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
 ```eval_rst
 .. tabs::
@@ -38,7 +42,7 @@ Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
       .. note::
          Activating your working conda environment will automatically configure oneAPI environment variables.
-```
+``` -->
 
 ### Install IPEX-LLM From PyPI
 
@@ -91,7 +95,9 @@ pip install --pre --upgrade ipex-llm[xpu]
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
-Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported. For oneAPI installed using the Offline installer, configure oneAPI environment variables with:
+<!-- Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported. For oneAPI installed using the Offline installer, configure oneAPI environment variables with: -->
+
+Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported, and configure oneAPI environment variables with: 
 
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -143,12 +149,17 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   ```cmd
   conda install libuv
   ```
-
-* For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+* Make sure you have configured oneAPI environment variables in your Anaconda Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
   Please note that you need to set these environment variables again once you have a new Anaconda Prompt window.
+
+<!-- * For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+  ```cmd
+  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+  ```
+  Please note that you need to set these environment variables again once you have a new Anaconda Prompt window. -->
 
 ## Linux
 
