@@ -239,7 +239,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 
             .. code-block:: bash
 
-               sudo apt install -y intel-basekit
+               sudo apt install -y intel-basekit=2024.0.1-43
 
             .. note::
 

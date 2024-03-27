@@ -65,7 +65,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
   
   sudo apt update
 
-  sudo apt install intel-basekit
+  sudo apt install intel-basekit=2024.0.1-43
   ```
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
 
