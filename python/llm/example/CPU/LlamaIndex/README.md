@@ -5,11 +5,6 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
 
-## Retrieval-Augmented Generation (RAG) Example
-The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
-
-
-
 ## 1. Setting up Dependencies 
 
 * **Install ipex-llm** 
@@ -94,7 +89,7 @@ The Text to SQL example ([text_to_sql.py](./text_to_sql.py)) is adapted from the
 In the current directory, run the example with command:
 
 ```bash
-python text_to_sql.py -m <path_to_model> -q <path_to_embedding_model>
+python text_to_sql.py -m <path_to_model> -e <path_to_embedding_model>
 ```
 **Additional Parameters for Configuration**:
 - `-m MODEL_PATH`: **Required**, path to the LLM model

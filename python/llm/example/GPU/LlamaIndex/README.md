@@ -188,7 +188,7 @@ The Text to SQL example ([text_to_sql.py](./text_to_sql.py)) is adapted from the
 In the current directory, run the example with command:
 
 ```bash
-python text_to_sql.py -m <path_to_model> -q <path_to_embedding_model>
+python text_to_sql.py -m <path_to_model> -e <path_to_embedding_model>
 ```
 **Additional Parameters for Configuration**:
 - `-m MODEL_PATH`: **Required**, path to the LLM model
