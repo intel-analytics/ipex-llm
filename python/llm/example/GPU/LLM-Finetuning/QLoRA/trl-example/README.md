@@ -16,7 +16,7 @@ This example utilizes a subset of [yahma/alpaca-cleaned](https://huggingface.co/
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
 pip install transformers==4.34.0 datasets
 pip install peft==0.5.0
 pip install accelerate==0.23.0

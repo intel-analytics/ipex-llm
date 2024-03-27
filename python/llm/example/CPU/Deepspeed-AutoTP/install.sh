@@ -12,7 +12,7 @@ mkdir -p /opt/intel/oneccl
 mv ./_install/env /opt/intel/oneccl
 # 2. install torch and ipex
 pip install torch==2.1.0
-pip install intel_extension_for_pytorch==2.1.0 -f https://developer.intel.com/ipex-whl-stable-cpu
+pip install intel_extension_for_pytorch==2.1.0 --extra-index-url https://developer.intel.com/ipex-whl-stable-cpu
 # install torchccl (oneccl binding for pytorch)
 pip install https://intel-extension-for-pytorch.s3.amazonaws.com/torch_ccl/cpu/oneccl_bind_pt-2.1.0%2Bcpu-cp39-cp39-linux_x86_64.whl
 # 3. install deepspeed

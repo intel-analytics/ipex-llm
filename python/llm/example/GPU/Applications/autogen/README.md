@@ -16,7 +16,7 @@ conda activate autogen
 
 # install xpu-supported and fastchat-adapted ipex-llm
 # we recommend using ipex-llm version >= 2.5.0b20240110
-pip install --pre --upgrade ipex-llm[xpu,serving] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
 
 # install recommend transformers version
 pip install transformers==4.36.2
