@@ -1068,10 +1068,10 @@ def _optimize_post(model, lightweight_bmm=False):
             # for Qwen-VL-Chat
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.qwen_vl import qwen_attention_forward_vl
+            from ipex_llm.transformers.models.qwen_vl import qwen_attention_forward_vl_new
             convert_forward(model,
                             module.QWenAttention,
-                            qwen_attention_forward_vl
+                            qwen_attention_forward_vl_new
                             )
         else:
             # for Qwen-7B and Qwen-14B
