@@ -53,9 +53,6 @@ Using IPEX-LLM in FastChat does not impose any new limitations on model usage. T
 
 #### IPEX-LLM model worker (deprecated)
 
-<details>
-<summary>details</summary>
-
 > Warning: This method has been deprecated, please change to use `IPEX-LLM` [worker](#ipex-llm-worker) instead.
 
 FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
