@@ -44,6 +44,8 @@ Some parameters in the yaml file that you can configure:
 
 - repo_id: The name of the model and its organization.
 - local_model_hub: The folder path where the models are stored on your machine.
+- warm_up: The number of runs as warmup trials, executed before performance benchmarking.
+- num_trials: The number of runs for performance benchmarking. The final benchmark result would be the average of all the trials.
 - low_bit: The low_bit precision you want to convert to for benchmarking.
 - batch_size: The number of samples on which the models makes predictions in one forward pass.
 - in_out_pairs: Input sequence length and output sequence length combined by '-'.
@@ -52,6 +54,8 @@ Some parameters in the yaml file that you can configure:
   - `transformer_int4_gpu_win` on Intel GPU for Windows
   - `transformer_int4` on Intel CPU
 - cpu_embedding: Whether to put embedding on CPU (only avaiable now for windows gpu related test_api).
+
+Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` as well as `num_trials: 1`, and run each single model and in_out_pair separately.
 
 ## Run on Windows
 
