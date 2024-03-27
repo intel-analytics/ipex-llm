@@ -56,7 +56,7 @@ if __name__ == '__main__':
         prompt = RedPajama_PROMPT_FORMAT.format(prompt=args.prompt)
         inputs = tokenizer(prompt, return_tensors='pt').to('xpu')
 
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(**inputs,
                                 max_new_tokens=args.n_predict,
                                 do_sample=True,
