@@ -21,55 +21,62 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm.
 
 * **Database Setup (using PostgreSQL)**:
-    * Linux
-        * Installation: 
-            ```bash
-            sudo apt-get install postgresql-client
-            sudo apt-get install postgresql
-            ```
-        * Initialization:
-            
-            Switch to the **postgres** user and launch **psql** console
-            ```bash
-            sudo su - postgres
-            psql
-            ```
-            
-            Then, create a new user role:
-            ```bash
-            CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
-            ALTER ROLE <user> SUPERUSER;    
-            ```
-    * Windows
-        * click `Download the installer` in [PostgreSQL](https://www.postgresql.org/download/windows/).  
-        * Run the downloaded installation package as administrator, then click `next` continuously.  
-        * Open PowerShell:
-        ```bash
-            cd C:\Program Files\PostgreSQL\14\bin
-        ```   
-        The exact path will vary depending on your PostgreSQL location.  
-        * Then in PowerShell:
-        ```bash
-            .\psql -U postgres    
-        ```   
-        Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
-        * Create a new user role:
-        ```bash
-        CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
-        ALTER ROLE <user> SUPERUSER;    
+> Note: Database Setup is only required in RAG example.
+  * Linux
+      * Installation: 
+          ```bash
+          sudo apt-get install postgresql-client
+          sudo apt-get install postgresql
+          ```
+      * Initialization:
+
+          Switch to the **postgres** user and launch **psql** console
+          ```bash
+          sudo su - postgres
+          psql
+          ```
+
+          Then, create a new user role:
+          ```bash
+          CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
+          ALTER ROLE <user> SUPERUSER;    
+          ```
+  * Windows
+      * click `Download the installer` in [PostgreSQL](https://www.postgresql.org/download/windows/).  
+      * Run the downloaded installation package as administrator, then click `next` continuously.  
+      * Open PowerShell:
+      ```bash
+          cd C:\Program Files\PostgreSQL\14\bin
+      ```   
+      The exact path will vary depending on your PostgreSQL location.  
+      * Then in PowerShell:
+      ```bash
+          .\psql -U postgres    
+      ```   
+      Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
+      * Create a new user role:
+      ```bash
+      CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
+      ALTER ROLE <user> SUPERUSER;    
         ```
 * **Pgvector Installation**:
-    * Linux
-        * Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
-    * Windows 
-        * It is recommended to use [pgvector for Windows](https://github.com/pgvector/pgvector?tab=readme-ov-file#windows) instead of others (such as conda-force) to avoid potential errors. Some steps may require running as administrator.
+> Note: Pgvector Installation is only required in RAG example.
 
 
-* **Data Preparation**: Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
-    ```bash
-    mkdir data
-    wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
-    ```
+  * Linux
+      * Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
+  * Windows 
+      * It is recommended to use [pgvector for Windows](https://github.com/pgvector/pgvector?tab=readme-ov-file#windows) instead of others (such as conda-force) to avoid potential errors. Some steps may require running as administrator.
+
+
+* **Data Preparation**: 
+> Note: Data Preparation is only required in RAG example.
+
+Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
+  ```bash
+  mkdir data
+  wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
+  ```
 
 ### 2. Configures OneAPI environment variables
 #### 2.1 Configurations for Linux
@@ -144,6 +151,8 @@ There is no need to set further environment variables.
 
 #### 4.1 RAG (Retrival Augmented Generation)
 
+The RAG example shows how to load the input text into vector database, and then use `RetrieverQueryEngine` to build a retrival pipeline.
+
 In the current directory, run the example with command:
 
 ```bash
@@ -173,6 +182,8 @@ In conclusion, while Llama 2 performs well on most benchmarks compared to other 
 ```
 
 #### 4.2 Text to SQL
+
+The Text to SQL example shows how to define a text-to-SQL retriever on its own and plug it into `RetrieverQueryEngine` to build a retrival pipeline.
 
 In the current directory, run the example with command:
 
