@@ -183,6 +183,8 @@ In conclusion, while Llama 2 performs well on most benchmarks compared to other 
 
 #### 4.2 Text to SQL
 
+> Note: Text to SQL example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+
 The Text to SQL example shows how to define a text-to-SQL retriever on its own and plug it into `RetrieverQueryEngine` to build a retrival pipeline.
 
 In the current directory, run the example with command:
