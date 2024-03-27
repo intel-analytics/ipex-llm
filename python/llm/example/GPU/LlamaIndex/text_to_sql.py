@@ -3,7 +3,7 @@ from llama_index.core import SQLDatabase
 from llama_index.core.retrievers import NLSQLRetriever
 from llama_index.core.query_engine import RetrieverQueryEngine
 from ipex_llm.llamaindex.llms import BigdlLLM
-from ipex_llm.langchain.embeddings import TransformersBgeEmbeddings
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer, insert
 import argparse
 
@@ -47,11 +47,7 @@ def main(args):
     engine, city_stats_table = create_database_schema()
     sql_database = define_sql_database(engine, city_stats_table)
 
-    embed_model = TransformersBgeEmbeddings.from_model_id(
-            model_id=args.embedding_model_path,
-            model_kwargs={'load_in_low_bit':"fp16"},
-            device_map="xpu"
-    )
+    embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
 
     llm = BigdlLLM(
         model_name=args.model_path,
