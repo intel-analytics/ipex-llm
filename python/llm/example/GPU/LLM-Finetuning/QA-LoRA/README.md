@@ -52,8 +52,8 @@ bash qalora_finetune_llama2_7b_pvc_1550_1_tile.sh
 python ./alpaca_qalora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./ipex-qlora-alpaca" \
-    --resume_from_checkpoint "./ipex-qlora-alpaca/checkpoint-1100"
+    --output_dir "./ipex-llm-qlora-alpaca" \
+    --resume_from_checkpoint "./ipex-llm-qlora-alpaca/checkpoint-1100"
 ```
 
 ### 5. Sample Output

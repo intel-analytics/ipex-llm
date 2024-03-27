@@ -135,8 +135,8 @@ If you fail to complete the whole finetuning process, it is suggested to resume 
 python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./ipex-qlora-alpaca" \
-    --resume_from_checkpoint "./ipex-qlora-alpaca/checkpoint-1100"
+    --output_dir "./ipex-llm-qlora-alpaca" \
+    --resume_from_checkpoint "./ipex-llm-qlora-alpaca/checkpoint-1100"
 ```
 
 ### 5. Sample Output

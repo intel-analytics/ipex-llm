@@ -23,7 +23,7 @@ mpirun -n 2 \
        python -u ./alpaca_relora_finetuning.py \
        --base_model "meta-llama/Llama-2-7b-hf" \
        --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./ipex-relora-alpaca" \
+       --output_dir "./ipex-llm-relora-alpaca" \
        --micro_batch_size 8 \
        --relora_steps 300 \
        --relora_warmup_steps 10 \
