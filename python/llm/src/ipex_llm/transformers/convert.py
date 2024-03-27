@@ -263,7 +263,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                                        full_module_name,
                                                                        imatrix_data,
                                                                        model_type)
-                    print(full_module_name, qtype, cur_qtype)
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
