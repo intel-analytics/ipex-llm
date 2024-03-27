@@ -16,7 +16,7 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.0.110+xpu as default
 # you can install specific ipex/torch version for your need
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install einops # package required by Mamba
 ```
 

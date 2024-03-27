@@ -56,7 +56,7 @@ The easiest ways to install `ipex-llm` is the following commands:
 conda create -n llm python=3.9 libuv
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
 ### Install IPEX-LLM From Wheel
@@ -393,7 +393,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
          conda create -n llm python=3.9
          conda activate llm
 
-         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
       .. note::
 
@@ -401,7 +401,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
          .. code-block:: bash
 
-            pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+            pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
             
 
    .. tab:: PyTorch 2.0
@@ -411,7 +411,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
          conda create -n llm python=3.9
          conda activate llm
 
-         pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+         pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 ```
 

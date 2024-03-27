@@ -72,7 +72,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
 
 ### Setup Python Environment
-
+ 
 Download and install the Miniconda as follows if you don't have conda installed on your machine:
   ```bash
   wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -96,7 +96,7 @@ conda activate llm
 
 * With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
   ```
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
 
 ## Verify Installation
