@@ -83,7 +83,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
-    parser.add_argument('-q', '--question', type=str, default='Return the top 5 cities (along with their populations) with the highest population.',
+    parser.add_argument('-q', '--question', type=str, default='Which city has the highest population?',
                         help='qustion you want to ask.')
     parser.add_argument('-e','--embedding-model-path',default="BAAI/bge-small-en",
                         help="the path to embedding model path")
