@@ -87,43 +87,47 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 #
 # Note this format cannot be used directly in IPEX-LLM's mm_int4, which expects
 # row major but packing two consecutive columns.
+def q4_0_xpu_transpose(ggml_weight, weight_shape, qtype):
+    if qtype == ggml_tensor_qtype["sym_int4"]:
+        from ipex_llm.transformers.low_bit_linear import get_block_size
+        Q4_0 = get_block_size("sym_int4")
 
+        n, k = weight_shape
+        ggml_weight_only = ggml_weight[:n*k//2]
+        ggml_scales = ggml_weight[n*k//2:]
 
-def q4_0_xpu_transpose(ggml_weight, weight_shape):
-    from ipex_llm.transformers.low_bit_linear import get_block_size
-    Q4_0 = get_block_size("sym_int4")
+        qweight = ggml_weight_only.clone()
+        scales = ggml_scales.view(torch.float16).clone()
 
-    n, k = weight_shape
-    ggml_weight_only = ggml_weight[:n*k//2]
-    ggml_scales = ggml_weight[n*k//2:]
+        qweight_0 = qweight & 0x0F
+        qweight_1 = qweight >> 4
 
-    qweight = ggml_weight_only.clone()
-    scales = ggml_scales.view(torch.float16).clone()
+        qweight_0 = qweight_0.reshape(n, -1, Q4_0//2)
+        qweight_1 = qweight_1.reshape(n, -1, Q4_0//2)
+        qweight = torch.cat([qweight_0, qweight_1], dim=-1)
+        qweight = qweight.reshape(n, k//16, 2, 8)
+        qweight = qweight.bitwise_left_shift(
+            torch.tensor([0, 4], dtype=torch.uint8, device=ggml_weight.device).reshape(1, 1, 2, 1))
 
-    qweight_0 = qweight & 0x0F
-    qweight_1 = qweight >> 4
+        qweight = torch.bitwise_or(qweight[:, :, 0, :], qweight[:, :, 1, :])
+        qweight = qweight.reshape(n, k//2)
+        qweight = qweight.transpose(0, 1).contiguous()
 
-    qweight_0 = qweight_0.reshape(n, -1, Q4_0//2)
-    qweight_1 = qweight_1.reshape(n, -1, Q4_0//2)
-    qweight = torch.cat([qweight_0, qweight_1], dim=-1)
-    qweight = qweight.reshape(n, k//16, 2, 8)
-    qweight = qweight.bitwise_left_shift(
-        torch.tensor([0, 4], dtype=torch.uint8, device=ggml_weight.device).reshape(1, 1, 2, 1))
+        scales = scales.reshape(n, k//Q4_0).transpose(0, 1).contiguous()
 
-    qweight = torch.bitwise_or(qweight[:, :, 0, :], qweight[:, :, 1, :])
-    qweight = qweight.reshape(n, k//2)
-    qweight = qweight.transpose(0, 1).contiguous()
+        # 119 is the value of 0x77
+        zeros = torch.ones([k//Q4_0, n//2], dtype=torch.uint8, device=ggml_weight.device) * (119)
 
-    scales = scales.reshape(n, k//Q4_0).transpose(0, 1).contiguous()
+        qweight_bytes = qweight.view(torch.uint8).view(-1)
+        scales_bytes = scales.view(torch.uint8).view(-1)
+        zeros_bytes = zeros.view(torch.uint8).view(-1)
 
-    # 119 is the value of 0x77
-    zeros = torch.ones([k//Q4_0, n//2], dtype=torch.uint8, device=ggml_weight.device) * (119)
-
-    qweight_bytes = qweight.view(torch.uint8).view(-1)
-    scales_bytes = scales.view(torch.uint8).view(-1)
-    zeros_bytes = zeros.view(torch.uint8).view(-1)
-
-    weight = torch.concat([qweight_bytes, zeros_bytes, scales_bytes], dim=0)
+        weight = torch.concat([qweight_bytes, zeros_bytes, scales_bytes], dim=0)
+    elif qtype == ggml_tensor_qtype["fp8_e5m2"]:
+        n, k = weight_shape
+        weight = ggml_weight[:n*k].view(n, k).transpose(0, 1).contiguous()
+    else:
+        invalidInputError(False, f"Unsupported qtype {qtype}")
     return weight
 
 
@@ -373,7 +377,7 @@ class FP4Params(torch.nn.Parameter):
                                                      reduce(mul, self._shape, 1),
                                                      self.qtype)
             if self.enable_xetla:
-                self.data = q4_0_xpu_transpose(self.data, self._shape)
+                self.data = q4_0_xpu_transpose(self.data, self._shape, self.qtype)
             new_param = FP4Params(super().to(device=device,
                                              dtype=dtype,
                                              non_blocking=non_blocking),
@@ -610,7 +614,7 @@ class LowBitLinear(nn.Linear):
                                                      input_seq_size)
             elif self.enable_xetla:
                 x_2d = x_2d.half()
-                result = linear_q4_0.mm_int4(x_2d, self.weight.data)
+                result = linear_q4_0.mm_int4(x_2d, self.weight.data, self.qtype)
             else:
                 # inference path
                 # current workaround to reduce first token latency of fp32 input
