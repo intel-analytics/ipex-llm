@@ -94,10 +94,29 @@ conda activate llm
 
 ## Install `ipex-llm`
 
-* With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
-  ```
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-  ```
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU.
+Choose either US or CN website for `extra-index-url`:
+
+```eval_rst
+.. tabs::
+   .. tab:: US
+
+      .. code-block:: cmd
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+   .. tab:: CN
+
+      .. code-block:: cmd
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+```
+
+```eval_rst
+.. note::
+
+  If you encounter network issues while installing IPEX, refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id3>`_ for troubleshooting advice.
+```
 
 ## Verify Installation
 * You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:

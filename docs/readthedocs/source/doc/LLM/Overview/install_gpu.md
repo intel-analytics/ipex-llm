@@ -50,13 +50,28 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
    ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
-The easiest ways to install `ipex-llm` is the following commands:
+The easiest ways to install `ipex-llm` is the following commands,
+choosing either US or CN website for `extra-index-url`:
 
-```
-conda create -n llm python=3.9 libuv
-conda activate llm
+```eval_rst
+.. tabs::
+   .. tab:: US
 
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+      .. code-block:: cmd
+
+         conda create -n llm python=3.9 libuv
+         conda activate llm
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+   .. tab:: CN
+
+      .. code-block:: cmd
+
+         conda create -n llm python=3.9 libuv
+         conda activate llm
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
 
 ### Install IPEX-LLM From Wheel
@@ -387,31 +402,65 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 ```eval_rst
 .. tabs::
    .. tab:: PyTorch 2.1
+      Choose either US or CN website for `extra-index-url`:
 
-      .. code-block:: bash
+      .. tabs::
+         .. tab:: US
 
-         conda create -n llm python=3.9
-         conda activate llm
+            .. code-block:: bash
 
-         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+               conda create -n llm python=3.9
+               conda activate llm
 
-      .. note::
+               pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-         The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
+            .. note::
 
-         .. code-block:: bash
+               The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
 
-            pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+               .. code-block:: bash
+
+                  pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+         .. tab:: CN
+
+            .. code-block:: bash
+
+               conda create -n llm python=3.9
+               conda activate llm
+
+               pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+
+            .. note::
+
+               The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
+
+               .. code-block:: bash
+
+                  pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             
 
    .. tab:: PyTorch 2.0
+      Choose either US or CN website for `extra-index-url`:
 
-      .. code-block:: bash
+      .. tabs::
+         .. tab:: US
 
-         conda create -n llm python=3.9
-         conda activate llm
+            .. code-block:: bash
 
-         pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+               conda create -n llm python=3.9
+               conda activate llm
+
+               pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+         .. tab:: CN
+
+            .. code-block:: bash
+
+               conda create -n llm python=3.9
+               conda activate llm
+
+               pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 
 ```
 
