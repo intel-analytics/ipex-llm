@@ -51,11 +51,11 @@ check_torch()
   fi
 }
 
-check_bigdl()
+check_ipex_llm()
 {
   echo "-----------------------------------------------------------------"
-  echo -n 'BigDL '
-  pip show bigdl-llm | grep Version:
+  echo -n 'ipex-llm '
+  pip show ipex-llm | grep Version:
 }
 
 check_cpu_info()
@@ -178,10 +178,10 @@ main()
     exit -1
   fi
   
-  # check site packages version, such as transformers, pytorch, bigdl
+  # check site packages version, such as transformers, pytorch, ipex_llm
   check_transformers
   check_torch
-  check_bigdl
+  check_ipex_llm
   check_ipex
 
   # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
