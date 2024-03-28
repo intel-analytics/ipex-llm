@@ -2,7 +2,7 @@
 
 This folder contains examples showcasing how to use `langchain` with `ipex-llm`. 
 
-### Install IPEX LLM
+### Install-IPEX LLM
 
 Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install). 
 
@@ -70,4 +70,4 @@ python transformers_int4/voiceassistant.py -m <path_to_model> [-q <your_question
 
 ### Legacy (Native INT4 examples)
 
-IPEX LLM also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 
+IPEX-LLM also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 
