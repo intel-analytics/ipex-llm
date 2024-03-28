@@ -322,6 +322,10 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
         # TODO: this check needs some time
         if not torch.all(attention_mask.eq(0)):
             return False
+        # disable pvc batch size > 1
+        if torch.xpu.get_device_name(
+            query_states.device.index).startswith("Intel(R) Data Center GPU Max"):
+            return False
 
     device_name = torch.xpu.get_device_name(query_states.device.index)
     if device_name.startswith("Intel(R) Arc(TM) A") or \
