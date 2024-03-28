@@ -55,7 +55,7 @@ Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), 
 
 ### Install oneAPI
 
-Open the **Anaconda Prompt**, create a new python environment `llm` and activate it:
+Open the **Anaconda Prompt**. Then create a new python environment `llm` and activate it:
 ```cmd
 conda create -n llm python=3.9 libuv
 conda activate llm
