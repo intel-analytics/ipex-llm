@@ -57,9 +57,9 @@ Using IPEX-LLM in FastChat does not impose any new limitations on model usage. T
 
 FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
 
-For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `IPEX-LLM` as backend, you need to change name from `llama-7b-hf` to `ipex_llm-7b`.The key point here is that the model's path should include "ipex" and **should not include paths matched by other model adapters**.
+For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `IPEX-LLM` as backend, you need to change name from `llama-7b-hf` to `ipex-llm-7b`.The key point here is that the model's path should include "ipex" and **should not include paths matched by other model adapters**.
 
-Then we will use `ipex-7b` as model-path.
+Then we will use `ipex-llm-7b` as model-path.
 
 > note: This is caused by the priority of name matching list. The new added `IPEX-LLM` adapter is at the tail of the name-matching list so that it has the lowest priority. If model path contains other keywords like `vicuna` which matches to another adapter with higher priority, then the `IPEX-LLM` adapter will not work.
 
@@ -69,10 +69,10 @@ Then we can run model workers
 
 ```bash
 # On CPU
-python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex_llm-7b --device cpu
+python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex-llm-7b --device cpu
 
 # On GPU
-python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex_llm-7b --device xpu
+python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex-llm-7b --device xpu
 ```
 
 If you run successfully using `ipex_llm` backend, you can see the output in log like this:
