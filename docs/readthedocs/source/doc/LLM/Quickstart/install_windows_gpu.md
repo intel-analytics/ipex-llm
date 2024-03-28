@@ -32,14 +32,9 @@ Download and install the latest GPU driver from the [official Intel download pag
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=100%; />
 
 
-### Install oneAPI 
+<!-- ### Install oneAPI  -->
 
-<!-- * With the `llm` environment active, use `pip` to install the [**Intel oneAPI Base Toolkit**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html):
-  ```cmd
-  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
-  ``` -->
-
-Download and install the [**Intel oneAPI Base Toolkit 2024.0**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
+<!-- Download and install the [**Intel oneAPI Base Toolkit 2024.0**](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline). During installation, you can continue with the default installation settings.
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_oneapi_offline_installer.png"  width=100%; />
 
@@ -47,9 +42,9 @@ Download and install the [**Intel oneAPI Base Toolkit 2024.0**](https://www.inte
 .. tip::
 
    If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
-```
+``` -->
 
-### Setup Python Environment
+### Install Miniconda
 
 Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
@@ -57,13 +52,18 @@ Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=70%/>
 </div>
 
-After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
+
+### Install oneAPI
+
+Open the **Anaconda Prompt**. Then create a new python environment `llm` and activate it:
 ```cmd
 conda create -n llm python=3.9 libuv
-```
-Activate the newly created environment `llm`:
-```cmd
 conda activate llm
+```
+
+Use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
+```cmd
+pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 ```
   
 ## Install `ipex-llm`
@@ -96,14 +96,14 @@ Choose either US or CN website for `extra-index-url`:
 You can verify if `ipex-llm` is successfully installed following below steps.
 
 ### Step 1: Runtime Configurations
- * Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
+* Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
    ```cmd
    conda activate llm
    ```
- * Configure oneAPI variables by running the following command:
+<!-- * Configure oneAPI variables by running the following command:
    ```cmd
    call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-   ```
+   ``` -->
 * Set the following environment variables according to your device:
 
   ```eval_rst
