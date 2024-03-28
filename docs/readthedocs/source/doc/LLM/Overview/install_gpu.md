@@ -18,6 +18,29 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
+* Step 3 (Recommended): Install [Miniconda](https://docs.anaconda.com/free/miniconda/) for Python environment management. Choose **Miniconda installer for Windows**.
+
+* Step 4: Install Intel® oneAPI Base Toolkit 2024.0:
+
+  First, Create a Python 3.9 enviroment and activate it. In Anaconda Prompt:
+
+  ```cmd
+  conda create -n llm python=3.9 libuv
+
+  conda activate llm
+  ```
+
+  ```eval_rst
+  .. important::
+
+     ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
+  ```
+
+  Then, use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
+  ```cmd
+  pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
+  ```
+
 <!-- Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
 ```eval_rst
@@ -38,26 +61,8 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
          Activating your working conda environment will automatically configure oneAPI environment variables.
 ``` -->
 
-### Install IPEX-LLM From PyPI
-
-We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment. In Anaconda Prompt:
-
-```cmd
-conda create -n llm python=3.9 libuv
-
-conda activate llm
-```
-
-```eval_rst
-.. important::
-
-   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
-```
-
-With the `llm` environment active, use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
-```cmd
-pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
-```
+### Install IPEX-LLM
+#### Install IPEX-LLM From PyPI
 
 The easiest ways to install `ipex-llm` is the following commands,
 choosing either US or CN website for `extra-index-url`:
@@ -83,7 +88,7 @@ choosing either US or CN website for `extra-index-url`:
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
 
-### Install IPEX-LLM From Wheel
+#### Install IPEX-LLM From Wheel
 
 If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
@@ -393,7 +398,8 @@ IPEX-LLM GPU support on Linux has been verified on:
                   sudo ./installer
 ```
 
-### Install IPEX-LLM From PyPI
+### Install IPEX-LLM
+#### Install IPEX-LLM From PyPI
 
 We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
 
@@ -473,7 +479,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
 ```
 
-### Install IPEX-LLM From Wheel
+#### Install IPEX-LLM From Wheel
 
 If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 

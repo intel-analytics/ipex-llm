@@ -44,7 +44,7 @@ Download and install the latest GPU driver from the [official Intel download pag
    If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
 ``` -->
 
-### Setup Python Environment
+### Install Miniconda
 
 Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
@@ -52,18 +52,16 @@ Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=70%/>
 </div>
 
-After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
+
+### Install oneAPI
+
+Open the **Anaconda Prompt**, create a new python environment `llm` and activate it:
 ```cmd
 conda create -n llm python=3.9 libuv
-```
-Activate the newly created environment `llm`:
-```cmd
 conda activate llm
 ```
 
-## Install oneAPI
-
-With the `llm` environment active, use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
+Use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
 ```cmd
 pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 ```
