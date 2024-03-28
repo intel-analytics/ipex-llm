@@ -600,7 +600,7 @@ def qwen_model_forward(
         if self.use_cache_quantization:
             past_length = past_key_values[0][0][0].size(2)
         else:
-            past_length = past_key_values[0][0].size(-2)
+            past_length = past_key_values[0][0].size(1)
     if position_ids is None:
         position_ids = torch.arange(
             past_length,
