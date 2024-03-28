@@ -28,7 +28,7 @@ Example usage:
 python ./alpaca_qlora_finetuning_cpu.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./ipex-qlora-alpaca"
+    --output_dir "./ipex-llm-qlora-alpaca"
 ```
 
 **Note**: You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file.
@@ -109,7 +109,7 @@ def generate_and_tokenize_prompt(data_point):
 python ./quotes_qlora_finetuning_cpu.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "./english_quotes" \
-    --output_dir "./ipex-qlora-alpaca" \
+    --output_dir "./ipex-llm-qlora-alpaca" \
     --prompt_template_name "english_quotes"
 ```
 

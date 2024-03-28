@@ -1,8 +1,8 @@
 ## Langchain Examples
 
-This folder contains examples showcasing how to use `langchain` with `ipex`. 
+This folder contains examples showcasing how to use `langchain` with `ipex-llm`. 
 
-### Install IPEX
+### Install-IPEX LLM
 
 Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install). 
 
@@ -36,7 +36,7 @@ To run the example, execute the following command in the current directory:
 ```bash
 python transformers_int4/rag.py -m <path_to_model> [-q <your_question>] [-i <path_to_input_txt>]
 ```
-> Note: If `-i` is not specified, it will use a short introduction to Big-DL as input by default. if `-q` is not specified, `What is IPEX?` will be used by default. 
+> Note: If `-i` is not specified, it will use a short introduction to Big-DL as input by default. if `-q` is not specified, `What is IPEX LLM?` will be used by default. 
 
 
 ### Example: Math
@@ -66,3 +66,8 @@ python transformers_int4/voiceassistant.py -m <path_to_model> [-q <your_question
 - `-x MAX_NEW_TOKENS`: the max new tokens of model tokens input
 - `-l LANGUAGE`: you can specify a language such as "english" or "chinese" 
 - `-d True|False`: whether the model path specified in -m is saved low bit model.
+
+### Legacy (Native INT4 examples)
+
+IPEX-LLM also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 
+

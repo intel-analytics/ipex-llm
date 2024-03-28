@@ -62,7 +62,7 @@ After the container is booted, you could get into the container through `docker 
 docker exec -it my_container bash
 ```
 
-To run inference using `IPEX-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm#cpu-int4).
+To run inference using `IPEX-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#cpu-int4).
 
 
 #### Getting started with chat

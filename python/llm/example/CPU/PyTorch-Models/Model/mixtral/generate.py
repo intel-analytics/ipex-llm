@@ -54,7 +54,7 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = MIXTRAL_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('cpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex-llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
