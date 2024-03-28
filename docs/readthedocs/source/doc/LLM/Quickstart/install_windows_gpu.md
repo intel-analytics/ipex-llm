@@ -98,14 +98,14 @@ Choose either US or CN website for `extra-index-url`:
 You can verify if `ipex-llm` is successfully installed following below steps.
 
 ### Step 1: Runtime Configurations
- * Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
+* Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
    ```cmd
    conda activate llm
    ```
- <!-- * Configure oneAPI variables by running the following command:
+<!-- * Configure oneAPI variables by running the following command:
    ```cmd
-   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" -->
-   ```
+   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+   ``` -->
 * Set the following environment variables according to your device:
 
   ```eval_rst
