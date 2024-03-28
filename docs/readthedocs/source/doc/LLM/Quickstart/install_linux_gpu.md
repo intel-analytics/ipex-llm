@@ -19,7 +19,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
     ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
 * Install drivers
 
@@ -41,9 +41,9 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo reboot
     ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/i915.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/i915.png" width=100%; />
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
 
 
 * Configure permissions
@@ -67,9 +67,9 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
   sudo apt install intel-basekit=2024.0.1-43
   ```
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
 
 ### Setup Python Environment
  
