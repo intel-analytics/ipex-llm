@@ -63,7 +63,7 @@ conda activate llm
 
 ## Install oneAPI
 
-With the `llm` environment active, use `pip` to install the **Intel oneAPI Base Toolkit**:
+With the `llm` environment active, use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
 ```cmd
 pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 ```
