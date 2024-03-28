@@ -18,7 +18,7 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
-* Step 3 (Recommended): Install [Miniconda](https://docs.anaconda.com/free/miniconda/) for Python environment management. Choose **Miniconda installer for Windows**.
+* Step 3 (Recommended): Install [Miniconda](https://docs.anaconda.com/free/miniconda/) for Python environment management. Choose Miniconda installer for Windows.
 
 * Step 4: Install Intel® oneAPI Base Toolkit 2024.0:
 
@@ -36,7 +36,7 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
      ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
   ```
 
-  Then, use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
+  Then, use `pip` to install the Intel oneAPI Base Toolkit 2024.0:
   ```cmd
   pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
   ```
