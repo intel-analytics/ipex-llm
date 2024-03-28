@@ -595,7 +595,6 @@ def _optimize_pre(model):
         from ipex_llm.transformers.models.bert import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "qwen":
-        position_ids = torch.arange(0, model.config.max_position_embeddings)
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
 
@@ -625,7 +624,6 @@ def _optimize_pre(model):
                 module.q_proj = q_proj
                 module.k_proj = k_proj
                 module.v_proj = v_proj
-                module.position_ids = position_ids
                 module.rope_base = rope_base
                 del module.c_attn
         model.apply(split_qkv_proj_func)
