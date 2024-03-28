@@ -1,18 +1,18 @@
 ## BigDL-LLM finetuning on CPU quick start
 
-This quickstart guide walks you through setting up and running large language model finetuning with `bigdl-llm` using docker. 
+This quickstart guide walks you through setting up and running large language model finetuning with `ipex-llm` using docker. 
 
 ### Prepare Docker Image
 
 You can download directly from Dockerhub like（recommended):
 
 ```bash
-docker pull intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 to check if the image is successfully downloaded, you can use:
 
 ```bash
-docker images | grep intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone
+docker images | grep intelanalytics/ipex-llm-cpu
 ```
 
 Or follow steps provided in [Build/Use BigDL-LLM cpu image](https://github.com/intel-analytics/BigDL/blob/main/docker/llm/README.md#docker-installation-guide-for-bigdl-llm-fine-tuning-on-cpu) to build the image from source:
@@ -24,7 +24,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -41,19 +41,19 @@ export HTTPS_PROXY=your_https_proxy
 docker run -itd \
    --net=host \
    --privileged \
-   --name=bigdl-llm-fintune-qlora-cpu \
+   --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   -v $BASE_MODE_PATH:/bigdl/model \
-   -v $DATA_PATH:/bigdl/data/alpaca-cleaned \
-   intelanalytics/bigdl-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   -v $BASE_MODE_PATH:/ipex_llm/model \
+   -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
 ```
 
 ### Start Fine-Tuning (Local Mode)
 Enter the running container:
 
 ```bash
-docker exec -it bigdl-llm-fintune-qlora-cpu bash
+docker exec -it ipex-llm-fintune-qlora-cpu bash
 ```
 
 Then, start QLoRA fine-tuning: If the machine memory is not enough, you can try to set use_gradient_checkpointing=True.
