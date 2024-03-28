@@ -53,7 +53,7 @@ def generate(
     **kwargs,
 ):
     if hasattr(self, "draft_model"):
-        from ipex_llm.llm.transformers.convert import get_enable_ipex
+        from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
         if _enable_ipex and inputs.size(1) < 256:
             logger.warning(

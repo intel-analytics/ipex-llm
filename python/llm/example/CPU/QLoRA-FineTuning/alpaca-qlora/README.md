@@ -54,7 +54,7 @@ python ./alpaca_qlora_finetuning_cpu.py \
 ```bash
 # need to run the alpaca stand-alone version first
 # for using mpirun
-pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable
+pip install oneccl_bind_pt --extra-index-url https://developer.intel.com/ipex-whl-stable
 ```
 
 2. modify conf in `finetune_one_node_two_sockets.sh` and run

@@ -27,7 +27,7 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install transformers==4.36.0  # upgrade transformers
 ```
 

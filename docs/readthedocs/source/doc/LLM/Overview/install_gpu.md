@@ -18,9 +18,11 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
 
 * Step 2: Install or update to latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
-* Step 3: Install Intel® oneAPI Base Toolkit 2024.0
+* Step 3: Install Intel® oneAPI Base Toolkit 2024.0: download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?operatingsystem=window&distributions=offline>) version 2024.0 through Offline Installer.
+   
+  During installation, you could just continue with "Recommended Installation". If you would like to continue with "Custom Installation", please note that oneAPI Deep Neural Network Library, oneAPI Math Kernel Library, and oneAPI DPC++/C++ Compiler are required, the other components are optional.
 
-Intel® oneAPI Base Toolkit 2024.0 installation methods:
+<!-- Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
 ```eval_rst
 .. tabs::
@@ -38,7 +40,7 @@ Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
       .. note::
          Activating your working conda environment will automatically configure oneAPI environment variables.
-```
+``` -->
 
 ### Install IPEX-LLM From PyPI
 
@@ -50,13 +52,28 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
    ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.9 is recommended for best practices.
 ```
 
-The easiest ways to install `ipex-llm` is the following commands:
+The easiest ways to install `ipex-llm` is the following commands,
+choosing either US or CN website for `extra-index-url`:
 
-```
-conda create -n llm python=3.9 libuv
-conda activate llm
+```eval_rst
+.. tabs::
+   .. tab:: US
 
-pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      .. code-block:: cmd
+
+         conda create -n llm python=3.9 libuv
+         conda activate llm
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+   .. tab:: CN
+
+      .. code-block:: cmd
+
+         conda create -n llm python=3.9 libuv
+         conda activate llm
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
 
 ### Install IPEX-LLM From Wheel
@@ -91,7 +108,9 @@ pip install --pre --upgrade ipex-llm[xpu]
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example.
 
-Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported. For oneAPI installed using the Offline installer, configure oneAPI environment variables with:
+<!-- Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported. For oneAPI installed using the Offline installer, configure oneAPI environment variables with: -->
+
+Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported, and configure oneAPI environment variables with: 
 
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -143,12 +162,17 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   ```cmd
   conda install libuv
   ```
-
-* For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+* Make sure you have configured oneAPI environment variables in your Anaconda Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
   Please note that you need to set these environment variables again once you have a new Anaconda Prompt window.
+
+<!-- * For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+  ```cmd
+  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+  ```
+  Please note that you need to set these environment variables again once you have a new Anaconda Prompt window. -->
 
 ## Linux
 
@@ -239,7 +263,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 
             .. code-block:: bash
 
-               sudo apt install -y intel-basekit
+               sudo apt install -y intel-basekit=2024.0.1-43
 
             .. note::
 
@@ -387,31 +411,65 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 ```eval_rst
 .. tabs::
    .. tab:: PyTorch 2.1
+      Choose either US or CN website for `extra-index-url`:
 
-      .. code-block:: bash
+      .. tabs::
+         .. tab:: US
 
-         conda create -n llm python=3.9
-         conda activate llm
+            .. code-block:: bash
 
-         pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+               conda create -n llm python=3.9
+               conda activate llm
 
-      .. note::
+               pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-         The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
+            .. note::
 
-         .. code-block:: bash
+               The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
 
-            pip install --pre --upgrade ipex-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+               .. code-block:: bash
+
+                  pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+         .. tab:: CN
+
+            .. code-block:: bash
+
+               conda create -n llm python=3.9
+               conda activate llm
+
+               pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+
+            .. note::
+
+               The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
+
+               .. code-block:: bash
+
+                  pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             
 
    .. tab:: PyTorch 2.0
+      Choose either US or CN website for `extra-index-url`:
 
-      .. code-block:: bash
+      .. tabs::
+         .. tab:: US
 
-         conda create -n llm python=3.9
-         conda activate llm
+            .. code-block:: bash
 
-         pip install --pre --upgrade ipex-llm[xpu_2.0] -f https://developer.intel.com/ipex-whl-stable-xpu
+               conda create -n llm python=3.9
+               conda activate llm
+
+               pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+         .. tab:: CN
+
+            .. code-block:: bash
+
+               conda create -n llm python=3.9
+               conda activate llm
+
+               pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 
 ```
 
@@ -490,6 +548,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          # Recommended Environment Variables for optimal performance
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Intel Data Center GPU Max
 
@@ -504,6 +563,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          # Recommended Environment Variables for optimal performance
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         export SYCL_CACHE_PERSISTENT=1
          export ENABLE_SDP_FUSION=1
 
       Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``

@@ -67,7 +67,7 @@ python transformers_int4/voiceassistant.py -m <path_to_model> [-q <your_question
 - `-l LANGUAGE`: you can specify a language such as "english" or "chinese" 
 - `-d True|False`: whether the model path specified in -m is saved low bit model.
 
-
 ### Legacy (Native INT4 examples)
 
 IPEX-LLM also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 
+

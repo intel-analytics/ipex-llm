@@ -14,7 +14,7 @@ conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 # you can install specific ipex/torch version for your need
-pip install --pre --upgrade ipex-llm[xpu_2.1] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 # configures OneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
 
