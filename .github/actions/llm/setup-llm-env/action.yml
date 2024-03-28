@@ -32,10 +32,10 @@ runs:
         fi
         whl_name=$(ls python/llm/dist)
         if [[ ${{ inputs.extra-dependency }} == 'xpu_2.0' ]]; then
-          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.0]" -f https://developer.intel.com/ipex-whl-stable-xpu 
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.0]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
           pip install pytest expecttest
         elif [[ ${{ inputs.extra-dependency }} == 'xpu_2.1' ]]; then
-          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" -f https://developer.intel.com/ipex-whl-stable-xpu 
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
           pip install pytest expecttest
         else
           pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"

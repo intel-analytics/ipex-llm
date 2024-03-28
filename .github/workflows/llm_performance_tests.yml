@@ -74,7 +74,7 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -198,7 +198,7 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -272,7 +272,7 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -344,7 +344,7 @@ jobs:
       #     if not exist dist\ipex_llm*.whl (exit /b 1)
       #     for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
 
-      #     pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      #     pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
       #     if %ERRORLEVEL% neq 0 (exit /b 1)
       #     pip list
 
@@ -367,7 +367,7 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           pip show ipex-llm | findstr %TEST_VERSION_DATE%
           if %ERRORLEVEL% neq 0 (
             echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"

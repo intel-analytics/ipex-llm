@@ -18,6 +18,7 @@ pip install --pre --upgrade ipex-llm[all] # for cpu
 ```
 
 ### For GPU
+Choose either US or CN website for `extra-index-url`:
 ```eval_rst
 .. tabs::
 
