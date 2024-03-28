@@ -10,7 +10,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 #### For Linux kernel 6.2
 
-* Install arc driver
+* Install wget, gpg-agent
     ```bash
     sudo apt-get install -y gpg-agent wget
     wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
@@ -56,6 +56,51 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     hwinfo --display
     ```
 
+#### For Linux kernel 6.5
+
+* Install wget, gpg-agent
+    ```bash
+    sudo apt-get install -y gpg-agent wget
+    wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+    sudo gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
+    sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+    ```
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
+
+* Install drivers
+
+    ```bash
+    sudo apt-get update
+    sudo apt-get -y install \
+        gawk \
+        dkms \
+        linux-headers-$(uname -r) \
+        libc6-dev
+
+    sudo apt-get install -y gawk libc6-dev udev\
+        intel-opencl-icd intel-level-zero-gpu level-zero \
+        intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
+        libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
+        libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers \
+        mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo
+    
+    sudo reboot
+    ```
+
+  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
+
+
+* Configure permissions
+    ```bash
+    sudo gpasswd -a ${USER} render
+    newgrp render
+
+    # Verify the device is working with i915 driver
+    sudo apt-get install -y hwinfo
+    hwinfo --display
+    ```
 
 ### Install oneAPI 
   ```
@@ -65,7 +110,22 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
   
   sudo apt update
 
-  sudo apt install intel-basekit=2024.0.1-43
+   sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
+      intel-oneapi-compiler-cpp-eclipse-cfg=2024.0.2-49895 \
+      intel-oneapi-compiler-dpcpp-eclipse-cfg=2024.0.2-49895 \
+      intel-oneapi-diagnostics-utility=2024.0.0-49093 \
+      intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
+      intel-oneapi-mkl=2024.0.0-49656 \
+      intel-oneapi-mkl-devel=2024.0.0-49656 \
+      intel-oneapi-mpi=2021.11.0-49493 \
+      intel-oneapi-mpi-devel=2021.11.0-49493 \
+      intel-oneapi-tbb=2021.11.0-49513  \
+      intel-oneapi-tbb-devel=2021.11.0-49513 \
+      intel-oneapi-ccl=2021.11.2-5  \
+      intel-oneapi-ccl-devel=2021.11.2-5 \
+      intel-oneapi-dnnl-devel=2024.0.0-49521 \
+      intel-oneapi-dnnl=2024.0.0-49521 \
+      intel-oneapi-tcm-1.0=1.0.0-435
   ```
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
 
