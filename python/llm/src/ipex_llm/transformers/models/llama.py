@@ -298,7 +298,7 @@ def fuse_qkv_weight(q_proj, k_proj, v_proj):
     return torch.cat([qweight, qzeros, qscales], dim=0)
 
 
-def should_use_mm_int4_qkv(self, device):
+def should_use_mm_xetla_qkv(self, device):
     return device.type == "xpu" and self.q_proj.qtype == SYM_INT4 and self.q_proj.enable_xetla
 
 
@@ -553,13 +553,13 @@ def llama_attention_forward_4_31_original(
                     query_states, key_states, value_states
                 )
             else:
-                if should_use_mm_int4_qkv(self, device):
+                if should_use_mm_xetla_qkv(self, device):
                     if not hasattr(self, "qkv_proj_qweight"):
                         self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
                                                                 self.k_proj,
                                                                 self.v_proj)
                     import linear_q4_0
-                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight)
                     query_states = qkv_states[:, :, :hidden_size]
                     key_states = qkv_states[:, :, hidden_size:2*hidden_size]
                     value_states = qkv_states[:, :, 2*hidden_size:]
@@ -1196,13 +1196,13 @@ def llama_attention_forward_4_36_original(
                     query_states, key_states, value_states
                 )
             else:
-                if should_use_mm_int4_qkv(self, device):
+                if should_use_mm_xetla_qkv(self, device):
                     if not hasattr(self, "qkv_proj_qweight"):
                         self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
                                                                 self.k_proj,
                                                                 self.v_proj)
                     import linear_q4_0
-                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight)
                     query_states = qkv_states[:, :, :hidden_size]
                     key_states = qkv_states[:, :, hidden_size:2*hidden_size]
                     value_states = qkv_states[:, :, 2*hidden_size:]

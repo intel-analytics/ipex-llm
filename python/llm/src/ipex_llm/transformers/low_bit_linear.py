@@ -75,10 +75,11 @@ IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
 IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 
+# For sym_int4
 # The ggml_weight is col major and packs two rows at a stride of Q4_0//2.
 #
 # The returning weight is row major and packs two rows at a stride of 16//2.
-# 16 is the tile_size_y used in mm_int4, so that we can do something like
+# 16 is the tile_size_y used in mm_xetla, so that we can do something like
 # new_weight_tile = concat(weight_tile & 0x0F, weight_tile >> 4).
 #
 # A more complex packing strategy is to permute the weight so that the
@@ -87,6 +88,8 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 #
 # Note this format cannot be used directly in IPEX-LLM's mm_int4, which expects
 # row major but packing two consecutive columns.
+#
+# For fp8, just remove the scales (which are all ones) and transpose
 def q4_0_xpu_transpose(ggml_weight, weight_shape, qtype):
     if qtype == ggml_tensor_qtype["sym_int4"]:
         from ipex_llm.transformers.low_bit_linear import get_block_size
@@ -614,7 +617,7 @@ class LowBitLinear(nn.Linear):
                                                      input_seq_size)
             elif self.enable_xetla:
                 x_2d = x_2d.half()
-                result = linear_q4_0.mm_int4(x_2d, self.weight.data, self.qtype)
+                result = linear_q4_0.mm_xetla(x_2d, self.weight.data, self.qtype)
             else:
                 # inference path
                 # current workaround to reduce first token latency of fp32 input
