@@ -273,33 +273,42 @@ def llama_decoder_forward(
     return outputs
 
 
-def fuse_qkv_weight(q_proj, k_proj, v_proj):
-    weight_size = q_proj.out_len * q_proj.in_len // 2
-    zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
-    zeros_end = weight_size + zeros_size
-    weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
-    zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
-    scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
-    qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                            k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                            v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+def fuse_qkv_weight(q_proj, k_proj, v_proj, qtype):
+    if qtype == SYM_INT4 and q_proj.out_len == k_proj.out_len == v_proj.out_len:
+        weight_size = q_proj.out_len * q_proj.in_len // 2
+        zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
+        zeros_end = weight_size + zeros_size
+        weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
+        zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
+        scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
+        qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                                k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                                v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                                ], dim=-1).reshape(-1)
+        qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                            k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                            v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
                             ], dim=-1).reshape(-1)
-    qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                           k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                           v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                           ], dim=-1).reshape(-1)
-    qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                            k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                            v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                            ], dim=-1).reshape(-1)
-    q_proj.weight.data = torch.empty(0)
-    k_proj.weight.data = torch.empty(0)
-    v_proj.weight.data = torch.empty(0)
-    return torch.cat([qweight, qzeros, qscales], dim=0)
+        qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                                k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                                v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                                ], dim=-1).reshape(-1)
+        q_proj.weight.data = torch.empty(0)
+        k_proj.weight.data = torch.empty(0)
+        v_proj.weight.data = torch.empty(0)
+        return torch.cat([qweight, qzeros, qscales], dim=0)
+    elif qtype == FP8E5:
+        result = torch.cat([q_proj.weight, k_proj.weight, v_proj.weight], dim=1).contiguous()
+        q_proj.weight.data = torch.empty(0)
+        k_proj.weight.data = torch.empty(0)
+        v_proj.weight.data = torch.empty(0)
+        return result
+    else:
+        invalidInputError(False, f"Unsupported qtype {qtype}")
 
 
 def should_use_mm_xetla_qkv(self, device):
-    return device.type == "xpu" and self.q_proj.qtype == SYM_INT4 and self.q_proj.enable_xetla
+    return device.type == "xpu" and self.q_proj.qtype in {SYM_INT4, FP8E5} and self.q_proj.enable_xetla
 
 
 def llama_attention_forward_4_31(
@@ -557,12 +566,16 @@ def llama_attention_forward_4_31_original(
                     if not hasattr(self, "qkv_proj_qweight"):
                         self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
                                                                 self.k_proj,
-                                                                self.v_proj)
+                                                                self.v_proj,
+                                                                self.q_proj.weight.qtype,)
                     import linear_q4_0
-                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight)
-                    query_states = qkv_states[:, :, :hidden_size]
-                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
-                    value_states = qkv_states[:, :, 2*hidden_size:]
+                    q_out_len = self.q_proj.out_len
+                    k_out_len = self.k_proj.out_len
+                    v_out_len = self.v_proj.out_len
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight, self.q_proj.weight.qtype)
+                    query_states = qkv_states[:, :, :q_out_len]
+                    key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
+                    value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
                     query_states = self.q_proj(hidden_states)
                     key_states = self.k_proj(hidden_states)
@@ -1200,12 +1213,16 @@ def llama_attention_forward_4_36_original(
                     if not hasattr(self, "qkv_proj_qweight"):
                         self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
                                                                 self.k_proj,
-                                                                self.v_proj)
+                                                                self.v_proj,
+                                                                self.q_proj.weight.qtype,)
                     import linear_q4_0
-                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight)
-                    query_states = qkv_states[:, :, :hidden_size]
-                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
-                    value_states = qkv_states[:, :, 2*hidden_size:]
+                    q_out_len = self.q_proj.out_len
+                    k_out_len = self.k_proj.out_len
+                    v_out_len = self.v_proj.out_len
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight, self.q_proj.weight.qtype)
+                    query_states = qkv_states[:, :, :q_out_len]
+                    key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
+                    value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
                     query_states = self.q_proj(hidden_states)
                     key_states = self.k_proj(hidden_states)
