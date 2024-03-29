@@ -145,7 +145,7 @@ There is no need to set further environment variables.
 In the current directory, run the example with command:
 
 ```bash
-python rag.py -m <path_to_model>
+python rag.py -m <path_to_model> -t <path_to_tokenizer>
 ```
 **Additional Parameters for Configuration**:
 - `-m MODEL_PATH`: **Required**, path to the LLM model
@@ -155,6 +155,7 @@ python rag.py -m <path_to_model>
 - `-q QUESTION`: question you want to ask
 - `-d DATA`: path to source data used for retrieval (in pdf format)
 - `-n N_PREDICT`: max predict tokens
+- `-t TOKENIZER_PATH`: **Required**, path to the tokenizer model
 
 ### 5. Example Output
 

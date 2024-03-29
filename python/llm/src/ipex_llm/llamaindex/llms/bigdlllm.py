@@ -171,6 +171,10 @@ class BigdlLLM(CustomLLM):
             "`messages_to_prompt` that does so."
         ),
     )
+    load_low_bit: bool = Field(
+        default=False,
+        description="The model is low_bit model or not"
+    )
 
     _model: Any = PrivateAttr()
     _tokenizer: Any = PrivateAttr()
@@ -198,6 +202,7 @@ class BigdlLLM(CustomLLM):
         completion_to_prompt: Optional[Callable[[str], str]]=None,
         pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
+        load_low_bit: bool = False
     ) -> None:
         """
         Construct BigdlLLM.
@@ -235,6 +240,25 @@ class BigdlLLM(CustomLLM):
         """
         model_kwargs = model_kwargs or {}
         from ipex_llm.transformers import AutoModelForCausalLM
+        if not load_low_bit:
+            try:
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    model_name, load_in_4bit=True, use_cache=True,
+                    trust_remote_code=True, **model_kwargs
+                )
+            except:
+                from ipex_llm.transformers import AutoModel
+                self._model = AutoModel.from_pretrained(model_name,
+                                                        load_in_4bit=True, **model_kwargs)
+        else:
+            try:
+                self._model = AutoModelForCausalLM.load_low_bit(
+                    model_name, use_cache=True,
+                    trust_remote_code=True, **model_kwargs)
+            except:
+                from ipex_llm.transformers import AutoModel
+                self._model = AutoModel.load_low_bit(model_name,  **model_kwargs)
+                    
         if model:
             self._model = model
         else:
