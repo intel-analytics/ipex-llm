@@ -269,7 +269,8 @@ def module_name_process(full_module_name):
 
 def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_type=None):
     cur_qtype = qtype
-    if qtype in [ggml_tensor_qtype["gguf_iq2_xxs"], ggml_tensor_qtype["gguf_iq2_xs"]]:
+    if qtype in [ggml_tensor_qtype["gguf_iq2_xxs"], ggml_tensor_qtype["gguf_iq2_xs"],
+                 ggml_tensor_qtype["gguf_iq1_s"]]:
         # For quantization which needs importance matrix
         new_module_name, layer, cur_module = module_name_process(full_module_name)
         # custom mixed quantization strategy
@@ -282,6 +283,8 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_type=
         else:
             if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]):
                 cur_qtype = ggml_tensor_qtype['q2_k']
+            if qtype == ggml_tensor_qtype["gguf_iq1_s"] and cur_module == 'o':
+                cur_qtype = ggml_tensor_qtype['gguf_iq2_xxs']
         if imatrix_data is not None and new_module_name in imatrix_data:
             cur_imatrix = imatrix_data[new_module_name]
         else:
