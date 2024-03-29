@@ -21,7 +21,7 @@ jobs:
   # llm-cpp-build:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
-  ipex-llm-build:
+  # ipex-llm-build:
     # # python build can only be published once a day, please do not publish it manually
     # if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' }} 
     # runs-on: [self-hosted, Bree]
