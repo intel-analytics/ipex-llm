@@ -30,7 +30,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
         dkms \
         linux-headers-$(uname -r) \
         libc6-dev
-    sudo apt install intel-i915-dkms  intel-fw-gpu
+    sudo apt install intel-i915-dkms intel-fw-gpu
     sudo apt-get install -y gawk libc6-dev udev\
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
@@ -110,22 +110,22 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
   
   sudo apt update
 
-   sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
-      intel-oneapi-compiler-cpp-eclipse-cfg=2024.0.2-49895 \
-      intel-oneapi-compiler-dpcpp-eclipse-cfg=2024.0.2-49895 \
-      intel-oneapi-diagnostics-utility=2024.0.0-49093 \
-      intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
-      intel-oneapi-mkl=2024.0.0-49656 \
-      intel-oneapi-mkl-devel=2024.0.0-49656 \
-      intel-oneapi-mpi=2021.11.0-49493 \
-      intel-oneapi-mpi-devel=2021.11.0-49493 \
-      intel-oneapi-tbb=2021.11.0-49513  \
-      intel-oneapi-tbb-devel=2021.11.0-49513 \
-      intel-oneapi-ccl=2021.11.2-5  \
-      intel-oneapi-ccl-devel=2021.11.2-5 \
-      intel-oneapi-dnnl-devel=2024.0.0-49521 \
-      intel-oneapi-dnnl=2024.0.0-49521 \
-      intel-oneapi-tcm-1.0=1.0.0-435
+  sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
+    intel-oneapi-compiler-cpp-eclipse-cfg=2024.0.2-49895 \
+    intel-oneapi-compiler-dpcpp-eclipse-cfg=2024.0.2-49895 \
+    intel-oneapi-diagnostics-utility=2024.0.0-49093 \
+    intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
+    intel-oneapi-mkl=2024.0.0-49656 \
+    intel-oneapi-mkl-devel=2024.0.0-49656 \
+    intel-oneapi-mpi=2021.11.0-49493 \
+    intel-oneapi-mpi-devel=2021.11.0-49493 \
+    intel-oneapi-tbb=2021.11.0-49513  \
+    intel-oneapi-tbb-devel=2021.11.0-49513 \
+    intel-oneapi-ccl=2021.11.2-5  \
+    intel-oneapi-ccl-devel=2021.11.2-5 \
+    intel-oneapi-dnnl-devel=2024.0.0-49521 \
+    intel-oneapi-dnnl=2024.0.0-49521 \
+    intel-oneapi-tcm-1.0=1.0.0-435
   ```
   > <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
 
