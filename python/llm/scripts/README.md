@@ -46,8 +46,6 @@ torch=2.1.0a0+cxx11.abi
 -----------------------------------------------------------------
 ipex-llm Version: 2.1.0b20240327
 -----------------------------------------------------------------
-/home/arda/anaconda3/envs/new-ipex-llm/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: ''If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
-  warn(
 ipex=2.1.10+xpu
 -----------------------------------------------------------------
 CPU Information: 
@@ -108,9 +106,9 @@ xpu-smi is properly installed.
 +-----------+--------------------------------------------------------------------------------------+
 | Device ID | Device Information                                                                   |
 +-----------+--------------------------------------------------------------------------------------+
-| 0         | Device Name: Intel Corporation Device 56a0 (rev 08)                                  |
+| 0         | Device Name: Intel(R) Arc(TM) A770 Graphics                                          |
 |           | Vendor Name: Intel(R) Corporation                                                    |
-|           | UUID: 00000000-0000-0003-0000-000856a08086                                           |
+|           | SOC UUID: 00000000-0000-0003-0000-000856a08086                                       |
 |           | PCI BDF Address: 0000:03:00.0                                                        |
 |           | DRM Device: /dev/dri/card0                                                           |
 |           | Function Type: physical                                                              |
