@@ -123,7 +123,7 @@ jobs:
       # - name: Install IPEX-LLM from Pypi
       #   shell: bash
       #   run: |
-      #     pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      #     pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 
       # - name: Test installed xpu version
       #   shell: bash

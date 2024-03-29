@@ -19,7 +19,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
     ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
 * Install drivers
 
@@ -41,9 +41,9 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo reboot
     ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/i915.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/i915.png" width=100%; />
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
 
 
 * Configure permissions
@@ -65,14 +65,14 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
   
   sudo apt update
 
-  sudo apt install intel-basekit
+  sudo apt install intel-basekit=2024.0.1-43
   ```
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
 
 ### Setup Python Environment
-
+ 
 Download and install the Miniconda as follows if you don't have conda installed on your machine:
   ```bash
   wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -84,7 +84,7 @@ You can use `conda --version` to verify you conda installation.
 
 After installation, create a new python environment `llm`:
 ```cmd
-conda create -n llm python=3.9 libuv
+conda create -n llm python=3.9
 ```
 Activate the newly created environment `llm`:
 ```cmd
@@ -94,10 +94,29 @@ conda activate llm
 
 ## Install `ipex-llm`
 
-* With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
-  ```
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://developer.intel.com/ipex-whl-stable-xpu
-  ```
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU.
+Choose either US or CN website for `extra-index-url`:
+
+```eval_rst
+.. tabs::
+   .. tab:: US
+
+      .. code-block:: cmd
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+   .. tab:: CN
+
+      .. code-block:: cmd
+
+         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+```
+
+```eval_rst
+.. note::
+
+  If you encounter network issues while installing IPEX, refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id3>`_ for troubleshooting advice.
+```
 
 ## Verify Installation
 * You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
@@ -128,6 +147,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          # Recommended Environment Variables for optimal performance
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Intel Data Center GPU Max
 
@@ -142,6 +162,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          # Recommended Environment Variables for optimal performance
          export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+         export SYCL_CACHE_PERSISTENT=1
          export ENABLE_SDP_FUSION=1
 
       Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``

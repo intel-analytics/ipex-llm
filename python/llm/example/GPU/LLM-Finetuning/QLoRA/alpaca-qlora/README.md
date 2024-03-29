@@ -13,10 +13,10 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 conda create -n llm python=3.9
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install transformers==4.34.0 datasets
 pip install fire peft==0.5.0
-pip install oneccl_bind_pt==2.1.100 -f https://developer.intel.com/ipex-whl-stable-xpu # necessary to run distributed finetuning
+pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ # necessary to run distributed finetuning
 pip install accelerate==0.23.0
 pip install bitsandbytes scipy
 # configures OneAPI environment variables
@@ -135,8 +135,8 @@ If you fail to complete the whole finetuning process, it is suggested to resume 
 python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./ipex-qlora-alpaca" \
-    --resume_from_checkpoint "./ipex-qlora-alpaca/checkpoint-1100"
+    --output_dir "./ipex-llm-qlora-alpaca" \
+    --resume_from_checkpoint "./ipex-llm-qlora-alpaca/checkpoint-1100"
 ```
 
 ### 5. Sample Output

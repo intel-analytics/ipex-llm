@@ -59,7 +59,7 @@ if __name__ == '__main__':
         chat[0]['content'] = args.prompt
         prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 

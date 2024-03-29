@@ -10,7 +10,7 @@ In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-
 
 ### 0. Environment
 
-To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
+To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit 2024.0. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
 
 After install the toolkit, run the following commands in your environment before starting vLLM GPU:
 ```bash
@@ -38,7 +38,7 @@ pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install numpy
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade "ipex-llm[xpu]" -f https://developer.intel.com/ipex-whl-stable-xpu
+pip install --pre --upgrade "ipex-llm[xpu]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.

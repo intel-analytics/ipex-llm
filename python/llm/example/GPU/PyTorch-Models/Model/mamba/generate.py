@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # Generate predicted tokens
     with torch.inference_mode():
         input_ids = tokenizer.encode(args.prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         st = time.time()

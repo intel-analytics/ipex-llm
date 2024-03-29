@@ -52,7 +52,7 @@ if __name__ == '__main__':
     inputs = processor(text, voice_preset=voice_preset).to('xpu')
 
     with torch.inference_mode():
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         audio_array = model.generate(**inputs)
 
         st = time.time()

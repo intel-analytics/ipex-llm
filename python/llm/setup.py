@@ -275,7 +275,7 @@ def setup_package():
                     ]
     all_requires += CONVERT_DEP
 
-    # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
+    # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_20_requires = copy.deepcopy(all_requires)
     xpu_20_requires.remove('torch')
     # xpu_20 only works for linux now
