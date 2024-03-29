@@ -43,7 +43,7 @@ permissions:
 
 jobs:
   ipex-llm-finetune-lora-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
+    # if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
