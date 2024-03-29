@@ -17,8 +17,6 @@ This guide provides step-by-step instructions for installing and using IPEX-LLM 
 
 ## Docker Installation Instructions
 
-**Getting Started with Docker:**
-
 1. **For New Users:**
    - Begin by visiting the [official Docker Get Started page](https://www.docker.com/get-started/) for a comprehensive introduction and installation guide.
 
