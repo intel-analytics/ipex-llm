@@ -18,8 +18,8 @@ permissions:
 
 jobs:
   
-  llm-cpp-build:
-    uses: ./.github/workflows/llm-binary-build.yml
+  # llm-cpp-build:
+  #   uses: ./.github/workflows/llm-binary-build.yml
 
   ipex-llm-build:
     # python build can only be published once a day, please do not publish it manually
@@ -73,8 +73,8 @@ jobs:
   docker-build:
     uses: ./.github/workflows/manually_build.yml
     with:
-      artifact: 'all'
-      tag: '2.1.0-SNAPSHOT'
+      artifact: all
+      tag: 2.1.0-SNAPSHOT
 
   create-workflow-badge:
     runs-on: ubuntu-latest
