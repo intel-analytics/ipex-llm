@@ -70,6 +70,8 @@ from llama_index.core.llms.custom import CustomLLM
 
 from llama_index.core.base.llms.generic_utils import (
     messages_to_prompt as generic_messages_to_prompt,
+    completion_response_to_chat_response,
+    stream_completion_response_to_chat_response
 )
 from llama_index.core.prompts.base import PromptTemplate
 from llama_index.core.types import BaseOutputParser, PydanticProgramMode
@@ -85,14 +87,14 @@ DEFAULT_HUGGINGFACE_MODEL = "meta-llama/Llama-2-7b-chat-hf"
 logger = logging.getLogger(__name__)
 
 
-class BigdlLLM(CustomLLM):
-    """Wrapper around the BigDL-LLM
+class IpexLLM(CustomLLM):
+    """Wrapper around the Ipex-LLM
 
     Example:
         .. code-block:: python
 
-            from ipex_llm.llamaindex.llms import BigdlLLM
-            llm = BigdlLLM(model_path="/path/to/llama/model")
+            from ipex_llm.llamaindex.llms import IpexLLM
+            llm = IpexLLM(model_path="/path/to/llama/model")
     """
 
     model_name: str = Field(
@@ -240,37 +242,31 @@ class BigdlLLM(CustomLLM):
         """
         model_kwargs = model_kwargs or {}
         from ipex_llm.transformers import AutoModelForCausalLM
-        if not load_low_bit:
-            try:
-                self._model = AutoModelForCausalLM.from_pretrained(
-                    model_name, load_in_4bit=True, use_cache=True,
-                    trust_remote_code=True, **model_kwargs
-                )
-            except:
-                from ipex_llm.transformers import AutoModel
-                self._model = AutoModel.from_pretrained(model_name,
-                                                        load_in_4bit=True, **model_kwargs)
-        else:
-            try:
-                self._model = AutoModelForCausalLM.load_low_bit(
-                    model_name, use_cache=True,
-                    trust_remote_code=True, **model_kwargs)
-            except:
-                from ipex_llm.transformers import AutoModel
-                self._model = AutoModel.load_low_bit(model_name,  **model_kwargs)
                     
         if model:
             self._model = model
         else:
-            try:
-                self._model = AutoModelForCausalLM.from_pretrained(
-                    model_name, load_in_4bit=True, use_cache=True,
-                    trust_remote_code=True, **model_kwargs
-                )
-            except:
-                from ipex_llm.transformers import AutoModel
-                self._model = AutoModel.from_pretrained(model_name,
-                                                        load_in_4bit=True, **model_kwargs)
+            if not load_low_bit:
+                try:
+                    self._model = AutoModelForCausalLM.from_pretrained(
+                        model_name, load_in_4bit=True, use_cache=True,
+                        trust_remote_code=True, **model_kwargs
+                    )
+                except:
+                    from ipex_llm.transformers import AutoModel
+                    self._model = AutoModel.from_pretrained(model_name,
+                                                            load_in_4bit=True, 
+                                                            **model_kwargs)
+            else:
+                try:
+                    self._model = AutoModelForCausalLM.load_low_bit(
+                    model_name, use_cache=True,
+                    trust_remote_code=True, **model_kwargs)
+                except:
+                    from ipex_llm.transformers import AutoModel
+                    self._model = AutoModel.load_low_bit(model_name,  **model_kwargs)    
+                
+                
 
         if 'xpu' in device_map:
             self._model = self._model.to(device_map)
@@ -295,7 +291,6 @@ class BigdlLLM(CustomLLM):
         if tokenizer:
             self._tokenizer = tokenizer
         else:
-            print(f"load tokenizer: {tokenizer_name}")
             try:
                 self._tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
             except:
@@ -362,7 +357,7 @@ class BigdlLLM(CustomLLM):
         Returns:
             Str of class name.
         """
-        return "BigDL_LLM"
+        return "IpexLLM"
 
     @property
     def metadata(self) -> LLMMetadata:
@@ -455,7 +450,7 @@ class BigdlLLM(CustomLLM):
         Returns:
             CompletionReponse after generation.
         """
-        from transformers import TextStreamer
+        from transformers import TextIteratorStreamer
         full_prompt = prompt
         if not formatted:
             if self.query_wrapper_prompt:
@@ -470,9 +465,9 @@ class BigdlLLM(CustomLLM):
             if key in input_ids:
                 input_ids.pop(key, None)
 
-        streamer = TextStreamer(self._tokenizer, skip_prompt=True, skip_special_tokens=True)
+        streamer = TextIteratorStreamer(self._tokenizer, skip_prompt=True, skip_special_tokens=True)
         generation_kwargs = dict(
-            input_ids,
+            input_ids=input_ids,
             streamer=streamer,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=self._stopping_criteria,
@@ -489,3 +484,17 @@ class BigdlLLM(CustomLLM):
                 yield CompletionResponse(text=text, delta=x)
 
         return gen()
+    
+    @llm_chat_callback()
+    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+        prompt = self.messages_to_prompt(messages)
+        completion_response = self.complete(prompt, formatted=True, **kwargs)
+        return completion_response_to_chat_response(completion_response)
+
+    @llm_chat_callback()
+    def stream_chat(
+        self, messages: Sequence[ChatMessage], **kwargs: Any
+    ) -> ChatResponseGen:
+        prompt = self.messages_to_prompt(messages)
+        completion_response = self.stream_complete(prompt, formatted=True, **kwargs)
+        return stream_completion_response_to_chat_response(completion_response)
