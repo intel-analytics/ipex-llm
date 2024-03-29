@@ -12,12 +12,12 @@ docker pull intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 to check if the image is successfully downloaded, you can use:
 
 ```bash
-cd 
 docker images | grep intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
 ```
 
 Or follow steps provided in [Build/Use IPEX-LLM cpu image](https://github.com/intel-analytics/ipex-llm/blob/main/docker/llm/README.md#ipex-llm-on-windows) to build the image from source:
 ```bash
+cd ipex-llm/docker/llm/inference/cpu/docker
 docker build \
   --build-arg http_proxy$=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
