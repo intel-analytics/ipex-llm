@@ -62,7 +62,7 @@ check_cpu_info()
 {
   echo "-----------------------------------------------------------------"
   echo "CPU Information: "
-  lscpu | grep -E "Model name|CPU(s)|MHz|Architecture|CPU\(s\):" | grep -v "NUMA node0 CPU(s):"
+  lscpu | head -n 17
 }
 
 check_memory_type()
@@ -153,16 +153,15 @@ check_xpu_driver()
 check_OpenCL_driver()
 {
   echo "-----------------------------------------------------------------"
-  sudo clinfo | fgrep Driver
+  clinfo | fgrep Driver
 }
 
 check_igpu()
 {
   echo "-----------------------------------------------------------------"
-  sycl_ls_output=$(sycl-ls)
-  if echo "$sycl_ls_output" | grep -q "Intel(R) UHD Graphics"; then
+  if sycl-ls | grep -q "Intel(R) UHD Graphics\|Intel(R) Arc(TM) Graphics"; then
       echo "igpu detected"
-      echo "$sycl_ls_output" | grep "Intel(R) UHD Graphics"
+      sycl-ls | grep -E "Intel\(R\) UHD Graphics|Intel\(R\) Arc\(TM\) Graphics"
   else
       echo "igpu not detected"
   fi
