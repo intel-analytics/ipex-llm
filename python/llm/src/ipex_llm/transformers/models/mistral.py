@@ -158,8 +158,11 @@ def mistral_model_forward_4_36(
         return_dict=return_dict,
     )
 
-def should_use_xetla_int4_qkv(self, device):
-    return device.type == "xpu" and self.q_proj.qtype in {SYM_INT4, FP8E5} and self.q_proj.enable_xetla
+def should_use_xetla_mm_qkv(self, device):
+    full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
+    supported_qtype = self.q_proj.qtype in {SYM_INT4, FP8E5}
+    enable_xetla = self.q_proj.enable_xetla
+    return device.type == "xpu" and enable_xetla and full_attn and supported_qtype
 
 
 def mistral_attention_forward(
@@ -365,7 +368,7 @@ def mistral_attention_forward_quantized(
 
 
 def fuse_qkv_weight(q_proj, k_proj, v_proj, qtype):
-    if qtype == SYM_INT4 and q_proj.out_len == k_proj.out_len == v_proj.out_len:
+    if qtype == SYM_INT4:
         weight_size = q_proj.out_len * q_proj.in_len // 2
         zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
         zeros_end = weight_size + zeros_size
@@ -440,7 +443,7 @@ def mistral_attention_forward_original(
         kv_seq_len += 1
     else:
 
-        if should_use_xetla_int4_qkv(self, device):
+        if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
                 self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
                                                         self.k_proj,
@@ -822,7 +825,7 @@ def mistral_attention_forward_4_36_original(
         past_key_value.value_cache[self.layer_idx] = value_states
 
     else:
-        if should_use_xetla_int4_qkv(self, device):
+        if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
                 self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
                                                         self.k_proj,

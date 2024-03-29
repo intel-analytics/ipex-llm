@@ -90,7 +90,7 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 # row major but packing two consecutive columns.
 #
 # For fp8, just remove the scales (which are all ones) and transpose
-def q4_0_xpu_transpose(ggml_weight, weight_shape, qtype):
+def ggml_xpu_to_ipex_llm_xetla(ggml_weight, weight_shape, qtype):
     if qtype == ggml_tensor_qtype["sym_int4"]:
         from ipex_llm.transformers.low_bit_linear import get_block_size
         Q4_0 = get_block_size("sym_int4")
@@ -129,6 +129,53 @@ def q4_0_xpu_transpose(ggml_weight, weight_shape, qtype):
     elif qtype == ggml_tensor_qtype["fp8_e5m2"]:
         n, k = weight_shape
         weight = ggml_weight[:n*k].view(n, k).transpose(0, 1).contiguous()
+    else:
+        invalidInputError(False, f"Unsupported qtype {qtype}")
+    return weight
+
+def ipex_llm_xetla_to_ggml_xpu(xetla_weight, weight_shape, qtype):
+    from ipex_llm.transformers.low_bit_linear import get_block_size
+    if qtype == ggml_tensor_qtype["sym_int4"]:
+        Q4_0 = get_block_size("sym_int4")
+        n, k = weight_shape
+        weight_size = n*k//2
+        zeros_size = n*k//Q4_0//2
+        scales_size = n*k//Q4_0 * 2
+        xetla_weight_only = xetla_weight[:weight_size]
+        scales_start = weight_size + zeros_size
+        xetla_scales = xetla_weight[scales_start:scales_start+scales_size]
+
+        qweight = xetla_weight_only.clone()
+        scales = xetla_scales.view(torch.float16).clone()
+
+        qweight_0 = qweight & 0x0F
+        qweight_1 = qweight >> 4
+        qweight_0 = qweight_0.reshape(-1, 8, n)
+        qweight_1 = qweight_1.reshape(-1, 8, n)
+        qweight = torch.cat([qweight_0, qweight_1], dim=1)
+
+        qweight = qweight.reshape(k, n).transpose(0, 1).contiguous().reshape(n, k//Q4_0,
+                                                                             2, Q4_0//2)
+        qweight = qweight.bitwise_left_shift(
+            torch.tensor([0, 4], dtype=torch.uint8,
+                         device=xetla_weight_only.device).reshape(1, 1, 2, 1))
+
+        qweight = torch.bitwise_or(qweight[:, :, 0, :], qweight[:, :, 1, :])
+        qweight = qweight.reshape(n, k//2)
+
+        scales = scales.reshape(k//Q4_0, n).transpose(0, 1).contiguous()
+
+        qweight_bytes = qweight.view(torch.uint8).view(-1)
+        scales_bytes = scales.view(torch.uint8).view(-1)
+        weight = torch.concat([qweight_bytes, scales_bytes], dim=0)
+    elif qtype == ggml_tensor_qtype["fp8_e5m2"]:
+        Q8_0 = get_block_size("fp8_e5m2")
+        n, k = weight_shape
+        qweight = xetla_weight[:n*k].transpose(0, 1).contiguous()
+        scales = torch.ones([n*k//Q8_0], dtype=torch.float, device=xetla_weight.device)
+        qweight_bytes = qweight.view(torch.uint8).view(-1)
+        scales_bytes = scales.view(torch.uint8).view(-1)
+        weight = torch.concat([qweight_bytes, scales_bytes], dim=0)
     else:
         invalidInputError(False, f"Unsupported qtype {qtype}")
     return weight
@@ -380,7 +427,7 @@ class FP4Params(torch.nn.Parameter):
                                                      reduce(mul, self._shape, 1),
                                                      self.qtype)
             if self.enable_xetla:
-                self.data = q4_0_xpu_transpose(self.data, self._shape, self.qtype)
+                self.data = ggml_xpu_to_ipex_llm_xetla(self.data, self._shape, self.qtype)
             new_param = FP4Params(super().to(device=device,
                                              dtype=dtype,
                                              non_blocking=non_blocking),
@@ -404,9 +451,8 @@ class FP4Params(torch.nn.Parameter):
                                   qtype=self.qtype,
                                   enable_xetla=self.enable_xetla)
             if self.enable_xetla:
-                invalidInputError(False,
-                                  "xetla is not supported on CPUs but got enable_xetla=True")
-            new_param.data = ggml_q_format_convet_xpu2cpu(new_param.data,
+                ggml_xpu = ipex_llm_xetla_to_ggml_xpu(new_param.data, new_param._shape, new_param.qtype)
+            new_param.data = ggml_q_format_convet_xpu2cpu(ggml_xpu,
                                                           reduce(mul, new_param._shape, 1),
                                                           new_param.qtype)
             return new_param
