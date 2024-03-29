@@ -59,10 +59,10 @@ docker exec -it $CONTAINER_NAME bash
 ### 3. Start Inference and Tutorials
 **3.1 Chat Interface**: Use `chat.py` for conversational AI. 
 
-For example, if your model is chatglm-6b and mounted on /llm/models, you can excute the following command to initiate a conversation:
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
   ```bash
   cd /llm/portable-zip
-  python chat.py --model-path /llm/models/chatglm2-6b
+  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
   ```
 Here is a demostration:
 
@@ -98,8 +98,8 @@ cd /llm//benchmark/all-in-one
 Users can provide models and related information in config.yaml.
 ```bash
 repo_id:
-  - 'THUDM/chatglm-6b'
-  - 'THUDM/chatglm2-6b'
+  # - 'THUDM/chatglm-6b'
+  # - 'THUDM/chatglm2-6b'
   - 'meta-llama/Llama-2-7b-chat-hf'
   # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
 local_model_hub: 'path to your local model hub'
@@ -112,10 +112,10 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
 test_api:
-  - "transformer_int4"
-  - "native_int4"
-  - "optimize_model"
-  - "pytorch_autocast_bf16"
+  # - "transformer_int4"
+  # - "native_int4"
+  # - "optimize_model"
+  # - "pytorch_autocast_bf16"
   # - "transformer_autocast_bf16"
   # - "bigdl_ipex_bf16"
   # - "bigdl_ipex_int4"
@@ -129,7 +129,7 @@ test_api:
   # - "transformer_int4_fp16_gpu_win" # on Intel GPU for Windows, use fp16 for non-linear layer
   # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
   # - "deepspeed_optimize_model_gpu" # deepspeed autotp on Intel GPU
-  # - "speculative_cpu"
+  - "speculative_cpu"
   # - "speculative_gpu"
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
@@ -152,12 +152,16 @@ Additionally, for examples related to Inference with Speculative Decoding, you c
 
 ## IPEX-LLM Inference on XPU
 
-First, pull docker image from docker hub:
-```
+### 1. Prepare ipex-llm-cpu Docker Image
+
+Run the following command to pull image from dockerhub:
+```bash
 docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
+
+### 2. Start bigdl-llm-cpu Docker Container
+
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
-An example could be:
 ```bash
 #/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
@@ -174,7 +178,10 @@ sudo docker run -itd \
         $DOCKER_IMAGE
 ```
 
-After the container is booted, you could get into the container through `docker exec`.
+Access the container:
+```
+docker exec -it $CONTAINER_NAME bash
+```
 
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
@@ -186,7 +193,17 @@ root@arda-arc12:/# sycl-ls
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
+### 3. Start Inference
+**Chat Interface**: Use `chat.py` for conversational AI. 
+
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
+  ```bash
+  cd /llm
+  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+  ```
+
 To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm/example/GPU).
+
 
 ## IPEX-LLM Serving on CPU
 
