@@ -186,14 +186,11 @@ def llama_mlp_forward(
             hidden_states = attn_output.view(x.shape)
         return hidden_states
     else:
-        if os.environ.get("IPEX_LLM_LOW_MEM", None) == "1":
-            a = self.act_fn(self.gate_proj(x))
-            b = self.up_proj(x)
-            c = a * b
-            del a, b
-            out = self.down_proj(c)
-        else:
-            out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        a = self.act_fn(self.gate_proj(x))
+        b = self.up_proj(x)
+        c = a * b
+        del a, b
+        out = self.down_proj(c)
         if residual is not None:
             return out + residual
         else:
