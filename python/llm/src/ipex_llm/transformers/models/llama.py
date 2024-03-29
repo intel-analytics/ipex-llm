@@ -83,7 +83,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
                                                            n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 _ipex_version = None
@@ -186,7 +186,14 @@ def llama_mlp_forward(
             hidden_states = attn_output.view(x.shape)
         return hidden_states
     else:
-        out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        if os.environ.get("IPEX_LLM_LOW_MEM", None) == "1":
+            a = self.act_fn(self.gate_proj(x))
+            b = self.up_proj(x)
+            c = a * b
+            del a, b
+            out = self.down_proj(c)
+        else:
+            out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
         if residual is not None:
             return out + residual
         else:
