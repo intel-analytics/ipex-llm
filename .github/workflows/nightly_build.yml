@@ -71,7 +71,6 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   docker-build:
-    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' }} 
     uses: ./.github/workflows/manually_build.yml
     with:
       artifact: 'all'

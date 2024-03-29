@@ -28,16 +28,7 @@ on:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
         default: 'all'
-        type: choice
-        options:
-        - all
-        - ipex-llm-finetune-lora-cpu
-        - ipex-llm-finetune-qlora-cpu
-        - ipex-llm-finetune-qlora-xpu
-        - ipex-llm-xpu
-        - ipex-llm-cpu
-        - ipex-llm-serving-xpu
-        - ipex-llm-serving-cpu
+        type: string
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
