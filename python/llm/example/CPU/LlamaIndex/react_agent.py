@@ -26,7 +26,7 @@ def main(args):
     )
     agent = ReActAgent.from_tools([multiply_tool, add_tool], llm=llm, verbose=True)
     response = agent.chat(args.question)
-    print("=========response============")
+    print("=========response=========")
     print(response)
 
 if __name__ == "__main__":

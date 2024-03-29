@@ -209,7 +209,7 @@ Action Input: {'a': 20, 'b': 8}
 Observation: 28
 Thought: I can answer without using any more tools. I'll use the user's language to answer
 Answer: 28
-=========response============
+=========response=========
 28
 ```
 
