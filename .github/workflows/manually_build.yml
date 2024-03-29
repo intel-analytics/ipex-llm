@@ -43,14 +43,13 @@ permissions:
 
 jobs:
   ipex-llm-finetune-lora-cpu:
-    # if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-lora-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login
       run: |
-        echo ${{ inputs.tag }}
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: ipex-llm-finetune-lora-cpu
       run: |
@@ -75,7 +74,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-finetune-qlora-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -105,7 +104,7 @@ jobs:
           sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-finetune-qlora-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -135,7 +134,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-xpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -165,7 +164,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -195,7 +194,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-serving-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -225,7 +224,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-serving-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
