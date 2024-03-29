@@ -28,12 +28,12 @@ Here we use Linux/MacOS as example, if you have a Windows OS, please follow [IPE
 
 ### Use the image for inference on CPU
 
-Here, we use [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-v0.1) as example, please download it and start a docker container.
+Here, we use [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as example, please download it and start a docker container.
 
 1. Download the model
 ``` python
 from huggingface_hub import snapshot_download
-repo_id="mistralai/Mistral-7B-v0.1"
+repo_id="meta-llama/Llama-2-7b-chat-hf"
 local_dir="./Mistral-7B-v0.1"
 snapshot_download(repo_id=repo_id,
                   local_dir=local_dir,
@@ -61,18 +61,33 @@ docker run -itd \
         $DOCKER_IMAGE
 ```
 
-### Start the chatting
+### Start chatting
 
-Enter the running container:
+1. Enter the running container:
 
 ```bash
 # Launch the Controller
-docker exec -it ipex-llm-cpu 
-```
-After entering the container through docker exec, you can run chat.py by:
-``` bash
-cd /llm/portable-zip
-python chat.py --model-path /llm/models/Mistral-7B
+docker exec -it ipex-llm-cpu bash
 ```
 
+2. After entering the container through docker exec, you can run chat.py by:
+``` bash
+cd /llm/portable-zip
+python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+```
+
+3. start chatting
 You will see the example result
+```
+Human: how are you
+BigDL-LLM: huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+        - Avoid using `tokenizers` before the fork if possible
+        - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+        - Avoid using `tokenizers` before the fork if possible
+        - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+
+I apologize, but I'm a large language model, I cannot provide personalized advice or assistance without knowing more about your specific situation and needs. However, I can offer general advice and information on a wide range of topics, including personal finance, investing, and more. Please feel free to ask me any questions you have, and I'll do my best to help.
+```
