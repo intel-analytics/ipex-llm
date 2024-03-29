@@ -22,6 +22,27 @@ on:
         required: true
         default: 'latest'
         type: string
+  workflow_call:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - ipex-llm-finetune-lora-cpu
+        - ipex-llm-finetune-qlora-cpu
+        - ipex-llm-finetune-qlora-xpu
+        - ipex-llm-xpu
+        - ipex-llm-cpu
+        - ipex-llm-serving-xpu
+        - ipex-llm-serving-cpu
+      tag:
+        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        required: true
+        default: 'latest'
+        type: string
 
 env:
   TAG: ${{ github.event.inputs.tag }}
@@ -55,7 +76,10 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-finetune-qlora-cpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
@@ -82,7 +106,10 @@ jobs:
           sudo docker push ${image}:${TAG}
           sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
           sudo docker push 10.239.45.10/arda/${image}:${TAG}
-          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-finetune-qlora-xpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
@@ -109,7 +136,10 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-xpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-xpu' || github.event.inputs.artifact == 'all' }}
@@ -136,7 +166,10 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-cpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-cpu' || github.event.inputs.artifact == 'all' }}
@@ -163,7 +196,10 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-xpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
@@ -190,7 +226,10 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-cpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
@@ -216,5 +255,8 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
