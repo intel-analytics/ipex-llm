@@ -74,8 +74,8 @@ jobs:
     if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' }} 
     uses: ./.github/workflows/manually_build.yml
     with:
-      artifact: all
-      tag: 2.1.0-SNAPSHOT
+      artifact: 'all'
+      tag: '2.1.0-SNAPSHOT'
 
   create-workflow-badge:
     runs-on: ubuntu-latest
