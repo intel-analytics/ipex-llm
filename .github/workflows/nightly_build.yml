@@ -69,6 +69,12 @@ jobs:
         job-name: python-build
         runner-hosted-on: 'Shanghai'
 
+  docker-build:
+    if: ${{ github.event.schedule }} 
+    uses: ./.github/workflows/manually_build.yml
+    with:
+      artifact: all
+      tag: 2.1.0-SNAPSHOT
 
   create-workflow-badge:
     runs-on: ubuntu-latest
