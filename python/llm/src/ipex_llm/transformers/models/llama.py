@@ -273,8 +273,8 @@ def llama_decoder_forward(
     return outputs
 
 
-def fuse_qkv_weight(q_proj, k_proj, v_proj, qtype):
-    if qtype == SYM_INT4 and q_proj.out_len == k_proj.out_len == v_proj.out_len:
+def fuse_qkv_weight_xetla(q_proj, k_proj, v_proj, qtype):
+    if qtype == SYM_INT4:
         weight_size = q_proj.out_len * q_proj.in_len // 2
         zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
         zeros_end = weight_size + zeros_size
@@ -307,8 +307,12 @@ def fuse_qkv_weight(q_proj, k_proj, v_proj, qtype):
         invalidInputError(False, f"Unsupported qtype {qtype}")
 
 
-def should_use_mm_xetla_qkv(self, device):
-    return device.type == "xpu" and self.q_proj.qtype in {SYM_INT4, FP8E5} and self.q_proj.enable_xetla
+def should_use_xetla_mm_qkv(self, device):
+    full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
+    supported_qtype = self.q_proj.qtype == SYM_INT4 and full_attn
+    supported_qtype = supported_qtype or self.q_proj.qtype == FP8E5
+    enable_xetla = self.q_proj.enable_xetla
+    return device.type == "xpu" and enable_xetla and supported_qtype
 
 
 def llama_attention_forward_4_31(
@@ -562,17 +566,18 @@ def llama_attention_forward_4_31_original(
                     query_states, key_states, value_states
                 )
             else:
-                if should_use_mm_xetla_qkv(self, device):
+                if should_use_xetla_mm_qkv(self, device):
                     if not hasattr(self, "qkv_proj_qweight"):
-                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
-                                                                self.k_proj,
-                                                                self.v_proj,
-                                                                self.q_proj.weight.qtype,)
+                        self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
+                                                                      self.k_proj,
+                                                                      self.v_proj,
+                                                                      self.q_proj.weight.qtype,)
                     import linear_q4_0
                     q_out_len = self.q_proj.out_len
                     k_out_len = self.k_proj.out_len
                     v_out_len = self.v_proj.out_len
-                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight, self.q_proj.weight.qtype)
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight,
+                                                      self.q_proj.weight.qtype)
                     query_states = qkv_states[:, :, :q_out_len]
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
@@ -1209,9 +1214,9 @@ def llama_attention_forward_4_36_original(
                     query_states, key_states, value_states
                 )
             else:
-                if should_use_mm_xetla_qkv(self, device):
+                if should_use_xetla_mm_qkv(self, device):
                     if not hasattr(self, "qkv_proj_qweight"):
-                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                        self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
                                                                 self.k_proj,
                                                                 self.v_proj,
                                                                 self.q_proj.weight.qtype,)

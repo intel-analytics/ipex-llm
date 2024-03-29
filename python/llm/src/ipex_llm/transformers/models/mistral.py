@@ -54,6 +54,8 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
+from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
+from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla
 try:
     from transformers.cache_utils import Cache
 except ImportError:
@@ -158,11 +160,7 @@ def mistral_model_forward_4_36(
         return_dict=return_dict,
     )
 
-def should_use_xetla_mm_qkv(self, device):
-    full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
-    supported_qtype = self.q_proj.qtype in {SYM_INT4, FP8E5}
-    enable_xetla = self.q_proj.enable_xetla
-    return device.type == "xpu" and enable_xetla and full_attn and supported_qtype
+
 
 
 def mistral_attention_forward(
@@ -367,40 +365,6 @@ def mistral_attention_forward_quantized(
     return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
-def fuse_qkv_weight(q_proj, k_proj, v_proj, qtype):
-    if qtype == SYM_INT4:
-        weight_size = q_proj.out_len * q_proj.in_len // 2
-        zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
-        zeros_end = weight_size + zeros_size
-        weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
-        zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
-        scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
-        qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                                k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                                v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                                ], dim=-1).reshape(-1)
-        qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                            k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                            v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                            ], dim=-1).reshape(-1)
-        qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                                k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                                v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                                ], dim=-1).reshape(-1)
-        q_proj.weight.data = torch.empty(0)
-        k_proj.weight.data = torch.empty(0)
-        v_proj.weight.data = torch.empty(0)
-        return torch.cat([qweight, qzeros, qscales], dim=0)
-    elif qtype == FP8E5:
-        result = torch.cat([q_proj.weight, k_proj.weight, v_proj.weight], dim=1).contiguous()
-        q_proj.weight.data = torch.empty(0)
-        k_proj.weight.data = torch.empty(0)
-        v_proj.weight.data = torch.empty(0)
-        return result
-    else:
-        invalidInputError(False, f"Unsupported qtype {qtype}")
-
-
 def mistral_attention_forward_original(
     self,
     hidden_states: torch.Tensor,
@@ -445,7 +409,7 @@ def mistral_attention_forward_original(
 
         if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
-                self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
+                self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
                                                         self.k_proj,
                                                         self.v_proj,
                                                         self.q_proj.qtype)
@@ -827,15 +791,17 @@ def mistral_attention_forward_4_36_original(
     else:
         if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
-                self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
-                                                        self.k_proj,
-                                                        self.v_proj,
-                                                        self.q_proj.qtype)
+                self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
+                                                              self.k_proj,
+                                                              self.v_proj,
+                                                              self.q_proj.qtype)
             import linear_q4_0
             q_out_len = self.q_proj.out_len
             k_out_len = self.k_proj.out_len
             v_out_len = self.v_proj.out_len
-            qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight, self.q_proj.qtype)
+            qkv_states = linear_q4_0.mm_xetla(hidden_states,
+                                              self.qkv_proj_qweight,
+                                              self.q_proj.qtype)
             query_states = qkv_states[:, :, :q_out_len]
             key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
             value_states = qkv_states[:, :, q_out_len + k_out_len:]
