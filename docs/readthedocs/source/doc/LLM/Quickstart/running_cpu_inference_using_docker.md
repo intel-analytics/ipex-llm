@@ -34,7 +34,7 @@ Here, we use [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-c
 ``` python
 from huggingface_hub import snapshot_download
 repo_id="meta-llama/Llama-2-7b-chat-hf"
-local_dir="./Mistral-7B-v0.1"
+local_dir="./Llama-2-7b-chat-hf"
 snapshot_download(repo_id=repo_id,
                   local_dir=local_dir,
                   local_dir_use_symlinks=False
