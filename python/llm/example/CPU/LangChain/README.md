@@ -67,6 +67,22 @@ python transformers_int4/voiceassistant.py -m <path_to_model> [-q <your_question
 - `-l LANGUAGE`: you can specify a language such as "english" or "chinese" 
 - `-d True|False`: whether the model path specified in -m is saved low bit model.
 
+
+### Example: Low Bit
+
+The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+By `save_low_bit` we save the weights of low_bit model into the target folder.
+> Note: `save_low_bit` only saves the weights of the model. 
+> Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
+```bash
+python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
+```
+**Runtime Arguments Explained**:
+- `-m MODEL_PATH`: **Required**, the path to the model
+- `-t TARGET_PATH`: **Required**, the path to save the low_bit model
+- `-q QUESTION`: the question
+
+
 ### Legacy (Native INT4 examples)
 
 IPEX-LLM also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 

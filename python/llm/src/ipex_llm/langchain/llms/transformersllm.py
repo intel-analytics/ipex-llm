@@ -90,6 +90,7 @@ class TransformersLLM(LLM):
         model_id: str,
         model_kwargs: Optional[dict] = None,
         device_map: str = 'cpu',
+        tokenizer_id: str = None,
         **kwargs: Any,
     ) -> LLM:
         """
@@ -121,10 +122,16 @@ class TransformersLLM(LLM):
 
         _model_kwargs = model_kwargs or {}
         # TODO: may refactore this code in the future
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
-        except:
-            tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
+        if tokenizer_id!=None:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+        else:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
 
         # TODO: may refactore this code in the future
         try:
@@ -155,6 +162,7 @@ class TransformersLLM(LLM):
         model_id: str,
         model_kwargs: Optional[dict] = None,
         device_map: str = 'cpu',
+        tokenizer_id : str = None,
         **kwargs: Any,
     ) -> LLM:
         """
@@ -184,10 +192,16 @@ class TransformersLLM(LLM):
 
         _model_kwargs = model_kwargs or {}
         # TODO: may refactore this code in the future
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
-        except:
-            tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
+        if tokenizer_id!=None:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+        else:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
 
         # TODO: may refactore this code in the future
         try:
