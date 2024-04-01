@@ -2,7 +2,7 @@
 
 ## Image
 
-To deploy IPEX-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT`
+To deploy IPEX-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT`
 
 ## Before deployment
 
@@ -73,7 +73,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+    image: intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -146,7 +146,7 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed

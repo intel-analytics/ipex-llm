@@ -1,4 +1,4 @@
-imageName: intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
+imageName: intelanalytics/ipex-llm-finetune-lora-cpu:2.1.0-SNAPSHOT
 trainerNum: 8
 microBatchSize: 8
 nfsServerIp: your_nfs_server_ip
