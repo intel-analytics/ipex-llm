@@ -120,10 +120,6 @@ def qwen_attention_forward_vl(
                 self.v_proj.weight.qtype, kv_seq_len, self.head_dim, base]
         import linear_q4_0
         query, key, value = linear_q4_0.forward_qkv_bias(*args)
-        # print("After fuse qkv: ")
-        # print(f"query size: {query.shape}, query type: {query.dtype}")
-        # print(f"key size: {key.shape}, key type: {key.dtype}")
-        # print(f"value size: {value.shape}, value type: {value.dtype}")
         kv_seq_len += 1
         query_size, key_size = 1, 1
     else:
