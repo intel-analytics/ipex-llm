@@ -267,8 +267,12 @@ def module_name_process(full_module_name):
     return new_module_name, layer, cur_module
 
 
-def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_type=None):
+def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_config=None):
     cur_qtype = qtype
+    if model_config is not None:
+        model_type = getattr(model_config, "model_type", None)
+    else:
+        model_dtype = None
     if qtype in [ggml_tensor_qtype["gguf_iq2_xxs"], ggml_tensor_qtype["gguf_iq2_xs"],
                  ggml_tensor_qtype["gguf_iq1_s"]]:
         # For quantization which needs importance matrix
@@ -281,7 +285,15 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_type=
             elif cur_module == 'down' and int(layer) in [0, 1, 2, 3]:
                 cur_qtype = ggml_tensor_qtype['q2_k']
         else:
-            if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]):
+            num_hidden_layers = getattr(model_config, "num_hidden_layers", None)
+            hidden_size = getattr(model_config, "hidden_size", None)
+            if model_type == "llama" and hidden_size == 8192:
+                # for llama2-70b
+                if cur_module == 'v':
+                    cur_qtype = ggml_tensor_qtype['sym_int4']  # llama.cpp use q4k here
+                if cur_module == 'down' and int(layer) < int(num_hidden_layers/8):
+                    cur_qtype = ggml_tensor_qtype['q2_k']
+            elif cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]):
                 cur_qtype = ggml_tensor_qtype['q2_k']
             if qtype == ggml_tensor_qtype["gguf_iq1_s"] and cur_module == 'o':
                 cur_qtype = ggml_tensor_qtype['gguf_iq2_xxs']

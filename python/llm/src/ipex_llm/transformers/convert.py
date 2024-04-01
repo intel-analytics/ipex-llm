@@ -192,7 +192,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  convert_shape_only=False,
                                  cpu_embedding=False, prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
-                                 model_type=None, torch_dtype=torch.float32,
+                                 model_config=None, torch_dtype=torch.float32,
                                  enable_xetla=False):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
@@ -211,6 +211,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             in_features, out_features, mp_group = linear_args
             optimize_lm_head = False
             if name == "lm_head":
+                model_type = getattr(model_config, "model_type", None)
                 if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
                                                                       None) == "1":
                     optimize_lm_head = True
@@ -262,7 +263,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
-                                                                       model_type)
+                                                                       model_config)
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -378,7 +379,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
                 imatrix_data=imatrix_data,
                 embedding_qtype=embedding_qtype,
-                model_type=model_type,
+                model_config=model_config,
                 torch_dtype=torch_dtype,
                 enable_xetla=enable_xetla,
             )
@@ -652,17 +653,13 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
-    # mixed quantization needs model_type to choose custom quantization strategy
-    if hasattr(model, "config"):
-        model_type = getattr(model.config, "model_type", None)
-    else:
-        model_type = None
+    # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
         convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
         embedding_qtype=embedding_qtype,
-        model_type=model_type,
+        model_config=getattr(model, "config", None),
         torch_dtype=torch_dtype,
         enable_xetla=enable_xetla,
     )
