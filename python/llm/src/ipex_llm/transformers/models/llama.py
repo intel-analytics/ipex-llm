@@ -533,12 +533,12 @@ def llama_attention_forward_4_31_original(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                         dtype=hidden_states.dtype, device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
@@ -1165,12 +1165,12 @@ def llama_attention_forward_4_36_original(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                         dtype=hidden_states.dtype, device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
