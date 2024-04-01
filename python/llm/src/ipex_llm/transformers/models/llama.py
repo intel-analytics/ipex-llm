@@ -1324,6 +1324,8 @@ def native_sdp(query, key, value, attention_mask,
 
     # at inference time, for memory considerations, may not need to upcast attention to fp32
     attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+    if attn_weights.dtype != value.dtype:
+        attn_weights = attn_weights.to(value.dtype)
     attn_output = torch.matmul(attn_weights, value)
     return attn_output, attn_weights
 
