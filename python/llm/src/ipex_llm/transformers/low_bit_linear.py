@@ -538,7 +538,7 @@ class LowBitLinear(nn.Linear):
         # The condition makes sure that empty cache only takes effect if this layer is lm_head.
         # For other models like llama, lm_cache will be applied as well
         # since performance isn't impacted.
-        self.is_lm_head = self.in_len * self.out_len >= 30000 * 4096
+        self.is_lm_head = self.in_len * self.out_len >= 30000 * 4096 and self.bias is None
         self.low_memory_mode = self.is_lm_head
 
     def forward(self, x: torch.Tensor):
