@@ -53,7 +53,7 @@ def generate(
     **kwargs,
 ):
     if hasattr(self, "draft_model"):
-        from ipex_llm.llm.transformers.convert import get_enable_ipex
+        from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
         if _enable_ipex and inputs.size(1) < 256:
             logger.warning(
@@ -565,7 +565,7 @@ def speculative_generate(self,
                 ("mistral" in self.config.model_type) or
                 ("qwen" in self.config.model_type) or
                 ("chatglm" in self.config.model_type)):
-            invalidInputError(False, "BigDL Speculative Decoding with IPEX only supports \
+            invalidInputError(False, "BigDL Speculative Decoding with IPEX-LLM only supports \
                               Llama, Baichuan2, Mistral, ChatGLM and Qwen models currently.")
         if "chatglm" in self.config.model_type:
             global query_group_size
@@ -726,7 +726,7 @@ def speculative_generate(self,
                             past_key_values=draft_past_key_values,
                         )
                     else:
-                        invalidInputError(False, "BigDL Speculative Decoding with IPEX only supports \
+                        invalidInputError(False, "BigDL Speculative Decoding with IPEX-LLM only supports \
                               Llama, Baichuan2, Mistral, ChatGLM and Qwen models currently.")
 
                     draft_output = CausalLMOutputWithPast(

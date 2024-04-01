@@ -92,7 +92,7 @@ arguments info:
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-#### 5.1. RAG (Retrival Augmented Generation)
+#### 5.2. RAG (Retrival Augmented Generation)
 
 ```bash
 python rag.py -m <path_to_model> [-q QUESTION] [-i INPUT_PATH]

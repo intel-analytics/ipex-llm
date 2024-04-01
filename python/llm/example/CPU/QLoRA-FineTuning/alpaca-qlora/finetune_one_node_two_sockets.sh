@@ -14,5 +14,5 @@ mpirun -n 2 \
  --max_steps -1 \
  --base_model "meta-llama/Llama-2-7b-hf" \
  --data_path "yahma/alpaca-cleaned" \
- --output_dir "./ipex-qlora-alpaca"
+ --output_dir "./ipex-llm-qlora-alpaca"
 

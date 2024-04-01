@@ -109,7 +109,7 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = args.prompt
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(f'xpu:{local_rank}')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 use_cache=True)

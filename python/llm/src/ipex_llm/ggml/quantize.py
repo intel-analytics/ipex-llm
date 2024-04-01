@@ -42,7 +42,9 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "bf16": 20,
                      "gguf_iq2_xxs": 21,
                      "gguf_iq2_xs": 22,
-                     "q2_k": 23}
+                     "q2_k": 23,
+                     "gguf_iq1_s": 24,
+                     "gguf_iq1_m": 25}
 
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,

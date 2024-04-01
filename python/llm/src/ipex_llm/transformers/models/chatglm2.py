@@ -227,7 +227,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
             key_layer = key_layer.transpose(0, 1)
             query_layer_cur = query_layer[..., :rot_dim]
             key_layer_cur = key_layer[..., :rot_dim]
-            # ipex's apply_rotary_embedding can change the origin storage, so query_layer will get
+            # ipex_llm's apply_rotary_embedding can change the origin storage, so query_layer will get
             # the result directly.
             torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
             torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
@@ -367,7 +367,7 @@ def chatglm2_attention_forward_8eb45c(
             key_layer = key_layer.transpose(0, 1)
             query_layer_cur = query_layer[..., :rot_dim]
             key_layer_cur = key_layer[..., :rot_dim]
-            # ipex's apply_rotary_embedding can change the origin storage, so query_layer will get
+            # ipex_llm's apply_rotary_embedding can change the origin storage, so query_layer will get
             # the result directly.
             torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
             torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)

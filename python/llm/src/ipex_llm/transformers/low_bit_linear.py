@@ -73,7 +73,7 @@ FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
 IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
-
+IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 
 # The ggml_weight is col major and packs two rows at a stride of Q4_0//2.
 #
@@ -85,7 +85,7 @@ Q2_K = ggml_tensor_qtype["q2_k"]
 # new_weight_tile is directly VNNI packed, but I did not find significant
 # performance improvement.
 #
-# Note this format cannot be used directly in IPEX's mm_int4, which expects
+# Note this format cannot be used directly in IPEX-LLM's mm_int4, which expects
 # row major but packing two consecutive columns.
 def q4_0_xpu_transpose(ggml_weight, weight_shape):
     from ipex_llm.transformers.low_bit_linear import get_block_size
@@ -156,7 +156,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K]:
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S]:
             ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
         else:
             if imatrix is not None:
@@ -702,12 +702,16 @@ class FP16Linear(nn.Linear):
                 if self.weight_type == 2:
                     self.weight = self.weight.transpose(0, 1).contiguous()
                     self.weight_type = 1
-                return F.linear(x, self.weight, self.bias)
+                result = F.linear(x, self.weight, self.bias)
             else:
                 if self.weight_type == 1:
                     self.weight = self.weight.transpose(0, 1).contiguous()
                     self.weight_type = 2
-                return torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
+                result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
+            if self.mp_group is not None:
+                from deepspeed import comm as dist
+                dist.inference_all_reduce(result, group=self.mp_group)
+            return result
         else:
             if self.in_len == 4096 and self.weight_type != 3 or \
                     self.in_len == 11008 and self.weight_type != 1:

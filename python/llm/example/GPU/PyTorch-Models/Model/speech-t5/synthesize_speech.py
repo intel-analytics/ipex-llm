@@ -89,7 +89,7 @@ if __name__ == '__main__':
     speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to('xpu')
     
     with torch.inference_mode():
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         speech = model.generate_speech(inputs["input_ids"], speaker_embeddings, vocoder=vocoder)
 
         st = time.time()

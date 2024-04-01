@@ -35,7 +35,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # Fix Trivy CVE Issues
     pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \

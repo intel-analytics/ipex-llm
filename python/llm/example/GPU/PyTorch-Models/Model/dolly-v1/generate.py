@@ -65,7 +65,7 @@ if __name__ == '__main__':
         prompt = DOLLY_V1_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         end_key_token_id=tokenizer.encode("### End")[0]
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 use_cache=True,
                                 max_new_tokens=args.n_predict,

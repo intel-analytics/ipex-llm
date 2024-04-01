@@ -46,7 +46,6 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  use_cache=True)
     model = model.to('xpu')
-    model = ipex.optimize(model.eval(), dtype="float16", inplace=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -57,7 +56,7 @@ if __name__ == '__main__':
         prompt = GptJ_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
