@@ -427,9 +427,6 @@ def run_transformer_int4_gpu(repo_id,
                                                             trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -519,9 +516,6 @@ def run_optimize_model_gpu(repo_id,
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
@@ -594,9 +588,6 @@ def run_ipex_fp16_gpu(repo_id,
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half().to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
@@ -852,9 +843,6 @@ def run_transformer_int4_gpu_win(repo_id,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -962,9 +950,6 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half()
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -1067,9 +1052,6 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
