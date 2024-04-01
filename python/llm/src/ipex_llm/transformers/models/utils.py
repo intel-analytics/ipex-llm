@@ -341,6 +341,9 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
     if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
         # esimd_sdp not support PVC GPU when batch size > 1 for now
         return False
+    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A"):
+        # esimd_sdp not support ARC GPU when batch size > 1 for now
+        return False
     if query_states.shape[0] > 1 and attention_mask is not None:
         # for batched input, can't accept attention_mask
         # TODO: this check needs some time
