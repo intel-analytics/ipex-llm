@@ -55,7 +55,7 @@ It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc 
 ### 1. Prepare ipex-llm-xpu Docker Image
 Run the following command in WSL:
 ```bash
-docker pull intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
 This step will take around 20 minutes depending on your network.
 
@@ -64,7 +64,7 @@ This step will take around 20 minutes depending on your network.
 To map the xpu into the container, an example (docker_setup.sh) could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
