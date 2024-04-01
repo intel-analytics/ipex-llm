@@ -17,6 +17,7 @@
 import torch
 import time
 import argparse
+
 from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
