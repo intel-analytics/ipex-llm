@@ -17,16 +17,16 @@ powershell -Command "(gc python39._pth) -replace '%search%', '%replace%' | Out-F
 cd ..
 
 :: install pip packages
-%python-embed% -m pip install --pre --upgrade bigdl-llm[all]
+%python-embed% -m pip install --pre --upgrade ipex-llm[all]
 %python-embed% -m pip install transformers_stream_generator tiktoken einops colorama
 
 if "%1"=="--ui" (
-    %python-embed% -m pip install --pre --upgrade bigdl-llm[serving]
+    %python-embed% -m pip install --pre --upgrade ipex-llm[serving]
 )
 
 :: compress the python and scripts
 if "%1"=="--ui" (
-    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat-ui.bat', '.\README.md' -DestinationPath .\bigdl-llm-ui.zip"
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat-ui.bat', '.\README.md' -DestinationPath .\ipex-llm-ui.zip"
 ) else (
-    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\bigdl-llm.zip"
+    powershell -Command "Compress-Archive -Path '.\python-embed', '.\chat.bat', '.\chat.py', '.\README.md' -DestinationPath .\ipex-llm.zip"
 )

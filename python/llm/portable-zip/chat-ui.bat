@@ -11,7 +11,7 @@ if errorlevel 1 (
 )
 echo [1/3] Controller started successfully
 
-powershell -Command "Start-Process -FilePath PowerShell -ArgumentList '-Command', '& { .\python-embed\python.exe -m ipex_llm.serving.model_worker --model-path %modelpath% --device cpu > zip_model_worker.log 2>&1 }' -NoNewWindow"
+powershell -Command "Start-Process -FilePath PowerShell -ArgumentList '-Command', '& { .\python-embed\python.exe -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path %modelpath% --device cpu --low-bit "sym_int4" --trust-remote-code > zip_model_worker.log 2>&1 }' -NoNewWindow"
 timeout /t 1 /nobreak >nul 2>&1
 :loop2
 powershell -Command "$output = Get-Content zip_model_worker.log; if($null -eq $output -or !($output | Select-String -Pattern 'Uvicorn running on')) { exit 1 } else { exit 0 }"
