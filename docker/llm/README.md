@@ -264,7 +264,7 @@ To serve using the Web UI, you need three main components: web servers that inte
   Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
 - #### **Step 3: Launch Gradio web server or RESTful API server**
-  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with cURL.
+  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with HTTP.
 
   - **Option 1: Serving with Web UI**
     ```bash
@@ -279,7 +279,7 @@ To serve using the Web UI, you need three main components: web servers that inte
       Launch the RESTful API server
 
       ```bash
-      python3 -m fastchat.serve.openai_api_server --host localhost --port 8000 &
+      python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 &
       ```
 
       Use curl for testing, an example could be:
@@ -292,7 +292,7 @@ To serve using the Web UI, you need three main components: web servers that inte
         "best_of": 1,
         "use_beam_search": false,
         "stream": false
-      }' http://localhost:8000/v1/completions
+      }' http://YOUR_HTTP_HOST:8000/v1/completions
       ```
   You can find more details here [Serving using IPEX-LLM and FastChat](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/serving/fastchat/README.md)
 
@@ -305,7 +305,8 @@ To fully utilize the continuous batching feature of the vLLM, you can send reque
   # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
   # of batched prompt length the server will accept
   numactl -C 0-47 -m 0 python -m ipex_llm.vllm.entrypoints.openai.api_server \
-          --model /llm/models/Llama-2-7b-chat-hf/ --port 8000  \
+          --model /llm/models/Llama-2-7b-chat-hf/  \
+          --host 0.0.0.0 --port 8000 \
           --load-format 'auto' --device cpu --dtype bfloat16 \
           --max-num-batched-tokens 4096 &
   ```
@@ -313,7 +314,7 @@ To fully utilize the continuous batching feature of the vLLM, you can send reque
 - #### **Step 2: Use curl for testing, access the api server as follows:**
 
   ```bash
-  curl http://localhost:8000/v1/completions \
+  curl http://YOUR_HTTP_HOST:8000/v1/completions \
           -H "Content-Type: application/json" \
           -d '{
                   "model": "/llm/models/Llama-2-7b-chat-hf/",
@@ -392,7 +393,7 @@ To serve using the Web UI, you need three main components: web servers that inte
   Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
 - #### **Step 3: Launch Gradio web server or RESTful API server**
-  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with cURL.
+  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with HTTP.
 
   - **Option 1: Serving with Web UI**
     ```bash
@@ -407,7 +408,7 @@ To serve using the Web UI, you need three main components: web servers that inte
       Launch the RESTful API server
 
       ```bash
-      python3 -m fastchat.serve.openai_api_server --host localhost --port 8000 &
+      python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 &
       ```
 
       Use curl for testing, an example could be:
@@ -420,7 +421,7 @@ To serve using the Web UI, you need three main components: web servers that inte
         "best_of": 1,
         "use_beam_search": false,
         "stream": false
-      }' http://localhost:8000/v1/completions
+      }' http://YOUR_HTTP_HOST:8000/v1/completions
       ```
   You can find more details here [Serving using IPEX-LLM and FastChat](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/serving/fastchat/README.md)
 
@@ -433,7 +434,8 @@ To fully utilize the continuous batching feature of the vLLM, you can send reque
   # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
   # of batched prompt length the server will accept
   python -m ipex_llm.vllm.entrypoints.openai.api_server \
-          --model /llm/models/Llama-2-7b-chat-hf/ --port 8000  \
+          --model /llm/models/Llama-2-7b-chat-hf/ \
+          --host 0.0.0.0 --port 8000 \
           --load-format 'auto' --device xpu --dtype bfloat16 \
           --max-num-batched-tokens 4096 &
   ```
@@ -441,7 +443,7 @@ To fully utilize the continuous batching feature of the vLLM, you can send reque
 - #### **Step 2: Use curl for testing, access the api server as follows:**
 
   ```bash
-  curl http://localhost:8000/v1/completions \
+  curl http://YOUR_HTTP_HOST:8000/v1/completions \
           -H "Content-Type: application/json" \
           -d '{
                   "model": "/llm/models/Llama-2-7b-chat-hf/",
