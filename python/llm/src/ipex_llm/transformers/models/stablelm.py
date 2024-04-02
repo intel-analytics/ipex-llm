@@ -60,6 +60,7 @@ except ImportError:
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
+
 def merge_qkv(module: torch.nn.Module):
     if isinstance(module, StableLmAttention):
         new_weight = torch.cat([
@@ -131,7 +132,12 @@ def stablelm_attention_forward(
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         # [batch_size, seq_length, num_heads, head_dim // config.partial_rotary_factor]
-        query_rot, key_rot = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids, "stablelm")
+        query_rot, key_rot = apply_rotary_pos_emb(query_rot,
+                                                  key_rot,
+                                                  cos,
+                                                  sin,
+                                                  position_ids,
+                                                  "stablelm")
 
     # [batch_size, seq_length, num_heads, head_dim]
     query_states = torch.cat((query_rot, query_pass), dim=-1)
@@ -193,31 +199,39 @@ def stablelm_attention_forward(
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(
+            query_states,
+            key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
+            invalidInputError(
+                False,
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
+                f" but is {attn_weights.size()}"
             )
 
         if attention_mask is not None:
             if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                invalidInputError(
+                    False,
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                    f" but is {attention_mask.size()}"
                 )
+
             attn_weights = attn_weights + attention_mask
 
         # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dtype=torch.float32, dim=-1).to(query_states.dtype)
+        attn_weights = \
+            nn.functional.softmax(attn_weights, dtype=torch.float32, dim=-1).to(query_states.dtype)
         attn_weights = self.attention_dropout(attn_weights)
 
         attn_output = torch.matmul(attn_weights, value_states)
 
         if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            raise ValueError(
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-                f" {attn_output.size()}"
+            invalidInputError(
+                False,
+                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
+                f" but is {attn_output.size()}"
             )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
@@ -228,4 +242,3 @@ def stablelm_attention_forward(
         attn_weights = None
 
     return attn_output.to(original_dtype), attn_weights, past_key_value
-
