@@ -20,7 +20,7 @@ on:
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-        default: 'latest'
+        default: '2.1.0-SNAPSHOT'
         type: string
   workflow_call:
     inputs:
@@ -32,7 +32,7 @@ on:
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-        default: 'latest'
+        default: '2.1.0-SNAPSHOT'
         type: string
 
 env:
