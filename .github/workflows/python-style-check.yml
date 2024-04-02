@@ -1,0 +1,54 @@
+name: Python Style Check
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Controls when the action will run.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-style-check.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-style-check.yml'
+  # schedule:
+  #   - cron: '0 16 * * *'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  style-check:
+    # The type of runner that the job will run on
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install pycodestyle
+             pip install pydocstyle
+             pip install mypy==0.982
+             pip install wheel
+
+      - name: LLM style checking
+        run: bash python/llm/dev/test/lint-python
+
