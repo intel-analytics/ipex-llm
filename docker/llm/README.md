@@ -92,7 +92,7 @@ Here's a demonstration of how to navigate the tutorial in the explorer:
 **3.3 Performance Benchmark**: We provide a benchmark tool help users to test all the benchmarks and record them in a result CSV. 
 
 ```bash
-cd /llm//benchmark/all-in-one
+cd /llm/benchmark/all-in-one
 ```
 
 Users can provide models and related information in config.yaml.
