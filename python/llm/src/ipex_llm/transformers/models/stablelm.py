@@ -41,6 +41,24 @@ import math
 from typing import Optional, Tuple
 
 import torch
+from torch import nn
+import torch.nn.functional as F
+from transformers.modeling_outputs import BaseModelOutputWithPast
+from transformers.models.mistral.modeling_mistral import MistralModel
+from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
+    restore_fp8_kv_cache, use_quantize_kv_cache
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
+    apply_rotary_pos_emb_no_cache_xpu
+from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
+    is_enough_kv_cache_room_4_36
+from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
+try:
+    from transformers.cache_utils import Cache
+except ImportError:
+    Cache = Tuple[torch.Tensor]
 
 
 def stablelm_attention_forward(
