@@ -4,7 +4,13 @@
 This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `ipex-llm`.
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
-## 1. Setting up Dependencies 
+
+## Retrieval-Augmented Generation (RAG) Example
+The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
+
+
+
+### 1. Setting up Dependencies 
 
 * **Install LlamaIndex Packages**
     ```bash
@@ -15,80 +21,69 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
     Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm.
 
 * **Database Setup (using PostgreSQL)**:
-  > Note: Database Setup is only required in RAG example.
-
-  * Linux
-      * Installation: 
-          ```bash
-          sudo apt-get install postgresql-client
-          sudo apt-get install postgresql
-          ```
-      * Initialization:
-
-          Switch to the **postgres** user and launch **psql** console
-          ```bash
-          sudo su - postgres
-          psql
-          ```
-
-          Then, create a new user role:
-          ```bash
-          CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
-          ALTER ROLE <user> SUPERUSER;    
-          ```
-  * Windows
-      * click `Download the installer` in [PostgreSQL](https://www.postgresql.org/download/windows/).  
-      * Run the downloaded installation package as administrator, then click `next` continuously.  
-      * Open PowerShell:
-      ```bash
-          cd C:\Program Files\PostgreSQL\14\bin
-      ```   
-      The exact path will vary depending on your PostgreSQL location.  
-      * Then in PowerShell:  
-          
+    * Linux
+        * Installation: 
+            ```bash
+            sudo apt-get install postgresql-client
+            sudo apt-get install postgresql
+            ```
+        * Initialization:
+            
+            Switch to the **postgres** user and launch **psql** console
+            ```bash
+            sudo su - postgres
+            psql
+            ```
+            
+            Then, create a new user role:
+            ```bash
+            CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
+            ALTER ROLE <user> SUPERUSER;    
+            ```
+    * Windows
+        * click `Download the installer` in [PostgreSQL](https://www.postgresql.org/download/windows/).  
+        * Run the downloaded installation package as administrator, then click `next` continuously.  
+        * Open PowerShell:
+        ```bash
+            cd C:\Program Files\PostgreSQL\14\bin
+        ```   
+        The exact path will vary depending on your PostgreSQL location.  
+        * Then in PowerShell:
         ```bash
             .\psql -U postgres    
-        ``` 
-          
-          Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
-      * Create a new user role:
-      ```bash
-      CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
-      ALTER ROLE <user> SUPERUSER;    
+        ```   
+        Input the password you set in the previous installation. If PowerShell shows `postgres=#`, it indicates a successful connection.
+        * Create a new user role:
+        ```bash
+        CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
+        ALTER ROLE <user> SUPERUSER;    
         ```
 * **Pgvector Installation**:
-  > Note: Pgvector Installation is only required in RAG example.
+    * Linux
+        * Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
+    * Windows 
+        * It is recommended to use [pgvector for Windows](https://github.com/pgvector/pgvector?tab=readme-ov-file#windows) instead of others (such as conda-force) to avoid potential errors. Some steps may require running as administrator.
 
 
-  * Linux
-      * Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
-  * Windows 
-      * It is recommended to use [pgvector for Windows](https://github.com/pgvector/pgvector?tab=readme-ov-file#windows) instead of others (such as conda-force) to avoid potential errors. Some steps may require running as administrator.
-
-
-* **Data Preparation**: 
-  > Note: Data Preparation is only required in RAG example.
-
-  Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
+* **Data Preparation**: Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
     ```bash
     mkdir data
     wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
     ```
 
-## 2. Configures OneAPI environment variables
-### 2.1 Configurations for Linux
+### 2. Configures OneAPI environment variables
+#### 2.1 Configurations for Linux
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
-### 2.2 Configurations for Windows
+#### 2.2 Configurations for Windows
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 ```
 > Note: Please make sure you are using **CMD** (**Anaconda Prompt** if using conda) to run the command as PowerShell is not supported.
-
-## 3. Runtime Configurations
+### 3. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-### 3.1 Configurations for Linux
+#### 3.1 Configurations for Linux
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
@@ -112,7 +107,7 @@ export ENABLE_SDP_FUSION=1
 > Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
 </details>
 
-### 3.2 Configurations for Windows
+#### 3.2 Configurations for Windows
 <details>
 
 <summary>For Intel iGPU</summary>
@@ -145,11 +140,7 @@ There is no need to set further environment variables.
 > Note: For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 
-## 4. Run the examples
-
-### 4.1 RAG (Retrival Augmented Generation)
-
-The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
+### 4. Running the RAG example
 
 In the current directory, run the example with command:
 
@@ -165,7 +156,7 @@ python rag.py -m <path_to_model>
 - `-d DATA`: path to source data used for retrieval (in pdf format)
 - `-n N_PREDICT`: max predict tokens
 
-**Example Output**:
+### 5. Example Output
 
 A query such as **"How does Llama 2 compare to other open-source models?"** with the Llama2 paper as the data source, using the `Llama-2-7b-chat-hf` model, will produce the output like below:
 
@@ -179,30 +170,6 @@ However, it's important to note that the performance of Llama 2 can vary dependi
 In conclusion, while Llama 2 performs well on most benchmarks compared to other open-source models, its performance
 ```
 
-### 4.2 Text to SQL
-
-> Note: Text to SQL example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
-
-The Text to SQL example ([text_to_sql.py](./text_to_sql.py)) is adapted from the [Official llama index Text-to-SQL example](https://docs.llamaindex.ai/en/stable/examples/index_structs/struct_indices/SQLIndexDemo/#part-3-text-to-sql-retriever). This example shows how to define a text-to-SQL retriever on its own and plug it into `RetrieverQueryEngine` to build a retrival pipeline.
-
-In the current directory, run the example with command:
-
-```bash
-python text_to_sql.py -m <path_to_model> -e <path_to_embedding_model>
-```
-**Additional Parameters for Configuration**:
-- `-m MODEL_PATH`: **Required**, path to the LLM model
-- `-e EMBEDDING_MODEL_PATH`: **Required**, path to the embedding model
-- `-q QUESTION`: question you want to ask
-- `-n N_PREDICT`: max predict tokens
-
-**Example Output**:
-
-A query such as **"Which city has the highest population?"** using the `zephyr-7b-alpha` model, will produce the output like below:
-```
-The city with the highest population is Tokyo, with a population of 13,960,000.
-```
-
-## 5. Trouble shooting
-### 5.1 Core dump
+### 6. Trouble shooting
+#### 6.1 Core dump
 If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.
