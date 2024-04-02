@@ -1499,15 +1499,13 @@ def run_deepspeed_optimize_model_gpu(repo_id,
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()
                 print("model generate cost: " + str(end - st))
-                if local_rank == 0:
-                    # record data of rank 0
-                    output = tokenizer.batch_decode(output_ids)
-                    actual_out_len = output_ids.shape[1] - actual_in_len
-                    print(output[0])
-                    if i >= warm_up:
-                        result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                               actual_in_len, actual_out_len, load_time, model.peak_memory])
+                output = tokenizer.batch_decode(output_ids)
+                actual_out_len = output_ids.shape[1] - actual_in_len
+                print(output[0])
                 torch.xpu.empty_cache()
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                               actual_in_len, actual_out_len, load_time, model.peak_memory])
     del model
     torch.xpu.empty_cache()
     return result
