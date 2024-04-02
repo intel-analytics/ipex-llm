@@ -43,6 +43,8 @@ from typing import Optional, Tuple
 import torch
 from torch import nn
 import torch.nn.functional as F
+from transformers.models.stablelm.modeling_stablelm import StableLmAttention
+
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
@@ -55,7 +57,24 @@ try:
 except ImportError:
     Cache = Tuple[torch.Tensor]
 
+
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+def merge_qkv(module: torch.nn.Module):
+    if isinstance(module, StableLmAttention):
+        new_weight = torch.cat([
+            module.q_proj.weight.data,
+            module.k_proj.weight.data,
+            module.v_proj.weight.data,
+        ], dim=0)
+
+        qkv_proj = torch.nn.Linear(0, 0, bias=False)
+        qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
+        qkv_proj.in_features = new_weight.size(1)
+        qkv_proj.out_features = new_weight.size(0)
+        module.qkv_proj = qkv_proj
+
+        del module.q_proj, module.k_proj, module.v_proj
 
 
 def stablelm_attention_forward(
@@ -69,7 +88,7 @@ def stablelm_attention_forward(
         **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
 
-    bsz, q_len, hidden_size = hidden_states.size()
+    bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
@@ -77,15 +96,12 @@ def stablelm_attention_forward(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
 
-    query_states = self.q_proj(hidden_states)
-    key_states = self.k_proj(hidden_states)
-    value_states = self.v_proj(hidden_states)
-
-    query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,
-                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
+    qkv = self.qkv_proj(hidden_states)
+    qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+    qkv = qkv.transpose(1, 2)
+    query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                        self.num_heads,
+                                                        self.num_heads], dim=1)
 
     kv_seq_len = key_states.shape[-2]
 

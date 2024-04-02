@@ -632,6 +632,10 @@ def _optimize_pre(model):
                 module.rope_base = rope_base
                 del module.c_attn
         model.apply(split_qkv_proj_func)
+    if model.config.model_type == "stablelm":
+        from ipex_llm.transformers.models.stablelm import merge_qkv
+        model.apply(merge_qkv)
+
     return model
 
 
