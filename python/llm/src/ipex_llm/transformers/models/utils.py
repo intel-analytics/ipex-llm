@@ -16,6 +16,7 @@
 
 import os
 import torch
+import warnings
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
@@ -74,6 +75,12 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
 def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
+    elif os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+        warnings.warn(
+            "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
+            "Please use `IPEX_LLM_QUANTIZE_KV_CACHE` instead."
+        )
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
     else:
