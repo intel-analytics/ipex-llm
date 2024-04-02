@@ -452,6 +452,8 @@ class FP4Params(torch.nn.Parameter):
                                   enable_xetla=self.enable_xetla)
             if self.enable_xetla:
                 ggml_xpu = ipex_llm_xetla_to_ggml_xpu(new_param.data, new_param._shape, new_param.qtype)
+            else:
+                ggml_xpu = new_param.data
             new_param.data = ggml_q_format_convet_xpu2cpu(ggml_xpu,
                                                           reduce(mul, new_param._shape, 1),
                                                           new_param.qtype)
