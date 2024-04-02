@@ -35,7 +35,12 @@ class DynamicFp8Cache(DynamicCache):
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
         if layer_idx == 0:
-            self.seen_tokens += seq_len
+            if hasattr(self, "_seen_tokens"):
+                # 4.39 uses `_seen_tokens`
+                self._seen_tokens += seq_len
+            else:
+                # 4.37 uses `seen_tokens`
+                self.seen_tokens += seq_len
 
         # Update the cache
         if len(self.key_cache) <= layer_idx:
