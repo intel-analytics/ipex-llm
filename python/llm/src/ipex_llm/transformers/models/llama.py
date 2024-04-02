@@ -64,7 +64,7 @@ from transformers import logging
 logger = logging.get_logger(__name__)
 
 
-def llama_decoding_fast_path_qtype_check(proj): 
+def llama_decoding_fast_path_qtype_check(proj):
     # IQ2_XXS only can be used in Llama-like model
     qtype = getattr(proj, "qtype", None)
     return qtype in [SYM_INT4, FP8E5, IQ2_XXS, FP4]
