@@ -113,7 +113,7 @@ def attention_forward(
     if past_key_value is not None:
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
-    # BigDL OPT: fuse rope
+    # IPEX-LLM OPT: fuse rope
     if should_use_fuse_rope(self, hidden_states, position_ids):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                      key_states,
@@ -125,7 +125,7 @@ def attention_forward(
         query_states, key_states = apply_rotary_pos_emb(
             query_states, key_states, cos, sin, position_ids)
 
-    # BigDL OPT: kv cache and quantize kv cache
+    # IPEX-LLM OPT: kv cache and quantize kv cache
     invalidInputError(past_key_value is not None,
                       "`past_key_value` cannot be None")
     use_quantize_kv = use_quantize_kv_cache(self.o_proj, hidden_states)
