@@ -15,7 +15,7 @@
 #
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/v4.38.0/src/transformers/models/stablelm/modeling_stablelm.py
-# which is licensed under StabilityAI Non-Commercial Research Community License:
+# which is licensed under Apache License 2.0:
 #
 # Copyright 2024 EleutherAI and the HuggingFace Inc. team. All rights reserved.
 #
