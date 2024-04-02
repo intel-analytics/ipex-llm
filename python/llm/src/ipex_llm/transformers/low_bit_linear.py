@@ -546,7 +546,6 @@ class LowBitLinear(nn.Linear):
         # on arc or IPEX_LLM_LOW_MEM is set to 1 at inference time.
         if self.device is None:
             self.device = get_xpu_device_type(self.weight.data)
-            # TODO: may remove IPEX_LLM_LOW_MEM here, probably not necessary
             self.low_memory_mode = \
                 self.low_memory_mode and \
                 (self.device == "arc" or os.environ.get("IPEX_LLM_LOW_MEM", None) == "1")
