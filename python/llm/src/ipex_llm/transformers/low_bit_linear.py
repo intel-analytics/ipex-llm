@@ -543,13 +543,13 @@ class LowBitLinear(nn.Linear):
 
     def forward(self, x: torch.Tensor):
         # empty cache before and after lm_head at first token when input > 1024
-        # on arc or BIGDL_LOW_MEMORY_MODE is set to 1 at inference time.
+        # on arc or IPEX_LLM_LOW_MEM is set to 1 at inference time.
         if self.device is None:
             self.device = get_xpu_device_type(self.weight.data)
-            # TODO: may remove BIGDL_LOW_MEMORY_MODE here, probably not necessary
+            # TODO: may remove IPEX_LLM_LOW_MEM here, probably not necessary
             self.low_memory_mode = \
                 self.low_memory_mode and \
-                (self.device == "arc" or os.environ.get("BIGDL_LOW_MEMORY_MODE", None) == "1")
+                (self.device == "arc" or os.environ.get("IPEX_LLM_LOW_MEM", None) == "1")
         # Due to inconsistent training status in some models like Baichuan-7b-Chat,
         # we should check both self.training and torch.is_inference_mode_enabled().
         is_training = self.training and not torch.is_inference_mode_enabled()
