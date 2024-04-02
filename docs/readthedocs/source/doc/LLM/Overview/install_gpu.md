@@ -73,7 +73,6 @@ choosing either US or CN website for `extra-index-url`:
 
       .. code-block:: cmd
 
-         conda create -n llm python=3.9 libuv
          conda activate llm
 
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -82,7 +81,6 @@ choosing either US or CN website for `extra-index-url`:
 
       .. code-block:: cmd
 
-         conda create -n llm python=3.9 libuv
          conda activate llm
 
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
