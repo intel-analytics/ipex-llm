@@ -1467,7 +1467,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
     from deepspeed.comm.comm import init_distributed
     init_distributed()
 
-    model = BenchmarkWrapper(model)
+    model = BenchmarkWrapper(model, do_print=True)
 
     result = {}
     with torch.inference_mode():
