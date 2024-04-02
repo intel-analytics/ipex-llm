@@ -189,8 +189,8 @@ def qwen_attention_forward_vl(
         present = None
 
     if decoding_fast_path:
-        query = query.transpose(1, 2) # change to (bsz, q_len, num_heads, head_dim)
-
+        # change to (bsz, q_len, num_heads, head_dim)
+        query = query.transpose(1, 2)
 
     if self.use_logn_attn and not self.training:
         if self.logn_tensor.device != query.device or self.logn_tensor.dtype != query.dtype:
