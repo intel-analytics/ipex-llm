@@ -4,17 +4,12 @@
 This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `ipex-llm`.
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
-## Prerequisites
 
-Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install) before proceeding with the examples provided here. 
+## 1. Setting up Dependencies 
 
-
-## Retrieval-Augmented Generation (RAG) Example
-The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
-
-
-
-### Setting up Dependencies 
+* **Install ipex-llm** 
+  
+  Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install) before proceeding with the examples provided here. 
 
 * **Install LlamaIndex Packages**
     ```bash
@@ -22,35 +17,46 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     ```
 
 * **Database Setup (using PostgreSQL)**:
-    * Installation: 
-        ```bash
-        sudo apt-get install postgresql-client
-        sudo apt-get install postgresql
-        ```
-    * Initialization:
+  > Note: Database Setup is only required in RAG example.
 
-      Switch to the **postgres** user and launch **psql** console:
-        ```bash
-        sudo su - postgres
-        psql
-        ```
-      Then, create a new user role:
-        ```bash
-        CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
-        ALTER ROLE <user> SUPERUSER;    
+  * Installation: 
+      ```bash
+      sudo apt-get install postgresql-client
+      sudo apt-get install postgresql
+      ```
+  * Initialization:
+
+    Switch to the **postgres** user and launch **psql** console:
+      ```bash
+      sudo su - postgres
+      psql
+      ```
+    Then, create a new user role:
+      ```bash
+      CREATE ROLE <user> WITH LOGIN PASSWORD '<password>';
+      ALTER ROLE <user> SUPERUSER;    
         ```
 * **Pgvector Installation**:
-    Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
+  > Note: Database Setup is only required in RAG example.
+  
+  Follow installation instructions on [pgvector's GitHub](https://github.com/pgvector/pgvector) and refer to the [installation notes](https://github.com/pgvector/pgvector#installation-notes) for additional help.
 
 
-* **Data Preparation**: Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
-    ```bash
-    mkdir data
-    wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
-    ```
+* **Data Preparation**: 
+  > Note: Database Setup is only required in RAG example.
+  
+  Download the Llama2 paper and save it as `data/llama2.pdf`, which serves as the default source file for retrieval.
+  ```bash
+  mkdir data
+  wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
+  ```
 
 
-### Running the RAG example
+## 2. Run the examples
+
+### 2.1 RAG (Retrival Augmented Generation)
+
+The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
 
 In the current directory, run the example with command:
 
@@ -66,7 +72,7 @@ python rag.py -m <path_to_model>
 - `-d DATA`: path to source data used for retrieval (in pdf format)
 - `-n N_PREDICT`: max predict tokens
 
-### Example Output
+**Example Output**：
 
 A query such as **"How does Llama 2 compare to other open-source models?"** with the Llama2 paper as the data source, using the `Llama-2-7b-chat-hf` model, will produce the output like below:
 
