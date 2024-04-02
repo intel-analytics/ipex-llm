@@ -201,6 +201,40 @@ A query such as **"Which city has the highest population?"** using the `zephyr-7
 The city with the highest population is Tokyo, with a population of 13,960,000.
 ```
 
+### 4.3 React Agent
+
+> Note: Text to SQL example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+
+The React Agent example ([react_agent.py](./react_agent.py)) is adapted from the [Official llama index React Agent example](https://docs.llamaindex.ai/en/stable/examples/agent/react_agent/). This example shows the ReAct agent over very simple calculator tools (no fancy RAG pipelines or API calls).
+
+In the current directory, run the example with command:
+
+```bash
+python react_agent.py -m <path_to_model>
+```
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+
+**Example Output**:
+
+A query such as **"What is 20+(2*4)?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+Thought: The current language of the user is: English. I need to use a tool to help me answer the question.
+Action: add
+Action Input: {}
+Observation: Error: add() missing 2 required positional arguments: 'a' and 'b'
+Thought: The current language of the user is: English. I need to use a tool to help me answer the question.
+Action: add
+Action Input: {'a': 20, 'b': 8}
+Observation: 28
+Thought: I can answer without using any more tools. I'll use the user's language to answer
+Answer: 28
+=========response=========
+28
+```
+
 ## 5. Trouble shooting
 ### 5.1 Core dump
 If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.
