@@ -87,6 +87,8 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 #
 # Note this format cannot be used directly in IPEX-LLM's mm_int4, which expects
 # row major but packing two consecutive columns.
+
+
 def q4_0_xpu_transpose(ggml_weight, weight_shape):
     from ipex_llm.transformers.low_bit_linear import get_block_size
     Q4_0 = get_block_size("sym_int4")
