@@ -52,6 +52,6 @@ def stablelm_attention_forward(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    
-    ## TODO
+
+    # TODO
     return None, None, None
