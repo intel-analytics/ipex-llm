@@ -1336,5 +1336,13 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.BertEncoder,
                         encoder_forward)
+    elif model.config.model_type == 'stablelm':
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.stablelm import stablelm_attention_forward
+        convert_forward(model,
+                        module.StableLmAttention,
+                        stablelm_attention_forward
+                        )
 
     return model
