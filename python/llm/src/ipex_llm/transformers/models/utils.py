@@ -74,6 +74,13 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
 def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
+    elif os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+        import warnings
+        warnings.warn(
+            "Passing `BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in v2.5. "
+            "Please make sure use `IPEX_LLM_QUANTIZE_KV_CACHE` instead."
+        )
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
     else:
