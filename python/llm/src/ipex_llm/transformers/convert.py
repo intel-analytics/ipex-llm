@@ -632,6 +632,10 @@ def _optimize_pre(model):
                 module.rope_base = rope_base
                 del module.c_attn
         model.apply(split_qkv_proj_func)
+    if model.config.model_type == "stablelm":
+        from ipex_llm.transformers.models.stablelm import merge_qkv
+        model.apply(merge_qkv)
+
     return model
 
 
@@ -1336,5 +1340,16 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.BertEncoder,
                         encoder_forward)
+    elif model.config.model_type == 'stablelm':
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.stablelm import stablelm_attention_forward
+        convert_forward(model,
+                        module.StableLmAttention,
+                        stablelm_attention_forward
+                        )
+        convert_forward(model,
+                        module.StableLmMLP,
+                        llama_mlp_forward)
 
     return model

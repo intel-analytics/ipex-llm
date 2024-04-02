@@ -168,7 +168,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2", "yuan"]:
+                        "mixtral", "qwen2", "yuan", "stablelm"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -207,7 +207,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family, rope_the
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral"]:
+                        "mixtral", "stablelm"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids,
                                                         q_embed, k_embed, rope_theta)
         return q_embed, k_embed
