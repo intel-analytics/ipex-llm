@@ -32,7 +32,8 @@ import torch.utils.checkpoint
 from transformers.utils import logging
 from ipex_llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import rotate_half
-
+from ipex_llm.transformers.models.utils import use_esimd_sdp
+from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
@@ -82,36 +83,25 @@ def qwen_attention_forward_vl(
     use_cache: Optional[bool] = False,
 ):
 
-    mixed_x_layer = self.c_attn(hidden_states)
-
-    query, key, value = mixed_x_layer.split(self.split_size, dim=2)
-
-    query = self._split_heads(query, self.num_heads, self.head_dim)
-    key = self._split_heads(key, self.num_heads, self.head_dim)
-    value = self._split_heads(value, self.num_heads, self.head_dim)
-
     kv_seq_len = hidden_states.size()[1]
 
-    if rotary_pos_emb is not None:
-        cur_len = query.shape[1]
-        rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
-        rotary_pos_emb = (rotary_pos_emb,) * 2
-        q_pos_emb, k_pos_emb = rotary_pos_emb
-        # Slice the pos emb for current inference
-        query = apply_rotary_pos_emb(query, q_pos_emb)
-        key = apply_rotary_pos_emb(key, k_pos_emb)
+    bsz, q_len, _ = hidden_states.size()
+    device = hidden_states.device
 
-    bsz, _, n_heads, head_dim = key.size()
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states)
+    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
+    decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
+    if decoding_fast_path:
+        hidden_states = hidden_states.view(1, -1)
+        cache_k, cache_v = layer_past[0], layer_past[1]
+        cache_k = cache_k.transpose(1, 2)
+        cache_v = cache_v.transpose(1, 2)
 
-    if layer_past is not None:
-        kv_seq_len += layer_past[0].shape[1]
-        # past_key, past_value = layer_past[0], layer_past[1]
-        # key = torch.cat((past_key, key), dim=1)
-        # value = torch.cat((past_value, value), dim=1)
-        cache_k = layer_past[0].transpose(1, 2)
-        cache_v = layer_past[1].transpose(1, 2)
-        if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
-            # allocate new
+        kv_seq_len = cache_k.shape[-2]
+        self.position_ids = self.position_ids.to(device)
+        position_ids = self.position_ids[kv_seq_len]
+        base = self.rope_base
+        if is_enough_kv_cache_room(layer_past, kv_seq_len):
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
                                                        self.num_heads,
                                                        self.head_dim,
@@ -124,10 +114,55 @@ def qwen_attention_forward_vl(
             cache_k = new_cache_k
             cache_v = new_cache_v
 
-        key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                   key.transpose(1, 2), value.transpose(1, 2))
-        key = key_states.transpose(1, 2)
-        value = value_states.transpose(1, 2)
+        args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
+                self.v_proj.weight.data, self.q_proj.bias.data, self.k_proj.bias.data,
+                self.v_proj.bias.data, position_ids, cache_k, cache_v, self.q_proj.weight.qtype,
+                self.v_proj.weight.qtype, kv_seq_len, self.head_dim, base]
+        import linear_q4_0
+        query, key, value = linear_q4_0.forward_qkv_bias(*args)
+        kv_seq_len += 1
+        query_size, key_size = 1, 1
+    else:
+        query = self.q_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
+        key = self.k_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
+        value = self.v_proj(hidden_states).view(bsz, q_len, self.num_heads, self.head_dim)
+
+        if rotary_pos_emb is not None:
+            cur_len = query.shape[1]
+            rotary_pos_emb = [i[:, -cur_len:, :, :] for i in rotary_pos_emb]
+            rotary_pos_emb = (rotary_pos_emb,) * 2
+            q_pos_emb, k_pos_emb = rotary_pos_emb
+            # Slice the pos emb for current inference
+            query = apply_rotary_pos_emb(query, q_pos_emb)
+            key = apply_rotary_pos_emb(key, k_pos_emb)
+        query_size, key_size = query.size(1), key.size(1)
+
+    if layer_past is not None:
+        if not decoding_fast_path:
+            kv_seq_len += layer_past[0].shape[1]
+            # past_key, past_value = layer_past[0], layer_past[1]
+            # key = torch.cat((past_key, key), dim=1)
+            # value = torch.cat((past_value, value), dim=1)
+            cache_k = layer_past[0].transpose(1, 2)
+            cache_v = layer_past[1].transpose(1, 2)
+            if cache_k.stride()[1] < kv_seq_len * cache_k.size(3):
+                # allocate new
+                new_cache_k, new_cache_v = extend_kv_cache(bsz,
+                                                           self.num_heads,
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=hidden_states.device)
+                new_cache_k[:] = cache_k
+                new_cache_v[:] = cache_v
+                cache_k = new_cache_k
+                cache_v = new_cache_v
+
+            key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                       key.transpose(1, 2), value.transpose(1, 2))
+            key = key_states
+            value = value_states
     elif use_cache:
         max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
         new_key_states, new_value_states = init_kv_cache(bsz,
@@ -139,28 +174,42 @@ def qwen_attention_forward_vl(
                                                          device=hidden_states.device)
         new_key_states[:] = key.transpose(1, 2)
         new_value_states[:] = value.transpose(1, 2)
-        key = new_key_states.transpose(1, 2)
-        value = new_value_states.transpose(1, 2)
+        key = new_key_states
+        value = new_value_states
 
     if use_cache:
-        present = (key, value)
+        present = (key.transpose(1, 2), value.transpose(1, 2))
     else:
         present = None
+
+    if decoding_fast_path:
+        query = query.transpose(1, 2) # change to (bsz, q_len, num_heads, head_dim)
 
     if self.use_logn_attn and not self.training:
         if self.logn_tensor.device != query.device or self.logn_tensor.dtype != query.dtype:
             self.logn_tensor = self.logn_tensor.to(query.device).type_as(query)
-        seq_start = key.size(1) - query.size(1)
-        seq_end = key.size(1)
+        seq_start = key_size - key_size
+        seq_end = key_size
         logn_tensor = self.logn_tensor[:, seq_start:seq_end, :, :]
         query = query * logn_tensor.expand_as(query)
 
     query = query.permute(0, 2, 1, 3)
-    key = key.permute(0, 2, 1, 3)
-    value = value.permute(0, 2, 1, 3)
-    attn_output, attn_weight = self._attn(
-        query, key, value, registered_causal_mask, attention_mask, head_mask
-    )
+
+    if not self.training and not hidden_states.requires_grad and \
+    use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query,
+                                                    key,
+                                                    value)
+        attn_output = attn_output.view(query.shape)
+        attn_output = attn_output.transpose(1, 2)
+        attn_weight = None
+    else:
+        attn_output, attn_weight = self._attn(
+            query, key, value, registered_causal_mask, attention_mask, head_mask
+        )
+
+
     context_layer = self._merge_heads(
         attn_output, self.num_heads, self.head_dim
     )
@@ -172,6 +221,24 @@ def qwen_attention_forward_vl(
         outputs += (attn_weight,)
 
     return outputs
+
+
+def should_use_fuse_rope(self, query_states):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+    return use_fuse_rope
+
+
+def is_enough_kv_cache_room(layer_past, kv_seq_len=1):
+    # to determinate if is enough kv cache room in transformers between 4.31 and 4.35
+    # seq_len for current seq len
+    # For llama like kv cache, i.e., [bs, n_head, seq_len, head_dim]
+    if layer_past is None:
+        return False
+    else:
+        cache_k, cache_v = layer_past[0], layer_past[1]
+        cache_k = cache_k.transpose(1, 2)
+        return cache_k.stride(1) < (kv_seq_len + 1) * cache_k.size(3)
 
 
 def qwen_vl_resampler_forward(self, x, attn_mask=None):

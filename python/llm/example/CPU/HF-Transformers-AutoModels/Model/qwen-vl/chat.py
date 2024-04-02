@@ -41,7 +41,9 @@ if __name__ == '__main__':
                                                  load_in_4bit=True, 
                                                  device_map="cpu", 
                                                  trust_remote_code=True, 
-                                                 modules_to_not_convert=['c_fc', 'out_proj'] )
+                                                 modules_to_not_convert=['c_fc', 'out_proj'],
+                                                 torch_dtype=torch.float32
+                                                 )
 
     # Specify hyperparameters for generation (No need to do this if you are using transformers>=4.32.0)
     model.generation_config = GenerationConfig.from_pretrained(model_path, trust_remote_code=True)
