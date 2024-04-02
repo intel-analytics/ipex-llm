@@ -595,6 +595,10 @@ def _optimize_pre(model):
     ):
         from ipex_llm.transformers.models.bert import merge_qkv
         model.apply(merge_qkv)
+    # for starcoder2
+    if model.config.model_type == "starcoder2":
+        from ipex_llm.transformers.models.starcoder2 import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "qwen":
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
@@ -1295,6 +1299,15 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+    elif model.config.model_type == "starcoder2":
+        # starcoder2
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.starcoder2 import attention_forward
+        from ipex_llm.transformers.models.starcoder2 import model_forward
+        convert_forward(model, module.Starcoder2Attention, attention_forward)
+        convert_forward(model, module.Starcoder2Model, model_forward)
+
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
