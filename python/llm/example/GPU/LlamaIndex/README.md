@@ -179,6 +179,28 @@ However, it's important to note that the performance of Llama 2 can vary dependi
 In conclusion, while Llama 2 performs well on most benchmarks compared to other open-source models, its performance
 ```
 
+### 4.2 Text to SQL
+
+> Note: Text to SQL example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+
+The Text to SQL example ([text_to_sql.py](./text_to_sql.py)) is adapted from the [Official llama index Text-to-SQL example](https://docs.llamaindex.ai/en/stable/examples/index_structs/struct_indices/SQLIndexDemo/#part-3-text-to-sql-retriever). This example shows how to define a text-to-SQL retriever on its own and plug it into `RetrieverQueryEngine` to build a retrival pipeline.
+
+In the current directory, run the example with command:
+
+```bash
+python text_to_sql.py -m <path_to_model> -e <path_to_embedding_model>
+```
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-e EMBEDDING_MODEL_PATH`: **Required**, path to the embedding model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+**Example Output**:
+A query such as **"Which city has the highest population?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+The city with the highest population is Tokyo, with a population of 13,960,000.
+```
+
 ## 5. Trouble shooting
 ### 5.1 Core dump
 If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.
