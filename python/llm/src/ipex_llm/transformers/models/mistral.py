@@ -86,7 +86,8 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
     return llama_decoding_fast_path_qtype_check(proj) and \
-        use_fuse_rope and enough_kv_room and bs == 1
+        use_fuse_rope and enough_kv_room and bs == 1 and \
+        not proj.enable_xetla
 
 
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
@@ -159,8 +160,6 @@ def mistral_model_forward_4_36(
         output_hidden_states=output_hidden_states,
         return_dict=return_dict,
     )
-
-
 
 
 def mistral_attention_forward(
@@ -386,7 +385,6 @@ def mistral_attention_forward_original(
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -410,14 +408,16 @@ def mistral_attention_forward_original(
         if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
                 self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
-                                                        self.k_proj,
-                                                        self.v_proj,
-                                                        self.q_proj.qtype)
+                                                              self.k_proj,
+                                                              self.v_proj,
+                                                              self.q_proj.qtype)
             import linear_q4_0
             q_out_len = self.q_proj.out_len
             k_out_len = self.k_proj.out_len
             v_out_len = self.v_proj.out_len
-            qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight, self.q_proj.qtype)
+            qkv_states = linear_q4_0.mm_xetla(hidden_states,
+                                              self.qkv_proj_qweight,
+                                              self.q_proj.qtype)
             query_states = qkv_states[:, :, :q_out_len]
             key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
             value_states = qkv_states[:, :, q_out_len + k_out_len:]

@@ -75,6 +75,7 @@ IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
 IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 
+
 # For sym_int4
 # The ggml_weight is col major and packs two rows at a stride of Q4_0//2.
 #
@@ -132,6 +133,7 @@ def ggml_xpu_to_ipex_llm_xetla(ggml_weight, weight_shape, qtype):
     else:
         invalidInputError(False, f"Unsupported qtype {qtype}")
     return weight
+
 
 def ipex_llm_xetla_to_ggml_xpu(xetla_weight, weight_shape, qtype):
     from ipex_llm.transformers.low_bit_linear import get_block_size
@@ -451,7 +453,9 @@ class FP4Params(torch.nn.Parameter):
                                   qtype=self.qtype,
                                   enable_xetla=self.enable_xetla)
             if self.enable_xetla:
-                ggml_xpu = ipex_llm_xetla_to_ggml_xpu(new_param.data, new_param._shape, new_param.qtype)
+                ggml_xpu = ipex_llm_xetla_to_ggml_xpu(new_param.data,
+                                                      new_param._shape,
+                                                      new_param.qtype)
             else:
                 ggml_xpu = new_param.data
             new_param.data = ggml_q_format_convet_xpu2cpu(ggml_xpu,
