@@ -101,3 +101,31 @@ A query such as **"Which city has the highest population?"** using the `zephyr-7
 ```
 The city with the highest population is Tokyo, with a population of 13,960,000.
 ```
+
+### 2.3 React Agent
+
+> Note: React Agent example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+
+The Text to SQL example ([react_agent.py](./react_agent.py)) is adapted from the [Official llama index React Agent example](https://docs.llamaindex.ai/en/stable/examples/agent/react_agent/). This example shows the ReAct agent over very simple calculator tools (no fancy RAG pipelines or API calls).
+
+In the current directory, run the example with command:
+
+```bash
+python react_agent.py -m <path_to_model>
+```
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+
+**Example Output**:
+
+A query such as **"What is 3+5?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+Thought: (Implicit) I can answer without any more tools!
+Answer: <|assistant|>
+The sum of 3 and 5 is 8.
+=========response=========
+<|assistant|>
+The sum of 3 and 5 is 8.
+```
