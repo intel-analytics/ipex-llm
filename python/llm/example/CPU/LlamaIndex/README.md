@@ -129,3 +129,51 @@ The sum of 3 and 5 is 8.
 <|assistant|>
 The sum of 3 and 5 is 8.
 ```
+
+### 2.4 JSON Query Engine
+
+> Note: 
+    > - JSON Query Engine example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+    > - This example also requires `jsonpath-ng`. Use `pip install jsonpath-ng` to install.
+
+The JSON Query Engine example ([json_query_engine.py](./json_query_engine.py)) is adapted from the [Official llama index JSON Query Engine example](https://github.com/run-llama/llama_index/blob/main/docs/docs/examples/query_engine/json_query_engine.ipynb). This example shows how to query JSON documents that conform to a JSON schema. This JSON schema is then used in the context of a prompt to convert a natural language query into a structured JSON Path query. This JSON Path query is then used to retrieve data to answer the given question.
+
+In the current directory, run the example with command:
+
+```bash
+python json_query_engine.py -m <path_to_model>
+```
+
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+
+**Example Output**:
+
+A query such as **"What comments has simon been writing?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+Interesting thoughts, Loved reading this!
+
+This is a comment written by simon.
+
+This is a blog post written by admin.
+
+This is a comment written by john.
+
+This is a blog post written by admin.
+
+This is a comment written by simon.
+
+This is a blog post written by admin.
+
+This is a comment written by john.
+
+This is a blog post written by admin.
+
+This is a comment written by simon.
+
+This is a blog post written by admin.
+
+This is a comment
+```
