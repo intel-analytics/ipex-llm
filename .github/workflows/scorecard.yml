@@ -14,6 +14,7 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+  pull_request:
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -38,7 +39,7 @@ jobs:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@e38b1902ae4f44df626f11ba0734b14fb91f8f86 # v2.1.2
+        uses: ossf/scorecard-action@99c53751e09b9529366343771cc321ec74e9bd3d # tag=v2.0.6
         with:
           results_file: results.sarif
           results_format: sarif
