@@ -21,6 +21,7 @@ from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4
+from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
 
@@ -340,6 +341,10 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
 
     if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
         # esimd_sdp not support PVC GPU when batch size > 1 for now
+        return False
+    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
+            and is_deepspeed_available:
+        # esimd_sdp not support ARC GPU when batch size > 1 using DeepSpeed AutoTP for now
         return False
     if query_states.shape[0] > 1 and attention_mask is not None:
         # for batched input, can't accept attention_mask
