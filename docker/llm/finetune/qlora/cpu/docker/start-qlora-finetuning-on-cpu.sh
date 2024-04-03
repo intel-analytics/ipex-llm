@@ -4,6 +4,7 @@ cd /ipex_llm
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 source /opt/intel/oneapi/setvars.sh
+export CPU_CORES=$(nproc)
 source ipex-llm-init -t
 
 if [ -d "./model" ];
@@ -19,7 +20,6 @@ fi
 if [ "$STANDALONE_DOCKER" = "TRUE" ]
 then
   export CONTAINER_IP=$(hostname -i)
-  export CPU_CORES=$(nproc)
   source /opt/intel/oneapi/setvars.sh
   export CCL_WORKER_COUNT=$WORKER_COUNT_DOCKER
   export CCL_WORKER_AFFINITY=auto
