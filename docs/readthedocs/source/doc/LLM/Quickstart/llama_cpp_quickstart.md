@@ -31,7 +31,7 @@ pip install --pre --upgrade ipex-llm[cpp]
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
 
-## 2 Setup for running llama.cpp
+### 2 Setup for running llama.cpp
 
 First you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
 ```cmd
