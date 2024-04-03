@@ -87,8 +87,24 @@ def is_linear_module(module):
     mp_group = None
 
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+    from vllm.model_executor.layers.linear import ColumnParallelLinear, RowParallelLinear,  QKVParallelLinear, MergedColumnParallelLinear
+    from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
+    from vllm.model_executor.parallel_utils.parallel_state import get_tensor_model_parallel_group
 
-    if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+    # Currently, we do not use ColumnParallelLinear directly
+    if isinstance(module, RowParallelLinear):
+        in_features = module.input_size
+        out_features = module.output_size
+        result = True
+        mp_group = get_tensor_model_parallel_group()
+    elif isinstance(module, MergedColumnParallelLinear) or isinstance(module, QKVParallelLinear):
+        # This step does the all_gather op, however, it won't do it.
+        # TODO: may need to change to adapt other models
+        result = True
+        in_features = module.input_size
+        out_features = module.output_size
+        mp_group = None
+    elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
