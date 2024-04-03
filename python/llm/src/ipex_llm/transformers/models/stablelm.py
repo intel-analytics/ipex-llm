@@ -71,6 +71,13 @@ def merge_qkv(module: torch.nn.Module):
 
         qkv_proj = torch.nn.Linear(0, 0, bias=False)
         qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
+        if module.q_proj.bias is not None:
+            new_bias = torch.cat([
+                module.q_proj.bias.data,
+                module.k_proj.bias.data,
+                module.v_proj.bias.data,
+            ], dim=0)
+            qkv_proj.bias = torch.nn.Parameter(new_bias, requires_grad=False)
         qkv_proj.in_features = new_weight.size(1)
         qkv_proj.out_features = new_weight.size(0)
         module.qkv_proj = qkv_proj
