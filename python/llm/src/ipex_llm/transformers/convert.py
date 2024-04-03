@@ -104,7 +104,7 @@ def is_linear_module(module):
         out_features = module.output_size
         result = True
         # Set mp_group does not 100% indicate need to do all_reduce operations
-        if is_torch_distributed_initialized() and get_tensor_model_parallel_world_size() >= 1:
+        if is_torch_distributed_initialized() and get_tensor_model_parallel_world_size() >= 2:
             mp_group = get_tensor_model_parallel_group()
         else:
             mp_group = None

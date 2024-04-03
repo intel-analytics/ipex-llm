@@ -700,7 +700,9 @@ class FP16Linear(nn.Linear):
         if self.weight is not None and self.weight.dtype != x.dtype:
             self.weight.data = self.weight.data.to(x.dtype)
 
-        if not self.use_esimd_kernel(x):
+        # FIXME: it seems that error will occur if esimd kernel get used
+        # if not self.use_esimd_kernel(x):
+        if True:
             if get_ipex_version() < "2.1.10+xpu":
                 if self.weight_type == 2:
                     self.weight = self.weight.transpose(0, 1).contiguous()
