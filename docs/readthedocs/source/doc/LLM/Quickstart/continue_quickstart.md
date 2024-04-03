@@ -1,14 +1,22 @@
 
 # Run Code Copilot on Windows with Intel GPU
 
-[**Continue**](https://marketplace.visualstudio.com/items?itemName=Continue.continue) is a coding copilot extension in [Microsoft Visual Studio Code](https://code.visualstudio.com/); by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local llms running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) for code explanation, code generation/completion; see the snapshot of running Continue below (using [`CodeLlama-7b`](https://huggingface.co/codellama/CodeLlama-7b-hf)).
+[**Continue**](https://marketplace.visualstudio.com/items?itemName=Continue.continue) is a coding copilot extension in [Microsoft Visual Studio Code](https://code.visualstudio.com/); by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local llms running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) for code explanation, code generation/completion; see the demos of using Continue with [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) running on Intel A770 GPU below.
+
+
+<table border="1" width="100%">
+  <tr>
+    <td align="center">Code Generation</td>
+    <td align="center">Code Explanation</td>
+  </tr>
+  <tr>
+    <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/code-gen.mp4" width="100%" controls></video></td>
+    <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/code-explanation.mp4" width="100%" controls></video></td>
+</tr>
+</table>
 
 
 
-
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_preview.jpeg" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_preview.jpeg" width=100%; />
-</a>
 
 ## Quickstart
 
