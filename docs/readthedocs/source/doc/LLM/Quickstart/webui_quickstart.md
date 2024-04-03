@@ -1,6 +1,8 @@
 # Run Text Generation WebUI on Intel GPU
 
-The [oobabooga/text-generation-webui](https://github.com/oobabooga/text-generation-webui) provides a user friendly GUI for anyone to run LLM locally; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run LLM in [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); see the demo of running LLaMA2-7B on an Intel Core Ultra laptop below.
+The [oobabooga/text-generation-webui](https://github.com/oobabooga/text-generation-webui) provides a user friendly GUI for anyone to run LLM locally; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run LLM in [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
+
+See the demo of running LLaMA2-7B on an Intel Core Ultra laptop below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4" width="100%" controls></video>
 
