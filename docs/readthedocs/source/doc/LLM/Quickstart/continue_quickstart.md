@@ -17,30 +17,14 @@ This guide walks you through setting up and running **Continue** within _Visual 
 
 ### 1. Install and Run Text Generation WebUI
 
-Visit [Run Text Generation WebUI Quickstart Guide](webui_quickstart.html), and follow the steps 1) [Install IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm), 2) [Install WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-the-webui) and 3) [Start the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#start-the-webui-server) to install and start the **Text Generation WebUI API Service**, with a few exceptions as below: 
-
-
+Visit [Run Text Generation WebUI Quickstart Guide](webui_quickstart.html), and follow the steps 1) [Install IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm), 2) [Install WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-the-webui) and 3) [Start the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#start-the-webui-server) to install and start the Text Generation WebUI API Service. **Please pay attention to below items during installation:**
 
 - The Text Generation WebUI API service requires Python version 3.10 or higher. But [IPEX-LLM installation instructions](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm) used ``python=3.9`` as default for creating the conda environment. We recommend changing it to ``3.11``, using below command:
   ```bash
   conda create -n llm python=3.11 libuv
   ```
-- When following instructions in [Install Python Dependencies](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-dependencies), install an extra dependency for the API service, i.e. `extensions/openai/requirements.txt`:
-  ```cmd
-    cd C:\text-generation-webui
-    pip install -r requirements_cpu_only.txt
-    pip install -r extensions/openai/requirements.txt
-  ```
-- When following the instructios in [Launch the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#launch-the-server), add a few additional command line arguments for the API service:
-  ```
-    python server.py --load-in-4bit --api --api-port 5000 --listen
-  ```
+- Remember to launch the server **with API service** as specified in [Launch the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#launch-the-server)
 
-```eval_rst
-.. note::
-
-   The API server will by default use port ``5000``. To change the port, use ``--api-port 1234`` in the command above. You can also specify using SSL or API Key in the command. Please see `this guide <https://github.com/intel-analytics/text-generation-webui/blob/ipex-llm/docs/12%20-%20OpenAI%20API.md>`_ for the full list of arguments.
-```
 
 
 ### 2. Use WebUI to Load Model
@@ -89,7 +73,7 @@ Follow the steps in [Model Download](https://ipex-llm.readthedocs.io/en/latest/d
 
 
 
-## 4. Configure `Continue`
+### 4. Configure `Continue`
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_configuration.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_configuration.png" width=100%; />
@@ -112,17 +96,17 @@ In `config.json`, you'll find the `models` property, a list of the models that y
 }
 ```
 
-## 5. How to Use Continue
+### 5. How to Use Continue
 For detailed tutorials please refer to [this link](https://continue.dev/docs/how-to-use-continue). Here we are only showing the most common scenarios.
 
-### Ask about highlighted code or an entire file
+#### Ask about highlighted code or an entire file
 If you don't understand how some code works, highlight(press `Ctrl+Shift+L`) it and ask "how does this code work?"
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_sample_usage1.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_sample_usage1.png" width=100%; />
 </a>
 
-### Editing existing code
+#### Editing existing code
 You can ask Continue to edit your highlighted code with the command `/edit`.
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_sample_usage2.png" target="_blank">
@@ -130,9 +114,9 @@ You can ask Continue to edit your highlighted code with the command `/edit`.
 </a>
 
 
-## Troubleshooting
+### Troubleshooting
 
-### Failed to load the extension `openai`
+#### Failed to load the extension `openai`
 
 If you encounter `TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'` when you run `python server.py --load-in-4bit --api`, please make sure you are using `Python 3.11` instead of lower versions.
 
