@@ -1,26 +1,70 @@
-# Run Ollama on Intel GPU
+# Run Ollama on Linux with Intel GPU
 
-### 1 Install Ollama integrated with IPEX-LLM
+The [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine. Now you can run Ollama with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); see the demo of running LLaMA2-7B on an Intel A770 GPU below.
 
-First ensure that IPEX-LLM is installed. Follow the instructions on the [IPEX-LLM Installation Quickstart for Windows with Intel GPU](install_windows_gpu.html). And activate your conda environment.
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
 
-Run `pip install --pre --upgrade ipex-llm[cpp]`, then execute `init-ollama`, you can see a softlink of `ollama`under your current directory.
 
-### 2 Verify Ollama Serve
+## Quickstart
 
-To avoid potential proxy issues, run `export no_proxy=localhost,127.0.0.1`. Execute `export ZES_ENABLE_SYSMAN=1` and `source /opt/intel/oneapi/setvars.sh` to enable driver initialization and dependencies for system management.
+### 1 Install IPEX-LLM with Ollama Binaries
 
-Start the service using `./ollama serve`. It should display something like:
+Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Install Prerequisits on Linux](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#linux) , and section [Install IPEX-LLM cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binaries. 
 
-![image-20240403164414684](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240403164414684.png)
+**After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
 
-To expose the `ollama` service port and access it from another machine, use `OLLAMA_HOST=0.0.0.0 ./ollama serve`.
+### 2. Initialize Ollama 
 
-Open another terminal, use `./ollama pull <model_name>` to download a model locally.
+Activate the `llm-cpp` conda environment and initialize Ollama by executing the commands below. A symbolic link to `ollama` will appear in your current directory.
 
-![image-20240403165342436](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240403165342436.png)
+```bash
+conda activate llm-cpp
+init-ollama
+``` 
 
-Verify the setup with the following command:
+### 3 Run Ollama Serve
+
+
+Launch the Ollama service:
+
+```bash
+conda activate llm-cpp
+
+export no_proxy=localhost,127.0.0.1
+export ZES_ENABLE_SYSMAN=1
+source /opt/intel/oneapi/setvars.sh
+
+./ollama serve
+```
+
+```eval_rst
+.. note::
+   
+  To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
+```
+
+The console will display messages similar to the following:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_serve.png" width=100%; />
+</a>
+
+
+
+### 4 Pull Model
+Keep the Ollama service on and open a new terminal and pull a model, e.g. `dolphin-phi:latest`:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" width=100%; />
+</a>
+
+
+
+### 5 Using Ollama
+
+#### Using Curl 
+
+Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled model**, e.g. `dolphin-phi`.
 
 ```shell
 curl http://localhost:11434/api/generate -d '
@@ -31,14 +75,30 @@ curl http://localhost:11434/api/generate -d '
 }'
 ```
 
-Expected results:
+An example output of using model `doplphin-phi` looks like the following:
 
-![image-20240403170520057](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240403170520057.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" width=100%; />
+</a>
 
-### 3 Example: Ollama Run
 
-You can use `./ollama run <model_name>` to automatically pull and load the model for a stream chat.
+#### Using Ollama Run
 
-![image-20240403165927706](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240403165927706.png)
+You can also use `ollama run` to run the model directly on console. **Replace the <model_name> with your pulled model**, e.g. `dolphin-phi`. This command will seamlessly download, load the model, and enable you to interact with it through a streaming conversation."
 
-![image-20240403170234524](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240403170234524.png)
+
+```bash
+conda activate llm-cpp
+
+export no_proxy=localhost,127.0.0.1
+export ZES_ENABLE_SYSMAN=1
+source /opt/intel/oneapi/setvars.sh
+
+./ollama run <model_name>
+```
+
+An example process of interacting with model with `ollama run` looks like the following:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" width=100%; /><img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_2.png" width=100%; />
+</a>
