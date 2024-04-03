@@ -230,7 +230,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     invalidInputError(isinstance(model, torch.nn.Module),
                       "model should be an instance of "
                       f"`torch.nn.Module`, but got {type(model)} at last.")
-    invalidInputError(model.device.type in ('cpu', 'meta'),
+    invalidInputError(not hasattr(model, 'device') or model.device.type in ('cpu', 'meta'),
                       "Expect model on device `cpu` or `meta`, "
                       f"but got device type {model.device.type}")
     if kwargs.pop("replace_embedding", False):
