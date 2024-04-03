@@ -18,6 +18,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
+# Refer to https://huggingface.co/stabilityai/stablelm-zephyr-3b/blob/8b471c751c0e78cb46cf9f47738dd0eb45392071/config.json#L21, please make sure you are using a stable version of Transformers, 4.38.0 or newer.
 pip install transformers==4.38.0
 ```
 
@@ -29,6 +30,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
+# Refer to https://huggingface.co/stabilityai/stablelm-zephyr-3b/blob/8b471c751c0e78cb46cf9f47738dd0eb45392071/config.json#L21, please make sure you are using a stable version of Transformers, 4.38.0 or newer.
 pip install transformers==4.38.0
 ```
 
