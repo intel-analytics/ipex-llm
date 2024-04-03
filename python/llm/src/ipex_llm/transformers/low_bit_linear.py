@@ -58,7 +58,7 @@ T = TypeVar("T", bound="torch.nn.Module")
 import ipex_llm.ggml.model.llama.llama_cpp as ggml
 import ctypes
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
-from ipex_llm.transformers.convert import is_deepspeed_available
+from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
 
 TORCH_LINEAR_THRESHOLD = int(os.getenv("BIGDL_LLM_LINEAR_THRESHOLD", "512"))
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
@@ -715,8 +715,7 @@ class FP16Linear(nn.Linear):
                 if is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(output, group=self.mp_group)
-                else:
-                    # TODO: check vllm is available
+                elif is_vllm_available():
                     torch.distributed.all_reduce(output, group=self.mp_group)
             return output
         else:
@@ -756,8 +755,7 @@ class FP16Linear(nn.Linear):
                 if is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                else:
-                    # TODO: check vllm is available
+                elif is_vllm_available():
                     torch.distributed.all_reduce(result, group=self.mp_group)
 
             if self.bias is not None:

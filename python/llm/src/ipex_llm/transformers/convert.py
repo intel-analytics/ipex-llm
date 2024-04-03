@@ -59,6 +59,8 @@ def is_auto_gptq_available():
 def is_auto_awq_available():
     return importlib.util.find_spec("awq") is not None
 
+def is_vllm_available():
+    return importlib.util.find_spec("vllm") is not None
 
 def is_deepspeed_available():
     spec = importlib.util.find_spec("deepspeed")
