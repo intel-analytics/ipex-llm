@@ -572,32 +572,20 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
+
 ## IPEX-LLM Fine Tuning on XPU
 
 The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
-### 1. Prepare Docker Image
+### 1. Prepare ipex-llm-finetune-qlora-xpu Docker Image
 
-You can download directly from Dockerhub like:
+Run the following command:
 
 ```bash
 docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
 ```
 
-Or build the image from source:
-
-```bash
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker build \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT \
-  -f ./Dockerfile .
-```
-
-### 2. Prepare Base Model, Data and Container
+### 2. Prepare Base Model, Data and Start Docker Container
 
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
@@ -606,46 +594,29 @@ export BASE_MODE_PATH=your_downloaded_base_model_path
 export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
+export CONTAINER_NAME=my_container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
 
 docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=ipex-llm-fintune-qlora-xpu \
+   --name=$CONTAINER_NAME \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/ipex-llm-fintune-qlora-xpu:2.1.0-SNAPSHOT
+   $DOCKER_IMAGE
 ```
 
-The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
+After the container is booted, you could get into the container through docker exec.
 
 ```bash
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker run -itd \
-   --net=host \
-   --device=/dev/dri \
-   --memory="32G" \
-   --name=ipex-llm-fintune-qlora-xpu \
-   -e http_proxy=${HTTP_PROXY} \
-   -e https_proxy=${HTTPS_PROXY} \
-   --shm-size="16g" \
-   intelanalytics/ipex-llm-fintune-qlora-xpu:2.1.0-SNAPSHOT
+docker exec -it $CONTAINER_NAME bash
 ```
 
-However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
-
-### 3. Start Fine-Tuning
-
-Enter the running container:
-
-```bash
-docker exec -it ipex-llm-fintune-qlora-xpu bash
-```
+### 3. Start Fine-Tuning (Local Mode)
 
 Then, start QLoRA fine-tuning:
 
@@ -670,3 +641,13 @@ After minutes, it is expected to get results like:
 100%|███████████████████████████████████████████████████████████████████████████████████| 200/200 [07:16<00:00,  2.18s/it]
 TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15})
 ```
+
+### 4. Merge the adapter into the original model
+
+Using the [export_merged_model.py](../../../../../../python/llm/example/GPU/LLM-Finetuning/QLoRA/export_merged_model.py) to merge.
+
+```
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+```
+
+Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
