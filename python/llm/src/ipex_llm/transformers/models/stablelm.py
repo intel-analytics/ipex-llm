@@ -48,7 +48,7 @@ from transformers.models.stablelm.modeling_stablelm import StableLmAttention
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu
+    apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.mistral import should_use_fuse_rope, repeat_kv
@@ -124,13 +124,15 @@ def stablelm_attention_forward(
         key_states[..., : self.rotary_emb.dim],
         key_states[..., self.rotary_emb.dim:],
     )
+    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
     if use_fuse_rope:
-        query_rot, key_rot = apply_rotary_pos_emb_no_cache_xpu(query_rot,
-                                                               key_rot,
-                                                               position_ids,
-                                                               "stablelm")
+        query_rot, key_rot = apply_rotary_pos_emb_cache_freq_xpu(query_rot,
+                                                                 key_rot,
+                                                                 sin,
+                                                                 cos,
+                                                                 "stablelm",
+                                                                 position_ids)
     else:
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         # [batch_size, seq_length, num_heads, head_dim // config.partial_rotary_factor]
         query_rot, key_rot = apply_rotary_pos_emb(query_rot,
                                                   key_rot,
