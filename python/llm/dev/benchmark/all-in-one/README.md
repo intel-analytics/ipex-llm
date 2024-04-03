@@ -23,8 +23,7 @@ Config YAML file has following format
 
 ```yaml
 repo_id:
-  - 'THUDM/chatglm-6b'
-  - 'THUDM/chatglm2-6b'
+  # - 'THUDM/chatglm2-6b'
   - 'meta-llama/Llama-2-7b-chat-hf'
   # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
 local_model_hub: 'path to your local model hub'
@@ -37,21 +36,29 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
 test_api:
-  - "transformer_int4"
-  - "native_int4"
-  - "optimize_model"
-  - "pytorch_autocast_bf16"
-  # - "transformer_autocast_bf16"
   # - "ipex_fp16_gpu" # on Intel GPU
   # - "bigdl_fp16_gpu" # on Intel GPU
-  # - "transformer_int4_gpu"  # on Intel GPU
+  - "transformer_int4_gpu"  # on Intel GPU
+  # - "transformer_int4_fp16_gpu" # on Intel GPU, use fp16 for non-linear layer
   # - "optimize_model_gpu"  # on Intel GPU
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
   # - "transformer_int4_gpu_win" # on Intel GPU for Windows
   # - "transformer_int4_fp16_gpu_win" # on Intel GPU for Windows, use fp16 for non-linear layer
   # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+  # - "deepspeed_optimize_model_gpu" # deepspeed autotp on Intel GPU
+  # - "speculative_gpu"
+  # - "transformer_int4"
+  # - "native_int4"
+  # - "optimize_model"
+  # - "pytorch_autocast_bf16"
+  # - "transformer_autocast_bf16"
+  # - "bigdl_ipex_bf16"
+  # - "bigdl_ipex_int4"
+  # - "bigdl_ipex_int8"
+  # - "speculative_cpu"
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
+
 
 ```
 
