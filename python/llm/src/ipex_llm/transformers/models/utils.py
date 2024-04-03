@@ -207,7 +207,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family, rope_the
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "stablelm"]:
+                        "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids,
                                                         q_embed, k_embed, rope_theta)
         return q_embed, k_embed

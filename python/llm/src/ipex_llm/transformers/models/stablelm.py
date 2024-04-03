@@ -48,7 +48,7 @@ from transformers.models.stablelm.modeling_stablelm import StableLmAttention
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu
+    apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.mistral import should_use_fuse_rope, repeat_kv
