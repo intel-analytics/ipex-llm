@@ -36,6 +36,13 @@ Then, change to the directory of WebUI (e.g.,`C:\text-generation-webui`) and ins
 ```cmd
 cd C:\text-generation-webui
 pip install -r requirements_cpu_only.txt
+pip install -r extensions/openai/requirements.txt
+```
+
+```eval_rst
+.. note::
+   
+   `extensions/openai/requirements.txt` is for API service. If you don't need the API service, you can omit this command. 
 ```
 
 ### 3 Start the WebUI Server
@@ -59,17 +66,34 @@ set BIGDL_LLM_XMX_DISABLED=1
 ```
 
 #### Launch the Server
-In **Anaconda Prompt** with the conda environment `llm` activated, navigate to the text-generation-webui folder and start the server using the following command:
+In **Anaconda Prompt** with the conda environment `llm` activated, navigate to the `text-generation-webui` folder and execute the following commands (You can optionally lanch the server with or without the API service): 
 
+##### without API service
+   ```cmd
+   python server.py --load-in-4bit
+   ```
+##### with API service
+  ```
+    python server.py --load-in-4bit --api --api-port 5000 --listen
+  ```
 ```eval_rst
 .. note::
 
    with ``--load-in-4bit`` option, the models will be optimized and run at 4-bit precision. For configuration for other formats and precisions, refer to `this link <https://github.com/intel-analytics/text-generation-webui?tab=readme-ov-file#32-optimizations-for-other-percisions>`_
 ```
 
-   ```cmd
-   python server.py --load-in-4bit
-   ```
+```eval_rst
+.. note::
+
+   The API service allows user to access models using OpenAI-compatible API. For usage examples, refer to [this link](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples)  
+```
+
+```eval_rst
+.. note::
+
+   The API server will by default use port ``5000``. To change the port, use ``--api-port 1234`` in the command above. You can also specify using SSL or API Key in the command. Please see `this guide <https://github.com/intel-analytics/text-generation-webui/blob/ipex-llm/docs/12%20-%20OpenAI%20API.md>`_ for the full list of arguments.
+```
+
 
 #### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 

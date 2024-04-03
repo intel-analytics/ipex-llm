@@ -1,4 +1,4 @@
-# Use llama.cpp with IPEX-LLM on Intel GPU
+# Run llama.cpp with IPEX-LLM on Intel GPU 
 
 Now you can use IPEX-LLM as an Intel GPU accelerated backend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `ipex-llm` on Intel GPU (both iGPU and dGPU). 
 
