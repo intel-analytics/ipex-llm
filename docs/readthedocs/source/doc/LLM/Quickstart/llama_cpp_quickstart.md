@@ -7,6 +7,8 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width="100%" controls></video>
 
 ## Quick Start
+This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
+
 ### 0 Prerequisites
 IPEX-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
 
