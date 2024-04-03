@@ -1443,7 +1443,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
                                                      torch_dtype=torch.float16, trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     model = deepspeed.init_inference(model, mp_size=world_size,
-                                     dtype=torch.float16, replace_method="auto",)
+                                     dtype=torch.bfloat16, replace_method="auto",)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
