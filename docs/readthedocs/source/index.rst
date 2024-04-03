@@ -551,6 +551,13 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/deepseek">link</a></td>
        </tr>
+       <tr>
+         <td>StableLM</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/stablelm">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/stablelm">link</a></td>
+       </tr>
      </tbody>
    </table>
 
