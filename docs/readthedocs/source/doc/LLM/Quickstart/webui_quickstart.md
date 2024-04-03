@@ -104,6 +104,12 @@ If everything goes well, you will get a message as shown below.
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=100%; />
 </a>
 
+```eval_rst
+.. note::
+
+   Model loading might take a few minutes as it includes a **warm-up** phase. This `warm-up` step is used to improve the speed of subsequent model uses. 
+```
+
 #### Chat with the Model
 
 In the **Chat** tab, start new conversations with **New chat**. 
