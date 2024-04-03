@@ -136,7 +136,7 @@ def qwen_attention_forward_original(
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
-    position_ids = rotary_pos_emb_list[-1] # the last one is posisiton_ids
+    position_ids = rotary_pos_emb_list[-1]  # the last one is posisiton_ids
     rotary_pos_emb_list = rotary_pos_emb_list[:-1]
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
@@ -332,7 +332,7 @@ def qwen_attention_forward_quantized(
 
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
-    position_ids = rotary_pos_emb_list[-1] # the last one is posisiton_ids
+    position_ids = rotary_pos_emb_list[-1]  # the last one is posisiton_ids
     rotary_pos_emb_list = rotary_pos_emb_list[:-1]
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)

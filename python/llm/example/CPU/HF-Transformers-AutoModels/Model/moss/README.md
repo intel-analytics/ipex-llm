@@ -14,6 +14,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install ipex-llm[all] # install ipex-llm with 'all' option
+pip install "transformers<4.34"
 ```
 
 ### 2. Run

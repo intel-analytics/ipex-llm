@@ -48,7 +48,7 @@
 import importlib.util
 import logging
 from typing import Any, List, Mapping, Optional
-
+from ipex_llm.utils.common.log4Error import invalidInputError
 from pydantic import Extra
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
@@ -90,13 +90,14 @@ class TransformersLLM(LLM):
         model_id: str,
         model_kwargs: Optional[dict] = None,
         device_map: str = 'cpu',
+        tokenizer_id: str = None,
         **kwargs: Any,
     ) -> LLM:
         """
         Construct object from model_id
-        
+
         Args:
-        
+
             model_id: Path for the huggingface repo id to be downloaded or
                       the huggingface checkpoint folder.
             model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
@@ -114,21 +115,28 @@ class TransformersLLM(LLM):
             from transformers import AutoTokenizer, LlamaTokenizer
 
         except ImportError:
-            raise ValueError(
+            invalidInputError(
                 "Could not import transformers python package. "
                 "Please install it with `pip install transformers`."
             )
 
         _model_kwargs = model_kwargs or {}
         # TODO: may refactore this code in the future
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
-        except:
-            tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
+        if tokenizer_id is not None:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+        else:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
 
         # TODO: may refactore this code in the future
         try:
-            model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
+            model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True,
+                                                         **_model_kwargs)
         except:
             model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
 
@@ -155,13 +163,12 @@ class TransformersLLM(LLM):
         model_id: str,
         model_kwargs: Optional[dict] = None,
         device_map: str = 'cpu',
+        tokenizer_id: str = None,
         **kwargs: Any,
     ) -> LLM:
         """
         Construct low_bit object from model_id
-        
         Args:
-        
             model_id: Path for the bigdl transformers low-bit model checkpoint folder.
             model_kwargs: Keyword arguments that will be passed to the model and tokenizer.
             kwargs: Extra arguments that will be passed to the model and tokenizer.
@@ -177,24 +184,29 @@ class TransformersLLM(LLM):
             from transformers import AutoTokenizer, LlamaTokenizer
 
         except ImportError:
-            raise ValueError(
+            invalidInputError(
                 "Could not import transformers python package. "
                 "Please install it with `pip install transformers`."
             )
 
         _model_kwargs = model_kwargs or {}
         # TODO: may refactore this code in the future
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
-        except:
-            tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
+        if tokenizer_id is not None:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(tokenizer_id, **_model_kwargs)
+        else:
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
+            except:
+                tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
 
         # TODO: may refactore this code in the future
         try:
             model = AutoModelForCausalLM.load_low_bit(model_id, **_model_kwargs)
         except:
             model = AutoModel.load_low_bit(model_id, **_model_kwargs)
-        
         # TODO: may refactore this code in the future
         if 'xpu' in device_map:
             model = model.to(device_map)
@@ -260,5 +272,5 @@ class TransformersLLM(LLM):
             else:
                 stopping_criteria = None
             output = self.model.generate(input_ids, stopping_criteria=stopping_criteria, **kwargs)
-            text = self.tokenizer.decode(output[0], skip_special_tokens=True)[len(prompt) :]
+            text = self.tokenizer.decode(output[0], skip_special_tokens=True)[len(prompt):]
             return text

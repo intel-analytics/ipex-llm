@@ -43,7 +43,7 @@ from ipex_llm.vllm.model_executor.input_metadata import InputMetadata
 
 from ipex_llm.vllm.sampling_params import SamplingParams, SamplingType
 from ipex_llm.vllm.sequence import (SamplerOutput, SequenceGroupMetadata,
-                                     SequenceData, SequenceOutputs)
+                                    SequenceData, SequenceOutputs)
 
 import time
 

@@ -92,7 +92,7 @@ Here's a demonstration of how to navigate the tutorial in the explorer:
 **3.3 Performance Benchmark**: We provide a benchmark tool help users to test all the benchmarks and record them in a result CSV. 
 
 ```bash
-cd /llm//benchmark/all-in-one
+cd /llm/benchmark/all-in-one
 ```
 
 Users can provide models and related information in config.yaml.
@@ -144,9 +144,9 @@ Then, execute `bash run-spr.sh`, which will generate output results in `results.
 bash run-spr.sh
 ```
 
-For further details and comprehensive functionality of the benchmark tool, please refer to the [all-in-one benchmark tool](https://github.com/intel-analytics/BigDL/tree/main/python/llm/dev/benchmark/all-in-one).
+For further details and comprehensive functionality of the benchmark tool, please refer to the [all-in-one benchmark tool](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/all-in-one).
 
-Additionally, for examples related to Inference with Speculative Decoding, you can explore [Speculative-Decoding Examples](https://github.com/intel-analytics/BigDL/tree/main/python/llm/example/CPU/Speculative-Decoding).
+Additionally, for examples related to Inference with Speculative Decoding, you can explore [Speculative-Decoding Examples](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Speculative-Decoding).
 
 
 
@@ -202,19 +202,26 @@ For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you
   python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
   ```
 
-To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm/example/GPU).
+To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU).
 
 
 ## IPEX-LLM Serving on CPU
+FastChat is an open platform for training, serving, and evaluating large language model based chatbots. You can find the detailed information at their [homepage](https://github.com/lm-sys/FastChat).
 
-### Boot container
+IPEX-LLM is integrated into FastChat so that user can use IPEX-LLM as a serving backend in the deployment.
 
-Pull image:
-```
+### 1. Prepare ipex-llm-serving-cpu Docker Image
+
+Run the following command:
+
+```bash
 docker pull intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 ```
 
-You could use the following bash script to start the container. Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
+### 2. Start ipex-llm-serving-cpu Docker Container
+
+Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
+
 ```bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
@@ -229,102 +236,132 @@ docker run -itd \
     -v $MODEL_PATH:/llm/models \
     $DOCKER_IMAGE
 ```
-After the container is booted, you could get into the container through `docker exec`.
+Access the container:
+```
+docker exec -it $CONTAINER_NAME bash
+```
 
-### Models
-
-Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
-
-FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
-
-A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `IPEX-LLM` backend will be used automatically.
-
-
-### Start the service
-
-#### Serving with Web UI
+### 3. Serving with FastChat
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
-##### Launch the Controller
-```bash
-python3 -m fastchat.serve.controller
-```
+- #### **Step 1: Launch the Controller**
+  ```bash
+  python3 -m fastchat.serve.controller &
+  ```
 
-This controller manages the distributed workers.
+  This controller manages the distributed workers.
 
-##### Launch the model worker(s)
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
-```
-Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
+- #### **Step 2: Launch the model worker(s)**
 
-> To run model worker using Intel GPU, simply change the --device cpu option to --device xpu
+  Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
+  ```bash
+  source ipex-llm-init -t
 
-##### Launch the Gradio web server
+  # Available low_bit format including sym_int4, sym_int8, bf16 etc.
+  python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path path/to/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu" &
+  ```
+  Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
-```bash
-python3 -m fastchat.serve.gradio_web_server
-```
+- #### **Step 3: Launch Gradio web server or RESTful API server**
+  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with HTTP.
 
-This is the user interface that users will interact with.
+  - **Option 1: Serving with Web UI**
+    ```bash
+    python3 -m fastchat.serve.gradio_web_server &
+    ```
+    This is the user interface that users will interact with.
 
-By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
+    By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
 
-#### Serving with OpenAI-Compatible RESTful APIs
+  - **Option 2: Serving with OpenAI-Compatible RESTful APIs**
 
-To start an OpenAI API server that provides compatible APIs using `IPEX-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
+      Launch the RESTful API server
 
-First, launch the controller
+      ```bash
+      python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 &
+      ```
 
-```bash
-python3 -m fastchat.serve.controller
-```
+      Use curl for testing, an example could be:
 
-Then, launch the model worker(s):
+      ```bash
+      curl -X POST -H "Content-Type: application/json" -d '{
+        "model": "Llama-2-7b-chat-hf",
+        "prompt": "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
+        "n": 1,
+        "best_of": 1,
+        "use_beam_search": false,
+        "stream": false
+      }' http://YOUR_HTTP_HOST:8000/v1/completions
+      ```
+  You can find more details here [Serving using IPEX-LLM and FastChat](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/serving/fastchat/README.md)
 
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
-```
+### 4. Serving with vLLM Continuous Batching
+To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
-Finally, launch the RESTful API server
+- #### **Step 1: Launch the api_server**
+  ```bash
+  #!/bin/bash
+  # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
+  # of batched prompt length the server will accept
+  numactl -C 0-47 -m 0 python -m ipex_llm.vllm.entrypoints.openai.api_server \
+          --model /llm/models/Llama-2-7b-chat-hf/  \
+          --host 0.0.0.0 --port 8000 \
+          --load-format 'auto' --device cpu --dtype bfloat16 \
+          --max-num-batched-tokens 4096 &
+  ```
 
-```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
-```
+- #### **Step 2: Use curl for testing, access the api server as follows:**
+
+  ```bash
+  curl http://YOUR_HTTP_HOST:8000/v1/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+                  "model": "/llm/models/Llama-2-7b-chat-hf/",
+                  "prompt": "San Francisco is a",
+                  "max_tokens": 128,
+                  "temperature": 0
+  }' &
+  ```
+
+  You can find more details here: [Serving with vLLM Continuous Batching](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/vLLM-Serving/README.md)
 
 
 ## IPEX-LLM Serving on XPU
 
-### Boot container
+FastChat is an open platform for training, serving, and evaluating large language model based chatbots. You can find the detailed information at their [homepage](https://github.com/lm-sys/FastChat).
 
-Pull image:
-```
+IPEX-LLM is integrated into FastChat so that user can use IPEX-LLM as a serving backend in the deployment.
+
+### 1. Prepare ipex-llm-serving-xpu Docker Image
+
+Run the following command:
+
+```bash
 docker pull intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
 ```
 
+### 2. Start ipex-llm-serving-xpu Docker Container
+
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
 
-An example could be:
 ```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
-export SERVICE_MODEL_PATH=/llm/models/chatglm2-6b[a specified model path for running service]
 
 docker run -itd \
     --net=host \
-    --device=/dev/dri \
-    --memory="32G" \
+    --cpuset-cpus="0-47" \
+    --cpuset-mems="0" \
     --name=$CONTAINER_NAME \
-    --shm-size="16g" \
     -v $MODEL_PATH:/llm/models \
-    -e SERVICE_MODEL_PATH=$SERVICE_MODEL_PATH \
-    $DOCKER_IMAGE --service-model-path $SERVICE_MODEL_PATH
+    $DOCKER_IMAGE
 ```
-You can assign specified model path to service-model-path to run the service while booting the container. Also you can manually run the service after entering container. Run `/opt/entrypoint.sh --help` in container to see more information. There are steps below describe how to run service in details as well.
-
+Access the container:
+```
+docker exec -it $CONTAINER_NAME bash
+```
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
 ```bash
@@ -334,58 +371,88 @@ root@arda-arc12:/# sycl-ls
 [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
-After the container is booted, you could get into the container through `docker exec`.
 
-### Start the service
-
-#### Serving with Web UI
+### 3. Serving with FastChat
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
-##### Launch the Controller
-```bash
-python3 -m fastchat.serve.controller
-```
+- #### **Step 1: Launch the Controller**
+  ```bash
+  python3 -m fastchat.serve.controller &
+  ```
 
-This controller manages the distributed workers.
+  This controller manages the distributed workers.
 
-##### Launch the model worker(s)
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
-```
-Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
+- #### **Step 2: Launch the model worker(s)**
 
-##### Launch the Gradio web server
+  Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
+  ```bash
+  # Available low_bit format including sym_int4, sym_int8, fp16 etc.
+  python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /llm/models/Llama-2-7b-chat-hf/ --low-bit "sym_int4" --trust-remote-code --device "xpu" &
+  ```
+  Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
-```bash
-python3 -m fastchat.serve.gradio_web_server
-```
+- #### **Step 3: Launch Gradio web server or RESTful API server**
+  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with HTTP.
 
-This is the user interface that users will interact with.
+  - **Option 1: Serving with Web UI**
+    ```bash
+    python3 -m fastchat.serve.gradio_web_server &
+    ```
+    This is the user interface that users will interact with.
 
-By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
+    By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
 
-#### Serving with OpenAI-Compatible RESTful APIs
+  - **Option 2: Serving with OpenAI-Compatible RESTful APIs**
 
-To start an OpenAI API server that provides compatible APIs using `IPEX-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
+      Launch the RESTful API server
 
-First, launch the controller
+      ```bash
+      python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 &
+      ```
 
-```bash
-python3 -m fastchat.serve.controller
-```
+      Use curl for testing, an example could be:
 
-Then, launch the model worker(s):
+      ```bash
+      curl -X POST -H "Content-Type: application/json" -d '{
+        "model": "Llama-2-7b-chat-hf",
+        "prompt": "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
+        "n": 1,
+        "best_of": 1,
+        "use_beam_search": false,
+        "stream": false
+      }' http://YOUR_HTTP_HOST:8000/v1/completions
+      ```
+  You can find more details here [Serving using IPEX-LLM and FastChat](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/serving/fastchat/README.md)
 
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
-```
+### 4. Serving with vLLM Continuous Batching
+To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
-Finally, launch the RESTful API server
+- #### **Step 1: Launch the api_server**
+  ```bash
+  #!/bin/bash
+  # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
+  # of batched prompt length the server will accept
+  python -m ipex_llm.vllm.entrypoints.openai.api_server \
+          --model /llm/models/Llama-2-7b-chat-hf/ \
+          --host 0.0.0.0 --port 8000 \
+          --load-format 'auto' --device xpu --dtype bfloat16 \
+          --max-num-batched-tokens 4096 &
+  ```
 
-```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
-```
+- #### **Step 2: Use curl for testing, access the api server as follows:**
+
+  ```bash
+  curl http://YOUR_HTTP_HOST:8000/v1/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+                  "model": "/llm/models/Llama-2-7b-chat-hf/",
+                  "prompt": "San Francisco is a",
+                  "max_tokens": 128,
+                  "temperature": 0
+  }' &
+  ```
+  You can find more details here [Serving with vLLM Continuous Batching](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md)
 
 ## IPEX-LLM Fine Tuning on CPU
 
@@ -505,32 +572,20 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
+
 ## IPEX-LLM Fine Tuning on XPU
 
 The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
-### 1. Prepare Docker Image
+### 1. Prepare ipex-llm-finetune-qlora-xpu Docker Image
 
-You can download directly from Dockerhub like:
+Run the following command:
 
 ```bash
 docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
 ```
 
-Or build the image from source:
-
-```bash
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker build \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT \
-  -f ./Dockerfile .
-```
-
-### 2. Prepare Base Model, Data and Container
+### 2. Prepare Base Model, Data and Start Docker Container
 
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
@@ -539,46 +594,29 @@ export BASE_MODE_PATH=your_downloaded_base_model_path
 export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
+export CONTAINER_NAME=my_container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
 
 docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=ipex-llm-fintune-qlora-xpu \
+   --name=$CONTAINER_NAME \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/ipex-llm-fintune-qlora-xpu:2.1.0-SNAPSHOT
+   $DOCKER_IMAGE
 ```
 
-The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
+After the container is booted, you could get into the container through docker exec.
 
 ```bash
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker run -itd \
-   --net=host \
-   --device=/dev/dri \
-   --memory="32G" \
-   --name=ipex-llm-fintune-qlora-xpu \
-   -e http_proxy=${HTTP_PROXY} \
-   -e https_proxy=${HTTPS_PROXY} \
-   --shm-size="16g" \
-   intelanalytics/ipex-llm-fintune-qlora-xpu:2.1.0-SNAPSHOT
+docker exec -it $CONTAINER_NAME bash
 ```
 
-However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
-
-### 3. Start Fine-Tuning
-
-Enter the running container:
-
-```bash
-docker exec -it ipex-llm-fintune-qlora-xpu bash
-```
+### 3. Start Fine-Tuning (Local Mode)
 
 Then, start QLoRA fine-tuning:
 
@@ -603,3 +641,13 @@ After minutes, it is expected to get results like:
 100%|███████████████████████████████████████████████████████████████████████████████████| 200/200 [07:16<00:00,  2.18s/it]
 TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15})
 ```
+
+### 4. Merge the adapter into the original model
+
+Using the [export_merged_model.py](../../python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora/export_merged_model.py) to merge.
+
+```
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+```
+
+Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
