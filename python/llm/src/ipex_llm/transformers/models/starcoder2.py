@@ -44,7 +44,7 @@ from ipex_llm.transformers.models.utils import (
     use_quantize_kv_cache, restore_fp8_kv_cache,
     apply_rotary_pos_emb_no_cache_xpu
 )
-from ipex_llm.transformers.kv import DynamicFp8Cache
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 from typing import Optional, Tuple, List
@@ -56,6 +56,7 @@ from transformers.models.starcoder2.modeling_starcoder2 import Starcoder2Model, 
 def should_use_fuse_rope(self, hidden_states, position_ids):
     use_fuse_rope = (
         hidden_states.device.type == "xpu" and
+        hidden_states.numel() == hidden_states.size(-1) and
         not (self.training and hidden_states.requires_grad) and
         position_ids is not None
     )
@@ -130,12 +131,8 @@ def attention_forward(
                       "`past_key_value` cannot be None")
     use_quantize_kv = use_quantize_kv_cache(self.o_proj, hidden_states)
 
-    if use_quantize_kv:
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, None, new_layout=True)
-    else:
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, None)
+    key_states, value_states = past_key_value.update(key_states, value_states,
+                                                     self.layer_idx, None, new_layout=True)
 
     if use_quantize_kv and q_len == 1:
         import linear_q4_0
@@ -188,9 +185,12 @@ def model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.c_fc, input_ids):
-        if not isinstance(past_key_values, DynamicFp8Cache):
+    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.c_fc, input_ids)
+    if use_cache:
+        if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+        if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
+            past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
     return Starcoder2Model.forward(
         self=self,
         input_ids=input_ids,
