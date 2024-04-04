@@ -117,6 +117,7 @@ def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_
 
     if attn_output.size() != (bsz, num_heads, q_len, head_dim):
         invalidInputError(
+            False,
             f"`attn_output` should be of size {(bsz, num_heads, q_len, head_dim)},"
             f" but is {attn_output.size()}"
         )
@@ -326,6 +327,7 @@ def mistral_attention_forward_quantized(
             if attention_mask is not None:
                 if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                     invalidInputError(
+                        False,
                         f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                         f" but is {attention_mask.size()}"
                     )
@@ -682,6 +684,7 @@ def mistral_attention_forward_4_36_quantized(
             if attention_mask is not None:
                 if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                     invalidInputError(
+                        False,
                         f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                         f" but is {attention_mask.size()}"
                     )

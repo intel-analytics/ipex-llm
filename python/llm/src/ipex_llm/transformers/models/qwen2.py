@@ -141,7 +141,7 @@ def qwen2_model_forward_internal(
     elif inputs_embeds is not None:
         batch_size, seq_length, _ = inputs_embeds.shape
     else:
-        invalidInputError("You have to specify either decoder_input_ids or decoder_inputs_embeds")
+        invalidInputError(False, "You have to specify either decoder_input_ids or decoder_inputs_embeds")
 
     if self.gradient_checkpointing and self.training:
         if use_cache:
