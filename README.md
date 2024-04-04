@@ -37,7 +37,7 @@
 [^1]: Performance varies by use, configuration and other factors. `ipex-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 ## `ipex-llm` Demos
-See the demo of running [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [LangChain-Chatchat RAG](https://github.com/intel-analytics/Langchain-Chatchat), [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html) and [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels) with `ipex-llm` *(on either Intel Core Ultra laptop or Arc GPU)* below.
+See the demo of running [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [LangChain-Chatchat RAG](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html), [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html) and [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels) with `ipex-llm` *(on either Intel Core Ultra laptop or Arc GPU)* below.
 
 <table width="100%">
   <tr>
@@ -59,11 +59,18 @@ See the demo of running [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/
     </td>
   </tr>
   <tr>
-    <td align="center" width="25%"><code>Text-Generation-WebUI</code></td>
-    <td align="center" width="25%"><code>LangChain-Chatchat</code></td>
-    <td align="center" width="25%"><code>llama.cpp</code></td>
-    <td align="center" width="25%"><code>HuggingFace Transformers</code></td>
-  </tr>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">Text-Generation-WebUI</a>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html">LangChain-Chatchat RAG</a>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp</a>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels">HuggingFace transformers</a>
+    </td>  </tr>
 </table>
 
 ## `ipex-llm` Quickstart
@@ -77,7 +84,7 @@ See the demo of running [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/
 - [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html): running **ipex-llm for llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp` on Intel GPU*)
 - [vLLM](python/llm/example/GPU/vLLM-Serving): running `ipex-llm` in `vLLM` on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
 - [FastChat](python/llm/src/ipex_llm/serving/fastchat): running `ipex-llm` in `FastChat` serving on on both Intel GPU and CPU
-- [LangChain-Chatchat RAG](https://github.com/intel-analytics/Langchain-Chatchat): running `ipex-llm` in `LangChain-Chatchat` (*Knowledge Base QA using **RAG** pipeline*)
+- [LangChain-Chatchat RAG](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html): running `ipex-llm` in `LangChain-Chatchat` (*Knowledge Base QA using **RAG** pipeline*)
 - [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html): running `ipex-llm` in `oobabooga` **WebUI**
 - [Benchmarking](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html): running  (latency and throughput) benchmarks for `ipex-llm` on Intel CPU and GPU
 
