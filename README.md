@@ -37,13 +37,11 @@
 [^1]: Performance varies by use, configuration and other factors. `ipex-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 ## `ipex-llm` Demos
-See the ***optimized performance*** of `chatglm2-6b` and `llama-2-13b-chat` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
-
-See the demo of running Text Generation WebUI, LangChain-Chatchat RAG, llama.cpp and HuggingFace Transformers with `ipex-llm` (on either Intel Core Ultra laptop or Arc GPU) below.
+See the demo of running [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [LangChain-Chatchat RAG](https://github.com/intel-analytics/Langchain-Chatchat), [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html) and [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels) with `ipex-llm` *(on either Intel Core Ultra laptop or Arc GPU)* below.
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="2"><strong>Intel Core Ultra Laptop</strong>strong></td>
+    <td align="center" colspan="2"><strong>Intel Core Ultra Laptop</strong></td>
     <td align="center" colspan="2"><strong>Intel Arc GPU</strong></td>
   </tr>
   <tr>
