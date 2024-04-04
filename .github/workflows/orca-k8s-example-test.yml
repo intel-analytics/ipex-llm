@@ -1,0 +1,55 @@
+name:  ORCA K8S Test 
+
+# Controls when the action will run. 
+on:
+  schedule:
+    - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/orca/**'
+      - '.github/workflows/orca-k8s-example-test.yml'
+      - '.github/actions/orca/orca-exampletest-k8s-action/action.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/orca/**'
+      - '.github/workflows/orca-k8s-example-test.yml'
+      - '.github/actions/orca/orca-exampletest-k8s-action/action.yml'
+  workflow_dispatch:
+
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  ORCA-Spark-K8s-Example-Prvn:
+    runs-on: [self-hosted, K8S-TEST]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: set env
+        env:
+          DEFAULT_IMAGE: 'intelanalytics/bigdl-k8s'
+          DEFAULT_TAG: 'latest'
+        run: |
+          echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+      - name: Run Test
+        uses: ./.github/actions/orca/orca-exampletest-k8s-action
+        with:
+          image: ${{env.IMAGE}}
+          image-tag: ${{env.TAG}}
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: ORCA-Spark-K8s-Example-Prvn.json
+          type: job
+          job-name: ORCA-Spark-K8s-Example-Prvn
+          runner-hosted-on: 'Shanghai'

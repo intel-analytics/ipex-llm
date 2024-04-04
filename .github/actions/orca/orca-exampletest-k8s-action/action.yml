@@ -1,0 +1,100 @@
+name: 'ORCA-Spark-K8s-Example-Prvn'
+description: 'ORCA-Spark-K8s-Example-Prvn'
+
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: 'intelanalytics/bigdl-k8s'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        export CONTAINER_NAME="orca-spark-k8s"
+        docker pull ${IMAGE}
+        docker rm -f ${CONTAINER_NAME}
+
+        docker run -itd --net=host \
+          --name ${CONTAINER_NAME} \
+          -v /etc/kubernetes:/etc/kubernetes \
+          -v /root/.kube:/root/.kube \
+          -v /disk1/nfsdata/default-nfsvolumeclaim-pvc-d77a2e75-905f-49c1-ad1d-4eaee67c0967:/bigdl2.0/data \
+          -e http_proxy=http://child-prc.intel.com:913 \
+          -e https_proxy=http://child-prc.intel.com:913 \
+          -e RUNTIME_SPARK_MASTER=k8s://https://172.16.0.117:6443 \
+          -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+          -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:latest \
+          -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+          -e RUNTIME_DRIVER_HOST=172.16.0.117 \
+          -e RUNTIME_DRIVER_PORT=54321 \
+          -e RUNTIME_EXECUTOR_INSTANCES=4 \
+          -e RUNTIME_EXECUTOR_CORES=4 \
+          -e RUNTIME_EXECUTOR_MEMORY=20g \
+          -e RUNTIME_TOTAL_EXECUTOR_CORES=16 \
+          -e RUNTIME_DRIVER_CORES=2 \
+          -e RUNTIME_DRIVER_MEMORY=10g \
+          intelanalytics/bigdl-k8s:latest bash
+
+    - name: TF Examples Test
+      shell: bash
+      run: |
+        export CONTAINER_NAME="orca-spark-k8s"
+        docker exec -i $CONTAINER_NAME bash -c "
+
+        wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+        bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh -b -p $HOME/anaconda3
+        source ~/.bashrc
+        /root/anaconda3/bin/conda create -n orca-py38 -y python==3.8 --yes
+        source /root/anaconda3/bin/activate orca-py38
+        export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+        pip install tensorflow==2.6.0 keras==2.6.0
+        pip install --pre --upgrade bigdl-spark3[ray]"
+
+        docker exec -i orca-spark-k8s bash -c "
+        
+        source /root/anaconda3/bin/activate orca-py38
+        pip install setuptools==66.0.0
+        /root/anaconda3/bin/conda list
+        /root/anaconda3/bin/conda pack -o /opt/spark/work-dir/environment.tar.gz
+        spark-submit \
+        --master k8s://https://172.16.0.117:6443 \
+        --deploy-mode client \
+        --conf spark.driver.host=172.16.0.117 \
+        --conf spark.driver.port=54321 \
+        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+        --name orca-k8s-application \
+        --conf spark.kubernetes.container.image=intelanalytics/bigdl-k8s:latest \
+        --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+        --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
+        --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+        --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
+        --conf spark.kubernetes.driverEnv.http_proxy=http://child-prc.intel.com:913 \
+        --conf spark.kubernetes.driverEnv.https_proxy=http://child-prc.intel.com:913 \
+        --conf spark.kubernetes.executorEnv.http_proxy=http://child-prc.intel.com:913 \
+        --conf spark.kubernetes.executorEnv.https_proxy=http://child-prc.intel.com:913 \
+        --conf spark.kubernetes.container.image.pullPolicy=Always \
+        --archives /opt/spark/work-dir/environment.tar.gz#env \
+        --conf spark.pyspark.driver.python=python \
+        --conf spark.pyspark.python=env/bin/python \
+        --conf spark.executor.instances=4 \
+        --executor-cores 16 \
+        --executor-memory 50g \
+        --total-executor-cores 64 \
+        --driver-cores 4 \
+        --driver-memory 50g \
+        --properties-file /opt/bigdl-2.3.0-SNAPSHOT/conf/spark-bigdl.conf \
+        --py-files /opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-orca-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/examples/friesian/ncf/ncf_train.py  \
+        --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
+        --conf spark.sql.catalogImplementation='in-memory' \
+        --conf spark.driver.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
+        --conf spark.executor.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
+        local:///opt/bigdl-2.3.0-SNAPSHOT/examples/friesian/ncf/ncf_train.py \
+        --cluster_mode 'spark-submit' --backend 'spark'"
