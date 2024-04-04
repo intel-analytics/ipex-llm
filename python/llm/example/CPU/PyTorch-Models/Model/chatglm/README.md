@@ -15,7 +15,6 @@ conda create -n llm python=3.9 # recommend to use Python 3.9
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
-pip install "transformers<4.34.1"  # chatglm cannot work with transformers 4.34.1+
 ```
 
 ### 2. Run
