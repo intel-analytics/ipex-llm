@@ -353,10 +353,11 @@ def index_concatenate(x, axis=0):
         return res
 
 
-def split_predict_cols(y):
-    if not isinstance(y, (list, tuple)):
-        return {"prediction": y}
-    output_cols = [f"output_{i}" for i in range(len(y))]
+def split_predict_cols(y, output_cols=None):
+    if output_cols is None:
+        if not isinstance(y, (list, tuple)):
+            return {"prediction": y}
+        output_cols = [f"torch_output_{i}" for i in range(len(y))]
 
     # Multi-output in a list format
     invalidInputError(len(output_cols) == len(y),

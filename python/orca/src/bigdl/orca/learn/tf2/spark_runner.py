@@ -534,7 +534,10 @@ class SparkRunner:
         def predict_fn(shard):
             y = self.model.predict(shard["x"], **params)
             if output_cols is None:
-                return {"prediction": y}
+                if self.model.outputs is None or len(self.model.outputs) == 1:
+                    return {"prediction": y}
+                else:
+                    return {"tf_output_" + str(i): y[i] for i in range(0, len(y))}
             else:
                 if len(output_cols) == 1:
                     return {output_cols[0]: y}

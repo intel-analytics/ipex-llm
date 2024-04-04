@@ -542,6 +542,12 @@ class TestPyTorchEstimatorBasic(TestCase):
         result.collect()
         assert "scalar" and "dict" in result.columns
 
+        result_1 = estimator.predict(df, batch_size=4,
+                                     callbacks=[ComplicatedMCB()],
+                                     feature_cols=["f"])
+        result_1.collect()
+        assert "torch_output_0" and "torch_output_1" in result_1.columns
+
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()

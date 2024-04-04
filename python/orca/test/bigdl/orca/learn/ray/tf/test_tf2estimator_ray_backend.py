@@ -1220,7 +1220,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         pred_df = estimator.predict(df,
                                     feature_cols=["input_1", "input_2"])
         pred_df.collect()
-        assert "prediction" in pred_df.columns
+        assert "tf_output_0" and "tf_output_1" in pred_df.columns
 
 
 if __name__ == "__main__":

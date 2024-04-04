@@ -550,7 +550,10 @@ class TFRunner:
             else:
                 y = local_model.predict(shard, **params)
             if output_cols is None:
-                return {"prediction": y}
+                if local_model.outputs is None or len(local_model.outputs) == 1:
+                    return {"prediction": y}
+                else:
+                    return {"tf_output_" + str(i): y[i] for i in range(0, len(y))}
             else:
                 if len(output_cols) == 1:
                     return {output_cols[0]: y}

@@ -586,7 +586,7 @@ class TorchRunner(BaseRunner):
 
         return output, target, loss
 
-    def predict(self, partition, batch_size=32, profile=False, callbacks=None):
+    def predict(self, partition, batch_size=32, profile=False, callbacks=None, output_cols=None):
         """Predict the model."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
@@ -613,7 +613,7 @@ class TorchRunner(BaseRunner):
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
                 y = self._predict(iter(data_loader), callbacks=callbacks)
-            return split_predict_cols(y)
+            return split_predict_cols(y, output_cols)
 
         self.call_hook(callbacks, "before_pred_epoch")
         with self.timers.record("predict"):

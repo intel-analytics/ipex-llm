@@ -562,7 +562,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               accept_str_col=True,
                                               shard_size=local_batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
-            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards, multi_output=True)
         elif isinstance(data, SparkXShards):
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':

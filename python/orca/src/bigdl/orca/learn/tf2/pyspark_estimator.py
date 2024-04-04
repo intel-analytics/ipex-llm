@@ -488,7 +488,7 @@ class SparkTFEstimator():
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
-            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards, multi_output=True)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
