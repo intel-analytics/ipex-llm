@@ -87,7 +87,7 @@ Then you can access the api server as follows:
  curl http://localhost:8000/v1/completions \
          -H "Content-Type: application/json" \
          -d '{
-                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf-ipex/",
+                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf/",
                  "prompt": "San Francisco is a",
                  "max_tokens": 128,
                  "temperature": 0
