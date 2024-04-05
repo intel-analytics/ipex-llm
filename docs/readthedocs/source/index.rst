@@ -48,40 +48,41 @@
 See the demo of `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_, `local RAG using LangChain-Chatchat <https://github.com/intel-analytics/Langchain-Chatchat>`_, `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_ and `HuggingFace transformers <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_ *(on either Intel Core Ultra laptop or Arc GPU)* with `ipex-llm`  below.
 
 .. raw:: html
-  <table width="100%">
-    <tr>
-      <td align="center" colspan="2"><strong>Intel Core Ultra Laptop</strong></td>
-      <td align="center" colspan="2"><strong>Intel Arc GPU</strong></td>
-    </tr>
-    <tr>
-      <td>
-        <video src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4" width=100% />
-      </td>
-      <td>
-        <video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width=100% />
-      </td>
-      <td>
-        <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width=100% />
-      </td>
-      <td>
-        <video src="https://llm-assets.readthedocs.io/en/latest/_images/chat-py.mp4" width=100% />
-      </td>
-    </tr>
-    <tr>
-      <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">Text-Generation-WebUI</a>
-      </td>
-      <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html">Local RAG using LangChain-Chatchat</a>
-      </td>
-      <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp</a>
-      </td>
-      <td align="center" width="25%">
-        <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels">HuggingFace transformers</a>
-      </td>  
-    </tr>
-  </table>
+   
+   <table width="100%">
+      <tr>
+         <td align="center" colspan="2"><strong>Intel Core Ultra Laptop</strong></td>
+         <td align="center" colspan="2"><strong>Intel Arc GPU</strong></td>
+      </tr>
+      <tr>
+         <td>
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4" width=100% />
+         </td>
+         <td>
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width=100% />
+         </td>
+         <td>
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width=100% />
+         </td>
+         <td>
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/chat-py.mp4" width=100% />
+         </td>
+      </tr>
+      <tr>
+         <td align="center" width="25%">
+            <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">Text-Generation-WebUI</a>
+         </td>
+         <td align="center" width="25%">
+            <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html">Local RAG using LangChain-Chatchat</a>
+         </td>
+         <td align="center" width="25%">
+            <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp</a>
+         </td>
+         <td align="center" width="25%">
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels">HuggingFace transformers</a>
+         </td>
+      </tr>
+   </table>
 
 ************************************************
 Latest update 🔥
