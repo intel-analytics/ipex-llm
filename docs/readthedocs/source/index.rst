@@ -45,7 +45,7 @@
 ``ipex-llm`` Demos
 ************************************************
 
-See the demo of `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_, `local RAG using LangChain-Chatchat <https://github.com/intel-analytics/Langchain-Chatchat>`_, `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_ and `HuggingFace transformers <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_ *(on either Intel Core Ultra laptop or Arc GPU)* with `ipex-llm`  below.
+See the demo of `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_, `local RAG using LangChain-Chatchat <https://github.com/intel-analytics/Langchain-Chatchat>`_, `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_ and `HuggingFace transformers <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_ *(on either Intel Core Ultra laptop or Arc GPU)* with ``ipex-llm``  below.
 
 .. raw:: html
    
