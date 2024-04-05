@@ -56,16 +56,16 @@ See the demo of `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html
       </tr>
       <tr>
          <td>
-            <video src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4" width=100% />
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4" width=100% controls />
          </td>
          <td>
-            <video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width=100% />
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width=100% controls />
          </td>
          <td>
-            <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width=100% />
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width=100% controls />
          </td>
          <td>
-            <video src="https://llm-assets.readthedocs.io/en/latest/_images/chat-py.mp4" width=100% />
+            <video src="https://llm-assets.readthedocs.io/en/latest/_images/chat-py.mp4" width=100% controls />
          </td>
       </tr>
       <tr>
