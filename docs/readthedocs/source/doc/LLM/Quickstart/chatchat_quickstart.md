@@ -1,6 +1,8 @@
-# Run Langchain-Chatchat on Intel GPU
+# Run Local RAG using Langchain-Chatchat on Intel GPU
 
-[chatchat-space/Langchain-Chatchat](https://github.com/chatchat-space/Langchain-Chatchat) is a Knowledge Base QA application using RAG pipeline; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily use [Langchain-Chatchat](https://github.com/intel-analytics/Langchain-Chatchat) with LLMs and Embedding models running locally on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); see the demos of running LLaMA2-7B (English) and ChatGLM-3-6B (Chinese) on an Intel Core Ultra laptop below.
+[chatchat-space/Langchain-Chatchat](https://github.com/chatchat-space/Langchain-Chatchat) is a Knowledge Base QA application using RAG pipeline; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily ***local RAG pipelines*** using [Langchain-Chatchat](https://github.com/intel-analytics/Langchain-Chatchat) with LLMs and Embedding models on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); 
+
+*See the demos of running LLaMA2-7B (English) and ChatGLM-3-6B (Chinese) on an Intel Core Ultra laptop below.*
 
 <table border="1" width="100%">
   <tr>
@@ -12,7 +14,6 @@
     <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4" width="100%" controls></video></td>
 </tr>
 </table>
-
 
 
 >You can change the UI language in the left-side menu. We currently support **English** and **简体中文** (see video demos below). 
