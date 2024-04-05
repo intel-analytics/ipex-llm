@@ -351,6 +351,7 @@ def mixtral_attention_forward(
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(
+            False,
             f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
             f" but is {attn_output.size()}"
         )
