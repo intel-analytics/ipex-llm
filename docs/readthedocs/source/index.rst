@@ -49,7 +49,7 @@ See the demo of `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html
 
 .. raw:: html
    
-   <table width="100%">
+   <table border="1" width="100%">
       <tr>
          <td align="center" colspan="2"><strong>Intel Core Ultra Laptop</strong></td>
          <td align="center" colspan="2"><strong>Intel Arc GPU</strong></td>
