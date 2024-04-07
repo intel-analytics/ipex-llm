@@ -407,6 +407,7 @@ class SchedulerConfig:
     def _verify_args(self) -> None:
         if self.max_num_batched_tokens < self.max_model_len:
             invalidInputError(
+                False,
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) is "
                 f"smaller than max_model_len ({self.max_model_len}). "
                 "This effectively limits the maximum sequence length to "
@@ -415,6 +416,7 @@ class SchedulerConfig:
                 "decrease max_model_len.")
         if self.max_num_batched_tokens < self.max_num_seqs:
             invalidInputError(
+                False,
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) must "
                 "be greater than or equal to max_num_seqs "
                 f"({self.max_num_seqs}).")

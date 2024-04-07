@@ -1,25 +1,28 @@
-# Use llama.cpp with IPEX-LLM on Intel GPU
+# Run llama.cpp with IPEX-LLM on Intel GPU 
 
-Now you can use IPEX-LLM as an Intel GPU accelerated backend of [llama.cpp](https://github.com/ggerganov/llama.cpp). This quickstart guide walks you through setting up and using [llama.cpp](https://github.com/ggerganov/llama.cpp) with `ipex-llm` on Intel GPU (both iGPU and dGPU). 
+[ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in in pure C++ across a variety of hardware; you can now use the C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
-```eval_rst
-.. note::
+See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
-   ``llama.cpp`` now provides Q-series (Q4_0 / Q4_1 / Q8_0 / Q4_K / Q5_K / Q6_K /...) and IQ-series(IQ2 / IQ3 / IQ4 /...) quantization types. Only Q-series GGUF models are supported in IPEX-LLM now, support for IQ-series is still work in progress.
-```
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width="100%" controls></video>
 
-## 0 Prerequisites
+## Quick Start
+This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
+
+### 0 Prerequisites
 IPEX-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
 
-### Linux
+#### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
 Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and [Intel® oneAPI Base Toolkit 2024.0](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html).
 
-### Windows
+#### Windows
 Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and Intel® oneAPI Base Toolkit 2024.0.
 
-## 1 Install IPEX-LLM for llama.cpp
+**Note**: IPEX-LLM backend only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output.
+
+### 1 Install IPEX-LLM for llama.cpp
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
 ```cmd
@@ -30,7 +33,7 @@ pip install --pre --upgrade ipex-llm[cpp]
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
 
-## 2 Setup for running llama.cpp
+### 2 Setup for running llama.cpp
 
 First you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
 ```cmd
@@ -38,7 +41,7 @@ mkdir llama-cpp
 cd llama-cpp
 ```
 
-### Initialize llama.cpp with IPEX-LLM
+#### Initialize llama.cpp with IPEX-LLM
 
 Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 ```eval_rst
@@ -75,11 +78,11 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
 **Now you can use these executable files by standard llama.cpp's usage.**
 
-## 3 Example: Running community GGUF models with IPEX-LLM
+### 3 Example: Running community GGUF models with IPEX-LLM
 
 Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
-### Set Environment Variables
+#### Set Environment Variables
 Configure oneAPI variables by running the following command:
 
 ```eval_rst
@@ -97,10 +100,10 @@ Configure oneAPI variables by running the following command:
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 ```
 
-### Model Download
+#### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
 
-### Run the quantized model
+#### Run the quantized model
 
 ```eval_rst
 .. tabs::
@@ -125,7 +128,7 @@ Before running, you should download or copy community GGUF model to your current
       For more details about meaning of each parameter, you can use ``main.exe -h``.
 ```
 
-### Sample Output
+#### Sample Output
 ```
 Log start
 main: build = 1 (38bcbd4)
@@ -254,7 +257,8 @@ llama_print_timings:       total time =    xx.xx ms /    62 tokens
 Log end
 ```
 
-## Troubleshooting
+### Troubleshooting
 
-### Fail to quantize model
+#### Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
+

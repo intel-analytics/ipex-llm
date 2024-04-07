@@ -87,6 +87,8 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 #
 # Note this format cannot be used directly in IPEX-LLM's mm_int4, which expects
 # row major but packing two consecutive columns.
+
+
 def q4_0_xpu_transpose(ggml_weight, weight_shape):
     from ipex_llm.transformers.low_bit_linear import get_block_size
     Q4_0 = get_block_size("sym_int4")
@@ -538,18 +540,17 @@ class LowBitLinear(nn.Linear):
         # The condition makes sure that empty cache only takes effect if this layer is lm_head.
         # For other models like llama, lm_cache will be applied as well
         # since performance isn't impacted.
-        self.is_lm_head = self.in_len * self.out_len >= 30000 * 4096
+        self.is_lm_head = self.in_len * self.out_len >= 32000 * 4096 and self.bias is None
         self.low_memory_mode = self.is_lm_head
 
     def forward(self, x: torch.Tensor):
         # empty cache before and after lm_head at first token when input > 1024
-        # on arc or BIGDL_LOW_MEMORY_MODE is set to 1 at inference time.
+        # on arc or IPEX_LLM_LOW_MEM is set to 1 at inference time.
         if self.device is None:
             self.device = get_xpu_device_type(self.weight.data)
-            # TODO: may remove BIGDL_LOW_MEMORY_MODE here, probably not necessary
             self.low_memory_mode = \
                 self.low_memory_mode and \
-                (self.device == "arc" or os.environ.get("BIGDL_LOW_MEMORY_MODE", None) == "1")
+                (self.device == "arc" or os.environ.get("IPEX_LLM_LOW_MEM", None) == "1")
         # Due to inconsistent training status in some models like Baichuan-7b-Chat,
         # we should check both self.training and torch.is_inference_mode_enabled().
         is_training = self.training and not torch.is_inference_mode_enabled()
