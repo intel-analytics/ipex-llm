@@ -1330,7 +1330,7 @@ def llama_attention_forward_4_36_original(
 def native_sdp(query, key, value, attention_mask,
                bsz, q_len, kv_seq_len, head_dim, num_heads, output_attentions):
     if should_split_qkv_tensor(query, output_attentions):
-        return native_sdp_split_tensor(query, key, value, attention_mask,
+        return native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                        bsz, q_len, kv_seq_len, head_dim)
     else:
         attn_weights = torch.matmul(query.to(key.dtype),
@@ -1361,7 +1361,8 @@ def native_sdp(query, key, value, attention_mask,
         return attn_output, attn_weights
 
 
-def native_sdp_split_tensor(query, key, value, attention_mask, bsz, q_len, kv_seq_len, head_dim):
+def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
+                                bsz, q_len, kv_seq_len, head_dim):
     query_sp = torch.split(query.to(key.dtype), 16, dim=1)
     key_sp = torch.split(key.transpose(2, 3), 16, dim=1)
     value_sp = torch.split(value, 16, dim=1)
