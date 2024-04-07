@@ -88,7 +88,7 @@ logger = logging.getLogger(__name__)
 
 
 class IpexLLM(CustomLLM):
-    """Wrapper around the Ipex-LLM
+    """Wrapper around the IPEX-LLM
 
     Example:
         .. code-block:: python
@@ -207,7 +207,7 @@ class IpexLLM(CustomLLM):
         load_low_bit: bool = False
     ) -> None:
         """
-        Construct BigdlLLM.
+        Construct Ipex-LLM.
 
         Args:
 
@@ -236,6 +236,7 @@ class IpexLLM(CustomLLM):
             completion_to_prompt: Function to convert messages to prompt.
             pydantic_program_mode: DEFAULT.
             output_parser: BaseOutputParser.
+            load_low_bit: Use low_bit checkpoint. 
 
         Returns:
             None.
@@ -367,6 +368,40 @@ class IpexLLM(CustomLLM):
         pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
     ):
+        """
+        Construct IPEX-LLM from HuggingFace Model. 
+
+        Args:
+
+            context_window: The maximum number of tokens available for input.
+            max_new_tokens: The maximum number of tokens to generate.
+            query_wrapper_prompt: The query wrapper prompt, containing the query placeholder.
+                        Should contain a `{query_str}` placeholder.
+            tokenizer_name: The name of the tokenizer to use from HuggingFace.
+                        Unused if `tokenizer` is passed in directly.
+            model_name: The model name to use from HuggingFace.
+                        Unused if `model` is passed in directly.
+            model: The HuggingFace model.
+            tokenizer: The tokenizer.
+            device_map: The device_map to use. Defaults to 'auto'.
+            stopping_ids: The stopping ids to use.
+                        Generation stops when these token IDs are predicted.
+            tokenizer_kwargs: The kwargs to pass to the tokenizer.
+            tokenizer_outputs_to_remove: The outputs to remove from the tokenizer.
+                        Sometimes huggingface tokenizers return extra inputs that cause errors.
+            model_kwargs: The kwargs to pass to the model during initialization.
+            generate_kwargs: The kwargs to pass to the model during generation.
+            is_chat_model: Whether the model is `chat`
+            callback_manager: Callback manager.
+            system_prompt: The system prompt, containing any extra instructions or context.
+            messages_to_prompt: Function to convert messages to prompt.
+            completion_to_prompt: Function to convert messages to prompt.
+            pydantic_program_mode: DEFAULT.
+            output_parser: BaseOutputParser.
+
+        Returns:
+            Ipex-LLM instance.
+        """
         return cls(
             context_window=context_window,
             max_new_tokens=max_new_tokens,
@@ -408,6 +443,40 @@ class IpexLLM(CustomLLM):
         pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
     ):
+        """
+        Construct IPEX-LLM from HuggingFace Model low-bit checkpoint. 
+
+        Args:
+
+            context_window: The maximum number of tokens available for input.
+            max_new_tokens: The maximum number of tokens to generate.
+            query_wrapper_prompt: The query wrapper prompt, containing the query placeholder.
+                        Should contain a `{query_str}` placeholder.
+            tokenizer_name: The name of the tokenizer to use from HuggingFace.
+                        Unused if `tokenizer` is passed in directly.
+            model_name: The model name to use from HuggingFace.
+                        Unused if `model` is passed in directly.
+            model: The HuggingFace model.
+            tokenizer: The tokenizer.
+            device_map: The device_map to use. Defaults to 'auto'.
+            stopping_ids: The stopping ids to use.
+                        Generation stops when these token IDs are predicted.
+            tokenizer_kwargs: The kwargs to pass to the tokenizer.
+            tokenizer_outputs_to_remove: The outputs to remove from the tokenizer.
+                        Sometimes huggingface tokenizers return extra inputs that cause errors.
+            model_kwargs: The kwargs to pass to the model during initialization.
+            generate_kwargs: The kwargs to pass to the model during generation.
+            is_chat_model: Whether the model is `chat`
+            callback_manager: Callback manager.
+            system_prompt: The system prompt, containing any extra instructions or context.
+            messages_to_prompt: Function to convert messages to prompt.
+            completion_to_prompt: Function to convert messages to prompt.
+            pydantic_program_mode: DEFAULT.
+            output_parser: BaseOutputParser.
+
+        Returns:
+            Ipex-LLM instance.
+        """
         return cls(
             context_window=context_window,
             max_new_tokens=max_new_tokens,
