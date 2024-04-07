@@ -132,3 +132,6 @@ Inference time: xxxx s
 
 [INST] Artificial Intelligence (AI) is a branch of computer science that deals with the simulation of intelligent behavior in computers. It is a broad
 ```
+
+#### 2.4 Deepspeed Tensor Parallel Inference
+For platforms without sufficient GPU memory to serve Mistral on one signle GPU card, **Deepspeed Tensor Parallel** can help to scale the inference to multiple cards, which enables large model and increases resource utilization. Please to refer to [here](../../../Deepspeed-AutoTP).

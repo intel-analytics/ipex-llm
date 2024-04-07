@@ -64,7 +64,7 @@ from transformers import logging
 logger = logging.get_logger(__name__)
 
 
-def llama_decoding_fast_path_qtype_check(proj): 
+def llama_decoding_fast_path_qtype_check(proj):
     # IQ2_XXS only can be used in Llama-like model
     qtype = getattr(proj, "qtype", None)
     return qtype in [SYM_INT4, FP8E5, IQ2_XXS, FP4]
@@ -83,7 +83,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
                                                            n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 _ipex_version = None
@@ -186,7 +186,11 @@ def llama_mlp_forward(
             hidden_states = attn_output.view(x.shape)
         return hidden_states
     else:
-        out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        a = self.act_fn(self.gate_proj(x))
+        b = self.up_proj(x)
+        c = a * b
+        del a, b
+        out = self.down_proj(c)
         if residual is not None:
             return out + residual
         else:
@@ -529,12 +533,12 @@ def llama_attention_forward_4_31_original(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                         dtype=hidden_states.dtype, device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
@@ -997,8 +1001,13 @@ def llama_attention_forward_4_36_quantized(
                 )
             attn_weights = attn_weights + attention_mask
 
-        # at inference time, for memory considerations, may not need to upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+        if kv_seq_len >= 2048:
+            # for memory considerations, do not upcast attention to fp32 for long sequences
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+        else:
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
         if use_cache:
             cache_kwargs = None
@@ -1037,8 +1046,13 @@ def llama_attention_forward_4_36_quantized(
                     )
                 attn_weights = attn_weights + attention_mask
 
-            # at inference time, for memory considerations, may not need to upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            if kv_seq_len >= 2048:
+                # for memory considerations, do not upcast attention to fp32 for long sequences
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            else:
+                # upcast attention to fp32
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                     dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
@@ -1161,12 +1175,12 @@ def llama_attention_forward_4_36_original(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                         dtype=hidden_states.dtype, device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
@@ -1322,8 +1336,13 @@ def native_sdp(query, key, value, attention_mask,
                               f"but is {attention_mask.size()}")
         attn_weights = attn_weights + attention_mask
 
-    # at inference time, for memory considerations, may not need to upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+    if kv_seq_len >= 2048:
+        # for memory considerations, do not upcast attention to fp32 for long sequences
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+    else:
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                             dtype=torch.float32).to(value.dtype)
     attn_output = torch.matmul(attn_weights, value)
     return attn_output, attn_weights
 

@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT .
 ```
 
 ### Use the image for doing cpu serving
@@ -16,7 +16,7 @@ You could use the following bash script to start the container.  Please be noted
 
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -36,7 +36,7 @@ Also you can set environment variables and start arguments while running a conta
 To start a controller container:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 controller_host=localhost
 controller_port=23000
 api_host=localhost
@@ -59,7 +59,7 @@ sudo docker run -itd \
 To start a worker container:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 export MODEL_PATH=YOUR_MODEL_PATH
 controller_host=localhost
 controller_port=23000

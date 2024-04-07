@@ -63,13 +63,20 @@ check_cpu_info()
   echo "-----------------------------------------------------------------"
   echo "CPU Information: "
   lscpu | head -n 17
-  
+}
+
+check_memory_type()
+{
+  echo "-----------------------------------------------------------------"
+  echo "CPU type: "
+  sudo dmidecode -t 17 | grep DDR
+
 }
 
 check_mem_info()
 {
   echo "-----------------------------------------------------------------"
-  cat /proc/meminfo | grep MemTotal
+  cat /proc/meminfo | grep "MemTotal" | awk '{print "Total Memory: " $2/1024/1024 " GB"}'
   
 }
 
@@ -125,6 +132,41 @@ check_ipex()
   fi
 }
 
+check_xpu_info()
+{
+  echo "-----------------------------------------------------------------"
+  lspci -v | grep -i vga -A 8
+}
+
+check_linux_kernel_version()
+{
+  echo "-----------------------------------------------------------------"
+  uname -a
+}
+
+check_xpu_driver()
+{
+  echo "-----------------------------------------------------------------"
+  xpu-smi -v
+}
+
+check_OpenCL_driver()
+{
+  echo "-----------------------------------------------------------------"
+  clinfo | fgrep Driver
+}
+
+check_igpu()
+{
+  echo "-----------------------------------------------------------------"
+  if sycl-ls | grep -q "Intel(R) UHD Graphics\|Intel(R) Arc(TM) Graphics"; then
+      echo "igpu detected"
+      sycl-ls | grep -E "Intel\(R\) UHD Graphics|Intel\(R\) Arc\(TM\) Graphics"
+  else
+      echo "igpu not detected"
+  fi
+}
+
 main()
 {
   # first guarantee correct python is installed. 
@@ -144,9 +186,15 @@ main()
   # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
   check_cpu_info
   check_mem_info
-  check_ulimit
+  # check_memory_type
+  # check_ulimit
   check_os
-  check_env
+  # check_env
+  check_xpu_info
+  check_linux_kernel_version
+  check_xpu_driver
+  check_OpenCL_driver
+  check_igpu
 
   # check if xpu-smi and GPU is available. 
   check_xpu_smi_install

@@ -10,28 +10,41 @@ on:
         type: choice
         options:
         - all
-        - ipex-llm-finetune-lora-cpu
-        - ipex-llm-finetune-qlora-cpu
-        - ipex-llm-finetune-qlora-xpu
-        - ipex-llm-xpu
         - ipex-llm-cpu
-        - ipex-llm-serving-xpu
+        - ipex-llm-xpu
         - ipex-llm-serving-cpu
+        - ipex-llm-serving-xpu
+        - ipex-llm-finetune-lora-cpu
+        - ipex-llm-finetune-qlora-cpu-standalone
+        - ipex-llm-finetune-qlora-cpu-k8s
+        - ipex-llm-finetune-qlora-xpu
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
-        default: 'latest'
+        default: '2.1.0-SNAPSHOT'
+        type: string
+  workflow_call:
+    inputs:
+      artifact:
+        description: 'select which job to run("all" will make all jobs run)'
+        required: true
+        default: 'all'
+        type: string
+      tag:
+        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        required: true
+        default: '2.1.0-SNAPSHOT'
         type: string
 
 env:
-  TAG: ${{ github.event.inputs.tag }}
+  TAG: ${{ inputs.tag }}
 
 permissions:
   contents: read
 
 jobs:
   ipex-llm-finetune-lora-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-lora-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-lora-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -55,10 +68,13 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
-  ipex-llm-finetune-qlora-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-finetune-qlora-cpu-standalone:
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu-standalone' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -66,12 +82,12 @@ jobs:
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: ipex-llm-finetune-qlora-cpu
+      - name: ipex-llm-finetune-qlora-cpu-standalone
         run: |
           echo "##############################################################"
-          echo "####### ipex-llm-finetune-qlora-cpu ########"
+          echo "####### ipex-llm-finetune-qlora-cpu-standalone ########"
           echo "##############################################################"
-          export image=intelanalytics/ipex-llm-finetune-qlora-cpu
+          export image=intelanalytics/ipex-llm-finetune-qlora-cpu-standalone
           cd docker/llm/finetune/qlora/cpu/docker
           sudo docker build \
             --no-cache=true \
@@ -82,10 +98,43 @@ jobs:
           sudo docker push ${image}:${TAG}
           sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
           sudo docker push 10.239.45.10/arda/${image}:${TAG}
-          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+
+  ipex-llm-finetune-qlora-cpu-k8s:
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu-k8s' || inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      - name: docker login
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+      - name: ipex-llm-finetune-qlora-cpu-k8s
+        run: |
+          echo "##############################################################"
+          echo "####### ipex-llm-finetune-qlora-cpu-k8s ########"
+          echo "##############################################################"
+          export image=intelanalytics/ipex-llm-finetune-qlora-cpu-k8s
+          cd docker/llm/finetune/qlora/cpu/docker
+          sudo docker build \
+            --no-cache=true \
+            --build-arg http_proxy=${HTTP_PROXY} \
+            --build-arg https_proxy=${HTTPS_PROXY} \
+            --build-arg no_proxy=${NO_PROXY} \
+            -t ${image}:${TAG} -f ./Dockerfile.k8s .
+          sudo docker push ${image}:${TAG}
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-finetune-qlora-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -109,10 +158,13 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-xpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -136,10 +188,13 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -163,10 +218,13 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-xpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-serving-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -190,10 +248,13 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-cpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-serving-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -216,5 +277,8 @@ jobs:
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 

@@ -6,7 +6,7 @@ on:
   #   paths:
   #     - '.github/workflows/nightly_build.yml'
   schedule:
-    - cron: '30 11 * * *'  # GMT time, 11:30 GMT == 19:30 China
+    - cron: '00 15 * * *'  # GMT time, 15:00 GMT == 23:00 China
   workflow_dispatch:
 
 env:
@@ -69,6 +69,12 @@ jobs:
         job-name: python-build
         runner-hosted-on: 'Shanghai'
 
+  docker-build:
+    if: ${{ github.event.schedule }} 
+    uses: ./.github/workflows/manually_build.yml
+    with:
+      artifact: all
+      tag: 2.1.0-SNAPSHOT
 
   create-workflow-badge:
     runs-on: ubuntu-latest
