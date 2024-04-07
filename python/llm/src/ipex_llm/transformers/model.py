@@ -298,10 +298,10 @@ class _BaseAutoModelClass:
             elif load_in_low_bit == "bf16":
                 if torch_dtype is not None and torch_dtype != torch.bfloat16:
                     invalidInputError(
-                            False,
-                            f"Please use torch_dtype=torch.bfloat16"
-                            f" when setting load_in_low_bit='bf16'."
-                        )
+                        False,
+                        f"Please use torch_dtype=torch.bfloat16"
+                        f" when setting load_in_low_bit='bf16'."
+                    )
                 else:
                     kwargs["torch_dtype"] = torch.bfloat16
             else:
