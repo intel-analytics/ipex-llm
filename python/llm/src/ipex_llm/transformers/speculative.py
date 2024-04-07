@@ -695,6 +695,7 @@ def speculative_generate(self,
                             input_ids=draft_current_input_ids,
                             attention_mask=draft_attention_mask,
                             position_ids=position_ids,
+                            return_last_logit=torch.tensor(False),
                             past_key_values=draft_past_key_values,
                         )
                     elif self.config.model_type == "baichuan":
@@ -820,7 +821,7 @@ def speculative_generate(self,
                     output = self.trace_graph(input_ids=drafted_input_ids,
                                               attention_mask=cur_attention_mask,
                                               position_ids=position_ids,
-                                              # return_last_logit=torch.tensor(False),
+                                              return_last_logit=torch.tensor(False),
                                               past_key_values=past_key_values,)
                 elif "qwen" in self.config.model_type:
                     output = self.trace_graph(input_ids=drafted_input_ids,
