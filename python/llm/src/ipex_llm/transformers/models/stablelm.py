@@ -135,7 +135,7 @@ def stablelm_attention_forward(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache_stablelm(self.head_dim, self.q_proj, hidden_states):
+    if use_quantize_kv_cache_stablelm(self.head_dim, self.o_proj, hidden_states):
         forward_function = stablelm_attention_forward_quantized
     else:
         forward_function = stablelm_attention_forward_original
@@ -424,7 +424,7 @@ def stablelm_attention_forward_quantized(
                                                          new_layout=True)
         kv_seq_len = key_states.shape[-2]
         if query_states.size(2) != 1 or query_states.device.type != 'xpu' or \
-                (self.num_heads != 64 and self.head_dim != 128):
+                (self.head_dim != 64 and self.head_dim != 128):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
