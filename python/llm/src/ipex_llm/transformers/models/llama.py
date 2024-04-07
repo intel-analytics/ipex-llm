@@ -216,7 +216,7 @@ def should_use_fast_rope(self, query_states, position_ids):
 
 def should_split_tensor(query_states, output_attentions):
     if not output_attentions and query_states.dtype == torch.float16 and \
-        query_states.shape[2] >= 6800:
+            query_states.shape[2] >= 6800:
         # split tensor for memory block limitation
         # support fp16 and set input length threshold at 6800 for now
         return True
