@@ -639,18 +639,19 @@ def llama_attention_forward_4_31_original(
         attn_weights = None
     else:
         # otherwise, use native attention
-        if query_states.dtype == torch.float16 and query_states.shape[2] >= 6800:
+        if not output_attentions and query_states.dtype == torch.float16 and \
+            query_states.shape[2] >= 6800:
             # split tensor for memory block limitation
             # support fp16 and set input length threshold at 6800 for now
             attn_output, attn_weights = native_sdp_sp(query_states, key_states, value_states,
-                                               attention_mask,
-                                               bsz, q_len, kv_seq_len,
-                                               self.head_dim)
+                                                      attention_mask,
+                                                      bsz, q_len, kv_seq_len,
+                                                      self.head_dim)
         else:
             attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                attention_mask,
-                                                bsz, q_len, kv_seq_len,
-                                                self.head_dim, self.num_heads)
+                                                   attention_mask,
+                                                   bsz, q_len, kv_seq_len,
+                                                   self.head_dim, self.num_heads)
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
         invalidInputError(False,
