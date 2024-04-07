@@ -38,7 +38,7 @@ if __name__ == '__main__':
     model = Bark.init_from_config(config)
     model.load_checkpoint(config, checkpoint_dir=model_path, eval=True)
     
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)
 
     # Synthesize speech with the given input

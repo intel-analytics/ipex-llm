@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # Load whisper model under pytorch framework
     model = whisper.load_model(args.model_name)
 
-    # With only one line to enable bigdl optimize on a pytorch model
+    # With only one line to enable IPEX-LLM optimize on a pytorch model
     model = optimize_model(model)
 
     st = time.time()

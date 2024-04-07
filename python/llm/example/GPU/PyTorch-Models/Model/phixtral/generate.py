@@ -43,7 +43,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     
-    # Load huggingface model with optimize_model in BigDL
+    # Load huggingface model with optimize_model in IPEX-LLM
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True)
