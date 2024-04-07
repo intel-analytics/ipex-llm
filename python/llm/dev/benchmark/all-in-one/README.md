@@ -2,7 +2,7 @@
 
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
-Before running, make sure to have [bigdl-llm](../../../README.md).
+Before running, make sure to have [ipex-llm](../../../../../README.md).
 
 ## Dependencies
 
@@ -36,10 +36,10 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
 test_api:
-  # - "ipex_fp16_gpu" # on Intel GPU
-  # - "bigdl_fp16_gpu" # on Intel GPU
   - "transformer_int4_gpu"  # on Intel GPU
   # - "transformer_int4_fp16_gpu" # on Intel GPU, use fp16 for non-linear layer
+  # - "ipex_fp16_gpu" # on Intel GPU
+  # - "bigdl_fp16_gpu" # on Intel GPU
   # - "optimize_model_gpu"  # on Intel GPU
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
   # - "transformer_int4_gpu_win" # on Intel GPU for Windows
