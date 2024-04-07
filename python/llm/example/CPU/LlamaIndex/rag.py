@@ -165,7 +165,7 @@ def main(args):
     
     # Use custom LLM in BigDL
     from ipex_llm.llamaindex.llms import IpexLLM
-    llm = IpexLLM(
+    llm = IpexLLM.from_model_id(
         model_name=args.model_path,
         tokenizer_name=args.tokenizer_path,
         context_window=512,
@@ -175,7 +175,6 @@ def main(args):
         messages_to_prompt=messages_to_prompt,
         completion_to_prompt=completion_to_prompt,
         device_map="cpu",
-        load_low_bit=False,
     )
     
     vector_store = load_vector_database(username=args.user, password=args.password)

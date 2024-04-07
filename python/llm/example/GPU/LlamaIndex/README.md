@@ -16,9 +16,9 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     ```bash
     pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
     ```
-* **Install Bigdl LLM**
+* **Install IPEX-LLM**
 
-    Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm.
+    Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install ipex-llm.
 
 * **Database Setup (using PostgreSQL)**:
     * Linux

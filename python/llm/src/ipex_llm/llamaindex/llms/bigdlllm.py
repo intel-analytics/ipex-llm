@@ -242,7 +242,6 @@ class IpexLLM(CustomLLM):
         """
         model_kwargs = model_kwargs or {}
         from ipex_llm.transformers import AutoModelForCausalLM
-                    
         if model:
             self._model = model
         else:
@@ -255,18 +254,16 @@ class IpexLLM(CustomLLM):
                 except:
                     from ipex_llm.transformers import AutoModel
                     self._model = AutoModel.from_pretrained(model_name,
-                                                            load_in_4bit=True, 
+                                                            load_in_4bit=True,
                                                             **model_kwargs)
             else:
                 try:
                     self._model = AutoModelForCausalLM.load_low_bit(
-                    model_name, use_cache=True,
-                    trust_remote_code=True, **model_kwargs)
+                        model_name, use_cache=True,
+                        trust_remote_code=True, **model_kwargs)
                 except:
                     from ipex_llm.transformers import AutoModel
-                    self._model = AutoModel.load_low_bit(model_name,  **model_kwargs)    
-                
-                
+                    self._model = AutoModel.load_low_bit(model_name, **model_kwargs)
 
         if 'xpu' in device_map:
             self._model = self._model.to(device_map)
@@ -344,6 +341,89 @@ class IpexLLM(CustomLLM):
             completion_to_prompt=completion_to_prompt,
             pydantic_program_mode=pydantic_program_mode,
             output_parser=output_parser,
+        )
+
+    @classmethod
+    def from_model_id(
+        cls,
+        context_window: int = DEFAULT_CONTEXT_WINDOW,
+        max_new_tokens: int = DEFAULT_NUM_OUTPUTS,
+        query_wrapper_prompt: Union[str, PromptTemplate]="{query_str}",
+        tokenizer_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
+        device_map: Optional[str] = "auto",
+        stopping_ids: Optional[List[int]] = None,
+        tokenizer_kwargs: Optional[dict] = None,
+        tokenizer_outputs_to_remove: Optional[list] = None,
+        model_kwargs: Optional[dict] = None,
+        generate_kwargs: Optional[dict] = None,
+        is_chat_model: Optional[bool] = False,
+        callback_manager: Optional[CallbackManager] = None,
+        system_prompt: str = "",
+        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]]=None,
+        completion_to_prompt: Optional[Callable[[str], str]]=None,
+        pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
+        output_parser: Optional[BaseOutputParser] = None,
+    ):
+        return cls(
+            context_window=context_window,
+            max_new_tokens=max_new_tokens,
+            query_wrapper_prompt=query_wrapper_prompt,
+            tokenizer_name=tokenizer_name,
+            model_name=model_name,
+            device_map=device_map,
+            tokenizer_kwargs=tokenizer_kwargs,
+            model_kwargs=model_kwargs,
+            generate_kwargs=generate_kwargs,
+            is_chat_model=is_chat_model,
+            callback_manager=callback_manager,
+            system_prompt=system_prompt,
+            completion_to_prompt=completion_to_prompt,
+            messages_to_prompt=messages_to_prompt,
+        )
+
+    @classmethod
+    def from_model_id_low_bit(
+        cls,
+        context_window: int = DEFAULT_CONTEXT_WINDOW,
+        max_new_tokens: int = DEFAULT_NUM_OUTPUTS,
+        query_wrapper_prompt: Union[str, PromptTemplate]="{query_str}",
+        tokenizer_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
+        device_map: Optional[str] = "auto",
+        stopping_ids: Optional[List[int]] = None,
+        tokenizer_kwargs: Optional[dict] = None,
+        tokenizer_outputs_to_remove: Optional[list] = None,
+        model_kwargs: Optional[dict] = None,
+        generate_kwargs: Optional[dict] = None,
+        is_chat_model: Optional[bool] = False,
+        callback_manager: Optional[CallbackManager] = None,
+        system_prompt: str = "",
+        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]]=None,
+        completion_to_prompt: Optional[Callable[[str], str]]=None,
+        pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
+        output_parser: Optional[BaseOutputParser] = None,
+    ):
+        return cls(
+            context_window=context_window,
+            max_new_tokens=max_new_tokens,
+            query_wrapper_prompt=query_wrapper_prompt,
+            tokenizer_name=tokenizer_name,
+            model_name=model_name,
+            device_map=device_map,
+            tokenizer_kwargs=tokenizer_kwargs,
+            model_kwargs=model_kwargs,
+            generate_kwargs=generate_kwargs,
+            is_chat_model=is_chat_model,
+            callback_manager=callback_manager,
+            system_prompt=system_prompt,
+            completion_to_prompt=completion_to_prompt,
+            messages_to_prompt=messages_to_prompt,
+            load_low_bit=True,
         )
 
     @classmethod
@@ -484,7 +564,7 @@ class IpexLLM(CustomLLM):
                 yield CompletionResponse(text=text, delta=x)
 
         return gen()
-    
+
     @llm_chat_callback()
     def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
         prompt = self.messages_to_prompt(messages)

@@ -164,7 +164,7 @@ def main(args):
     
     # Use custom LLM in BigDL
     from ipex_llm.llamaindex.llms import IpexLLM
-    llm = IpexLLM(
+    llm = IpexLLM.from_model_id(
         model_name=args.model_path,
         tokenizer_name=args.tokenizer_path,
         context_window=512,
