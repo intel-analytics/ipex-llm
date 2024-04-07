@@ -216,7 +216,7 @@ def should_use_fast_rope(self, query_states, position_ids):
 
 def should_split_tensor(query_states, output_attentions):
     if not output_attentions and query_states.dtype == torch.float16 and \
-                query_states.shape[2] >= 6800:
+        query_states.shape[2] >= 6800:
         # split tensor for memory block limitation
         # support fp16 and set input length threshold at 6800 for now
         return True
@@ -649,9 +649,9 @@ def llama_attention_forward_4_31_original(
     else:
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                attention_mask,
-                                                bsz, q_len, kv_seq_len,
-                                                self.head_dim, self.num_heads, output_attentions)
+                                               attention_mask,
+                                               bsz, q_len, kv_seq_len,
+                                               self.head_dim, self.num_heads, output_attentions)
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
         invalidInputError(False,
@@ -1339,15 +1339,15 @@ def native_sdp(query, key, value, attention_mask,
         attn_weights_size = (bsz, num_heads, q_len, kv_seq_len)
         if attn_weights.size() != attn_weights_size:
             invalidInputError(False,
-                            f"Attention weights should be of size {attn_weights_size}, "
-                            f"but is {attn_weights.size()}")
+                              f"Attention weights should be of size {attn_weights_size}, "
+                              f"but is {attn_weights.size()}")
 
         if attention_mask is not None:
             attn_mask_size = (bsz, 1, q_len, kv_seq_len)
             if attention_mask.size() != attn_mask_size:
                 invalidInputError(False,
-                                f"Attention mask should be of size {attn_mask_size}, "
-                                f"but is {attention_mask.size()}")
+                                  f"Attention mask should be of size {attn_mask_size}, "
+                                  f"but is {attention_mask.size()}")
             attn_weights = attn_weights + attention_mask
 
         if kv_seq_len >= 2048:
@@ -1356,7 +1356,7 @@ def native_sdp(query, key, value, attention_mask,
         else:
             # upcast attention to fp32
             attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                dtype=torch.float32).to(value.dtype)
+                                                 dtype=torch.float32).to(value.dtype)
         attn_output = torch.matmul(attn_weights, value)
         return attn_output, attn_weights
 
