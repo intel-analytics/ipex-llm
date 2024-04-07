@@ -45,7 +45,7 @@ if __name__ == '__main__':
                                                  torch_dtype=torch.float16,
                                                  trust_remote_code=True)
 
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)
     
     # Load tokenizer

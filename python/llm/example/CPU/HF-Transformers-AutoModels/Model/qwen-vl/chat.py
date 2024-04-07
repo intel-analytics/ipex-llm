@@ -36,7 +36,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path  
         
     # Load model
-    # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
+    # For successful IPEX-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
     model = AutoModelForCausalLM.from_pretrained(model_path, 
                                                  load_in_4bit=True, 
                                                  device_map="cpu", 
