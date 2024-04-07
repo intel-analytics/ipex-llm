@@ -1346,6 +1346,7 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.stablelm import stablelm_attention_forward
+        from ipex_llm.transformers.models.stablelm import stablelm_model_forward
         convert_forward(model,
                         module.StableLmAttention,
                         stablelm_attention_forward
@@ -1353,5 +1354,8 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.StableLmMLP,
                         llama_mlp_forward)
-
+        convert_forward(model,
+                        module.StableLmModel,
+                        stablelm_model_forward
+                        )
     return model
