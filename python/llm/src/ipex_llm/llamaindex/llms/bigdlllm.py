@@ -70,6 +70,8 @@ from llama_index.core.llms.custom import CustomLLM
 
 from llama_index.core.base.llms.generic_utils import (
     messages_to_prompt as generic_messages_to_prompt,
+    completion_response_to_chat_response,
+    stream_completion_response_to_chat_response
 )
 from llama_index.core.prompts.base import PromptTemplate
 from llama_index.core.types import BaseOutputParser, PydanticProgramMode
@@ -85,14 +87,14 @@ DEFAULT_HUGGINGFACE_MODEL = "meta-llama/Llama-2-7b-chat-hf"
 logger = logging.getLogger(__name__)
 
 
-class BigdlLLM(CustomLLM):
-    """Wrapper around the BigDL-LLM
+class IpexLLM(CustomLLM):
+    """Wrapper around the IPEX-LLM
 
     Example:
         .. code-block:: python
 
-            from ipex_llm.llamaindex.llms import BigdlLLM
-            llm = BigdlLLM(model_path="/path/to/llama/model")
+            from ipex_llm.llamaindex.llms import IpexLLM
+            llm = IpexLLM(model_path="/path/to/llama/model")
     """
 
     model_name: str = Field(
@@ -171,6 +173,10 @@ class BigdlLLM(CustomLLM):
             "`messages_to_prompt` that does so."
         ),
     )
+    load_low_bit: bool = Field(
+        default=False,
+        description="The model is low_bit model or not"
+    )
 
     _model: Any = PrivateAttr()
     _tokenizer: Any = PrivateAttr()
@@ -198,9 +204,10 @@ class BigdlLLM(CustomLLM):
         completion_to_prompt: Optional[Callable[[str], str]]=None,
         pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
         output_parser: Optional[BaseOutputParser] = None,
+        load_low_bit: bool = False
     ) -> None:
         """
-        Construct BigdlLLM.
+        Construct Ipex-LLM.
 
         Args:
 
@@ -229,6 +236,7 @@ class BigdlLLM(CustomLLM):
             completion_to_prompt: Function to convert messages to prompt.
             pydantic_program_mode: DEFAULT.
             output_parser: BaseOutputParser.
+            load_low_bit: Use low_bit checkpoint.
 
         Returns:
             None.
@@ -238,15 +246,25 @@ class BigdlLLM(CustomLLM):
         if model:
             self._model = model
         else:
-            try:
-                self._model = AutoModelForCausalLM.from_pretrained(
-                    model_name, load_in_4bit=True, use_cache=True,
-                    trust_remote_code=True, **model_kwargs
-                )
-            except:
-                from ipex_llm.transformers import AutoModel
-                self._model = AutoModel.from_pretrained(model_name,
-                                                        load_in_4bit=True, **model_kwargs)
+            if not load_low_bit:
+                try:
+                    self._model = AutoModelForCausalLM.from_pretrained(
+                        model_name, load_in_4bit=True, use_cache=True,
+                        trust_remote_code=True, **model_kwargs
+                    )
+                except:
+                    from ipex_llm.transformers import AutoModel
+                    self._model = AutoModel.from_pretrained(model_name,
+                                                            load_in_4bit=True,
+                                                            **model_kwargs)
+            else:
+                try:
+                    self._model = AutoModelForCausalLM.load_low_bit(
+                        model_name, use_cache=True,
+                        trust_remote_code=True, **model_kwargs)
+                except:
+                    from ipex_llm.transformers import AutoModel
+                    self._model = AutoModel.load_low_bit(model_name, **model_kwargs)
 
         if 'xpu' in device_map:
             self._model = self._model.to(device_map)
@@ -271,7 +289,6 @@ class BigdlLLM(CustomLLM):
         if tokenizer:
             self._tokenizer = tokenizer
         else:
-            print(f"load tokenizer: {tokenizer_name}")
             try:
                 self._tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
             except:
@@ -328,6 +345,157 @@ class BigdlLLM(CustomLLM):
         )
 
     @classmethod
+    def from_model_id(
+        cls,
+        context_window: int = DEFAULT_CONTEXT_WINDOW,
+        max_new_tokens: int = DEFAULT_NUM_OUTPUTS,
+        query_wrapper_prompt: Union[str, PromptTemplate]="{query_str}",
+        tokenizer_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
+        device_map: Optional[str] = "auto",
+        stopping_ids: Optional[List[int]] = None,
+        tokenizer_kwargs: Optional[dict] = None,
+        tokenizer_outputs_to_remove: Optional[list] = None,
+        model_kwargs: Optional[dict] = None,
+        generate_kwargs: Optional[dict] = None,
+        is_chat_model: Optional[bool] = False,
+        callback_manager: Optional[CallbackManager] = None,
+        system_prompt: str = "",
+        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]]=None,
+        completion_to_prompt: Optional[Callable[[str], str]]=None,
+        pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
+        output_parser: Optional[BaseOutputParser] = None,
+    ):
+        """
+        Construct IPEX-LLM from HuggingFace Model.
+
+        Args:
+
+            context_window: The maximum number of tokens available for input.
+            max_new_tokens: The maximum number of tokens to generate.
+            query_wrapper_prompt: The query wrapper prompt, containing the query placeholder.
+                        Should contain a `{query_str}` placeholder.
+            tokenizer_name: The name of the tokenizer to use from HuggingFace.
+                        Unused if `tokenizer` is passed in directly.
+            model_name: The model name to use from HuggingFace.
+                        Unused if `model` is passed in directly.
+            model: The HuggingFace model.
+            tokenizer: The tokenizer.
+            device_map: The device_map to use. Defaults to 'auto'.
+            stopping_ids: The stopping ids to use.
+                        Generation stops when these token IDs are predicted.
+            tokenizer_kwargs: The kwargs to pass to the tokenizer.
+            tokenizer_outputs_to_remove: The outputs to remove from the tokenizer.
+                        Sometimes huggingface tokenizers return extra inputs that cause errors.
+            model_kwargs: The kwargs to pass to the model during initialization.
+            generate_kwargs: The kwargs to pass to the model during generation.
+            is_chat_model: Whether the model is `chat`
+            callback_manager: Callback manager.
+            system_prompt: The system prompt, containing any extra instructions or context.
+            messages_to_prompt: Function to convert messages to prompt.
+            completion_to_prompt: Function to convert messages to prompt.
+            pydantic_program_mode: DEFAULT.
+            output_parser: BaseOutputParser.
+
+        Returns:
+            Ipex-LLM instance.
+        """
+        return cls(
+            context_window=context_window,
+            max_new_tokens=max_new_tokens,
+            query_wrapper_prompt=query_wrapper_prompt,
+            tokenizer_name=tokenizer_name,
+            model_name=model_name,
+            device_map=device_map,
+            tokenizer_kwargs=tokenizer_kwargs,
+            model_kwargs=model_kwargs,
+            generate_kwargs=generate_kwargs,
+            is_chat_model=is_chat_model,
+            callback_manager=callback_manager,
+            system_prompt=system_prompt,
+            completion_to_prompt=completion_to_prompt,
+            messages_to_prompt=messages_to_prompt,
+        )
+
+    @classmethod
+    def from_model_id_low_bit(
+        cls,
+        context_window: int = DEFAULT_CONTEXT_WINDOW,
+        max_new_tokens: int = DEFAULT_NUM_OUTPUTS,
+        query_wrapper_prompt: Union[str, PromptTemplate]="{query_str}",
+        tokenizer_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model_name: str = DEFAULT_HUGGINGFACE_MODEL,
+        model: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
+        device_map: Optional[str] = "auto",
+        stopping_ids: Optional[List[int]] = None,
+        tokenizer_kwargs: Optional[dict] = None,
+        tokenizer_outputs_to_remove: Optional[list] = None,
+        model_kwargs: Optional[dict] = None,
+        generate_kwargs: Optional[dict] = None,
+        is_chat_model: Optional[bool] = False,
+        callback_manager: Optional[CallbackManager] = None,
+        system_prompt: str = "",
+        messages_to_prompt: Optional[Callable[[Sequence[ChatMessage]], str]]=None,
+        completion_to_prompt: Optional[Callable[[str], str]]=None,
+        pydantic_program_mode: PydanticProgramMode=PydanticProgramMode.DEFAULT,
+        output_parser: Optional[BaseOutputParser] = None,
+    ):
+        """
+        Construct IPEX-LLM from HuggingFace Model low-bit checkpoint.
+
+        Args:
+
+            context_window: The maximum number of tokens available for input.
+            max_new_tokens: The maximum number of tokens to generate.
+            query_wrapper_prompt: The query wrapper prompt, containing the query placeholder.
+                        Should contain a `{query_str}` placeholder.
+            tokenizer_name: The name of the tokenizer to use from HuggingFace.
+                        Unused if `tokenizer` is passed in directly.
+            model_name: The model name to use from HuggingFace.
+                        Unused if `model` is passed in directly.
+            model: The HuggingFace model.
+            tokenizer: The tokenizer.
+            device_map: The device_map to use. Defaults to 'auto'.
+            stopping_ids: The stopping ids to use.
+                        Generation stops when these token IDs are predicted.
+            tokenizer_kwargs: The kwargs to pass to the tokenizer.
+            tokenizer_outputs_to_remove: The outputs to remove from the tokenizer.
+                        Sometimes huggingface tokenizers return extra inputs that cause errors.
+            model_kwargs: The kwargs to pass to the model during initialization.
+            generate_kwargs: The kwargs to pass to the model during generation.
+            is_chat_model: Whether the model is `chat`
+            callback_manager: Callback manager.
+            system_prompt: The system prompt, containing any extra instructions or context.
+            messages_to_prompt: Function to convert messages to prompt.
+            completion_to_prompt: Function to convert messages to prompt.
+            pydantic_program_mode: DEFAULT.
+            output_parser: BaseOutputParser.
+
+        Returns:
+            Ipex-LLM instance.
+        """
+        return cls(
+            context_window=context_window,
+            max_new_tokens=max_new_tokens,
+            query_wrapper_prompt=query_wrapper_prompt,
+            tokenizer_name=tokenizer_name,
+            model_name=model_name,
+            device_map=device_map,
+            tokenizer_kwargs=tokenizer_kwargs,
+            model_kwargs=model_kwargs,
+            generate_kwargs=generate_kwargs,
+            is_chat_model=is_chat_model,
+            callback_manager=callback_manager,
+            system_prompt=system_prompt,
+            completion_to_prompt=completion_to_prompt,
+            messages_to_prompt=messages_to_prompt,
+            load_low_bit=True,
+        )
+
+    @classmethod
     def class_name(cls) -> str:
         """
         Get class name.
@@ -338,7 +506,7 @@ class BigdlLLM(CustomLLM):
         Returns:
             Str of class name.
         """
-        return "BigDL_LLM"
+        return "IpexLLM"
 
     @property
     def metadata(self) -> LLMMetadata:
@@ -431,7 +599,7 @@ class BigdlLLM(CustomLLM):
         Returns:
             CompletionReponse after generation.
         """
-        from transformers import TextStreamer
+        from transformers import TextIteratorStreamer
         full_prompt = prompt
         if not formatted:
             if self.query_wrapper_prompt:
@@ -446,9 +614,9 @@ class BigdlLLM(CustomLLM):
             if key in input_ids:
                 input_ids.pop(key, None)
 
-        streamer = TextStreamer(self._tokenizer, skip_prompt=True, skip_special_tokens=True)
+        streamer = TextIteratorStreamer(self._tokenizer, skip_prompt=True, skip_special_tokens=True)
         generation_kwargs = dict(
-            input_ids,
+            input_ids=input_ids,
             streamer=streamer,
             max_new_tokens=self.max_new_tokens,
             stopping_criteria=self._stopping_criteria,
@@ -465,3 +633,17 @@ class BigdlLLM(CustomLLM):
                 yield CompletionResponse(text=text, delta=x)
 
         return gen()
+
+    @llm_chat_callback()
+    def chat(self, messages: Sequence[ChatMessage], **kwargs: Any) -> ChatResponse:
+        prompt = self.messages_to_prompt(messages)
+        completion_response = self.complete(prompt, formatted=True, **kwargs)
+        return completion_response_to_chat_response(completion_response)
+
+    @llm_chat_callback()
+    def stream_chat(
+        self, messages: Sequence[ChatMessage], **kwargs: Any
+    ) -> ChatResponseGen:
+        prompt = self.messages_to_prompt(messages)
+        completion_response = self.stream_complete(prompt, formatted=True, **kwargs)
+        return stream_completion_response_to_chat_response(completion_response)

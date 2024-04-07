@@ -55,7 +55,7 @@ Configure oneAPI variables by running the following command in **Anaconda Prompt
 ```eval_rst
 .. note::
    
-   For more details about runtime configurations, `refer to this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ 
+   For more details about runtime configurations, refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ 
 ```
 
 ```cmd
