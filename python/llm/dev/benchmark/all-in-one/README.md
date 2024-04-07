@@ -2,7 +2,7 @@
 
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
-Before running, make sure to have [ipex-llm](../../../../../README.md).
+Before running, make sure to have [ipex-llm](../../../../../README.md) installed.
 
 ## Dependencies
 
@@ -41,7 +41,6 @@ test_api:
   # - "ipex_fp16_gpu" # on Intel GPU
   # - "bigdl_fp16_gpu" # on Intel GPU
   # - "optimize_model_gpu"  # on Intel GPU
-  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
   # - "transformer_int4_gpu_win" # on Intel GPU for Windows
   # - "transformer_int4_fp16_gpu_win" # on Intel GPU for Windows, use fp16 for non-linear layer
   # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
@@ -56,6 +55,7 @@ test_api:
   # - "bigdl_ipex_int4"
   # - "bigdl_ipex_int8"
   # - "speculative_cpu"
+  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
 
