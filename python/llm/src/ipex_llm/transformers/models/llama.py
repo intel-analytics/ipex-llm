@@ -1330,7 +1330,8 @@ def llama_attention_forward_4_36_original(
 def native_sdp(query, key, value, attention_mask,
                bsz, q_len, kv_seq_len, head_dim, num_heads, output_attentions):
     if should_split_tensor(query, output_attentions):
-        return native_sdp_split_tensor(query, key, value, attention_mask, bsz, q_len, kv_seq_len, head_dim)
+        return native_sdp_split_tensor(query, key, value, attention_mask,
+                                       bsz, q_len, kv_seq_len, head_dim)
     else:
         attn_weights = torch.matmul(query.to(key.dtype),
                                     key.transpose(2, 3)) / math.sqrt(head_dim)
