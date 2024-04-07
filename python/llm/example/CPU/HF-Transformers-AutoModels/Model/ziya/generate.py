@@ -42,7 +42,7 @@ if __name__ == '__main__':
     from ipex_llm.transformers import AutoModelForCausalLM
     # enabling `use_cache=True` allows the model to utilize the previous
     # key/values attentions to speed up decoding;
-    # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+    # to obtain optimal performance with IPEX-LLM INT4 optimizations,
     # it is important to set use_cache=True for Ziya models
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,

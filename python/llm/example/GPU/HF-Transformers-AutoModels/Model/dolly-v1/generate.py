@@ -64,7 +64,7 @@ if __name__ == '__main__':
         st = time.time()
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations,
         # it is important to set use_cache=True for Dolly v1 models
         output = model.generate(input_ids,
                                 use_cache=True,

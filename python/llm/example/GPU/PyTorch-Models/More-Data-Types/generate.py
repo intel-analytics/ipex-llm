@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
     
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # `low_bit` param support `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5` and `sym_int8`
     # By specifying `low_bit` param, relevant low bit optimizations will be applied to the model
     model = optimize_model(model, low_bit=low_bit)
