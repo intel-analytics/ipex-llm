@@ -74,6 +74,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'transformer_int4_gpu':
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
+    elif test_api == 'transformer_int4_fp16_gpu':
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, fp16=True)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'pytorch_autocast_bf16':
@@ -388,7 +390,8 @@ def run_transformer_int4_gpu(repo_id,
                              num_trials,
                              num_beams,
                              low_bit,
-                             batch_size):
+                             batch_size,
+                             fp16=False):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
@@ -405,12 +408,10 @@ def run_transformer_int4_gpu(repo_id,
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                             trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.to('xpu')
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
@@ -426,7 +427,13 @@ def run_transformer_int4_gpu(repo_id,
                 model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                             trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.to('xpu')
+
+    if fp16:
+        model = model.half()
+        print("Convert model to half precision")
+    
+    model = model.to('xpu')
+
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
