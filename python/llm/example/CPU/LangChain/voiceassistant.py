@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-# This would makes sure Python is aware there is more than one sub-package within bigdl,
+# This would makes sure Python is aware there is more than one sub-package within IPEX-LLM,
 # physically located elsewhere.
 # Otherwise there would be module not found error in non-pip's setting as Python would
-# only search the first bigdl package and end up finding only one sub-package.
+# only search the first IPEX-LLM package and end up finding only one sub-package.
 
 # Code adapted from https://python.langchain.com/docs/use_cases/chatbots/voice_assistant
 

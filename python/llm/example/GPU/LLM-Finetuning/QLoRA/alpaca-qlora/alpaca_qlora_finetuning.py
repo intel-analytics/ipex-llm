@@ -53,7 +53,7 @@ from common.utils import Prompter, get_int_from_env, wandb_check, get_train_val_
 
 from transformers import BitsAndBytesConfig
 from ipex_llm.transformers import AutoModelForCausalLM
-# import them from ipex_llm.transformers.qlora to get a BigDL-LLM compatible Peft model
+# import them from ipex_llm.transformers.qlora to get a IPEX-LLM compatible Peft model
 from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
     LoraConfig
 from ipex_llm.utils.common import invalidInputError
@@ -69,7 +69,7 @@ os.environ["MASTER_PORT"] = str(port)
 def train(
     # model/data params
     base_model: str = "meta-llama/Llama-2-7b-hf",  # the only required argument, default to be "meta-llama/Llama-2-7b-hf"
-    saved_low_bit_model: str = None,  # optional, the path to the saved model with bigdl-llm low-bit optimization
+    saved_low_bit_model: str = None,  # optional, the path to the saved model with IPEX-LLM low-bit optimization
     data_path: str = "yahma/alpaca-cleaned",
     output_dir: str = "./bigdl-qlora-alpaca",
     # training hyperparams
@@ -199,7 +199,7 @@ def train(
 
     print(model)
 
-    # Prepare a BigDL-LLM compatible Peft model
+    # Prepare a IPEX-LLM compatible Peft model
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=gradient_checkpointing)
 
     config = LoraConfig(

@@ -162,7 +162,7 @@ def messages_to_prompt(messages):
 def main(args):
     embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
     
-    # Use custom LLM in BigDL
+    # Use custom LLM in IPEX-LLM
     from ipex_llm.llamaindex.llms import BigdlLLM
     llm = BigdlLLM(
         model_name=args.model_path,
