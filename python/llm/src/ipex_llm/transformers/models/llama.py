@@ -214,7 +214,7 @@ def should_use_fast_rope(self, query_states, position_ids):
     return use_fuse_rope
 
 
-def should_split_tensor(query_states, output_attentions):
+def should_split_qkv_tensor(query_states, output_attentions):
     if not output_attentions and query_states.dtype == torch.float16 and \
             query_states.shape[2] >= 6800:
         # split tensor for memory block limitation
@@ -1329,7 +1329,7 @@ def llama_attention_forward_4_36_original(
 
 def native_sdp(query, key, value, attention_mask,
                bsz, q_len, kv_seq_len, head_dim, num_heads, output_attentions):
-    if should_split_tensor(query, output_attentions):
+    if should_split_qkv_tensor(query, output_attentions):
         return native_sdp_split_tensor(query, key, value, attention_mask,
                                        bsz, q_len, kv_seq_len, head_dim)
     else:
