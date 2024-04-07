@@ -236,7 +236,7 @@ class IpexLLM(CustomLLM):
             completion_to_prompt: Function to convert messages to prompt.
             pydantic_program_mode: DEFAULT.
             output_parser: BaseOutputParser.
-            load_low_bit: Use low_bit checkpoint. 
+            load_low_bit: Use low_bit checkpoint.
 
         Returns:
             None.
@@ -369,7 +369,7 @@ class IpexLLM(CustomLLM):
         output_parser: Optional[BaseOutputParser] = None,
     ):
         """
-        Construct IPEX-LLM from HuggingFace Model. 
+        Construct IPEX-LLM from HuggingFace Model.
 
         Args:
 
@@ -444,7 +444,7 @@ class IpexLLM(CustomLLM):
         output_parser: Optional[BaseOutputParser] = None,
     ):
         """
-        Construct IPEX-LLM from HuggingFace Model low-bit checkpoint. 
+        Construct IPEX-LLM from HuggingFace Model low-bit checkpoint.
 
         Args:
 
