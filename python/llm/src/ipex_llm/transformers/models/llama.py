@@ -639,11 +639,18 @@ def llama_attention_forward_4_31_original(
         attn_weights = None
     else:
         # otherwise, use native attention
-        attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+        if query_states.dtype == torch.float16 and query_states.shape[2] >= 6800:
+            # split tensor for memory block limitation
+            # support fp16 and set input length threshold at 6800 for now
+            attn_output, attn_weights = native_sdp_sp(query_states, key_states, value_states,
                                                attention_mask,
                                                bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads)
-
+                                               self.head_dim)
+        else:
+            attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                                attention_mask,
+                                                bsz, q_len, kv_seq_len,
+                                                self.head_dim, self.num_heads)
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
         invalidInputError(False,
@@ -1345,6 +1352,34 @@ def native_sdp(query, key, value, attention_mask,
                                              dtype=torch.float32).to(value.dtype)
     attn_output = torch.matmul(attn_weights, value)
     return attn_output, attn_weights
+
+
+def native_sdp_sp(query, key, value, attention_mask,
+               bsz, q_len, kv_seq_len, head_dim):
+    query_sp = torch.split(query.to(key.dtype), 16, dim=1)
+    key_sp = torch.split(key.transpose(2, 3), 16, dim=1)
+    value_sp = torch.split(value, 16, dim=1)
+    attn_weights = []
+    for q, k, v in zip(query_sp, key_sp, value_sp):
+        attn_weights_sp = torch.matmul(q, k)/ math.sqrt(head_dim)
+        attn_weights_sp_size = (bsz, 16, q_len, kv_seq_len)
+        if attn_weights_sp.size() != attn_weights_sp_size:
+            invalidInputError(False,
+                            f"Splitted Attention weights should be of size {attn_weights_sp_size},"
+                            f" but is {attn_weights_sp.size()}")
+
+        if attention_mask is not None:
+            attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+            if attention_mask.size() != attn_mask_size:
+                invalidInputError(False,
+                                f"Attention mask should be of size {attn_mask_size}, "
+                                f"but is {attention_mask.size()}")
+            attn_weights_sp = attn_weights_sp + attention_mask
+        attn_weights_sp = nn.functional.softmax(attn_weights_sp, dim=-1)
+        attn_weights_sp = torch.matmul(attn_weights_sp, v)
+        attn_weights.append(attn_weights_sp)
+    attn_output = torch.cat(attn_weights, dim=1)
+    return attn_output, None
 
 
 def llama_model_selective_batching_forward_4_31(
