@@ -70,7 +70,7 @@ def get_stop_words_ids(chat_format, tokenizer):
 
 @torch.no_grad()
 def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len, stop_words=[]):
-    print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
+    print(Fore.BLUE+"IPEX-LLM: "+Fore.RESET, end="")
     outputs = model(
         input_ids=input_ids,
         past_key_values=past_key_values,
@@ -151,7 +151,7 @@ def chatglm3_stream_chat(model, tokenizer):
         # let's stop the conversation when user input "stop"
         if user_input == "stop":
             break
-        print(Fore.BLUE+"BigDL-LLM: "+Fore.RESET, end="")
+        print(Fore.BLUE+"IPEX-LLM: "+Fore.RESET, end="")
         # https://github.com/THUDM/ChatGLM3/blob/main/PROMPT_en.md
         prompt = f"""
             <|system|>

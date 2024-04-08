@@ -128,7 +128,7 @@ if __name__ == "__main__":
     #                                              modules_to_not_convert=["lm_head"],)
 
     model = model.to('xpu')
-    # Prepare a BigDL-LLM compatible Peft model
+    # Prepare a IPEX-LLM compatible Peft model
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=gradient_checkpointing)
     model = get_peft_model(model, peft_config)
     model.config.use_cache = False
