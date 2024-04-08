@@ -1,9 +1,15 @@
 # Run Ollama on Linux with Intel GPU
 
-The [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine. Now you can run Ollama with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); see the demo of running LLaMA2-7B on an Intel A770 GPU below.
+[ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of `ipex-llm` as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
+
+```eval_rst
+.. note::
+   Only Linux is currently supported.
+```
+
+See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
-
 
 ## Quickstart
 
