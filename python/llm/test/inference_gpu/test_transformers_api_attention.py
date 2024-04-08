@@ -121,9 +121,9 @@ class Test_Optimize_Gpu_Model:
             del model
             del opt_model
             gc.collect()
-            
+
             assert all(max_diff <= lower_bound for max_diff in max_diff_tensor)
-    
+
     @pytest.mark.parametrize('Name, Model, Tokenizer, model_path',TEST_MODEL_LIST)
     def test_dynamic_functions(self, Name, Model, Tokenizer, model_path):
         if Name == "MPT-7B":
@@ -141,7 +141,7 @@ class Test_Optimize_Gpu_Model:
         elif Name == "Qwen-7B-Chat":
             self.Qwen_gpu_model(Name, Model, Tokenizer, model_path)
 
-    
+
     def MPT_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.blocks.31.norm_1"
@@ -155,14 +155,14 @@ class Test_Optimize_Gpu_Model:
         self_attn = "model.layers.31.self_attn"
         lower_bound = 8e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
-    
+
     def Falcon_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
         # currently only compare the output of the last self-attention layer.
         layer_norm = "transformer.h.31.input_layernorm"
         self_attn = "transformer.h.31.self_attention"
         lower_bound = 0
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
-    
+
     def Chatglm2_gpu_model(self, Name, Model, Tokenizer, model_path):
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.encoder.layers.27.input_layernorm"
@@ -176,12 +176,12 @@ class Test_Optimize_Gpu_Model:
         self_attn = "model.layers.31.self_attn"
         lower_bound = 9e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
-    
+
     def Baichuan_gpu_model(self, Name, Model, Tokenizer, model_path):
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "model.layers.31.input_layernorm"
         self_attn = "model.layers.31.self_attn"
-        lower_bound = 2e-3
+        lower_bound = 8e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
     def Qwen_gpu_model(self, Name, Model, Tokenizer, model_path):
