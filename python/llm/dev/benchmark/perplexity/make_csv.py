@@ -35,9 +35,8 @@ def make_csv(result_dict, output_path=None):
     current_date = datetime.datetime.now().strftime("%Y-%m-%d")
     file_name = f'results_{current_date}.csv'
     full_path = os.path.join(output_path, file_name) if output_path else file_name
-    print('Writing to', full_path)
     file_name = full_path
-    headers = ["Index", "Model", "Precision", "en", "zh"]
+    headers = ["Index", "Model", "Precision", "ppl_result"]
     
     with open(file_name, mode='w', newline='') as csv_file:
         writer = csv.writer(csv_file)
@@ -46,10 +45,10 @@ def make_csv(result_dict, output_path=None):
         for model, model_results in result_dict.items():
             for precision, prec_results in model_results.items():
                 row = [index, model, precision]
-                for language in headers[3:]:
+                for language in ["en","zh"]:
                     task_results = prec_results.get(language.lower(), None)
                     if task_results is None:
-                        row.append("")
+                        continue
                     else:
                         result = task_results["results"]
                         row.append("%.4f" % result)
@@ -89,6 +88,7 @@ def main(*args):
     output_path = args[2]
 
     merged_results = merge_results(input_path)
+
     make_csv(merged_results, output_path)
 
 
