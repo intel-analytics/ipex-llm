@@ -224,6 +224,7 @@ jobs:
         run: |
           pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
           pip install transformers==4.31.0
+          pip install pydantic>=2.0.0
           bash python/llm/test/run-llm-llamaindex-tests.sh
   llm-unit-test-on-arc:
     needs: [setup-python-version, llm-cpp-build]
