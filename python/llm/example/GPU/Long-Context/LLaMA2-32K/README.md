@@ -104,7 +104,7 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 4.2 Using 8k input size prompt
-You can set the `prompt` argument to be a `.txt` file path containing the 8k size prompt text. A possible command using the 8k input size prompt we provided is given below as an example.
+You can set the `prompt` argument to be a `.txt` file path containing the 8k size prompt text. An example command using the 8k input size prompt we provide is given below:
 ```
 python ./generate.py --repo-id-or-model-path togethercomputer/Llama-2-7B-32K-Instruct --prompt 8k.txt
 ```

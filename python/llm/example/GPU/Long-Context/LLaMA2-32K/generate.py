@@ -68,7 +68,11 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+        if not args.prompt.endswith('.txt'):
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+        else:
+            with open(args.prompt, 'r') as f:
+                prompt = f.read()
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
