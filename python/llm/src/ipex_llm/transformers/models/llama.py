@@ -1383,8 +1383,8 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                   f"but is {attention_mask.size()}")
             attn_weights_split = attn_weights_split + attention_mask
         attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
-        attn_output_split = torch.matmul(attn_weights_split, v)
-        attn_outputs.append(attn_output_split)
+        attn_weights_split = torch.matmul(attn_weights_split, v)
+        attn_outputs.append(attn_weights_split)
     attn_output = torch.cat(attn_outputs, dim=1)
     return attn_output, None
 
