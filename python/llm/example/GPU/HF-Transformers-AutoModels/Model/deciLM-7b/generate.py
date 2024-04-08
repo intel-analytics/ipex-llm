@@ -55,7 +55,7 @@ if __name__ == '__main__':
         cpu_embedding=True
     )
     
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     model = model.to('xpu')
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path)

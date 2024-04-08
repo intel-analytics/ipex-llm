@@ -59,7 +59,7 @@ Follow the steps in [Model Download](https://ipex-llm.readthedocs.io/en/latest/d
 ```eval_rst
 .. note::
 
-  If you don't need to use the API service anymore, you can follow the instructions in [Exit WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#exit-the-webui) to stop the service.  
+  If you don't need to use the API service anymore, you can follow the instructions in refer to `Exit WebUI <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#exit-the-webui>`_  to stop the service.  
 ```
 
 
@@ -104,7 +104,7 @@ In `config.json`, you'll find the `models` property, a list of the models that y
 }
 ```
 
-### 5. How to Use Continue
+### 5. How to Use `Continue`
 For detailed tutorials please refer to [this link](https://continue.dev/docs/how-to-use-continue). Here we are only showing the most common scenarios.
 
 #### Ask about highlighted code or an entire file

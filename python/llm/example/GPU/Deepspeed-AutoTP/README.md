@@ -17,8 +17,8 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 # configures OneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
-pip install git+https://github.com/microsoft/DeepSpeed.git@4fc181b0
-pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@ec33277
+pip install git+https://github.com/microsoft/DeepSpeed.git@ed8aed5
+pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b
 pip install mpi4py
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 ```

@@ -33,7 +33,7 @@
 from ipex_llm import llm_patch
 llm_patch(train=True)
 
-# The following is the original LLM finetuning code using PEFT (without BigDL-LLM)
+# The following is the original LLM finetuning code using PEFT (without IPEX-LLM)
 import os
 import sys
 from typing import List

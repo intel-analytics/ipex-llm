@@ -163,10 +163,10 @@ def main(args):
     embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
     
     # Use custom LLM in BigDL
-    from ipex_llm.llamaindex.llms import BigdlLLM
-    llm = BigdlLLM(
+    from ipex_llm.llamaindex.llms import IpexLLM
+    llm = IpexLLM.from_model_id(
         model_name=args.model_path,
-        tokenizer_name=args.model_path,
+        tokenizer_name=args.tokenizer_path,
         context_window=512,
         max_new_tokens=args.n_predict,
         generate_kwargs={"temperature": 0.7, "do_sample": False},
@@ -245,6 +245,8 @@ if __name__ == "__main__":
                         help="the path to embedding model path")
     parser.add_argument('-n','--n-predict', type=int, default=32,
                         help='max number of predict tokens')
+    parser.add_argument('-t','--tokenizer-path',type=str,required=True,
+                        help='the path to transformers tokenizer')
     args = parser.parse_args()
     
     main(args)
