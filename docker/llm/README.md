@@ -456,9 +456,11 @@ To fully utilize the continuous batching feature of the vLLM, you can send reque
 
 ## IPEX-LLM Fine Tuning on CPU
 
-### 1. Prepare Docker Image
+The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel CPU.
 
-You can download directly from Dockerhub like:
+### 1. Prepare ipex-llm-finetune-qlora-cpu Docker Image
+
+Run the following command:
 
 ```bash
 # For standalone
@@ -468,31 +470,7 @@ docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT
 ```
 
-Or build the image from source:
-
-```bash
-# For standalone
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker build \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT \
-  -f ./Dockerfile .
-
-# For k8s
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker build \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT \
-  -f ./Dockerfile.k8s .
-```
-
-### 2. Prepare Base Model, Data and Container
+### 2. Prepare Base Model, Data and Start Docker Container
 
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
@@ -501,40 +479,52 @@ export BASE_MODE_PATH=your_downloaded_base_model_path
 export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
+export CONTAINER_NAME=my_container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 
 docker run -itd \
-   --net=host \
-   --name=ipex-llm-fintune-qlora-cpu \
-   -e http_proxy=${HTTP_PROXY} \
-   -e https_proxy=${HTTPS_PROXY} \
-   -v $BASE_MODE_PATH:/ipex_llm/model \
-   -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
+  --net=host \
+  --name=$CONTAINER_NAME \
+  -e http_proxy=${HTTP_PROXY} \
+  -e https_proxy=${HTTPS_PROXY} \
+  -v $BASE_MODE_PATH:/ipex_llm/model \
+  -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
+  $DOCKER_IMAGE
 ```
 
-The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
+You can also start Multi-Porcess Fine-Tuning in one Docker Container.
+
+Multi-process parallelism enables higher performance for QLoRA fine-tuning, e.g. Xeon server series with multi-processor-socket architecture is suitable to run one instance on each QLoRA. This can be done by simply invoke >=2 OneCCL instances in IPEX-LLM QLoRA docker:
 
 ```bash
+export BASE_MODE_PATH=your_downloaded_base_model_path
+export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
+export CONTAINER_NAME=my_container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 
 docker run -itd \
-   --net=host \
-   --name=ipex-llm-fintune-qlora-cpu \
-   -e http_proxy=${HTTP_PROXY} \
-   -e https_proxy=${HTTPS_PROXY} \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
+  --name=$CONTAINER_NAME \
+  --cpuset-cpus="your_expected_range_of_cpu_numbers" \
+  -e STANDALONE_DOCKER=TRUE \
+  -e WORKER_COUNT_DOCKER=your_worker_count \
+  -e http_proxy=${HTTP_PROXY} \
+  -e https_proxy=${HTTPS_PROXY} \
+  -v $BASE_MODE_PATH:/ipex_llm/model \
+  -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
+  $DOCKER_IMAGE
 ```
+Note that `STANDALONE_DOCKER` is set to **TRUE** here.
 
-However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
 
-### 3. Start Fine-Tuning (Local Mode)
-
-Enter the running container:
+After the container is booted, you could get into the container through docker exec.
 
 ```bash
-docker exec -it ipex-llm-fintune-qlora-cpu bash
+docker exec -it $CONTAINER_NAME bash
 ```
+
+### 3. Start Fine-Tuning (Local Mode)
 
 Then, start QLoRA fine-tuning:
 If the machine memory is not enough, you can try to set `use_gradient_checkpointing=True`.
@@ -571,6 +561,12 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 ```
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
+
+
+### 5. Start Distributed Fine-Tuning on Kubernetes
+
+Besides multi-process mode, you can also run QLoRA on a kubernetes cluster. please refer [here](https://github.com/intel-analytics/IPEX-LLM/blob/main/docker/llm/finetune/qlora/cpu/kubernetes/README.md).
+
 
 
 ## IPEX-LLM Fine Tuning on XPU
