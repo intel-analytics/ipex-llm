@@ -633,7 +633,7 @@ def _optimize_pre(model):
                 del module.c_attn
         model.apply(split_qkv_proj_func)
     if model.config.model_type == "stablelm":
-        # For stablelm-zephyr-3b
+        # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
         model.apply(merge_qkv)
 
@@ -1342,10 +1342,11 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.BertEncoder,
                         encoder_forward)
     elif model.config.model_type == 'stablelm':
-        # For stablelm-zephyr-3b
+        # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.stablelm import stablelm_attention_forward
+        from ipex_llm.transformers.models.stablelm import stablelm_model_forward
         convert_forward(model,
                         module.StableLmAttention,
                         stablelm_attention_forward
@@ -1353,5 +1354,8 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.StableLmMLP,
                         llama_mlp_forward)
-
+        convert_forward(model,
+                        module.StableLmModel,
+                        stablelm_model_forward
+                        )
     return model
