@@ -43,7 +43,8 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
 def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
     return decoding_fast_path_qtype_check(proj) and \
-        use_fuse_rope and enough_kv_room and bs == 1
+        use_fuse_rope and enough_kv_room and bs == 1 \
+        and not proj.enable_xetla
 
 
 def should_use_fuse_rope(self, hidden_states, position_ids):
