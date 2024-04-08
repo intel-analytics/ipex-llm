@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
     runs-on: [self-hosted, llm, perf]
     env:
       OMP_NUM_THREADS: 16
@@ -163,7 +163,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
     runs-on: [self-hosted, llm, spr-perf]
     env:
       OMP_NUM_THREADS: 16
@@ -238,10 +238,10 @@ jobs:
         include:
           - os: windows
             platform: dp
-            python-version: "3.9"
+            python-version: "3.11"
           # - os: windows
           #   platform: lp
-          #   python-version: "3.9"
+          #   python-version: "3.11"
     runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-core, "${{ matrix.platform }}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -309,7 +309,7 @@ jobs:
       matrix:
         include:
           - os: windows
-            python-version: "3.9"
+            python-version: "3.11"
     runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-igpu]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -380,7 +380,7 @@ jobs:
       - name: Create env for html generation
         shell: cmd
         run: |
-          call conda create -n html-gen python=3.9 -y
+          call conda create -n html-gen python=3.11 -y
           call conda activate html-gen
 
           pip install pandas==1.5.3

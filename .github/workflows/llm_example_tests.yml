@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
         instruction: ["AVX512"]
     runs-on: [ self-hosted, llm,"${{matrix.instruction}}", ubuntu-20.04-lts ]
     env:
