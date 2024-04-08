@@ -4,7 +4,7 @@ The [open-webui](https://github.com/open-webui/open-webui) provides a user frien
 
 See the demo of running Mistral:7B on Intel Arc A770 below.
 
-<video src="" width="100%" controls></video>
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_demo.mp4" width="100%" controls></video>
 
 ## Quickstart
 This quickstart guide walks you through setting up and using the [open-webui](https://github.com/open-webui/open-webui) with Ollama. 
@@ -79,31 +79,46 @@ open-webui will be accessible at http://localhost:8080/.
 
 If this is your first time using it, you need to register. After registering, log in with the registered account to access the interface.
 
-![image-20240407170336578](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407170336578.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" width="100%" />
+</a>
 
-![image-20240407170703847](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407170703847.png)
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_login.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_login.png" width="100%" />
+</a>
 
 Check your ollama service connection in `Settings`. If everything goes well, you will get a message as shown below.
 
-![image-20240407170811631](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407170811631.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" width="100%" />
+</a>
 
 Pull model in `Settings/Models`, click the download button and ollama will download the model you select automatically.
 
-![image-20240407171421875](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407171421875.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" width="100%" />
+</a>
 
 #### Chat with the Model
 
 Start new conversations with **New chat**. Select a downloaded model here:
 
-![image-20240407171643754](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407171643754.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_select_model.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_select_model.png" width="100%" />
+</a>
 
 Enter prompts into the textbox at the bottom and press the send button to receive responses.
 
-![image-20240407172714188](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407172714188.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_chat_1.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_chat_1.png" width="100%" />
+</a>
 
 You can also drop files into the textbox for LLM to read.
 
-![image-20240407172738371](C:\Users\yibopeng\AppData\Roaming\Typora\typora-user-images\image-20240407172738371.png)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_chat_2.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_chat_2.png" width="100%" />
+</a>
 
 #### Exit Open-Webui
 
