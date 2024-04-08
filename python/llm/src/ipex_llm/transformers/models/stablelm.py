@@ -387,19 +387,19 @@ def stablelm_attention_forward_quantized(
 
     kv_seq_len = key_states.shape[-2]
     if len(past_key_value.key_cache) <= self.layer_idx:
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
+        attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
+        invalidInputError(
+            attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len),
+            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}"
+            f", but is {attn_weights.size()}")
 
         if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-                )
+            invalidInputError(
+                attention_mask.size() != (bsz, 1, q_len, kv_seq_len),
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                f" but is {attention_mask.size()}")
             attn_weights = attn_weights + attention_mask
 
         # at inference time, for memory considerations, may not need to upcast attention to fp32
@@ -408,11 +408,10 @@ def stablelm_attention_forward_quantized(
 
         attn_output = torch.matmul(attn_weights, value_states)
 
-        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            raise ValueError(
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-                f" {attn_output.size()}"
-            )
+        invalidInputError(
+            attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim),
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}"
+            f", but is {attn_output.size()}")
         if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
@@ -436,17 +435,16 @@ def stablelm_attention_forward_quantized(
 
         attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
+        invalidInputError(
+            attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len),
+            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}"
+            f", but is {attn_weights.size()}")
 
         if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-                )
+            invalidInputError(
+                attention_mask.size() != (bsz, 1, q_len, kv_seq_len),
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                f" but is {attention_mask.size()}")
             attn_weights = attn_weights + attention_mask
 
         # at inference time, for memory considerations, may not need to upcast attention to fp32
