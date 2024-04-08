@@ -258,15 +258,15 @@ class LowMemoryLlama(GenerationMixin):
         inputs = input_ids.to(self.device)
 
         # Set up kv cache
-        kv_cache = {}
+        kv_cache = [None] * len(self.model.model.layers)
         if past_key_values is None:
-            past_key_values = {}
+            past_key_values = [None] * len(self.model.model.layers)
 
         with torch.inference_mode():
             # Generate attention mask and position ids
             current_shape = inputs.shape[1]
-            if past_key_values.get(self.layer_names[1], None):
-                pre_shape = past_key_values[self.layer_names[1]][0].size(2)
+            if past_key_values[0] is not None:
+                pre_shape = past_key_values[0][0].size(2)
             else:
                 pre_shape = 0
             pos = self.position_ids[:, pre_shape : current_shape + pre_shape]
@@ -282,9 +282,10 @@ class LowMemoryLlama(GenerationMixin):
                 if layer_name in ("model.embed_tokens", "model.norm", "lm_head"):
                     inputs = layer(inputs)
                 else:
-                    inputs, new_kv_cache = layer(inputs, use_cache=True, past_key_value=past_key_values.get(layer_name, None),
+                    decoder_layer_index = layer_name.split('.')[-1]
+                    inputs, new_kv_cache = layer(inputs, use_cache=True, past_key_value=past_key_values[decoder_layer_index],
                                                  position_ids=pos, attention_mask=attn)
-                    kv_cache[layer_name] = new_kv_cache
+                    kv_cache[decoder_layer_index] = new_kv_cache
 
                 # Delete weight before moving to('meta')
                 for module in layer.modules():
