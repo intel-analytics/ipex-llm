@@ -108,6 +108,10 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 ``ipex-llm`` Quickstart
 ************************************************
 
+============================================
+Install ``ipex-llm``
+============================================
+
 * `Windows GPU <doc/LLM/Quickstart/install_windows_gpu.html>`_: installing ``ipex-llm`` on Windows with Intel GPU
 * `Linux GPU <doc/LLM/Quickstart/install_linux_gpu.html>`_: installing ``ipex-llm`` on Linux with Intel GPU
 * `Docker <https://github.com/intel-analytics/ipex-llm/tree/main/docker/llm>`_: using ``ipex-llm`` dockers on Intel CPU and GPU
@@ -120,8 +124,8 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 Run ``ipex-llm``
 ============================================
 
-* `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_: running **llama.cpp** (*using C++ interface of ``ipex-llm`` as an accelerated backend for ``llama.cpp``*) on Intel GPU
-* `ollama <doc/LLM/Quickstart/ollama_quickstart.html>`_: running **ollama** (*using C++ interface of ``ipex-llm`` as an accelerated backend for ``ollama``*) on Intel GPU
+* `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_: running **llama.cpp** (*using C++ interface of* ``ipex-llm`` *as an accelerated backend for* ``llama.cpp``) on Intel GPU
+* `ollama <doc/LLM/Quickstart/ollama_quickstart.html>`_: running **ollama** (*using C++ interface of* ``ipex-llm`` *as an accelerated backend for* ``ollama``) on Intel GPU
 * `vLLM <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving>`_: running ``ipex-llm`` in ``vLLM`` on both Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving>`_
 * `FastChat <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>`_: running ``ipex-llm`` in ``FastChat`` serving on on both Intel GPU and CPU
 * `LangChain-Chatchat RAG <https://github.com/intel-analytics/Langchain-Chatchat>`_: running ``ipex-llm`` in ``LangChain-Chatchat`` (*Knowledge Base QA using* **RAG** *pipeline*)
