@@ -89,6 +89,7 @@ def merge_qkv(module: torch.nn.Module):
 
         del module.q_proj, module.k_proj, module.v_proj
 
+
 def stablelm_model_forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -401,8 +402,8 @@ def stablelm_attention_forward_quantized(
                 )
             attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dtype=torch.float32, dim=-1).to(query_states.dtype)
+        # at inference time, for memory considerations, may not need to upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1).to(query_states.dtype)
         attn_weights = self.attention_dropout(attn_weights)
 
         attn_output = torch.matmul(attn_weights, value_states)
@@ -415,13 +416,11 @@ def stablelm_attention_forward_quantized(
         if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs,
-                                                             new_layout=True)
+                                                             self.layer_idx, cache_kwargs)
     else:
         cache_kwargs = None  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs,
-                                                         new_layout=True)
+                                                         self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if query_states.size(2) != 1 or query_states.device.type != 'xpu' or \
                 (self.head_dim != 64 and self.head_dim != 128):
@@ -430,32 +429,37 @@ def stablelm_attention_forward_quantized(
             # repeat k/v heads if n_kv_heads < n_heads
             key_states = repeat_kv(key_states, self.num_key_value_groups)
             value_states = repeat_kv(value_states, self.num_key_value_groups)
-            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-                raise ValueError(
-                    f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                    f" {attn_weights.size()}"
-                )
-
-            if attention_mask is not None:
-                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    raise ValueError(
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
-                    )
-                attn_weights = attn_weights + attention_mask
-
-            # upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dtype=torch.float32, dim=-1).to(query_states.dtype)
-            attn_weights = self.attention_dropout(attn_weights)
-
-            attn_output = torch.matmul(attn_weights, value_states)
-
+            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
-            attn_weights = None
+            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+
+        attn_weights = attn_weights / math.sqrt(self.head_dim)
+
+        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
+            raise ValueError(
+                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                f" {attn_weights.size()}"
+            )
+
+        if attention_mask is not None:
+            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                raise ValueError(
+                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                )
+            attn_weights = attn_weights + attention_mask
+
+        # at inference time, for memory considerations, may not need to upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+        attn_weights = self.attention_dropout(attn_weights)
+
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu' or \
+                (self.head_dim != 64 and self.head_dim != 128):
+            attn_output = torch.matmul(attn_weights, value_states)
+        else:
+            import linear_q4_0
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
+                                                            value_states.transpose(-1, -2))
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
