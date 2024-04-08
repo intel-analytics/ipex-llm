@@ -1363,13 +1363,16 @@ def native_sdp(query, key, value, attention_mask,
 
 def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                 bsz, q_len, kv_seq_len, head_dim):
-    query_split = torch.split(query.to(key.dtype), 16, dim=1)
-    key_split = torch.split(key.transpose(2, 3), 16, dim=1)
-    value_split = torch.split(value, 16, dim=1)
-    attn_outputs = []
+    block_size = 8
+    query_split = torch.split(query.to(key.dtype), block_size, dim=1)
+    key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
+    value_split = torch.split(value, block_size, dim=1)
+    attn_output = torch.empty(query.size(0), query.size(1),
+                              query.size(2), value.size(3)).to(query.device)
+    idx = 0
     for q, k, v in zip(query_split, key_split, value_split):
         attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
-        attn_weights_split_size = (bsz, 16, q_len, kv_seq_len)
+        attn_weights_split_size = (bsz, block_size, q_len, kv_seq_len)
         if attn_weights_split.size() != attn_weights_split_size:
             invalidInputError(False,
                               f"Splitted attention weights should be of size "
@@ -1384,8 +1387,8 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
             attn_weights_split = attn_weights_split + attention_mask
         attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
         attn_weights_split = torch.matmul(attn_weights_split, v)
-        attn_outputs.append(attn_weights_split)
-    attn_output = torch.cat(attn_outputs, dim=1)
+        attn_output[:,idx:idx+attn_weights_split.size(1),:,:] = attn_weights_split
+        idx = idx + attn_weights_split.size(1)
     return attn_output, None
 
 
