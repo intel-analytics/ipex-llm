@@ -180,12 +180,11 @@ def stablelm_attention_forward_original(
     kv_seq_len = key_states.shape[-2]
 
     if past_key_value is not None:
-        if self.layer_idx is None:
-            invalidInputError(False,
-                              "The cache structure has changed since version v4.36. "
-                              f"If you are using {self.__class__.__name__} for "
-                              "auto-regressive decodingwith k/v caching, please make sure "
-                              "to initialize the attention class with a layer index.")
+        invalidInputError(self.layer_idx is not None,
+                          "The cache structure has changed since version v4.36. "
+                          f"If you are using {self.__class__.__name__} for "
+                          "auto-regressive decodingwith k/v caching, please make sure "
+                          "to initialize the attention class with a layer index.")
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
     # Partial rotary embedding
@@ -278,20 +277,16 @@ def stablelm_attention_forward_original(
             query_states,
             key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
-                f" but is {attn_weights.size()}"
-            )
+        invalidInputError(
+            attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
+            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)},"
+            f" but is {attn_weights.size()}")
 
         if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                invalidInputError(
-                    False,
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                    f" but is {attention_mask.size()}"
-                )
+            invalidInputError(
+                attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                f" but is {attention_mask.size()}")
 
             attn_weights = attn_weights + attention_mask
 
@@ -302,12 +297,10 @@ def stablelm_attention_forward_original(
 
         attn_output = torch.matmul(attn_weights, value_states)
 
-        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            invalidInputError(
-                False,
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
-                f" but is {attn_output.size()}"
-            )
+        invalidInputError(
+            attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
+            f" but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
@@ -344,15 +337,14 @@ def stablelm_attention_forward_quantized(
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
-        if self.layer_idx is None:
-            invalidInputError(
-                False,
-                f"The cache structure has changed since version v4.36. "
-                "If you are using {self.__class__.__name__} "
-                "for auto-regressive decoding with k/v caching, "
-                "please make sure to initialize the attention class "
-                "with a layer index."
-            )
+        invalidInputError(
+            self.layer_idx is not None,
+            f"The cache structure has changed since version v4.36. "
+            "If you are using {self.__class__.__name__} "
+            "for auto-regressive decoding with k/v caching, "
+            "please make sure to initialize the attention class "
+            "with a layer index."
+        )
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
     # Partial rotary embedding
