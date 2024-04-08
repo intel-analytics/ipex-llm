@@ -413,8 +413,7 @@ def stablelm_attention_forward_quantized(
         key_states, value_states = past_key_value.update(key_states, value_states,
                                                          self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu' or \
-                (self.head_dim != 64 and self.head_dim != 128):
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
@@ -443,8 +442,7 @@ def stablelm_attention_forward_quantized(
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
         attn_weights = self.attention_dropout(attn_weights)
 
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu' or \
-                (self.head_dim != 64 and self.head_dim != 128):
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
