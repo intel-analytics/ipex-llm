@@ -399,4 +399,5 @@ jobs:
             pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             source /home/arda/intel/oneapi/setvars.sh
           fi
+          pip install pydantic>=2.0.0
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
