@@ -1363,17 +1363,17 @@ def native_sdp(query, key, value, attention_mask,
 
 def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                 bsz, q_len, kv_seq_len, head_dim):
-    query_sp = torch.split(query.to(key.dtype), 16, dim=1)
-    key_sp = torch.split(key.transpose(2, 3), 16, dim=1)
-    value_sp = torch.split(value, 16, dim=1)
-    attn_weights = []
-    for q, k, v in zip(query_sp, key_sp, value_sp):
-        attn_weights_sp = torch.matmul(q, k) / math.sqrt(head_dim)
-        attn_weights_sp_size = (bsz, 16, q_len, kv_seq_len)
-        if attn_weights_sp.size() != attn_weights_sp_size:
+    query_split = torch.split(query.to(key.dtype), 16, dim=1)
+    key_split = torch.split(key.transpose(2, 3), 16, dim=1)
+    value_split = torch.split(value, 16, dim=1)
+    attn_outputs = []
+    for q, k, v in zip(query_split, key_split, value_split):
+        attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
+        attn_weights_split_size = (bsz, 16, q_len, kv_seq_len)
+        if attn_weights_split.size() != attn_weights_split_size:
             invalidInputError(False,
                               f"Splitted attention weights should be of size "
-                              f"{attn_weights_sp_size}, but is {attn_weights_sp.size()}")
+                              f"{attn_weights_split_size}, but is {attn_weights_split.size()}")
 
         if attention_mask is not None:
             attn_mask_size = (bsz, 1, q_len, kv_seq_len)
@@ -1381,11 +1381,11 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                 invalidInputError(False,
                                   f"Attention mask should be of size {attn_mask_size}, "
                                   f"but is {attention_mask.size()}")
-            attn_weights_sp = attn_weights_sp + attention_mask
-        attn_weights_sp = nn.functional.softmax(attn_weights_sp, dim=-1)
-        attn_weights_sp = torch.matmul(attn_weights_sp, v)
-        attn_weights.append(attn_weights_sp)
-    attn_output = torch.cat(attn_weights, dim=1)
+            attn_weights_split = attn_weights_split + attention_mask
+        attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
+        attn_output_split = torch.matmul(attn_weights_split, v)
+        attn_outputs.append(attn_output_split)
+    attn_output = torch.cat(attn_outputs, dim=1)
     return attn_output, None
 
 
