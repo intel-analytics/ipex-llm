@@ -142,6 +142,7 @@ def qwen_attention_forward_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
     qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k, cache_v = layer_past[0], layer_past[1]
