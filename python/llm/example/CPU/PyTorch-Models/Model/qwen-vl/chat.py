@@ -35,10 +35,10 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     # Load model
-    model = AutoModelForCausalLM.from_pretrained(model_path, device_map="cpu",  trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(model_path, device_map="cpu", trust_remote_code=True)
 
-    # With only one line to enable BigDL-LLM optimization on model
-    # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
+    # With only one line to enable IPEX-LLM optimization on model
+    # For successful IPEX-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
     model = optimize_model(model, 
                            low_bit='sym_int4', 
                            modules_to_not_convert=['c_fc', 'out_proj'])

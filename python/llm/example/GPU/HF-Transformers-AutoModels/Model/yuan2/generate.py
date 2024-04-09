@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # if your selected model is capable of utilizing previous key/value attentions
     # to enhance decoding speed, but has `"use_cache": false` in its model config,
     # it is important to set `use_cache=True` explicitly in the `generate` function
-    # to obtain optimal performance with BigDL-LLM INT4 optimizations
+    # to obtain optimal performance with IPEX-LLM INT4 optimizations
     outputs = model.generate(inputs, do_sample=True, top_k=5, max_length=args.n_predict)
     end_time = time.time()
 

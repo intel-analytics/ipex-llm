@@ -55,7 +55,7 @@ def extract_key_value(self, hidden, state=None):
             self.time_mix_value.data,
             self.time_mix_receptance.data,
             self.time_mix_gate.data,
-        ])
+        ]).to(dtype=hidden.dtype)
 
     import linear_q4_0
     mixed_result = linear_q4_0.rwkv_time_shift(hidden, shifted, self.mixed_mix)
@@ -232,7 +232,8 @@ def rwkv_ffn_forward_wrapper(origin_rwkv_ffn_forward):
                 shifted = shifted.unsqueeze(1)
 
             if not hasattr(self, "mixed_mix"):
-                self.mixed_mix = torch.cat([self.time_mix_key.data, self.time_mix_receptance.data])
+                self.mixed_mix = torch.cat([self.time_mix_key.data,
+                                            self.time_mix_receptance.data]).to(dtype=hidden.dtype)
 
             import linear_q4_0
             mixed_result = linear_q4_0.rwkv_time_shift(hidden, shifted, self.mixed_mix)

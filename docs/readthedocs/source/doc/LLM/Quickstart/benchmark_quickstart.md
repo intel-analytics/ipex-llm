@@ -1,4 +1,4 @@
-# IPEX-LLM Benchmarking
+# Run Performance Benchmarking with IPEX-LLM
 
 We can do benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
@@ -21,7 +21,7 @@ git clone https://github.com/intel-analytics/ipex-llm.git
 cd ipex-llm/python/llm/dev/benchmark/all-in-one/
 ```
 
-## Configure YAML File
+## config.yaml
 
 ```yaml
 repo_id:
@@ -44,6 +44,8 @@ Some parameters in the yaml file that you can configure:
 
 - repo_id: The name of the model and its organization.
 - local_model_hub: The folder path where the models are stored on your machine.
+- warm_up: The number of runs as warmup trials, executed before performance benchmarking.
+- num_trials: The number of runs for performance benchmarking. The final benchmark result would be the average of all the trials.
 - low_bit: The low_bit precision you want to convert to for benchmarking.
 - batch_size: The number of samples on which the models makes predictions in one forward pass.
 - in_out_pairs: Input sequence length and output sequence length combined by '-'.
@@ -52,6 +54,8 @@ Some parameters in the yaml file that you can configure:
   - `transformer_int4_gpu_win` on Intel GPU for Windows
   - `transformer_int4` on Intel CPU
 - cpu_embedding: Whether to put embedding on CPU (only avaiable now for windows gpu related test_api).
+
+Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` as well as `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately.
 
 ## Run on Windows
 
@@ -144,4 +148,4 @@ Please refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overvie
 
 ## Result
 
-After the script runnning is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for  performance results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in config.yaml have been successfully applied in the benchmarking.
+After the benchmarking completes, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.

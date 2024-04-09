@@ -36,12 +36,14 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path  
         
     # Load model
-    # For successful BigDL-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
+    # For successful IPEX-LLM optimization on Qwen-VL-Chat, skip the 'c_fc' and 'out_proj' modules during optimization
     model = AutoModelForCausalLM.from_pretrained(model_path, 
                                                  load_in_4bit=True, 
                                                  device_map="cpu", 
                                                  trust_remote_code=True, 
-                                                 modules_to_not_convert=['c_fc', 'out_proj'] )
+                                                 modules_to_not_convert=['c_fc', 'out_proj'],
+                                                 torch_dtype=torch.float32
+                                                 )
 
     # Specify hyperparameters for generation (No need to do this if you are using transformers>=4.32.0)
     model.generation_config = GenerationConfig.from_pretrained(model_path, trust_remote_code=True)

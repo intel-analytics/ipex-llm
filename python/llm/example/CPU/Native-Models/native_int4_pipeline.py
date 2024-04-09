@@ -56,8 +56,8 @@ def load(model_path, model_family, n_threads):
 def inference(llm, repo_id_or_model_path, model_family, prompt):
 
     if model_family in ['llama', 'gptneox', 'bloom', 'starcoder', 'chatglm']:
-        # ------ Option 1: Use bigdl-llm based tokenizer
-        print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
+        # ------ Option 1: Use IPEX-LLM based tokenizer
+        print('-'*20, ' IPEX-LLM based tokenizer ', '-'*20)
         st = time.time()
 
         # please note that the prompt here can either be a string or a list of string
@@ -126,13 +126,13 @@ def main():
     if args.model_family == 'llama2':
         args.model_family = 'llama'
 
-    # Step 1: convert original model to BigDL llm model
-    bigdl_llm_path = convert(repo_id_or_model_path=repo_id_or_model_path,
+    # Step 1: convert original model to IPEX-LLM model
+    ipex_llm_path = convert(repo_id_or_model_path=repo_id_or_model_path,
                              model_family=args.model_family,
                              tmp_path=args.tmp_path)
     
     # Step 2: load int4 model
-    llm = load(model_path=bigdl_llm_path,
+    llm = load(model_path=ipex_llm_path,
                model_family=args.model_family,
                n_threads=args.thread_num)
 

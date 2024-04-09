@@ -74,6 +74,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_optimize_model(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'transformer_int4_gpu':
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
+    elif test_api == 'transformer_int4_fp16_gpu':
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, fp16=True)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'pytorch_autocast_bf16':
@@ -101,7 +103,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'bigdl_ipex_int8':
         result = run_bigdl_ipex_int8(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
     elif test_api == 'deepspeed_optimize_model_gpu':
-        result = run_deepspeed_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
+        result = run_deepspeed_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding)
     elif test_api == 'speculative_cpu':
         result = run_speculative_cpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
     elif test_api == 'speculative_gpu':
@@ -121,7 +123,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             low_bit,
                             cpu_embedding if 'win' in test_api else 'N/A',
                             round(result[in_out_pair][-1][5], 2),
-                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu' ]) else 'N/A',
+                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) else 'N/A',
                             streaming if 'win' in test_api else 'N/A'],
                             ) 
 
@@ -388,7 +390,8 @@ def run_transformer_int4_gpu(repo_id,
                              num_trials,
                              num_beams,
                              low_bit,
-                             batch_size):
+                             batch_size,
+                             fp16=False):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
@@ -405,12 +408,10 @@ def run_transformer_int4_gpu(repo_id,
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                             trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.to('xpu')
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
@@ -426,10 +427,13 @@ def run_transformer_int4_gpu(repo_id,
                 model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                             trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
+
+    if fp16:
+        model = model.half()
+        print("Convert model to half precision")
+    
+    model = model.to('xpu')
+
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -519,9 +523,6 @@ def run_optimize_model_gpu(repo_id,
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
@@ -594,9 +595,6 @@ def run_ipex_fp16_gpu(repo_id,
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, use_cache=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half().to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
@@ -716,7 +714,7 @@ def run_bigdl_fp16_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len, load_time])
+                                           actual_in_len, actual_out_len, load_time, model.peak_memory])
     del model
     torch.xpu.empty_cache()
     return result
@@ -852,9 +850,6 @@ def run_transformer_int4_gpu_win(repo_id,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -962,9 +957,6 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.half()
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -1067,9 +1059,6 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
@@ -1420,7 +1409,8 @@ def run_deepspeed_optimize_model_gpu(repo_id,
                                      num_trials,
                                      num_beams,
                                      low_bit,
-                                     batch_size):
+                                     batch_size,
+                                     cpu_embedding):
     def get_int_from_env(env_keys, default):
         for e in env_keys:
             val = int(os.environ.get(e, -1))
@@ -1461,14 +1451,14 @@ def run_deepspeed_optimize_model_gpu(repo_id,
                                                      torch_dtype=torch.float16, trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     model = deepspeed.init_inference(model, mp_size=world_size,
-                                     dtype=torch.float16, replace_method="auto",)
+                                     dtype=torch.bfloat16, replace_method="auto",)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
 
     # Use bigdl-llm `optimize_model` to convert the model into optimized low bit format
     # Convert the rest of the model into float16 to reduce allreduce traffic
-    model = optimize_model(model.module.to(f'cpu'), low_bit=low_bit).to(torch.float16)
+    model = optimize_model(model.module.to(f'cpu'), low_bit=low_bit, cpu_embedding=cpu_embedding).to(torch.float16)
     # Next, use XPU as accelerator to speed up inference
     current_accel = XPU_Accelerator()
     set_accelerator(current_accel)
@@ -1484,7 +1474,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
     from deepspeed.comm.comm import init_distributed
     init_distributed()
 
-    model = BenchmarkWrapper(model)
+    model = BenchmarkWrapper(model, do_print=True)
 
     result = {}
     with torch.inference_mode():
@@ -1522,7 +1512,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
                 torch.xpu.empty_cache()
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len, load_time])
+                                               actual_in_len, actual_out_len, load_time, model.peak_memory])
     del model
     torch.xpu.empty_cache()
     return result

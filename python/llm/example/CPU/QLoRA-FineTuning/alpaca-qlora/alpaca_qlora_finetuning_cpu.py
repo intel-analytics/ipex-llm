@@ -49,7 +49,7 @@ from utils.prompter import Prompter
 from transformers import BitsAndBytesConfig
 from ipex_llm.transformers import AutoModelForCausalLM
 
-# import them from ipex_llm.transformers.qlora to get a BigDL-LLM compatible Peft model
+# import them from ipex_llm.transformers.qlora to get a IPEX-LLM compatible Peft model
 from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training, LoraConfig
 from ipex_llm.utils.isa_checker import ISAChecker
 
@@ -64,7 +64,7 @@ def get_int_from_env(env_keys, default):
 def train(
     # model/data params
     base_model: str = "meta-llama/Llama-2-7b-hf",  # the only required argument, default to be "meta-llama/Llama-2-7b-hf"
-    saved_low_bit_model: str = None,  # optional, the path to the saved model with bigdl-llm low-bit optimization
+    saved_low_bit_model: str = None,  # optional, the path to the saved model with ipex-llm low-bit optimization
     data_path: str = "yahma/alpaca-cleaned",
     output_dir: str = "./bigdl-qlora-alpaca",
     # training hyperparams
@@ -256,7 +256,7 @@ def train(
             ]  # could be sped up, probably
         return tokenized_full_prompt
 
-    # Prepare a BigDL-LLM compatible Peft model
+    # Prepare a IPEX-LLM compatible Peft model
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=gradient_checkpointing)
 
     config = LoraConfig(

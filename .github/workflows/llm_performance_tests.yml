@@ -74,7 +74,7 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -164,7 +164,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-    runs-on: [self-hosted, llm, spr01-perf]
+    runs-on: [self-hosted, llm, spr-perf]
     env:
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
@@ -198,7 +198,7 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -220,14 +220,14 @@ jobs:
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
-          cp ./*.csv /models/nightly_perf_cpu
+          cp ./*.csv /mnt/disk1/models/nightly_perf_cpu
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/nightly_perf_cpu
-          cd /models/nightly_perf_cpu
-          # for f in *.html; do
-          #   curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/nightly_perf_cpu/
-          # done
+          python csv_to_html.py -f /mnt/disk1/models/nightly_perf_cpu
+          cd /mnt/disk1/models/nightly_perf_cpu
+          for f in *.html; do
+            curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/nightly_perf_cpu/
+          done
 
   llm-performance-test-on-core:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
@@ -272,7 +272,7 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[all] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -344,7 +344,7 @@ jobs:
       #     if not exist dist\ipex_llm*.whl (exit /b 1)
       #     for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
 
-      #     pip install --pre --upgrade %whl_name%[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+      #     pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
       #     if %ERRORLEVEL% neq 0 (exit /b 1)
       #     pip list
 
@@ -367,7 +367,7 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           pip show ipex-llm | findstr %TEST_VERSION_DATE%
           if %ERRORLEVEL% neq 0 (
             echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"

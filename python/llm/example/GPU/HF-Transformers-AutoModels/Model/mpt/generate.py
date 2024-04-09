@@ -58,14 +58,14 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = MPT_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 
         # start inference
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations,
         # it is important to set use_cache=True for MPT models
         mpt_generation_config = GenerationConfig(
             max_new_tokens=args.n_predict, 

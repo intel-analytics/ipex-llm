@@ -1,5 +1,5 @@
-name: "Setup BigDL-LLM Env"
-description: "BigDL-LLM installation"
+name: "Setup IPEX-LLM Env"
+description: "IPEX-LLM installation"
 inputs:
   extra-dependency:
     description: "Name of extra dependencies filled in brackets"
@@ -16,10 +16,10 @@ runs:
         pip uninstall bigdl-core-xe-esimd -y || true
         pip uninstall bigdl-core-xe-21 -y || true
         pip uninstall bigdl-core-xe-esimd-21 -y || true
-        sed -i 's/"bigdl-core-xe==" + VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-esimd==" + VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-21==" + VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
-        sed -i 's/"bigdl-core-xe-esimd-21==" + VERSION + "/"bigdl-core-xe-esimd-21/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe==" + CORE_XE_VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd==" + CORE_XE_VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION + "/"bigdl-core-xe-esimd-21/g' python/llm/setup.py
 
         pip install requests
         if [[ ${{ runner.os }} == 'Linux' ]]; then
@@ -32,10 +32,10 @@ runs:
         fi
         whl_name=$(ls python/llm/dist)
         if [[ ${{ inputs.extra-dependency }} == 'xpu_2.0' ]]; then
-          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.0]" -f https://developer.intel.com/ipex-whl-stable-xpu 
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.0]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
           pip install pytest expecttest
         elif [[ ${{ inputs.extra-dependency }} == 'xpu_2.1' ]]; then
-          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" -f https://developer.intel.com/ipex-whl-stable-xpu 
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
           pip install pytest expecttest
         else
           pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"

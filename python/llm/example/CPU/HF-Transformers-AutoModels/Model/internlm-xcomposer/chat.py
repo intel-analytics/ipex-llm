@@ -37,7 +37,7 @@ if __name__ == '__main__':
     image = args.image_path
 
     # Load model
-    # For successful BigDL-LLM optimization on InternLM-XComposer, skip the 'qkv' module during optimization
+    # For successful IPEX-LLM optimization on InternLM-XComposer, skip the 'qkv' module during optimization
     model = AutoModelForCausalLM.from_pretrained(model_path, device='cpu', load_in_4bit=True,
                                                  trust_remote_code=True, modules_to_not_convert=['qkv'])
 

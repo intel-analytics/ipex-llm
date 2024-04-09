@@ -18,7 +18,7 @@ import torch
 import pytest
 from unittest import TestCase
 import os
-from ipex_llm.llamaindex.llms import BigdlLLM
+from ipex_llm.llamaindex.llms import IpexLLM
 
 class Test_LlamaIndex_Transformers_API(TestCase):
     def setUp(self):
@@ -51,7 +51,7 @@ class Test_LlamaIndex_Transformers_API(TestCase):
         return prompt
     
     def test_bigdl_llm(self):    
-        llm = BigdlLLM(
+        llm = IpexLLM.from_model_id(
             model_name=self.llama_model_path,
             tokenizer_name=self.llama_model_path,
             context_window=512,

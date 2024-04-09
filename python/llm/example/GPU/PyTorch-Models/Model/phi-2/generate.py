@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
 
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
         model.generation_config.pad_token_id = model.generation_config.eos_token_id
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict, generation_config = generation_config)
         # start inference
         st = time.time()

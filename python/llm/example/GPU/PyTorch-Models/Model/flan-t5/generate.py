@@ -43,7 +43,7 @@ if __name__ == '__main__':
                                                   torch_dtype='auto',
                                                   low_cpu_mem_usage=True)
 
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # "wo" module is not converted due to some issues of T5 model
     # (https://github.com/huggingface/transformers/issues/20287),
     # "lm_head" module is not converted to generate outputs with better quality
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = FLAN_T5_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 

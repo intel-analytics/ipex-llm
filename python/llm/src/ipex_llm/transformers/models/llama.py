@@ -64,7 +64,7 @@ from transformers import logging
 logger = logging.get_logger(__name__)
 
 
-def llama_decoding_fast_path_qtype_check(proj): 
+def llama_decoding_fast_path_qtype_check(proj):
     # IQ2_XXS only can be used in Llama-like model
     qtype = getattr(proj, "qtype", None)
     return qtype in [SYM_INT4, FP8E5, IQ2_XXS, FP4]
@@ -83,7 +83,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
                                                            n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 _ipex_version = None
@@ -186,7 +186,11 @@ def llama_mlp_forward(
             hidden_states = attn_output.view(x.shape)
         return hidden_states
     else:
-        out = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        a = self.act_fn(self.gate_proj(x))
+        b = self.up_proj(x)
+        c = a * b
+        del a, b
+        out = self.down_proj(c)
         if residual is not None:
             return out + residual
         else:
@@ -208,6 +212,15 @@ def should_use_fast_rope(self, query_states, position_ids):
     use_fuse_rope = use_fuse_rope and self.config.rope_scaling is None
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
+
+
+def should_split_qkv_tensor(query_states, output_attentions):
+    if not output_attentions and query_states.dtype == torch.float16 and \
+            query_states.shape[2] >= 6800:
+        # split tensor for memory block limitation
+        # support fp16 and set input length threshold at 6800 for now
+        return True
+    return False
 
 
 def llama_decoder_forward(
@@ -260,33 +273,46 @@ def llama_decoder_forward(
     return outputs
 
 
-def fuse_qkv_weight(q_proj, k_proj, v_proj):
-    weight_size = q_proj.out_len * q_proj.in_len // 2
-    zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
-    zeros_end = weight_size + zeros_size
-    weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
-    zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
-    scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
-    qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                            k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                            v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
-                            ], dim=-1).reshape(-1)
-    qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                           k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                           v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
-                           ], dim=-1).reshape(-1)
-    qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                            k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                            v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
-                            ], dim=-1).reshape(-1)
-    q_proj.weight.data = torch.empty(0)
-    k_proj.weight.data = torch.empty(0)
-    v_proj.weight.data = torch.empty(0)
-    return torch.cat([qweight, qzeros, qscales], dim=0)
+def fuse_qkv_weight_xetla(q_proj, k_proj, v_proj, qtype):
+    if qtype == SYM_INT4:
+        weight_size = q_proj.out_len * q_proj.in_len // 2
+        zeros_size = q_proj.in_len * q_proj.out_len // 2 // 64
+        zeros_end = weight_size + zeros_size
+        weight_byte_shape = (q_proj.in_len//2, q_proj.out_len)
+        zeros_byte_shape = (q_proj.in_len//64, q_proj.out_len//2)
+        scales_byte_shape = (q_proj.in_len//64, q_proj.out_len*2)
+        qweight = torch.concat([q_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                                k_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                                v_proj.weight.data[:weight_size].reshape(weight_byte_shape),
+                                ], dim=-1).reshape(-1)
+        qzeros = torch.concat([q_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                               k_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                               v_proj.weight.data[weight_size:zeros_end].reshape(zeros_byte_shape),
+                               ], dim=-1).reshape(-1)
+        qscales = torch.concat([q_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                                k_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                                v_proj.weight.data[zeros_end:].reshape(scales_byte_shape),
+                                ], dim=-1).reshape(-1)
+        q_proj.weight.data = torch.empty(0)
+        k_proj.weight.data = torch.empty(0)
+        v_proj.weight.data = torch.empty(0)
+        return torch.cat([qweight, qzeros, qscales], dim=0)
+    elif qtype == FP8E5:
+        result = torch.cat([q_proj.weight, k_proj.weight, v_proj.weight], dim=1).contiguous()
+        q_proj.weight.data = torch.empty(0)
+        k_proj.weight.data = torch.empty(0)
+        v_proj.weight.data = torch.empty(0)
+        return result
+    else:
+        invalidInputError(False, f"Unsupported qtype {qtype}")
 
 
-def should_use_mm_int4_qkv(self, device):
-    return device.type == "xpu" and self.q_proj.qtype == SYM_INT4 and self.q_proj.enable_xetla
+def should_use_xetla_mm_qkv(self, device):
+    full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
+    supported_qtype = self.q_proj.qtype == SYM_INT4 and full_attn
+    supported_qtype = supported_qtype or self.q_proj.qtype == FP8E5
+    enable_xetla = self.q_proj.enable_xetla
+    return device.type == "xpu" and enable_xetla and supported_qtype
 
 
 def llama_attention_forward_4_31(
@@ -339,6 +365,7 @@ def llama_attention_forward_4_31_quantized(
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -400,7 +427,7 @@ def llama_attention_forward_4_31_quantized(
         attn_output, attn_weights = native_sdp(query_states, repeated_key_states,
                                                repeated_value_states, attention_mask,
                                                bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads)
+                                               self.head_dim, self.num_heads, output_attentions)
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
                 bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
@@ -425,7 +452,7 @@ def llama_attention_forward_4_31_quantized(
             attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
                                                    attention_mask,
                                                    bsz, q_len, kv_seq_len,
-                                                   self.head_dim, self.num_heads)
+                                                   self.head_dim, self.num_heads, output_attentions)
         else:
             import linear_q4_0
             attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
@@ -529,27 +556,32 @@ def llama_attention_forward_4_31_original(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                         dtype=hidden_states.dtype, device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
                 )
             else:
-                if should_use_mm_int4_qkv(self, device):
+                if should_use_xetla_mm_qkv(self, device):
                     if not hasattr(self, "qkv_proj_qweight"):
-                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
-                                                                self.k_proj,
-                                                                self.v_proj)
+                        self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
+                                                                      self.k_proj,
+                                                                      self.v_proj,
+                                                                      self.q_proj.weight.qtype,)
                     import linear_q4_0
-                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
-                    query_states = qkv_states[:, :, :hidden_size]
-                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
-                    value_states = qkv_states[:, :, 2*hidden_size:]
+                    q_out_len = self.q_proj.out_len
+                    k_out_len = self.k_proj.out_len
+                    v_out_len = self.v_proj.out_len
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight,
+                                                      self.q_proj.weight.qtype)
+                    query_states = qkv_states[:, :, :q_out_len]
+                    key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
+                    value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
                     query_states = self.q_proj(hidden_states)
                     key_states = self.k_proj(hidden_states)
@@ -626,7 +658,7 @@ def llama_attention_forward_4_31_original(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states, attention_mask):
         import linear_fp16_esimd
         attn_output = linear_fp16_esimd.sdp_forward(query_states,
                                                     key_states,
@@ -638,8 +670,7 @@ def llama_attention_forward_4_31_original(
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
                                                attention_mask,
                                                bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads)
-
+                                               self.head_dim, self.num_heads, output_attentions)
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
         invalidInputError(False,
@@ -810,7 +841,8 @@ def llama_attention_selective_batching_forward_4_31(
                                                        1,
                                                        current_kv_len,
                                                        self.head_dim,
-                                                       self.num_heads)
+                                                       self.num_heads,
+                                                       output_attentions)
                 if attn_output.size() != (1, self.num_heads, 1, self.head_dim):
                     invalidInputError(False,
                                       f"`attn_output` should be of size "
@@ -854,7 +886,8 @@ def llama_attention_selective_batching_forward_4_31(
                                            q_len,
                                            kv_seq_len,
                                            self.head_dim,
-                                           self.num_heads)
+                                           self.num_heads,
+                                           output_attentions)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(False,
@@ -918,6 +951,7 @@ def llama_attention_forward_4_36_quantized(
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
@@ -997,8 +1031,13 @@ def llama_attention_forward_4_36_quantized(
                 )
             attn_weights = attn_weights + attention_mask
 
-        # at inference time, for memory considerations, may not need to upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+        if kv_seq_len >= 2048:
+            # for memory considerations, do not upcast attention to fp32 for long sequences
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+        else:
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(query_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
         if use_cache:
             cache_kwargs = None
@@ -1037,8 +1076,13 @@ def llama_attention_forward_4_36_quantized(
                     )
                 attn_weights = attn_weights + attention_mask
 
-            # at inference time, for memory considerations, may not need to upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            if kv_seq_len >= 2048:
+                # for memory considerations, do not upcast attention to fp32 for long sequences
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            else:
+                # upcast attention to fp32
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                     dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
@@ -1161,27 +1205,33 @@ def llama_attention_forward_4_36_original(
                     self.k_proj.weight.data = self.qkv_proj_weight[1, :, :]
                     self.v_proj.weight.data = self.qkv_proj_weight[2, :, :]
                     torch.xpu.empty_cache()
-                query_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
-                key_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                         device=hidden_states.device)
-                value_states = torch.empty(bsz, q_len, hidden_size, dtype=hidden_states.dtype,
-                                           device=hidden_states.device)
+                query_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
+                key_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                         dtype=hidden_states.dtype, device=hidden_states.device)
+                value_states = torch.empty(bsz, q_len, self.qkv_proj_weight.shape[-1],
+                                           dtype=hidden_states.dtype, device=hidden_states.device)
                 torch.ops.torch_ipex.mm_qkv_out(
                     hidden_states, self.qkv_proj_weight, None,
                     query_states, key_states, value_states
                 )
             else:
-                if should_use_mm_int4_qkv(self, device):
+                if should_use_xetla_mm_qkv(self, device):
                     if not hasattr(self, "qkv_proj_qweight"):
-                        self.qkv_proj_qweight = fuse_qkv_weight(self.q_proj,
-                                                                self.k_proj,
-                                                                self.v_proj)
+                        self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
+                                                                      self.k_proj,
+                                                                      self.v_proj,
+                                                                      self.q_proj.weight.qtype,)
                     import linear_q4_0
-                    qkv_states = linear_q4_0.mm_int4(hidden_states, self.qkv_proj_qweight)
-                    query_states = qkv_states[:, :, :hidden_size]
-                    key_states = qkv_states[:, :, hidden_size:2*hidden_size]
-                    value_states = qkv_states[:, :, 2*hidden_size:]
+                    q_out_len = self.q_proj.out_len
+                    k_out_len = self.k_proj.out_len
+                    v_out_len = self.v_proj.out_len
+                    qkv_states = linear_q4_0.mm_xetla(hidden_states,
+                                                      self.qkv_proj_qweight,
+                                                      self.q_proj.weight.qtype)
+                    query_states = qkv_states[:, :, :q_out_len]
+                    key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
+                    value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
                     query_states = self.q_proj(hidden_states)
                     key_states = self.k_proj(hidden_states)
@@ -1277,7 +1327,7 @@ def llama_attention_forward_4_36_original(
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
                                                attention_mask,
                                                bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads)
+                                               self.head_dim, self.num_heads, output_attentions)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
@@ -1304,28 +1354,68 @@ def llama_attention_forward_4_36_original(
 
 
 def native_sdp(query, key, value, attention_mask,
-               bsz, q_len, kv_seq_len, head_dim, num_heads):
-    attn_weights = torch.matmul(query.to(key.dtype),
-                                key.transpose(2, 3)) / math.sqrt(head_dim)
+               bsz, q_len, kv_seq_len, head_dim, num_heads, output_attentions):
+    if should_split_qkv_tensor(query, output_attentions):
+        return native_sdp_split_qkv_tensor(query, key, value, attention_mask,
+                                           bsz, q_len, kv_seq_len, head_dim, num_heads)
+    else:
+        attn_weights = torch.matmul(query.to(key.dtype),
+                                    key.transpose(2, 3)) / math.sqrt(head_dim)
 
-    attn_weights_size = (bsz, num_heads, q_len, kv_seq_len)
-    if attn_weights.size() != attn_weights_size:
-        invalidInputError(False,
-                          f"Attention weights should be of size {attn_weights_size}, "
-                          f"but is {attn_weights.size()}")
-
-    if attention_mask is not None:
-        attn_mask_size = (bsz, 1, q_len, kv_seq_len)
-        if attention_mask.size() != attn_mask_size:
+        attn_weights_size = (bsz, num_heads, q_len, kv_seq_len)
+        if attn_weights.size() != attn_weights_size:
             invalidInputError(False,
-                              f"Attention mask should be of size {attn_mask_size}, "
-                              f"but is {attention_mask.size()}")
-        attn_weights = attn_weights + attention_mask
+                              f"Attention weights should be of size {attn_weights_size}, "
+                              f"but is {attn_weights.size()}")
 
-    # at inference time, for memory considerations, may not need to upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1)
-    attn_output = torch.matmul(attn_weights, value)
-    return attn_output, attn_weights
+        if attention_mask is not None:
+            attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+            if attention_mask.size() != attn_mask_size:
+                invalidInputError(False,
+                                  f"Attention mask should be of size {attn_mask_size}, "
+                                  f"but is {attention_mask.size()}")
+            attn_weights = attn_weights + attention_mask
+
+        if kv_seq_len >= 2048:
+            # for memory considerations, do not upcast attention to fp32 for long sequences
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+        else:
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                 dtype=torch.float32).to(value.dtype)
+        attn_output = torch.matmul(attn_weights, value)
+        return attn_output, attn_weights
+
+
+def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
+                                bsz, q_len, kv_seq_len, head_dim, num_heads):
+    block_size = 8
+    query_split = torch.split(query.to(key.dtype), block_size, dim=1)
+    key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
+    value_split = torch.split(value, block_size, dim=1)
+    attn_output = torch.empty(bsz, num_heads, q_len, head_dim).to(query.device)
+    idx = 0
+    for q, k, v in zip(query_split, key_split, value_split):
+        attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
+        block_actual_size = attn_weights_split.size(1)
+        attn_weights_split_size = (bsz, block_actual_size, q_len, kv_seq_len)
+        if attn_weights_split.size() != attn_weights_split_size:
+            invalidInputError(False,
+                              f"Splitted attention weights should be of size "
+                              f"{attn_weights_split_size}, but is {attn_weights_split.size()}")
+
+        if attention_mask is not None:
+            attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+            if attention_mask.size() != attn_mask_size:
+                invalidInputError(False,
+                                  f"Attention mask should be of size {attn_mask_size}, "
+                                  f"but is {attention_mask.size()}")
+            attn_weights_split = attn_weights_split + attention_mask
+        attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
+        attn_weights_split = torch.matmul(attn_weights_split, v)
+        attn_output[:, idx:idx+block_actual_size, :, :] = attn_weights_split
+        idx = idx + block_actual_size
+    return attn_output, None
 
 
 def llama_model_selective_batching_forward_4_31(
@@ -1582,7 +1672,7 @@ def llama_attention_fast_forward(
     attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
                                            attention_mask,
                                            bsz, q_len, kv_seq_len,
-                                           self.head_dim, self.num_heads)
+                                           self.head_dim, self.num_heads, output_attentions)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:

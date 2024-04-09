@@ -60,7 +60,7 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
         model.generation_config.pad_token_id = model.generation_config.eos_token_id
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 generation_config = generation_config)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations
 
         # Note that phi-2 uses GenerationConfig to enable 'use_cache'
         output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict, generation_config = generation_config)

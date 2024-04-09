@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # if your selected model is capable of utilizing previous key/value attentions
     # to enhance decoding speed, but has `"use_cache": false` in its model config,
     # it is important to set `use_cache=True` explicitly in the `generate` function
-    # to obtain optimal performance with BigDL-LLM INT4 optimizations
+    # to obtain optimal performance with IPEX-LLM INT4 optimizations
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = BAICHUAN_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
 

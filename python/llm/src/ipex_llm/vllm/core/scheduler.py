@@ -43,7 +43,7 @@ from ipex_llm.vllm.core.policy import PolicyFactory
 from ipex_llm.vllm.logger import init_logger
 from ipex_llm.vllm.sequence import SequenceData, SequenceStatus
 from ipex_llm.vllm.sequence import (Sequence, SequenceGroup,
-                                     SequenceGroupMetadata)
+                                    SequenceGroupMetadata)
 from ipex_llm.utils.common import invalidInputError
 
 logger = init_logger(__name__)

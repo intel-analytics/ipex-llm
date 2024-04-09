@@ -29,7 +29,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     # install XPU ipex-llm
-    pip install --pre --upgrade ipex-llm[xpu] -f https://developer.intel.com/ipex-whl-stable-xpu && \
+    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # install huggingface dependencies
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
     pip install peft==0.5.0 datasets accelerate==0.23.0 && \

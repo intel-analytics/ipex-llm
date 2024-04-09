@@ -30,7 +30,11 @@ def main(args):
     
     question = args.question
     model_path = args.model_path
-    template ="""{question}"""
+    # Below is the prompt format for LLaMa-2 according to 
+    # https://huggingface.co/meta-llama/Llama-2-7b-chat-hf
+    # If you're using a different language model, 
+    # please adjust the template according to its own model card.
+    template = """<s>[INST] <<SYS>>\n    \n<</SYS>>\n\n{question} [/INST]"""
 
     prompt = PromptTemplate(template=template, input_variables=["question"])
 
@@ -38,11 +42,13 @@ def main(args):
     #     model_id=model_path,
     #     task="text-generation",
     #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+    #     device_map='xpu'
     # )
 
     llm = TransformersLLM.from_model_id(
         model_id=model_path,
         model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+        device_map='xpu'
     )
 
     llm_chain = LLMChain(prompt=prompt, llm=llm)

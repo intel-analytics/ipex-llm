@@ -46,6 +46,7 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 IPEX_LLM_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(IPEX_LLM_PYTHON_HOME,
                './llm/version.txt'), 'r').read().strip()
+CORE_XE_VERSION = VERSION.replace("2.1.0", "2.5.0")
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
@@ -274,23 +275,23 @@ def setup_package():
                     ]
     all_requires += CONVERT_DEP
 
-    # Linux install with -f https://developer.intel.com/ipex-whl-stable-xpu
+    # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_20_requires = copy.deepcopy(all_requires)
     xpu_20_requires.remove('torch')
     # xpu_20 only works for linux now
     xpu_20_requires += ["torch==2.0.1a0;platform_system=='Linux'",
                         "torchvision==0.15.2a0;platform_system=='Linux'",
                         "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                        "bigdl-core-xe==" + VERSION + ";platform_system=='Linux'",
-                        "bigdl-core-xe-esimd==" + VERSION + ";platform_system=='Linux'"]
+                        "bigdl-core-xe==" + CORE_XE_VERSION + ";platform_system=='Linux'",
+                        "bigdl-core-xe-esimd==" + CORE_XE_VERSION + ";platform_system=='Linux'"]
 
     xpu_21_requires = copy.deepcopy(all_requires)
     xpu_21_requires.remove('torch')
     xpu_21_requires += ["torch==2.1.0a0",
                         "torchvision==0.16.0a0",
                         "intel_extension_for_pytorch==2.1.10+xpu",
-                        "bigdl-core-xe-21==" + VERSION,
-                        "bigdl-core-xe-esimd-21==" + VERSION + ";platform_system=='Linux'"]
+                        "bigdl-core-xe-21==" + CORE_XE_VERSION,
+                        "bigdl-core-xe-esimd-21==" + CORE_XE_VERSION + ";platform_system=='Linux'"]
     # default to ipex 2.1 for linux and windows
     xpu_requires = copy.deepcopy(xpu_21_requires)
 
@@ -323,7 +324,7 @@ def setup_package():
                         "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
-                        "cpp": ["bigdl-core-cpp==" + VERSION]},
+                        "cpp": ["bigdl-core-cpp==" + CORE_XE_VERSION]},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

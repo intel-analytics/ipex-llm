@@ -67,7 +67,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          source bigdl-llm-init -t
+          source ipex-llm-init -t
           export OMP_NUM_THREADS=48
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
@@ -125,7 +125,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          source bigdl-llm-init -t
+          source ipex-llm-init -t
           export OMP_NUM_THREADS=48
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run-stress-test.py

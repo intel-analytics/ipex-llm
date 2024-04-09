@@ -8,10 +8,10 @@ You can download directly from Dockerhub like:
 
 ```bash
 # For standalone
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 
 # For k8s
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -24,7 +24,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT \
   -f ./Dockerfile .
 
 # For k8s
@@ -34,7 +34,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT \
   -f ./Dockerfile.k8s .
 ```
 
@@ -55,7 +55,7 @@ docker run -itd \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/ipex_llm/model \
    -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -69,7 +69,7 @@ docker run -itd \
    --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -130,7 +130,7 @@ docker run -itd \
  -e WORKER_COUNT_DOCKER=your_worker_count \
  -v your_downloaded_base_model_path:/ipex_llm/model \
  -v your_downloaded_data_path:/ipex_llm/data/alpaca_data_cleaned_archive.json \
- intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+ intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
 Note that `STANDALONE_DOCKER` is set to **TRUE** here.

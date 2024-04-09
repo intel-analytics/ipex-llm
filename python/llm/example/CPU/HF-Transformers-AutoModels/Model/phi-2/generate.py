@@ -58,7 +58,7 @@ if __name__ == '__main__':
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations
 
         model.generation_config.pad_token_id = model.generation_config.eos_token_id
         # Note that phi-2 uses GenerationConfig to enable 'use_cache'

@@ -27,7 +27,7 @@ mpirun -n 8 \
        python -u ./alpaca_qlora_finetuning.py \
        --base_model "meta-llama/Llama-2-70b-hf" \
        --data_path "yahma/alpaca-cleaned" \
-       --output_dir "./ipex-qlora-alpaca" \
+       --output_dir "./ipex-llm-qlora-alpaca" \
        --gradient_checkpointing True \
        --micro_batch_size 8 \
        --batch_size 128 \

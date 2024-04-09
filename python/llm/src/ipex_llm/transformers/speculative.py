@@ -53,6 +53,28 @@ def generate(
     **kwargs,
 ):
     if hasattr(self, "draft_model"):
+        from ipex_llm.transformers.convert import get_enable_ipex
+        _enable_ipex = get_enable_ipex()
+        if _enable_ipex and inputs.size(1) < 256:
+            logger.warning(
+                "IPEX_CPU optimized models have issues for speculative decoding with short prompts"
+                "(length < 256). Using normal generate() method instead."
+            )
+            for var in ['max_step_draft', 'th_stop_draft', 'hf_adjust',
+                        'auto_th_stop_draft', 'auto_parameters', 'min_step_draft',
+                        'th_batch_num']:
+                value = kwargs.pop(var, None)
+            del self.draft_model
+            return original_generate(self,
+                                     inputs=inputs,
+                                     generation_config=generation_config,
+                                     logits_processor=logits_processor,
+                                     stopping_criteria=stopping_criteria,
+                                     prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                     synced_gpus=synced_gpus,
+                                     assistant_model=assistant_model,
+                                     streamer=streamer,
+                                     **kwargs)
         # do speculative decoding
         # TODO: maybe add other way to double check
         new_speculative_kwargs = {}
@@ -543,7 +565,7 @@ def speculative_generate(self,
                 ("mistral" in self.config.model_type) or
                 ("qwen" in self.config.model_type) or
                 ("chatglm" in self.config.model_type)):
-            invalidInputError(False, "BigDL Speculative Decoding with IPEX only supports \
+            invalidInputError(False, "BigDL Speculative Decoding with IPEX-LLM only supports \
                               Llama, Baichuan2, Mistral, ChatGLM and Qwen models currently.")
         if "chatglm" in self.config.model_type:
             global query_group_size
@@ -669,12 +691,21 @@ def speculative_generate(self,
                         past_key_value_len = draft_past_key_values[0][0].shape[2]
                         position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                         position_ids = position_ids[:, :-draft_current_input_ids.size(0)]
-                        draft_output = draft_model.trace_graph(
-                            input_ids=draft_current_input_ids,
-                            attention_mask=draft_attention_mask,
-                            position_ids=position_ids,
-                            past_key_values=draft_past_key_values,
-                        )
+                        if self.config.model_type == "chatglm":
+                            draft_output = draft_model.trace_graph(
+                                input_ids=draft_current_input_ids,
+                                attention_mask=draft_attention_mask,
+                                position_ids=position_ids,
+                                return_last_logit=torch.tensor(False),
+                                past_key_values=draft_past_key_values,
+                            )
+                        else:
+                            draft_output = draft_model.trace_graph(
+                                input_ids=draft_current_input_ids,
+                                attention_mask=draft_attention_mask,
+                                position_ids=position_ids,
+                                past_key_values=draft_past_key_values,
+                            )
                     elif self.config.model_type == "baichuan":
                         if self.config.hidden_size == 4096:
                             past_key_value_len = draft_past_key_values[0][0].shape[2]
@@ -704,7 +735,7 @@ def speculative_generate(self,
                             past_key_values=draft_past_key_values,
                         )
                     else:
-                        invalidInputError(False, "BigDL Speculative Decoding with IPEX only supports \
+                        invalidInputError(False, "BigDL Speculative Decoding with IPEX-LLM only supports \
                               Llama, Baichuan2, Mistral, ChatGLM and Qwen models currently.")
 
                     draft_output = CausalLMOutputWithPast(
@@ -798,7 +829,7 @@ def speculative_generate(self,
                     output = self.trace_graph(input_ids=drafted_input_ids,
                                               attention_mask=cur_attention_mask,
                                               position_ids=position_ids,
-                                              # return_last_logit=torch.tensor(False),
+                                              return_last_logit=torch.tensor(False),
                                               past_key_values=past_key_values,)
                 elif "qwen" in self.config.model_type:
                     output = self.trace_graph(input_ids=drafted_input_ids,

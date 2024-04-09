@@ -2,7 +2,7 @@
 
 ## Image
 
-To deploy IPEX-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT`
+To deploy IPEX-LLM-serving cpu in Kubernetes environment, please use this image: `intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT`
 
 ## Before deployment
 
@@ -10,7 +10,7 @@ To deploy IPEX-LLM-serving cpu in Kubernetes environment, please use this image:
 
 In this document, we will use `vicuna-7b-v1.5` as the deployment model.
 
-After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna-7b-v1.5-ipex` to use `ipex-llm` as the backend. The `ipex-llm` backend will be used if model path contains `ipex-llm`. Otherwise, the original transformer-backend will be used.
+After downloading the model, please change name from `vicuna-7b-v1.5` to `vicuna-7b-v1.5-ipex-llm` to use `ipex-llm` as the backend. The `ipex-llm` backend will be used if model path contains `ipex-llm`. Otherwise, the original transformer-backend will be used.
 
 You can download the model from [here](https://huggingface.co/lmsys/vicuna-7b-v1.5).
 
@@ -73,7 +73,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+    image: intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -146,7 +146,7 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed

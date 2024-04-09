@@ -55,7 +55,7 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations,
         # it is important to set use_cache=True for MPT models
         mpt_generation_config = GenerationConfig(
             max_new_tokens=args.n_predict, 

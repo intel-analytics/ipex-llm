@@ -24,7 +24,7 @@ spec:
   dnsPolicy: "ClusterFirst"
   containers:
   - name: fastchat-controller # fixed
-    image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+    image: intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
     imagePullPolicy: IfNotPresent
     env:
     - name: CONTROLLER_HOST # fixed
@@ -91,7 +91,7 @@ spec:
       dnsPolicy: "ClusterFirst"
       containers:
       - name: fastchat-worker # fixed
-        image: intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+        image: intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
         env:
         - name: CONTROLLER_HOST # fixed

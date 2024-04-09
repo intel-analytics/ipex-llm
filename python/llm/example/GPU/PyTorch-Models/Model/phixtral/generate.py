@@ -43,7 +43,7 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     
-    # Load huggingface model with optimize_model in BigDL
+    # Load huggingface model with optimize_model in IPEX-LLM
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         prompt = PHI1_5_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 generation_config = generation_config)

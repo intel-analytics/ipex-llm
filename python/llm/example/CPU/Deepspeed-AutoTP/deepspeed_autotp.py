@@ -87,7 +87,7 @@ if __name__ == '__main__':
         replace_method="auto"
     )
 
-    # Apply BigDL-LLM INT4 optimizations on transformers
+    # Apply IPEX-LLM INT4 optimizations on transformers
     model = optimize_model(model.module.to(f'cpu'), low_bit='sym_int4')
 
     model = model.to(f'cpu:{local_rank}')
@@ -102,7 +102,7 @@ if __name__ == '__main__':
         # Batch tokenizing
         prompt = args.prompt
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(f'cpu:{local_rank}')
-        # ipex model needs a warmup, then inference time can be accurate
+        # ipex-llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 use_cache=True)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 do_sample=False,
                                 max_new_tokens=args.n_predict)

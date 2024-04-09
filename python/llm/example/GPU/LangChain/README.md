@@ -92,7 +92,7 @@ arguments info:
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-#### 5.1. RAG (Retrival Augmented Generation)
+#### 5.2. RAG (Retrival Augmented Generation)
 
 ```bash
 python rag.py -m <path_to_model> [-q QUESTION] [-i INPUT_PATH]
@@ -101,3 +101,18 @@ arguments info:
 - `-m MODEL_PATH`: **required**, path to the model.
 - `-q QUESTION`: question to ask. Default is `What is IPEX?`.
 - `-i INPUT_PATH`: path to the input doc.
+
+
+#### 5.2. Low Bit
+
+The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+By `save_low_bit` we save the weights of low_bit model into the target folder.
+> Note: `save_low_bit` only saves the weights of the model. 
+> Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
+```bash
+python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
+```
+**Runtime Arguments Explained**:
+- `-m MODEL_PATH`: **Required**, the path to the model
+- `-t TARGET_PATH`: **Required**, the path to save the low_bit model
+- `-q QUESTION`: the question

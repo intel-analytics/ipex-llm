@@ -28,7 +28,7 @@ Example usage:
 python ./alpaca_qlora_finetuning_cpu.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./ipex-qlora-alpaca"
+    --output_dir "./ipex-llm-qlora-alpaca"
 ```
 
 **Note**: You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file.
@@ -54,7 +54,7 @@ python ./alpaca_qlora_finetuning_cpu.py \
 ```bash
 # need to run the alpaca stand-alone version first
 # for using mpirun
-pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable
+pip install oneccl_bind_pt --extra-index-url https://developer.intel.com/ipex-whl-stable
 ```
 
 2. modify conf in `finetune_one_node_two_sockets.sh` and run
@@ -109,7 +109,7 @@ def generate_and_tokenize_prompt(data_point):
 python ./quotes_qlora_finetuning_cpu.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
     --data_path "./english_quotes" \
-    --output_dir "./ipex-qlora-alpaca" \
+    --output_dir "./ipex-llm-qlora-alpaca" \
     --prompt_template_name "english_quotes"
 ```
 

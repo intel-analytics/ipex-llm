@@ -184,7 +184,7 @@ def chatglm2_model_forward(
 def chatglm2_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
-    if use_quantize_kv_cache(self.query_key_value, hidden_states):
+    if use_quantize_kv_cache(self.query_key_value, hidden_states.transpose(0, 1)):
         forward_function = chatglm2_quantized_attention_forward_8eb45c
     else:
         forward_function = chatglm2_attention_forward_8eb45c
@@ -227,8 +227,8 @@ def chatglm2_quantized_attention_forward_8eb45c(
             key_layer = key_layer.transpose(0, 1)
             query_layer_cur = query_layer[..., :rot_dim]
             key_layer_cur = key_layer[..., :rot_dim]
-            # ipex's apply_rotary_embedding can change the origin storage, so query_layer will get
-            # the result directly.
+            # ipex_llm's apply_rotary_embedding can change the origin storage,
+            # so query_layer will get the result directly.
             torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
             torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
             query_layer = query_layer.transpose(0, 1)
@@ -367,8 +367,8 @@ def chatglm2_attention_forward_8eb45c(
             key_layer = key_layer.transpose(0, 1)
             query_layer_cur = query_layer[..., :rot_dim]
             key_layer_cur = key_layer[..., :rot_dim]
-            # ipex's apply_rotary_embedding can change the origin storage, so query_layer will get
-            # the result directly.
+            # ipex_llm's apply_rotary_embedding can change the origin storage,
+            # so query_layer will get the result directly.
             torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
             torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
             query_layer = query_layer.transpose(0, 1)
@@ -512,10 +512,23 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and L == S:
-            context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
-                                                           key_layer,
-                                                           value_layer,
-                                                           is_causal=True).to(key_layer.dtype)
+            # split tensor for memory block limitation
+            # support fp16 and set input length threshold at 5000 for now
+            if query_layer.dtype == torch.float16 and L >= 5000:
+                # split first dim 32 -> 8
+                query_sp = torch.split(query_layer.to(key_layer.dtype), 8, dim=1)
+                key_sp = torch.split(key_layer, 8, dim=1)
+                value_sp = torch.split(value_layer, 8, dim=1)
+                results = []
+                for q, k, v in zip(query_sp, key_sp, value_sp):
+                    result = F.scaled_dot_product_attention(q, k, v, is_causal=True).to(k.dtype)
+                    results.append(result)
+                context_layer = torch.cat(results, dim=1)
+            else:
+                context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
+                                                               key_layer,
+                                                               value_layer,
+                                                               is_causal=True).to(key_layer.dtype)
         else:
             if use_esimd_sdp(query_layer.shape[2], key_layer.shape[2],
                              query_layer.shape[-1], query_layer):

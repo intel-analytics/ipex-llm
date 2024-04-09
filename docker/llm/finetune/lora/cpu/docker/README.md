@@ -5,7 +5,7 @@
 You can download directly from Dockerhub like:
 
 ```bash
-docker pull intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-lora-cpu:2.1.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -17,7 +17,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-lora-cpu:2.1.0-SNAPSHOT \
   -f ./Dockerfile .
 ```
 
@@ -33,7 +33,7 @@ docker run -itd \
  -e WORKER_COUNT_DOCKER=your_worker_count \
  -v your_downloaded_base_model_path:/ipex_llm/model \
  -v your_downloaded_data_path:/ipex_llm/data/alpaca_data_cleaned_archive.json \
- intelanalytics/ipex-llm-finetune-lora-cpu:2.5.0-SNAPSHOT \
+ intelanalytics/ipex-llm-finetune-lora-cpu:2.1.0-SNAPSHOT \
  bash
 ```
 

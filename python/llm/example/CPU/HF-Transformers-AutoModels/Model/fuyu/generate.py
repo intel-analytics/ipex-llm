@@ -38,7 +38,7 @@ if __name__ == '__main__':
     image = Image.open(args.image_path)
 
     # Load model
-    # For successful BigDL-LLM optimization on Fuyu, skip the 'vision_embed_tokens' module during optimization
+    # For successful IPEX-LLM optimization on Fuyu, skip the 'vision_embed_tokens' module during optimization
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map='cpu',
                                                  load_in_4bit = True,
                                                  trust_remote_code=True,

@@ -136,10 +136,13 @@ def qwen_attention_forward_original(
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
+    position_ids = rotary_pos_emb_list[-1]  # the last one is posisiton_ids
+    rotary_pos_emb_list = rotary_pos_emb_list[:-1]
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
     qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k, cache_v = layer_past[0], layer_past[1]
@@ -147,8 +150,6 @@ def qwen_attention_forward_original(
         cache_v = cache_v.transpose(1, 2)
 
         kv_seq_len = cache_k.shape[-2]
-        self.position_ids = self.position_ids.to(device)
-        position_ids = self.position_ids[kv_seq_len]
         base = self.rope_base
         if is_enough_kv_cache_room(layer_past, kv_seq_len):
             new_cache_k, new_cache_v = extend_kv_cache(bsz,
@@ -182,7 +183,7 @@ def qwen_attention_forward_original(
         # query = self._split_heads(query, self.num_heads, self.head_dim)
         # key = self._split_heads(key, self.num_heads, self.head_dim)
         # value = self._split_heads(value, self.num_heads, self.head_dim)
-        if rotary_pos_emb_list is not None:
+        if len(rotary_pos_emb_list) != 0:
             cur_len = query.shape[1]
             if len(rotary_pos_emb_list) == 1:
                 rotary_pos_emb = rotary_pos_emb_list[0]
@@ -332,6 +333,8 @@ def qwen_attention_forward_quantized(
 
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
+    position_ids = rotary_pos_emb_list[-1]  # the last one is posisiton_ids
+    rotary_pos_emb_list = rotary_pos_emb_list[:-1]
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
     # qtype_check = decoding_fast_path_qtype_check(self.q_proj)
@@ -349,7 +352,6 @@ def qwen_attention_forward_quantized(
             device=device
         )
 
-        position_ids = self.position_ids[self.kv_seq_len].to(device)
         base = self.rope_base
 
         args = [hidden_states, self.q_proj.weight.data, self.k_proj.weight.data,
@@ -599,7 +601,7 @@ def qwen_model_forward(
         if self.use_cache_quantization:
             past_length = past_key_values[0][0][0].size(2)
         else:
-            past_length = past_key_values[0][0].size(-2)
+            past_length = past_key_values[0][0].size(1)
     if position_ids is None:
         position_ids = torch.arange(
             past_length,
@@ -651,7 +653,7 @@ def qwen_model_forward(
     self.rotary_emb._ntk_alpha_cached_list = ntk_alpha_list
     rotary_pos_emb_list = [
         self.rotary_emb(kv_seq_len, ntk_alpha=ntk_alpha) for ntk_alpha in ntk_alpha_list
-    ]
+    ] + [position_ids]
 
     hidden_states = self.drop(hidden_states)
     output_shape = input_shape + (hidden_states.size(-1),)

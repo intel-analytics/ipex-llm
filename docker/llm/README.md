@@ -1,148 +1,170 @@
 # Getting started with IPEX-LLM in Docker
 
+This guide provides step-by-step instructions for installing and using IPEX-LLM in a Docker environment. It covers setups for both CPU and XPU (accelerated processing units) on different operating systems.
+
 ### Index
-- [Docker installation guide for IPEX-LLM on CPU](#docker-installation-guide-for-ipex-llm-on-cpu)
-    - [IPEX-LLM on Windows](#ipex-llm-on-windows)
-    - [IPEX-LLM on Linux/MacOS](#ipex-llm-on-linuxmacos)
-- [Docker installation guide for IPEX LLM on XPU](#docker-installation-guide-for-ipex-llm-on-xpu) 
-- [Docker installation guide for IPEX LLM Serving on CPU](#docker-installation-guide-for-ipex-llm-serving-on-cpu) 
-- [Docker installation guide for IPEX LLM Serving on XPU](#docker-installation-guide-for-ipex-llm-serving-on-xpu) 
-- [Docker installation guide for IPEX LLM Fine Tuning on CPU](#docker-installation-guide-for-ipex-llm-fine-tuning-on-cpu) 
-- [Docker installation guide for IPEX LLM Fine Tuning on XPU](#docker-installation-guide-for-ipex-llm-fine-tuning-on-xpu) 
-
-## Docker installation guide for IPEX-LLM on CPU
-
-### IPEX-LLM on Windows
-
-#### Install docker
-
-New users can quickly get started with Docker using this [official link](https://www.docker.com/get-started/).
-
-For Windows users, make sure WSL2 or Hyper-V is enabled on your computer. 
-The instructions for installing can be accessed from 
-[here](https://docs.docker.com/desktop/install/windows-install/).
+- [Docker Installation](#docker-installation-instructions)
+- [IPEX-LLM Inference](#ipex-llm-inference-on-cpu)
+    - [On CPU](#ipex-llm-inference-on-cpu)
+    - [On XPU](#ipex-llm-inference-on-xpu)
+- [IPEX-LLM Serving](#ipex-llm-serving-on-cpu)
+    - [On CPU](#ipex-llm-serving-on-cpu)
+    - [On XPU](#ipex-llm-serving-on-xpu)
+- [IPEX-LLM Fine Tuning](#ipex-llm-fine-tuning-on-cpu)
+    - [On CPU](#ipex-llm-fine-tuning-on-cpu)
+    - [On XPU](#ipex-llm-fine-tuning-on-xpu)
 
 
-#### Pull ipex-llm-cpu image
+## Docker Installation Instructions
 
-To pull image from hub, you can execute command on console:
+1. **For New Users:**
+   - Begin by visiting the [official Docker Get Started page](https://www.docker.com/get-started/) for a comprehensive introduction and installation guide.
+
+2. **Additional Steps for Windows Users:**
+   - For Windows Users, follow the step-by-step guide: [Docker Installation Instructions for Windows](https://github.com/intel-analytics/ipex-llm/blob/main/docs/readthedocs/source/doc/LLM/Quickstart/docker_windows_gpu.md).
+
+
+## IPEX-LLM Inference on CPU
+
+### 1. Prepare ipex-llm-cpu Docker Image
+
+Run the following command to pull image from dockerhub:
 ```bash
-docker pull intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
-```
-to check if the image is successfully downloaded, you can use:
-```powershell
-docker images | sls intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
 ```
 
+### 2. Start bigdl-llm-cpu Docker Container
 
-#### Start ipex-llm-cpu container
-
-To run the image and do inference, you could create and run a bat script on Windows.
-
-An example on Windows could be:
-```bat
-@echo off
-set DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
-set CONTAINER_NAME=my_container
-set MODEL_PATH=D:/llm/models[change to your model path]
-
-:: Run the Docker container
-docker run -itd ^
-    -p 12345:12345 ^
-    --cpuset-cpus="0-7" ^
-    --cpuset-mems="0" ^
-    --memory="8G" ^
-    --name=%CONTAINER_NAME% ^
-    -v %MODEL_PATH%:/llm/models ^
-    %DOCKER_IMAGE%
-```
-
-After the container is booted, you could get into the container through `docker exec`.
-```
-docker exec -it my_container bash
-```
-
-To run inference using `IPEX-LLM` using cpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm#cpu-int4).
-
-
-#### Getting started with chat
-
-chat.py can be used to initiate a conversation with a specified model. The file is under directory '/llm'.
-
-You can download models and bind the model directory from host machine to container when start a container.
-
-After entering the container through `docker exec`, you can run chat.py by:
-```bash
-cd /llm/portable-zip
-python chat.py --model-path YOUR_MODEL_PATH
-```
-If your model is chatglm-6b and mounted on /llm/models, you can excute:
-```bash
-python chat.py --model-path /llm/models/chatglm-6b
-```
-Here is a demostration:
-
-<a align="left"  href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif">
-            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif" width='60%' /> 
-
-</a>
-
-#### Getting started with tutorials
-
-You could start a jupyter-lab serving to explore ipex-llm-tutorial which can help you build a more sophisticated Chatbo.
-
-To start serving,  run the script under '/llm':
-```bash
-cd /llm
-./start-notebook.sh [--port EXPECTED_PORT]
-```
-You could assign a port to serving, or the default port 12345 will be assigned.
-
-If you use host network mode when booted the container, after successfully running service, you can access http://127.0.0.1:12345/lab to get into tutorial, or you should bind the correct ports between container and host. 
-
-Here is a demostration of how to use tutorial in explorer:
-
-<a align="left" href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif">
-            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif" width='60%' /> 
-
-</a>
-
-### IPEX-LLM on Linux/MacOS
-
-To run container on Linux/MacOS:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
 docker run -itd \
+    --privileged \
     -p 12345:12345 \
-    --cpuset-cpus="0-7" \
+    --cpuset-cpus="0-47" \
     --cpuset-mems="0" \
-    --memory="8G" \
     --name=$CONTAINER_NAME \
     -v $MODEL_PATH:/llm/models \
     $DOCKER_IMAGE
 ```
 
-Also, you could use chat.py and ipex-llm-tutorial for development.
-
-[Getting started with chat](#getting-started-with-chat)
-
-[Getting started with tutorials](#getting-started-with-tutorials)
-
-## Docker installation guide for IPEX LLM on XPU
-
-First, pull docker image from docker hub:
+Access the container:
 ```
-docker pull intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
+docker exec -it $CONTAINER_NAME bash
 ```
+
+### 3. Start Inference and Tutorials
+**3.1 Chat Interface**: Use `chat.py` for conversational AI. 
+
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
+  ```bash
+  cd /llm/portable-zip
+  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+  ```
+Here is a demostration:
+
+<a align="left"  href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif">
+            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-chatpy-demo.gif" width='60%' /> 
+
+</a><br>
+
+**3.2 Jupyter Lab Tutorials**: Start a Jupyter Lab session for IPEX-LLM tutorials.
+
+Run the following command to start notebook:
+```bash
+cd /llm
+./start-notebook.sh [--port EXPECTED_PORT]
+```
+The default port is 12345, you could assign a different port by specifying the --port parameter.
+
+If you're using the host network mode when booting the container, once the service is running successfully, you can access the tutorial at http://127.0.0.1:12345/lab. Alternatively, you need to ensure the correct ports are bound between the container and the host. 
+
+Here's a demonstration of how to navigate the tutorial in the explorer:
+
+<a align="left" href="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif">
+            <img src="https://llm-assets.readthedocs.io/en/latest/_images/llm-inference-cpu-docker-tutorial-demo.gif" width='60%' /> 
+
+</a> <br>
+
+**3.3 Performance Benchmark**: We provide a benchmark tool help users to test all the benchmarks and record them in a result CSV. 
+
+```bash
+cd /llm/benchmark/all-in-one
+```
+
+Users can provide models and related information in config.yaml.
+```bash
+repo_id:
+  # - 'THUDM/chatglm-6b'
+  # - 'THUDM/chatglm2-6b'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+  # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
+local_model_hub: 'path to your local model hub'
+warm_up: 1
+num_trials: 3
+num_beams: 1 # default to greedy search
+low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 1 # default to 1
+in_out_pairs:
+  - '32-32'
+  - '1024-128'
+test_api:
+  # - "transformer_int4"
+  # - "native_int4"
+  # - "optimize_model"
+  # - "pytorch_autocast_bf16"
+  # - "transformer_autocast_bf16"
+  # - "bigdl_ipex_bf16"
+  # - "bigdl_ipex_int4"
+  # - "bigdl_ipex_int8"
+  # - "ipex_fp16_gpu" # on Intel GPU
+  # - "bigdl_fp16_gpu" # on Intel GPU
+  # - "transformer_int4_gpu"  # on Intel GPU
+  # - "optimize_model_gpu"  # on Intel GPU
+  # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
+  # - "transformer_int4_gpu_win" # on Intel GPU for Windows
+  # - "transformer_int4_fp16_gpu_win" # on Intel GPU for Windows, use fp16 for non-linear layer
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows using load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+  # - "deepspeed_optimize_model_gpu" # deepspeed autotp on Intel GPU
+  - "speculative_cpu"
+  # - "speculative_gpu"
+cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
+```
+
+This benchmark tool offers various test APIs, including `transformer_int4`, `speculative_cpu`, and more.
+
+For instance, if you wish to benchmark **inference with speculative decoding**, utilize the `speculative_cpu` test API in the `config.yml` file. 
+
+Then, execute `bash run-spr.sh`, which will generate output results in `results.csv`.
+```bash
+bash run-spr.sh
+```
+
+For further details and comprehensive functionality of the benchmark tool, please refer to the [all-in-one benchmark tool](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/all-in-one).
+
+Additionally, for examples related to Inference with Speculative Decoding, you can explore [Speculative-Decoding Examples](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Speculative-Decoding).
+
+
+
+## IPEX-LLM Inference on XPU
+
+### 1. Prepare ipex-llm-cpu Docker Image
+
+Run the following command to pull image from dockerhub:
+```bash
+docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+```
+
+### 2. Start bigdl-llm-cpu Docker Container
+
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
-An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -156,7 +178,10 @@ sudo docker run -itd \
         $DOCKER_IMAGE
 ```
 
-After the container is booted, you could get into the container through `docker exec`.
+Access the container:
+```
+docker exec -it $CONTAINER_NAME bash
+```
 
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
@@ -168,20 +193,37 @@ root@arda-arc12:/# sycl-ls
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
-To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/IPEX/tree/main/python/llm/example/GPU).
+### 3. Start Inference
+**Chat Interface**: Use `chat.py` for conversational AI. 
 
-## Docker installation guide for IPEX LLM Serving on CPU
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
+  ```bash
+  cd /llm
+  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+  ```
 
-### Boot container
+To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU).
 
-Pull image:
-```
-docker pull intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
-```
 
-You could use the following bash script to start the container. Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
+## IPEX-LLM Serving on CPU
+FastChat is an open platform for training, serving, and evaluating large language model based chatbots. You can find the detailed information at their [homepage](https://github.com/lm-sys/FastChat).
+
+IPEX-LLM is integrated into FastChat so that user can use IPEX-LLM as a serving backend in the deployment.
+
+### 1. Prepare ipex-llm-serving-cpu Docker Image
+
+Run the following command:
+
 ```bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
+```
+
+### 2. Start ipex-llm-serving-cpu Docker Container
+
+Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
+
+```bash
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -194,102 +236,132 @@ docker run -itd \
     -v $MODEL_PATH:/llm/models \
     $DOCKER_IMAGE
 ```
-After the container is booted, you could get into the container through `docker exec`.
+Access the container:
+```
+docker exec -it $CONTAINER_NAME bash
+```
 
-### Models
-
-Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
-
-FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
-
-A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `IPEX-LLM` backend will be used automatically.
-
-
-### Start the service
-
-#### Serving with Web UI
+### 3. Serving with FastChat
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
-##### Launch the Controller
+- #### **Step 1: Launch the Controller**
+  ```bash
+  python3 -m fastchat.serve.controller &
+  ```
+
+  This controller manages the distributed workers.
+
+- #### **Step 2: Launch the model worker(s)**
+
+  Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
+  ```bash
+  source ipex-llm-init -t
+
+  # Available low_bit format including sym_int4, sym_int8, bf16 etc.
+  python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path path/to/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu" &
+  ```
+  Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
+
+- #### **Step 3: Launch Gradio web server or RESTful API server**
+  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with HTTP.
+
+  - **Option 1: Serving with Web UI**
+    ```bash
+    python3 -m fastchat.serve.gradio_web_server &
+    ```
+    This is the user interface that users will interact with.
+
+    By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
+
+  - **Option 2: Serving with OpenAI-Compatible RESTful APIs**
+
+      Launch the RESTful API server
+
+      ```bash
+      python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 &
+      ```
+
+      Use curl for testing, an example could be:
+
+      ```bash
+      curl -X POST -H "Content-Type: application/json" -d '{
+        "model": "Llama-2-7b-chat-hf",
+        "prompt": "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
+        "n": 1,
+        "best_of": 1,
+        "use_beam_search": false,
+        "stream": false
+      }' http://YOUR_HTTP_HOST:8000/v1/completions
+      ```
+  You can find more details here [Serving using IPEX-LLM and FastChat](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/serving/fastchat/README.md)
+
+### 4. Serving with vLLM Continuous Batching
+To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
+
+- #### **Step 1: Launch the api_server**
+  ```bash
+  #!/bin/bash
+  # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
+  # of batched prompt length the server will accept
+  numactl -C 0-47 -m 0 python -m ipex_llm.vllm.entrypoints.openai.api_server \
+          --model /llm/models/Llama-2-7b-chat-hf/  \
+          --host 0.0.0.0 --port 8000 \
+          --load-format 'auto' --device cpu --dtype bfloat16 \
+          --max-num-batched-tokens 4096 &
+  ```
+
+- #### **Step 2: Use curl for testing, access the api server as follows:**
+
+  ```bash
+  curl http://YOUR_HTTP_HOST:8000/v1/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+                  "model": "/llm/models/Llama-2-7b-chat-hf/",
+                  "prompt": "San Francisco is a",
+                  "max_tokens": 128,
+                  "temperature": 0
+  }' &
+  ```
+
+  You can find more details here: [Serving with vLLM Continuous Batching](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/vLLM-Serving/README.md)
+
+
+## IPEX-LLM Serving on XPU
+
+FastChat is an open platform for training, serving, and evaluating large language model based chatbots. You can find the detailed information at their [homepage](https://github.com/lm-sys/FastChat).
+
+IPEX-LLM is integrated into FastChat so that user can use IPEX-LLM as a serving backend in the deployment.
+
+### 1. Prepare ipex-llm-serving-xpu Docker Image
+
+Run the following command:
+
 ```bash
-python3 -m fastchat.serve.controller
+docker pull intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
 ```
 
-This controller manages the distributed workers.
-
-##### Launch the model worker(s)
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
-```
-Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
-
-> To run model worker using Intel GPU, simply change the --device cpu option to --device xpu
-
-##### Launch the Gradio web server
-
-```bash
-python3 -m fastchat.serve.gradio_web_server
-```
-
-This is the user interface that users will interact with.
-
-By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
-
-#### Serving with OpenAI-Compatible RESTful APIs
-
-To start an OpenAI API server that provides compatible APIs using `IPEX-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
-
-First, launch the controller
-
-```bash
-python3 -m fastchat.serve.controller
-```
-
-Then, launch the model worker(s):
-
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device cpu
-```
-
-Finally, launch the RESTful API server
-
-```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
-```
-
-
-## Docker installation guide for IPEX LLM Serving on XPU
-
-### Boot container
-
-Pull image:
-```
-docker pull intelanalytics/ipex-llm-serving-xpu:2.5.0-SNAPSHOT
-```
+### 2. Start ipex-llm-serving-xpu Docker Container
 
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
 
-An example could be:
 ```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.5.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
-export SERVICE_MODEL_PATH=/llm/models/chatglm2-6b[a specified model path for running service]
 
 docker run -itd \
     --net=host \
-    --device=/dev/dri \
-    --memory="32G" \
+    --cpuset-cpus="0-47" \
+    --cpuset-mems="0" \
     --name=$CONTAINER_NAME \
-    --shm-size="16g" \
     -v $MODEL_PATH:/llm/models \
-    -e SERVICE_MODEL_PATH=$SERVICE_MODEL_PATH \
-    $DOCKER_IMAGE --service-model-path $SERVICE_MODEL_PATH
+    $DOCKER_IMAGE
 ```
-You can assign specified model path to service-model-path to run the service while booting the container. Also you can manually run the service after entering container. Run `/opt/entrypoint.sh --help` in container to see more information. There are steps below describe how to run service in details as well.
-
+Access the container:
+```
+docker exec -it $CONTAINER_NAME bash
+```
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
 ```bash
@@ -299,60 +371,90 @@ root@arda-arc12:/# sycl-ls
 [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
-After the container is booted, you could get into the container through `docker exec`.
 
-### Start the service
-
-#### Serving with Web UI
+### 3. Serving with FastChat
 
 To serve using the Web UI, you need three main components: web servers that interface with users, model workers that host one or more models, and a controller to coordinate the web server and model workers.
 
-##### Launch the Controller
-```bash
-python3 -m fastchat.serve.controller
-```
+- #### **Step 1: Launch the Controller**
+  ```bash
+  python3 -m fastchat.serve.controller &
+  ```
 
-This controller manages the distributed workers.
+  This controller manages the distributed workers.
 
-##### Launch the model worker(s)
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
-```
-Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
+- #### **Step 2: Launch the model worker(s)**
 
-##### Launch the Gradio web server
+  Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
+  ```bash
+  # Available low_bit format including sym_int4, sym_int8, fp16 etc.
+  python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /llm/models/Llama-2-7b-chat-hf/ --low-bit "sym_int4" --trust-remote-code --device "xpu" &
+  ```
+  Wait until the process finishes loading the model and you see "Uvicorn running on ...". The model worker will register itself to the controller.
 
-```bash
-python3 -m fastchat.serve.gradio_web_server
-```
+- #### **Step 3: Launch Gradio web server or RESTful API server**
+  You can launch Gradio web server to serve your models using the web UI or launch RESTful API server to serve with HTTP.
 
-This is the user interface that users will interact with.
+  - **Option 1: Serving with Web UI**
+    ```bash
+    python3 -m fastchat.serve.gradio_web_server &
+    ```
+    This is the user interface that users will interact with.
 
-By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
+    By following these steps, you will be able to serve your models using the web UI with `IPEX-LLM` as the backend. You can open your browser and chat with a model now.
 
-#### Serving with OpenAI-Compatible RESTful APIs
+  - **Option 2: Serving with OpenAI-Compatible RESTful APIs**
 
-To start an OpenAI API server that provides compatible APIs using `IPEX-LLM` backend, you need three main components: an OpenAI API Server that serves the in-coming requests, model workers that host one or more models, and a controller to coordinate the web server and model workers.
+      Launch the RESTful API server
 
-First, launch the controller
+      ```bash
+      python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000 &
+      ```
 
-```bash
-python3 -m fastchat.serve.controller
-```
+      Use curl for testing, an example could be:
 
-Then, launch the model worker(s):
+      ```bash
+      curl -X POST -H "Content-Type: application/json" -d '{
+        "model": "Llama-2-7b-chat-hf",
+        "prompt": "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
+        "n": 1,
+        "best_of": 1,
+        "use_beam_search": false,
+        "stream": false
+      }' http://YOUR_HTTP_HOST:8000/v1/completions
+      ```
+  You can find more details here [Serving using IPEX-LLM and FastChat](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/serving/fastchat/README.md)
 
-```bash
-python3 -m ipex_llm.serving.model_worker --model-path lmsys/vicuna-7b-v1.3 --device xpu
-```
+### 4. Serving with vLLM Continuous Batching
+To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
-Finally, launch the RESTful API server
+- #### **Step 1: Launch the api_server**
+  ```bash
+  #!/bin/bash
+  # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
+  # of batched prompt length the server will accept
+  python -m ipex_llm.vllm.entrypoints.openai.api_server \
+          --model /llm/models/Llama-2-7b-chat-hf/ \
+          --host 0.0.0.0 --port 8000 \
+          --load-format 'auto' --device xpu --dtype bfloat16 \
+          --max-num-batched-tokens 4096 &
+  ```
 
-```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
-```
+- #### **Step 2: Use curl for testing, access the api server as follows:**
 
-## Docker installation guide for IPEX LLM Fine Tuning on CPU
+  ```bash
+  curl http://YOUR_HTTP_HOST:8000/v1/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+                  "model": "/llm/models/Llama-2-7b-chat-hf/",
+                  "prompt": "San Francisco is a",
+                  "max_tokens": 128,
+                  "temperature": 0
+  }' &
+  ```
+  You can find more details here [Serving with vLLM Continuous Batching](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md)
+
+## IPEX-LLM Fine Tuning on CPU
 
 ### 1. Prepare Docker Image
 
@@ -360,10 +462,10 @@ You can download directly from Dockerhub like:
 
 ```bash
 # For standalone
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 
 # For k8s
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -376,7 +478,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT \
   -f ./Dockerfile .
 
 # For k8s
@@ -386,7 +488,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT \
   -f ./Dockerfile.k8s .
 ```
 
@@ -407,7 +509,7 @@ docker run -itd \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/ipex_llm/model \
    -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -421,7 +523,7 @@ docker run -itd \
    --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -470,32 +572,20 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
-## Docker installation guide for IPEX LLM Fine Tuning on XPU
+
+## IPEX-LLM Fine Tuning on XPU
 
 The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
-### 1. Prepare Docker Image
+### 1. Prepare ipex-llm-finetune-qlora-xpu Docker Image
 
-You can download directly from Dockerhub like:
-
-```bash
-docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT
-```
-
-Or build the image from source:
+Run the following command:
 
 ```bash
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker build \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-xpu:2.5.0-SNAPSHOT \
-  -f ./Dockerfile .
+docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
 ```
 
-### 2. Prepare Base Model, Data and Container
+### 2. Prepare Base Model, Data and Start Docker Container
 
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
@@ -504,46 +594,29 @@ export BASE_MODE_PATH=your_downloaded_base_model_path
 export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
+export CONTAINER_NAME=my_container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
 
 docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=ipex-llm-fintune-qlora-xpu \
+   --name=$CONTAINER_NAME \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/ipex-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
+   $DOCKER_IMAGE
 ```
 
-The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
+After the container is booted, you could get into the container through docker exec.
 
 ```bash
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
-
-docker run -itd \
-   --net=host \
-   --device=/dev/dri \
-   --memory="32G" \
-   --name=ipex-llm-fintune-qlora-xpu \
-   -e http_proxy=${HTTP_PROXY} \
-   -e https_proxy=${HTTPS_PROXY} \
-   --shm-size="16g" \
-   intelanalytics/ipex-llm-fintune-qlora-xpu:2.5.0-SNAPSHOT
+docker exec -it $CONTAINER_NAME bash
 ```
 
-However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
-
-### 3. Start Fine-Tuning
-
-Enter the running container:
-
-```bash
-docker exec -it ipex-llm-fintune-qlora-xpu bash
-```
+### 3. Start Fine-Tuning (Local Mode)
 
 Then, start QLoRA fine-tuning:
 
@@ -568,3 +641,13 @@ After minutes, it is expected to get results like:
 100%|███████████████████████████████████████████████████████████████████████████████████| 200/200 [07:16<00:00,  2.18s/it]
 TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15})
 ```
+
+### 4. Merge the adapter into the original model
+
+Using the [export_merged_model.py](../../python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora/export_merged_model.py) to merge.
+
+```
+python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
+```
+
+Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.

@@ -1,5 +1,5 @@
-name: 'BigDL-LLM example tests'
-description: 'BigDL-LLM example tests'
+name: 'IPEX-LLM example tests'
+description: 'IPEX-LLM example tests'
 
 runs:
   using: "composite"
