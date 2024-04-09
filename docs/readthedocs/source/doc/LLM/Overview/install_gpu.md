@@ -25,7 +25,7 @@ To apply Intel GPU acceleration, there're several prerequisite steps for tools i
   First, Create a Python 3.9 enviroment and activate it. In Anaconda Prompt:
 
   ```cmd
-  conda create -n llm python=3.9 libuv
+  conda create -n llm python=3.11 libuv
 
   conda activate llm
   ```
@@ -164,7 +164,7 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
 
 * Ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
   ```cmd
-  conda create -n llm python=3.9 libuv
+  conda create -n llm python=3.11 libuv
   ```
   If you missed `libuv`, you can add it to your existing environment through
   ```cmd
@@ -422,7 +422,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
             .. code-block:: bash
 
-               conda create -n llm python=3.9
+               conda create -n llm python=3.11
                conda activate llm
 
                pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -439,7 +439,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
             .. code-block:: bash
 
-               conda create -n llm python=3.9
+               conda create -n llm python=3.11
                conda activate llm
 
                pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
@@ -461,7 +461,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
             .. code-block:: bash
 
-               conda create -n llm python=3.9
+               conda create -n llm python=3.11
                conda activate llm
 
                pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -470,7 +470,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 
             .. code-block:: bash
 
-               conda create -n llm python=3.9
+               conda create -n llm python=3.11
                conda activate llm
 
                pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/

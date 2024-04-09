@@ -10,7 +10,7 @@ In the example [example_chat_completion.py](./example_chat_completion.py), we sh
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 
 # Install meta-llama repository

@@ -26,7 +26,7 @@ Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.re
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
 ```cmd
-conda create -n llm-cpp python=3.9
+conda create -n llm-cpp python=3.11
 conda activate llm-cpp
 pip install --pre --upgrade ipex-llm[cpp]
 ```

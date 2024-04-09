@@ -5,7 +5,7 @@ This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main)
 ### 1. Install
 
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 pip install datasets transformers==4.35.0

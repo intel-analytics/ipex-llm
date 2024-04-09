@@ -5,7 +5,7 @@ In this example, we show a pipeline to apply IPEX-LLM low-bit optimizations (inc
 ## Prepare Environment
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]

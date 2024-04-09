@@ -28,7 +28,7 @@ This guide walks you through setting up and running **Continue** within _Visual 
 
 Visit [Run Text Generation WebUI Quickstart Guide](webui_quickstart.html), and follow the steps 1) [Install IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm), 2) [Install WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-the-webui) and 3) [Start the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#start-the-webui-server) to install and start the Text Generation WebUI API Service. **Please pay attention to below items during installation:**
 
-- The Text Generation WebUI API service requires Python version 3.10 or higher. But [IPEX-LLM installation instructions](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm) used ``python=3.9`` as default for creating the conda environment. We recommend changing it to ``3.11``, using below command:
+- The Text Generation WebUI API service requires Python version 3.10 or higher. But [IPEX-LLM installation instructions](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm) used ``python=3.11`` as default for creating the conda environment. We recommend changing it to ``3.11``, using below command:
   ```bash
   conda create -n llm python=3.11 libuv
   ```
