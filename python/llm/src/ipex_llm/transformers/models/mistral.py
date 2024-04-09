@@ -60,7 +60,10 @@ try:
     from transformers.cache_utils import Cache
 except ImportError:
     Cache = Tuple[torch.Tensor]
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:

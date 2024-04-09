@@ -40,8 +40,9 @@ from torch.nn import functional as F
 from ipex_llm.transformers.models.utils import use_fused_layer_norm
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
+import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: bool):
