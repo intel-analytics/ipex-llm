@@ -76,7 +76,10 @@ check_memory_type()
 check_mem_info()
 {
   echo "-----------------------------------------------------------------"
-  cat /proc/meminfo | grep "MemTotal" | awk '{print "Total Memory: " $2/1024/1024 " GB"}'
+  cat /proc/meminfo | grep "MemTotal" | awk '{print "Total CPU Memory: " $2/1024/1024 " GB"}'
+
+  echo -n "Memory Type: "
+  sudo dmidecode --type memory | grep -m 1 DDR | awk '{print $2, $3}'
   
 }
 
@@ -123,9 +126,9 @@ check_xpu_smi()
 check_ipex()
 {
   echo "-----------------------------------------------------------------"
-  if python -c "import intel_extension_for_pytorch as ipex; print(ipex.__version__)" >/dev/null 2>&1
+  if python -c "import warnings; warnings.filterwarnings('ignore'); import intel_extension_for_pytorch as ipex; print(ipex.__version__)" >/dev/null 2>&1
   then
-    VERSION=`python -c "import intel_extension_for_pytorch as ipex; print(ipex.__version__)"`
+    VERSION=`python -c "import warnings; warnings.filterwarnings('ignore'); import intel_extension_for_pytorch as ipex; print(ipex.__version__)"`
     echo "ipex=$VERSION"
   else
     echo "IPEX is not installed. "
@@ -135,7 +138,7 @@ check_ipex()
 check_xpu_info()
 {
   echo "-----------------------------------------------------------------"
-  lspci -v | grep -i vga -A 8
+  lspci -v | grep -i vga -A 8 | awk '/Memory/ {gsub(/\[size=[0-9]+G\]/,"\033[1;33m&\033[0m")} 1'
 }
 
 check_linux_kernel_version()
@@ -167,8 +170,16 @@ check_igpu()
   fi
 }
 
+check_gpu_memory()
+{
+  lspci -v | grep -i vga -A 8 | awk '/VGA compatible controller/ {getline; getline; getline; getline; print "GPU" i++ " Memory", substr($0, length($0)-index($0," "), index($0," "))}'
+}
+
 main()
 {
+  # pre-run sudo to avoid typing password in the later part
+  sudo -v
+
   # first guarantee correct python is installed. 
   check_python
   res=$?
@@ -190,7 +201,6 @@ main()
   # check_ulimit
   check_os
   # check_env
-  check_xpu_info
   check_linux_kernel_version
   check_xpu_driver
   check_OpenCL_driver
@@ -205,6 +215,10 @@ main()
   else
     check_xpu_smi
   fi
+
+  check_gpu_memory
+
+  check_xpu_info
 
   echo "-----------------------------------------------------------------"
 }
