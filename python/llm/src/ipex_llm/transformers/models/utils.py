@@ -169,7 +169,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2", "yuan", "stablelm"]:
+                        "mixtral", "qwen2", "yuan", "stablelm", "qwen2_moe"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]

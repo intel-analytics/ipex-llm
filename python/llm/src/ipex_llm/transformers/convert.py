@@ -1121,6 +1121,8 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_attention_forward
+
         convert_forward(model,
                         module.Qwen2MoeRMSNorm,
                         llama_rms_norm_forward)
@@ -1130,6 +1132,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeMLP,
                         llama_mlp_forward)
+        convert_forward(model,
+                        module.Qwen2MoeAttention,
+                        qwen2moe_attention_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
