@@ -48,7 +48,7 @@ if __name__ == '__main__':
     print("Creating model...")
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="cpu", trust_remote_code=True, torch_dtype=torch.float16).eval()
     
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)
 
     prompt = YUAN2_PROMPT_FORMAT.format(prompt=args.prompt)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # if your selected model is capable of utilizing previous key/value attentions
     # to enhance decoding speed, but has `"use_cache": false` in its model config,
     # it is important to set `use_cache=True` explicitly in the `generate` function
-    # to obtain optimal performance with BigDL-LLM INT4 optimizations
+    # to obtain optimal performance with IPEX-LLM INT4 optimizations
     outputs = model.generate(inputs, do_sample=True, top_k=5, max_length=args.n_predict)
     end_time = time.time()
 

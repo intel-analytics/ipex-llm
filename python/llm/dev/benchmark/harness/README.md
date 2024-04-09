@@ -30,6 +30,6 @@ Taking example above, the script will fork 3 processes, each for one xpu, to exe
 ## Results
 We follow [Open LLM Leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard) to record our metrics, `acc_norm` for `hellaswag` and `arc_challenge`, `mc2` for `truthful_qa` and `acc` for `mmlu`. For `mmlu`, there are 57 subtasks which means users may need to average them manually to get final result.
 ## Summarize the results
-"""python
+```python
 python make_table.py <input_dir>
-"""
+```

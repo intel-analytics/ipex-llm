@@ -7,14 +7,15 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
 
 ## 1. Setting up Dependencies 
 
-* **Install ipex-llm** 
-  
-  Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install) before proceeding with the examples provided here. 
-
 * **Install LlamaIndex Packages**
     ```bash
     pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
     ```
+
+* **Install IPEX-LLM**
+
+  Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) before proceeding with the examples provided here. 
+
 
 * **Database Setup (using PostgreSQL)**:
   > Note: Database Setup is only required in RAG example.
@@ -61,7 +62,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
 In the current directory, run the example with command:
 
 ```bash
-python rag.py -m <path_to_model>
+python rag.py -m <path_to_model> -t <path_to_tokenizer>
 ```
 **Additional Parameters for Configuration**:
 - `-m MODEL_PATH`: **Required**, path to the LLM model
@@ -71,6 +72,7 @@ python rag.py -m <path_to_model>
 - `-q QUESTION`: question you want to ask
 - `-d DATA`: path to source data used for retrieval (in pdf format)
 - `-n N_PREDICT`: max predict tokens
+- `-t TOKENIZER_PATH`: **Required**, path to the tokenizer model
 
 **Example Output**：
 

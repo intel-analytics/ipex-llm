@@ -26,9 +26,9 @@ from .bigdlllm import *
 from llama_index.core.base.llms.base import BaseLLM
 
 __all__ = [
-    "BigdlLLM",
+    "IpexLLm",
 ]
 
 type_to_cls_dict: Dict[str, Type[BaseLLM]] = {
-    "BigdlLLM": BigdlLLM,
+    "IpexLLM": IpexLLM,
 }

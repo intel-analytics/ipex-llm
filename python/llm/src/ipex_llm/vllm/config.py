@@ -318,15 +318,6 @@ def _get_and_verify_max_len(
 def get_config(model: str,
                trust_remote_code: bool,
                revision: Optional[str] = None) -> PretrainedConfig:
-    # NOTE: Because the Mistral model in HF hub does not have
-    # `configuration_mistral.py`, we cannot use `AutoConfig` to load the
-    # config. Instead, we use `MistralConfig` directly.
-    # NOTE: This is a hack. This does not work for local models.
-    # FIXME: Remove this once the Mistral model is available in the stable
-    # version of HF transformers.
-    if "mistral" in model.lower():
-        return MistralConfig.from_pretrained(model, revision=revision)
-
     try:
         config = AutoConfig.from_pretrained(
             model, trust_remote_code=trust_remote_code, revision=revision)
@@ -407,6 +398,7 @@ class SchedulerConfig:
     def _verify_args(self) -> None:
         if self.max_num_batched_tokens < self.max_model_len:
             invalidInputError(
+                False,
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) is "
                 f"smaller than max_model_len ({self.max_model_len}). "
                 "This effectively limits the maximum sequence length to "
@@ -415,6 +407,7 @@ class SchedulerConfig:
                 "decrease max_model_len.")
         if self.max_num_batched_tokens < self.max_num_seqs:
             invalidInputError(
+                False,
                 f"max_num_batched_tokens ({self.max_num_batched_tokens}) must "
                 "be greater than or equal to max_num_seqs "
                 f"({self.max_num_seqs}).")

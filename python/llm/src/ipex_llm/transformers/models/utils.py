@@ -16,10 +16,12 @@
 
 import os
 import torch
+import warnings
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4
+from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
 
@@ -28,7 +30,7 @@ SILU = 0
 GELU = 1
 
 
-def decoding_fast_path_qtype_check(proj): 
+def decoding_fast_path_qtype_check(proj):
     qtype = getattr(proj, "qtype", None)
     return qtype in [SYM_INT4, FP8E5, FP4]
 
@@ -74,6 +76,12 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
 def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     if os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
+    elif os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+        warnings.warn(
+            "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
+            "Please use `IPEX_LLM_QUANTIZE_KV_CACHE` instead."
+        )
+        return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
     else:
@@ -84,7 +92,7 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
 
 def kv_cache_device_check(x: torch.Tensor) -> bool:
     return get_xpu_device_type(x) == "mtl" or \
-        ((get_xpu_device_type(x) == "arc" or get_xpu_device_type(x) == "flex") and \
+        ((get_xpu_device_type(x) == "arc" or get_xpu_device_type(x) == "flex") and
             1 < x.size(0) and x.size(0) <= 8)
 
 
@@ -161,7 +169,7 @@ def rotate_every_two(x):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2", "yuan"]:
+                        "mixtral", "qwen2", "yuan", "stablelm"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -218,7 +226,7 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["qwen", "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-    elif model_family in ["qwen2", "yuan"]:
+    elif model_family in ["qwen2", "yuan", "stablelm"]:
         cos = cos.to(q.dtype)
         sin = sin.to(q.dtype)
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -323,8 +331,8 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
 
     device_name = torch.xpu.get_device_name(query_states.device.index)
     if device_name.startswith("Intel(R) Arc(TM) A") or \
-              device_name.startswith("Intel(R) Data Center GPU Flex") or \
-              device_name.startswith("Intel(R) Data Center GPU Max"):
+       device_name.startswith("Intel(R) Data Center GPU Flex") or \
+       device_name.startswith("Intel(R) Data Center GPU Max"):
         import linear_fp16_esimd
         if not hasattr(linear_fp16_esimd, "sdp_forward"):
             return False
@@ -333,6 +341,10 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
 
     if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
         # esimd_sdp not support PVC GPU when batch size > 1 for now
+        return False
+    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
+            and is_deepspeed_available:
+        # esimd_sdp not support ARC GPU when batch size > 1 using DeepSpeed AutoTP for now
         return False
     if query_states.shape[0] > 1 and attention_mask is not None:
         # for batched input, can't accept attention_mask

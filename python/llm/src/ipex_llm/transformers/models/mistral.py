@@ -54,6 +54,8 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
+from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
+from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla
 try:
     from transformers.cache_utils import Cache
 except ImportError:
@@ -84,7 +86,8 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
     return llama_decoding_fast_path_qtype_check(proj) and \
-        use_fuse_rope and enough_kv_room and bs == 1
+        use_fuse_rope and enough_kv_room and bs == 1 and \
+        not proj.enable_xetla
 
 
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,
@@ -117,6 +120,7 @@ def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_
 
     if attn_output.size() != (bsz, num_heads, q_len, head_dim):
         invalidInputError(
+            False,
             f"`attn_output` should be of size {(bsz, num_heads, q_len, head_dim)},"
             f" but is {attn_output.size()}"
         )
@@ -326,6 +330,7 @@ def mistral_attention_forward_quantized(
             if attention_mask is not None:
                 if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                     invalidInputError(
+                        False,
                         f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                         f" but is {attention_mask.size()}"
                     )
@@ -380,7 +385,6 @@ def mistral_attention_forward_original(
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
@@ -400,9 +404,27 @@ def mistral_attention_forward_original(
                                                                          self.head_dim)
         kv_seq_len += 1
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+
+        if should_use_xetla_mm_qkv(self, device):
+            if not hasattr(self, "qkv_proj_qweight"):
+                self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
+                                                              self.k_proj,
+                                                              self.v_proj,
+                                                              self.q_proj.qtype)
+            import linear_q4_0
+            q_out_len = self.q_proj.out_len
+            k_out_len = self.k_proj.out_len
+            v_out_len = self.v_proj.out_len
+            qkv_states = linear_q4_0.mm_xetla(hidden_states,
+                                              self.qkv_proj_qweight,
+                                              self.q_proj.qtype)
+            query_states = qkv_states[:, :, :q_out_len]
+            key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
+            value_states = qkv_states[:, :, q_out_len + k_out_len:]
+        else:
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len,
@@ -682,6 +704,7 @@ def mistral_attention_forward_4_36_quantized(
             if attention_mask is not None:
                 if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
                     invalidInputError(
+                        False,
                         f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
                         f" but is {attention_mask.size()}"
                     )
@@ -766,9 +789,26 @@ def mistral_attention_forward_4_36_original(
         past_key_value.value_cache[self.layer_idx] = value_states
 
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if should_use_xetla_mm_qkv(self, device):
+            if not hasattr(self, "qkv_proj_qweight"):
+                self.qkv_proj_qweight = fuse_qkv_weight_xetla(self.q_proj,
+                                                              self.k_proj,
+                                                              self.v_proj,
+                                                              self.q_proj.qtype)
+            import linear_q4_0
+            q_out_len = self.q_proj.out_len
+            k_out_len = self.k_proj.out_len
+            v_out_len = self.v_proj.out_len
+            qkv_states = linear_q4_0.mm_xetla(hidden_states,
+                                              self.qkv_proj_qweight,
+                                              self.q_proj.qtype)
+            query_states = qkv_states[:, :, :q_out_len]
+            key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
+            value_states = qkv_states[:, :, q_out_len + k_out_len:]
+        else:
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
 
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len,
@@ -853,6 +893,15 @@ def mistral_attention_forward_4_36_original(
                                                      key_states,
                                                      value_states,
                                                      is_causal=True)
+        attn_weights = None
+        attn_output = attn_output.transpose(1, 2).contiguous()
+        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
+    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

@@ -527,6 +527,16 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
 
 
 def _optimize_pre(model):
+    try:
+        from sentence_transformers.SentenceTransformer import SentenceTransformer
+        if isinstance(model, SentenceTransformer):
+            if str(model._modules['0']).strip().split(' ')[-1] == 'BertModel':
+                from ipex_llm.transformers.models.bert import merge_qkv
+                model.apply(merge_qkv)
+                return model
+    except ModuleNotFoundError:
+        pass
+
     from transformers.modeling_utils import PreTrainedModel
     # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
@@ -595,6 +605,10 @@ def _optimize_pre(model):
     ):
         from ipex_llm.transformers.models.bert import merge_qkv
         model.apply(merge_qkv)
+    # for starcoder2
+    if model.config.model_type == "starcoder2":
+        from ipex_llm.transformers.models.starcoder2 import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "qwen":
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
@@ -628,6 +642,11 @@ def _optimize_pre(model):
                 module.rope_base = rope_base
                 del module.c_attn
         model.apply(split_qkv_proj_func)
+    if model.config.model_type == "stablelm":
+        # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
+        from ipex_llm.transformers.models.stablelm import merge_qkv
+        model.apply(merge_qkv)
+
     return model
 
 
@@ -783,6 +802,24 @@ def _optimize_post(model, lightweight_bmm=False):
     from ipex_llm.transformers.models.llama import llama_decoder_forward
     from ipex_llm.transformers.models.llama import llama_model_forward
     from transformers.modeling_utils import PreTrainedModel
+
+    try:
+        from sentence_transformers.SentenceTransformer import SentenceTransformer
+        if isinstance(model, SentenceTransformer):
+            if str(model._modules['0']).strip().split(' ')[-1] == 'BertModel':
+                modeling_module_name = model._modules['0'].auto_model.__class__.__module__
+                module = importlib.import_module(modeling_module_name)
+                from ipex_llm.transformers.models.bert import self_attention_forward
+                from ipex_llm.transformers.models.bert import encoder_forward
+                convert_forward(model,
+                                module.BertSelfAttention,
+                                self_attention_forward)
+                convert_forward(model,
+                                module.BertEncoder,
+                                encoder_forward)
+                return model
+    except ModuleNotFoundError:
+        pass
 
     # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
@@ -995,10 +1032,18 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.MLP,
                             baichuan_mlp_forward)
-            replace_func(model,
-                         module.BaichuanModel,
-                         "get_alibi_mask",
-                         baichuan_13b_get_alibi_mask)
+            if hasattr(model.model, 'get_alibi_mask_orig'):
+                # deepspeed rewrite "get_alibi_mask" to support baichuan
+                # https://github.com/microsoft/DeepSpeed/pull/4721
+                replace_func(model,
+                             module.BaichuanModel,
+                             "get_alibi_mask_orig",
+                             baichuan_13b_get_alibi_mask)
+            else:
+                replace_func(model,
+                             module.BaichuanModel,
+                             "get_alibi_mask",
+                             baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:
@@ -1295,6 +1340,15 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+    elif model.config.model_type == "starcoder2":
+        # starcoder2
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.starcoder2 import attention_forward
+        from ipex_llm.transformers.models.starcoder2 import model_forward
+        convert_forward(model, module.Starcoder2Attention, attention_forward)
+        convert_forward(model, module.Starcoder2Model, model_forward)
+
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1323,5 +1377,21 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.BertEncoder,
                         encoder_forward)
-
+    elif model.config.model_type == 'stablelm':
+        # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.stablelm import stablelm_attention_forward
+        from ipex_llm.transformers.models.stablelm import stablelm_model_forward
+        convert_forward(model,
+                        module.StableLmAttention,
+                        stablelm_attention_forward
+                        )
+        convert_forward(model,
+                        module.StableLmMLP,
+                        llama_mlp_forward)
+        convert_forward(model,
+                        module.StableLmModel,
+                        stablelm_model_forward
+                        )
     return model

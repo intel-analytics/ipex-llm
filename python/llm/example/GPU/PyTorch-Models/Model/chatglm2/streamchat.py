@@ -43,7 +43,7 @@ if __name__ == '__main__':
                                       torch_dtype='auto',
                                       low_cpu_mem_usage=True)
     
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model)

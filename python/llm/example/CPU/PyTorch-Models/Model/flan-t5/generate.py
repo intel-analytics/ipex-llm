@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Load model
     model = AutoModelForSeq2SeqLM.from_pretrained(model_path, trust_remote_code=True)
 
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # "wo" module is not converted due to some issues of T5 model
     # (https://github.com/huggingface/transformers/issues/20287),
     # "lm_head" module is not converted to generate outputs with better quality

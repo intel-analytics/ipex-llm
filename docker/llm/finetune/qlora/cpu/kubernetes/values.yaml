@@ -1,4 +1,4 @@
-imageName: intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.5.0-SNAPSHOT
+imageName: intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT
 trainerNum: 2
 microBatchSize: 8
 enableGradientCheckpoint: false # true will save more memory but increase latency

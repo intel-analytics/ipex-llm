@@ -164,7 +164,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-    runs-on: [self-hosted, llm, spr01-perf]
+    runs-on: [self-hosted, llm, spr-perf]
     env:
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
@@ -220,11 +220,11 @@ jobs:
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
-          cp ./*.csv /models/nightly_perf_cpu
+          cp ./*.csv /mnt/disk1/models/nightly_perf_cpu
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
-          python csv_to_html.py -f /models/nightly_perf_cpu
-          cd /models/nightly_perf_cpu
+          python csv_to_html.py -f /mnt/disk1/models/nightly_perf_cpu
+          cd /mnt/disk1/models/nightly_perf_cpu
           for f in *.html; do
             curl -T "$f" ${LLM_FTP_URL}/llm/nightly_perf/nightly_perf_cpu/
           done

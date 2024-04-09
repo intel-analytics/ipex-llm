@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # Load model
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
 
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)
     
     # Load tokenizer

@@ -189,7 +189,7 @@ jobs:
           fi
 
           python run_llb.py \
-            --model bigdl-llm \
+            --model ipex-llm \
             --pretrained ${MODEL_PATH} \
             --precision ${{ matrix.precision }} \
             --device ${{ matrix.device }} \

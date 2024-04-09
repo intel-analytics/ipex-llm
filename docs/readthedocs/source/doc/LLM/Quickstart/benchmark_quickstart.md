@@ -1,4 +1,4 @@
-# IPEX-LLM Benchmarking
+# Run Performance Benchmarking with IPEX-LLM
 
 We can do benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
