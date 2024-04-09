@@ -8,7 +8,7 @@ predict the next N tokens using `generate()` API, with IPEX-LLM speculative deco
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen to conduct generation

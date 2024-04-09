@@ -13,7 +13,7 @@ This example is ported from [Fine_tune_a_Mistral_7b_model_with_DPO](https://gith
 ### 1. Install
 
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/

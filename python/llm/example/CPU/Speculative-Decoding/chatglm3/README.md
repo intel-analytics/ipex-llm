@@ -7,7 +7,7 @@ In the example [speculative.py](./speculative.py), we show a basic use case for 
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 ```

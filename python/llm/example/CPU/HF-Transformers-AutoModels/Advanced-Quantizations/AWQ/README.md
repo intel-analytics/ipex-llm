@@ -34,7 +34,7 @@ In the example [generate.py](./generate.py), we show a basic use case for a AWQ 
 We suggest using conda to manage environment:
 
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 
 pip install autoawq==0.1.8 --no-deps
