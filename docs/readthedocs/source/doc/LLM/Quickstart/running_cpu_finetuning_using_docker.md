@@ -1,62 +1,55 @@
 ## IPEX-LLM finetuning on CPU quick start
 
-This quickstart guide walks you through setting up and running large language model finetuning with `ipex-llm` using docker. 
+This quickstart guide walks you through setting up and running large language model finetuning with `ipex-llm` using a docker image. 
 
 ### Prepare Docker Image
 
-You can download directly from Dockerhub like (recommended):
+You can download directly from Dockerhub :
 
 ```bash
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 to check if the image is successfully downloaded, you can use:
 
 ```bash
-docker images | grep intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT
+docker images | grep intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
-Or follow steps provided in [Docker installation guide for IPEX-LLM Fine Tuning on CPU](https://github.com/intel-analytics/ipex-llm/blob/main/docker/llm/README.md#docker-installation-guide-for-ipex-llm-fine-tuning-on-cpu) to build the image from source:
 
-```bash
-# For standalone
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
+### Prepare Base Model and dataset
+Here, we fine-tune a Llama2-7b with yahma/alpaca-cleaned dataset, please download them first.
 
-cd ipex-llm/docker/llm/finetune/qlora/cpu/
-docker build \
-  --build-arg http_proxy=${HTTP_PROXY} \
-  --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.5.0-SNAPSHOT \
-  -f ./Dockerfile .
-```
+#### Download base model
+[Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) is used as example to show LLM finetuning. Create a ``download.py`` and insert the code snippet below to dwonload the model from huggingface. 
 
-Here we use Linux/MacOS as example, if you have a Windows OS, please follow [IPEX-LLM on Windows](https://github.com/intel-analytics/ipex-llm/blob/main/docker/llm/README.md#docker-installation-guide-for-ipex-llm-on-cpu) to prepare a IPEX-LLM finetuning image on CPU.
-
-### Prepare Base Model and Container
-Here, we try to fine-tune a Llama2-7b with yahma/alpaca-cleaned dataset, please download them.
-
-1. Download base model
 ``` python
 from huggingface_hub import snapshot_download
-repo_id="meta-llama/Llama-2-7b"
-local_dir="./Llama-2-7b"
+repo_id="meta-llama/Llama-2-7b-chat-hf"
+local_dir="/home/llm/models/Llama-2-7b-chat-hf"
 snapshot_download(repo_id=repo_id,
                   local_dir=local_dir,
                   local_dir_use_symlinks=False
                   )
 ```
-2. Download yahma/alpaca-cleaned dataset
+
+Then use the bash script to download the model to local directory of ``/home/llm/models/Llama-2-7b-chat-hf``. 
+``` bash
+python download.py
+```
+
+#### Download yahma/alpaca-cleaned dataset
 ``` bash
 mkdir alpaca-cleaned
 cd alpaca-cleaned
-wget https://huggingface.co/datasets/yahma/alpaca-cleaned/blob/main/alpaca_data_cleaned.json .
 ```
-Or just download alpaca_data_cleaned.json from https://huggingface.co/datasets/yahma/alpaca-cleaned/tree/main.
+Go to huggingface website https://huggingface.co/datasets/yahma/alpaca-cleaned/tree/main, click ``Download file`` of ``alpaca_data_cleaned.json`` and save it to ``aplace-cleaned``.
 
-3. start a docker container with files mounted like below:
+### Start a docker container
+Once you have base model and dataset ready, you can start a docker container with files mounted correctly:
+
 ```bash
-export BASE_MODE_PATH=your_downloaded_base_model_path
-export DATA_PATH=your_downloaded_data_path
+export BASE_MODE_PATH=/home/llm/models/Llama-2-7b-chat-hf
+export DATA_PATH=./alpaca-cleaned
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 
