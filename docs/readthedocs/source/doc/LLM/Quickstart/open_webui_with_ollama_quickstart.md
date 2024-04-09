@@ -41,10 +41,13 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
     ```
 
 #### Start the service
-    ```
-    export no_proxy=localhost,127.0.0.1
-    bash start.sh
-    ```
+
+Run below commands to start the service:
+
+```sh
+export no_proxy=localhost,127.0.0.1
+bash start.sh
+```
 
 
 ```eval_rst
