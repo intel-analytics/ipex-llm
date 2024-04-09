@@ -45,16 +45,16 @@ source /opt/intel/oneapi/setvars.sh
 
 The console will display messages similar to the following:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_serve.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_serve.png" width=100%; />
 </a>
 
 
 
 ### 4 Pull Model
-Keep the Ollama service on and open a new terminal and pull a model, e.g. `dolphin-phi:latest`:
+Keep the Ollama service on and open another terminal and run `./ollama pull <model_name>` to automatically pull a model. e.g. `dolphin-phi:latest`:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" width=100%; />
 </a>
 
@@ -77,7 +77,7 @@ curl http://localhost:11434/api/generate -d '
 
 An example output of using model `doplphin-phi` looks like the following:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" width=100%; />
 </a>
 
@@ -99,6 +99,6 @@ source /opt/intel/oneapi/setvars.sh
 
 An example process of interacting with model with `ollama run` looks like the following:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" width=100%; /><img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_2.png" width=100%; />
 </a>
