@@ -65,21 +65,16 @@ check_cpu_info()
   lscpu | head -n 17
 }
 
-check_memory_type()
-{
-  echo "-----------------------------------------------------------------"
-  echo "CPU type: "
-  sudo dmidecode -t 17 | grep DDR
-
-}
-
 check_mem_info()
 {
   echo "-----------------------------------------------------------------"
   cat /proc/meminfo | grep "MemTotal" | awk '{print "Total CPU Memory: " $2/1024/1024 " GB"}'
 
-  echo -n "Memory Type: "
-  sudo dmidecode --type memory | grep -m 1 DDR | awk '{print $2, $3}'
+  # Check if sudo session exists
+  if sudo -n true 2>/dev/null; then
+      echo -n "Memory Type: "
+      sudo dmidecode --type memory | grep -m 1 DDR | awk '{print $2, $3}'
+  fi
   
 }
 
@@ -177,9 +172,6 @@ check_gpu_memory()
 
 main()
 {
-  # pre-run sudo to avoid typing password in the later part
-  sudo -v
-
   # first guarantee correct python is installed. 
   check_python
   res=$?
@@ -197,7 +189,6 @@ main()
   # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
   check_cpu_info
   check_mem_info
-  # check_memory_type
   # check_ulimit
   check_os
   # check_env
