@@ -106,7 +106,7 @@ The city with the highest population is Tokyo, with a population of 13,960,000.
 
 > Note: React Agent example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
 
-The Text to SQL example ([react_agent.py](./react_agent.py)) is adapted from the [Official llama index React Agent example](https://docs.llamaindex.ai/en/stable/examples/agent/react_agent/). This example shows the ReAct agent over very simple calculator tools (no fancy RAG pipelines or API calls).
+The Text to SQL example ([react_agent.py](./react_agent.py)) is adapted from the [Official llama index React Agent example](https://docs.llamaindex.ai/en/stable/examples/agent/react_agent). This example shows the ReAct agent over very simple calculator tools (no fancy RAG pipelines or API calls).
 
 In the current directory, run the example with command:
 
@@ -176,4 +176,31 @@ This is a comment written by simon.
 This is a blog post written by admin.
 
 This is a comment
+```
+
+### 2.5 Query from Dataframe
+
+> Note: Query from Dataframe example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+
+The Query from Dataframe example ([query_pipeline_pandas.py](./query_pipeline_pandas.py)) is adapted from the [Official llama index Query from Dataframe example](https://github.com/run-llama/llama_index/blob/main/docs/docs/examples/pipeline/query_pipeline_pandas.ipynb). This example builds a query pipeline that can perform structured operations over a Pandas DataFrame to satisfy a user query, using LLMs to infer the set of operations.
+
+In the current directory, run the example with command:
+
+```bash
+# Download data
+wget 'https://raw.githubusercontent.com/jerryjliu/llama_index/main/docs/docs/examples/data/csv/titanic_train.csv' -O 'titanic_train.csv'
+# Run the example
+python json_query_engine.py -m <path_to_model>
+```
+
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+
+**Example Output**:
+
+A query such as **"What is the correlation between survival and age?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+The correlation between hair color and survival is -0.077. This suggests that there is a weak negative correlation between the two variables. In other words, individuals with a certain hair color are slightly less likely to survive than those with other hair colors. However, this correlation is not statistically significant, meaning that it could be due to chance.
 ```
