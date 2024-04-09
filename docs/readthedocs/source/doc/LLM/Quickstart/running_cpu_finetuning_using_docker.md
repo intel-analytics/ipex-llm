@@ -2,8 +2,15 @@
 
 This quickstart guide walks you through setting up and running large language model finetuning with `ipex-llm` using a docker image. 
 
-### Prepare Docker Image
+### Docker Installation Instructions
+1. **For New Users**:
+   - Begin by visiting the official Docker Get Started page for a comprehensive introduction and installation guide.
+Additional Steps for Windows Users:
 
+2. **Additional Steps for Windows Users:**
+    - For Windows Users, follow the step-by-step guide: [Docker Installation Instructions for Windows](https://github.com/intel-analytics/ipex-llm/blob/main/docs/readthedocs/source/doc/LLM/Quickstart/docker_windows_gpu.md#install-docker-on-windows).
+
+### Prepare Docker Image
 You can download directly from Dockerhub :
 
 ```bash
@@ -15,9 +22,8 @@ to check if the image is successfully downloaded, you can use:
 docker images | grep intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
 ```
 
-
 ### Prepare Base Model and dataset
-Here, we fine-tune a Llama2-7b with yahma/alpaca-cleaned dataset, please download them first.
+Here, we fine-tune a Llama2-7b with yahma/alpaca-cleaned dataset, please follow the steps to download them first.
 
 #### Download base model
 [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) is used as example to show LLM finetuning. Create a ``download.py`` and insert the code snippet below to dwonload the model from huggingface. 
@@ -33,6 +39,7 @@ snapshot_download(repo_id=repo_id,
 ```
 
 Then use the bash script to download the model to local directory of ``/home/llm/models/Llama-2-7b-chat-hf``. 
+
 ``` bash
 python download.py
 ```
