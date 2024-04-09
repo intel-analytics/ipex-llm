@@ -93,17 +93,17 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
 Download the wheels on Windows system:
 
 ```
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp39-cp39-win_amd64.whl
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp39-cp39-win_amd64.whl
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-win_amd64.whl
+wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp311-cp311-win_amd64.whl
 ```
 
 You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
 
 ```
-pip install torch-2.1.0a0+cxx11.abi-cp39-cp39-win_amd64.whl
-pip install torchvision-0.16.0a0+cxx11.abi-cp39-cp39-win_amd64.whl
-pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-win_amd64.whl
+pip install torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
+pip install torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
+pip install intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl
 
 pip install --pre --upgrade ipex-llm[xpu]
 ```
@@ -111,7 +111,7 @@ pip install --pre --upgrade ipex-llm[xpu]
 ```eval_rst
 .. note::
 
-   All the wheel packages mentioned here are for Python 3.11. If you would like to use Python 3.9 or 3.10, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
+   All the wheel packages mentioned here are for Python 3.11. If you would like to use Python 3.9 or 3.10, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp11`` with ``cp39`` or ``cp310``, respectively.
 ```
 
 ### Runtime Configuration
@@ -488,18 +488,18 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
       .. code-block:: bash
 
          # get the wheels on Linux system for IPEX 2.1.10+xpu
-         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
-         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
-         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp39-cp39-linux_x86_64.whl
+         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp311-cp311-linux_x86_64.whl
+         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp311-cp311-linux_x86_64.whl
+         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp311-cp311-linux_x86_64.whl
 
       Then you may install directly from the wheel archives using following commands:
 
       .. code-block:: bash
 
          # install the packages from the wheels
-         pip install torch-2.1.0a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
-         pip install torchvision-0.16.0a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
-         pip install intel_extension_for_pytorch-2.1.10+xpu-cp39-cp39-linux_x86_64.whl
+         pip install torch-2.1.0a0+cxx11.abi-cp311-cp311-linux_x86_64.whl
+         pip install torchvision-0.16.0a0+cxx11.abi-cp311-cp311-linux_x86_64.whl
+         pip install intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-linux_x86_64.whl
 
          # install ipex-llm for Intel GPU
          pip install --pre --upgrade ipex-llm[xpu]
@@ -509,18 +509,18 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
       .. code-block:: bash
 
          # get the wheels on Linux system for IPEX 2.0.110+xpu
-         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.0.1a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
-         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.15.2a0%2Bcxx11.abi-cp39-cp39-linux_x86_64.whl
-         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.0.110%2Bxpu-cp39-cp39-linux_x86_64.whl
+         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.0.1a0%2Bcxx11.abi-cp311-cp311-linux_x86_64.whl
+         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.15.2a0%2Bcxx11.abi-cp311-cp311-linux_x86_64.whl
+         wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.0.110%2Bxpu-cp311-cp311-linux_x86_64.whl
 
       Then you may install directly from the wheel archives using following commands:
 
       .. code-block:: bash
 
          # install the packages from the wheels
-         pip install torch-2.0.1a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
-         pip install torchvision-0.15.2a0+cxx11.abi-cp39-cp39-linux_x86_64.whl
-         pip install intel_extension_for_pytorch-2.0.110+xpu-cp39-cp39-linux_x86_64.whl
+         pip install torch-2.0.1a0+cxx11.abi-cp311-cp311-linux_x86_64.whl
+         pip install torchvision-0.15.2a0+cxx11.abi-cp311-cp311-linux_x86_64.whl
+         pip install intel_extension_for_pytorch-2.0.110+xpu-cp311-cp311-linux_x86_64.whl
 
          # install ipex-llm for Intel GPU
          pip install --pre --upgrade ipex-llm[xpu_2.0]
@@ -530,7 +530,7 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
 ```eval_rst
 .. note::
 
-   All the wheel packages mentioned here are for Python 3.11. If you would like to use Python 3.9 or 3.10, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp39`` with ``cp310`` or ``cp311``, respectively.
+   All the wheel packages mentioned here are for Python 3.11. If you would like to use Python 3.9 or 3.10, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp11`` with ``cp39`` or ``cp310``, respectively.
 ```
 
 ### Runtime Configuration
