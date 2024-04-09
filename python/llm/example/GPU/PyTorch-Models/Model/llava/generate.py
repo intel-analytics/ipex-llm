@@ -57,7 +57,7 @@ from llava.mm_utils import (
     KeywordsStoppingCriteria
 )
 
-from bigdl.llm import optimize_model
+from ipex_llm import optimize_model
 
 # Load the pretrained model.
 # Adapted from llava.model.builder.load_pretrained_model.
