@@ -34,10 +34,10 @@ jobs:
         include:
           - os: windows
             instruction: AVX-VNNI-UT
-            python-version: "3.9"
+            python-version: "3.11"
           - os: ubuntu-20.04-lts
             instruction: avx512
-            python-version: "3.9"
+            python-version: "3.11"
     runs-on: [self-hosted, llm, "${{matrix.instruction}}", "${{matrix.os}}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
