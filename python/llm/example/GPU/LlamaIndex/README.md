@@ -262,6 +262,33 @@ Jerry has written the following comments:
 - "Nice post!" on blog post with ID 1.
 ```
 
+### 4.5 Query from Dataframe
+
+> Note: Query from Dataframe example is varified on `zephyr-7b-alpha`. This model requires transformers==4.37.0. Please use `pip install transformers==4.37.0` to upgrade transformers version to 4.37.0.
+
+The Query from Dataframe example ([query_pipeline_pandas.py](./query_pipeline_pandas.py)) is adapted from the [Official llama index Query from Dataframe example](https://github.com/run-llama/llama_index/blob/main/docs/docs/examples/pipeline/query_pipeline_pandas.ipynb). This example builds a query pipeline that can perform structured operations over a Pandas DataFrame to satisfy a user query, using LLMs to infer the set of operations.
+
+In the current directory, run the example with command:
+
+```bash
+# Download data
+wget 'https://raw.githubusercontent.com/jerryjliu/llama_index/main/docs/docs/examples/data/csv/titanic_train.csv' -O 'titanic_train.csv'
+# Run the example
+python json_query_engine.py -m <path_to_model>
+```
+
+**Additional Parameters for Configuration**:
+- `-m MODEL_PATH`: **Required**, path to the LLM model
+- `-q QUESTION`: question you want to ask
+- `-n N_PREDICT`: max predict tokens
+
+**Example Output**:
+
+A query such as **"What is the correlation between survival and age?"** using the `zephyr-7b-alpha` model, will produce the output like below:
+```
+The correlation between survival and age is -0.077. This suggests a weak negative correlation, meaning that as age increases, the likelihood of survival decreases slightly. However, the correlation is not statistically significant, as the p-value would need to be less than 0.05 to be considered significant.
+```
+
 ## 5. Trouble shooting
 ### 5.1 Core dump
 If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.
