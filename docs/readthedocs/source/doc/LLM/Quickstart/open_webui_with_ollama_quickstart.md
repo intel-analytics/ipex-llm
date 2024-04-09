@@ -1,18 +1,18 @@
-# Run Open-Webui with Ollama on Linux with Intel GPU
+# Run Open WebUI on Linux with Intel GPU
 
-The [open-webui](https://github.com/open-webui/open-webui) provides a user friendly GUI for anyone to run LLM locally; by porting it to [ollama](https://github.com/ollama/ollama) integrated with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run LLM in [open-webui](https://github.com/open-webui/open-webui) on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
+[Open WebUI](https://github.com/open-webui/open-webui) is a user friendly GUI for running LLM locally; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run LLM in [Open WebUI](https://github.com/open-webui/open-webui) on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
 See the demo of running Mistral:7B on Intel Arc A770 below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_demo.mp4" width="100%" controls></video>
 
 ## Quickstart
-This quickstart guide walks you through setting up and using the [open-webui](https://github.com/open-webui/open-webui) with Ollama. 
+This quickstart guide walks you through setting up and using [Open WebUI](https://github.com/open-webui/open-webui) with Ollama (using the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend).
 
 
 ### 1 Run Ollama on Linux with Intel GPU
 
-To use the open-webui on Intel GPU, first ensure that you can run Ollama on Intel GPU. Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.md). Please keep ollama service running after completing the above steps.
+Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run `ollama serve`. Remember Please keep ollama service running during the use of Open WebUI.
 
 ### 2 Install and Run Open-Webui
 
