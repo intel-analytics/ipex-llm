@@ -5,15 +5,15 @@ FastChat is an open platform for training, serving, and evaluating large languag
 IPEX-LLM can be easily integrated into FastChat so that user can use `IPEX-LLM` as a serving backend in the deployment.
 
 ## Quick Start
+
 This quickstart guide walks you through installing and running `FastChat` with `ipex-llm`.
 
 ## 1. Install IPEX-LLM with FastChat
 
-```bash
-pip install --pre --upgrade ipex-llm[serving]
+To run on CPU, you can install ipex-llm as follows:
 
-# Or
-pip install --pre --upgrade ipex-llm[all]
+```bash
+pip install --pre --upgrade ipex-llm[serving, all]
 ```
 
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
@@ -41,24 +41,14 @@ Using IPEX-LLM in FastChat does not impose any new limitations on model usage. T
 
 To integrate IPEX-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `ipex_llm_worker.py`.
 
-```eval_rst
-.. tabs::
-   .. tab:: CPU Example
+```bash
+# On CPU
+# Available low_bit format including sym_int4, sym_int8, bf16 etc.
+python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "cpu"
 
-      .. code-block:: bash
-
-        source ipex-llm-init -t
-
-        # Available low_bit format including sym_int4, sym_int8, bf16 etc.
-        python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
-
-   .. tab:: GPU Example
-
-      .. code-block:: bash
-
-        # Available low_bit format including sym_int4, sym_int8, fp16 etc.
-        python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
-
+# On GPU
+# Available low_bit format including sym_int4, sym_int8, fp16 etc.
+python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
 For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
@@ -79,6 +69,8 @@ python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MO
 
 ### Launch Gradio web server
 
+When you have started the controller and the worker, you can start web server as follows:
+
 ```bash
 python3 -m fastchat.serve.gradio_web_server
 ```
@@ -90,6 +82,8 @@ By following these steps, you will be able to serve your models using the web UI
 ### Launch RESTful API server
 
 To start an OpenAI API server that provides compatible APIs using IPEX-LLM backend, you can launch the `openai_api_server` and follow this [doc](https://github.com/lm-sys/FastChat/blob/main/docs/openai_api.md) to use it.
+
+When you have started the controller and the worker, you can start RESTful API server as follows:
 
 ```bash
 python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
