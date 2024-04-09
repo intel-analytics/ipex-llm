@@ -24,7 +24,7 @@ import multiprocessing as mp
 from contextlib import redirect_stdout, redirect_stderr
 
 from ipexllm import IPEXLLM
-models.MODEL_REGISTRY['ipex-llm'] = IPEXLLM    # patch bigdl-llm to harness
+models.MODEL_REGISTRY['ipex-llm'] = IPEXLLM    # patch ipex-llm to harness
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 
