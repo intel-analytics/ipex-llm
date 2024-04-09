@@ -42,6 +42,7 @@ import os
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
+
 def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
     return decoding_fast_path_qtype_check(proj) and \
         use_fuse_rope and enough_kv_room and bs == 1 \
