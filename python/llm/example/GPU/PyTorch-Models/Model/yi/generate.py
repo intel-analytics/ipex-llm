@@ -41,7 +41,7 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  use_cache=True)
     
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model)
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()

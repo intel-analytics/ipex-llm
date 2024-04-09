@@ -4,10 +4,6 @@
 This folder contains examples showcasing how to use [**LlamaIndex**](https://github.com/run-llama/llama_index) with `ipex-llm`.
 > [**LlamaIndex**](https://github.com/run-llama/llama_index) is a data framework designed to improve large language models by providing tools for easier data ingestion, management, and application integration. 
 
-## Prerequisites
-
-Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install) before proceeding with the examples provided here. 
-
 
 ## Retrieval-Augmented Generation (RAG) Example
 The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
@@ -20,6 +16,10 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     ```bash
     pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
     ```
+
+* **Install IPEX-LLM**
+Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) before proceeding with the examples provided here. 
+
 
 * **Database Setup (using PostgreSQL)**:
     * Installation: 
@@ -55,7 +55,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
 In the current directory, run the example with command:
 
 ```bash
-python rag.py -m <path_to_model>
+python rag.py -m <path_to_model> -t <path_to_tokenizer>
 ```
 **Additional Parameters for Configuration**:
 - `-m MODEL_PATH`: **Required**, path to the LLM model
@@ -65,6 +65,7 @@ python rag.py -m <path_to_model>
 - `-q QUESTION`: question you want to ask
 - `-d DATA`: path to source data used for retrieval (in pdf format)
 - `-n N_PREDICT`: max predict tokens
+- `-t TOKENIZER_PATH`: **Required**, path to the tokenizer model
 
 ### Example Output
 

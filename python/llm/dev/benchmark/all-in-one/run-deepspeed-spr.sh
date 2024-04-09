@@ -1,5 +1,5 @@
 #!/bin/bash
-source ipex-llm-init
+source ipex-llm-init -t
 unset OMP_NUM_THREADS # deepspeed will set it for each instance automatically
 source /opt/intel/oneccl/env/setvars.sh
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib

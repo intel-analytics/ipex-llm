@@ -57,7 +57,7 @@ Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), 
 
 Open the **Anaconda Prompt**. Then create a new python environment `llm` and activate it:
 ```cmd
-conda create -n llm python=3.9 libuv
+conda create -n llm python=3.11 libuv
 conda activate llm
 ```
 

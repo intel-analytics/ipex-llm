@@ -73,7 +73,7 @@ if __name__ == '__main__':
     model = SpeechT5ForTextToSpeech.from_pretrained(model_path)
     vocoder = SpeechT5HifiGan.from_pretrained(vocoder_path)
 
-    # With only one line to enable BigDL-LLM optimization on model
+    # With only one line to enable IPEX-LLM optimization on model
     # Skip optimizing these two modules to get higher audio quality
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.

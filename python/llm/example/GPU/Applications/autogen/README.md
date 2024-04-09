@@ -11,7 +11,7 @@ mkdir autogen
 cd autogen
 
 # create respective conda environment
-conda create -n autogen python=3.9
+conda create -n autogen python=3.11
 conda activate autogen
 
 # install xpu-supported and fastchat-adapted ipex-llm

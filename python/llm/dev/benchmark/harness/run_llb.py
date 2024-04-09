@@ -20,8 +20,8 @@ import os
 from harness_to_leaderboard import *
 from lm_eval import tasks, evaluator, utils, models
 
-from bigdl_llm import BigDLLM
-models.MODEL_REGISTRY['bigdl-llm'] = BigDLLM    # patch bigdl-llm to harness
+from ipexllm import IPEXLLM
+models.MODEL_REGISTRY['ipex-llm'] = IPEXLLM    # patch ipex-llm to harness
 
 logging.getLogger("openai").setLevel(logging.WARNING)
 

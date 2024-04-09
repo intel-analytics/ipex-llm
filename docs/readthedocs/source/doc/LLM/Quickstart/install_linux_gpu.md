@@ -144,7 +144,7 @@ You can use `conda --version` to verify you conda installation.
 
 After installation, create a new python environment `llm`:
 ```cmd
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 ```
 Activate the newly created environment `llm`:
 ```cmd

@@ -1,6 +1,6 @@
 # Run llama.cpp with IPEX-LLM on Intel GPU 
 
-[ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in in pure C++ across a variety of hardware; you can now use the C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
+[ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in in pure C++ across a variety of hardware; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
@@ -20,11 +20,13 @@ Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedoc
 #### Windows
 Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and Intel® oneAPI Base Toolkit 2024.0.
 
+**Note**: IPEX-LLM backend only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output.
+
 ### 1 Install IPEX-LLM for llama.cpp
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
 ```cmd
-conda create -n llm-cpp python=3.9
+conda create -n llm-cpp python=3.11
 conda activate llm-cpp
 pip install --pre --upgrade ipex-llm[cpp]
 ```
@@ -259,3 +261,4 @@ Log end
 
 #### Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
+

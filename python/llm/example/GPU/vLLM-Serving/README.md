@@ -31,7 +31,7 @@ To run vLLM continuous batching on Intel GPUs, install the dependencies as follo
 
 ```bash
 # First create an conda environment
-conda create -n ipex-vllm python==3.9
+conda create -n ipex-vllm python=3.11
 conda activate ipex-vllm
 # Install dependencies
 pip3 install psutil
@@ -87,7 +87,7 @@ Then you can access the api server as follows:
  curl http://localhost:8000/v1/completions \
          -H "Content-Type: application/json" \
          -d '{
-                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf-ipex/",
+                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf/",
                  "prompt": "San Francisco is a",
                  "max_tokens": 128,
                  "temperature": 0

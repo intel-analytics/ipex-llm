@@ -10,7 +10,7 @@ In the example [generate.py](./generate.py), we show a basic use case for a MOSS
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 
 pip install ipex-llm[all] # install ipex-llm with 'all' option

@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
         model_name: ${{ fromJson(needs.set-matrix.outputs.model_name) }}
         task: ${{ fromJson(needs.set-matrix.outputs.task) }}
         precision: ${{ fromJson(needs.set-matrix.outputs.precision) }}
@@ -189,7 +189,7 @@ jobs:
           fi
 
           python run_llb.py \
-            --model bigdl-llm \
+            --model ipex-llm \
             --pretrained ${MODEL_PATH} \
             --precision ${{ matrix.precision }} \
             --device ${{ matrix.device }} \
@@ -216,10 +216,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      - name: Set up Python 3.9
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Install dependencies
         shell: bash
         run: |
@@ -243,10 +243,10 @@ jobs:
     runs-on: ["self-hosted", "llm", "accuracy1", "accuracy-nightly"]
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-      - name: Set up Python 3.9
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Install dependencies
         shell: bash
         run: |

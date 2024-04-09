@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     model_path = args.model
 
-    # Load gguf model and vocab, then convert them to bigdl-llm model and huggingface tokenizer
+    # Load gguf model and vocab, then convert them to IPEX-LLM model and huggingface tokenizer
     model, tokenizer = AutoModelForCausalLM.from_gguf(model_path, low_bit = args.low_bit,)
 
     # Generate predicted tokens

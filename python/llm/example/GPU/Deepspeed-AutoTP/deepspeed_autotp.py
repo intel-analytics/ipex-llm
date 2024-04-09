@@ -63,7 +63,7 @@ if __name__ == '__main__':
     low_bit = args.low_bit
 
     # First use CPU as accelerator
-    # Convert to deepspeed model and apply bigdl-llm optimization on CPU to decrease GPU memory usage
+    # Convert to deepspeed model and apply IPEX-LLM optimization on CPU to decrease GPU memory usage
     current_accel = CPU_Accelerator()
     set_accelerator(current_accel)
     model = AutoModelForCausalLM.from_pretrained(args.repo_id_or_model_path,
@@ -76,11 +76,11 @@ if __name__ == '__main__':
     model = deepspeed.init_inference(
         model,
         mp_size=world_size,
-        dtype=torch.float16,
+        dtype=torch.bfloat16,
         replace_method="auto",
     )
 
-    # Use bigdl-llm `optimize_model` to convert the model into optimized low bit format
+    # Use IPEX-LLM `optimize_model` to convert the model into optimized low bit format
     # Convert the rest of the model into float16 to reduce allreduce traffic
     model = optimize_model(model.module.to(f'cpu'), low_bit=low_bit).to(torch.float16)
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+        # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 do_sample=False,
                                 max_new_tokens=args.n_predict)

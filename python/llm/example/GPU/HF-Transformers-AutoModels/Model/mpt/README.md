@@ -10,7 +10,7 @@ In the example [generate.py](./generate.py), we show a basic use case for an MPT
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -20,7 +20,7 @@ pip install einops  # additional package required for mpt-7b-chat and mpt-30b-ch
 #### 1.2 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9 libuv
+conda create -n llm python=3.11 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/

@@ -1,8 +1,9 @@
 
-# Run Code Copilot on Windows with Intel GPU
+# Run Coding Copilot on Windows with Intel GPU
 
-[**Continue**](https://marketplace.visualstudio.com/items?itemName=Continue.continue) is a coding copilot extension in [Microsoft Visual Studio Code](https://code.visualstudio.com/); by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local llms running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) for code explanation, code generation/completion; see the demos of using Continue with [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) running on Intel A770 GPU below.
+[**Continue**](https://marketplace.visualstudio.com/items?itemName=Continue.continue) is a coding copilot extension in [Microsoft Visual Studio Code](https://code.visualstudio.com/); by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local LLMs running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) for code explanation, code generation/completion, etc.
 
+See the demos of using Continue with [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) running on Intel A770 GPU below.
 
 <table border="1" width="100%">
   <tr>
@@ -27,7 +28,7 @@ This guide walks you through setting up and running **Continue** within _Visual 
 
 Visit [Run Text Generation WebUI Quickstart Guide](webui_quickstart.html), and follow the steps 1) [Install IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm), 2) [Install WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-the-webui) and 3) [Start the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#start-the-webui-server) to install and start the Text Generation WebUI API Service. **Please pay attention to below items during installation:**
 
-- The Text Generation WebUI API service requires Python version 3.10 or higher. But [IPEX-LLM installation instructions](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#install-ipex-llm) used ``python=3.9`` as default for creating the conda environment. We recommend changing it to ``3.11``, using below command:
+- The Text Generation WebUI API service requires Python version 3.10 or higher. We recommend use Python 3.11 as below:
   ```bash
   conda create -n llm python=3.11 libuv
   ```
@@ -59,7 +60,7 @@ Follow the steps in [Model Download](https://ipex-llm.readthedocs.io/en/latest/d
 ```eval_rst
 .. note::
 
-  If you don't need to use the API service anymore, you can follow the instructions in [Exit WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#exit-the-webui) to stop the service.  
+  If you don't need to use the API service anymore, you can follow the instructions in refer to `Exit WebUI <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#exit-the-webui>`_  to stop the service.  
 ```
 
 
@@ -104,7 +105,7 @@ In `config.json`, you'll find the `models` property, a list of the models that y
 }
 ```
 
-### 5. How to Use Continue
+### 5. How to Use `Continue`
 For detailed tutorials please refer to [this link](https://continue.dev/docs/how-to-use-continue). Here we are only showing the most common scenarios.
 
 #### Ask about highlighted code or an entire file

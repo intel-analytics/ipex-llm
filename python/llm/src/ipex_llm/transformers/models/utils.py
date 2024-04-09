@@ -395,6 +395,8 @@ def use_fused_layer_norm(x: torch.Tensor, training: bool):
 
 def fp16_fusion_check(proj, x, training):
     # only use fp16 fusion on PVC inference
+    if not hasattr(proj, "qtype"):
+        return False
     if proj.qtype != ggml_tensor_qtype["fp16"]:
         return False
     if proj.weight_type != 2:

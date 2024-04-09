@@ -20,7 +20,7 @@ check_python()
       retval="0"
     fi
   else
-    echo "No Python found! Please use `conda create -n llm python=3.9` to create environment. More details could be found in the README.md"
+    echo "No Python found! Please use `conda create -n llm python=3.11` to create environment. More details could be found in the README.md"
     retval="1"
   fi
   return "$retval"

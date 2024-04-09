@@ -16,7 +16,7 @@ This example is ported from [bnb-4bit-training](https://colab.research.google.co
 ### 1. Install
 
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 pip install transformers==4.34.0
