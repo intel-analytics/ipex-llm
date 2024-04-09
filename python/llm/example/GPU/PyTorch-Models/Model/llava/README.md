@@ -17,11 +17,13 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-git clone -b v1.1.1 --depth=1 https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 pip install einops # install dependencies required by llava
+pip install transformers==4.36.2
+
+git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
+git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
 ```
 
 #### 1.2 Installation on Windows
@@ -31,11 +33,14 @@ conda create -n llm python=3.11 libuv
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-git clone -b v1.1.1 --depth=1 https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 pip install einops # install dependencies required by llava
+pip install transformers==4.36.2
+
+git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
+git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
+
 ```
 
 ### 2. Configures OneAPI environment variables
