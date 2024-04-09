@@ -6,8 +6,8 @@
 
 <table border="1" width="100%">
   <tr>
-    <td align="center">English</td>
-    <td align="center">简体中文</td>
+    <td align="center" width="50%">English</td>
+    <td align="center" width="50%">简体中文</td>
   </tr>
   <tr>
     <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width="100%" controls></video></td>
@@ -33,7 +33,7 @@ See the Langchain-Chatchat architecture below ([source](https://github.com/chatc
  Follow the guide that corresponds to your specific system and GPU type from the links provided below:
 
 - For systems with Intel Core Ultra integrated GPU: [Windows Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_win_mtl.md#)
-- For systems with Intel Arc A-Series GPU: [Windows Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_windows_arc.md#) | [Linux Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_linux_arc.md#)
+- For systems with Intel Arc A-Series GPU: [Windows Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_win_arc.md#) | [Linux Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_linux_arc.md#)
 - For systems with Intel Data Center Max Series GPU: [Linux Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_linux_max.md#)
 
 
