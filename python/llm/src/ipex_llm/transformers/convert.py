@@ -1127,6 +1127,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeSparseMoeBlock,
                         qwen2moe_moeblock_forward)
+        convert_forward(model,
+                        module.Qwen2MoeMLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
