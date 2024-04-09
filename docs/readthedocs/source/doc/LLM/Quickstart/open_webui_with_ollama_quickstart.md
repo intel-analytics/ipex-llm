@@ -16,31 +16,6 @@ To use the open-webui on Intel GPU, first ensure that you can run Ollama on Inte
 
 ### 2 Install and Run Open-Webui
 
-#### Option 1: Docker
-
-> [!IMPORTANT]
-> Include `-v open-webui:/app/backend/data` in your Docker command when using Docker for Open WebUI. This ensures the database is properly mounted and prevents data loss.
-
-- **For Ollama on Your Computer**:
-
-  ```bash
-  export no_proxy=localhost,127.0.0.1
-  docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
-  ```
-
-- **For Ollama on a Different Server**:
-
-  Replace `OLLAMA_BASE_URL` with your server's URL:
-
-  ```bash
-  export no_proxy=localhost,127.0.0.1
-  docker run -d -p 3000:8080 -e OLLAMA_BASE_URL=https://example.com -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
-  ```
-
-- Access open-webui at [http://localhost:3000](http://localhost:3000). 
-
-#### Option 2: Manual Build
-
 **Requirements** 
 
 - Node.js (>= 20.10) or Bun (>= 1.0.21)
@@ -88,7 +63,13 @@ If this is your first time using it, you need to register. After registering, lo
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_login.png" width="100%" />
 </a>
 
-Check your ollama service connection in `Settings`. If everything goes well, you will get a message as shown below.
+Check your ollama service connection in `Settings`. The default Ollama Base URL is set to `https://localhost:11434`, you can also set your own url if you run Ollama service on another machine. Click this button to check if the Ollama service connection is functioning properly. If not, an alert will pop out as the below shows.
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings_0.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings_0.png" width="100%" />
+</a>
+
+If everything goes well, you will get a message as shown below.
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" width="100%" />
