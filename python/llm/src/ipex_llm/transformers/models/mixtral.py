@@ -75,62 +75,6 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
                                                            n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
-def moe_align_block_size(
-        topk_ids: torch.Tensor, block_size: int,
-        num_experts: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """
-    Aligns the token distribution across experts to be compatible with block
-    size for matrix multiplication.
-
-    Parameters:
-    - topk_ids: A tensor of shape [total_tokens, top_k] representing the
-        top-k expert indices for each token.
-    - block_size: The block size used in block matrix multiplication.
-    - num_experts: The total number of experts.
-
-    Returns:
-    - sorted_token_ids: A tensor containing the sorted token indices according
-        to their allocated expert.
-    - expert_ids: A tensor indicating the assigned expert index for each block.
-    - num_tokens_post_padded: The total number of tokens after padding,
-        ensuring divisibility by block_size.
-
-    This function pads the number of tokens that each expert needs to process
-    so that it is divisible by block_size.
-    Padding ensures that during block matrix multiplication, the dimensions
-    align correctly.
-
-    Example:
-    Given topk_ids = [[2, 3, 4], [1, 2, 4], [1, 3, 4], [1, 2, 3]],
-    block_size = 4, and num_experts = 4:
-    - We initially have 12 tokens (after repeating 'top_k' times) and 4 experts,
-        with each expert needing to process 3 tokens.
-    - As block_size is 4, we pad 1 token for each expert.
-    - First, flatten topk_ids to [2, 3, 4, 1, 2, 4, 1, 3, 4, 1, 2, 3].
-    - Then append padding tokens [12, 12, 12, 12] for each block.
-    - After sorting by expert index, we obtain token_ids
-        [3, 6, 9, 12, 0, 4, 10, 12, 1, 7, 11, 12, 2, 5, 8, 12].
-        Tokens 12 are non-existent (padding) and are ignored in
-        the subsequent matrix multiplication.
-    - The padding ensures that the total number of tokens is now divisible
-        by block_size for proper block matrix operations.
-    """
-    sorted_ids = torch.empty(
-        (topk_ids.numel() + num_experts * (block_size - 1), ),
-        dtype=torch.int32,
-        device=topk_ids.device)
-    expert_ids = torch.empty((topk_ids.numel() + num_experts, ),
-                             dtype=torch.int32,
-                             device=topk_ids.device)
-    sorted_ids.fill_(topk_ids.numel())
-    num_tokens_post_pad = torch.zeros((num_experts + 1),
-                                      dtype=torch.int32,
-                                      device=topk_ids.device)
-    import linear_q4_0
-    linear_q4_0.moe_align_block_size(topk_ids, num_experts, block_size, sorted_ids,
-                             expert_ids, num_tokens_post_pad)
-    return sorted_ids, expert_ids, num_tokens_post_pad
-
 
 def mixtral_moeblock_forward(self,
                              hidden_states: torch.Tensor):
@@ -145,39 +89,34 @@ def mixtral_moeblock_forward(self,
     routing_weights /= routing_weights.sum(dim=-1, keepdim=True)
     # we cast back to the input dtype
     routing_weights = routing_weights.to(hidden_states.dtype)
-    
-    use_f_moe = True
-    if use_f_moe:
-       final_hidden_states = torch.zeros(
-            (batch_size * sequence_length, hidden_dim),
-            dtype=hidden_states.dtype,
-            device=hidden_states.device
-        )
-       
-       
-       sorted_token_ids, expert_ids, num_tokens_post_padded = moe_align_block_size(selected_experts, 1, self.num_experts)
 
-        # Loop over all available experts in the model and perform the computation on each expert
+    if bs == 1:
+        selected_experts = selected_experts[0].cpu().tolist()
+        for idx in range(self.top_k):
+            exp_id = selected_experts[idx]
+            expert_layer = self.experts[exp_id]
+            weight = routing_weights[:, idx]
+            if idx == 0:
+                final_hidden_states = expert_layer(hidden_states, weight)
+            else:
+                final_hidden_states = final_hidden_states + expert_layer(hidden_states, weight)
+    elif bs < 256:
+        final_hidden_states = torch.zeros(
+        (batch_size * sequence_length, hidden_dim), dtype=hidden_states.dtype, device=hidden_states.device)
+        import linear_q4_0
+        indexes = linear_q4_0.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 8)
         for expert_idx in range(self.num_experts):
             expert_layer = self.experts[expert_idx]
-            
-            tokens = sorted_token_ids[num_tokens_post_padded[expert_idx]:num_tokens_post_padded[expert_idx + 1]]
+            idx_list = indexes[0][expert_idx]
+            top_x_list = indexes[1][expert_idx]
+            if len(idx_list) == 0:
+                continue
 
-            # in torch it is faster to index using lists than torch tensors
-            top_x_list = top_x.tolist()
-            idx_list = idx.tolist()
-
-            # Index the correct hidden states and compute the expert hidden state for
-            # the current expert. We need to make sure to multiply the output hidden
-            # states by `routing_weights` on the corresponding tokens (top-1 and top-2)
+            top_x = torch.tensor(top_x_list, dtype=torch.long, device=hidden_states.device)
             current_state = hidden_states[None, top_x_list].reshape(-1, hidden_dim)
-            current_hidden_states = expert_layer(current_state,
-                                                 routing_weights[top_x_list, idx_list, None])
-
-            # However `index_add_` only support torch tensors for indexing so we'll use
-            # the `top_x` tensor here.
+            current_hidden_states = expert_layer(current_state, routing_weights[top_x_list, idx_list, None])
             final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
-    elif bs > 1 or True:
+    else:
         final_hidden_states = torch.zeros(
             (batch_size * sequence_length, hidden_dim),
             dtype=hidden_states.dtype,
@@ -210,16 +149,6 @@ def mixtral_moeblock_forward(self,
             # However `index_add_` only support torch tensors for indexing so we'll use
             # the `top_x` tensor here.
             final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
-    else:
-        selected_experts = selected_experts[0].cpu().tolist()
-        for idx in range(self.top_k):
-            exp_id = selected_experts[idx]
-            expert_layer = self.experts[exp_id]
-            weight = routing_weights[:, idx]
-            if idx == 0:
-                final_hidden_states = expert_layer(hidden_states, weight)
-            else:
-                final_hidden_states = final_hidden_states + expert_layer(hidden_states, weight)
 
     final_hidden_states = final_hidden_states.reshape(batch_size, sequence_length, hidden_dim)
     return final_hidden_states, router_logits
