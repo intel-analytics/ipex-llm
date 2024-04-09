@@ -15,6 +15,7 @@ This section includes efficient guide to show you how to:
 * `Run Performance Benchmarking with IPEX-LLM <./benchmark_quickstart.html>`_
 * `Run Local RAG using Langchain-Chatchat on Intel GPU <./chatchat_quickstart.html>`_
 * `Run Text Generation WebUI on Intel GPU <./webui_quickstart.html>`_
+* `Run Open WebUI on Intel GPU <./open_webui_with_ollama_quickstart.html>`_
 * `Run Coding Copilot (Continue) in VSCode with Intel GPU <./continue_quickstart.html>`_
 * `Run llama.cpp with IPEX-LLM on Intel GPU <./llama_cpp_quickstart.html>`_
 * `Run Ollama with IPEX-LLM on Intel GPU <./ollama_quickstart.html>`_
