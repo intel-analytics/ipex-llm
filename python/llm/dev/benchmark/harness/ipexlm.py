@@ -35,7 +35,7 @@ def force_decrease_order(Reorderer):
 utils.Reorderer = force_decrease_order(utils.Reorderer)
 
 
-class BigDLLM(AutoCausalLM):
+class IPEXLM(AutoCausalLM):
     AUTO_MODEL_CLASS = AutoModelForCausalLM
     AutoCausalLM_ARGS = inspect.getfullargspec(AutoCausalLM.__init__).args
     def __init__(self, *args, **kwargs):
