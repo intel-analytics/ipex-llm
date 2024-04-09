@@ -2,7 +2,7 @@
 
 #### 1. Install Dependencies
 
-Install necessary packages (here Python 3.9 is our test environment):
+Install necessary packages (here Python 3.11 is our test environment):
 
 ```bash
 bash install.sh
