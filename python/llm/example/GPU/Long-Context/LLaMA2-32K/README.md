@@ -108,7 +108,7 @@ You can set the `prompt` argument to be a `.txt` file path containing the 8k siz
 ```
 python ./generate.py --repo-id-or-model-path togethercomputer/Llama-2-7B-32K-Instruct --prompt 8k.txt
 ```
-
+> Note: If you need to use less memory, please set `IPEX_LLM_LOW_MEM=1`, which will enable memory optimization and may slightly affect the latency performance.
 #### Sample Output
 #### [togethercomputer/Llama-2-7B-32K-Instruct](https://huggingface.co/togethercomputer/Llama-2-7B-32K-Instruct)
 ```log
@@ -124,5 +124,7 @@ What is AI? [/INST]
 
 <</SYS>>
 
-What is AI? [/INST]  Artificial intelligence (AI) is the broader field of research and development aimed at creating machines that can perform tasks that typically require human intelligence,
+What is AI? [/INST]
+
+AI is a broad field of study that deals with the creation of intelligent agents, which are systems that can perform tasks that typically require human intelligence
 ```
