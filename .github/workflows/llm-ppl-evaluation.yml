@@ -275,5 +275,5 @@ jobs:
         run: |
           python ppl_csv_to_html.py -f $ACC_FOLDER
           if ${{github.event_name == 'schedule'}}; then
-            python update_html_in_parent_folder.py -f $ACC_FOLDER
+            python ../harness/update_html_in_parent_folder.py -f $ACC_FOLDER
           fi
