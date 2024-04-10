@@ -47,12 +47,18 @@ from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
 from ipex_llm.transformers.models.llama import repeat_kv
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu,  is_enough_kv_cache_room_4_36
+    apply_rotary_pos_emb_cache_freq_xpu,  is_enough_kv_cache_room_4_36
 from ipex_llm.utils.common import invalidInputError
 
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
+
+def should_use_fuse_rope(self, query_states, position_ids):
+    use_fuse_rope = query_states.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
+    use_fuse_rope = use_fuse_rope and position_ids is not None
+    return use_fuse_rope
 
 def qwen2moe_attention_forward(
     self,
@@ -65,6 +71,8 @@ def qwen2moe_attention_forward(
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     
+    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
@@ -92,8 +100,13 @@ def qwen2moe_attention_forward(
             )
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin, position_ids, "qwen2_moe")
-
+    if use_fuse_rope:
+        query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
+                                                                       sin, cos, "qwen2_moe",
+                                                                       position_ids)
+    else:
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                        cos, sin, position_ids, "qwen2_moe")
     if past_key_value is not None:
         if self.layer_idx == 0:
             past_key_value._seen_tokens += key_states.shape[-2]
