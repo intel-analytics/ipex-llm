@@ -127,7 +127,7 @@ def main(args):
 if __name__ == "__main__":
     output_parser_module.default_output_processor = custom_default_output_processor
 
-    parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
+    parser = argparse.ArgumentParser(description='LlamaIndex IpexLLM Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='What is the correlation between survival and age?',
