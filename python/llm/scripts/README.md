@@ -24,6 +24,15 @@ sudo apt install xpu-smi
   > If you do not know how to install `ipex-llm`, refer to [IPEX-LLM installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) for more details.
 *  Within the activated python environment, run below command:
     *  On Linux
+      * install clinfo
+        `sudo apt install clinfo`
+
+       * activate oneapi
+        For IPEX 2.0, run this `source /home/arda/intel/oneapi/setvars.sh`
+
+        For IPEX 2.0, run this `source /opt/intel/oneapi/setvars.sh`
+
+      * run the env check
         ```bash
         bash env-check.sh
         ```
@@ -68,6 +77,7 @@ CPU min MHz:                        800.0000
 BogoMIPS:                           6374.40
 -----------------------------------------------------------------
 Total CPU Memory: 62.5343 GB
+Memory Type: DDR4 
 -----------------------------------------------------------------
 Operating System: 
 Ubuntu 22.04.3 LTS \n \l
@@ -84,7 +94,10 @@ Service:
     Build ID: 00000000
     Level Zero Version: 1.14.0
 -----------------------------------------------------------------
-env-check.sh: line 154: clinfo: command not found
+  Driver Version                                  2023.16.10.0.17_160000
+  Driver Version                                  2023.16.10.0.17_160000
+  Driver UUID                                     32332e33-352e-3237-3139-312e34320000
+  Driver Version                                  23.35.27191.42
 -----------------------------------------------------------------
 igpu not detected
 -----------------------------------------------------------------
