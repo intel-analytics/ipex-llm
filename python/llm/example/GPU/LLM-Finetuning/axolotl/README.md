@@ -44,6 +44,8 @@ Ensure `use_cpu` is disable in config (`~/.cache/huggingface/accelerate/default_
 
 This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.com/artidoro/qlora) directly on Intel GPU, based on [axolotl Llama-2 qlora example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.3.0/examples/llama-2/qlora.yml).
 
+Modify parameters in `qlora.yml` based on your requirements.
+
 ```
 accelerate launch finetune.py qlora.yml
 ```

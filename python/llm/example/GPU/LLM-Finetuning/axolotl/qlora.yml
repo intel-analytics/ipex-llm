@@ -38,6 +38,8 @@ wandb_log_model:
 gradient_accumulation_steps: 2
 micro_batch_size: 1
 num_epochs: 3
+# change optimizer from paged_adamw_32bit to adamw_torch
+# due to bitsandbytes issue https://github.com/TimDettmers/bitsandbytes/issues/244
 # optimizer: paged_adamw_32bit
 optimizer: adamw_torch
 lr_scheduler: cosine
