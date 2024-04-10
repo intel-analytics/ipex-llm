@@ -17,7 +17,7 @@
 import torch
 from llama_index.core.agent import ReActAgent
 from llama_index.core.tools import FunctionTool
-from ipex_llm.llamaindex.llms import BigdlLLM
+from ipex_llm.llamaindex.llms import IpexLLM
 import argparse
 
 def multiply(a: int, b: int) -> int:
@@ -31,7 +31,7 @@ def add(a: int, b: int) -> int:
 def main(args):
     multiply_tool = FunctionTool.from_defaults(fn=multiply)
     add_tool = FunctionTool.from_defaults(fn=add)
-    llm = BigdlLLM(
+    llm = IpexLLM(
         model_name=args.model_path,
         tokenizer_name=args.model_path,
         context_window=512,
@@ -46,7 +46,7 @@ def main(args):
     print(response)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
+    parser = argparse.ArgumentParser(description='LlamaIndex IpexLLM Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='What is 20+(2*4)?',
