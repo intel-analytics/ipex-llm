@@ -18,7 +18,6 @@ pip install bitsandbytes==0.43.0
 pip install datasets==2.18.0
 pip install transformers==4.39.1
 pip install trl==0.8.1
-pip install fire
 ```
 
 ### 2. GaLore Finetune
