@@ -19,7 +19,7 @@ import torch
 from llama_index.core import SQLDatabase
 from llama_index.core.retrievers import NLSQLRetriever
 from llama_index.core.query_engine import RetrieverQueryEngine
-from ipex_llm.llamaindex.llms import BigdlLLM
+from ipex_llm.llamaindex.llms import IpexLLM
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer, insert
 import argparse
@@ -66,7 +66,7 @@ def main(args):
 
     embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
 
-    llm = BigdlLLM(
+    llm = IpexLLM(
         model_name=args.model_path,
         tokenizer_name=args.model_path,
         context_window=512,
@@ -93,7 +93,7 @@ def main(args):
     print(str(response))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
+    parser = argparse.ArgumentParser(description='LlamaIndex IpexLLM Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='Which city has the highest population?',
