@@ -21,7 +21,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 RUN mkdir /ipex_llm/data && mkdir /ipex_llm/model && \
 # install pytorch 2.0.1
     apt-get update && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel git software-properties-common && \
+    apt-get install -y python3-pip python3.11-dev python3-wheel git software-properties-common && \
     pip3 install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
     pip install --upgrade torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
@@ -37,9 +37,9 @@ RUN mkdir /ipex_llm/data && mkdir /ipex_llm/model && \
     pip install -r /ipex_llm/requirements.txt && \
 # install python
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 && \
+    apt-get install -y python3.11 && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     pip install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install --upgrade requests && \
