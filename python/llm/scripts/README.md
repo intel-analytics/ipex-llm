@@ -38,66 +38,53 @@ sudo apt install xpu-smi
 
 ```
 -----------------------------------------------------------------
-PYTHON_VERSION=3.9.19
+PYTHON_VERSION=3.9.18
 -----------------------------------------------------------------
 transformers=4.31.0
 -----------------------------------------------------------------
 torch=2.1.0a0+cxx11.abi
 -----------------------------------------------------------------
-ipex-llm Version: 2.1.0b20240327
+ipex-llm Version: 2.1.0b20240325
 -----------------------------------------------------------------
 ipex=2.1.10+xpu
 -----------------------------------------------------------------
 CPU Information: 
-Architecture:                    x86_64
-CPU op-mode(s):                  32-bit, 64-bit
-Address sizes:                   46 bits physical, 48 bits virtual
-Byte Order:                      Little Endian
-CPU(s):                          32
-On-line CPU(s) list:             0-31
-Vendor ID:                       GenuineIntel
-Model name:                      13th Gen Intel(R) Core(TM) i9-13900K
-CPU family:                      6
-Model:                           183
-Thread(s) per core:              2
-Core(s) per socket:              24
-Socket(s):                       1
-Stepping:                        1
-CPU max MHz:                     5800.0000
-CPU min MHz:                     800.0000
-BogoMIPS:                        5990.40
+Architecture:                       x86_64
+CPU op-mode(s):                     32-bit, 64-bit
+Address sizes:                      46 bits physical, 48 bits virtual
+Byte Order:                         Little Endian
+CPU(s):                             24
+On-line CPU(s) list:                0-23
+Vendor ID:                          GenuineIntel
+Model name:                         12th Gen Intel(R) Core(TM) i9-12900K
+CPU family:                         6
+Model:                              151
+Thread(s) per core:                 2
+Core(s) per socket:                 16
+Socket(s):                          1
+Stepping:                           2
+CPU max MHz:                        5200.0000
+CPU min MHz:                        800.0000
+BogoMIPS:                           6374.40
 -----------------------------------------------------------------
-Total Memory: 62.5479 GB
+Total CPU Memory: 62.5343 GB
 -----------------------------------------------------------------
 Operating System: 
 Ubuntu 22.04.3 LTS \n \l
 
 -----------------------------------------------------------------
-03:00.0 VGA compatible controller: Intel Corporation Device 56a0 (rev 08) (prog-if 00 [VGA controller])
-        Subsystem: Device 1ef7:1307
-        Flags: bus master, fast devsel, latency 0, IRQ 201
-        Memory at 84000000 (64-bit, non-prefetchable) [size=16M]
-        Memory at 4000000000 (64-bit, prefetchable) [size=16G]
-        Expansion ROM at 85000000 [disabled] [size=2M]
-        Capabilities: <access denied>
-        Kernel driver in use: i915
-        Kernel modules: i915
------------------------------------------------------------------
-Linux arda-arc11 5.19.0-41-generic #42~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Apr 18 17:40:00 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+Linux arda-arc05 6.2.0-39-generic #40~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 16 10:53:04 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
 -----------------------------------------------------------------
 CLI:
-    Version: 1.2.13.20230704
+    Version: 1.2.22.20231025
     Build ID: 00000000
 
 Service:
-    Version: 1.2.13.20230704
+    Version: 1.2.22.20231025
     Build ID: 00000000
     Level Zero Version: 1.14.0
 -----------------------------------------------------------------
-  Driver Version                                  2023.16.11.0.22_160000
-  Driver Version                                  2023.16.11.0.22_160000
-  Driver UUID                                     32332e31-372e-3236-3234-312e33330000
-  Driver Version                                  23.17.26241.33
+env-check.sh: line 154: clinfo: command not found
 -----------------------------------------------------------------
 igpu not detected
 -----------------------------------------------------------------
@@ -113,5 +100,16 @@ xpu-smi is properly installed.
 |           | DRM Device: /dev/dri/card0                                                           |
 |           | Function Type: physical                                                              |
 +-----------+--------------------------------------------------------------------------------------+
+GPU0 Memory size=16G
+-----------------------------------------------------------------
+03:00.0 VGA compatible controller: Intel Corporation Device 56a0 (rev 08) (prog-if 00 [VGA controller])
+        Subsystem: Device 1ef7:1307
+        Flags: bus master, fast devsel, latency 0, IRQ 175
+        Memory at 84000000 (64-bit, non-prefetchable) [size=16M]
+        Memory at 4000000000 (64-bit, prefetchable) [size=16G]
+        Expansion ROM at 85000000 [disabled] [size=2M]
+        Capabilities: <access denied>
+        Kernel driver in use: i915
+        Kernel modules: i915
 -----------------------------------------------------------------
 ```
