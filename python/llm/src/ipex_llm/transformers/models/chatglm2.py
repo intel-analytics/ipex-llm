@@ -540,14 +540,14 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
             if query_layer.dtype == torch.float16 and L >= 5000:
                 # split second dim to block size = 8
                 block_size = 8
-                query_sp = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)
-                key_sp = torch.split(key_layer, block_size, dim=1)
-                value_sp = torch.split(value_layer, block_size, dim=1)
+                query_split = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)
+                key_split = torch.split(key_layer, block_size, dim=1)
+                value_split = torch.split(value_layer, block_size, dim=1)
                 batch_size, n_head, seq_len, head_dim = query_layer.shape
                 context_layer = torch.empty(batch_size, n_head, seq_len,
                                             head_dim).to(query_layer.device).to(key_layer.dtype)
                 idx = 0
-                for q, k, v in zip(query_sp, key_sp, value_sp):
+                for q, k, v in zip(query_split, key_split, value_split):
                     result = F.scaled_dot_product_attention(q, k, v, is_causal=True).to(k.dtype)
                     context_layer[:, idx:idx+q.shape[1], :, :] = result
                     idx = idx + q.shape[1]
