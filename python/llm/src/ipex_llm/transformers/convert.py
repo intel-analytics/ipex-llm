@@ -889,7 +889,7 @@ def _optimize_post(model, lightweight_bmm=False):
 
     if model.config.architectures is not None \
        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
-        if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
+        if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio') and model.config.rope_ratio == 16:
             # chatglm2-6b-32k
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
