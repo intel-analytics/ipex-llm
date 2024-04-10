@@ -38,12 +38,15 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, SIL
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
     return decoding_fast_path_qtype_check(proj) and \
-        use_fuse_rope and enough_kv_room and bs == 1
+        use_fuse_rope and enough_kv_room and bs == 1 \
+        and not proj.enable_xetla
 
 
 def should_use_fuse_rope(self, hidden_states, position_ids):

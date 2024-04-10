@@ -1,9 +1,15 @@
 # Run Ollama on Linux with Intel GPU
 
-The [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine. Now you can run Ollama with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); see the demo of running LLaMA2-7B on an Intel A770 GPU below.
+[ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
+
+```eval_rst
+.. note::
+   Only Linux is currently supported.
+```
+
+See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
-
 
 ## Quickstart
 
@@ -45,16 +51,16 @@ source /opt/intel/oneapi/setvars.sh
 
 The console will display messages similar to the following:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_serve.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_serve.png" width=100%; />
 </a>
 
 
 
 ### 4 Pull Model
-Keep the Ollama service on and open a new terminal and pull a model, e.g. `dolphin-phi:latest`:
+Keep the Ollama service on and open another terminal and run `./ollama pull <model_name>` to automatically pull a model. e.g. `dolphin-phi:latest`:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" width=100%; />
 </a>
 
@@ -77,7 +83,7 @@ curl http://localhost:11434/api/generate -d '
 
 An example output of using model `doplphin-phi` looks like the following:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" width=100%; />
 </a>
 
@@ -99,6 +105,6 @@ source /opt/intel/oneapi/setvars.sh
 
 An example process of interacting with model with `ollama run` looks like the following:
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_chat.png" target="_blank">
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" width=100%; /><img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_2.png" width=100%; />
 </a>

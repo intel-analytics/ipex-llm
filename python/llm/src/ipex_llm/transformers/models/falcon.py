@@ -41,8 +41,9 @@ from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 import warnings
 
+import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 # Copied from transformers.models.llama.modeling_llama.rotate_half

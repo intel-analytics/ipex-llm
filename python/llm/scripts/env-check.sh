@@ -20,7 +20,7 @@ check_python()
       retval="0"
     fi
   else
-    echo "No Python found! Please use `conda create -n llm python=3.9` to create environment. More details could be found in the README.md"
+    echo "No Python found! Please use `conda create -n llm python=3.11` to create environment. More details could be found in the README.md"
     retval="1"
   fi
   return "$retval"
@@ -65,18 +65,16 @@ check_cpu_info()
   lscpu | head -n 17
 }
 
-check_memory_type()
-{
-  echo "-----------------------------------------------------------------"
-  echo "CPU type: "
-  sudo dmidecode -t 17 | grep DDR
-
-}
-
 check_mem_info()
 {
   echo "-----------------------------------------------------------------"
-  cat /proc/meminfo | grep "MemTotal" | awk '{print "Total Memory: " $2/1024/1024 " GB"}'
+  cat /proc/meminfo | grep "MemTotal" | awk '{print "Total CPU Memory: " $2/1024/1024 " GB"}'
+
+  # Check if sudo session exists
+  if sudo -n true 2>/dev/null; then
+      echo -n "Memory Type: "
+      sudo dmidecode --type memory | grep -m 1 DDR | awk '{print $2, $3}'
+  fi
   
 }
 
@@ -123,9 +121,9 @@ check_xpu_smi()
 check_ipex()
 {
   echo "-----------------------------------------------------------------"
-  if python -c "import intel_extension_for_pytorch as ipex; print(ipex.__version__)" >/dev/null 2>&1
+  if python -c "import warnings; warnings.filterwarnings('ignore'); import intel_extension_for_pytorch as ipex; print(ipex.__version__)" >/dev/null 2>&1
   then
-    VERSION=`python -c "import intel_extension_for_pytorch as ipex; print(ipex.__version__)"`
+    VERSION=`python -c "import warnings; warnings.filterwarnings('ignore'); import intel_extension_for_pytorch as ipex; print(ipex.__version__)"`
     echo "ipex=$VERSION"
   else
     echo "IPEX is not installed. "
@@ -135,7 +133,7 @@ check_ipex()
 check_xpu_info()
 {
   echo "-----------------------------------------------------------------"
-  lspci -v | grep -i vga -A 8
+  lspci -v | grep -i vga -A 8 | awk '/Memory/ {gsub(/\[size=[0-9]+G\]/,"\033[1;33m&\033[0m")} 1'
 }
 
 check_linux_kernel_version()
@@ -167,6 +165,11 @@ check_igpu()
   fi
 }
 
+check_gpu_memory()
+{
+  lspci -v | grep -i vga -A 8 | awk '/VGA compatible controller/ {getline; getline; getline; getline; print "GPU" i++ " Memory", substr($0, length($0)-index($0," "), index($0," "))}'
+}
+
 main()
 {
   # first guarantee correct python is installed. 
@@ -186,11 +189,9 @@ main()
   # verify hardware (how many gpu availables, gpu status, cpu info, memory info, etc.)
   check_cpu_info
   check_mem_info
-  # check_memory_type
   # check_ulimit
   check_os
   # check_env
-  check_xpu_info
   check_linux_kernel_version
   check_xpu_driver
   check_OpenCL_driver
@@ -205,6 +206,10 @@ main()
   else
     check_xpu_smi
   fi
+
+  check_gpu_memory
+
+  check_xpu_info
 
   echo "-----------------------------------------------------------------"
 }

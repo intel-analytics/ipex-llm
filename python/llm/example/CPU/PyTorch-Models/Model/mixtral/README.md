@@ -13,7 +13,7 @@ We suggest using conda to manage the Python environment. For more information ab
 
 After installing conda, create a Python environment for IPEX-LLM:
 ```bash
-conda create -n llm python=3.9 # recommend to use Python 3.9
+conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
 # below command will install PyTorch CPU as default

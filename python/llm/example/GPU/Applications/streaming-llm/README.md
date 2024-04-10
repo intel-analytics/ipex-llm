@@ -10,7 +10,7 @@ model = AutoModelForCausalLM.from_pretrained(model_name_or_path, load_in_4bit=Tr
 ## Prepare Environment
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 pip install -U transformers==4.34.0
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/

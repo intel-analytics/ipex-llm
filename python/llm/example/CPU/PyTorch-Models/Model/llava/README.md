@@ -12,15 +12,17 @@ We suggest using conda to manage the Python environment. For more information ab
 
 After installing conda, create a Python environment for IPEX-LLM:
 ```bash
-conda create -n llm python=3.9 # recommend to use Python 3.9
+conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
-
-git clone -b v1.1.1 --depth=1 https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 pip install einops # install dependencies required by llava
+pip install transformers==4.36.2
+
+git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
+git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
 ```
 
 ### 2. Run

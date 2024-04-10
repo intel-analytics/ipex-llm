@@ -20,16 +20,16 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
     echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     rm /etc/apt/sources.list.d/intel-graphics.list && \
-    # Install PYTHON 3.9 and IPEX-LLM[xpu]
+    # Install PYTHON 3.11 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 git curl wget && \
+    apt-get install -y python3.11 git curl wget && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
+    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     # Install FastChat from source requires PEP 660 support
     python3 get-pip.py && \

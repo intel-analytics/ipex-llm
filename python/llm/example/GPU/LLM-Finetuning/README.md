@@ -9,6 +9,7 @@ This folder contains examples of running different training mode with IPEX-LLM o
 - [DPO](DPO): examples of running DPO finetuning
 - [common](common): common templates and utility classes in finetuning examples
 - [HF-PEFT](HF-PEFT): run finetuning on Intel GPU using Hugging Face PEFT code without modification
+- [axolotl](axolotl): LLM finetuning on Intel GPU using axolotl without writing code
 
 
 ## Troubleshooting

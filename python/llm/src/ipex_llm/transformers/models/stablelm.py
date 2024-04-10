@@ -60,8 +60,9 @@ try:
 except ImportError:
     Cache = Tuple[torch.Tensor]
 
+import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def merge_qkv(module: torch.nn.Module):

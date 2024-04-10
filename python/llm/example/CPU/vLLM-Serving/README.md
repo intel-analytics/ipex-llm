@@ -14,7 +14,7 @@ To run vLLM continuous batching on Intel CPUs, install the dependencies as follo
 
 ```bash
 # First create an conda environment
-conda create -n ipex-vllm python==3.9
+conda create -n ipex-vllm python=3.11
 conda activate ipex-vllm
 # Install dependencies
 pip3 install numpy

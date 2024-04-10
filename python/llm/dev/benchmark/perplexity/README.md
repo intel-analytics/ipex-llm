@@ -20,6 +20,6 @@ python run.py --model_path meta-llama/Llama-2-7b-chat-hf --precisions float16 sy
 - If you want to test perplexity on pre-downloaded datasets, please specify the `<path/to/dataset>` in the `dataset_path` argument in your command.
 
 ## Summarize the results
-"""python
+```python
 python make_table.py <input_dir>
-"""
+```

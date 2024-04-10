@@ -54,7 +54,9 @@ flash_attn_unpadded_func = None
 
 logger = logging.get_logger(__name__)
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 SUPPORT_TORCH2 = hasattr(torch, '__version__') and int(torch.__version__.split(".")[0]) >= 2
 
 
@@ -142,6 +144,7 @@ def qwen_attention_forward_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
     qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k, cache_v = layer_past[0], layer_past[1]

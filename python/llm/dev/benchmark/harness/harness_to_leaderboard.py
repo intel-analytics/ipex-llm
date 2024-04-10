@@ -48,7 +48,7 @@ task_to_metric = dict(
     drop='f1'
 )
 
-def parse_precision(precision, model="bigdl-llm"):
+def parse_precision(precision, model="ipex-llm"):
     result = match(r"([a-zA-Z_]+)(\d+)([a-zA-Z_\d]*)", precision)
     datatype = result.group(1)
     bit = int(result.group(2))
@@ -62,6 +62,6 @@ def parse_precision(precision, model="bigdl-llm"):
     else:
         if model == "hf-causal":
             return f"bnb_type={precision}"
-        if model == "bigdl-llm":
+        if model == "ipex-llm":
             return f"load_in_low_bit={precision}"
     raise RuntimeError(f"invald precision {precision}")    

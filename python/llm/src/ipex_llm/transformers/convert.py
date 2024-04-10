@@ -527,6 +527,16 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
 
 
 def _optimize_pre(model):
+    try:
+        from sentence_transformers.SentenceTransformer import SentenceTransformer
+        if isinstance(model, SentenceTransformer):
+            if str(model._modules['0']).strip().split(' ')[-1] == 'BertModel':
+                from ipex_llm.transformers.models.bert import merge_qkv
+                model.apply(merge_qkv)
+                return model
+    except ModuleNotFoundError:
+        pass
+
     from transformers.modeling_utils import PreTrainedModel
     # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
@@ -793,6 +803,24 @@ def _optimize_post(model, lightweight_bmm=False):
     from ipex_llm.transformers.models.llama import llama_model_forward
     from transformers.modeling_utils import PreTrainedModel
 
+    try:
+        from sentence_transformers.SentenceTransformer import SentenceTransformer
+        if isinstance(model, SentenceTransformer):
+            if str(model._modules['0']).strip().split(' ')[-1] == 'BertModel':
+                modeling_module_name = model._modules['0'].auto_model.__class__.__module__
+                module = importlib.import_module(modeling_module_name)
+                from ipex_llm.transformers.models.bert import self_attention_forward
+                from ipex_llm.transformers.models.bert import encoder_forward
+                convert_forward(model,
+                                module.BertSelfAttention,
+                                self_attention_forward)
+                convert_forward(model,
+                                module.BertEncoder,
+                                encoder_forward)
+                return model
+    except ModuleNotFoundError:
+        pass
+
     # All huggingface format models are inherited from `PreTrainedModel`
     if not isinstance(model, PreTrainedModel):
         logger.info("Only HuggingFace Transformers models are currently "
@@ -861,7 +889,8 @@ def _optimize_post(model, lightweight_bmm=False):
 
     if model.config.architectures is not None \
        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
-        if model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio'):
+        if (model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio')
+                and model.config.rope_ratio == 16):
             # chatglm2-6b-32k
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
@@ -1004,10 +1033,18 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model,
                             module.MLP,
                             baichuan_mlp_forward)
-            replace_func(model,
-                         module.BaichuanModel,
-                         "get_alibi_mask",
-                         baichuan_13b_get_alibi_mask)
+            if hasattr(model.model, 'get_alibi_mask_orig'):
+                # deepspeed rewrite "get_alibi_mask" to support baichuan
+                # https://github.com/microsoft/DeepSpeed/pull/4721
+                replace_func(model,
+                             module.BaichuanModel,
+                             "get_alibi_mask_orig",
+                             baichuan_13b_get_alibi_mask)
+            else:
+                replace_func(model,
+                             module.BaichuanModel,
+                             "get_alibi_mask",
+                             baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "baichuan":
         # baichuan1
         if model.config.hidden_size == 4096:

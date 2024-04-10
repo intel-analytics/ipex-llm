@@ -5,7 +5,7 @@ This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main)
 ### 1. Install
 
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 pip install datasets transformers==4.35.0
@@ -60,7 +60,7 @@ pip install oneccl_bind_pt --extra-index-url https://developer.intel.com/ipex-wh
 2. modify conf in `finetune_one_node_two_sockets.sh` and run
 
 ```
-source ${conda_env}/lib/python3.9/site-packages/oneccl_bindings_for_pytorch/env/setvars.sh
+source ${conda_env}/lib/python3.11/site-packages/oneccl_bindings_for_pytorch/env/setvars.sh
 bash finetune_one_node_two_sockets.sh
 ```
 

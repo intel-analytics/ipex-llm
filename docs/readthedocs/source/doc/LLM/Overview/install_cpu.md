@@ -17,7 +17,7 @@ Please refer to [Environment Setup](#environment-setup) for more information.
 
 .. important::
 
-   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.9 is recommended for best practices.
+   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.11 is recommended for best practices.
 ```
 
 ## Recommended Requirements
@@ -39,10 +39,10 @@ Here list the recommended hardware and OS for smooth IPEX-LLM optimization exper
 
 For optimal performance with LLM models using IPEX-LLM optimizations on Intel CPUs, here are some best practices for setting up environment:
 
-First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.9 enviroment:
+First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.11 enviroment:
 
 ```bash
-conda create -n llm python=3.9
+conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
