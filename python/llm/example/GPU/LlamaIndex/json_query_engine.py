@@ -17,31 +17,13 @@
 import torch
 from llama_index.core.indices.struct_store import JSONQueryEngine
 import llama_index.core.indices.struct_store.json_query as json_query_module
+from llama_index.core.indices.struct_store.json_query import default_output_processor
 from ipex_llm.llamaindex.llms import IpexLLM
 import argparse
 
 def custom_default_output_processor(llm_output, json_value):
-    """Default output processor that extracts values based on JSON Path expressions."""
-    # Post-process the LLM output to remove the JSONPath: prefix
-    llm_output = llm_output.replace("JSONPath: ", "").replace("JSON Path: ", "").strip()    
-    # Split the given string into separate JSON Path expressions
-    expression = [expr.strip('\'') for expr in llm_output.split("\n\n")][0]
-    try:
-        from jsonpath_ng.ext import parse
-        from jsonpath_ng.jsonpath import DatumInContext
-    except ImportError as exc:
-        IMPORT_ERROR_MSG = "You need to install jsonpath-ng to use this function!"
-        raise ImportError(IMPORT_ERROR_MSG) from exc
-    results = {}
-    try:
-        datum: List[DatumInContext] = parse(expression).find(json_value)
-        if datum:
-            key = expression.split(".")[
-                -1
-            ]  # Extracting "title" from "$.title", for example
-            results[key] = ", ".join(str(i.value) for i in datum)
-    except Exception as exc:
-        raise ValueError(f"Invalid JSON Path: {expression}") from exc
+    llm_output = llm_output.strip().split("\n\n")[0].replace("JSONPath: ", "").strip('\'')
+    results = default_output_processor(llm_output, json_value)
     return results
 
 def define_JSON_data():
