@@ -9,22 +9,30 @@ ENV PYTHONUNBUFFERED=1
 
 COPY ./start-notebook.sh /llm/start-notebook.sh
 
-# Install PYTHON 3.9
+# Update the software sources
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+# Install essential packages
     apt install software-properties-common libunwind8-dev vim less -y && \
+# Install git, curl, and wget
+    apt-get install -y git curl wget && \
+# Install Python 3.11
+    # Add Python 3.11 PPA repository
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 git curl wget && \
+    # Install Python 3.11
+    apt-get install -y python3.11 && \
+    # Remove the original /usr/bin/python3 symbolic link
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
+    ln -s /usr/bin/python3.11 /usr/bin/python3 && \
+    # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
+    # Install Python 3.11 development and utility packages
+    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
+# Download and install pip, install FastChat from source requires PEP 660 support
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-# Install FastChat from source requires PEP 660 support
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip3 install --no-cache-dir --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --pre --upgrade ipex-llm[all] && \
 # Download ipex-llm-tutorial
     cd /llm && \
     pip install --upgrade jupyterlab && \
