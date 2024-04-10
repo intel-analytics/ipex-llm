@@ -421,12 +421,12 @@ def run_transformer_int4_gpu(repo_id,
             if 'starcoder' in repo_id:
                 # Load starcoder-15.5b model in bf16 format to avoid CPU OOM.
                 model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                            trust_remote_code=True, use_cache=True, torch_dtype=torch.bfloat16).eval()
+                                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding, torch_dtype=torch.bfloat16).eval()
                 # Convert the low-bit model back to fp32 for performance considerations.
                 model = model.float()
             else:
                 model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                            trust_remote_code=True, use_cache=True).eval()
+                                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if fp16:
