@@ -21,7 +21,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     # install pytorch 2.1.0
     apt-get update && \
-    apt-get install -y --no-install-recommends python3-pip python3.9-dev python3-wheel python3.9-distutils git software-properties-common && \
+    apt-get install -y --no-install-recommends python3-pip python3.11-dev python3-wheel python3.11-distutils git software-properties-common && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --upgrade pip && \
