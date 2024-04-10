@@ -44,8 +44,9 @@ except ImportError:
         "accelerate training use the following command to install Xformers\npip install xformers."
     )
 
+import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def baichuan_13b_rms_norm_forward(self, hidden_states):

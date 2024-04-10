@@ -38,7 +38,9 @@ def apply_rotary_pos_emb_index(q, k, cos, sin, position_id):
     q, k = (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)
     return q, k
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 KV_CACHE_ALLOC_MIN_LENGTH = 512
 
 
