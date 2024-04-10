@@ -13,15 +13,22 @@ This quickstart guide walks you through setting up and using [Open WebUI](https:
 
 ### 1 Run Ollama on Linux with Intel GPU
 
-Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollam Serve". Please ensure that the Ollama service continues to run while you're using the Open WebUI.
+Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.md) to install and run "Ollam Serve". Please ensure that the Ollama service continues to run while you're using the Open WebUI.
 
 ### 2 Install and Run Open-Webui
+
+Open a new terminal, then create and activate a new conda environment with ``conda create -n open-webui``, ``conda activate open-webui``.
 
 #### Requirements 
 
 - Node.js (>= 20.10) or Bun (>= 1.0.21)
 - Python (>= 3.11)
 
+> **Note:** <br>
+> Update your package repository with `sudo apt update` (for Debian/Ubuntu). <br>
+> Install Node.js with `sudo apt install nodejs`. <br>
+> Install npm with `sudo apt install npm`. <br>
+> Verify the installations with `node -v` and `npm -v`.
 #### Installation
 
 1. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git) or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
@@ -55,6 +62,8 @@ bash start.sh
    
   If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com` before running `bash start.sh`.
 ```
+> **Troubleshoot:** When running ``bash start.sh``, error occurs like ``ModuleNotFoundError: No module named 'torch._C'`` <br>
+> Use ``pip uninstall torch`` and ``pip install torch torchvision torchaudio`` to re-install torch
 
 #### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal. Open the provided local URL in your browser to interact with the WebUI, e.g. http://localhost:8080/.
