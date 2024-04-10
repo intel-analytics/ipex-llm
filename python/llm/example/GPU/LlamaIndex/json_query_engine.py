@@ -17,7 +17,7 @@
 import torch
 from llama_index.core.indices.struct_store import JSONQueryEngine
 import llama_index.core.indices.struct_store.json_query as json_query_module
-from ipex_llm.llamaindex.llms import BigdlLLM
+from ipex_llm.llamaindex.llms import IpexLLM
 import argparse
 
 def custom_default_output_processor(llm_output, json_value):
@@ -147,7 +147,7 @@ def define_JSON_data():
 
 def main(args):
     json_value,  json_schema = define_JSON_data()
-    llm = BigdlLLM(
+    llm = IpexLLM(
         model_name=args.model_path,
         tokenizer_name=args.model_path,
         context_window=512,
@@ -168,7 +168,7 @@ def main(args):
 if __name__ == "__main__":
     json_query_module.default_output_processor = custom_default_output_processor
 
-    parser = argparse.ArgumentParser(description='LlamaIndex BigdlLLM Example')
+    parser = argparse.ArgumentParser(description='LlamaIndex IpexLLM Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='What comments has Jerry been writing?',
