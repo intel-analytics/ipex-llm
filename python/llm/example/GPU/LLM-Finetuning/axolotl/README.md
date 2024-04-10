@@ -48,7 +48,24 @@ This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.
 accelerate launch finetune.py qlora.yml
 ```
 
-### 3. Other examples
+Output in console
+
+```
+{'eval_loss': 0.9382301568984985, 'eval_runtime': 6.2513, 'eval_samples_per_second': 3.199, 'eval_steps_per_second': 3.199, 'epoch': 0.36}
+{'loss': 0.944, 'learning_rate': 0.00019752490425051743, 'epoch': 0.38}
+{'loss': 1.0179, 'learning_rate': 0.00019705675197106016, 'epoch': 0.4}
+{'loss': 0.9346, 'learning_rate': 0.00019654872959986937, 'epoch': 0.41}
+{'loss': 0.9747, 'learning_rate': 0.0001960010458282326, 'epoch': 0.43}
+{'loss': 0.8928, 'learning_rate': 0.00019541392564000488, 'epoch': 0.45}
+{'loss': 0.9317, 'learning_rate': 0.00019478761021918728, 'epoch': 0.47}
+{'loss': 1.0534, 'learning_rate': 0.00019412235685085035, 'epoch': 0.49}
+{'loss': 0.8777, 'learning_rate': 0.00019341843881544372, 'epoch': 0.5}
+{'loss': 0.9447, 'learning_rate': 0.00019267614527653488, 'epoch': 0.52}
+{'loss': 0.9651, 'learning_rate': 0.00019189578116202307, 'epoch': 0.54}
+{'loss': 0.9067, 'learning_rate': 0.00019107766703887764, 'epoch': 0.56}
+```
+
+### 4. Other examples
 
 Please refer to [axolotl examples](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.3.0/examples) for more models. Download `xxx.yml` and replace `qlora.yml` with new `xxx.yml`.
 
