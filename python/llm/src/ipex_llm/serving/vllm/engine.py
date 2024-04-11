@@ -14,14 +14,20 @@
 # limitations under the License.
 #
 
-
+from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.ray_utils import initialize_ray_cluster
 from vllm.usage.usage_lib import UsageContext
 
+from .model_runner_convert import _model_runner_convert
+
+
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def __init__(self, *args, **kwargs):
+        from vllm.worker.cpu_worker import CPUModelRunner
+        _model_runner_convert(CPUModelRunner)
+
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -65,3 +71,10 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         )
         return engine
 
+
+class IPEXLLMLLMEngine(LLMEngine):
+    def __init__(self, *args, **kwargs):
+        from vllm.worker.cpu_worker import CPUModelRunner
+        _model_runner_convert(CPUModelRunner)
+
+        super().__init__(*args, **kwargs)
