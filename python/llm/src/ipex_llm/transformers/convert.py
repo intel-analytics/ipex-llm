@@ -80,6 +80,10 @@ if is_auto_awq_available():
     from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
+def is_module_in_classes(module, classes):
+  return any(isinstance(module, cls) for cls in classes)
+
+
 def is_linear_module(module):
 
     in_features = None
@@ -88,7 +92,18 @@ def is_linear_module(module):
 
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
 
-    if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+    from vllm.model_executor.layers.linear import (
+        ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+    )
+    VLLM_LINEAR_LIST = [
+        ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+    ]
+    if is_module_in_classes(module, VLLM_LINEAR_LIST):
+        in_features = module.input_size
+        out_features = module.output_size
+        result = True
+        mp_group = None
+    elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
