@@ -11,12 +11,17 @@ This portable zip includes everything you need to run an LLM with IPEX-LLM optim
 </p>
 
 ### Verified Models
-
+- Llama-2-7b-chat-hf
+- Yi-6B-Chat
+- Mixtral-8x7B-Instruct-v0.1
+- Mistral-7B-Instruct-v0
 - ChatGLM2-6b
+- ChatGLM3-6b
 - Baichuan-13B-Chat
 - Baichuan2-7B-Chat
-- internlm-chat-7b-8k
-- Llama-2-7b-chat-hf
+- internlm-chat-7b
+- internlm2-chat-7b
+- Qwen-7B-Chat
 
 ## How to use
 
