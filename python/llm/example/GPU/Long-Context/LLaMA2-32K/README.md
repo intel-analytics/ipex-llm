@@ -1,4 +1,4 @@
-# Llama2
+# Llama2-32k
 In this directory, you will find examples on how you could apply IPEX-LLM INT4/FP8 optimizations on Llama2-32K models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [togethercomputer/Llama-2-7B-32K-Instruct](https://huggingface.co/togethercomputer/Llama-2-7B-32K-Instruct) as reference Llama2-32K models.
 
 ## 0. Requirements
