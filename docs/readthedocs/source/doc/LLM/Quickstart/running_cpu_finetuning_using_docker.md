@@ -3,12 +3,8 @@
 This quickstart guide walks you through setting up and running large language model finetuning with `ipex-llm` using a docker image. 
 
 ### Docker Installation Instructions
-1. **For New Users**:
-   - Begin by visiting the official Docker Get Started page for a comprehensive introduction and installation guide.
-Additional Steps for Windows Users:
-
-2. **Additional Steps for Windows Users:**
-    - For Windows Users, follow the step-by-step guide: [Docker Installation Instructions for Windows](https://github.com/intel-analytics/ipex-llm/blob/main/docs/readthedocs/source/doc/LLM/Quickstart/docker_windows_gpu.md#install-docker-on-windows).
+**For New Users**:
+- Begin by visiting the official Docker Get Started page for a comprehensive introduction and installation guide.
 
 ### Prepare Docker Image
 You can download directly from Dockerhub :
@@ -41,6 +37,7 @@ snapshot_download(repo_id=repo_id,
 Then use the bash script to download the model to local directory of ``/home/llm/models/Llama-2-7b-chat-hf``. 
 
 ``` bash
+pip install huggingface_hub
 python download.py
 ```
 
