@@ -28,6 +28,7 @@ sudo apt install xpu-smi
           ```sudo apt install clinfo```
 
         2. activate oneapi
+        
             For IPEX 2.0, run `source /home/arda/intel/oneapi/setvars.sh`
 
             For IPEX 2.0, run `source /opt/intel/oneapi/setvars.sh`
