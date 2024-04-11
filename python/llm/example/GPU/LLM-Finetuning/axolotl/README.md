@@ -24,6 +24,8 @@ git checkout v0.3.0
 # replace default requirements.txt in axolotl to avoid conflict
 cp ../requirements.txt .
 pip install -e .
+# change to transformers 4.34.0
+pip install transformers==4.34.0 datasets
 ```
 
 ### 2. Configures OneAPI environment variables and accelerate
