@@ -1122,7 +1122,10 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_attention_forward
-
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        convert_forward(model,
+                        module.Qwen2MoeModel,
+                        qwen2moe_model_forward)
         convert_forward(model,
                         module.Qwen2MoeRMSNorm,
                         llama_rms_norm_forward)
