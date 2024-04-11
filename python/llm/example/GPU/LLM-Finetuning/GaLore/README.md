@@ -34,7 +34,7 @@ Optional parameters for `galore_finetuning.py`:
 
 **--repo-id-or-model-path** : default to `meta-llama/Llama-2-7b-hf`, and you can also specify your local model path.
 
-**--data-path** : default to `g-ronimo/oasst2_top4k_en`, and you can also specify your local datal path.
+**--data-path** : default to `HuggingFaceH4/helpful_instructions`, and you can also specify your local datal path while note that it will introduce code modification effort by your self.
 
 **--output-dir** : default to `./ipex-llm-galore` to save fine-tuned model, and you can change if needed.
 
