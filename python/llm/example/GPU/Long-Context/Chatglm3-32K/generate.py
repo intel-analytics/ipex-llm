@@ -17,39 +17,26 @@
 import torch
 import time
 import argparse
+import numpy as np
 
-from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import LlamaTokenizer
+from ipex_llm.transformers import AutoModel
+from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-DEFAULT_SYSTEM_PROMPT = """\
-"""
-
-def get_prompt(message: str, chat_history: list[tuple[str, str]],
-               system_prompt: str) -> str:
-    texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
-    # The first user input is _not_ stripped
-    do_strip = False
-    for user_input, response in chat_history:
-        user_input = user_input.strip() if do_strip else user_input
-        do_strip = True
-        texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
-    message = message.strip() if do_strip else message
-    texts.append(f'{message} [/INST]')
-    return ''.join(texts)
+# here the prompt tuning refers to https://github.com/THUDM/ChatGLM3/blob/main/PROMPT.md
+CHATGLM_V3_PROMPT_FORMAT = "<|user|>\n{prompt}\n<|assistant|>"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2-32K model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="togethercomputer/Llama-2-7B-32K-Instruct",
-                        help='The huggingface repo id for the Llama2-32K (e.g. `togethercomputer/Llama-2-7B-32K-Instruct`) to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM3 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm3-6b-32k",
+                        help='The huggingface repo id for the ChatGLM3 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
     parser.add_argument('--low-bit', type=str, default="sym_int4",
-                        help='Load model in low bit')
+                    help='Load model in low bit')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -58,20 +45,21 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_low_bit=args.low_bit,
-                                                 optimize_model=True,
-                                                 trust_remote_code=True,
-                                                 use_cache=True)
+    model = AutoModel.from_pretrained(model_path,
+                                      load_in_low_bit=args.low_bit,
+                                      optimize_model=True,
+                                      trust_remote_code=True,
+                                      use_cache=True)
     model = model.half().to('xpu')
 
     # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                              trust_remote_code=True)
 
     # Generate predicted tokens
     with torch.inference_mode():
         if not args.prompt.endswith('.txt'):
-            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+            prompt = CHATGLM_V3_PROMPT_FORMAT.format(prompt=args.prompt)
         else:
             with open(args.prompt, 'r') as f:
                 prompt = f.read()
@@ -90,7 +78,6 @@ if __name__ == '__main__':
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()
-        output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
