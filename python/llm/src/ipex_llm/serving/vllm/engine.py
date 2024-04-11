@@ -20,13 +20,13 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.ray_utils import initialize_ray_cluster
 from vllm.usage.usage_lib import UsageContext
 
-from .model_runner_convert import _model_runner_convert
+from .ipex_llm_convert import _ipex_llm_convert
 
 
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def __init__(self, *args, **kwargs):
         from vllm.worker.cpu_worker import CPUModelRunner
-        _model_runner_convert(CPUModelRunner)
+        _ipex_llm_convert(CPUModelRunner)
 
         super().__init__(*args, **kwargs)
 
@@ -75,6 +75,6 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
 class IPEXLLMLLMEngine(LLMEngine):
     def __init__(self, *args, **kwargs):
         from vllm.worker.cpu_worker import CPUModelRunner
-        _model_runner_convert(CPUModelRunner)
+        _ipex_llm_convert(CPUModelRunner)
 
         super().__init__(*args, **kwargs)
