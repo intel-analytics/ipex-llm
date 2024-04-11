@@ -45,12 +45,18 @@ if __name__ == '__main__':
 
     dataset = load_dataset(args.data_path)
     data = dataset["train"].train_test_split(
-        test_size=2000, shuffle=False, seed=42
+        train_size=8000,test_size=2000, shuffle=False, seed=42
     )
+    
     def prompt_format(data):
         return {"data": f"{tokenizer.bos_token} {data['prompt']} {tokenizer.eos_token} {data['completion']}"}
     train_data = data["train"].map(prompt_format)
     test_data = data["test"].map(prompt_format)
+
+    import gc
+    del data
+    del dataset
+    gc.collect()
 
     from transformers import TrainingArguments
 
