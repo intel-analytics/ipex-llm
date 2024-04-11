@@ -14,14 +14,6 @@
 # limitations under the License.
 #
 
-from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
-from trl import setup_chat_format
-from datasets import load_dataset
-import torch
-import argparse
-
-# GaLore hyperparameters
 rank = 1024
 update_proj_gap = 200
 scale = 2
@@ -29,9 +21,8 @@ scale = 2
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Fine-tune transformers with IPEX-LLM GaLore')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--data-path', type=str, default="g-ronimo/oasst2_top4k_en",
+                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`)')
+    parser.add_argument('--data-path', type=str, default="HuggingFaceH4/helpful_instructions",
                         help='Dataset path for fine-tuning')
     parser.add_argument('--output-dir', type=str, default="./ipex-llm-galore",
                         help='Path to save fine-tuned mode')
@@ -49,18 +40,24 @@ if __name__ == '__main__':
     model = model.to("xpu")
     tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast = False)
 
-    model, tokenizer = setup_chat_format(model, tokenizer)
     if tokenizer.pad_token in [None, tokenizer.eos_token]:
         tokenizer.pad_token = tokenizer.unk_token
 
     dataset = load_dataset(args.data_path)
+    data = dataset["train"].train_test_split(
+        test_size=2000, shuffle=False, seed=42
+    )
+    def prompt_format(data):
+        return {"data": f"{tokenizer.bos_token} {data['prompt']} {tokenizer.eos_token} {data['completion']}"}
+    train_data = data["train"].map(prompt_format)
+    test_data = data["test"].map(prompt_format)
 
     from transformers import TrainingArguments
 
     training_arguments = TrainingArguments(
         output_dir = f"out",
         evaluation_strategy = "steps",
-        label_names = ["labels"],
+        label_names = ["data"],
         per_device_train_batch_size = 16,
         save_steps = 250,
         eval_steps = 250,
@@ -79,14 +76,14 @@ if __name__ == '__main__':
     trainer = SFTTrainer(
         model = model,
         tokenizer = tokenizer,
-        train_dataset = dataset["train"],
-        eval_dataset = dataset['test'],
+        train_dataset = train_data,
+        eval_dataset = test_data,
+        dataset_text_field="data",
         data_collator = DataCollatorForCompletionOnlyLM(
-            instruction_template = "<|im_start|>user",
-            response_template = "<|im_start|>assistant",
+            instruction_template = f"{tokenizer.bos_token}",
+            response_template = f"{tokenizer.eos_token}",
             tokenizer = tokenizer,
             mlm = False),
-        max_seq_length = 256,
         dataset_kwargs = dict(add_special_tokens = False),
         args = training_arguments,
     )
