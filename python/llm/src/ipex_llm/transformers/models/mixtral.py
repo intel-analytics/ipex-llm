@@ -101,8 +101,8 @@ def mixtral_moeblock_forward(self,
             else:
                 final_hidden_states = final_hidden_states + expert_layer(hidden_states, weight)
     elif bs < 256:
-        final_hidden_states = torch.zeros(
-        (batch_size * sequence_length, hidden_dim), dtype=hidden_states.dtype, device=hidden_states.device)
+        final_hidden_states = torch.zeros((batch_size * sequence_length, hidden_dim),
+                                          dtype=hidden_states.dtype, device=hidden_states.device)
         import linear_q4_0
         indexes = linear_q4_0.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 8)
         for expert_idx in range(self.num_experts):
@@ -114,7 +114,8 @@ def mixtral_moeblock_forward(self,
 
             top_x = torch.tensor(top_x_list, dtype=torch.long, device=hidden_states.device)
             current_state = hidden_states[None, top_x_list].reshape(-1, hidden_dim)
-            current_hidden_states = expert_layer(current_state, routing_weights[top_x_list, idx_list, None])
+            current_hidden_states = expert_layer(current_state,
+                                                 routing_weights[top_x_list, idx_list, None])
             final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
     else:
         final_hidden_states = torch.zeros(
