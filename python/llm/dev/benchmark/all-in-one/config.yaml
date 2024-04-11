@@ -32,5 +32,5 @@ test_api:
   # - "bigdl_ipex_int8"
   # - "speculative_cpu"
   # - "deepspeed_transformer_int4_cpu" # on Intel SPR Server
-cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
