@@ -48,6 +48,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install -r /opt/requirements.txt && \
     pip3 install typing-inspect==0.8.0 typing_extensions==4.5.0 && \
     pip3 install ray==2.3.1 && \
+    pip3 install transformers==4.36.0 && \
     pip3 install sentence-transformers --no-deps && \
     pip3 install cmake ninja cpuid && \
     pip3 install scikit-build && \
