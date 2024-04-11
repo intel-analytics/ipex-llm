@@ -3,6 +3,8 @@ from typing import List, Optional, Tuple, Union
 
 from vllm.model_executor.model_loader import get_model
 from vllm.model_executor.layers.rotary_embedding import RotaryEmbedding
+from vllm.model_executor.layers.layernorm import RMSNorm
+
 from vllm._C import ops
 from .model_convert import _model_mlp_convert, _model_attention_convert
 
@@ -42,6 +44,31 @@ def _ipex_llm_rotary_embedding_forward(
         return query, key
 
 
+def _ipex_llm_rmsnorm_forward(
+    self,
+    x: torch.Tensor,
+    residual: Optional[torch.Tensor] = None,
+) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    x = x.to(dtype=self.weight.data.dtype)
+    if residual is not None:
+        ops.fused_add_rms_norm(
+            x,
+            residual,
+            self.weight.data,
+            self.variance_epsilon,
+        )
+        return x, residual
+    out = torch.empty_like(x)
+    ops.rms_norm(
+        out,
+        x,
+        self.weight.data,
+        self.variance_epsilon,
+    )
+    return out
+
+
 def _ipex_llm_convert(model_runner):
     setattr(model_runner, "load_model", _ipex_llm_load_model)
     setattr(RotaryEmbedding, "forward", _ipex_llm_rotary_embedding_forward)
+    setattr(RMSNorm, "forward", _ipex_llm_rmsnorm_forward)
