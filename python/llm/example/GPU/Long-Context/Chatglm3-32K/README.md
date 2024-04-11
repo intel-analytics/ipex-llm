@@ -1,4 +1,4 @@
-# Chatglm3
+# Chatglm3-32k
 In this directory, you will find examples on how you could apply IPEX-LLM INT4/FP8 optimizations on Chatglm3-32K models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b-32k](https://huggingface.co/THUDM/chatglm3-6b-32k) as reference Chatglm3-32K models.
 
 ## 0. Requirements
