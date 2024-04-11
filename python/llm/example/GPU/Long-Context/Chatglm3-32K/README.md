@@ -115,17 +115,12 @@ python ./generate.py --repo-id-or-model-path togethercomputer/chatglm3-6b-32k --
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<s>[INST] <<SYS>>
-
-<</SYS>>
-
-What is AI? [/INST]
+<|user|>
+What is AI?
+<|assistant|>
 -------------------- Output --------------------
-[INST] <<SYS>>
-
-<</SYS>>
-
-What is AI? [/INST]
-
-AI is a broad field of study that deals with the creation of intelligent agents, which are systems that can perform tasks that typically require human intelligence
+[gMASK]sop <|user|>
+What is AI?
+<|assistant|>
+ AI stands for Artificial Intelligence. It refers to the ability of computers and other machines to perform tasks that typically require human intelligence, such as recognizing patterns, making
 ```
