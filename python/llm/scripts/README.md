@@ -24,17 +24,18 @@ sudo apt install xpu-smi
   > If you do not know how to install `ipex-llm`, refer to [IPEX-LLM installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) for more details.
 *  Within the activated python environment, run below command:
     *  On Linux
-      * install clinfo `sudo apt install clinfo`
+        1. install clinfo 
+          ```sudo apt install clinfo```
 
-      * activate oneapi
-        For IPEX 2.0, run this `source /home/arda/intel/oneapi/setvars.sh`
+        2. activate oneapi
+            For IPEX 2.0, run `source /home/arda/intel/oneapi/setvars.sh`
 
-        For IPEX 2.0, run this `source /opt/intel/oneapi/setvars.sh`
+            For IPEX 2.0, run `source /opt/intel/oneapi/setvars.sh`
 
-      * run the env check
-        ```bash
-        bash env-check.sh
-        ```
+        3. run the env check
+            ```bash
+            bash env-check.sh
+            ```
     * On Windows,
         ```bash
         env-check.bat
