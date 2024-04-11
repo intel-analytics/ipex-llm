@@ -40,9 +40,9 @@ def _Attention_forward(
     attn_metadata: AttentionMetadata,
 ) -> torch.Tensor:
     qkv = self.qkv_proj(hidden_states)
+    qkv = qkv.to(dtype=torch.float)
     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
     q, k = self.rotary_emb(positions, q, k)
-    kv_cache = kv_cache.to(dtype=k.dtype)
     if hasattr(self, "kv_scale"):
         attn_output = self.attn(q, k, v, kv_cache, attn_metadata,
                                 self.kv_scale)
