@@ -3,11 +3,8 @@
 This quickstart guide walks you through setting up and running large language model inference with `ipex-llm` using docker. 
 
 ### Docker Installation Instructions
-1. **For New Users**:
-   - Begin by visiting the official Docker Get Started page for a comprehensive introduction and installation guide.
-
-2. **Additional Steps for Windows Users:**
-    - For Windows Users, follow the step-by-step guide: [Docker Installation Instructions for Windows](https://github.com/intel-analytics/ipex-llm/blob/main/docs/readthedocs/source/doc/LLM/Quickstart/docker_windows_gpu.md#install-docker-on-windows).
+**For New Users**:
+- Begin by visiting the official Docker Get Started page for a comprehensive introduction and installation guide.
 
 ### Prepare Docker Image
 
@@ -37,12 +34,17 @@ snapshot_download(repo_id=repo_id,
 
 Then use the script to download the model to local directory of ``/home/llm/models/Llama-2-7b-chat-hf``. 
 ``` bash
+pip install huggingface_hub
 python download.py
 ```
 
-### Start a docker container and run inference:
+### Start a docker container and run inference
 
-1. Set up your proxy and start the container with a name of ``ipex-llm-xpu`` by calling ``docker run``.
+Now you can start a docker container and use example of chat.py to run inference with 
+``Llama-2-7b-chat-hf`` model.
+
+#### Start a docker container
+Set up your proxy and start the container with a name of ``ipex-llm-xpu`` by calling ``docker run``.
 
 ```bash
 export HTTP_PROXY=your_http_proxy
@@ -61,7 +63,7 @@ docker run -itd \
     $DOCKER_IMAGE
 ```
 
-2. Enter the running container:
+#### Enter the running container
 After the container is booted, you could get into the container through docker exec.
 
 ```bash
@@ -69,15 +71,17 @@ After the container is booted, you could get into the container through docker e
 docker exec -it ipex-llm-xpu bash
 ```
 
-3. After entering the container through docker exec, you can run chat.py by:
+#### run chat.py example
+After entering the container through docker exec, you can run chat.py by:
 
 ``` bash
 cd /llm
 python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
 ```
 
-4. Chat with the model and see the responses.
-You will see the example result
+#### Chat with the model and see the responses 
+
+You will see the example result after you type "what is AI?".
 ```
 Human: what is AI?
 BigDL-LLM: Hello there! I'm here to help you understand AI. AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as learning, problem-solving, decision-making, and communication.
