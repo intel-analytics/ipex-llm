@@ -41,21 +41,16 @@ Optional parameters for `galore_finetuning.py`:
 ### 3. Sample Output
 ```log
 ......
-find instruction key `<|im_start|>user` in the following instance: <|im_start|> user
-According to noted psychologist Professor Jordan Peterson, intelligence and wisdom are not only not the same thing, they are not even correlated.
-
-Consequently, I would argue, anyone who undertook to create and market an "artificial intelligence” program should also interest themselves in being able to market “artificial wisdom.”
-
-But, you will rejoin, “Anybody who claims to be wise is vulnerable to the charge of sophistry.”  This is correct.  However, I propose a solution to that problem, by inverting the question.  Do not ask, "who is systematically wise?" but rather, “Who is systematically opposed by, or systematically ignored by, people who are not wise?”
-
-Of course, that changes the issue to, “Who is most prominently ‘not wise’ in American society?”  I put it to you that that question reduces down to “who is prominently superficial and negative?”  Negativity is not wise because it is equivalent to ingratitude - the opposite of counting your blessings - and that (as Dennis Prager noted in his book, “Happiness is a Serious Problem”) This instance will be ignored in loss calculation. Note, if this happens often, consider increasing the `max_seq_length`.
-{'loss': 1.0935, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.32}
-{'loss': 1.168, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.33}
-{'loss': 1.0114, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.33}
-{'loss': 1.2606, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.34}
-{'loss': 1.1006, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.34}
-{'loss': 0.9969, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.34}
- 11%|████████                                                              | 86/750 [xx:xx<x:xx:xx, xx.xxs/it]
- ......
-
+{'loss': 0.7624, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.12}
+{'loss': 0.7557, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.12}
+{'loss': 0.7079, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
+{'loss': 1.4144, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
+{'loss': 0.7582, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
+{'loss': 0.4273, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
+{'loss': 0.7137, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
+{'loss': 0.9176, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.14}
+{'loss': 0.7178, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.14}
+{'loss': 0.8935, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.14}
+  5%|████▏                                                                                      | 70/1500 [xx:xx<x:xx:xx, xx.xxs/it]
+......
 ```
