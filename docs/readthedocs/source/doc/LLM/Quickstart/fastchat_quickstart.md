@@ -13,7 +13,7 @@ This quickstart guide walks you through installing and running `FastChat` with `
 To run on CPU, you can install ipex-llm as follows:
 
 ```bash
-pip install --pre --upgrade ipex-llm[serving, all]
+pip install --pre --upgrade ipex-llm[serving,all]
 ```
 
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
