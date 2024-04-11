@@ -291,7 +291,7 @@ def blank_lines(logical_line, blank_lines, indent_level, line_number,
             yield 0, "E302 expected 2 blank lines, found %d" % blank_before
 
 
-def extraneous_whitespace(logical_line):
+def extraneous_whitespace(logical_line, noqa):
     r"""Avoid extraneous whitespace.
 
     Avoid extraneous whitespace in these situations:
@@ -310,6 +310,9 @@ def extraneous_whitespace(logical_line):
     E203: if x == 4: print x, y ; x, y = y, x
     E203: if x == 4 : print x, y; x, y = y, x
     """
+    if noqa:
+        return
+
     line = logical_line
     for match in EXTRANEOUS_WHITESPACE_REGEX.finditer(line):
         text = match.group()
@@ -346,7 +349,7 @@ def whitespace_around_keywords(logical_line):
             yield match.start(2), "E271 multiple spaces after keyword"
 
 
-def missing_whitespace(logical_line):
+def missing_whitespace(logical_line, noqa):
     r"""Each comma, semicolon or colon should be followed by whitespace.
 
     Okay: [a, b]
@@ -359,6 +362,8 @@ def missing_whitespace(logical_line):
     E231: foo(bar,baz)
     E231: [{'a':'b'}]
     """
+    if noqa:
+        return
     line = logical_line
     for index in range(len(line) - 1):
         char = line[index]

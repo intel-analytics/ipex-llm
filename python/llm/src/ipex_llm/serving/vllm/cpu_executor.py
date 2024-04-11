@@ -20,8 +20,8 @@ from vllm.executor.cpu_executor import CPUExecutor
 from vllm.sequence import SequenceGroupMetadata, SamplerOutput
 from vllm.utils import make_async
 
-class CPUExecutorAsync(CPUExecutor, ExecutorAsyncBase):
 
+class CPUExecutorAsync(CPUExecutor, ExecutorAsyncBase):
     async def execute_model_async(
         self,
         seq_group_metadata_list: List[SequenceGroupMetadata],

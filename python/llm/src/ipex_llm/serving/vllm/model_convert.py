@@ -15,14 +15,14 @@ from vllm.model_executor.models.xverse import XverseMLP, XverseAttention
 
 from vllm.attention import AttentionMetadata
 
-_MLP_CONVERT_LIST = [CohereMLP, DeepseekMLP, GemmaMLP, GPTJMLP, LlamaMLP, 
+_MLP_CONVERT_LIST = [CohereMLP, DeepseekMLP, GemmaMLP, GPTJMLP, LlamaMLP,
                      OrionMLP, Qwen2MoeMLP, Qwen2MLP, StablelmMLP, Starcoder2MLP,
                      XverseMLP]
 
-_ATTENTION_CONVERT_LIST = [CohereAttention, DeepseekAttention, GemmaAttention, GPTJAttention, 
-                            LlamaAttention, OrionAttention, 
-                            Qwen2MoeAttention, Qwen2Attention, StablelmAttention, 
-                            Starcoder2Attention, XverseAttention]
+_ATTENTION_CONVERT_LIST = [CohereAttention, DeepseekAttention, GemmaAttention, GPTJAttention,
+                           LlamaAttention, OrionAttention,
+                           Qwen2MoeAttention, Qwen2Attention, StablelmAttention,
+                           Starcoder2Attention, XverseAttention]
 
 
 def _MLP_forward(self, x):

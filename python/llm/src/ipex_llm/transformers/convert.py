@@ -81,7 +81,7 @@ if is_auto_awq_available():
 
 
 def is_module_in_classes(module, classes):
-  return any(isinstance(module, cls) for cls in classes)
+    return any(isinstance(module, cls) for cls in classes)
 
 
 def is_linear_module(module):

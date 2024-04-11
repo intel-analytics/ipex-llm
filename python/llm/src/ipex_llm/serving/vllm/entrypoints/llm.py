@@ -17,6 +17,7 @@
 
 from vllm.entrypoints.llm import LLM as _LLM
 
+
 class LLM(_LLM):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

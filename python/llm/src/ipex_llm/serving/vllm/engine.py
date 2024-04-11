@@ -42,7 +42,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         engine_config = engine_args.create_engine_config()
 
         if engine_config.device_config.device_type == "neuron":
-            raise NotImplementedError("Neuron is not supported for "
+            raise NotImplementedError("Neuron is not supported for "  # noqa
                                       "async engine yet.")
         elif engine_config.device_config.device_type == "cpu":
             from .cpu_executor import CPUExecutorAsync
@@ -53,7 +53,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
             from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
             executor_class = RayGPUExecutorAsync
         else:
-            assert engine_config.parallel_config.world_size == 1, (
+            assert engine_config.parallel_config.world_size == 1, (  # noqa
                 "Ray is required if parallel_config.world_size > 1.")
             from vllm.executor.gpu_executor import GPUExecutorAsync
             executor_class = GPUExecutorAsync

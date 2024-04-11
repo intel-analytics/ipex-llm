@@ -123,7 +123,7 @@ if __name__ == "__main__":
         allow_headers=args.allowed_headers,
     )
 
-    if token := os.environ.get("VLLM_API_KEY") or args.api_key:
+    if token := os.environ.get("VLLM_API_KEY") or args.api_key:  # noqa
 
         @app.middleware("http")
         async def authentication(request: Request, call_next):
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         elif inspect.iscoroutinefunction(imported):
             app.middleware("http")(imported)
         else:
-            raise ValueError(f"Invalid middleware {middleware}. "
+            raise ValueError(f"Invalid middleware {middleware}. "  # noqa
                              f"Must be a function or a class.")
 
     logger.info(f"vLLM API server version {vllm.__version__}")
