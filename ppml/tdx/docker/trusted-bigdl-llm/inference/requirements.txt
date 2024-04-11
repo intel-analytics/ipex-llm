@@ -1,4 +1,3 @@
-transformers==4.36.0
 # install torch first:
 # pip install torch==2.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 
