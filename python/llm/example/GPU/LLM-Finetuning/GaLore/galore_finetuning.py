@@ -85,6 +85,7 @@ if __name__ == '__main__':
         train_dataset = train_data,
         eval_dataset = test_data,
         dataset_text_field="data",
+        max_seq_length = 256,
         data_collator = DataCollatorForCompletionOnlyLM(
             instruction_template = f"{tokenizer.bos_token}",
             response_template = f"{tokenizer.eos_token}",
