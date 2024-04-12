@@ -332,10 +332,7 @@ if __name__ == "__main__":
     model = optimize_model(model)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    print("model.config.architectures[0] is: ", model.config.architectures[0])
-    print("model.config.architectures[0] == 'BaiChuanForCausalLM' is: ", model.config.architectures[0] == "BaiChuanForCausalLM")
-    print("model.config.vocab_size == 64000 is: ", model.config.vocab_size == 64000)
-
+    
     if model.config.architectures is not None and model.config.architectures[0] == "QWenLMHeadModel":
         stop_words = get_stop_words_ids("Qwen", tokenizer=tokenizer)
         kv_cache = StartRecentKVCache(start_size=start_size,
