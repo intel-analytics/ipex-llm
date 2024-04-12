@@ -106,9 +106,8 @@ def main():
 
         # Add display of FP16 values for each model and add percentage difference column
 
-    task = 'ppl_result'
-    latest_csv[f'{task}_FP16'] = latest_csv['Model'].apply(lambda model: fp16_dict.get(model, {}).get(task, 'N/A'))
-    latest_csv[f'{task}_diff_FP16(%)'] = latest_csv.apply(lambda row: calculate_percentage_difference(row[task], row[f'{task}_FP16']), axis=1)
+    latest_csv['ppl_result_FP16'] = latest_csv['Model'].apply(lambda model: fp16_dict.get(model, {}).get('ppl_result', 'N/A'))
+    latest_csv['ppl_result_diff_FP16(%)'] = latest_csv.apply(lambda row: calculate_percentage_difference(row['ppl_result'], row['ppl_result_FP16']), axis=1)
     print(csv_files)
 
     if len(csv_files)>1:
@@ -168,14 +167,9 @@ def main():
 
 
         diffs_within_normal_range = is_diffs_within_normal_range(diff_ppl_result, threshold=highlight_threshold)
-
-        subset1='ppl_result_diff_last(%)'
         
-        # columns will be different: columns_sec={'ppl_result': '{:.2f}'}
         columns={'ppl_result': '{:.2f}', 'last_ppl_result': '{:.2f}', 'ppl_result_diff_last(%)': '{:.2f}'}
-        # This is the same
         latest_csv.drop('Index', axis=1, inplace=True)
-        # subset is different
 
         styled_df = latest_csv.style.format(columns).applymap(lambda val: highlight_vals(val, max=highlight_threshold, is_last=True), subset=['ppl_result_diff_last(%)'])
         styled_df = styled_df.applymap(lambda val: highlight_vals(val, max=highlight_threshold, is_last=False), subset=['ppl_result_diff_FP16(%)'])
@@ -203,14 +197,3 @@ def main():
  
 if __name__ == "__main__":
     sys.exit(main())
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
