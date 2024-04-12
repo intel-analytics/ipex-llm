@@ -17,6 +17,7 @@
 from transformers import TrainerCallback
 import numpy as np
 
+
 # source: https://github.com/OptimalScale/LMFlow/blob/main/src/lmflow/pipeline/finetuner.py
 class DynamicLayerActivationCallback(TrainerCallback):
     def __init__(self, n_layers, interval_steps, model):
@@ -39,7 +40,8 @@ class DynamicLayerActivationCallback(TrainerCallback):
             self.layers_attribute = class_to_layers_map[model_class_name]
         else:
             self.layers_attribute = training_args.lisa_layers_attribute
-        self.total_layers = len(eval('self.' + self.layers_attribute))  # Dynamically execute to get the number of layers
+        # Dynamically execute to get the number of layers
+        self.total_layers = len(eval('self.' + self.layers_attribute))
 
         self.active_layers_indices = []
 
@@ -60,8 +62,13 @@ class DynamicLayerActivationCallback(TrainerCallback):
 
         # Randomly select n_layers to activate
         layers = eval('self.' + self.layers_attribute)  # Re-fetch layer references
-        self.active_layers_indices = np.random.choice(range(self.total_layers), self.n_layers, replace=False)
-        print(f"Activating layers at indices: {self.active_layers_indices} for the next steps.", flush=True)
+        self.active_layers_indices = np.random.choice(
+                                        range(self.total_layers), 
+                                        self.n_layers, 
+                                        replace=False
+                                    )
+        print(f"Activating layers at indices: {self.active_layers_indices} for the next steps.",
+                flush=True)
 
         # Enable gradients only for the selected layers
         for idx in self.active_layers_indices:
