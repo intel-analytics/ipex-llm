@@ -20,8 +20,20 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 
 RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     # install pytorch 2.1.0
-    apt-get update && \
-    apt-get install -y --no-install-recommends python3-pip python3.11-dev python3-wheel python3.11-distutils git software-properties-common && \
+    # Install python 3.11.1
+    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common git gcc g++ make libunwind8-dev zlib1g-dev && \
+    mkdir -p /opt/python && \
+    cd /opt/python && \
+    wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz && \
+    tar -xf Python-3.11.1.tar.xz && \
+    cd Python-3.11.1 && \
+    ./configure --enable-optimizations --with-zlib && \
+    make altinstall && \
+    rm /usr/bin/python3 && \
+    # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
+    ln -s /opt/python/Python-3.11.1/python /usr/bin/python3 && \
+    # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
+    ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --upgrade pip && \
@@ -37,10 +49,7 @@ RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     pip install bitsandbytes && \
-    # install basic dependencies
-    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
-    ln -s /usr/bin/python3 /usr/bin/python && \
     cd /ipex_llm && \
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
     mv IPEX-LLM/python/llm/example/CPU/QLoRA-FineTuning/* . && \
