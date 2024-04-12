@@ -332,7 +332,7 @@ if __name__ == "__main__":
     model = optimize_model(model)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    
+
     if model.config.architectures is not None and model.config.architectures[0] == "QWenLMHeadModel":
         stop_words = get_stop_words_ids("Qwen", tokenizer=tokenizer)
         kv_cache = StartRecentKVCache(start_size=start_size,
@@ -352,7 +352,6 @@ if __name__ == "__main__":
     elif model.config.architectures[0] == "BaichuanForCausalLM" and model.config.vocab_size == 64000:
         # Baichuan-13B-Chat
         stream_chat_with_history(model=model, tokenizer=tokenizer)
-        print("call baichuan_stream_chat")
     else:
         kv_cache = StartRecentKVCache(start_size=start_size, recent_size=recent_size)
         stream_chat(model=model,
