@@ -426,8 +426,8 @@ def qwen2moe_moeblock_forward(self, hidden_states: torch.Tensor):
 
             top_x = torch.tensor(top_x_list, dtype=torch.long, device=hidden_states.device)
             current_state = hidden_states[None, top_x_list].reshape(-1, hidden_dim)
-            current_hidden_states = expert_layer(current_state,
-                                                 routing_weights[top_x_list, idx_list, None])
+            current_hidden_states = expert_layer(current_state) * \
+                routing_weights[top_x_list, idx_list, None]
             final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
     else:
         final_hidden_states = torch.zeros(
