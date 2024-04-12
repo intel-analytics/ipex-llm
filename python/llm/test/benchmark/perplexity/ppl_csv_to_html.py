@@ -104,8 +104,7 @@ def main():
 
     diffs_within_normal_range = True
 
-        # Add display of FP16 values for each model and add percentage difference column
-
+    # Add display of FP16 values for each model and add percentage difference column
     latest_csv['ppl_result_FP16'] = latest_csv['Model'].apply(lambda model: fp16_dict.get(model, {}).get('ppl_result', 'N/A'))
     latest_csv['ppl_result_diff_FP16(%)'] = latest_csv.apply(lambda row: calculate_percentage_difference(row['ppl_result'], row['ppl_result_FP16']), axis=1)
 
