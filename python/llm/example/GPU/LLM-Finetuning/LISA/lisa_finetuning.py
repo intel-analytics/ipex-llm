@@ -21,7 +21,7 @@ import torch
 import transformers
 from datasets import load_dataset
 import accelerate
-from lisa_callback import DynamicLayerActivationCallback
+from ipex_llm.transformers.lisa import DynamicLayerActivationCallback
 from transformers import AutoTokenizer
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
