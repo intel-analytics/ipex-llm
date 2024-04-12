@@ -13,7 +13,8 @@ source $basekit_root/ccl/latest/env/vars.sh --force
 NUM_GPUS=2 # number of used GPU
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
-export TORCH_LLM_ALLREDUCE=0 # Different from PVC
+export TORCH_LLM_ALLREDUCE=0
 
 mpirun -np $NUM_GPUS --prepend-rank \
-        python serving.py
+        python serving.py --repo-id-or-model-path YOUR_REPO_ID_OR_MODEL_PATH --low-bit 'sym_int4'
+
