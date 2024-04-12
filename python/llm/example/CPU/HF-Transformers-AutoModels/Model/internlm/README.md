@@ -1,6 +1,6 @@
 # InternLM
 
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on InternLM models. For illustration purposes, we utilize the [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b-8k) as a reference InternLM model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on InternLM models. For illustration purposes, we utilize the [internlm/internlm-chat-7b](https://huggingface.co/internlm/internlm-chat-7b) as a reference InternLM model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -22,7 +22,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the InternLM model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'internlm/internlm-chat-7b-8k'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the InternLM model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'internlm/internlm-chat-7b'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -50,7 +50,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [internlm/internlm-chat-7b-8k](https://huggingface.co/internlm/internlm-chat-7b-8k)
+#### [internlm/internlm-chat-7b](https://huggingface.co/internlm/internlm-chat-7b)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
