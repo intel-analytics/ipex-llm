@@ -251,6 +251,7 @@ def qwen2moe_attention_forward_origin(
     qtype_check = decoding_fast_path_qtype_check(self.q_proj)
     decoding_fast_path = (qtype_check and use_fuse_rope
                           and enough_kv_room and bsz * q_len == 1)
+    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k = past_key_value.key_cache[self.layer_idx]
