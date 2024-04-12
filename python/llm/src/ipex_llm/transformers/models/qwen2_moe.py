@@ -416,7 +416,7 @@ def qwen2moe_moeblock_forward(self, hidden_states: torch.Tensor):
         final_hidden_states = torch.zeros((batch_size * sequence_length, hidden_dim),
                                           dtype=hidden_states.dtype, device=hidden_states.device)
         import linear_q4_0
-        indexes = linear_q4_0.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 8)
+        indexes = linear_q4_0.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 60)
         for expert_idx in range(self.num_experts):
             expert_layer = self.experts[expert_idx]
             idx_list = indexes[0][expert_idx]
