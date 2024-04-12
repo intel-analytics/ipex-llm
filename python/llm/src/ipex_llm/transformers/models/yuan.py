@@ -38,7 +38,9 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, SIL
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5
 from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):

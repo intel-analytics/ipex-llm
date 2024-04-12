@@ -69,7 +69,9 @@ from transformers import logging
 
 logger = logging.get_logger(__name__)
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def should_use_fuse_rope(self, query_states, position_ids):

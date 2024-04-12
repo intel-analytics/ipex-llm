@@ -54,7 +54,9 @@ flash_attn_unpadded_func = None
 
 logger = logging.get_logger(__name__)
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 SUPPORT_TORCH2 = hasattr(torch, '__version__') and int(torch.__version__.split(".")[0]) >= 2
 
 

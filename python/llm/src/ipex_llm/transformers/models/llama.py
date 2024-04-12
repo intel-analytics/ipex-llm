@@ -114,7 +114,8 @@ def llama_model_forward_4_36(
 ) -> Union[Tuple, BaseModelOutputWithPast]:
     from ipex_llm.transformers.kv import DynamicFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):
+    input = input_ids if input_ids is not None else inputs_embeds
+    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input):
         if not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_36_internal(
@@ -646,12 +647,11 @@ def llama_attention_forward_4_31_original(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
-
     if not self.training and not hidden_states.requires_grad and \
             use_flash_attention(query_states, key_states, attention_mask):
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
                                                      key_states.to(device, dtype=torch.float16),
                                                      value_states.to(device, dtype=torch.float16),
@@ -659,13 +659,14 @@ def llama_attention_forward_4_31_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states, attention_mask):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states,
-                                                    value_states)
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
                                                attention_mask,
@@ -1033,8 +1034,9 @@ def llama_attention_forward_4_36_quantized(
                 )
             attn_weights = attn_weights + attention_mask
 
-        if kv_seq_len >= 2048:
-            # for memory considerations, do not upcast attention to fp32 for long sequences
+        if kv_seq_len >= 2048 or bsz >= 64:
+            # for memory considerations, do not upcast attention to fp32
+            # for long sequences or large batches
             attn_weights = nn.functional.softmax(attn_weights, dim=-1)
         else:
             # upcast attention to fp32
@@ -1078,8 +1080,9 @@ def llama_attention_forward_4_36_quantized(
                     )
                 attn_weights = attn_weights + attention_mask
 
-            if kv_seq_len >= 2048:
-                # for memory considerations, do not upcast attention to fp32 for long sequences
+            if kv_seq_len >= 2048 or bsz >= 64:
+                # for memory considerations, do not upcast attention to fp32
+                # for long sequences or large batches
                 attn_weights = nn.functional.softmax(attn_weights, dim=-1)
             else:
                 # upcast attention to fp32
@@ -1304,12 +1307,11 @@ def llama_attention_forward_4_36_original(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
-
     if not self.training and not hidden_states.requires_grad and \
             use_flash_attention(query_states, key_states, attention_mask):
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         # now only use flash attention for first token
         attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
                                                      key_states.to(device, dtype=torch.float16),
@@ -1318,13 +1320,14 @@ def llama_attention_forward_4_36_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states,
-                                                    value_states)
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
                                                attention_mask,
@@ -1378,8 +1381,9 @@ def native_sdp(query, key, value, attention_mask,
                                   f"but is {attention_mask.size()}")
             attn_weights = attn_weights + attention_mask
 
-        if kv_seq_len >= 2048:
-            # for memory considerations, do not upcast attention to fp32 for long sequences
+        if kv_seq_len >= 2048 or bsz >= 64:
+            # for memory considerations, do not upcast attention to fp32
+            # for long sequences or large batches
             attn_weights = nn.functional.softmax(attn_weights, dim=-1)
         else:
             # upcast attention to fp32

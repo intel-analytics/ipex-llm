@@ -48,6 +48,8 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
+                        help='Load model in low bit')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
+                                                 load_in_low_bit=args.low_bit,
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)

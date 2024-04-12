@@ -13,29 +13,38 @@ This quickstart guide walks you through setting up and using [Open WebUI](https:
 
 ### 1 Run Ollama on Linux with Intel GPU
 
-Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollam Serve". Please ensure that the Ollama service continues to run while you're using the Open WebUI.
+Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollam Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
 
 ### 2 Install and Run Open-Webui
 
-#### Requirements 
-
-- Node.js (>= 20.10) or Bun (>= 1.0.21)
-- Python (>= 3.11)
 
 #### Installation
 
-1. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git) or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
+```eval_rst
+.. note::
 
-2. Run below commands to install Open WebUI
+  Package version requirements for running Open WebUI: Node.js (>= 20.10) or Bun (>= 1.0.21), Python (>= 3.11)
+```
+
+1. Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+   ```sh
+   sudo apt update 
+   sudo apt install nodejs 
+   sudo apt install npm 
+   ```
+
+2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
+
+3. Run below commands to install Open WebUI.  
     ```sh
     cd ~/open-webui/
     cp -RPp .env.example .env  # Copy required .env file
 
-    # Build Frontend
+    # Build frontend
     npm i
     npm run build
 
-    # Serve Frontend with Backend
+    # Install Dependencies
     cd ./backend
     pip install -r requirements.txt -U
     ```
@@ -133,3 +142,10 @@ Additionally, you can drag and drop a document into the textbox, allowing the LL
 #### Exit Open-Webui
 
 To shut down the open-webui server, use **Ctrl+C** in the terminal where the open-webui server is runing, then close your browser tab.
+
+
+### 4. Troubleshooting
+
+##### Error `No module named 'torch._C`
+
+When you encounter the error ``ModuleNotFoundError: No module named 'torch._C'`` after executing ```bash start.sh```, you can resolve it by reinstalling PyTorch. First, use ```pip uninstall torch``` to remove the existing PyTorch installation, and then reinstall it along with its dependencies by running ```pip install torch torchvision torchaudio```.

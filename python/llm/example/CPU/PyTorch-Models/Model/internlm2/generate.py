@@ -23,7 +23,7 @@ from ipex_llm import optimize_model
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/internlm/internlm-chat-7b-8k/blob/main/modeling_internlm.py#L768
+# here the prompt tuning refers to https://huggingface.co/internlm/internlm-chat-7b/blob/main/modeling_internlm.py#L1053
 INTERNLM_PROMPT_FORMAT = "<|User|>:{prompt}\n<|Bot|>:"
 
 if __name__ == '__main__':

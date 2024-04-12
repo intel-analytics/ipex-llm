@@ -35,7 +35,9 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
 from ipex_llm.transformers.models.utils import rotate_half, apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
 
 
 def baichuan_attention_forward_7b(
