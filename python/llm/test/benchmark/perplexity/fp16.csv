@@ -5,4 +5,4 @@ Index,Model,Precision,ppl_result
 3,Baichuan2-7B-Chat,fp16,10.7676
 4,mpt-7b-chat,fp16,5.7882
 5,falcon-7b-instruct-with-patch,fp16,5.2532
-6,Mistral-7B-v0.1,fp16,3.6597
+6,mistral-7b-v0.1,fp16,3.6597
