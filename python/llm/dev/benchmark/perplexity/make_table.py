@@ -35,8 +35,8 @@ def make_table(result_dict):
     """Generate table of results."""
     md_writer = MarkdownTableWriter()
     latex_writer = LatexTableWriter()
-    md_writer.headers = ["Model", "Precision", "en", "zh"]
-    latex_writer.headers = ["Model", "Precision", "en", "zh"]
+    md_writer.headers =  ["Model", "Precision", "ppl_result"]
+    latex_writer.headers = ["Model", "Precision", "ppl_result"]
 
     languages = ["en", "zh"]
     values = []
@@ -46,7 +46,7 @@ def make_table(result_dict):
             for language in languages:
                 task_results = prec_results.get(language, None)
                 if task_results is None:
-                    value.append("")
+                    continue
                 else:
                     result = task_results["results"]
                     value.append("%.4f" % result)
