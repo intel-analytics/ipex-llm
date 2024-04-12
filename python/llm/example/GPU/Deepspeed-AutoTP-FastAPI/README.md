@@ -34,8 +34,17 @@ We provide example usage for `Llama-2-7b` model running on Arc A770
 
 Run Llama-2-7b on two Intel Arc A770:
 
-```
+```bash
 bash run_llama2_7b_arc_2_card.sh
+```
+
+If you successfully run the serving, you can get output like this:
+
+```bash
+[0] INFO:     Started server process [120071]
+[0] INFO:     Waiting for application startup.
+[0] INFO:     Application startup complete.
+[0] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 
 > **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
@@ -70,4 +79,3 @@ And you should get output like this:
 ```
 
 **Important**: The first token latency is much larger than rest token latency, you could use [our benchmark tool](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
-
