@@ -58,7 +58,7 @@ def create_fp16_dict(fp16_path):
     fp16_dict = {}
     for _, row in fp16_df.iterrows():
         model = row['Model']
-        
+        # Formalize the data to have 2 decimal places
         fp16_dict[model] = {
             'ppl_result': "{:.2f}".format(row['ppl_result'])
         }
@@ -111,7 +111,6 @@ def main():
     print(csv_files)
 
     if len(csv_files)>1:
-        
         if args.baseline_path:
             previous_csv = pd.read_csv(args.baseline_path, index_col=0)
         else:
@@ -128,9 +127,7 @@ def main():
             for current_csv_ind,current_csv_row in current_csv.iterrows():
                 current_csv_model=current_csv_row['Model'].strip()
                 current_csv_precision=current_csv_row['Precision'].strip()
-                
                 current_csv_model_ppl_result=current_csv_model+'-'+current_csv_precision+'-'+'ppl_result'
-                
                 add_to_dict(csv_dict, current_csv_model_ppl_result, current_csv_row[ppl_result])
                 
         for latest_csv_ind,latest_csv_row in latest_csv.iterrows():
@@ -138,7 +135,6 @@ def main():
             latest_csv_model=latest_csv_row['Model'].strip()
             latest_csv_precision=latest_csv_row['Precision'].strip()
             latest_ppl_result=latest_csv_row[ppl_result]
-            print("This is the latest_ppl_result",latest_ppl_result)
 
             in_previous_flag=False
 
@@ -150,7 +146,6 @@ def main():
                 if latest_csv_model==previous_csv_model and latest_csv_precision==previous_csv_precision:
 
                     previous_ppl_result=previous_csv_row[ppl_result] 
-                    print("This is the previous_ppl_result", previous_ppl_result)
 
                     if previous_ppl_result > 0.0:
                         last_ppl_result[latest_csv_ind]=previous_ppl_result
