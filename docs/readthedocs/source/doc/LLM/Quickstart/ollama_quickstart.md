@@ -1,4 +1,4 @@
-# Run Ollama on Linux with Intel GPU
+# Run Ollama with IPEX-LLM on Intel GPU
 
 [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
@@ -50,21 +50,25 @@ Launch the Ollama service:
    .. tab:: Linux
 
       .. code-block:: bash
-      
+
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
+         export http_proxy=
+         export unset =
          source /opt/intel/oneapi/setvars.sh
 
          ./ollama serve
 
    .. tab:: Windows
 
-      Please run the following command with **administrator privilege in Anaconda Prompt**.
+      Please run the following command in Anaconda Prompt.
 
       .. code-block:: bash
-      
+
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
+         set HTTP_PROXY=
+         set HTTPS_PROXY=
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
          ollama.exe serve
@@ -73,7 +77,7 @@ Launch the Ollama service:
 
 ```eval_rst
 .. note::
-   
+
   To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
 ```
 
@@ -84,55 +88,54 @@ The console will display messages similar to the following:
 </a>
 
 
+### 4 Using Ollama
 
-### 4 Pull Model
-Keep the Ollama service on and open another terminal and run `./ollama pull <model_name>` to automatically pull a model. e.g. `dolphin-phi:latest`:
+Keep the Ollama service on and open another terminal in Linux or open another Anaconda Prompt in Windows.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" width=100%; />
-</a>
+#### Using Ollama Run GGUF models
 
-
-
-### 5 Using Ollama
-
-#### Using Curl 
-
-Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled model**, e.g. `dolphin-phi`.
-
-```shell
-curl http://localhost:11434/api/generate -d '
-{ 
-  "model": "<model_name>", 
-  "prompt": "Why is the sky blue?", 
-  "stream": false 
-}'
-```
-
-An example output of using model `doplphin-phi` looks like the following:
-
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_curl.png" width=100%; />
-</a>
-
-
-#### Using Ollama Run
-
-You can also use `ollama run` to run the model directly on console. **Replace the <model_name> with your pulled model**, e.g. `dolphin-phi`. This command will seamlessly download, load the model, and enable you to interact with it through a streaming conversation."
-
+Ollama supports importing GGUF models in the Modelfile, for example, suppose you have downloaded a `mistral-7b-instruct-v0.1.Q4_K_M.gguf` from [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main), then you can create a file named `Modelfile`:
 
 ```bash
-conda activate llm-cpp
-
-export no_proxy=localhost,127.0.0.1
-export ZES_ENABLE_SYSMAN=1
-source /opt/intel/oneapi/setvars.sh
-
-./ollama run <model_name>
+FROM ./mistral-7b-instruct-v0.1.Q4_K_M.gguf
+TEMPLATE [INST] {{ .Prompt }} [/INST]
+PARAMETER num_gpu 999
+PARAMETER num_predict 64
 ```
 
-An example process of interacting with model with `ollama run` looks like the following:
+```eval_rst
+.. note::
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_1.png" width=100%; /><img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_run_2.png" width=100%; />
+  Please don't forget to set `PARAMETER num_gpu 999` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+```
+
+Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.
+
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         export no_proxy=localhost,127.0.0.1
+         ./ollama create example -f Modelfile
+         ./ollama run example
+
+   .. tab:: Windows
+
+      Please run the following command in Anaconda Prompt.
+
+      .. code-block:: bash
+
+         set no_proxy=localhost,127.0.0.1
+
+         ollama.exe create example -f Modelfile
+         ollama.exe run example
+
+```
+
+An example process of interacting with model with `ollama run example` looks like the following:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_gguf_demo_image.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_gguf_demo_image.png" width=100%; />
 </a>
