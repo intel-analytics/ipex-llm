@@ -2,11 +2,6 @@
 
 [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
-```eval_rst
-.. note::
-   Only Linux is currently supported.
-```
-
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
@@ -15,18 +10,35 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 ### 1 Install IPEX-LLM with Ollama Binaries
 
-Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Install Prerequisits on Linux](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#linux) , and section [Install IPEX-LLM cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binaries. 
+IPEX-LLM's support for `ollama` now is avaliable for Linux system and Windows system.
 
-**After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
+Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to setup and section [Install IPEX-LLM cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binaries. 
+
+**After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `ollama` commands with IPEX-LLM.**
 
 ### 2. Initialize Ollama 
 
 Activate the `llm-cpp` conda environment and initialize Ollama by executing the commands below. A symbolic link to `ollama` will appear in your current directory.
 
-```bash
-conda activate llm-cpp
-init-ollama
-``` 
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+      
+         conda activate llm-cpp
+         init-ollama
+
+   .. tab:: Windows
+
+      Please run the following command with **administrator privilege in Anaconda Prompt**.
+
+      .. code-block:: bash
+      
+         conda activate llm-cpp
+         init-ollama.bat
+
+```
 
 ### 3 Run Ollama Serve
 
