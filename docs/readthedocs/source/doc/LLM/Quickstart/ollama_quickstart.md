@@ -45,14 +45,30 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 Launch the Ollama service:
 
-```bash
-conda activate llm-cpp
+```eval_rst
+.. tabs::
+   .. tab:: Linux
 
-export no_proxy=localhost,127.0.0.1
-export ZES_ENABLE_SYSMAN=1
-source /opt/intel/oneapi/setvars.sh
+      .. code-block:: bash
+      
+         export no_proxy=localhost,127.0.0.1
+         export ZES_ENABLE_SYSMAN=1
+         source /opt/intel/oneapi/setvars.sh
 
-./ollama serve
+         ./ollama serve
+
+   .. tab:: Windows
+
+      Please run the following command with **administrator privilege in Anaconda Prompt**.
+
+      .. code-block:: bash
+      
+         set no_proxy=localhost,127.0.0.1
+         set ZES_ENABLE_SYSMAN=1
+         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+
+         ollama.exe serve
+
 ```
 
 ```eval_rst
