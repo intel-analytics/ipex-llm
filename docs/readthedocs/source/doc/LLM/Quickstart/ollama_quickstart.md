@@ -8,7 +8,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 ## Quickstart
 
-### 1 Install IPEX-LLM with Ollama Binaries
+### 1 Install IPEX-LLM for Ollama
 
 IPEX-LLM's support for `ollama` now is avaliable for Linux system and Windows system.
 
