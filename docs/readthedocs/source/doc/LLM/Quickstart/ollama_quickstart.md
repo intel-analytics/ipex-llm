@@ -40,6 +40,8 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 ```
 
+**Now you can use this executable file by standard ollama's usage.**
+
 ### 3 Run Ollama Serve
 
 
@@ -88,9 +90,35 @@ The console will display messages similar to the following:
 </a>
 
 
-### 4 Using Ollama
+### 4 Pull Model
+Keep the Ollama service on and open another terminal and run `./ollama pull <model_name>` in Linux (`ollama.exe pull <model_name>` in Windows) to automatically pull a model. e.g. `dolphin-phi:latest`:
 
-Keep the Ollama service on and open another terminal in Linux or open another Anaconda Prompt in Windows.
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" width=100%; />
+</a>
+
+
+### 5 Using Ollama
+
+#### Using Curl 
+
+Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled model**, e.g. `dolphin-phi`.
+
+```shell
+curl http://localhost:11434/api/generate -d '
+{ 
+  "model": "<model_name>", 
+  "prompt": "Why is the sky blue?", 
+  "stream": false,
+  "options":{"num_gpu": 999}
+}'
+```
+
+```eval_rst
+.. note::
+
+  Please don't forget to set `"options":{"num_gpu": 999}` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+```
 
 #### Using Ollama Run GGUF models
 
