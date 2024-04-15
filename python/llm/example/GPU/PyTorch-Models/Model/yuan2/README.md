@@ -99,7 +99,7 @@ set BIGDL_LLM_XMX_DISABLED=1
 
 <details>
 
-<summary>For Intel Arc™ A-Series</summary>
+<summary>For Intel Arc™ A-Series Graphics</summary>
 
 ```cmd
 set SYCL_CACHE_PERSISTENT=1
