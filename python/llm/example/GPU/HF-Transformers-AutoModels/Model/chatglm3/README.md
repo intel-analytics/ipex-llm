@@ -48,7 +48,6 @@ For optimal performance, it is recommended to set several environment variables.
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
 
 ```bash
-# Recommended Environment Variables for optimal performance
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export SYCL_CACHE_PERSISTENT=1
@@ -61,14 +60,12 @@ export SYCL_CACHE_PERSISTENT=1
 <summary>For Intel Data Center GPU Max Series</summary>
 
 ```bash
-# Recommended Environment Variables for optimal performance
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export SYCL_CACHE_PERSISTENT=1
 export ENABLE_SDP_FUSION=1
 ```
-> [!NOTE]
-> Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
 </details>
 
 <details>
@@ -187,7 +184,6 @@ For optimal performance, it is recommended to set several environment variables.
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
 
 ```bash
-# Recommended Environment Variables for optimal performance
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export SYCL_CACHE_PERSISTENT=1
@@ -200,14 +196,12 @@ export SYCL_CACHE_PERSISTENT=1
 <summary>For Intel Data Center GPU Max Series</summary>
 
 ```bash
-# Recommended Environment Variables for optimal performance
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export SYCL_CACHE_PERSISTENT=1
 export ENABLE_SDP_FUSION=1
 ```
-> [!NOTE]
-> Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
 </details>
 
 <details>
