@@ -46,10 +46,6 @@ For optimal performance, it is recommended to set several environment variables.
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
 
 ```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
-
 # Recommended Environment Variables for optimal performance
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -63,10 +59,6 @@ export SYCL_CACHE_PERSISTENT=1
 <summary>For Intel Data Center GPU Max Series</summary>
 
 ```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
-
 # Recommended Environment Variables for optimal performance
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -82,10 +74,6 @@ export ENABLE_SDP_FUSION=1
 <summary>For Intel iGPU</summary>
 
 ```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
-
 export SYCL_CACHE_PERSISTENT=1
 export BIGDL_LLM_XMX_DISABLED=1
 ```
@@ -195,10 +183,6 @@ For optimal performance, it is recommended to set several environment variables.
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
 
 ```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
-
 # Recommended Environment Variables for optimal performance
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -212,10 +196,6 @@ export SYCL_CACHE_PERSISTENT=1
 <summary>For Intel Data Center GPU Max Series</summary>
 
 ```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
-
 # Recommended Environment Variables for optimal performance
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
@@ -231,10 +211,6 @@ export ENABLE_SDP_FUSION=1
 <summary>For Intel iGPU</summary>
 
 ```bash
-# Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-# Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-source /opt/intel/oneapi/setvars.sh
-
 export SYCL_CACHE_PERSISTENT=1
 export BIGDL_LLM_XMX_DISABLED=1
 ```
