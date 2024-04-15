@@ -135,7 +135,7 @@ Please also set the following environment variable if you would like to run LLMs
          set SYCL_CACHE_PERSISTENT=1
          set BIGDL_LLM_XMX_DISABLED=1
 
-   .. tab:: Intel Arc™ A-Series
+   .. tab:: Intel Arc™ A-Series Graphics
 
       .. code-block:: cmd
 
@@ -579,6 +579,12 @@ To use GPU acceleration on Linux, several environment variables are required or 
          export SYCL_CACHE_PERSISTENT=1
          export BIGDL_LLM_XMX_DISABLED=1
 
+```
+
+```eval_rst
+.. note::
+
+   For **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ```
 
 ### Known issues
