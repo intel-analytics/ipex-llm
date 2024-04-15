@@ -1,18 +1,91 @@
-from typing import Optional, Tuple
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/huggingface/transformers/blob/main/src/transformers/generation
+# /candidate_generator.py and
+# https://github.com/huggingface/transformers/blob/main/src/transformers/generation
+# /utils.py
+#
+
+from typing import Callable, List, Optional, Tuple
 import torch
 import time
 import copy
 import logging
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
-from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs
+from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs,\
+    _crop_past_key_values, _prepare_generate_args, _non_cpu_ipex_verify
 from ipex_llm.utils.common import invalidInputError
 
 logger = logging.getLogger("ipex_llm.lookup")
 
+# patch GenerationMixin.generate
+from transformers import GenerationMixin
+original_generate = GenerationMixin.generate
+query_group_size = 16
 
+
+@torch.no_grad()
+def generate(
+    self,
+    inputs: Optional[torch.Tensor] = None,
+    generation_config: Optional[GenerationConfig] = None,
+    logits_processor: Optional[LogitsProcessorList] = None,
+    stopping_criteria: Optional[StoppingCriteriaList] = None,
+    prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]]=None,
+    synced_gpus: Optional[bool] = None,
+    assistant_model: Optional["PreTrainedModel"] = None,
+    streamer: Optional["BaseStreamer"] = None,
+    **kwargs,
+):
+    prompt_lookup_num_tokens = kwargs.pop("prompt_lookup_num_tokens", None)
+    if prompt_lookup_num_tokens:
+        if self.device.type == "xpu":
+            # Do prompt lookup generation
+            return self.lookup_generate(inputs=inputs,
+                                        num_output_tokens=prompt_lookup_num_tokens,
+                                        generation_config=generation_config,
+                                        logits_processor=logits_processor,
+                                        stopping_criteria=stopping_criteria,
+                                        prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                        **kwargs)
+        else:
+            logger.warning("Prompt lookup is currently not supported on CPU, fallback to " \
+                           "original generate.")
+            kwargs.pop("max_matching_ngram_size")
+    return original_generate(self,
+                             inputs=inputs,
+                             generation_config=generation_config,
+                             logits_processor=logits_processor,
+                             stopping_criteria=stopping_criteria,
+                             prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                             synced_gpus=synced_gpus,
+                             assistant_model=assistant_model,
+                             streamer=streamer,
+                             **kwargs)
+
+GenerationMixin.generate = generate
+
+
+# This class is copied from https://github.com/huggingface/transformers/blob/main/src
+# /transformers/generation/candidate_generator.py
 class PromptLookupCandidateGenerator():
     """
-    `CandidateGenerator` class to be used for prompt lookup generation. This class generates candidates by looking up
+    `CandidateGenerator` class to be used for prompt lookup generation. This class generates candidates
+    by looking up
     likely continuations in the provided prompt (input_ids) itself.
     Read the following blog post for more information: https://github.com/apoorvumang/prompt-lookup-decoding
 
@@ -34,7 +107,8 @@ class PromptLookupCandidateGenerator():
         if self.max_matching_ngram_size <= 0 or self.num_output_tokens <= 0:
             raise ValueError("Invalid max_matching_ngram_size or num_output_tokens")
 
-    def get_candidates(self, input_ids: torch.LongTensor) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
+    def get_candidates(self, input_ids: torch.LongTensor)-> Tuple[torch.LongTensor,
+                                                                  Optional[torch.FloatTensor]]:
         """
         Fetches the candidates to be tried for the current input.
 
@@ -119,95 +193,18 @@ def lookup_generate(self,
                     max_new_tokens: int = 10,
                     num_output_tokens: int = 10,
                     max_matching_ngram_size: int = None,
-                    tokenizer=None,
                     generation_config: Optional[GenerationConfig] = None,
                     attention_mask=None,
                     **sampling_kwargs):
 
-    if generation_config is None:
-        generation_config = self.generation_config
+    invalidInputError(self.device.type == "xpu", "Prompt lookup is currently not"
+                      " supported on CPU")
 
-    generation_config = copy.deepcopy(generation_config)
-    # All unused kwargs must be model kwargs
-    model_kwargs = generation_config.update(**sampling_kwargs)
-    generation_config.validate()
-    self._validate_model_kwargs(model_kwargs.copy())
+    input_ids, generation_config, logits_processor, stopping_criteria, \
+        model_kwargs = _prepare_generate_args(self, inputs, generation_config,
+                                              **sampling_kwargs)
 
-    if generation_config.pad_token_id is None and generation_config.eos_token_id is not None:
-        if model_kwargs.get("attention_mask", None) is None:
-            logger.warning(
-                "The attention mask and the pad token id were not set. As a consequence, "
-                "you may observe unexpected behavior. Please pass your input's "
-                "`attention_mask` to obtain reliable results."
-            )
-        eos_token_id = generation_config.eos_token_id
-        if isinstance(eos_token_id, list):
-            eos_token_id = eos_token_id[0]
-        logger.warning(f"Setting `pad_token_id` to `eos_token_id`:"
-                       f"{eos_token_id} for open-end generation.")
-        generation_config.pad_token_id = eos_token_id
-
-    # 2. Set generation parameters if not already defined
-    logits_processor = LogitsProcessorList()
-    stopping_criteria = StoppingCriteriaList()
-
-    # 3. Define model inputs
-    # inputs_tensor has to be defined
-    # model_input_name is defined if model-specific keyword input is passed
-    # otherwise model_input_name is None
-    # all model-specific keyword inputs are removed from `model_kwargs`
-    inputs_tensor, model_input_name, model_kwargs = self._prepare_model_inputs(
-        inputs, generation_config.bos_token_id, model_kwargs
-    )
-    batch_size = inputs_tensor.shape[0]
-
-    # 4. Define other model kwargs
-    # Removed not used
-
-    # decoder-only models should use left-padding for generation
-    if not self.config.is_encoder_decoder:
-        # If `input_ids` was given, check if the last id in any sequence is `pad_token_id`
-        # Note: If using, `inputs_embeds` this check does not work,
-        # because we want to be more hands-off.
-        if (
-            generation_config.pad_token_id is not None
-            and len(inputs_tensor.shape) == 2
-            and torch.sum(inputs_tensor[:, -1] == generation_config.pad_token_id) > 0
-        ):
-            logger.warning(
-                "A decoder-only architecture is being used, but right-padding "
-                "was detected! For correct generation results, please set "
-                "`padding_side='left'` when initializing the tokenizer."
-            )
-    else:
-        invalidInputError(False, "encoder-decoder models are not supported now.")
-
-    # 5. Prepare `input_ids` which will be used for auto-regressive generation
-    input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop("input_ids")
-
-    # if streamer is not None:
-    #     streamer.put(input_ids.cpu())
-
-    input_ids_length = input_ids.shape[-1]
-
-    # Here we use sample generation mode
-    # 8. prepare distribution pre_processing samplers
-    logits_processor = self._get_logits_processor(
-        generation_config=generation_config,
-        input_ids_seq_length=input_ids_length,
-        encoder_input_ids=inputs_tensor,
-        prefix_allowed_tokens_fn=None,
-        logits_processor=logits_processor,
-    )
-
-    # 12. expand input_ids with `num_return_sequences` additional sequences per batch
-    input_ids, model_kwargs = self._expand_inputs_for_generation(
-        input_ids=input_ids,
-        expand_size=generation_config.num_return_sequences,
-        is_encoder_decoder=self.config.is_encoder_decoder,
-        **model_kwargs,
-    )
-
+    print(f"max_matching_ngram_size: {max_matching_ngram_size}, num_output_tokens: {num_output_tokens}, ")
     candidates_generator = PromptLookupCandidateGenerator(
         num_output_tokens=num_output_tokens,
         max_matching_ngram_size=max_matching_ngram_size)
@@ -216,10 +213,6 @@ def lookup_generate(self,
     step_verify = 0
 
     clear_benchmarks(self)
-
-    current_input_ids = input_ids
-    # generate_ids = torch.empty([input_ids.size(0), max_new_tokens+num_output_tokens],
-    #                            dtype=torch.long, device=self.device)
     
     past_key_values = None
     input_len = input_ids.shape[1]
@@ -228,18 +221,17 @@ def lookup_generate(self,
         if step >= max_new_tokens:
             break
 
-        
         if step == 0:
             # first token use full model
             tic = time.time()
-            output = self(input_ids=current_input_ids,
+            output = self(input_ids=input_ids,
                           past_key_values=past_key_values,
                           attention_mask=attention_mask,
                           return_dict=True,
                           use_cache=True)
             logits = output['logits']
             logits = logits[:, -1:]
-            # logits[:, -1, :] = logits_processor(current_input_ids, logits[:, -1, :])
+            logits[:, -1, :] = logits_processor(input_ids, logits[:, -1, :])
             if generation_config.do_sample:
                 output_ids, prob_list = deepmind_sample(logits,
                                                         top_k=generation_config.top_k,
@@ -247,9 +239,7 @@ def lookup_generate(self,
                                                         temperature=generation_config.temperature)
             else:
                 output_ids = greedy(logits)
-            # generate_ids[:, step] = output_ids
-            current_input_ids = output_ids
-            input_ids = torch.cat((input_ids, current_input_ids), dim=-1)
+            input_ids = torch.cat((input_ids, output_ids), dim=-1)
             past_key_values = output['past_key_values']
             step += 1
             if self.device.type == 'xpu':
@@ -259,46 +249,35 @@ def lookup_generate(self,
             e2e_tic = time.time()
         else:
             cur_len = input_ids.shape[-1]
+            toc = time.time()
             candidate_input_ids, _ = candidates_generator.get_candidates(input_ids=input_ids)
             candidate_length = candidate_input_ids.shape[1] - input_ids.shape[1]
             verify_input_ids = candidate_input_ids[:, -candidate_length - 1: ]
-            # if candidate_length > 0:
-            #     candidate_str = tokenizer.batch_decode(candidate_input_ids[:, -candidate_length - 2: ], skip_special_tokens=True)
-            #     print(f"candidate_str: {candidate_str}")
             self.draft_num.append(candidate_length)
-            forward_args = {
-                "input_ids": verify_input_ids,
-                "past_key_values": past_key_values,
-                # "attention_mask": cur_attention_mask,
-                "return_dict": True,
-                "use_cache": True,
-                }
             tic = time.time()
-            output = self(**forward_args)
+            self.draft_time.append(tic - toc)
+            output = _non_cpu_ipex_verify(self, verify_input_ids, past_key_values,
+                                          attention_mask, return_dict=True, use_cache=True)
             if isinstance(output, dict):
                 logits = output['logits']
                 past_key_values = output['past_key_values']
         
-            new_logits = logits[:, -candidate_length - 1 :]  # excludes the input prompt if present
-            next_token_logits = new_logits.clone()
             if len(logits_processor) > 0:
                 for i in range(candidate_length + 1):
-                    new_logits[:, i, :] = logits_processor(candidate_input_ids[:, : cur_len + i], new_logits[:, i, :])
+                    logits[:, i, :] = logits_processor(candidate_input_ids[:, : cur_len + i], logits[:, i, :])
 
             if generation_config.do_sample:
-                target_probs = logits_to_probs(new_logits,
-                                               top_k=generation_config.top_k,
-                                               top_p=generation_config.top_p,
-                                               temperature=generation_config.temperature)
+                output_ids, prob_list = deepmind_sample(logits,
+                                                        top_k=generation_config.top_k,
+                                                        top_p=generation_config.top_p,
+                                                        temperature=generation_config.temperature)
             else:
-                output_ids = greedy(new_logits)
+                output_ids = greedy(logits)
 
             if self.device.type == 'xpu':
                 torch.xpu.synchronize()
             toc = time.time()
             self.verify_time.append(toc - tic)
-            
-            # self.generate_time.append(self.draft_time[-1] + self.verify_time[-1])
 
             # Compare drafts with target verified outputs
             # Drafts start from [1, k]
@@ -318,18 +297,12 @@ def lookup_generate(self,
             # Clean up target model KV cache
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
+                new_cache_size = max_of_max_matched - max_matched
+                past_key_values = _crop_past_key_values(self, past_key_values, new_cache_size)
 
-                past_key_values = [
-                    (k[:, :, :-(max_of_max_matched - max_matched)],
-                        v[:, :, :-(max_of_max_matched - max_matched)])
-                    for k, v in past_key_values
-                ]
-
-            # generate_ids[:, step:step+output_ids.size(1)] = output_ids
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
 
             step += output_ids.size(1)
-
             step_verify += 1
 
         # Stop on eos and remove content after eos
@@ -343,7 +316,5 @@ def lookup_generate(self,
     e2e_toc = time.time()
     self.n_token_generated = step
     self.e2e_time_without_first = e2e_toc - e2e_tic
-
-    # generate_ids = torch.cat([input_ids, generate_ids[:, :step]], dim=-1)
 
     return input_ids[:, : input_len + step]
