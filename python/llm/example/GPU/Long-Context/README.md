@@ -1,0 +1,22 @@
+# Running Long-Context generation using IPEX-LLM on Intel GPU
+
+Long-Context Generation is a critical aspect in various applications, such as document summarization, extended conversation handling, and complex question answering. Effective long-context generation can lead to more coherent and contextually relevant responses, enhancing user experience and model utility.
+
+This folder contains examples of running long-context generation with IPEX-LLM on Intel GPU:
+
+<!-- Maybe like this after adding more examples:
+- [Single GPU](Single GPU): single GPU examples w & w/o batch.
+- [Multiple GPU](Multiple GPU): multiple GPU examples w & w/o batch. -->
+- [LLaMA2-32K](LLaMA2-32K): examples of running LLaMA2-32K models with single GPU and without batch.
+- [ChatGLM3-32K](Chatglm3-32K): examples of running ChatGLM3-32K models with single GPU and without batch.
+
+### Maximum Input Length for Different Models.
+
+| Model Name | Low Memory Mode | Maximum Input Length |
+| -- | -- | -- |
+| LLaMA2-7B-32K | Disable | 10K |
+|  | Enable | 10K |
+| ChatGLM3-32K | Disable | 10K |
+|  | Enable | 10K |
+
+> Note: If you need to run longer input or use less memory, please set `IPEX_LLM_LOW_MEM=1` to enable **low memory mode**, which will enable memory optimization and may slightly affect the latency performance.
