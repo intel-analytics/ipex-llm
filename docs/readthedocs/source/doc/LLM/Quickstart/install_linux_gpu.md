@@ -207,7 +207,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
          # Recommended Environment Variables for optimal performance
          export USE_XETLA=OFF
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-         SYCL_CACHE_PERSISTENT=1
+         export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Intel Data Center GPU Max
 
