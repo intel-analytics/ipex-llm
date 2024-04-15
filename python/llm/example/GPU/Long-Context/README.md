@@ -1,14 +1,14 @@
-# Running Long-Context generation using IPEX-LLM on Intel Arc A770
+# Running Long-Context generation using IPEX-LLM on Intel Arc™ A770 Graphics
 
 Long-Context Generation is a critical aspect in various applications, such as document summarization, extended conversation handling, and complex question answering. Effective long-context generation can lead to more coherent and contextually relevant responses, enhancing user experience and model utility.
 
-This folder contains examples of running long-context generation with IPEX-LLM on Intel Arc A770 (16GB GPU memory):
+This folder contains examples of running long-context generation with IPEX-LLM on Intel Arc™ A770 Graphics(16GB GPU memory):
 
 <!-- Maybe like this after adding more examples:
 - [Single GPU](Single GPU): single GPU examples w & w/o batch.
 - [Multiple GPU](Multiple GPU): multiple GPU examples w & w/o batch. -->
-- [LLaMA2-32K](LLaMA2-32K): examples of running LLaMA2-32K models with single GPU and without batch.
-- [ChatGLM3-32K](Chatglm3-32K): examples of running ChatGLM3-32K models with single GPU and without batch.
+- [LLaMA2-32K](LLaMA2-32K): examples of running LLaMA2-32K models with INT4/FP8 precision.
+- [ChatGLM3-32K](Chatglm3-32K): examples of running ChatGLM3-32K models with INT4/FP8 precision.
 
 ### Maximum Input Length for Different Models with INT4/FP8 Precision.
 
