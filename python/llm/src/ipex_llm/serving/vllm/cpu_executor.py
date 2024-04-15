@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from typing import Dict, List, Optional, Union
+import torch
 
 from vllm.executor.executor_base import ExecutorAsyncBase
 from vllm.executor.cpu_executor import CPUExecutor
@@ -29,12 +30,15 @@ class CPUExecutorAsync(CPUExecutor, ExecutorAsyncBase):
         blocks_to_swap_out: Dict[int, int],
         blocks_to_copy: Dict[int, List[int]],
     ) -> SamplerOutput:
-        output = await make_async(self.driver_worker.execute_model)(
-            seq_group_metadata_list=seq_group_metadata_list,
-            blocks_to_swap_in=blocks_to_swap_in,
-            blocks_to_swap_out=blocks_to_swap_out,
-            blocks_to_copy=blocks_to_copy)
-        return output
+        with torch.no_grad(), torch.cpu.amp.autocast(
+            enabled=True
+        ):
+            output = await make_async(self.driver_worker.execute_model)(
+                seq_group_metadata_list=seq_group_metadata_list,
+                blocks_to_swap_in=blocks_to_swap_in,
+                blocks_to_swap_out=blocks_to_swap_out,
+                blocks_to_copy=blocks_to_copy)
+            return output
 
     async def check_health_async(self) -> None:
         # CPUExecutor will always be healthy as long as

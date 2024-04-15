@@ -1,3 +1,18 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 import torch
 from typing import List, Optional, Tuple, Union
 
@@ -7,6 +22,12 @@ from vllm.model_executor.layers.layernorm import RMSNorm
 
 from vllm._C import ops
 from .model_convert import _model_mlp_convert, _model_attention_convert
+
+
+def _ipex_llm_convert(model_runner):
+    setattr(model_runner, "load_model", _ipex_llm_load_model)
+    setattr(RotaryEmbedding, "forward", _ipex_llm_rotary_embedding_forward)
+    setattr(RMSNorm, "forward", _ipex_llm_rmsnorm_forward)
 
 
 def _ipex_llm_load_model(self) -> None:
@@ -49,7 +70,6 @@ def _ipex_llm_rmsnorm_forward(
     x: torch.Tensor,
     residual: Optional[torch.Tensor] = None,
 ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-    x = x.to(dtype=self.weight.data.dtype)
     if residual is not None:
         ops.fused_add_rms_norm(
             x,
@@ -66,9 +86,3 @@ def _ipex_llm_rmsnorm_forward(
         self.variance_epsilon,
     )
     return out
-
-
-def _ipex_llm_convert(model_runner):
-    setattr(model_runner, "load_model", _ipex_llm_load_model)
-    setattr(RotaryEmbedding, "forward", _ipex_llm_rotary_embedding_forward)
-    setattr(RMSNorm, "forward", _ipex_llm_rmsnorm_forward)
