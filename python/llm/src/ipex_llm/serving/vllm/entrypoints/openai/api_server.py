@@ -53,7 +53,7 @@ def parse_args():
     parser.add_argument(
         "--ipex-llm-optimize-mode",
         type=str,
-        default=None,
+        default="NATIVE",
         help="IPEX-LLM vLLM optimize mode. Defalut is native vLLM."
     )
     return parser.parse_args()

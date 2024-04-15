@@ -119,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ipex-llm-optimize-mode",
         type=str,
-        default=None,
+        default="NATIVE",
         help="IPEX-LLM vLLM optimize mode. Defalut is native vLLM."
     )
     parser = AsyncEngineArgs.add_cli_args(parser)
