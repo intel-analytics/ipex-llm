@@ -135,7 +135,7 @@ Please also set the following environment variable if you would like to run LLMs
          set SYCL_CACHE_PERSISTENT=1
          set BIGDL_LLM_XMX_DISABLED=1
 
-   .. tab:: Intel Arc™ A-Series
+   .. tab:: Intel Arc™ A-Series Graphics
 
       .. code-block:: cmd
 
