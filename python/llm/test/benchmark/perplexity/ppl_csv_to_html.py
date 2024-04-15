@@ -40,19 +40,6 @@ def nonzero_min(lst):
 def is_diffs_within_normal_range(diff_ppl_result, threshold=5.0):
     return not any(diff < (-threshold) for diff in diff_ppl_result if isinstance(diff, float))
 
-def add_to_dict(dict, key, value):
-    if key not in dict:
-        dict[key] = []
-    dict[key].append(value)
-
-def best_in_dict(dict, key, value):
-    if key in dict:
-        best_value = nonzero_min(dict[key])
-        if best_value < value or value <= 0.0:
-            return best_value
-        return value
-    return value
-
 def create_fp16_dict(fp16_path):
     fp16_df = pd.read_csv(fp16_path)
     fp16_dict = {}
@@ -118,15 +105,6 @@ def main():
         diff_ppl_result=['']*len(latest_csv.index)
 
         ppl_result = 'ppl_result'
-
-        csv_dict = {}
-        for csv_file in csv_files:
-            current_csv = pd.read_csv(csv_file, index_col=0)
-            for current_csv_ind,current_csv_row in current_csv.iterrows():
-                current_csv_model=current_csv_row['Model'].strip()
-                current_csv_precision=current_csv_row['Precision'].strip()
-                current_csv_model_ppl_result=current_csv_model+'-'+current_csv_precision+'-'+'ppl_result'
-                add_to_dict(csv_dict, current_csv_model_ppl_result, current_csv_row[ppl_result])
                 
         for latest_csv_ind,latest_csv_row in latest_csv.iterrows():
 
