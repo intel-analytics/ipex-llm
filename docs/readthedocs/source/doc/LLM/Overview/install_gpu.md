@@ -581,6 +581,12 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 ```
 
+```eval_rst
+.. note::
+
+   For **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
+```
+
 ### Known issues
 
 #### 1. Potential suboptimal performance with Linux kernel 6.2.0

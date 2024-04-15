@@ -229,6 +229,12 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 ```
 
+  ```eval_rst
+  .. seealso::
+
+     Please refer to `this guide <../Overview/install_gpu.html#id5>`_ for more details regarding runtime configuration.
+  ```
+
 ## A Quick Example
 
 Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 

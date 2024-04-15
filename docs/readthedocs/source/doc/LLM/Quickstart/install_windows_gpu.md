@@ -125,7 +125,7 @@ You can verify if `ipex-llm` is successfully installed following below steps.
   ```eval_rst
   .. seealso::
 
-     For other Intel dGPU Series, please refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
+     For other Intel dGPU Series, please refer to `this guide <../Overview/install_gpu.html#runtime-configuration>`_ for more details regarding runtime configuration.
   ```
 
 ### Step 2: Run Python Code
