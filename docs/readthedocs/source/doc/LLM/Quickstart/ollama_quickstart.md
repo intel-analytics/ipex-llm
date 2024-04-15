@@ -55,8 +55,6 @@ Launch the Ollama service:
 
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
-         export http_proxy=
-         export unset =
          source /opt/intel/oneapi/setvars.sh
 
          ./ollama serve
@@ -69,8 +67,6 @@ Launch the Ollama service:
 
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
-         set HTTP_PROXY=
-         set HTTPS_PROXY=
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
          ollama.exe serve
@@ -156,7 +152,6 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
       .. code-block:: bash
 
          set no_proxy=localhost,127.0.0.1
-
          ollama.exe create example -f Modelfile
          ollama.exe run example
 
