@@ -76,7 +76,7 @@ jobs:
         run: |
           pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
           pip install bigdl-core-xe-21==2.5.0b20230102
-          pip install bigdl-core-esimd-21==2.5.0b20230102
+          pip install bigdl-core-xe-esimd-21==2.5.0b20230102
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
