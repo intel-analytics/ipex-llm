@@ -4,7 +4,7 @@ Long-Context Generation is a critical aspect in various applications, such as do
 
 This folder contains examples of running long-context generation with IPEX-LLM on Intel Arc™ A770 Graphics(16GB GPU memory):
 
-<!-- Maybe like this after adding more examples:
+<!-- TODO: Maybe like this after adding more examples:
 - [Single GPU](Single GPU): single GPU examples w & w/o batch.
 - [Multiple GPU](Multiple GPU): multiple GPU examples w & w/o batch. -->
 - [LLaMA2-32K](LLaMA2-32K): examples of running LLaMA2-32K models with INT4/FP8 precision.
@@ -16,17 +16,18 @@ This folder contains examples of running long-context generation with IPEX-LLM o
 
     | Model Name | Low Memory Mode | Maximum Input Length |
     | -- | -- | -- |
-    | LLaMA2-7B-32K | Disable | 10K |
-    |  | Enable | 10K(Need to verify) |
-    | ChatGLM3-32K | Disable | 10K |
-    |  | Enable | 10K(Need to verify) |
+    | LLaMA2-7B-32K | Disable | 9K |
+    |  | Enable | 11K |
+    | ChatGLM3-6B-32K | Disable | 9K |
+    |  | Enable | 10K |
+
 - **FP8**
 
     | Model Name | Low Memory Mode | Maximum Input Length |
     | -- | -- | -- |
-    | LLaMA2-7B-32K | Disable | 8K |
-    |  | Enable | 8K(Need to verify) |
-    | ChatGLM3-32K | Disable | 8K |
-    |  | Enable | 8K(Need to verify) |
+    | LLaMA2-7B-32K | Disable | 7K |
+    |  | Enable | 9K |
+    | ChatGLM3-6B-32K | Disable | 8K |
+    |  | Enable | 9K |
 
 > Note: If you need to run longer input or use less memory, please set `IPEX_LLM_LOW_MEM=1` to enable **low memory mode**, which will enable memory optimization and may slightly affect the latency performance.
