@@ -34,13 +34,15 @@ RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     ln -s /opt/python/Python-3.11.1/python /usr/bin/python3 && \
     # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
     ln -s /usr/bin/python3 /usr/bin/python && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3 get-pip.py && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip && \
+    pip install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
     pip install --upgrade torch==2.1.0 && \
     # install CPU ipex-llm
-    pip3 install --pre --upgrade ipex-llm[all] && \
+    pip install --pre --upgrade ipex-llm[all] && \
     # install ipex and oneccl
     pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/intel_extension_for_pytorch-2.1.0%2Bcpu-cp39-cp39-linux_x86_64.whl && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
