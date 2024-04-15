@@ -31,6 +31,9 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 ### 2. Configures OneAPI environment variables for Linux
 
+> [!NOTE]
+> Skip this step if you are running on Windows.
+
 This is a required step on Linux for APT or offline installed oneAPI.
 Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
 
@@ -167,6 +170,9 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
+
+> [!NOTE]
+> Skip this step if you are running on Windows.
 
 This is a required step on Linux for APT or offline installed oneAPI.
 Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
