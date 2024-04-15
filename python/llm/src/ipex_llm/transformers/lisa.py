@@ -16,6 +16,7 @@
 
 from transformers import TrainerCallback
 import numpy as np
+from ipex_llm.utils.common import invalidInputError
 
 
 # source: https://github.com/OptimalScale/LMFlow/blob/main/src/lmflow/pipeline/finetuner.py
@@ -53,10 +54,10 @@ class DynamicLayerActivationCallback(TrainerCallback):
             for param in layer.parameters():
                 param.requires_grad = False
 
-    def on_step_begin(self, args, state, control, **kwargs):
-        # Check if it's time to switch active layers, including at step 0
-        if state.global_step % self.interval_steps == 0:
-            self.switch_active_layers()
+    # def on_step_begin(self, args, state, control, **kwargs):
+    #     # Check if it's time to switch active layers, including at step 0
+    #     if state.global_step % self.interval_steps == 0:
+    #         self.switch_active_layers()
 
     def switch_active_layers(self):
         # First, disable gradients for all layers
