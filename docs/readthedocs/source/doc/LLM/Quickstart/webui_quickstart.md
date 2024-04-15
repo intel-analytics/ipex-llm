@@ -59,11 +59,10 @@ Configure oneAPI variables by running the following command in **Anaconda Prompt
 ```
 
 ```cmd
-call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+set SYCL_CACHE_PERSISTENT=1
 ```
 If you're running on iGPU, set additional environment variables by running the following commands:
 ```cmd
-set SYCL_CACHE_PERSISTENT=1
 set BIGDL_LLM_XMX_DISABLED=1
 ```
 
