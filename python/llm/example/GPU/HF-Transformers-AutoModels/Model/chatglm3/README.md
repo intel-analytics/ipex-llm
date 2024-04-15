@@ -34,8 +34,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 > [!NOTE]
 > Skip this step if you are running on Windows.
 
-This is a required step on Linux for APT or offline installed oneAPI.
-Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
@@ -174,8 +173,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 > [!NOTE]
 > Skip this step if you are running on Windows.
 
-This is a required step on Linux for APT or offline installed oneAPI.
-Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
