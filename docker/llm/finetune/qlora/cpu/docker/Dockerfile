@@ -44,7 +44,7 @@ RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     # install CPU ipex-llm
     pip install --pre --upgrade ipex-llm[all] && \
     # install ipex and oneccl
-    pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/intel_extension_for_pytorch-2.1.0%2Bcpu-cp39-cp39-linux_x86_64.whl && \
+    pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/intel_extension_for_pytorch-2.1.0%2Bcpu-cp311-cp311-linux_x86_64.whl && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
     # install huggingface dependencies
     pip install datasets transformers==4.35.0 && \
