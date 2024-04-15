@@ -16,8 +16,8 @@ This folder contains examples of running long-context generation with IPEX-LLM o
 
     | Model Name | Low Memory Mode | Maximum Input Length |
     | -- | -- | -- |
-    | LLaMA2-7B-32K | Disable | 9K |
-    |  | Enable | 11K |
+    | LLaMA2-7B-32K | Disable | 10K |
+    |  | Enable | 12K |
     | ChatGLM3-6B-32K | Disable | 9K |
     |  | Enable | 10K |
 
