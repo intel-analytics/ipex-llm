@@ -42,7 +42,7 @@ class DynamicLayerActivationCallback(TrainerCallback):
             self.layers_attribute = class_to_layers_map[model_class_name]
         else:
             # self.layers_attribute = training_args.lisa_layers_attribute
-            raise ValueError(f"Model {model_class_name} not supported.")
+            invalidInputError(False, f"Model {model_class_name} not supported.")
         # Dynamically execute to get the number of layers
         self.total_layers = len(eval('self.' + self.layers_attribute))
 
