@@ -662,7 +662,7 @@ def whitespace_around_operator(logical_line):
             yield match.start(2), "E222 multiple spaces after operator"
 
 
-def missing_whitespace_around_operator(logical_line, tokens):
+def missing_whitespace_around_operator(logical_line, tokens, noqa):
     r"""Surround operators with a single space on either side.
 
     - Always surround these binary operators with a single space on
@@ -690,6 +690,8 @@ def missing_whitespace_around_operator(logical_line, tokens):
     E227: c = a|b
     E228: msg = fmt%(errno, errmsg)
     """
+    if noqa:
+        return
     parens = 0
     need_space = False
     prev_type = tokenize.OP
@@ -931,7 +933,7 @@ def module_imports_on_top_of_file(
         checker_state['seen_non_imports'] = True
 
 
-def compound_statements(logical_line):
+def compound_statements(logical_line, noqa):
     r"""Compound statements (on the same line) are generally
     discouraged.
 
@@ -960,6 +962,8 @@ def compound_statements(logical_line):
     E704: def f(x): return 2*x
     E731: f = lambda x: 2*x
     """
+    if noqa:
+        return
     line = logical_line
     last_char = len(line) - 1
     found = line.find(':')
