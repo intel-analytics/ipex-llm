@@ -30,12 +30,15 @@ conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
 When we run the model in a distributed manner across two GPUs, the memory consumption of each GPU is only half of what it was originally, and the GPUs can work simultaneously during inference computation.
 
-We provide example usage for `Llama-2-7b` model running on Arc A770
+We provide example usage for `Llama-2-7b-chat-hf` model running on Arc A770
 
-Run Llama-2-7b on two Intel Arc A770:
+Run Llama-2-7b-chat-hf on two Intel Arc A770:
 
 ```bash
-bash run_llama2_7b_arc_2_card.sh
+
+# Before run this script, you should adjust the YOUR_REPO_ID_OR_MODEL_PATH in last line
+# If you want to change server port, you can set port parameter in last line
+bash run_llama2_7b_chat_hf_arc_2_card.sh
 ```
 
 If you successfully run the serving, you can get output like this:

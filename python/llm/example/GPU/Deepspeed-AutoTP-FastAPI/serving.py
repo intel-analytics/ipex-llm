@@ -62,11 +62,11 @@ def load_model(model_path, low_bit):
     set_accelerator(current_accel)
     global model, tokenizer
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                    device_map={"": "cpu"},
-                                                    low_cpu_mem_usage=True,
-                                                    torch_dtype=torch.float16,
-                                                    trust_remote_code=True,
-                                                    use_cache=True)
+                                                 device_map={"": "cpu"},
+                                                 low_cpu_mem_usage=True,
+                                                 torch_dtype=torch.float16,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
 
     model = deepspeed.init_inference(
         model,
@@ -123,7 +123,7 @@ async def generate(prompt_request: PromptRequest):
         generate_time = time.time() - start_time
         output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        return {"generated_text": output_str, "generate_time": f'{generate_time}s'}
+        return {"generated_text": output_str, "generate_time": f'{generate_time:.3f}s'}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
@@ -132,13 +132,15 @@ if __name__ == "__main__":
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default='sym_int4',
                     help='The quantization type the model will convert to.')
-
+    parser.add_argument('--port', type=int, default=8000,
+                    help='The port number on which the server will run.')
+    
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     low_bit = args.low_bit
     load_model(model_path, low_bit)
     if local_rank == 0:
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+        uvicorn.run(app, host="0.0.0.0", port=args.port)
     else:
         while True:
             object_list = [None]
