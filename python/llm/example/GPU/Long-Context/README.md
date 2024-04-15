@@ -10,13 +10,23 @@ This folder contains examples of running long-context generation with IPEX-LLM o
 - [LLaMA2-32K](LLaMA2-32K): examples of running LLaMA2-32K models with single GPU and without batch.
 - [ChatGLM3-32K](Chatglm3-32K): examples of running ChatGLM3-32K models with single GPU and without batch.
 
-### Maximum Input Length for Different Models.
+### Maximum Input Length for Different Models with Different Precisions.
 
-| Model Name | Low Memory Mode | Maximum Input Length |
-| -- | -- | -- |
-| LLaMA2-7B-32K | Disable | 10K |
-|  | Enable | 10K |
-| ChatGLM3-32K | Disable | 10K |
-|  | Enable | 10K |
+- **INT4**
+
+    | Model Name | Low Memory Mode | Maximum Input Length |
+    | -- | -- | -- |
+    | LLaMA2-7B-32K | Disable | 10K |
+    |  | Enable | 10K(Need to verify) |
+    | ChatGLM3-32K | Disable | 10K |
+    |  | Enable | 10K(Need to verify) |
+- **FP8**
+
+    | Model Name | Low Memory Mode | Maximum Input Length |
+    | -- | -- | -- |
+    | LLaMA2-7B-32K | Disable | 8K |
+    |  | Enable | 8K(Need to verify) |
+    | ChatGLM3-32K | Disable | 10K |
+    |  | Enable | 8K(Need to verify) |
 
 > Note: If you need to run longer input or use less memory, please set `IPEX_LLM_LOW_MEM=1` to enable **low memory mode**, which will enable memory optimization and may slightly affect the latency performance.
