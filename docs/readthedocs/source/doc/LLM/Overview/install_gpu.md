@@ -135,15 +135,11 @@ Please also set the following environment variable if you would like to run LLMs
          set SYCL_CACHE_PERSISTENT=1
          set BIGDL_LLM_XMX_DISABLED=1
 
-   .. tab:: Intel Arc™ A300-Series or Pro A60
+   .. tab:: Intel Arc™ A-Series
 
       .. code-block:: cmd
 
          set SYCL_CACHE_PERSISTENT=1
-
-   .. tab:: Other Intel dGPU Series
-
-      There is no need to set further environment variables.
 ```
 
 ```eval_rst
@@ -571,6 +567,17 @@ To use GPU acceleration on Linux, several environment variables are required or 
          export ENABLE_SDP_FUSION=1
 
       Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``
+
+   .. tab:: Intel iGPU
+
+      .. code-block:: bash
+
+         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+         source /opt/intel/oneapi/setvars.sh
+
+         export SYCL_CACHE_PERSISTENT=1
+         export BIGDL_LLM_XMX_DISABLED=1
 
 ```
 
