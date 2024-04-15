@@ -5,6 +5,7 @@
 # auto-gptq
 packaging
 peft==0.5.0
+transformers==4.34.0
 bitsandbytes>=0.41.1
 accelerate==0.23.0
 addict
@@ -12,7 +13,7 @@ evaluate
 fire
 PyYAML>=6.0
 datasets
-# flash-attn>=2.2.1
+flash-attn>=2.2.1
 sentencepiece
 wandb
 einops

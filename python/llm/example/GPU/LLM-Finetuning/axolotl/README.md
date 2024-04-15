@@ -19,30 +19,31 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 git clone https://github.com/OpenAccess-AI-Collective/axolotl
 cd axolotl
 git checkout v0.3.0
-pip install -e . -rsourc ../requirements-xpu.txt
-# change to transformers 4.34.0
-pip install transformers==4.34.0 datasets
+cp ../requirements-xpu.txt requirements.txt
+pip install -e .
 ```
 
 ### 2. Configures OneAPI environment variables and accelerate
+
+Configures OneAPI environment variables 
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
 
-Config `accelerate` in command line interactively.
+Configures `accelerate` in command line interactively. 
 
 ```bash
 accelerate config
 ```
 
+Please answer `NO` in option `Do you want to run your training on CPU only (even if a GPU / Apple Silicon device is available)? [yes/NO]:`.
 
+After finish accelerate config, check if `use_cpu` is disable (i.e., ` use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
 
-Ensure `use_cpu` is disable in config (`~/.cache/huggingface/accelerate/default_config.yaml`).
+### 3. Finetune Llama-2-7B
 
-### 3. Finetune
-
-This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.com/artidoro/qlora) directly on Intel GPU, based on [axolotl Llama-2 qlora example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.3.0/examples/llama-2/qlora.yml).
+This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.com/artidoro/qlora) directly on Intel GPU, based on [axolotl Llama-2 qlora example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.3.0/examples/llama-2/qlora.yml). Note that only Llama-2-7B QLora example is verified on Intel ARC 770 with 16GB memory.
 
 Modify parameters in `qlora.yml` based on your requirements.
 
