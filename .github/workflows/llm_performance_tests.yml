@@ -13,7 +13,7 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
+  pull_request:
   #   branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
@@ -28,7 +28,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -74,7 +74,9 @@ jobs:
       - name: Install IPEX-LLM from Pypi
         shell: bash
         run: |
-          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
+          pip install bigdl-core-xe-21==2.5.0b20230102
+          pip intsall bigdl-core-esimd-21==2.5.0b20230102
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -199,6 +201,8 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          pip install bigdl-core-xe-21==2.5.0b20230102
+          pip intsall bigdl-core-esimd-21==2.5.0b20230102
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
