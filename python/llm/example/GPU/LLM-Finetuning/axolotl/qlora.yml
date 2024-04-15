@@ -1,3 +1,4 @@
+# This file is copied from https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.3.0/examples/llama-2/qlora.yml
 base_model: meta-llama/Llama-2-7b-hf
 base_model_config: meta-llama/Llama-2-7b-hf
 model_type: LlamaForCausalLM
