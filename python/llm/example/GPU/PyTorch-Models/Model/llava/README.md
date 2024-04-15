@@ -37,7 +37,7 @@ pip install einops # install dependencies required by llava
 pip install transformers==4.36.2
 
 git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
-cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
+copy generate.py .\LLaVA\ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
 git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
 
