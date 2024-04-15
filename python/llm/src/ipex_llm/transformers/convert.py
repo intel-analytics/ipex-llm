@@ -617,7 +617,8 @@ def _optimize_pre(model):
             if "QWenAttention" in module.__class__.__name__:
                 c_attn_weight = module.c_attn.weight.data
                 c_attn_bias = module.c_attn.bias.data
-                projection_size = module.projection_size
+                # Compatible with AutoTP case
+                projection_size = c_attn_weight.shape[0] // 3
                 hid_size = module.hidden_size
                 with init_empty_weights():
                     q_proj = torch.nn.Linear(hid_size, projection_size)
